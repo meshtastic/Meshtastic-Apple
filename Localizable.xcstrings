@@ -2039,6 +2039,12 @@
     },
     "A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un canale con indice 0 indica il canale principale da cui vengono inviati i pacchetti broadcast. I dati di posizione sono trasmessi dal primo canale in cui sono attivati a partire dal firmware 2.7."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2843,6 +2849,12 @@
     },
     "Administration Enabled" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amministrazione attivata"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3054,6 +3066,24 @@
                 "stringUnit" : {
                   "state" : "new",
                   "value" : "After %lld Days"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dopo %lld giorno"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dopo %lld giorni"
                 }
               }
             }
@@ -7689,6 +7719,12 @@
     },
     "Clear Stale Nodes" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi nodi vecchi"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7708,7 +7744,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cliente"
+            "value" : "Client"
           }
         },
         "ja" : {
@@ -7748,7 +7784,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cliente Nascosto"
+            "value" : "Client nascosto"
           }
         },
         "ja" : {
@@ -7782,7 +7818,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Storia del cliente"
+            "value" : "Storia del client"
           }
         },
         "ja" : {
@@ -7850,7 +7886,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cliente Muto"
+            "value" : "Client muto"
           }
         },
         "ja" : {
@@ -7884,7 +7920,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opzioni del cliente"
+            "value" : "Opzioni del client"
           }
         },
         "ja" : {
@@ -9841,7 +9877,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancellare tutte le metriche dell'ambiente?"
+            "value" : "Cancellare tutte le metriche ambientali?"
           }
         },
         "ja" : {
@@ -10061,7 +10097,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancellare le metriche di potenza?"
+            "value" : "Cancellare le metriche di alimentazione?"
           }
         },
         "ja" : {
@@ -14004,7 +14040,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il ripristino alle impostazioni di fabbrica eliminerà i dati del dispositivo e della app."
+            "value" : "Il ripristino alle impostazioni di fabbrica eliminerà i dati del dispositivo e dell’app."
           }
         },
         "ja" : {
@@ -14175,6 +14211,12 @@
     },
     "Favorited and ignored nodes are always retained. Nodes without PKC keys are cleared from the app database on the schedule set by the user, nodes with PKC keys are cleared only if the interval is set to 7 days or longer. This feature only purges nodes from the app that are not stored in the device node database." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I nodi preferiti e ignorati sono sempre conservati. I nodi senza chiavi PKC sono rimossi dal database dell’app secondo i tempi impostati dall’utente, i nodi con chiavi PKC sono rimossi solo se l’intervallo è impostato a 7 o più giorni. Questa funzione elimina dall’app soltanto i nodi che non sono memorizzati nel database dei nodi del dispositivo."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14459,7 +14501,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trovare un nodo"
+            "value" : "Trova un nodo"
           }
         },
         "ja" : {
@@ -14729,7 +14771,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sentito per la prima volta"
+            "value" : "Prima ricezione"
           }
         },
         "ja" : {
@@ -15011,7 +15053,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schermo ribaltabile"
+            "value" : "Ribalta schermo"
           }
         },
         "ja" : {
@@ -15039,7 +15081,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Capovolgere lo schermo in verticale"
+            "value" : "Ribalta lo schermo in verticale"
           }
         },
         "ja" : {
@@ -15149,7 +15191,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seguire la direzione"
+            "value" : "Segui con direzione"
           }
         },
         "ja" : {
@@ -15773,7 +15815,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Generare un codice QR"
+            "value" : "Genera un codice QR"
           }
         },
         "ja" : {
@@ -15869,7 +15911,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ottenere la posizione del nodo"
+            "value" : "Ottieni la posizione del nodo"
           }
         },
         "ja" : {
@@ -15933,14 +15975,21 @@
       }
     },
     "Get started" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inizia"
+          }
+        }
+      }
     },
     "Get the latest alpha firmware" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ottenere l'ultimo firmware alfa"
+            "value" : "Ottieni l'ultimo firmware alpha"
           }
         },
         "ja" : {
@@ -15974,7 +16023,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ottenere l'ultimo firmware stabile"
+            "value" : "Ottieni l'ultimo firmware stabile"
           }
         },
         "ja" : {
@@ -16005,6 +16054,12 @@
     },
     "GitHub Repository" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repository su GitHub"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16399,6 +16454,12 @@
             "value" : "חחח"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HaHa"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16433,6 +16494,12 @@
     },
     "Hard Reset" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset completo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16582,7 +16649,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ascoltato"
+            "value" : "Ricevuto"
           }
         },
         "ja" : {
@@ -17206,7 +17273,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Con quale frequenza vengono inviate le metriche di potenza attraverso la rete. L'impostazione predefinita è 30 minuti."
+            "value" : "Con quale frequenza vengono inviate le metriche di alimentazione attraverso la rete. L'impostazione predefinita è 30 minuti."
           }
         },
         "ja" : {
@@ -17480,7 +17547,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ibrido"
+            "value" : "Ibrida"
           }
         },
         "ja" : {
@@ -18033,6 +18100,12 @@
     },
     "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignora i messaggi aperti o non decifrabili osservati dalle mesh esterne. Ritrasmette soltanto il messaggio sui canali primari e secondari locali del nodo."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18058,7 +18131,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Percorso di importazione"
+            "value" : "Importa percorso"
           }
         },
         "ja" : {
@@ -18677,6 +18750,12 @@
     },
     "Jump to present" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Torna al presente"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18739,6 +18818,12 @@
     },
     "Key Backup" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup delle chiavi"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18854,7 +18939,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'ultima volta che si è sentito"
+            "value" : "Ultima ricezione"
           }
         },
         "ja" : {
@@ -18925,6 +19010,12 @@
     },
     "Latitude in degrees (e.g., 37.7749)" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latitudine in gradi (es. 34.7749)"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18941,6 +19032,12 @@
     },
     "Latitude must be between -90 and 90 degrees" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La latitudine deve essere tra -90 e 90 gradi."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18960,7 +19057,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Battito cardiaco a LED"
+            "value" : "Pulsazione LED"
           }
         },
         "ja" : {
@@ -19190,7 +19287,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Limitare tutti gli intervalli di trasmissione periodica, in particolare la telemetria e la posizione. Se è necessario aumentare gli hop, farlo sui nodi ai margini, non su quelli al centro. MQTT è sconsigliato quando il ciclo di lavoro è limitato, perché è il nodo gateway a svolgere tutto il lavoro."
+            "value" : "Limita tutti gli intervalli di trasmissione periodica, in particolare la telemetria e la posizione. Se è necessario aumentare gli hop, farlo sui nodi ai margini, non su quelli al centro. MQTT è sconsigliato quando il ciclo di lavoro è limitato, perché è il nodo gateway a svolgere tutto il lavoro."
           }
         },
         "ja" : {
@@ -19252,7 +19349,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Caricamento dei log. . ."
+            "value" : "Caricamento dei registri. . ."
           }
         },
         "ja" : {
@@ -19727,6 +19824,12 @@
     },
     "Longitude in degrees (e.g., -122.4194)" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longitudine in gradi (es. -122.4194)"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19743,6 +19846,12 @@
     },
     "Longitude must be between -180 and 180 degrees" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La longitudine deve essere tra -180 e 180 gradi"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19887,6 +19996,12 @@
     },
     "LoRa Config Changes:" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifiche configurazione LoRa:"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20152,7 +20267,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gestire i canali"
+            "value" : "Gestisci i canali"
           }
         },
         "ja" : {
@@ -20199,7 +20314,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gestisci sovrapposizioni mappa personalizzate"
+            "value" : "Gestisci le sovrapposizioni personalizzate della mappa"
           }
         },
         "ja" : {
@@ -20229,7 +20344,15 @@
       }
     },
     "Manage map data" : {
-      "comment" : "Link to manage uploaded map data"
+      "comment" : "Link to manage uploaded map data",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestisci i dati delle mappe"
+          }
+        }
+      }
     },
     "Managed Device" : {
       "localizations" : {
@@ -20558,7 +20681,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Raggiunta la massima ritrasmissione"
+            "value" : "Massima ritrasmissione raggiunta"
           }
         },
         "ja" : {
@@ -20706,7 +20829,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rete Attività live"
+            "value" : "Attività in tempo reale della mesh"
           }
         },
         "ja" : {
@@ -20770,7 +20893,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mappa della mesh"
+            "value" : "Mappa mesh"
           }
         },
         "ja" : {
@@ -20812,7 +20935,14 @@
       }
     },
     "Meshtastic" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic"
+          }
+        }
+      }
     },
     "Meshtastic Node %@ has shared channels with you" : {
       "localizations" : {
@@ -20825,7 +20955,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il Nodo Meshtastic %@ ha condiviso i canali con voi"
+            "value" : "Il Nodo Meshtastic %@ ha condiviso i canali con te"
           }
         },
         "ja" : {
@@ -21139,6 +21269,12 @@
     "Message Size" : {
       "comment" : "VoiceOver label for message size",
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione messaggio"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21275,6 +21411,12 @@
     },
     "Messaging" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messaggi"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23285,7 +23427,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nessuna metrica di potenza"
+            "value" : "Nessuna metrica di alimentazione"
           }
         },
         "ja" : {
@@ -24758,7 +24900,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aprire le impostazioni"
+            "value" : "Apri Impostazioni"
           }
         },
         "ja" : {
@@ -25072,7 +25214,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gli aggiornamenti OTA non sono supportati dalla vostra piattaforma."
+            "value" : "Gli aggiornamenti OTA non sono supportati dalla tua piattaforma."
           }
         },
         "ja" : {
@@ -25140,7 +25282,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Emissione di registrazioni di debug in tempo reale via seriale, visualizzazione ed esportazione di registri del dispositivo con correzione della posizione via Bluetooth."
+            "value" : "Emette i registri di debug in tempo reale via seriale, visualizza ed esporta i registri del dispositivo con correzione della posizione via Bluetooth."
           }
         },
         "ja" : {
@@ -26061,6 +26203,12 @@
     },
     "Please be advised that because the map report is not encrypted, your data may be stored and displayed permanently by third parties. Meshtastic does not assume responsibility for any such storage, display or disclosure of this data." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si prega di notare che, poiché il rapporto della mappa non è criptato, i tuoi dati potrebbero essere memorizzati e visualizzati permanentemente da terzi. Meshtastic non si assume alcuna responsabilità per la memorizzazione, la visualizzazione o la trasmissione di questi dati."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26086,7 +26234,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Collegarsi a una radio per configurare le impostazioni."
+            "value" : "Collegati a una radio per configurare le impostazioni."
           }
         },
         "ja" : {
@@ -26120,7 +26268,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impostare una regione"
+            "value" : "Imposta una regione"
           }
         },
         "ja" : {
@@ -26520,7 +26668,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Posizione Log %lld Punti"
+            "value" : "Posizione Registro %lld Punti"
           }
         },
         "ja" : {
@@ -26594,7 +26742,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Posizione Pacchetto ricevuto dal nodo: %@"
+            "value" : "Pacchetto posizione ricevuto dal nodo: %@"
           }
         },
         "ja" : {
@@ -26892,7 +27040,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Metriche di potenza"
+            "value" : "Metriche di alimentazione"
           }
         },
         "ja" : {
@@ -26920,7 +27068,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registro delle metriche di potenza"
+            "value" : "Registro delle metriche di alimentazione"
           }
         },
         "ja" : {
@@ -27613,6 +27761,12 @@
     },
     "Provide anonymous usage statistics and crash reports." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fornisci statistiche anonime di utilizzo e rapporti sui crash"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27744,7 +27898,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alimentato"
+            "value" : "ALIM."
           }
         },
         "ja" : {
@@ -28882,7 +29036,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Amministratore PKI remoto: %@"
+            "value" : "Amministrazione PKI remota: %@"
           }
         },
         "ja" : {
@@ -29172,7 +29326,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Richiesta PKI Admin: %@"
+            "value" : "Richiedi amministrazione PKI: %@"
           }
         },
         "ja" : {
@@ -29292,7 +29446,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ripristino delle impostazioni dell'app"
+            "value" : "Ripristina le impostazioni dell'app"
           }
         },
         "ja" : {
@@ -29514,7 +29668,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esaminare l'applicazione"
+            "value" : "Recensisci l’app"
           }
         },
         "ja" : {
@@ -30531,6 +30685,12 @@
             "value" : "לווין"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satellite"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31451,6 +31611,12 @@
     },
     "Select a node from the drop down to manage connected or remote devices." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona un nodo dal menù per gestire i dispostivi remoti o connessi"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33881,6 +34047,12 @@
     },
     "Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to start the live activity." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra le informazioni sulla radio Lora collegata via Bluetooth. Puoi scorrere a sinistra per disconnetterti dalla radio, e premere a lungo per avviare l’attività in tempo reale."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34573,6 +34745,12 @@
     },
     "Sponsor App Development" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sponsorizza lo sviluppo dell’app"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35040,7 +35218,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abbonati"
+            "value" : "Iscritto"
           }
         },
         "ja" : {
@@ -39763,6 +39941,12 @@
     },
     "Usage and Crash Data" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dati di utilizzo e crash"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41054,7 +41238,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lampeggiatore web"
+            "value" : "Flasher web"
           }
         },
         "ja" : {
@@ -41140,7 +41324,14 @@
       }
     },
     "Welcome to" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benvenuti a"
+          }
+        }
+      }
     },
     "What does the lock mean?" : {
       "localizations" : {
@@ -41227,7 +41418,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cosa fa la modalità operatore con licenza:\n* Imposta il nome del nodo con il proprio nominativo\n* Trasmette informazioni sul nodo ogni 10 minuti\n* Sovrascrive la frequenza, il dutycycle e la potenza di trasmissione\n* Disabilita la crittografia"
+            "value" : "Cosa fa la modalità operatore con licenza:\n* Imposta il nome del nodo con il proprio nominativo\n* Trasmette informazioni sul nodo ogni 10 minuti\n* Ignora la frequenza, il ciclo di lavoro e la potenza di trasmissione\n* Disabilita la crittografia"
           }
         },
         "ja" : {
@@ -41307,7 +41498,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quando si utilizza la modalità GPIO, mantenere l'uscita attiva per questo tempo. "
+            "value" : "Quando si utilizza la modalità GPIO, mantiene l'uscita attiva per questo tempo. "
           }
         },
         "ja" : {
@@ -41443,7 +41634,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sospenderà tutto il più possibile, per il ruolo di tracker e sensore questo includerà anche la radio lora. Non utilizzare questa impostazione se si desidera utilizzare il dispositivo con le applicazioni del telefono o se si utilizza un dispositivo senza pulsante utente."
+            "value" : "Sospende tutto il più possibile, per il ruolo di tracker e sensore questo include anche la radio Lora. Non utilizzare questa impostazione se si desidera utilizzare il dispositivo con le applicazioni del telefono o se si utilizza un dispositivo senza pulsante utente."
           }
         },
         "ja" : {
@@ -41591,7 +41782,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entro il %@"
+            "value" : "Entro %@"
           }
         },
         "ja" : {
@@ -42041,6 +42232,12 @@
     },
     "Your node will periodically send an unencrypted map report packet to the configured MQTT server, this includes id, short and long name, approximate location, hardware model, role, firmware version, LoRa region, modem preset and primary channel name." : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il nodo invierà periodicamente un pacchetto con il rapporto della mappa al server MQTT configurato, che include l’id, il nome breve e lungo, la posizione approssimativa, il modello hardware, il ruolo, la versione del firmware, la regione LoRa, il preset del modem e il nome del canale principale."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -42066,7 +42263,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La frequenza operativa del nodo viene calcolata in base alla regione, alla preimpostazione del modem e a questo campo. Se il campo è 0, lo slot viene calcolato automaticamente in base al nome del canale principale."
+            "value" : "La frequenza operativa del nodo viene calcolata in base alla regione, al preset del modem e a questo campo. Se il campo è 0, lo slot viene calcolato automaticamente in base al nome del canale principale."
           }
         },
         "ja" : {
@@ -42094,7 +42291,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La vostra posizione è stata inviata con una richiesta di risposta con la loro posizione. Riceverete una notifica quando la posizione verrà restituita."
+            "value" : "La tua posizione è stata inviata con la richiesta di una risposta con la sua posizione. Riceverai una notifica quando la posizione verrà restituita."
           }
         },
         "ja" : {
@@ -42128,7 +42325,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La vostra regione ha un ciclo di lavoro di %lld%%. MQTT è sconsigliato quando il ciclo di lavoro è limitato, perché il traffico extra sovraccaricherà rapidamente la rete LoRa."
+            "value" : "La tua regione ha un ciclo di lavoro di %lld%%. MQTT è sconsigliato quando il ciclo di lavoro è limitato, perché il traffico extra sovraccarica rapidamente la rete LoRa."
           }
         },
         "ja" : {
