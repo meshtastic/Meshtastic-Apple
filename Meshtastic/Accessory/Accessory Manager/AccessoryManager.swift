@@ -124,7 +124,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Public due to file separation
 	var discoveryTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
-	var heartbeatTask: Task<Void, Error>?
 	var locationTask: Task<Void, Error>?
 	var connectionStepper: SequentialSteps?
 	
@@ -139,6 +138,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	// Misc
 	@Published var expectedNodeDBSize: Int?
+	
+	var heartbeatTimer: ResettableTimer?
+	var heartbeatResponseTimer: ResettableTimer?
 	
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
@@ -262,8 +264,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		locationTask?.cancel()
 		locationTask = nil
 		
-		heartbeatTask?.cancel()
-		heartbeatTask = nil
+		await heartbeatTimer?.cancel(withReason: "Closing connection")
+		await heartbeatResponseTimer?.cancel(withReason: "Closing connection")
+		heartbeatTimer = nil
+		heartbeatResponseTimer = nil
 		
 		// Clean up continuations
 		wantConfigContinuation?.resume(throwing: CancellationError())
@@ -369,9 +373,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .data(let fromRadio):
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
 			self.processFromRadio(fromRadio)
+			Task {
+				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
+				await self.heartbeatTimer?.reset(delay: .seconds(60.0))
+			}
 
 		case .logMessage(let message):
 			self.didReceiveLog(message: message)
+			Task {
+				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
+				await self.heartbeatTimer?.reset(delay: .seconds(60.0))
+			}
 		
 		case .rssiUpdate(let rssi):
 			guard let deviceId = self.activeConnection?.device.id else {
@@ -673,18 +685,34 @@ extension AccessoryManager {
 
 extension AccessoryManager {
 	func setupPeriodicHeartbeat() async {
-		if let heartbeatTask {
-			Logger.transport.debug("💓 [Heartbeat] Cancelling existing heartbeat task")
-			heartbeatTask.cancel()
-			self.heartbeatTask = nil
+		if heartbeatTimer != nil {
+			Logger.transport.debug("💓 [Heartbeat] Cancelling existing heartbeat timer")
+			await self.heartbeatTimer?.cancel(withReason: "Duplicate setup, cancelling previous timer")
+			self.heartbeatTimer = nil
 		}
-		self.heartbeatTask = Task {
-			while Task.isCancelled == false {
-				try? await Task.sleep(for: .seconds(5 * 60))
-				Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
-				try? await sendHeartbeat()
+		self.heartbeatTimer = ResettableTimer(isRepeating: true, debugName: "Send Heartbeat") {
+			Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
+			try? await self.sendHeartbeat()
+		}
+		
+		// We can send heartbeats for older versions just fine, but only 2.7.4 and up will respond with
+		// a definite queueStatus packet.
+		if self.checkIsVersionSupported(forVersion: "2.7.4") {
+			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false, debugName: "Heartbeat Timeout") { @MainActor in
+				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
+				// If we're in the middle of a connection cancel it.
+				await self.connectionStepper?.cancel()
+				
+				// Close out the connection
+				if let activeConnection = self.activeConnection {
+					try? await activeConnection.connection.disconnect(withError: AccessoryError.timeout, shouldReconnect: true)
+				} else {
+					self.lastConnectionError = AccessoryError.timeout
+					try? await self.closeConnection()
+				}
 			}
 		}
+		await self.heartbeatTimer?.reset(delay: .seconds(60.0))
 	}
 }
 

@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-import Combine
+import OSLog
 
 struct RXTXIndicatorWidget: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -20,7 +20,13 @@ struct RXTXIndicatorWidget: View {
 				Task {
 					// TODO: replace with a heartbeat when the heartbeat works
 					try await Task.sleep(for: .seconds(0.5)) // little delay for user affordance
-					try await accessoryManager.requestDeviceMetadata()
+					if accessoryManager.checkIsVersionSupported(forVersion: "2.7.4") {
+						Logger.transport.debug("[RXTXIndicator] sending heartbeat (2.7.4+)")
+						try await accessoryManager.sendHeartbeat()
+					} else {
+						Logger.transport.debug("[RXTXIndicator] sending metadata request (pre 2.7.4 does not support heartbeat nonce)")
+						_ = try await accessoryManager.requestDeviceMetadata()
+					}
 				}
 			}
 			self.isPopoverOpen.toggle()

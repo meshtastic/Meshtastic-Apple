@@ -54,6 +54,7 @@
 		23AD54692E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */; };
 		23AD546B2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */; };
 		23AD546D2E2AE9630046E9AB /* AccessoryManager+MQTT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */; };
+		23D9D9392E50DA97005D1C18 /* ResettableTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */; };
 		23E23F922E392C2B00919073 /* LogRecord+StringRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */; };
 		23F488122E32980B002C776F /* AccessoryManager+Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F488112E32980B002C776F /* AccessoryManager+Position.swift */; };
 		23FF00B62E323C75001DF095 /* AccessoryManager+Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FF00B52E323C75001DF095 /* AccessoryManager+Connect.swift */; };
@@ -353,6 +354,7 @@
 		23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+FromRadio.swift"; sourceTree = "<group>"; };
 		23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+ToRadio.swift"; sourceTree = "<group>"; };
 		23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+MQTT.swift"; sourceTree = "<group>"; };
+		23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResettableTimer.swift; sourceTree = "<group>"; };
 		23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogRecord+StringRepresentation.swift"; sourceTree = "<group>"; };
 		23F488112E32980B002C776F /* AccessoryManager+Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Position.swift"; sourceTree = "<group>"; };
 		23FF00B52E323C75001DF095 /* AccessoryManager+Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Connect.swift"; sourceTree = "<group>"; };
@@ -721,9 +723,27 @@
 		237AEB8D2E1FE120003B7CE3 /* Accessory */ = {
 			isa = PBXGroup;
 			children = (
+				23D9D9312E50DA0E005D1C18 /* Protocols */,
+				23D9D9322E50DA1F005D1C18 /* Accessory Manager */,
+				23D9D9332E50DA33005D1C18 /* Transports */,
+				23D9D9372E50DA81005D1C18 /* Helpers */,
+			);
+			path = Accessory;
+			sourceTree = "<group>";
+		};
+		23D9D9312E50DA0E005D1C18 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
 				237AEB8E2E1FE456003B7CE3 /* Transport.swift */,
 				237AEB922E1FE4BA003B7CE3 /* Connection.swift */,
 				237AEB942E1FE516003B7CE3 /* Device.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		23D9D9322E50DA1F005D1C18 /* Accessory Manager */ = {
+			isa = PBXGroup;
+			children = (
 				237AEB902E1FE46D003B7CE3 /* AccessoryManager.swift */,
 				23F488112E32980B002C776F /* AccessoryManager+Position.swift */,
 				23FF00B52E323C75001DF095 /* AccessoryManager+Connect.swift */,
@@ -731,16 +751,55 @@
 				23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */,
 				23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */,
 				23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */,
+			);
+			path = "Accessory Manager";
+			sourceTree = "<group>";
+		};
+		23D9D9332E50DA33005D1C18 /* Transports */ = {
+			isa = PBXGroup;
+			children = (
+				23D9D9342E50DA40005D1C18 /* Bluetooth Low Energy */,
+				23D9D9352E50DA4D005D1C18 /* TCP */,
+				23D9D9362E50DA5A005D1C18 /* Serial */,
+			);
+			path = Transports;
+			sourceTree = "<group>";
+		};
+		23D9D9342E50DA40005D1C18 /* Bluetooth Low Energy */ = {
+			isa = PBXGroup;
+			children = (
 				237AEB962E1FE627003B7CE3 /* BLETransport.swift */,
 				237AEB982E20098B003B7CE3 /* BLEConnection.swift */,
-				232ED4C22E2C5E89009DA392 /* TCPTransport.swift */,
-				232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */,
-				2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */,
-				2346A7182E2FB9A300CB9239 /* SerialConnection.swift */,
-				23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */,
 				231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */,
 			);
-			path = Accessory;
+			path = "Bluetooth Low Energy";
+			sourceTree = "<group>";
+		};
+		23D9D9352E50DA4D005D1C18 /* TCP */ = {
+			isa = PBXGroup;
+			children = (
+				232ED4C22E2C5E89009DA392 /* TCPTransport.swift */,
+				232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */,
+			);
+			path = TCP;
+			sourceTree = "<group>";
+		};
+		23D9D9362E50DA5A005D1C18 /* Serial */ = {
+			isa = PBXGroup;
+			children = (
+				2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */,
+				2346A7182E2FB9A300CB9239 /* SerialConnection.swift */,
+			);
+			path = Serial;
+			sourceTree = "<group>";
+		};
+		23D9D9372E50DA81005D1C18 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */,
+				23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		251926882C3BAF2E00249DF5 /* Actions */ = {
@@ -1603,6 +1662,7 @@
 				DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */,
 				DD33DB622B3D27C7003E1EA0 /* FirmwareApi.swift in Sources */,
 				DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */,
+				23D9D9392E50DA97005D1C18 /* ResettableTimer.swift in Sources */,
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
 				DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */,
 				DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */,

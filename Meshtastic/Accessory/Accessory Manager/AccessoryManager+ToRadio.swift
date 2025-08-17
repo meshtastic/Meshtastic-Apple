@@ -148,13 +148,19 @@ extension AccessoryManager {
 	public func sendHeartbeat(toConnection: Connection? = nil) async throws {
 		var heartbeatToRadio: ToRadio = ToRadio()
 		var heartbeatPacket = Heartbeat()
-		heartbeatPacket.nonce = UInt32.random(in: 0...UInt32.max)
+		
+		// Note: at the time of writing, there was some indication that the firmware might
+		// respond to a nonce == 1 differently than other nonces.  So making this a random
+		// from 2..UInt32 max.  If additional special cases are added, can increase the
+		// lower bound
+		heartbeatPacket.nonce = UInt32.random(in: 2...UInt32.max)
 		heartbeatToRadio.payloadVariant = .heartbeat(heartbeatPacket)
 		if let toConnection {
 			try await toConnection.send(heartbeatToRadio)
 		} else {
 			try await self.send(heartbeatToRadio)
 		}
+		await self.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
 	}
 
 	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) async throws {
