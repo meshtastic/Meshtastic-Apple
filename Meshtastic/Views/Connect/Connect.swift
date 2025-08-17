@@ -478,6 +478,7 @@ struct ManualConnectionMenu: View {
 	@State private var showAlert: Bool = false
 	@State private var connectionString = ""
 	
+	
 	var body: some View {
 		Menu {
 			ForEach(transports) { transport in
@@ -491,10 +492,25 @@ struct ManualConnectionMenu: View {
 		} label: {
 			Label("Manual", systemImage: "plus")
 		}.alert("Manual connection string", isPresented: $showAlert, presenting: selectedTransport) { selectedTransport in
-			TextField("Connection details", text: $connectionString)
+			// This continues to be quick and dirty. A better system is needed.
+			TextField("Enter hostname[:port]", text: $connectionString)
+				.keyboardType(.URL)
+				.autocapitalization(.none)
+				.disableAutocorrection(true)
+				.onChange(of: connectionString) { _, newValue in
+					// Filter to only allow valid characters for hostname/IP:port
+					let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-:")
+					let filtered = String(newValue.unicodeScalars.filter { allowedCharacters.contains($0) })
+					if filtered != newValue {
+						connectionString = filtered
+					}
+				}
+			
 			Button("OK", action: {
-				Task {
-					try await selectedTransport.transport.manuallyConnect(withConnectionString: connectionString)
+				if !connectionString.isEmpty {
+					Task {
+						try await selectedTransport.transport.manuallyConnect(withConnectionString: connectionString)
+					}
 				}
 			})
 		}
