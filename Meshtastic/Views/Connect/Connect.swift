@@ -28,6 +28,12 @@ struct Connect: View {
 	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
 	
+	let autoconnectBinding = Binding<Bool>(get: {
+		return UserDefaults.autoconnectOnDiscovery
+	}, set: { newValue in
+		UserDefaults.autoconnectOnDiscovery = newValue
+	})
+	
 	var body: some View {
 		NavigationStack {
 			VStack {
@@ -313,6 +319,7 @@ struct Connect: View {
 						}
 						.textCase(nil)
 					}
+					Toggle("Automatically Connect", isOn: autoconnectBinding)
 				}
 				
 				HStack(alignment: .center) {

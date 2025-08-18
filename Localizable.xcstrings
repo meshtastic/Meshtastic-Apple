@@ -4250,6 +4250,9 @@
         }
       }
     },
+    "Automatically Connect" : {
+
+    },
     "Automatically toggles to the next page on the screen like a carousel, based the specified interval." : {
       "localizations" : {
         "it" : {
