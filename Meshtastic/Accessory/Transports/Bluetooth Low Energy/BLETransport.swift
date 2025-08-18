@@ -287,8 +287,17 @@ class BLETransport: Transport {
 		
 		// Inform the active connection that there was an error and it should disconnect
 		Task {
-			try? await self.activeConnection?.disconnect(withError: error, shouldReconnect: shouldReconnect)
-			self.activeConnection = nil
+			if let activeConnection = self.activeConnection {
+				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
+				self.activeConnection = nil
+			} else {
+				Logger.transport.debug("🛜 [BLETransport] error with no active connection.")
+				if let continuation = self.connectContinuation {
+					Logger.transport.debug("🛜 [BLETransport] error while we still have a connection continuation.")
+					continuation.resume(throwing: error)
+					self.connectContinuation = nil
+				}
+			}
 		}
 	}
 
