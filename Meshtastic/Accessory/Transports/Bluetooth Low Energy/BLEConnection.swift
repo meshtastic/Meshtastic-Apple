@@ -170,6 +170,9 @@ actor BLEConnection: Connection {
 	}
 	
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
+		if self.peripheral.state != .connected {
+			throw AccessoryError.ioFailed("BLE peripheral not connected")
+		}
 		return try await withTaskCancellationHandler {
 			try await discoverServices()
 			startRSSITask()

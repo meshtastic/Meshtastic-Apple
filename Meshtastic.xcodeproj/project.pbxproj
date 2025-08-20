@@ -54,6 +54,7 @@
 		23AD54692E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */; };
 		23AD546B2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */; };
 		23AD546D2E2AE9630046E9AB /* AccessoryManager+MQTT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */; };
+		23D316932E5618D2002FA4FB /* AsyncGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D316922E5618D2002FA4FB /* AsyncGate.swift */; };
 		23D9D9392E50DA97005D1C18 /* ResettableTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */; };
 		23E23F922E392C2B00919073 /* LogRecord+StringRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */; };
 		23F488122E32980B002C776F /* AccessoryManager+Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F488112E32980B002C776F /* AccessoryManager+Position.swift */; };
@@ -354,6 +355,7 @@
 		23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+FromRadio.swift"; sourceTree = "<group>"; };
 		23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+ToRadio.swift"; sourceTree = "<group>"; };
 		23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+MQTT.swift"; sourceTree = "<group>"; };
+		23D316922E5618D2002FA4FB /* AsyncGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncGate.swift; sourceTree = "<group>"; };
 		23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResettableTimer.swift; sourceTree = "<group>"; };
 		23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogRecord+StringRepresentation.swift"; sourceTree = "<group>"; };
 		23F488112E32980B002C776F /* AccessoryManager+Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Position.swift"; sourceTree = "<group>"; };
@@ -796,6 +798,7 @@
 		23D9D9372E50DA81005D1C18 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				23D316922E5618D2002FA4FB /* AsyncGate.swift */,
 				23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */,
 				23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */,
 			);
@@ -1748,6 +1751,7 @@
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */,
+				23D316932E5618D2002FA4FB /* AsyncGate.swift in Sources */,
 				23FF00B62E323C75001DF095 /* AccessoryManager+Connect.swift in Sources */,
 				DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */,
 				DD6F65742C6CB80A0053C113 /* View.swift in Sources */,

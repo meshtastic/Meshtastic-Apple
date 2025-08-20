@@ -134,7 +134,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Continuations
 	var wantConfigContinuation: CheckedContinuation<Void, Error>?
 	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
-	var wantDatabaseContinuation: PossiblyAlreadyDoneContinuation?
+	var wantDatabaseGate: AsyncGate = AsyncGate()
 
 	// Misc
 	@Published var expectedNodeDBSize: Int?
@@ -189,11 +189,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func sendWantDatabase() async throws {
-		if case let .notDone(inProgressWantDatabaseContinuation) = wantDatabaseContinuation {
-			inProgressWantDatabaseContinuation.resume(throwing: CancellationError())
-			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Database). Cancelling.")
-			self.wantDatabaseContinuation = nil
-		}
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
 			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
@@ -221,30 +216,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				firstDatabaseNodeInfoContinuation = nil
 			}
 		}
-
 	}
 	
 	func waitForWantDatabaseResponse() async throws {
-		if case .alreadyDone = wantDatabaseContinuation {
-			Logger.transport.info("[Accessory] wantConfig(Database) already done, skipping wait.")
-		} else {
-			Logger.transport.info("[Accessory] waiting for wantConfig(Database)")
-			try await withTaskCancellationHandler {
-				
-				try await withCheckedThrowingContinuation { cont in
-					self.wantDatabaseContinuation = .notDone(cont)
-				}
-				self.wantDatabaseContinuation = nil
-			} onCancel: {
-				Task {@MainActor in
-					if case let .notDone(wantDatabaseContinuation) = self.wantDatabaseContinuation {
-						wantDatabaseContinuation.resume(throwing: CancellationError())
-						self.wantDatabaseContinuation = nil
-					}
-				}
-			}
-			Logger.transport.info("[Accessory] wantConfig(Database) complete.")
-		}
+		try await wantDatabaseGate.wait()
 	}
 
 	// Fully tears down a connection and sets up the AccessoryManager for the next.
@@ -274,10 +249,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		wantConfigContinuation = nil
 		firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
 		firstDatabaseNodeInfoContinuation = nil
-		if case .notDone(let wantDatabaseContiniuation) = wantDatabaseContinuation {
-			wantDatabaseContiniuation.resume(throwing: CancellationError())
-		}
-		self.wantDatabaseContinuation = nil
+		
+		
+		await wantDatabaseGate.cancelAll()
+		await wantDatabaseGate.reset()
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false
@@ -646,10 +621,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				}
 				
 			case UInt32(NONCE_ONLY_DB):
-				if case let .notDone(continuation) = wantDatabaseContinuation {
-					continuation.resume()
-				} else {
-					wantDatabaseContinuation = .alreadyDone
+				// Open the gate for the wantDatabaseContinuation
+				Task { await wantDatabaseGate.open() }
+				
+				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
+				// Then the database is probably empty, and can continue
+				if let firstDatabaseNodeInfoContinuation {
+					firstDatabaseNodeInfoContinuation.resume()
+					self.firstDatabaseNodeInfoContinuation = nil
 				}
 				
 			default:

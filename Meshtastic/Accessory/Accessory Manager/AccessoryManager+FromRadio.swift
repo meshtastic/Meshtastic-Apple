@@ -98,6 +98,7 @@ extension AccessoryManager {
 	func handleNodeInfo(_ nodeInfo: NodeInfo) {
 		if let continuation = self.firstDatabaseNodeInfoContinuation {
 			continuation.resume()
+			self.firstDatabaseNodeInfoContinuation = nil
 		}
 		
 		guard nodeInfo.num > 0 else {
