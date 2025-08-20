@@ -285,19 +285,19 @@ class BLETransport: Transport {
 			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription)")
 		}
 		
-		// Inform the active connection that there was an error and it should disconnect
-		Task {
-			if let activeConnection = self.activeConnection {
+		if let continuation = self.connectContinuation {
+			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Resuming connection continuation with error.")
+			continuation.resume(throwing: error)
+			self.connectContinuation = nil
+		} else if let activeConnection = self.activeConnection {
+			// Inform the active connection that there was an error and it should disconnect
+			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Disconnecting the active connection.")
+			Task {
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
 				self.activeConnection = nil
-			} else {
-				Logger.transport.debug("🛜 [BLETransport] error with no active connection.")
-				if let continuation = self.connectContinuation {
-					Logger.transport.debug("🛜 [BLETransport] error while we still have a connection continuation.")
-					continuation.resume(throwing: error)
-					self.connectContinuation = nil
-				}
 			}
+		} else {
+			Logger.transport.error("🚨 [BLETransport] unhandled error.  May be in an inconsistent state.")
 		}
 	}
 
