@@ -757,8 +757,8 @@ extension AccessoryManager {
 		adminPacket.getDeviceMetadataRequest = true
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.to = fromUserNum
-		meshPacket.from	= toUserNum
+		meshPacket.to = toUserNum
+		meshPacket.from	= fromUserNum
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
