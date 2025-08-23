@@ -14,6 +14,8 @@ struct AppIconButton: View {
 	@State var errorDetails: String?
 	@State var didError = false
 
+	@Environment(\.colorScheme) var colorScheme
+
     var body: some View {
 		Button {
 			UIApplication.shared.setAlternateIconName(iconName) { error in
@@ -26,11 +28,13 @@ struct AppIconButton: View {
 			}
 		} label: {
 			HStack(alignment: .center) {
-				let imageName = "\(iconName ?? "AppIcon")_Thumb"
+				let imageName = colorScheme == .dark ? "\(iconName ?? "AppIcon")_Dark_Thumb" : "\(iconName ?? "AppIcon")_Thumb"
+
 				if let image = UIImage(named: imageName) {
 					Image(uiImage: image)
 						.resizable()
 						.aspectRatio(contentMode: .fill)
+						.background(.thickMaterial)
 						.frame(width: 50, height: 50)
 						.clipShape(RoundedRectangle(cornerRadius: 8))
 				}
