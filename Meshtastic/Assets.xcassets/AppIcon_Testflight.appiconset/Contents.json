@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "MSPM_4.png",
+      "filename" : "AppIcon_Testflight.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "AppIcon_Dev_Dark.png",
+      "filename" : "AppIcon_TestFlight_Dark.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

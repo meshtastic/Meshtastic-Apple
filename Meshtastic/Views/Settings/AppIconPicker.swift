@@ -6,8 +6,8 @@ struct AppIconPicker: View {
 	@Binding var isPresenting: Bool
 	@State private var didError = false
 	@State private var errorDetails: String?
-	var iconNames: [String?: String] = [nil: "Default", "AppIcon_Dev": "Develop"]
-	var meshGroupIconNames: [String?: String] = ["AppIcon_MN_MSP": "MSP Mesh"]
+	var iconNames: [String?: String] = [nil: "Default", "AppIcon_Dev": "Develop", "AppIcon_Testflight": "Testflight"]
+	var chirpyIconNames: [String?: String] = ["AppIcon_Chirpy": "Chirpy", "AppIcon_Chirpy_Testflight": "Chirpy - Testflight"]
 
 	// MARK: View
 	var body: some View {
@@ -18,8 +18,8 @@ struct AppIconPicker: View {
 
 				}
 			}
-			Section(header: Text("Local Meshes")) {
-				ForEach(Array(meshGroupIconNames.sorted(by: { $0.0 ?? "1" < $1.0 ?? "1"}).enumerated()), id: \.offset) { _, icon in
+			Section(header: Text("Chirpy")) {
+				ForEach(Array(chirpyIconNames.sorted(by: { $0.0 ?? "1" < $1.0 ?? "1"}).enumerated()), id: \.offset) { _, icon in
 					AppIconButton(iconDescription: .constant(icon.value), iconName: .constant(icon.key), isPresenting: $isPresenting)
 				}
 			}
