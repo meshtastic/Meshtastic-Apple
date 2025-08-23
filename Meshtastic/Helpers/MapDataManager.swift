@@ -148,13 +148,13 @@ class MapDataManager: ObservableObject {
 		guard let geoJSON = jsonObject as? [String: Any] else {
 			throw NSError(domain: "MapDataManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid GeoJSON format"])
 		}
-		
+
 		// Check required properties
 		guard let type = geoJSON["type"] as? String, type == "FeatureCollection",
 			  let features = geoJSON["features"] as? [[String: Any]] else {
 			throw NSError(domain: "MapDataManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "GeoJSON must be a FeatureCollection with features"])
 		}
-		
+
 		// Validate each feature
 		for feature in features {
 			guard let geometry = feature["geometry"] as? [String: Any],
