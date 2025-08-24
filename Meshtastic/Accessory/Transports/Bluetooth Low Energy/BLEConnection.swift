@@ -51,8 +51,8 @@ actor BLEConnection: Connection {
 	private var connectionStreamContinuation: AsyncStream<ConnectionEvent>.Continuation?
 	
 	private var connectContinuation: CheckedContinuation<Void, Error>?
-	private var writeContinuation: CheckedContinuation<Void, Error>?
-	private var readContinuation: CheckedContinuation<Data, Error>?
+	private var writeContinuations: [CheckedContinuation<Void, Error>]
+	private var readContinuations: [CheckedContinuation<Data, Error>]
 	
 	private var rssiTask: Task<Void, Never>?
 	
@@ -64,6 +64,8 @@ actor BLEConnection: Connection {
 		self.central = central
 		self.transport = transport
 		self.delegate = BLEConnectionDelegate(peripheral: peripheral)
+		self.writeContinuations = []
+		self.readContinuations = []
 		self.delegate.setConnection(self)
 	}
 	
@@ -85,9 +87,16 @@ actor BLEConnection: Connection {
 		central.cancelPeripheralConnection(peripheral)
 		peripheral.delegate = nil
 				
-		writeContinuation?.resume(throwing: AccessoryError.disconnected("Unknown error"))
-		writeContinuation = nil
-		
+		while !writeContinuations.isEmpty {
+			let writeContinuation = writeContinuations.removeFirst()
+			writeContinuation.resume(throwing: AccessoryError.disconnected("Unknown error"))
+		}
+
+		while !readContinuations.isEmpty {
+			let readContinuation = readContinuations.removeFirst()
+			readContinuation.resume(throwing: AccessoryError.disconnected("Unknown error"))
+		}
+
 		if let error {
 			// Inform the AccessoryManager of the error and intent to reconnect
 			if shouldReconnect {
@@ -216,11 +225,20 @@ actor BLEConnection: Connection {
 			return
 		}
 		
-		guard let services = peripheral.services else { return }
+		guard let services = peripheral.services else {
+			self.continueConnectionProcess(throwing: AccessoryError.discoveryFailed("No services found"))
+			return
+		}
 		
+		var foundMeshtasticService = false
 		for service in services where service.uuid == meshtasticServiceCBUUID {
+			foundMeshtasticService = true
 			peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID, LOGRADIO_UUID], for: service)
 			Logger.transport.info("🛜  [BLE] Service for Meshtastic discovered by \(self.peripheral.name ?? "Unknown", privacy: .public)")
+		}
+		
+		if !foundMeshtasticService {
+			self.continueConnectionProcess(throwing: AccessoryError.discoveryFailed("Meshtastic service not found"))
 		}
 	}
 	
@@ -276,8 +294,10 @@ actor BLEConnection: Connection {
 		if let error = error {
 			if characteristic.uuid == FROMRADIO_UUID {
 				Logger.transport.debug("🛜 [BLE] Error updating value for \(characteristic.meshtasticCharacteristicName, privacy: .public): \(error)")
-				readContinuation?.resume(throwing: error)
-				readContinuation = nil
+				if !readContinuations.isEmpty {
+					let readContinuation = self.readContinuations.removeFirst()
+					readContinuation.resume(throwing: error)
+				}
 			}
 			Task { try await self.handlePeripheralError(error: error) }
 			return
@@ -288,9 +308,9 @@ actor BLEConnection: Connection {
 		
 		switch characteristic.uuid {
 		case FROMRADIO_UUID:
-			if let readContinuation {
+			if !readContinuations.isEmpty {
+				let readContinuation = self.readContinuations.removeFirst()
 				readContinuation.resume(returning: value)
-				self.readContinuation = nil
 			}
 		case FROMNUM_UUID:
 			try? startDrainPendingPackets()
@@ -307,7 +327,17 @@ actor BLEConnection: Connection {
 	}
 	
 	func didWriteValueFor(characteristic: CBCharacteristic, error: Error?) {
-		guard characteristic.uuid == TORADIO_UUID, let writeContinuation else { return }
+		guard characteristic.uuid == TORADIO_UUID else {
+			Logger.transport.error("🛜 [BLE] didWriteValueFor a characteristic other than TORADIO_UUID.  Should not happen!")
+			return
+		}
+		guard !writeContinuations.isEmpty else {
+			Logger.transport.error("🛜 [BLE] didWriteValueFor with no waiting continuations.  Should not happen!")
+			return
+		}
+		
+		let writeContinuation = writeContinuations.removeFirst()
+		
 		if let error = error {
 			Logger.transport.error("🛜 [BLE] Did write for \(characteristic.meshtasticCharacteristicName, privacy: .public) with error \(error, privacy: .public)")
 			writeContinuation.resume(throwing: error)
@@ -319,7 +349,6 @@ actor BLEConnection: Connection {
 			#endif
 			writeContinuation.resume()
 		}
-		self.writeContinuation = nil
 	}
 	
 	func didReadRSSI(RSSI: NSNumber, error: Error?) {
@@ -343,12 +372,12 @@ actor BLEConnection: Connection {
 		}
 		
 		let writeType: CBCharacteristicWriteType = characteristic.properties.contains(.writeWithoutResponse) ? .withoutResponse : .withResponse
-		try await withCheckedThrowingContinuation { cont in
+		try await withCheckedThrowingContinuation { newWriteContinuation in
 			if writeType == .withoutResponse {
 				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
-				cont.resume()
+				newWriteContinuation.resume()
 			} else {
-				writeContinuation = cont
+				writeContinuations.append(newWriteContinuation)
 				peripheral.writeValue(binaryData, for: characteristic, type: writeType)
 			}
 		}
@@ -358,8 +387,8 @@ actor BLEConnection: Connection {
 		guard let FROMRADIO_characteristic else {
 			throw AccessoryError.ioFailed("No FROMRADIO_characteristic ")
 		}
-		let data: Data = try await withCheckedThrowingContinuation { cont in
-			readContinuation = cont
+		let data: Data = try await withCheckedThrowingContinuation { newReadContinuation in
+			readContinuations.append(newReadContinuation)
 			peripheral.readValue(for: FROMRADIO_characteristic)
 		}
 		if data.isEmpty {
@@ -428,9 +457,7 @@ actor BLEConnection: Connection {
 		}
 		
 		// Inform the active connection that there was an error and it should disconnect
-		Task {
-			try await self.disconnect(withError: error, shouldReconnect: shouldReconnect)
-		}
+		try self.disconnect(withError: error, shouldReconnect: shouldReconnect)
 	}
 	
 	func appDidEnterBackground() {
@@ -484,3 +511,4 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 		Task { await connection?.didReadRSSI(RSSI: RSSI, error: error) }
 	}
 }
+
