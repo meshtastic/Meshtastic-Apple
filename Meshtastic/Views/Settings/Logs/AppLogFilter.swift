@@ -111,7 +111,15 @@ struct AppLogFilter: View {
 
 		NavigationStack {
 			Form {
-				Section(header: Text("Categories")) {
+				Section(header: HStack {
+					Text("Categories")
+					Spacer()
+					Button {
+						categories.formUnion(LogCategories.allCases.map(\.id))
+					} label: {
+						Text("All")
+					}
+				}) {
 					VStack {
 						List(LogCategories.allCases, selection: $categories) { cat in
 							Text(cat.description)
@@ -121,7 +129,15 @@ struct AppLogFilter: View {
 						.frame(minHeight: 338, maxHeight: .infinity)
 					}
 				}
-				Section(header: Text("Log Levels")) {
+				Section(header: HStack {
+					Text("Log Levels")
+					Spacer()
+					Button {
+						levels.formUnion(LogLevels.allCases.map(\.id))
+					} label: {
+						Text("All")
+					}
+				}) {
 					VStack {
 						List(LogLevels.allCases, selection: $levels) { level in
 							Text(level.description)
