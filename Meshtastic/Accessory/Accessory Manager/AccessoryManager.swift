@@ -376,7 +376,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					shouldAutomaticallyConnectToPreferredPeripheral = true
 				}
 				
-				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheral, privacy: .public)")
+				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheral, privacy: .public))")
 
 				lastConnectionError = error
 				
@@ -613,7 +613,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
-			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for confligCompleteID: \(configCompleteID)")
+			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
 				if let continuation = wantConfigContinuation {

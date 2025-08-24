@@ -106,7 +106,7 @@ struct BatteryCompact: View {
 				return "Charging".localized
 			} else {
 				// Normal battery level
-				return String(format: NSLocalizedString("Battery Level %", comment: "VoiceOver value for battery level"), Int(level))
+				return String(format: NSLocalizedString("Battery Level %d", comment: "VoiceOver value for battery level"), Int(level))
 			}
 		} ?? "Unknown")
 	}
