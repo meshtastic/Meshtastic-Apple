@@ -53,7 +53,7 @@ struct BatteryGauge: View {
 					}
 				}
 				.accessibilityLabel(NSLocalizedString("Battery Level", comment: "VoiceOver label for battery gauge"))
-				.accessibilityValue(String(format: NSLocalizedString("Battery Level %", comment: "VoiceOver value for battery level"), Int(batteryLevel)))
+				.accessibilityValue(String(format: NSLocalizedString("Battery Level %d", comment: "VoiceOver value for battery level"), Int(batteryLevel)))
 				.tint(gradient)
 				.gaugeStyle(.accessoryCircular)
 			}

@@ -167,7 +167,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("Node info received for: %@".localized, packet.from.toHex())
+	let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, packet.from.toHex())
 	Logger.mesh.info("📟 \(logString, privacy: .public)")
 
 	guard packet.from > 0 else { return }
@@ -403,7 +403,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat("Position Packet received from node: %@".localized, String(packet.from))
+	let logString = String.localizedStringWithFormat("[Position] received from node: %@".localized, String(packet.from))
 	Logger.mesh.info("📍 \(logString, privacy: .public)")
 
 	let fetchNodePositionRequest = NodeInfoEntity.fetchRequest()

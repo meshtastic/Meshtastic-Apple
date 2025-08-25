@@ -78,6 +78,7 @@ extension UserDefaults {
 		case firstLaunch
 		case showDeviceOnboarding
 		case usageDataAndCrashReporting
+		case autoconnectOnDiscovery
 		case testIntEnum
 	}
 
@@ -171,6 +172,9 @@ extension UserDefaults {
 
 	@UserDefault(.showDeviceOnboarding, defaultValue: false)
 	static var showDeviceOnboarding: Bool
+
+	@UserDefault(.autoconnectOnDiscovery, defaultValue: true)
+	static var autoconnectOnDiscovery: Bool
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum

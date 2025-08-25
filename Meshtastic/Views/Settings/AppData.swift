@@ -13,7 +13,7 @@ import Foundation
 struct AppData: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var files = [URL]()
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 

@@ -9,8 +9,8 @@ import AppIntents
 import MeshtasticProtobufs
 
 struct AddContactIntent: AppIntent {
-	static var title: LocalizedStringResource = "Add Contact"
-	static var description: IntentDescription = "Takes a Meshtastic contact URL and saves it to the nodes database"
+	static let title: LocalizedStringResource = "Add Contact"
+	static let description: IntentDescription = "Takes a Meshtastic contact URL and saves it to the nodes database"
 
 	@Parameter(title: "Contact URL", description: "The URL for the node to add")
 	var contactUrl: URL
@@ -18,7 +18,7 @@ struct AddContactIntent: AppIntent {
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
 		// Ensure the BLE Manager is connected
-		if !BLEManager.shared.isConnected {
+		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
@@ -27,15 +27,11 @@ struct AddContactIntent: AppIntent {
 			// Extract contact information from the URL
 			if let contactData = components.last {
 				let decodedString = contactData.base64urlToBase64()
-				if let decodedData = Data(base64Encoded: decodedString) {
+				if let _ = Data(base64Encoded: decodedString) {
 					do {
-						let success = BLEManager.shared.addContactFromURL(base64UrlString: contactData)
-						if !success {
-							throw AppIntentErrors.AppIntentError.message("Failed to add contact")
-						}
-
+						try await AccessoryManager.shared.addContactFromURL(base64UrlString: contactData)
 					} catch {
-						throw AppIntentErrors.AppIntentError.message("Failed to parse contact data: \(error.localizedDescription)")
+						throw AppIntentErrors.AppIntentError.message("Failed to add/parse contact data: \(error.localizedDescription)")
 					}
 				}
 			}

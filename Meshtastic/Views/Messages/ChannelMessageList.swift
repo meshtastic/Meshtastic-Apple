@@ -13,7 +13,7 @@ import SwiftUI
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	// Keyboard State
 	@FocusState var messageFieldFocused: Bool
 	@ObservedObject var myInfo: MyInfoEntity
@@ -248,15 +248,13 @@ struct ChannelMessageList: View {
 			ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
 					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?",
-
+						deviceConnected: accessoryManager.isConnected,
+						name: accessoryManager.activeConnection?.device.shortName ?? "?",
 						// mqttProxyConnected defaults to false, so if it's not enabled it will still be false
-						mqttProxyConnected: bleManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
+						mqttProxyConnected: accessoryManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
 						mqttUplinkEnabled: channel.uplinkEnabled,
 						mqttDownlinkEnabled: channel.downlinkEnabled,
-						mqttTopic: bleManager.mqttManager.topic
+						mqttTopic: accessoryManager.mqttManager.topic
 					)
 				}
 			}

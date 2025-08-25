@@ -20,7 +20,7 @@ struct NodeDetail: View {
 		rawValue: UserDefaults.modemPreset
 	) ?? ModemPresets.longFast
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
@@ -34,7 +34,7 @@ struct NodeDetail: View {
 		NavigationStack {
 			List {
 				let connectedNode = getNodeInfo(
-					id: bleManager.connectedPeripheral?.num ?? -1,
+					id: accessoryManager.activeDeviceNum ?? -1,
 					context: context
 				)
 				Section("Hardware") {
@@ -115,7 +115,7 @@ struct NodeDetail: View {
 							.textSelection(.enabled)
 					}
 					.accessibilityElement(children: .combine)
-					let connectedNode = getNodeInfo(id: BLEManager.shared.connectedPeripheral?.num ?? 0, context: context)
+					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
 							if let user = node.user, user.keyMatch {
 								let publicKey = node.num == connectedNode?.num
 									? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
@@ -445,22 +445,17 @@ struct NodeDetail: View {
 					}
 					if let connectedNode {
 						FavoriteNodeButton(
-							bleManager: bleManager,
-							context: context,
 							node: node
 						)
 						if connectedNode.num != node.num {
 							ExchangePositionsButton(
-								bleManager: bleManager,
 								node: node
 							)
 							TraceRouteButton(
-								bleManager: bleManager,
 								node: node
 							)
 							if node.isStoreForwardRouter {
 								ClientHistoryButton(
-									bleManager: bleManager,
 									connectedNode: connectedNode,
 									node: node
 								)
@@ -469,13 +464,9 @@ struct NodeDetail: View {
 								NavigateToButton(node: node)
 							}
 							IgnoreNodeButton(
-								bleManager: bleManager,
-								context: context,
 								node: node
 							)
 							DeleteNodeButton(
-								bleManager: bleManager,
-								context: context,
 								connectedNode: connectedNode,
 								node: node
 							)
@@ -484,18 +475,22 @@ struct NodeDetail: View {
 				}
 				if let metadata = node.metadata,
 				   let connectedNode,
-				   self.bleManager.connectedPeripheral != nil {
+				   accessoryManager.isConnected {
 					Section("Administration") {
 						if UserDefaults.enableAdministration {
 							Button {
-								let adminMessageId = bleManager.requestDeviceMetadata(
-									fromUser: connectedNode.user!,
-									toUser: node.user!,
-									context: context
-								)
-								if adminMessageId > 0 {
-									Logger.mesh.info("Sent node metadata request from node details")
+								Task {
+									do {
+										_ = try await accessoryManager.requestDeviceMetadata(
+											fromUser: connectedNode.user!,
+											toUser: node.user!,
+										)
+										Logger.mesh.info("Sent node metadata request from node details")
+									} catch {
+										Logger.mesh.error("Faild to send node metadata request from node details")
+									}
 								}
+
 							} label: {
 								Label {
 									Text("Refresh device metadata")
@@ -514,11 +509,15 @@ struct NodeDetail: View {
 								isPresented: $showingShutdownConfirm
 							) {
 								Button("Shutdown Node?", role: .destructive) {
-									if !bleManager.sendShutdown(
-										fromUser: connectedNode.user!,
-										toUser: node.user!
-									) {
-										Logger.mesh.warning("Shutdown Failed")
+									Task {
+										do {
+											try await accessoryManager.sendShutdown(
+												fromUser: connectedNode.user!,
+												toUser: node.user!
+											)
+										} catch {
+											Logger.mesh.warning("Shutdown Failed")
+										}
 									}
 								}
 							}
@@ -535,11 +534,14 @@ struct NodeDetail: View {
 							isPresented: $showingRebootConfirm
 						) {
 							Button("Reboot node?", role: .destructive) {
-								if !bleManager.sendReboot(
-									fromUser: connectedNode.user!,
-									toUser: node.user!
-								) {
-									Logger.mesh.warning("Reboot Failed")
+								Task {
+									do {
+										try await accessoryManager.sendReboot(
+											fromUser: connectedNode.user!,
+											toUser: node.user! )
+									} catch {
+										Logger.mesh.warning("Reboot Failed")
+									}
 								}
 							}
 						}

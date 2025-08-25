@@ -2,29 +2,35 @@ import CoreData
 import SwiftUI
 
 struct ExchangePositionsButton: View {
-	var bleManager: BLEManager
-
 	var node: NodeInfoEntity
+
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@State private var isPresentingPositionSentAlert: Bool = false
 	@State private var isPresentingPositionFailedAlert: Bool = false
 
     var body: some View {
 		Button {
-			let positionSent = bleManager.sendPosition(
-				channel: node.channel,
-				destNum: node.num,
-				wantResponse: true
-			)
-			if positionSent {
-				isPresentingPositionSentAlert = true
-				DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-					isPresentingPositionSentAlert = false
-				}
-			} else {
-				isPresentingPositionFailedAlert = true
-				DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-					isPresentingPositionFailedAlert = false
+			Task {
+				do {
+					try await accessoryManager.sendPosition(
+						channel: node.channel,
+						destNum: node.num,
+						wantResponse: true
+					)
+					Task { @MainActor in
+						isPresentingPositionSentAlert = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+							isPresentingPositionSentAlert = false
+						}
+					}
+				} catch {
+					Task { @MainActor in
+						isPresentingPositionFailedAlert = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+							isPresentingPositionFailedAlert = false
+						}
+					}
 				}
 			}
 

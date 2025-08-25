@@ -101,7 +101,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
 	func startScanning() {
 		if isSwitchedOn {
-			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 			Logger.services.info("✅ [BLE] Scanning Started")
 		}
 	}
@@ -296,7 +296,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							subtitle: "\(peripheral.name ?? "Unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
-							path: "meshtastic:///bluetooth"
+							path: "meshtastic:///connect"
 						)
 					]
 					manager.schedule()
@@ -316,7 +316,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							subtitle: "\(peripheral.name ?? "Unknown".localized)",
 							content: e.localizedDescription,
 							target: "bluetooth",
-							path: "meshtastic:///bluetooth"
+							path: "meshtastic:///connect"
 						)
 					]
 					manager.schedule()

@@ -26,7 +26,7 @@ struct WidgetsLiveActivity: Widget {
 							 nodesOnline: context.state.nodesOnline,
 							 totalNodes: context.state.totalNodes,
 							 timerRange: context.state.timerRange)
-				.widgetURL(URL(string: "meshtastic:///bluetooth"))
+				.widgetURL(URL(string: "meshtastic:///connect"))
 
         } dynamicIsland: { context in
             DynamicIsland {
@@ -111,7 +111,7 @@ struct WidgetsLiveActivity: Widget {
 			.contentMargins(.trailing, 32, for: .expanded)
 			.contentMargins([.leading, .top, .bottom], 6, for: .compactLeading)
 			.contentMargins(.all, 6, for: .minimal)
-			.widgetURL(URL(string: "meshtastic:///bluetooth"))
+			.widgetURL(URL(string: "meshtastic:///connect"))
         }
     }
 }

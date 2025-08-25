@@ -13,7 +13,7 @@ import SwiftUI
 
 struct WaypointForm: View {
 
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.managedObjectContext) var context
 	@Environment(\.dismiss) private var dismiss
 	@State var waypoint: WaypointEntity
@@ -149,7 +149,11 @@ struct WaypointForm: View {
 				.scrollDismissesKeyboard(.immediately)
 				HStack {
 					Button {
-						if bleManager.isConnected {
+						guard let deviceNum = accessoryManager.activeDeviceNum else {
+							Logger.mesh.warning("Send waypoint failed: No deviceNum")
+							return
+						}
+						if accessoryManager.isConnected {
 							/// Send a new or exiting waypoint
 							var newWaypoint = Waypoint()
 							if waypoint.id  ==  0 {
@@ -169,7 +173,7 @@ struct WaypointForm: View {
 							newWaypoint.icon = unicode
 							if locked {
 								if lockedTo == 0 {
-									newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
+									newWaypoint.lockedTo = UInt32(deviceNum)
 								} else {
 									newWaypoint.lockedTo = UInt32(lockedTo)
 								}
@@ -179,11 +183,17 @@ struct WaypointForm: View {
 							} else {
 								newWaypoint.expire = 0
 							}
-							if bleManager.sendWaypoint(waypoint: newWaypoint) {
-								dismiss()
-							} else {
-								Logger.mesh.warning("Send waypoint failed")
-								waypointFailedAlert = true
+
+							Task {
+								do {
+									try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+									dismiss()
+								} catch {
+									Logger.mesh.warning("Send waypoint failed: \(error)")
+									Task { @MainActor in
+										waypointFailedAlert = true
+									}
+								}
 							}
 						} else {
 							Logger.mesh.warning("Send waypoint failed, node not connected")
@@ -194,7 +204,7 @@ struct WaypointForm: View {
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.regular)
-					.disabled(bleManager.connectedPeripheral == nil)
+					.disabled(!accessoryManager.isConnected)
 					.padding(.bottom)
 
 					Button(role: .cancel) {
@@ -207,7 +217,7 @@ struct WaypointForm: View {
 					.controlSize(.regular)
 					.padding(.bottom)
 
-					if waypoint.id > 0 && bleManager.isConnected {
+					if waypoint.id > 0 && accessoryManager.isConnected {
 
 						Menu {
 							Button("For me", action: {
@@ -219,6 +229,10 @@ struct WaypointForm: View {
 								}
 								dismiss() })
 							Button("For everyone", action: {
+								guard let deviceNum = accessoryManager.activeDeviceNum else {
+									Logger.mesh.error("Unable to set waypoint: No Device num")
+									return
+								}
 								var newWaypoint = Waypoint()
 								newWaypoint.id = UInt32(waypoint.id)
 								newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
@@ -232,24 +246,30 @@ struct WaypointForm: View {
 								newWaypoint.icon = unicode
 								if locked {
 									if lockedTo == 0 {
-										newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
+										newWaypoint.lockedTo = UInt32(deviceNum)
 									} else {
 										newWaypoint.lockedTo = UInt32(lockedTo)
 									}
 								}
 								newWaypoint.expire = UInt32(1)
-								if bleManager.sendWaypoint(waypoint: newWaypoint) {
-
-									context.delete(waypoint)
+								Task {
 									do {
-										try context.save()
+										try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+										Task { @MainActor in
+											context.delete(waypoint)
+											do {
+												try context.save()
+											} catch {
+												context.rollback()
+											}
+											dismiss()
+										}
 									} catch {
-										context.rollback()
+										Logger.mesh.warning("Send waypoint failed")
+										Task {@MainActor in
+											waypointFailedAlert = true
+										}
 									}
-									dismiss()
-								} else {
-									Logger.mesh.warning("Send waypoint failed")
-									waypointFailedAlert = true
 								}
 							})
 						}
@@ -271,7 +291,7 @@ struct WaypointForm: View {
 						Text(waypoint.name ?? "?")
 							.font(.largeTitle)
 						Spacer()
-						if waypoint.locked > 0 && waypoint.locked != UInt32(BLEManager.shared.connectedPeripheral?.num ?? 0) {
+						if waypoint.locked > 0 && waypoint.locked != UInt32(accessoryManager.activeDeviceNum ?? 0) {
 							Image(systemName: "lock.fill")
 								.font(.largeTitle)
 						} else {

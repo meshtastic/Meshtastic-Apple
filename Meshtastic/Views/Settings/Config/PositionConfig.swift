@@ -26,7 +26,7 @@ struct PositionFlags: OptionSet {
 struct PositionConfig: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State var hasChanges = false
@@ -160,7 +160,7 @@ struct PositionConfig: View {
 						.font(.callout)
 				}
 			}
-			if (gpsMode != 1 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1) || fixedPosition {
+			if (gpsMode != 1 && node?.num ?? 0 == accessoryManager.activeDeviceNum ?? -1) || fixedPosition {
 				VStack(alignment: .leading) {
 					Toggle(isOn: $fixedPosition) {
 						Label("Fixed Position", systemImage: "location.square.fill")
@@ -316,11 +316,11 @@ struct PositionConfig: View {
 	var saveButton: some View {
 		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			if fixedPosition && !supportedVersion {
-				_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
+				Task {
+					try await accessoryManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
+				}
 			}
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral!.num, context: context)
-
-			if connectedNode != nil {
+			if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
 				var pc = Config.PositionConfig()
 				pc.positionBroadcastSmartEnabled = smartPositionEnabled
 				pc.gpsEnabled = gpsMode == 1
@@ -345,11 +345,13 @@ struct PositionConfig: View {
 				if includeSpeed { pf.insert(.Speed) }
 				if includeHeading { pf.insert(.Heading) }
 				pc.positionFlags = UInt32(pf.rawValue)
-				let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!)
-				if adminMessageId > 0 {
-					// Disable the button after a successful save
-					hasChanges = false
-					goBack()
+				Task {
+					_ = try await accessoryManager.savePositionConfig(config: pc, fromUser: connectedNode.user!, toUser: node!.user!)
+					Task { @MainActor in
+						// Disable the button after a successful save
+						hasChanges = false
+						goBack()
+					}
 				}
 			}
 		}
@@ -375,7 +377,7 @@ struct PositionConfig: View {
 					advancedDeviceGPSSection
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.positionConfig == nil)
 			.alert(setFixedAlertTitle, isPresented: $showingSetFixedAlert) {
 				Button("Cancel", role: .cancel) {
 					fixedPosition = !fixedPosition
@@ -397,22 +399,28 @@ struct PositionConfig: View {
 		.navigationTitle("Position Config")
 		.navigationBarItems(
 			trailing: ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: bleManager.connectedPeripheral?.shortName ?? "?")
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		)
 		.onFirstAppear {
-			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
+			supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
 			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if let connectedNode {
-					if node.num != connectedNode.num {
+					if node.num != deviceNum {
 						if UserDefaults.enableAdministration {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.positionConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired position config requesting via PKI admin")
-								_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired position config requesting via PKI admin")
+										try await accessoryManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.info("🚨 Position config request failed")
+									}
+								}
 							}
 						} else {
 							/// Legacy Administration
@@ -511,10 +519,14 @@ struct PositionConfig: View {
 	}
 
 	private func setFixedPosition() {
-		guard let nodeNum = bleManager.connectedPeripheral?.num,
+		guard let nodeNum = accessoryManager.activeDeviceNum,
 			  nodeNum > 0 else { return }
-		if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
-			Logger.mesh.error("Set Position Failed")
+		Task {
+			do {
+				try await accessoryManager.setFixedPosition(fromUser: node!.user!, channel: 0)
+			} catch {
+				Logger.mesh.error("Set Position Failed")
+			}
 		}
 		node?.positionConfig?.fixedPosition = true
 		do {
@@ -528,10 +540,14 @@ struct PositionConfig: View {
 	}
 
 	private func removeFixedPosition() {
-		guard let nodeNum = bleManager.connectedPeripheral?.num,
+		guard let nodeNum = accessoryManager.activeDeviceNum,
 			  nodeNum > 0 else { return }
-		if !bleManager.removeFixedPosition(fromUser: node!.user!, channel: 0) {
-			Logger.mesh.error("Remove Fixed Position Failed")
+		Task {
+			do {
+				try await accessoryManager.removeFixedPosition(fromUser: node!.user!, channel: 0)
+			} catch {
+				Logger.mesh.error("Remove Fixed Position Failed")
+			}
 		}
 		let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
 		mutablePositions?.removeAllObjects()
