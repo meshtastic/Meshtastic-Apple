@@ -478,7 +478,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .waypointApp:
 					waypointPacket(packet: packet, context: context)
 				case .nodeinfoApp:
-					upsertNodeInfoPacket(packet: packet, context: context)
+					guard let connectedNodeNum = self.activeDeviceNum else {
+						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for node info upsert.")
+						return
+					}
+					if packet.from != connectedNodeNum {
+						upsertNodeInfoPacket(packet: packet, context: context)
+					} else {
+						Logger.mesh.error("🕸️ Received a node info packet from a device other than the one we are connected to. Dropping")
+					}
 				case .routingApp:
 					guard let deviceNum = activeConnection?.device.num else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for routingPacket.")

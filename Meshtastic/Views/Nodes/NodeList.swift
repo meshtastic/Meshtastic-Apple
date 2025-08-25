@@ -11,11 +11,11 @@ import OSLog
 struct NodeList: View {
 	@Environment(\.managedObjectContext)
 	var context
-
+	
 	@EnvironmentObject var accessoryManager: AccessoryManager
-
+	
 	@State var router: Router
-
+	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var searchText = ""
@@ -38,9 +38,8 @@ struct NodeList: View {
 	@State private var isPresentingPositionFailedAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
-	@State private var isPresentingShareContactQR = false
 	@State private var shareContactNode: NodeInfoEntity?
-
+	
 	var boolFilters: [Bool] {[
 		isFavorite,
 		isIgnored,
@@ -50,11 +49,11 @@ struct NodeList: View {
 		distanceFilter,
 		roleFilter
 	]}
-
+	
 	@State var isEditingFilters = false
-
+	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
-
+	
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "ignored", ascending: true),
@@ -65,14 +64,14 @@ struct NodeList: View {
 		animation: .spring
 	)
 	var nodes: FetchedResults<NodeInfoEntity>
-
+	
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
 			return getNodeInfo(id: num, context: context)
 		}
 		return nil
 	}
-
+	
 	@ViewBuilder
 	func contextMenuActions(
 		node: NodeInfoEntity,
@@ -84,7 +83,6 @@ struct NodeList: View {
 			if !user.unmessagable {
 				Button(action: {
 					shareContactNode = node
-					isPresentingShareContactQR = true
 				}) {
 					Label("Share Contact QR", systemImage: "qrcode")
 				}
@@ -140,7 +138,7 @@ struct NodeList: View {
 			}
 		}
 	}
-
+	
 	var body: some View {
 		// Use forceRefreshID to completely rebuild the view when notifications update the selected node
 		NavigationSplitView(columnVisibility: $columnVisibility) {
@@ -236,12 +234,8 @@ struct NodeList: View {
 								}
 							}
 						}
-						.sheet(isPresented: $isPresentingShareContactQR) {
-							if let node = shareContactNode {
-								ShareContactQRDialog(node: node.toProto())
-							} else {
-								EmptyView()
-							}
+						.sheet(item: $shareContactNode) { selectedNode in
+							ShareContactQRDialog(node: selectedNode.toProto())
 						}
 						.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 						.navigationBarItems(
@@ -376,7 +370,7 @@ struct NodeList: View {
 			NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ForceNavigationRefresh"), object: nil)
 		}
 	}
-
+	
 	private func searchNodeList() async {
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.hwDisplayName", "user.longName", "user.shortName"].map { property in
@@ -445,7 +439,7 @@ struct NodeList: View {
 		/// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation
-
+			
 			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 				let d: Double = maxDistance * 1.1
 				let r: Double = 6371009
