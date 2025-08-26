@@ -10934,6 +10934,12 @@
     },
     "Direct Message Help" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hilfe für Direktnachrichten"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13930,6 +13936,12 @@
     },
     "Favorites and nodes with recent messages show up at the top of the contact list." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoriten und Knoten mit aktuellen Nachrichten werden oben in der Kontaktliste angezeigt."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19216,6 +19228,12 @@
     },
     "Long press to favorite or mute the contact or delete a conversation." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durch langes Drücken kannst Du den Kontakt zu Deinen Favoriten hinzufügen, stumm schalten oder eine Unterhaltung löschen."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
