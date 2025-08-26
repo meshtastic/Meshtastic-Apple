@@ -9777,6 +9777,12 @@
     },
     "Description" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschreibung"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13345,6 +13351,12 @@
     },
     "Expire" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitpunkt"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13373,6 +13385,12 @@
     },
     "Expires" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfällt"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17368,6 +17386,12 @@
     },
     "Icon" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39000,6 +39024,12 @@
     },
     "Use my Location" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort verwenden"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
