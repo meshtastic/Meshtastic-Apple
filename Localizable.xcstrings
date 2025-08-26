@@ -8430,6 +8430,17 @@
         }
       }
     },
+    "Contact Filters" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontaktfilter"
+          }
+        }
+      }
+    },
     "Contact URL" : {
       "localizations" : {
         "ja" : {
