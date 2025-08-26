@@ -42,138 +42,138 @@ struct UserList: View {
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		let users = fetchUsers(withFilters: filters)
 		VStack {
-			List(users, selection: $userSelection) { user in
-				let mostRecent = user.messageList.last
-				let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
-				let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-				let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-				if user.num != accessoryManager.activeDeviceNum ?? 0 {
-					NavigationLink(value: user) {
-						ZStack {
-							Image(systemName: "circle.fill")
-								.opacity(user.unreadMessages > 0 ? 1 : 0)
-								.font(.system(size: 10))
-								.foregroundColor(.accentColor)
-								.brightness(0.2)
-						}
-						
-						CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
-						
-						VStack(alignment: .leading) {
-							HStack {
-								if user.pkiEncrypted {
-									if !user.keyMatch {
-										/// Public Key on the User and the Public Key on the Last Message don't match
-										Image(systemName: "key.slash")
-											.foregroundColor(.red)
-									} else {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-								} else {
-									Image(systemName: "lock.open.fill")
-										.foregroundColor(.yellow)
-								}
-								Text(user.longName ?? "Unknown".localized)
-									.font(.headline)
-									.allowsTightening(true)
-								Spacer()
-								if user.userNode?.favorite ?? false {
-									Image(systemName: "star.fill")
-										.foregroundColor(.yellow)
-								}
-								if user.messageList.count > 0 {
-									if lastMessageDay == currentDay {
-										Text(lastMessageTime, style: .time )
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									} else if lastMessageDay == (currentDay - 1) {
-										Text("Yesterday")
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-										Text(lastMessageTime.formattedDate(format: dateFormatString))
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									} else if lastMessageDay < (currentDay - 1800) {
-										Text(lastMessageTime.formattedDate(format: dateFormatString))
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									}
-								}
-							}
-							
-							if user.messageList.count > 0 {
-								HStack(alignment: .top) {
-									Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								}
-							}
-						}
-					}
-					.frame(height: 62)
-					.contextMenu {
-						Button {
-							if node != nil && !(user.userNode?.favorite ?? false) {
-								user.userNode?.favorite = !(user.userNode?.favorite ?? false)
-								Task {
-									try await accessoryManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
-									Logger.data.info("Favorited a node")
-								}
-							} else {
-								user.userNode?.favorite = !(user.userNode?.favorite ?? false)
-								Task {
-									try await accessoryManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
-									Logger.data.info("Unfavorited a node")
-								}
-							}
-							context.refresh(user, mergeChanges: true)
-							do {
-								try context.save()
-							} catch {
-								context.rollback()
-								Logger.data.error("Save Node Favorite Error")
-							}
-						} label: {
-							Label((user.userNode?.favorite ?? false) ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
-						}
-						Button {
-							user.mute = !user.mute
-							do {
-								try context.save()
-							} catch {
-								context.rollback()
-								Logger.data.error("Save User Mute Error")
-							}
-						} label: {
-							Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
-						}
-						if user.messageList.count > 0 {
-							Button(role: .destructive) {
-								isPresentingDeleteUserMessagesConfirm = true
-								userSelection = user
-							} label: {
-								Label("Delete Messages", systemImage: "trash")
-							}
-						}
-					}
-					.confirmationDialog(
-						"This conversation will be deleted.",
-						isPresented: $isPresentingDeleteUserMessagesConfirm,
-						titleVisibility: .visible
-					) {
-						Button(role: .destructive) {
-							deleteUserMessages(user: userSelection!, context: context)
-							context.refresh(node!.user!, mergeChanges: true)
-						} label: {
-							Text("Delete")
-						}
-					}
-				}
-			}
-			.listStyle(.plain)
-			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)", String(users.count)))
+            List(users, selection: $userSelection) { user in
+                let mostRecent = user.messageList.last
+                let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
+                let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+                let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+                if user.num != accessoryManager.activeDeviceNum ?? 0 {
+                    NavigationLink(value: user) {
+                        ZStack {
+                            Image(systemName: "circle.fill")
+                                .opacity(user.unreadMessages > 0 ? 1 : 0)
+                                .font(.system(size: 10))
+                                .foregroundColor(.accentColor)
+                                .brightness(0.2)
+                        }
+                        
+                        CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
+                        
+                        VStack(alignment: .leading) {
+                            HStack {
+                                if user.pkiEncrypted {
+                                    if !user.keyMatch {
+                                        /// Public Key on the User and the Public Key on the Last Message don't match
+                                        Image(systemName: "key.slash")
+                                            .foregroundColor(.red)
+                                    } else {
+                                        Image(systemName: "lock.fill")
+                                            .foregroundColor(.green)
+                                    }
+                                } else {
+                                    Image(systemName: "lock.open.fill")
+                                        .foregroundColor(.yellow)
+                                }
+                                Text(user.longName ?? "Unknown".localized)
+                                    .font(.headline)
+                                    .allowsTightening(true)
+                                Spacer()
+                                if user.userNode?.favorite ?? false {
+                                    Image(systemName: "star.fill")
+                                        .foregroundColor(.yellow)
+                                }
+                                if user.messageList.count > 0 {
+                                    if lastMessageDay == currentDay {
+                                        Text(lastMessageTime, style: .time )
+                                            .font(.footnote)
+                                            .foregroundColor(.secondary)
+                                    } else if lastMessageDay == (currentDay - 1) {
+                                        Text("Yesterday")
+                                            .font(.footnote)
+                                            .foregroundColor(.secondary)
+                                    } else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+                                        Text(lastMessageTime.formattedDate(format: dateFormatString))
+                                            .font(.footnote)
+                                            .foregroundColor(.secondary)
+                                    } else if lastMessageDay < (currentDay - 1800) {
+                                        Text(lastMessageTime.formattedDate(format: dateFormatString))
+                                            .font(.footnote)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            
+                            if user.messageList.count > 0 {
+                                HStack(alignment: .top) {
+                                    Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+                                        .font(.footnote)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                    }
+                    .frame(height: 62)
+                    .contextMenu {
+                        Button {
+                            if node != nil && !(user.userNode?.favorite ?? false) {
+                                user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+                                Task {
+                                    try await accessoryManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+                                    Logger.data.info("Favorited a node")
+                                }
+                            } else {
+                                user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+                                Task {
+                                    try await accessoryManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+                                    Logger.data.info("Unfavorited a node")
+                                }
+                            }
+                            context.refresh(user, mergeChanges: true)
+                            do {
+                                try context.save()
+                            } catch {
+                                context.rollback()
+                                Logger.data.error("Save Node Favorite Error")
+                            }
+                        } label: {
+                            Label((user.userNode?.favorite ?? false) ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
+                        }
+                        Button {
+                            user.mute = !user.mute
+                            do {
+                                try context.save()
+                            } catch {
+                                context.rollback()
+                                Logger.data.error("Save User Mute Error")
+                            }
+                        } label: {
+                            Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
+                        }
+                        if user.messageList.count > 0 {
+                            Button(role: .destructive) {
+                                isPresentingDeleteUserMessagesConfirm = true
+                                userSelection = user
+                            } label: {
+                                Label("Delete Messages", systemImage: "trash")
+                            }
+                        }
+                    }
+                    .confirmationDialog(
+                        "This conversation will be deleted.",
+                        isPresented: $isPresentingDeleteUserMessagesConfirm,
+                        titleVisibility: .visible
+                    ) {
+                        Button(role: .destructive) {
+                            deleteUserMessages(user: userSelection!, context: context)
+                            context.refresh(node!.user!, mergeChanges: true)
+                        } label: {
+                            Text("Delete")
+                        }
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(users.count)))
 			
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", filters: filters)
