@@ -120,8 +120,7 @@ struct MapDataFiles: View {
 					await MainActor.run {
 						isProcessing = false
 						processingProgress = 1.0
-
-						successMessage = "Successfully uploaded '\(metadata.originalName)' with \(metadata.overlayCount) overlays".localized
+						successMessage = String(localized: "Successfully uploaded '\(metadata.originalName)' with \(metadata.overlayCount) overlays")
 						showSuccess = true
 					}
 				} catch {
@@ -198,8 +197,7 @@ struct MapDataFileRow: View {
 						.padding(.vertical, 2)
 						.background(Color.secondary.opacity(0.2))
 						.cornerRadius(4)
-
-					Text("\(file.overlayCount) \(file.overlayCount > 1 ? "features".localized : "feature".localized)")
+					Text("\(file.overlayCount) features")
 						.font(.caption2)
 						.foregroundColor(.secondary)
 					Spacer()

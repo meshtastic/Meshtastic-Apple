@@ -1168,6 +1168,46 @@
         }
       }
     },
+    "%lld features" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Overlay"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Overlays"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld feature"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld features"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld or less hops away" : {
       "localizations" : {
         "de" : {
@@ -18235,6 +18275,16 @@
         }
       }
     },
+    "Invalid file content. Please check the file format." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ungültiger Dateiinhalt. Bitte überprüfe das Dateiformat."
+          }
+        }
+      }
+    },
     "Inverted top bar for 2 Color display" : {
       "localizations" : {
         "it" : {
@@ -19935,7 +19985,15 @@
       }
     },
     "Manage map data" : {
-      "comment" : "Link to manage uploaded map data"
+      "comment" : "Link to manage uploaded map data",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geodaten verwalten"
+          }
+        }
+      }
     },
     "Managed Device" : {
       "localizations" : {
@@ -22537,6 +22595,12 @@
     "No Data" : {
       "comment" : "Data source label when no files are available",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Daten vorhanden"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22696,7 +22760,14 @@
       }
     },
     "No files uploaded" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Dateien hochgeladen"
+          }
+        }
+      }
     },
     "No Interface" : {
       "localizations" : {
@@ -26979,6 +27050,12 @@
     },
     "Processing file..." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei wird verarbeitet…"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31041,7 +31118,14 @@
       }
     },
     "Select Map File" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GeoJSON-Datei auswählen"
+          }
+        }
+      }
     },
     "Select Node" : {
       "localizations" : {
@@ -34599,6 +34683,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "子系統"
+          }
+        }
+      }
+    },
+    "Successfully uploaded '%@' with %lld overlays" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "'%1$@' mit %2$lld Overlays wurde erfolgreich hochgeladen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Successfully uploaded '%1$@' with %2$lld overlays"
           }
         }
       }
@@ -38850,6 +38950,12 @@
     },
     "Upload Error" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hochladen fehlgeschlagen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38884,6 +38990,12 @@
     },
     "Upload GeoJSON files to display custom map overlays. Files are stored locally and can be up to 10MB." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade GeoJSON-Dateien hoch, um eigene Karten-Overlays anzuzeigen. Die Dateien werden lokal gespeichert und dürfen bis zu 10 MB groß sein."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38954,6 +39066,12 @@
     "Upload map data to enable overlays" : {
       "comment" : "Prompt to upload map data when none is available",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Geodaten hoch, um Karten-Overlays zu aktivieren"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38987,10 +39105,23 @@
       }
     },
     "Upload Map Overlays" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geodaten hochladen"
+          }
+        }
+      }
     },
     "Upload Success" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hochladen erfolgreich"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39024,7 +39155,14 @@
       }
     },
     "Uploaded Map Overlays" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hochgeladene Geodaten"
+          }
+        }
+      }
     },
     "Uptime" : {
       "localizations" : {
@@ -39435,6 +39573,12 @@
     "User Uploaded" : {
       "comment" : "Data source label for user uploaded files",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten verfügbar"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",

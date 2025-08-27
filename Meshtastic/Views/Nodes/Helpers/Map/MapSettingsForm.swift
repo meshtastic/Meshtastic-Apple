@@ -161,7 +161,7 @@ struct MapSettingsForm: View {
 											Text(file.originalName)
 												.font(.subheadline)
 											HStack {
-												Text("\(file.overlayCount) \(file.overlayCount > 1 ? "features".localized : "feature".localized)")
+												Text("\(file.overlayCount) features")
 													.font(.caption2)
 													.foregroundColor(.secondary)
 												Spacer()
