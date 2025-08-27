@@ -295,7 +295,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							title: "Radio Disconnected".localized,
 							subtitle: "\(peripheral.name ?? "Unknown".localized)",
 							content: e.localizedDescription,
-							target: "bluetooth",
+							target: "connect",
 							path: "meshtastic:///connect"
 						)
 					]
@@ -315,7 +315,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							title: "Radio Disconnected".localized,
 							subtitle: "\(peripheral.name ?? "Unknown".localized)",
 							content: e.localizedDescription,
-							target: "bluetooth",
+							target: "connect",
 							path: "meshtastic:///connect"
 						)
 					]
