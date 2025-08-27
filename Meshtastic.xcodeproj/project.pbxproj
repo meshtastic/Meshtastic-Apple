@@ -540,7 +540,6 @@
 		DDAB580C2B0DAA9E00147258 /* Routes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Routes.swift; sourceTree = "<group>"; };
 		DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEntityExtension.swift; sourceTree = "<group>"; };
 		DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMap.swift; sourceTree = "<group>"; };
-		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 		DDB234392B5CA9B000DA6FB1 /* MeshtasticDataModelV 24.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 24.xcdatamodel"; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
@@ -1242,7 +1241,6 @@
 				3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */,
 				BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */,
 				DDD43FE12A78C86B0083A3E9 /* Mqtt */,
-				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DD1BEF492E0292220090CE24 /* KeychainHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,

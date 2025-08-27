@@ -250,7 +250,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
 		firstDatabaseNodeInfoContinuation = nil
 		
-		
 		await wantDatabaseGate.cancelAll()
 		await wantDatabaseGate.reset()
 		

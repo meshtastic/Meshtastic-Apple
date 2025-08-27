@@ -478,7 +478,6 @@ struct ManualConnectionMenu: View {
 	@State private var showAlert: Bool = false
 	@State private var connectionString = ""
 	
-	
 	var body: some View {
 		Menu {
 			ForEach(transports) { transport in

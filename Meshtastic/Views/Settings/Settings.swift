@@ -431,7 +431,7 @@ struct Settings: View {
 									   let destinationNode = nodes.first(where: { $0.num == newValue }),
 									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
 									   let fromUser = connectedNode.user,
-									   let _ = connectedNode.myInfo,  //not sure why, but this check was present in the initial code.
+									   let _ = connectedNode.myInfo,  // not sure why, but this check was present in the initial code.
 									   let toUser = destinationNode.user {
 
 										preferredNodeNum = Int(connectedNode.num)
