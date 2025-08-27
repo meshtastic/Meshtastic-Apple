@@ -26,7 +26,6 @@ struct ChannelMessageList: View {
 	@State private var gotFirstUnreadMessage: Bool = false
 
 	@State private var messageToHighlight: Int64 = 0
-	@State private var scrollProxy: ScrollViewProxy?
 	
 	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
 	
