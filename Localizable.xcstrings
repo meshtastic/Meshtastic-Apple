@@ -2026,6 +2026,12 @@
     },
     "About Meshtastic" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über Meshtastic"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3607,7 +3613,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ambient Lighting"
+            "value" : "Ambientebeleuchtung"
           }
         },
         "fr" : {
@@ -3665,7 +3671,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ambient Lighting Config"
+            "value" : "Ambientebeleuchtungskonfiguration"
           }
         },
         "fr" : {
@@ -3990,6 +3996,12 @@
     },
     "App Settings" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Einstellungen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18645,6 +18657,12 @@
     },
     "LED State" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LED Status"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25597,6 +25615,12 @@
     },
     "Please connect to a radio to configure settings." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte verbinde dich mit einem Funkmodul, um die Einstellungen zu ändern."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29480,6 +29504,12 @@
     },
     "Route Recorder" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route aufzeichnen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29644,6 +29674,12 @@
     },
     "Routes" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Routen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35855,6 +35891,12 @@
     },
     "The state of the LED (on/off)" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status der LED (an/aus)"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
