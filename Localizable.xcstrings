@@ -31193,6 +31193,9 @@
         }
       }
     },
+    "Send a Direct Message" : {
+
+    },
     "Send a Group Message" : {
       "localizations" : {
         "de" : {
@@ -31282,6 +31285,9 @@
           }
         }
       }
+    },
+    "Send a message to a certain meshtastic node" : {
+
     },
     "Send a position on the primary channel when the user button is triple clicked." : {
       "localizations" : {

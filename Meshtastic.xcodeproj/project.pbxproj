@@ -92,6 +92,7 @@
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
 		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
 		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
+		BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */; };
 		BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613802C67290800485544 /* SendWaypointIntent.swift */; };
 		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
 		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
@@ -387,8 +388,8 @@
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
 		BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddContactIntent.swift; sourceTree = "<group>"; };
-		BC5EBA3B2D002A2000C442FF /* MessageNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNodeIntent.swift; sourceTree = "<group>"; };
 		BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelSettingsIntent.swift; sourceTree = "<group>"; };
+		BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNodeIntent.swift; sourceTree = "<group>"; };
 		BCB613802C67290800485544 /* SendWaypointIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendWaypointIntent.swift; sourceTree = "<group>"; };
 		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
 		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
@@ -839,8 +840,8 @@
 		BCB6137F2C6728E700485544 /* AppIntents */ = {
 			isa = PBXGroup;
 			children = (
+				BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */,
 				BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */,
-				BC5EBA3B2D002A2000C442FF /* MessageNodeIntent.swift */,
 				BCB613802C67290800485544 /* SendWaypointIntent.swift */,
 				BCB613822C672A2600485544 /* MessageChannelIntent.swift */,
 				BCB613842C68703800485544 /* NodePositionIntent.swift */,
@@ -1670,6 +1671,7 @@
 				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
 				232ED4C52E2C5EDD009DA392 /* TCPConnection.swift in Sources */,
 				DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */,
+				BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */,
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
 				BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
