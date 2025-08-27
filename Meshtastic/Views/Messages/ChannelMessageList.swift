@@ -210,7 +210,6 @@ struct ChannelMessageList: View {
 									}
 								}
 							}
-							gotFirstUnreadMessage = true
 						}
 					}
 					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
