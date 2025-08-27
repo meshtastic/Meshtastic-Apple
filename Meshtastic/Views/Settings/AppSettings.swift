@@ -48,8 +48,10 @@ struct AppSettings: View {
 						.foregroundStyle(.secondary)
 						.font(.caption)
 #if DEBUG
-					Toggle("Automatically Connect", isOn: autoconnectBinding)
-						.tint(.accentColor)
+					Toggle(isOn: autoconnectBinding) {
+						Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
+					}
+					.tint(.accentColor)
 #endif
 				}
 				Section(header: Text("environment")) {
