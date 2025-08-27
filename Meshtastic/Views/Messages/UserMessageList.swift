@@ -22,6 +22,7 @@ struct UserMessageList: View {
 	// Scroll state
 	@State private var showScrollToBottomButton = false
 	@State private var hasReachedBottom = false
+	@State private var gotFirstUnreadMessage: Bool = false
 	@State private var messageToHighlight: Int64 = 0
 
 	var body: some View {
@@ -131,6 +132,7 @@ struct UserMessageList: View {
 									.frame(maxWidth: .infinity)
 									.id(message.messageId)
 									.onAppear {
+										if gotFirstUnreadMessage {
 											if !message.read {
 												message.read = true
 												do {
@@ -149,6 +151,7 @@ struct UserMessageList: View {
 												hasReachedBottom = true
 												showScrollToBottomButton = false
 											}
+										}
 									}
 								}
 							}
@@ -177,6 +180,7 @@ struct UserMessageList: View {
 								}
 							}
 						}
+						gotFirstUnreadMessage = true
 					}
 					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
 						withAnimation {
