@@ -10,8 +10,9 @@ import DatadogCrashReporting
 import DatadogRUM
 import DatadogTrace
 import DatadogLogs
+#if DEBUG
 import DatadogSessionReplay
-
+#endif
 @main
 struct MeshtasticAppleApp: App {
 
@@ -74,7 +75,7 @@ struct MeshtasticAppleApp: App {
 			"hardware_model": UserDefaults.hardwareModel
 		]
 		RUMMonitor.shared().addAttributes(attributes)
-		
+#if DEBUG
 		SessionReplay.enable(
 		  with: SessionReplay.Configuration(
 			replaySampleRate: 100,
@@ -85,7 +86,7 @@ struct MeshtasticAppleApp: App {
 			featureFlags: [.swiftui: true]
 		  )
 		)
-		
+#endif
 #endif
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
