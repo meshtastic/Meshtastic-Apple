@@ -12,7 +12,7 @@ import MeshtasticProtobufs
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
@@ -48,10 +48,10 @@ struct Settings: View {
 			let node = nodes.first(where: { $0.num == preferredNodeNum })
 			if let node,
 				let loRaConfig = node.loRaConfig,
-			    let rc = RegionCodes(rawValue: Int(loRaConfig.regionCode)),
+				let rc = RegionCodes(rawValue: Int(loRaConfig.regionCode)),
 				let user = node.user,
 				!user.isLicensed,
-			    rc.dutyCycle > 0 && rc.dutyCycle < 100 {
+				rc.dutyCycle > 0 && rc.dutyCycle < 100 {
 				Label {
 					Text("Hourly Duty Cycle")
 				} icon: {
@@ -377,7 +377,7 @@ struct Settings: View {
 				}
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
-					if bleManager.connectedPeripheral != nil {
+					if accessoryManager.isConnected {
 						Section("Configure") {
 							if node?.canRemoteAdmin ?? false {
 								Picker("Node", selection: $selectedNode) {
@@ -386,11 +386,11 @@ struct Settings: View {
 									}
 									ForEach(nodes) { node in
 										/// Connected Node
-										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
+										if node.num == accessoryManager.activeDeviceNum ?? 0 {
 											Label {
-												Text("BLE: \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
+												Text("Connected") + Text(verbatim: ": \(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
-												Image(systemName: "antenna.radiowaves.left.and.right")
+												accessoryManager.activeConnection?.device.transportType.icon ?? Image("questionmark.circle")
 											}
 											.tag(Int(node.num))
 										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.sessionPasskey != nil { /// Nodes using the new PKI system
@@ -427,13 +427,17 @@ struct Settings: View {
 								}
 								.pickerStyle(.navigationLink)
 								.onChange(of: selectedNode) { _, newValue in
-									if selectedNode > 0 {
-										let node = nodes.first(where: { $0.num == newValue })
-										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
-										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil {// && node?.metadata == nil {
-											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, context: context)
-											if adminMessageId > 0 {
+									if selectedNode > 0,
+									   let destinationNode = nodes.first(where: { $0.num == newValue }),
+									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
+									   let fromUser = connectedNode.user,
+									   let _ = connectedNode.myInfo,  // not sure why, but this check was present in the initial code.
+									   let toUser = destinationNode.user {
+
+										preferredNodeNum = Int(connectedNode.num)
+										Task {
+											_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
+											Task { @MainActor in
 												Logger.mesh.info("Sent node metadata request from node details")
 											}
 										}
@@ -442,7 +446,7 @@ struct Settings: View {
 								TipView(AdminChannelTip(), arrowEdge: .top)
 									.tipViewStyle(PersistentTip())
 							} else {
-								if bleManager.connectedPeripheral != nil {
+								if accessoryManager.isConnected {
 									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
 								}
 							}
@@ -522,25 +526,26 @@ struct Settings: View {
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
+				// If the preferred node changes, then select the newly perferred node
+				// This should only happen during connect
 				preferredNodeNum = newConnectedNode
-				if nodes.count > 1 {
-					if selectedNode == 0 {
-						self.selectedNode = Int(bleManager.connectedPeripheral != nil ? newConnectedNode : 0)
-					}
-				} else {
-					self.selectedNode = Int(bleManager.connectedPeripheral != nil ? newConnectedNode: 0)
+				setSelectedNode(to: newConnectedNode)
+			}
+			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
+				// If we are on this screen, haven't iniatialized the selection yet,
+				// And we transition, to connected, then initialize the selection
+				if isConnectedNow, self.selectedNode == 0 {
+					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
+					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
 				}
 			}
 			.onAppear {
+				// If the selection hasn't be initialized yet, try to initalize it.
+				// If we are not fully connected yet, then setSelectedNode will
+				// not select the node and it will remain 0
 				if self.preferredNodeNum <= 0 {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-					if nodes.count > 1 {
-						if selectedNode == 0 {
-							self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
-						}
-					} else {
-						self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
-					}
+					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
 				}
 			}
 			.navigationTitle("Settings")
@@ -550,6 +555,16 @@ struct Settings: View {
 					UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 				}
 			)
+		}
+	}
+	
+	func setSelectedNode(to nodeNum: Int) {
+		if nodes.count > 1 {
+			if selectedNode == 0 {
+				self.selectedNode = Int(accessoryManager.isConnected ? nodeNum : 0)
+			}
+		} else {
+			self.selectedNode = Int(accessoryManager.isConnected ? nodeNum: 0)
 		}
 	}
 }

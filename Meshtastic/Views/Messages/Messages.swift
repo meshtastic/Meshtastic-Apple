@@ -13,7 +13,6 @@ import TipKit
 struct Messages: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
 
 	@ObservedObject
 	var router: Router
@@ -46,7 +45,6 @@ struct Messages: View {
 							.font(.title2)
 							.padding()
 					}
-
 				}
 				NavigationLink(value: MessagesNavigationState.directMessages()) {
 					Label {

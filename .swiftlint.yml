@@ -28,8 +28,8 @@ file_length:
 
 # TODO: should review
 cyclomatic_complexity:
-  warning: 70
-  error: 80
+  warning: 60
+  error: 70
   ignores_case_statements: true
 
 # TODO: should review
@@ -45,6 +45,7 @@ disabled_rules: # rule identifiers to exclude from running
   - operator_whitespace
   - multiple_closures_with_trailing_closure
   - todo
+  - trailing_whitespace
 
 # TODO: should review
 nesting:

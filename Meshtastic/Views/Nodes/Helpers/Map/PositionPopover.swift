@@ -12,7 +12,6 @@ struct PositionPopover: View {
 
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.dismiss) private var dismiss
 	var position: PositionEntity

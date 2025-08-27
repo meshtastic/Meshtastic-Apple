@@ -15,11 +15,11 @@ struct NodePositionIntent: AppIntent {
 	@Parameter(title: "Node Number")
 	var nodeNum: Int
 
-	static var title: LocalizedStringResource = "Get Node Position"
-	static var description: IntentDescription = "Fetch the latest position of a cetain node"
+	static let title: LocalizedStringResource = "Get Node Position"
+	static let description: IntentDescription = "Fetch the latest position of a cetain node"
 
 	func perform() async throws -> some IntentResult & ReturnsValue<CLPlacemark> {
-		if !BLEManager.shared.isConnected {
+		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "NodeInfoEntity")

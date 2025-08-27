@@ -16,7 +16,7 @@ struct SecurityConfig: View {
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -224,11 +224,8 @@ struct SecurityConfig: View {
 		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Security Config")
 		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(
-				bluetoothOn: bleManager.isSwitchedOn,
-				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: "\(bleManager.connectedPeripheral?.shortName ?? "?")"
-			)
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+
 		})
 		.onChange(of: node) { _, _ in
 			setSecurityValues()
@@ -290,16 +287,21 @@ struct SecurityConfig: View {
 		}
 		.onFirstAppear {
 			// Need to request a SecurityConfig from the remote node before allowing changes
-			if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-				let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
-				if let connectedNode {
-					if node.num != connectedNode.num {
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+					if node.num != deviceNum {
 						if UserDefaults.enableAdministration {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
 							if expiration < Date() || node.securityConfig == nil {
-								Logger.mesh.info("⚙️ Empty or expired security config requesting via PKI admin")
-								_ = bleManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired security config requesting via PKI admin")
+										try await accessoryManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.info("🚨 Security config request failed")
+									}
+								}
 							}
 						} else {
 							if node.deviceConfig == nil {
@@ -318,7 +320,8 @@ struct SecurityConfig: View {
 				return
 			}
 
-			guard let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context),
+			guard let deviceNum = accessoryManager.activeDeviceNum,
+				  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 				  let fromUser = connectedNode.user,
 				  let toUser = node?.user else {
 				return
@@ -332,32 +335,38 @@ struct SecurityConfig: View {
 			config.debugLogApiEnabled = debugLogApiEnabled
 
 			let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
-			let adminMessageId = bleManager.saveSecurityConfig(
-				config: config,
-				fromUser: fromUser,
-				toUser: toUser
-			)
-			if adminMessageId > 0 {
-				// Should show a saved successfully alert once I know that to be true
-				// for now just disable the button after a successful save
-				if keyUpdated {
-					node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
-					do {
-						try context.save()
-						Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
-					} catch {
-						context.rollback()
-						let nsError = error as NSError
-						Logger.data.error("Error Updating Core Data UserEntity: \(nsError, privacy: .public)")
+			Task {
+				_ = try await accessoryManager.saveSecurityConfig(
+					config: config,
+					fromUser: fromUser,
+					toUser: toUser
+				)
+				Task { @MainActor in
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					if keyUpdated {
+						node?.user?.publicKey = Data(base64Encoded: publicKey) ?? Data()
+						do {
+							try context.save()
+							Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							Logger.data.error("Error Updating Core Data UserEntity: \(nsError, privacy: .public)")
+						}
 					}
 				}
 				hasChanges = false
 				if keyUpdated {
-					if !bleManager.sendReboot(
-						fromUser: fromUser,
-						toUser: toUser
-					) {
-						Logger.mesh.warning("Reboot Failed")
+					Task {
+						do {
+							try await accessoryManager.sendReboot(
+								fromUser: fromUser,
+								toUser: toUser
+							)
+						} catch {
+							Logger.mesh.warning("Reboot Failed")
+						}
 					}
 				}
 				goBack()

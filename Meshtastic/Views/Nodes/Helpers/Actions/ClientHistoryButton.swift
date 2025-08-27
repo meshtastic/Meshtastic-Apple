@@ -1,7 +1,7 @@
 import SwiftUI
-
+import OSLog
 struct ClientHistoryButton: View {
-	var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	var connectedNode: NodeInfoEntity
 
@@ -12,10 +12,19 @@ struct ClientHistoryButton: View {
 
     var body: some View {
 		Button {
-			isPresentingAlert = bleManager.requestStoreAndForwardClientHistory(
-				fromUser: connectedNode.user!,
-				toUser: node.user!
-			)
+			Task {
+				do {
+					try await accessoryManager.requestStoreAndForwardClientHistory(
+						fromUser: connectedNode.user!,
+						toUser: node.user!
+					)
+					Task { @MainActor in
+						isPresentingAlert = true
+					}
+				} catch {
+					Logger.mesh.warning("Failed to send client history request: \(error)")
+				}
+			}
 		} label: {
 			Label(
 				"Client History",

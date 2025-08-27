@@ -23,7 +23,7 @@ struct MessageNodeIntent: AppIntent {
 		Summary("Send \(\.$messageContent) to \(\.$nodeNumber)")
 	}
 	func perform() async throws -> some IntentResult {
-		if !BLEManager.shared.isConnected {
+		if !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
@@ -36,7 +36,9 @@ struct MessageNodeIntent: AppIntent {
 			throw $messageContent.needsValueError("Message content exceeds 200 bytes.")
 		}
 
-		if !BLEManager.shared.sendMessage(message: messageContent, toUserNum: Int64(nodeNumber), channel: 0, isEmoji: false, replyID: 0) {
+		do {
+			try await AccessoryManager.shared.sendMessage(message: messageContent, toUserNum: Int64(nodeNumber), channel: 0, isEmoji: false, replyID: 0)
+		} catch {
 			throw AppIntentErrors.AppIntentError.message("Failed to send message")
 		}
 

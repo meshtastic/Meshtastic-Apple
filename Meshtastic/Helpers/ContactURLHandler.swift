@@ -11,11 +11,13 @@ import TipKit
 import MeshtasticProtobufs
 
 struct ContactURLHandler {
+
 	static var minimumContactVersion = "2.6.9"
-	static func handleContactUrl(url: URL, bleManager: BLEManager) {
-		let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||
-			minimumContactVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedAscending ||
-			minimumContactVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedSame
+
+	@MainActor
+	static func handleContactUrl(url: URL, accessoryManager: AccessoryManager) {
+		let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumContactVersion)
+
 		if !supportedVersion {
 			let alertController = UIAlertController(
 				title: "Firmware Upgrade Required",
@@ -48,8 +50,14 @@ struct ContactURLHandler {
 							title: "Yes",
 							style: .default,
 							handler: { _ in
-								let success = bleManager.addContactFromURL(base64UrlString: contactData)
-								Logger.services.debug("Contact added from URL: \(success ? "success" : "failed")")
+								Task {
+									do {
+										try await accessoryManager.addContactFromURL(base64UrlString: contactData)
+										Logger.services.debug("Contact added from URL successfully")
+									} catch {
+										Logger.services.debug("Contact added from URL failed with error \(error)")
+									}
+								}
 							}
 						))
 						alertController.addAction(UIAlertAction(

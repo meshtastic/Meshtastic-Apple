@@ -11,7 +11,7 @@ import SwiftUI
 struct UserConfig: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -59,6 +59,9 @@ struct UserConfig: View {
 										totalBytes = newValue.utf8.count
 									}
 									longName = newValue
+									if longName.contains("📵") {
+										isUnmessagable = true
+									}
 								}
 						}
 						.keyboardType(.default)
@@ -97,7 +100,7 @@ struct UserConfig: View {
 						Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 							.foregroundColor(.gray)
 							.font(.callout)
-						let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||  self.minimumVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedSame
+						let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
 						Toggle(isOn: $isUnmessagable) {
 							Label("Unmessagable", systemImage: "iphone.slash")
 							Text("Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond.")
@@ -107,7 +110,7 @@ struct UserConfig: View {
 						.disabled(!supportedVersion)
 					}
 					// Only manage ham mode for the locally connected node
-					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					if node?.num ?? 0 > 0 && node?.num ?? 0 == accessoryManager.activeDeviceNum ?? 0 {
 						Toggle(isOn: $isLicensed) {
 							Label("Licensed Operator", systemImage: "person.text.rectangle")
 						}
@@ -145,14 +148,14 @@ struct UserConfig: View {
 					}
 				}
 			}
-			.disabled(bleManager.connectedPeripheral == nil)
+			.disabled(!accessoryManager.isConnected)
 			HStack {
 				Button {
 					isPresentingSaveConfirm = true
 				} label: {
 					Label("Save", systemImage: "square.and.arrow.down")
 				}
-				.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+				.disabled(!accessoryManager.isConnected || !hasChanges)
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
@@ -167,8 +170,8 @@ struct UserConfig: View {
 							return
 						}
 
-						let connectedUser = getUser(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+						let connectedUser = getUser(id: accessoryManager.activeDeviceNum ?? -1, context: context)
+						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 						if node != nil && connectedNode != nil {
 
 							if !isLicensed {
@@ -176,10 +179,13 @@ struct UserConfig: View {
 								u.shortName = shortName
 								u.longName = longName
 								u.isUnmessagable = isUnmessagable
-								let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!)
-								if adminMessageId > 0 {
-									hasChanges = false
-									goBack()
+
+								Task {
+									_ = try await accessoryManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!)
+									Task { @MainActor in
+										hasChanges = false
+										goBack()
+									}
 								}
 							} else {
 								var ham = HamParameters()
@@ -188,10 +194,12 @@ struct UserConfig: View {
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
-								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!)
-								if adminMessageId > 0 {
-									hasChanges = false
-									goBack()
+								Task {
+									_ = try await accessoryManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!)
+									Task { @MainActor in
+										hasChanges = false
+										goBack()
+									}
 								}
 							}
 						}
@@ -205,7 +213,7 @@ struct UserConfig: View {
 		.navigationTitle("User Config")
 		.navigationBarItems(trailing:
 								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
 		.onAppear {
 			self.shortName = node?.user?.shortName ?? ""

@@ -10,7 +10,9 @@ import DatadogCrashReporting
 import DatadogRUM
 import DatadogTrace
 import DatadogLogs
-
+#if DEBUG
+import DatadogSessionReplay
+#endif
 @main
 struct MeshtasticAppleApp: App {
 
@@ -19,7 +21,7 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject	var appState: AppState
 
 	private let persistenceController: PersistenceController
-
+	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
 	@State var saveChannels = false
 	@State var incomingUrl: URL?
@@ -27,7 +29,9 @@ struct MeshtasticAppleApp: App {
 	@State var addChannels = false
 
 	init() {
+
 		let persistenceController = PersistenceController.shared
+
 		let appState = AppState(
 			router: Router()
 		)
@@ -35,9 +39,13 @@ struct MeshtasticAppleApp: App {
 		// RUM Client Tokens are NOT secret
 		let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
 		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
-		let environment = "testflight"
+		var environment = "AppStore"
 
 #if !targetEnvironment(macCatalyst)
+		
+#if DEBUG
+		environment = "TestFlight"
+#endif
 		Datadog.initialize(
 			with: Datadog.Configuration(
 				clientToken: clientToken,
@@ -67,10 +75,24 @@ struct MeshtasticAppleApp: App {
 			"hardware_model": UserDefaults.hardwareModel
 		]
 		RUMMonitor.shared().addAttributes(attributes)
+#if DEBUG
+		SessionReplay.enable(
+		  with: SessionReplay.Configuration(
+			replaySampleRate: 100,
+			textAndInputPrivacyLevel: .maskSensitiveInputs,
+			imagePrivacyLevel: .maskNone,
+			touchPrivacyLevel: .show,
+			startRecordingImmediately: true,
+			featureFlags: [.swiftui: true]
+		  )
+		)
 #endif
+#endif
+		accessoryManager = AccessoryManager.shared
+		accessoryManager.appState = appState
+
 		self._appState = ObservedObject(wrappedValue: appState)
-		// Initialize the BLEManager singleton with the necessary dependencies
-		BLEManager.setup(appState: appState, context: persistenceController.container.viewContext)
+
 		self.persistenceController = persistenceController
 		// Wire up router
 		self.appDelegate.router = appState.router
@@ -81,6 +103,13 @@ struct MeshtasticAppleApp: App {
 		// Show tips in development
 		try? Tips.resetDatastore()
 	#endif
+		if !UserDefaults.firstLaunch {
+			// If this is first launch, we will show onboarding screens which
+			// Step through the authorization process.  Do not start discovery
+			// unitl this workflow completes, otherwise the discovery process
+			// may trigger permission dialogs too soon.
+			accessoryManager.startDiscovery()
+		}
 	}
     var body: some Scene {
         WindowGroup {
@@ -102,8 +131,7 @@ struct MeshtasticAppleApp: App {
 				SaveChannelQRCode(
 					channelSetLink: channelSettings ?? "Empty Channel URL",
 					addChannels: addChannels,
-					bleManager: BLEManager.shared
-				)
+					accessoryManager: accessoryManager				)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.visible)
 			}
@@ -112,7 +140,7 @@ struct MeshtasticAppleApp: App {
 				self.incomingUrl = userActivity.webpageURL
 				self.saveChannels = false
 				if self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
-					ContactURLHandler.handleContactUrl(url: self.incomingUrl!, bleManager: BLEManager.shared)
+					ContactURLHandler.handleContactUrl(url: self.incomingUrl!, accessoryManager: accessoryManager)
 				} else if self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/") == true {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
@@ -140,7 +168,7 @@ struct MeshtasticAppleApp: App {
 				Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
 				self.incomingUrl = url
 				if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
-					ContactURLHandler.handleContactUrl(url: url, bleManager: BLEManager.shared)
+					ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 				} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
@@ -179,8 +207,8 @@ struct MeshtasticAppleApp: App {
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
+				accessoryManager.appDidEnterBackground()
 				do {
-
 					try persistenceController.container.viewContext.save()
 					Logger.services.info("💾 [App] Saved CoreData ViewContext when the app went to the background.")
 
@@ -192,13 +220,14 @@ struct MeshtasticAppleApp: App {
 				Logger.services.info("🎬 [App] Scene is inactive")
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
+				accessoryManager.appDidBecomeActive()
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}
 		}
 		.environment(\.managedObjectContext, persistenceController.container.viewContext)
 		.environmentObject(appState)
-		.environmentObject(BLEManager.shared)
+		.environmentObject(accessoryManager)
 	}
 
 }

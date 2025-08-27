@@ -9,9 +9,9 @@ import Foundation
 import AppIntents
 
 struct MessageChannelIntent: AppIntent {
-	static var title: LocalizedStringResource = "Send a Group Message"
+	static let title: LocalizedStringResource = "Send a Group Message"
 
-	static var description: IntentDescription = "Send a message to a certain meshtastic channel"
+	static let description: IntentDescription = "Send a message to a certain meshtastic channel"
 
 	@Parameter(title: "Message")
 	var messageContent: String
@@ -23,7 +23,7 @@ struct MessageChannelIntent: AppIntent {
 		Summary("Send \(\.$messageContent) to \(\.$channelNumber)")
 	}
 	func perform() async throws -> some IntentResult {
-		if !BLEManager.shared.isConnected {
+		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
@@ -41,7 +41,9 @@ struct MessageChannelIntent: AppIntent {
 			throw $messageContent.needsValueError("Message content exceeds 200 bytes.")
 		}
 
-		if !BLEManager.shared.sendMessage(message: messageContent, toUserNum: 0, channel: Int32(channelNumber), isEmoji: false, replyID: 0) {
+		do {
+			try await AccessoryManager.shared.sendMessage(message: messageContent, toUserNum: 0, channel: Int32(channelNumber), isEmoji: false, replyID: 0)
+		} catch {
 			throw AppIntentErrors.AppIntentError.message("Failed to send message")
 		}
 

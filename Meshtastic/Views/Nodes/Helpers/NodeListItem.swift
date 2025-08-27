@@ -22,7 +22,7 @@ struct NodeListItem: View {
         } else {
 			desc = "Unknown".localized + " " + "Node".localized
         }
-        if connected {
+        if isDirectlyConnected {
             desc += ", currently connected"
         }
         if node.favorite {
@@ -57,7 +57,7 @@ struct NodeListItem: View {
             }
         }
         // Add distance and heading/bearing if available, but only for non-connected nodes
-        if !connected, let (lastPosition, myCoord) = locationData {
+        if !isDirectlyConnected, let (lastPosition, myCoord) = locationData {
             let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
             let metersAway = nodeCoord.distance(from: myCoord)
             // Distance information
@@ -98,7 +98,7 @@ struct NodeListItem: View {
     }
 
 	@ObservedObject var node: NodeInfoEntity
-	var connected: Bool
+	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 
@@ -159,7 +159,7 @@ struct NodeListItem: View {
 									.symbolRenderingMode(.multicolor)
 							}
 						}
-						if connected {
+						if isDirectlyConnected {
 							IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill",
 										imageColor: .green,
 										text: "Connected".localized)
@@ -318,6 +318,6 @@ struct IconAndText: View {
 			user.shortName = "TU"
 			nodeInfo.user = user
 			return nodeInfo
-		}(), connected: true, connectedNode: 0, modemPreset: .longFast)
+		}(), isDirectlyConnected: true, connectedNode: 0, modemPreset: .longFast)
 	}
 }

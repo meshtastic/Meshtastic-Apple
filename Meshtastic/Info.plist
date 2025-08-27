@@ -100,9 +100,15 @@
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth is used to connect an iPhone to a user&apos;s meshtastic device to allow text messaging and location data for the mesh network.</string>
+	<string>Bluetooth is used to connect an iPhone to a user's meshtastic device to allow text messaging and location data for the mesh network.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_meshtastic._tcp</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>We use the camera to share channels using a QR Code</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>We use local networking to connect to network-based nodes.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device. Route Recording uses location in the background.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

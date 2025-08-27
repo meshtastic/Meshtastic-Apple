@@ -11,8 +11,8 @@ import AppIntents
 // Define the AppIntent for saving channel settings from a URL
 struct SaveChannelSettingsIntent: AppIntent {
 	// Define a title and description for the intent
-	static var title: LocalizedStringResource = "Save Channel Settings"
-	static var description: IntentDescription = "Takes a Meshtastic channel URL and saves the channel settings."
+	static let title: LocalizedStringResource = "Save Channel Settings"
+	static let description: IntentDescription = "Takes a Meshtastic channel URL and saves the channel settings."
 
 	// Define the input for the intent (the channel URL)
 	@Parameter(title: "Channel URL", description: "The URL for the channel settings")
@@ -21,7 +21,7 @@ struct SaveChannelSettingsIntent: AppIntent {
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
 		// Ensure the BLE Manager is connected
-		if !BLEManager.shared.isConnected {
+		if !(await AccessoryManager.shared.isConnected) {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
@@ -39,10 +39,13 @@ struct SaveChannelSettingsIntent: AppIntent {
 
 			// If valid channel settings are extracted, attempt to save them
 			if let channelSettings = channelSettings {
-				// Call the BLEManager to save the channel settings
-				let saveResult = BLEManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
-				if !saveResult {
-					throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
+				Task {
+					do {
+						// Call the AcessoryManager to save the channel settings
+						try await AccessoryManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
+					} catch {
+						throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
+					}
 				}
 			} else {
 				throw AppIntentErrors.AppIntentError.message("Invalid Channel URL: Unable to extract settings.")

@@ -11,7 +11,7 @@ import SwiftUI
 struct RangeTestConfig: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -53,21 +53,23 @@ struct RangeTestConfig: View {
 
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.rangeTestConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 				if connectedNode != nil {
 					var rtc = ModuleConfig.RangeTestConfig()
 					rtc.enabled = enabled
 					rtc.save = save
 					rtc.sender = UInt32(sender)
-					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					Task {
+						_ = try await accessoryManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!)
+						Task { @MainActor in
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			}
@@ -75,24 +77,29 @@ struct RangeTestConfig: View {
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?"
+						deviceConnected: accessoryManager.isConnected,
+						name: accessoryManager.activeConnection?.device.shortName ?? "?"
 					)
 				}
 			)
 			.onFirstAppear {
 				// Need to request a RangeTestModuleConfig from the remote node before allowing changes
-				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let deviceNum = accessoryManager.activeDeviceNum, let node {
+					let connectedNode = getNodeInfo(id: deviceNum, context: context)
 					if let connectedNode {
-						if node.num != connectedNode.num {
+						if node.num != deviceNum {
 							if UserDefaults.enableAdministration && node.num != connectedNode.num {
 								/// 2.5 Administration with session passkey
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.rangeTestConfig == nil {
-									Logger.mesh.info("⚙️ Empty or expired range test module config requesting via PKI admin")
-									_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									Task {
+										do {
+											Logger.mesh.info("⚙️ Empty or expired range test module config requesting via PKI admin")
+											try await accessoryManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+										} catch {
+											Logger.mesh.error("🚨 Request Range test module config failed")
+										}
+									}
 								}
 							} else {
 								/// Legacy Administration

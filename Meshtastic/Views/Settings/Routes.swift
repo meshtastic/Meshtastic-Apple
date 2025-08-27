@@ -14,7 +14,7 @@ struct Routes: View {
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var selectedRoute: RouteEntity?
 	@State private var importing = false
 	@State private var isShowingBadFileAlert = false
