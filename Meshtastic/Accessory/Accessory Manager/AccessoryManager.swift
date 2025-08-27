@@ -485,7 +485,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					if packet.from != connectedNodeNum {
 						upsertNodeInfoPacket(packet: packet, context: context)
 					} else {
-						Logger.mesh.error("🕸️ Received a node info packet from a device other than the one we are connected to. Dropping")
+						Logger.mesh.error("🕸️ Received a node info packet from ourselves over the mesh. Dropping.")
 					}
 				case .routingApp:
 					guard let deviceNum = activeConnection?.device.num else {
