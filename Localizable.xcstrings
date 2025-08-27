@@ -13416,7 +13416,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verfällt"
+            "value" : "Automatisches Löschen"
           }
         },
         "it" : {
