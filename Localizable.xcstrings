@@ -12187,6 +12187,12 @@
     },
     "Elev. Gain" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Höhenunterschied"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13475,6 +13481,12 @@
     },
     "Export" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportieren"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16264,6 +16276,12 @@
     },
     "Heading: %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurs: %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17779,6 +17797,12 @@
     },
     "Import Route" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route importieren"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29502,6 +29526,16 @@
         }
       }
     },
+    "Route List" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Routenliste"
+          }
+        }
+      }
+    },
     "Route Recorder" : {
       "localizations" : {
         "de" : {
@@ -29538,6 +29572,12 @@
     },
     "Route recording paused" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Routenaufzeichnung pausiert"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29677,7 +29717,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Routen"
+            "value" : "Routenliste"
           }
         },
         "it" : {

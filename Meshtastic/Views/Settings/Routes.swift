@@ -306,7 +306,7 @@ struct Routes: View {
 				)
 			}
 		}
-		.navigationTitle(selectedRoute != nil ? name : "Route List")
+		.navigationTitle(selectedRoute != nil ? name : String(localized: "Route List"))
 		.navigationBarTitleDisplayMode(.inline)
 	}
 }
