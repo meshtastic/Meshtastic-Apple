@@ -210,6 +210,7 @@ struct ChannelMessageList: View {
 									withAnimation {
 										scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
 										showScrollToBottomButton = true
+										gotFirstUnreadMessage = true
 									}
 								}
 							}
