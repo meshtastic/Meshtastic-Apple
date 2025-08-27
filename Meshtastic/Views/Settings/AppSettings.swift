@@ -17,6 +17,12 @@ struct AppSettings: View {
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
+	
+	let autoconnectBinding = Binding<Bool>(get: {
+		return UserDefaults.autoconnectOnDiscovery
+	}, set: { newValue in
+		UserDefaults.autoconnectOnDiscovery = newValue
+	})
 	var body: some View {
 		VStack {
 			Form {
@@ -30,24 +36,28 @@ struct AppSettings: View {
 					Toggle(isOn: $enableAdministration) {
 						Label("Administration", systemImage: "gearshape.2")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					Text("PKI based node administration, requires firmware version 2.5+")
 						.foregroundStyle(.secondary)
 						.font(.caption)
 					Toggle(isOn: $usageDataAndCrashReporting) {
 						Label("Usage and Crash Data", systemImage: "pencil.and.list.clipboard")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
+#if DEBUG
+					Toggle("Automatically Connect", isOn: autoconnectBinding)
+						.tint(.accentColor)
+#endif
 				}
 				Section(header: Text("environment")) {
 					VStack(alignment: .leading) {
 						Toggle(isOn: $environmentEnableWeatherKit) {
 							Label("Weather Conditions", systemImage: "cloud.sun")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 				}
 				Section(header: Text("App Data")) {
@@ -67,7 +77,7 @@ struct AppSettings: View {
 						purgeStaleNodeDays = newValue ? purgeStaleNodeDays : 0
 						Logger.services.info("ℹ️ Purge Stale Nodes changed to \(purgeStaleNodeDays)")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 
 					.listRowSeparator(purgeStaleNodes ? .hidden : .visible)
 					if purgeStaleNodes {
