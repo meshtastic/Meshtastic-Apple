@@ -391,7 +391,7 @@ struct DeviceOnboarding: View {
 	}
 	
 	func createBluetoothString() -> AttributedString {
-		var fullText = AttributedString("Meshtastic uses Bluetootht o connect to BLE-based accessories.  You can update the permissions at any time from settings.")
+		var fullText = AttributedString("Meshtastic uses Bluetooth to connect to BLE-based accessories.  You can update the permissions at any time from settings.")
 		if let range = fullText.range(of: "settings") {
 			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
 			fullText[range].foregroundColor = .blue
