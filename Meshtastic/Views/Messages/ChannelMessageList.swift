@@ -25,7 +25,26 @@ struct ChannelMessageList: View {
 	@State private var hasReachedBottom = false
 	@State private var gotFirstUnreadMessage: Bool = false
 
-		@State private var messageToHighlight: Int64 = 0
+	@State private var messageToHighlight: Int64 = 0
+	@State private var scrollProxy: ScrollViewProxy?
+	
+	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
+	
+	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
+		self.myInfo = myInfo
+		self.channel = channel
+		
+		// Configure fetch request here
+		let request: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
+		request.sortDescriptors = [
+			NSSortDescriptor(keyPath: \MessageEntity.messageTimestamp, ascending: true)
+		]
+		request.predicate = NSPredicate(
+			format: "channel == %ld AND toUser == nil AND isEmoji == false",
+			channel.index
+		)
+		_allPrivateMessages = FetchRequest(fetchRequest: request)
+	}
 
 	var body: some View {
 		VStack {
@@ -33,9 +52,10 @@ struct ChannelMessageList: View {
 				ZStack(alignment: .bottomTrailing) {
 					ScrollView {
 						LazyVStack {
-							ForEach(Array(channel.allPrivateMessages.enumerated()), id: \.element.id) { index, message in
+							ForEach(allPrivateMessages) { message in
 								// Get the previous message, if it exists
-								let previousMessage = index > 0 ? channel.allPrivateMessages[index - 1] : nil
+								let thisMessageIndex = allPrivateMessages.firstIndex(of: message) ?? 0
+								let previousMessage =  thisMessageIndex > 0 ? allPrivateMessages[thisMessageIndex - 1] : nil
 								let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
 								if message.displayTimestamp(aboveMessage: previousMessage) {
 									Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
@@ -43,7 +63,7 @@ struct ChannelMessageList: View {
 										.foregroundColor(.gray)
 								}
 								if message.replyID > 0 {
-									let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
+									let messageReply = allPrivateMessages.first(where: { $0.messageId == message.replyID })
 									HStack {
 										Button {
 											if let messageNum = messageReply?.messageId {
@@ -130,7 +150,7 @@ struct ChannelMessageList: View {
 										}
 									}
 									.padding(.bottom)
-									.id(channel.allPrivateMessages.firstIndex(of: message))
+									.id(allPrivateMessages.firstIndex(of: message))
 
 									if !currentUser {
 										Spacer(minLength: 50)
@@ -149,7 +169,7 @@ struct ChannelMessageList: View {
 										if !message.read {
 											message.read = true
 											do {
-												for unreadMessage in channel.allPrivateMessages.filter({ !$0.read }) {
+												for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
 													unreadMessage.read = true
 												}
 												try context.save()
@@ -161,7 +181,7 @@ struct ChannelMessageList: View {
 											}
 										}
 										// Check if we've reached the bottom message
-										if message.messageId == channel.allPrivateMessages.last?.messageId {
+										if message.messageId == allPrivateMessages.last?.messageId {
 											hasReachedBottom = true
 											showScrollToBottomButton = false
 										}
@@ -180,20 +200,22 @@ struct ChannelMessageList: View {
 					}
 					.scrollDismissesKeyboard(.interactively)
 					.onFirstAppear {
-						if channel.unreadMessages == 0 {
-							withAnimation {
-								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-								hasReachedBottom = true
-							}
-						} else {
-							if let firstUnreadMessageId = channel.allPrivateMessages.first(where: { !$0.read })?.messageId {
+						DispatchQueue.main.async {
+							if channel.unreadMessages == 0 {
 								withAnimation {
-									scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
-									showScrollToBottomButton = true
+									scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+									hasReachedBottom = true
+								}
+							} else {
+								if let firstUnreadMessageId = allPrivateMessages.first(where: { !$0.read })?.messageId {
+									withAnimation {
+										scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
+										showScrollToBottomButton = true
+									}
 								}
 							}
+							gotFirstUnreadMessage = true
 						}
-						gotFirstUnreadMessage = true
 					}
 					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
 						withAnimation {
@@ -202,7 +224,7 @@ struct ChannelMessageList: View {
 							showScrollToBottomButton = false
 						}
 					}
-					.onChange(of: channel.allPrivateMessages) {
+					.onChange(of: allPrivateMessages.count) {
 						if hasReachedBottom {
 							withAnimation {
 								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
@@ -261,3 +283,4 @@ struct ChannelMessageList: View {
 		}
 	}
 }
+
