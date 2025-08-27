@@ -38,9 +38,13 @@ struct MeshtasticAppleApp: App {
 		// RUM Client Tokens are NOT secret
 		let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
 		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
-		let environment = "testflight"
+		var environment = "AppStore"
 
 #if !targetEnvironment(macCatalyst)
+		
+#if DEBUG
+		environment = "TestFlight"
+#endif
 		Datadog.initialize(
 			with: Datadog.Configuration(
 				clientToken: clientToken,
