@@ -63,6 +63,7 @@ struct AppSettings: View {
 					}
 					.sheet(isPresented: $isPresentingAppIconSheet) {
 						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
+							.presentationDetents([.medium])
 					}
 				}
 				Section(header: Text("environment")) {
