@@ -297,11 +297,8 @@ struct FilteredUserList<Content: View>: View {
 			predicates.append(compoundPredicate)
 		}
 		// Hops Away
-		if hopsAway == 0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
-			predicates.append(hopsAwayPredicate)
-		} else if hopsAway > -1.0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(hopsAway))
+		if hopsAway > -1.0 {
+			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway <= %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
 		// Online
