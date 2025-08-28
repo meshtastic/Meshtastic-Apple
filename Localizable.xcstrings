@@ -4377,6 +4377,12 @@
     },
     "Available modem presets, default is Long Fast." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfügbare Modem-Presets, Standard ist „Long Range - Fast“."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12920,7 +12926,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Umwelt"
+            "value" : "Umgebung"
           }
         },
         "it" : {
@@ -25778,7 +25784,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bitte verbinde dich mit einem Funkmodul, um die Einstellungen zu ändern."
+            "value" : "Bitte verbinde dich mit einem Funkgerät, um die Einstellungen zu ändern."
           }
         },
         "it" : {
@@ -25815,6 +25821,12 @@
     },
     "Please set a region" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte lege eine Region fest"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26789,6 +26801,12 @@
     },
     "Presets" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presets"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36003,6 +36021,12 @@
     },
     "The region where you will be using your radios." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Region, in der Du Deine Funkgeräte verwenden wirst."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39383,6 +39407,12 @@
     },
     "Use Preset" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preset verwenden"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
