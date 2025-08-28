@@ -18,6 +18,7 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 	case radio = 4
 	case services = 5
 	case stats = 6
+	case transport = 7
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -37,6 +38,8 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 			return "🍏 Services"
 		case .stats:
 			return "📊 Stats"
+		case .transport:
+			return "🚚 Transport"
 		}
 	}
 }
@@ -108,17 +111,33 @@ struct AppLogFilter: View {
 
 		NavigationStack {
 			Form {
-				Section(header: Text("Categories")) {
+				Section(header: HStack {
+					Text("Categories")
+					Spacer()
+					Button {
+						categories.formUnion(LogCategories.allCases.map(\.id))
+					} label: {
+						Text("All")
+					}
+				}) {
 					VStack {
 						List(LogCategories.allCases, selection: $categories) { cat in
 							Text(cat.description)
 						}
 						.listStyle(.plain)
 						.environment(\.editMode, $editMode) /// bind it here!
-						.frame(minHeight: 300, maxHeight: .infinity)
+						.frame(minHeight: 338, maxHeight: .infinity)
 					}
 				}
-				Section(header: Text("Log Levels")) {
+				Section(header: HStack {
+					Text("Log Levels")
+					Spacer()
+					Button {
+						levels.formUnion(LogLevels.allCases.map(\.id))
+					} label: {
+						Text("All")
+					}
+				}) {
 					VStack {
 						List(LogLevels.allCases, selection: $levels) { level in
 							Text(level.description)

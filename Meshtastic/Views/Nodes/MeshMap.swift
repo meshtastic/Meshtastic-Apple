@@ -15,7 +15,7 @@ import MapKit
 struct MeshMap: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@ObservedObject
 	var router: Router
@@ -194,7 +194,7 @@ struct MeshMap: View {
 			}
 		}
 		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
 		.onFirstAppear {
 			UIApplication.shared.isIdleTimerDisabled = true

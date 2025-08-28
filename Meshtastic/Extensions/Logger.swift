@@ -10,7 +10,7 @@ import OSLog
 extension Logger {
 
 	/// The logger's subsystem.
-	private static var subsystem = Bundle.main.bundleIdentifier!
+	private static let subsystem = Bundle.main.bundleIdentifier!
 
 	/// All admin messages
 	static let admin = Logger(subsystem: subsystem, category: "🏛 Admin")
@@ -32,6 +32,9 @@ extension Logger {
 
 	/// All logs related to tracking and analytics.
 	static let statistics = Logger(subsystem: subsystem, category: "📊 Stats")
+
+	/// All logs related to the transport layer
+	static let transport = Logger(subsystem: subsystem, category: "🚚 Transport")
 
 	/// Fetch from the logstore
 	static public func fetch(predicateFormat: String) async throws -> [OSLogEntryLog] {

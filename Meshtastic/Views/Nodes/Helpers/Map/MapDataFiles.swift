@@ -4,7 +4,7 @@ import OSLog
 
 struct MapDataFiles: View {
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 
 	@State private var isShowingFilePicker = false

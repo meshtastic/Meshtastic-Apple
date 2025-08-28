@@ -11,13 +11,11 @@ import OSLog
 struct NodeList: View {
 	@Environment(\.managedObjectContext)
 	var context
-
-	@EnvironmentObject
-	var bleManager: BLEManager
-
-	@ObservedObject
-	var router: Router
-
+	
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	
+	@StateObject var router: Router
+	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var searchText = ""
@@ -40,8 +38,8 @@ struct NodeList: View {
 	@State private var isPresentingPositionFailedAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
-    @State private var shareContactNode: NodeInfoEntity?
-
+	@State private var shareContactNode: NodeInfoEntity?
+	
 	var boolFilters: [Bool] {[
 		isFavorite,
 		isIgnored,
@@ -51,11 +49,11 @@ struct NodeList: View {
 		distanceFilter,
 		roleFilter
 	]}
-
+	
 	@State var isEditingFilters = false
-
+	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
-
+	
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "ignored", ascending: true),
@@ -66,11 +64,14 @@ struct NodeList: View {
 		animation: .spring
 	)
 	var nodes: FetchedResults<NodeInfoEntity>
-
+	
 	var connectedNode: NodeInfoEntity? {
-		getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+		if let num = accessoryManager.activeDeviceNum {
+			return getNodeInfo(id: num, context: context)
+		}
+		return nil
 	}
-
+	
 	@ViewBuilder
 	func contextMenuActions(
 		node: NodeInfoEntity,
@@ -89,45 +90,43 @@ struct NodeList: View {
 		}
 		if let connectedNode {
 			/// Favoriting a node requires being connected
-			FavoriteNodeButton(bleManager: bleManager, context: context, node: node)
+			FavoriteNodeButton(node: node)
 			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
 				if !(node.user?.unmessagable ?? true) {
 					Button(action: {
 						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
-						   UIApplication.shared.open(url)
+							UIApplication.shared.open(url)
 						}
 					}) {
 						Label("Message", systemImage: "message")
 					}
 				}
 				TraceRouteButton(
-					bleManager: bleManager,
 					node: node
 				)
 				Button {
-					let positionSent = bleManager.sendPosition(
-						channel: node.channel,
-						destNum: node.num,
-						wantResponse: true
-					)
-					if positionSent {
-						isPresentingPositionSentAlert = true
-						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-							isPresentingPositionSentAlert = false
-						}
-					} else {
-						isPresentingPositionFailedAlert = true
-						DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-							isPresentingPositionFailedAlert = false
+					Task {
+						do {
+							try await accessoryManager.sendPosition(
+								channel: node.channel,
+								destNum: node.num,
+								wantResponse: true
+							)
+							Task { @MainActor in
+								isPresentingPositionSentAlert = true
+								DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+									isPresentingPositionSentAlert = false
+								}
+							}
+						} catch {
+							Logger.mesh.warning("Failed to sendPosition")
 						}
 					}
 				} label: {
 					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 				}
 				IgnoreNodeButton(
-					bleManager: bleManager,
-					context: context,
 					node: node
 				)
 				Button(role: .destructive) {
@@ -139,15 +138,15 @@ struct NodeList: View {
 			}
 		}
 	}
-
+	
 	var body: some View {
 		// Use forceRefreshID to completely rebuild the view when notifications update the selected node
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 				NodeListItem(
 					node: node,
-					connected: bleManager.connectedPeripheral?.num ?? -1 == node.num,
-					connectedNode: bleManager.connectedPeripheral?.num ?? -1
+					isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
+					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
 				)
 				.contextMenu {
 					contextMenuActions(
@@ -199,56 +198,58 @@ struct NodeList: View {
 				isPresented: $isPresentingPositionSentAlert) {
 					Button("OK") {	}.keyboardShortcut(.defaultAction)
 				} message: {
-				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
-			}
-			.alert(
-				"Position Exchange Failed",
-				isPresented: $isPresentingPositionFailedAlert) {
-					Button("OK") {	}.keyboardShortcut(.defaultAction)
-				} message: {
-				Text("Failed to get a valid position to exchange")
-			}
-			.alert(
-				"Trace Route Sent",
-				isPresented: $isPresentingTraceRouteSentAlert) {
-					Button("OK") {	}.keyboardShortcut(.defaultAction)
-				} message: {
-					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
-			}
-			.confirmationDialog(
-				"Are you sure?",
-				isPresented: $isPresentingDeleteNodeAlert,
-				titleVisibility: .visible
-			) {
-				Button("Delete Node") {
-					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
-					if connectedNode != nil {
-						if deleteNode != nil {
-							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(bleManager.connectedPeripheral?.num ?? -1))
-							if !success {
-								Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
+					Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+				}
+				.alert(
+					"Position Exchange Failed",
+					isPresented: $isPresentingPositionFailedAlert) {
+						Button("OK") {	}.keyboardShortcut(.defaultAction)
+					} message: {
+						Text("Failed to get a valid position to exchange")
+					}
+					.alert(
+						"Trace Route Sent",
+						isPresented: $isPresentingTraceRouteSentAlert) {
+							Button("OK") {	}.keyboardShortcut(.defaultAction)
+						} message: {
+							Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
+						}
+						.confirmationDialog(
+							"Are you sure?",
+							isPresented: $isPresentingDeleteNodeAlert,
+							titleVisibility: .visible
+						) {
+							Button("Delete Node") {
+								let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+								if connectedNode != nil {
+									if deleteNode != nil {
+										Task {
+											do {
+												try await accessoryManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
+											} catch {
+												Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
+											}
+										}
+									}
+								}
 							}
 						}
-					}
-				}
-			 }
-			.sheet(item: $shareContactNode) { selectedNode in
-				ShareContactQRDialog(node: selectedNode.toProto())
-			}
-			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
-			.navigationBarItems(
-				leading: MeshtasticLogo(),
-				trailing: ZStack {
-					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?",
-						phoneOnly: true
-					)
-				}
-				// Make sure the ZStack passes through accessibility to the ConnectedDevice component
-				.accessibilityElement(children: .contain)
-			)
+						.sheet(item: $shareContactNode) { selectedNode in
+							ShareContactQRDialog(node: selectedNode.toProto())
+						}
+						.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
+						.navigationBarItems(
+							leading: MeshtasticLogo(),
+							trailing: ZStack {
+								ConnectedDevice(
+									deviceConnected: accessoryManager.isConnected,
+									name: accessoryManager.activeConnection?.device.shortName ?? "?",
+									phoneOnly: true
+								)
+							}
+							// Make sure the ZStack passes through accessibility to the ConnectedDevice component
+								.accessibilityElement(children: .contain)
+						)
 		} content: {
 			if let node = selectedNode {
 				NavigationStack {
@@ -259,29 +260,21 @@ struct NodeList: View {
 					)
 					.edgesIgnoringSafeArea([.leading, .trailing])
 					.navigationBarItems(
+						leading: MeshtasticLogo(),
 						trailing: ZStack {
-							if UIDevice.current.userInterfaceIdiom != .phone {
-								Button {
-									columnVisibility = .detailOnly
-								} label: {
-									Image(systemName: "rectangle")
-								}
-								.accessibilityLabel("Hide sidebar")
-							}
 							ConnectedDevice(
-								bluetoothOn: bleManager.isSwitchedOn,
-								deviceConnected: bleManager.connectedPeripheral != nil,
-								name: bleManager.connectedPeripheral?.shortName ?? "?",
+								deviceConnected: accessoryManager.isConnected,
+								name: accessoryManager.activeConnection?.device.shortName ?? "?",
 								phoneOnly: true
 							)
 						}
 						// Make sure the ZStack passes through accessibility to the ConnectedDevice component
-						.accessibilityElement(children: .contain)
+							.accessibilityElement(children: .contain)
 					)
 				}
-			 } else {
+			} else {
 				ContentUnavailableView("Select Node", systemImage: "flipphone")
-			 }
+			}
 		} detail: {
 			ContentUnavailableView("", systemImage: "line.3.horizontal")
 		}
@@ -343,7 +336,7 @@ struct NodeList: View {
 		.onChange(of: router.navigationState) {
 			if let selected = router.navigationState.nodeListSelectedNodeNum {
 				// Force a complete view rebuild by generating a new UUID
-				Logger.services.info("Forcing view rebuild with new ID: \(self.forceRefreshID)")
+				Logger.services.info("👷‍♂️ [App] Forcing view rebuild with new ID: \(self.forceRefreshID, privacy: .public)")
 				// First clear selection
 				self.forceRefreshID = UUID()
 				self.selectedNode = nil
@@ -352,7 +345,7 @@ struct NodeList: View {
 					// Generate another UUID to ensure view gets rebuilt
 					self.forceRefreshID = UUID()
 					self.selectedNode = getNodeInfo(id: selected, context: context)
-					Logger.services.info("Complete view refresh with node: \(selected, privacy: .public)")
+					Logger.services.info("👷‍♂️ [App] Complete view refresh with node: \(selected, privacy: .public)")
 				}
 			} else {
 				self.selectedNode = nil
@@ -377,7 +370,7 @@ struct NodeList: View {
 			NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ForceNavigationRefresh"), object: nil)
 		}
 	}
-
+	
 	private func searchNodeList() async {
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.hwDisplayName", "user.longName", "user.shortName"].map { property in
@@ -446,7 +439,7 @@ struct NodeList: View {
 		/// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation
-
+			
 			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 				let d: Double = maxDistance * 1.1
 				let r: Double = 6371009

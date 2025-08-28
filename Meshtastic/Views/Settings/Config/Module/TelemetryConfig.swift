@@ -11,7 +11,7 @@ import SwiftUI
 struct TelemetryConfig: View {
 
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -101,10 +101,10 @@ struct TelemetryConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.telemetryConfig == nil)
+			.disabled(!accessoryManager.isConnected || node?.telemetryConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 				if connectedNode != nil {
 					var tc = ModuleConfig.TelemetryConfig()
 					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
@@ -115,37 +115,43 @@ struct TelemetryConfig: View {
 					tc.powerMeasurementEnabled = powerMeasurementEnabled
 					tc.powerUpdateInterval = UInt32(powerUpdateInterval)
 					tc.powerScreenEnabled = powerScreenEnabled
-					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+
+					Task {
+						_ = try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
+						Task { @MainActor in
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			}
 			.navigationTitle("Telemetry Config")
 			.navigationBarItems(
 				trailing: ZStack {
-					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?"
-					)
+					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+
 				}
 			)
 			.onFirstAppear {
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let deviceNum = accessoryManager.activeDeviceNum, let node {
+					let connectedNode = getNodeInfo(id: deviceNum, context: context)
 					if let connectedNode {
-						if node.num != connectedNode.num {
-							if UserDefaults.enableAdministration && node.num != connectedNode.num {
+						if node.num != deviceNum {
+							if UserDefaults.enableAdministration && node.num != deviceNum {
 								/// 2.5 Administration with session passkey
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.telemetryConfig == nil {
-									Logger.mesh.info("⚙️ Empty or expired telemetry module config requesting via PKI admin")
-									_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									Task {
+										do {
+											Logger.mesh.info("⚙️ Empty or expired telemetry module config requesting via PKI admin")
+											try await accessoryManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+										} catch {
+											Logger.mesh.info("🚨 Telemetry module config request failed: \(error.localizedDescription)")
+										}
+									}
 								}
 							} else {
 								/// Legacy Administration

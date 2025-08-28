@@ -13,30 +13,30 @@ class Router: ObservableObject {
 
 	init(
 		navigationState: NavigationState = NavigationState(
-			selectedTab: .bluetooth
+			selectedTab: .connect
 		)
 	) {
 		self.navigationState = navigationState
 
 		$navigationState.sink { destination in
-			Logger.services.info("🛣 Routed to \(String(describing: destination), privacy: .public)")
+			Logger.services.info("🛣 [App] Routed to \(destination.selectedTab.rawValue, privacy: .public)")
 		}.store(in: &cancellables)
 	}
 
 	func route(url: URL) {
 		guard url.scheme == "meshtastic" else {
-			Logger.services.error("🛣 Received routing URL \(url, privacy: .public) with invalid scheme. Ignoring route.")
+			Logger.services.error("🛣 [App] Received routing URL \(url, privacy: .public) with invalid scheme. Ignoring route.")
 			return
 		}
 		guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-			Logger.services.error("🛣 Received routing URL \(url, privacy: .public) with invalid host path. Ignoring route.")
+			Logger.services.error("🛣 [App] Received routing URL \(url, privacy: .public) with invalid host path. Ignoring route.")
 			return
 		}
 
 		if components.path == "/messages" {
 			routeMessages(components)
-		} else if components.path == "/bluetooth" {
-			navigationState.selectedTab = .bluetooth
+		} else if components.path == "/connect" {
+			navigationState.selectedTab = .connect
 		} else if components.path == "/nodes" {
 			routeNodes(components)
 		} else if components.path == "/map" {
@@ -44,7 +44,7 @@ class Router: ObservableObject {
 		} else if components.path.hasPrefix("/settings") {
 			routeSettings(components)
 		} else {
-			Logger.services.warning("Failed to route url: \(url, privacy: .public)")
+			Logger.services.warning("🛣 [App] Failed to route url: \(url, privacy: .public)")
 		}
 	}
 

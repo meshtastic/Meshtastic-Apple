@@ -8,16 +8,23 @@ import OSLog
 struct AppSettings: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
 	@State private var isPresentingAppIconSheet = false
 	@State private var purgeStaleNodes: Bool = false
+	@State private var showAutoConnect: Bool = false
 	@AppStorage("purgeStaleNodeDays") private var  purgeStaleNodeDays: Double = 0
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
+	
+	let autoconnectBinding = Binding<Bool>(get: {
+		return UserDefaults.autoconnectOnDiscovery
+	}, set: { newValue in
+		UserDefaults.autoconnectOnDiscovery = newValue
+	})
 	var body: some View {
 		VStack {
 			Form {
@@ -31,17 +38,23 @@ struct AppSettings: View {
 					Toggle(isOn: $enableAdministration) {
 						Label("Administration", systemImage: "gearshape.2")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					Text("PKI based node administration, requires firmware version 2.5+")
 						.foregroundStyle(.secondary)
 						.font(.caption)
 					Toggle(isOn: $usageDataAndCrashReporting) {
 						Label("Usage and Crash Data", systemImage: "pencil.and.list.clipboard")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
+
+					if showAutoConnect {
+						Toggle(isOn: autoconnectBinding) {
+							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
+						}
+						.tint(.accentColor)
 					Button {
 						isPresentingAppIconSheet.toggle()
 					} label: {
@@ -56,7 +69,7 @@ struct AppSettings: View {
 						Toggle(isOn: $environmentEnableWeatherKit) {
 							Label("Weather Conditions", systemImage: "cloud.sun")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 				}
 				Section(header: Text("App Data")) {
@@ -70,13 +83,20 @@ struct AppSettings: View {
 					.onFirstAppear {
 						purgeStaleNodes = purgeStaleNodeDays > 0
 						Logger.services.info("ℹ️ Purge Stale Nodes toggle initialized to \(purgeStaleNodes)")
+#if DEBUG
+						showAutoConnect = true
+#else
+						if Bundle.main.isTestFlight {
+							showAutoConnect = true
+						}
+#endif
 					}
 					.onChange(of: purgeStaleNodes) { _, newValue in
 						purgeStaleNodeDays = purgeStaleNodeDays > 0 ? purgeStaleNodeDays : 7
 						purgeStaleNodeDays = newValue ? purgeStaleNodeDays : 0
 						Logger.services.info("ℹ️ Purge Stale Nodes changed to \(purgeStaleNodeDays)")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 
 					.listRowSeparator(purgeStaleNodes ? .hidden : .visible)
 					if purgeStaleNodes {
@@ -105,7 +125,9 @@ struct AppSettings: View {
 						titleVisibility: .visible
 					) {
 						Button("Erase all app data?", role: .destructive) {
-							bleManager.disconnectPeripheral()
+							Task {
+								try await accessoryManager.disconnect()
+							}
 							/// Delete any database backups too
 							if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
 								url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
@@ -142,7 +164,7 @@ struct AppSettings: View {
 		.navigationTitle("App Settings")
 		.navigationBarItems(trailing:
 								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
 	}
 }

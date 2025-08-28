@@ -11,7 +11,7 @@ import OSLog
 struct AmbientLightingConfig: View {
 	@Environment(\.self) var environment
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
 	var node: NodeInfoEntity?
@@ -49,10 +49,13 @@ struct AmbientLightingConfig: View {
 					}
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.ambientLightingConfig == nil)
+			.disabled(!self.accessoryManager.isConnected || node?.ambientLightingConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				guard let deviceNum = accessoryManager.activeDeviceNum else {
+					return
+				}
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if connectedNode != nil {
 					var al = ModuleConfig.AmbientLightingConfig()
 					al.ledState = ledState
@@ -64,37 +67,43 @@ struct AmbientLightingConfig: View {
 						al.blue = UInt32(components.blue * 255)
 					}
 
-					let adminMessageId =  bleManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					Task {
+						do {
+							_ = try await accessoryManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!)
+							Task { @MainActor in
+								hasChanges = false
+								goBack()
+							}
+						} catch {
+							Logger.mesh.warning("Unable to send ambient lighting module config")
+						}
 					}
 				}
 			}
 			.navigationTitle("Ambient Lighting Config")
 			.navigationBarItems(
 				trailing: ZStack {
-					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: bleManager.connectedPeripheral?.shortName ?? "?"
-					)
+					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 				}
 			)
 			.onFirstAppear {
 				// Need to request a Ambient Lighting Config from the remote node before allowing changes
-				if let connectedPeripheral = bleManager.connectedPeripheral, let node {
-					let connectedNode = getNodeInfo(id: connectedPeripheral.num, context: context)
+				if let deviceNum = accessoryManager.activeDeviceNum, let node {
+					let connectedNode = getNodeInfo(id: deviceNum, context: context)
 					if let connectedNode {
-						if node.num != connectedNode.num {
+						if node.num != deviceNum {
 							if UserDefaults.enableAdministration {
 								/// 2.5 Administration with session passkey
 								let expiration = node.sessionExpiration ?? Date()
 								if expiration < Date() || node.ambientLightingConfig == nil {
-									Logger.mesh.info("⚙️ Empty or expired ambient lighting module config requesting via PKI admin")
-									_ = bleManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									Task {
+										do {
+											Logger.mesh.info("⚙️ Empty or expired ambient lighting module config requesting via PKI admin")
+											try await accessoryManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!)
+										} catch {
+											Logger.mesh.info("🚨 Unable to send  ambient lighting config request")
+										}
+									}
 								}
 							} else {
 								/// Legacy Administration

@@ -11,7 +11,7 @@ import OSLog
 
 struct Firmware: View {
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var accessoryManager: AccessoryManager
 	var node: NodeInfoEntity?
 	@State var minimumVersion = "2.5.4"
 	@State var version = ""
@@ -20,8 +20,8 @@ struct Firmware: View {
 	@State private var latestAlpha: FirmwareRelease?
 
 	var body: some View {
-
-		let supportedVersion = self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
+		let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
+		let connectedVersion = accessoryManager.activeConnection?.device.firmwareVersion ?? "Unknown"
 		ScrollView {
 			VStack(alignment: .leading) {
 				let deviceString = currentDevice?.hwModelSlug.replacingOccurrences(of: "_", with: "")
@@ -53,7 +53,7 @@ struct Firmware: View {
 						.foregroundStyle(.green)
 						.font(.title2)
 						.padding(.bottom)
-					Text("Current Firmware Version: \(bleManager.connectedVersion)")
+					Text("Current Firmware Version: \(connectedVersion)")
 						.fixedSize(horizontal: false, vertical: true)
 						.font(.title3)
 						.padding(.bottom)
@@ -63,7 +63,7 @@ struct Firmware: View {
 						.foregroundStyle(.red)
 						.font(.title2)
 						.padding(.bottom)
-					Text("Current Firmware Version: \(bleManager.connectedVersion), Latest Firmware Version: \(minimumVersion)")
+					Text("Current Firmware Version: \(connectedVersion), Latest Firmware Version: \(minimumVersion)")
 						.fixedSize(horizontal: false, vertical: true)
 						.font(.title3)
 						.padding(.bottom)
@@ -108,15 +108,18 @@ struct Firmware: View {
 								.foregroundStyle(.gray)
 								.font(.caption)
 							Button {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+								let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
 								if connectedNode != nil {
-
-									if bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
-										DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-											bleManager.disconnectPeripheral(reconnect: false)
+									Task {
+										do {
+											try await accessoryManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!)
+											Task {
+												try await Task.sleep(nanoseconds: 1 * 1_000_000_000) // 1 second
+												try await accessoryManager.disconnect()
+											}
+										} catch {
+											Logger.mesh.error("Enter DFU Failed")
 										}
-									} else {
-										Logger.mesh.error("Enter DFU Failed")
 									}
 								}
 							} label: {
@@ -158,10 +161,14 @@ struct Firmware: View {
 						HStack(alignment: .center) {
 							Spacer()
 							Button {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+								let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
 								if connectedNode != nil {
-									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!) {
-										Logger.mesh.error("Reboot Failed")
+									Task {
+										do {
+											try await accessoryManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!)
+										} catch {
+											Logger.mesh.error("Reboot Failed")
+										}
 									}
 								}
 							} label: {

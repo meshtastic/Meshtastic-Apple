@@ -56,48 +56,56 @@ func generateMessageMarkdown (message: String) -> String {
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-
-	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
+	switch config.payloadVariant {
+	case .bluetooth:
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
+	case .device:
 		upsertDeviceConfigPacket(config: config.device, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
+	case .display:
 		upsertDisplayConfigPacket(config: config.display, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
+	case .lora:
 		upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
+	case .network:
 		upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
+	case .position:
 		upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
+	case .power:
 		upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+	case .security:
 		upsertSecurityConfigPacket(config: config.security, nodeNum: nodeNum, context: context)
+	default:
+#if DEBUG
+		Logger.services.error("⁉️ Unknown Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
+#endif
 	}
 }
 
 func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-
-	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.ambientLighting(config.ambientLighting) {
+	switch config.payloadVariant {
+	case .ambientLighting:
 		upsertAmbientLightingModuleConfigPacket(config: config.ambientLighting, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
+	case .cannedMessage:
 		upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(config.detectionSensor) {
+	case .detectionSensor:
 		upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
+	case .externalNotification:
 		upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
+	case .mqtt:
 		upsertMqttModuleConfigPacket(config: config.mqtt, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.paxcounter(config.paxcounter) {
+	case .paxcounter:
 		upsertPaxCounterModuleConfigPacket(config: config.paxcounter, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
+	case .rangeTest:
 		upsertRangeTestModuleConfigPacket(config: config.rangeTest, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
+	case .serial:
 		upsertSerialModuleConfigPacket(config: config.serial, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
+	case .telemetry:
 		upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.storeForward(config.storeForward) {
+	case .storeForward:
 		upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum, context: context)
+	default:
+#if DEBUG
+		Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
+#endif
 	}
 }
 
@@ -258,7 +266,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
-	let logString = String.localizedStringWithFormat("Node info received for: %@".localized, String(nodeInfo.num))
+	let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
 	Logger.mesh.info("📟 \(logString, privacy: .public)")
 
 	guard nodeInfo.num > 0 else { return nil }
@@ -716,139 +724,139 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 }
 
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
-
-	if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
-		let logString = String.localizedStringWithFormat("Telemetry received for: %@".localized, String(packet.from))
-		Logger.mesh.info("📈 \(logString, privacy: .public)")
-	if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
-			/// Other unhandled telemetry packets
-			return
-		}
-		let telemetry = TelemetryEntity(context: context)
-		let fetchNodeTelemetryRequest = NodeInfoEntity.fetchRequest()
-		fetchNodeTelemetryRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-		do {
-			let fetchedNode = try context.fetch(fetchNodeTelemetryRequest)
-			if fetchedNode.count == 1 {
-				/// Currently only Device Metrics and Environment Telemetry are supported in the app
-				if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
-					// Device Metrics
-					telemetry.airUtilTx = telemetryMessage.deviceMetrics.hasAirUtilTx.then(telemetryMessage.deviceMetrics.airUtilTx)
-					telemetry.channelUtilization = telemetryMessage.deviceMetrics.hasChannelUtilization.then(telemetryMessage.deviceMetrics.channelUtilization)
-					telemetry.batteryLevel = telemetryMessage.deviceMetrics.hasBatteryLevel.then(Int32(telemetryMessage.deviceMetrics.batteryLevel))
-					telemetry.voltage = telemetryMessage.deviceMetrics.hasVoltage.then(telemetryMessage.deviceMetrics.voltage)
-					telemetry.uptimeSeconds = telemetryMessage.deviceMetrics.hasUptimeSeconds.then(Int32(telemetryMessage.deviceMetrics.uptimeSeconds))
-					telemetry.metricsType = 0
-					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
-				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
-					// Environment Metrics
-					telemetry.barometricPressure = telemetryMessage.environmentMetrics.hasBarometricPressure.then(telemetryMessage.environmentMetrics.barometricPressure)
-					telemetry.current = telemetryMessage.environmentMetrics.hasCurrent.then(telemetryMessage.environmentMetrics.current)
-					telemetry.iaq = telemetryMessage.environmentMetrics.hasIaq.then(Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq))
-					telemetry.gasResistance = telemetryMessage.environmentMetrics.hasGasResistance.then(telemetryMessage.environmentMetrics.gasResistance)
-					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.hasRelativeHumidity.then(telemetryMessage.environmentMetrics.relativeHumidity)
-					telemetry.temperature = telemetryMessage.environmentMetrics.hasTemperature.then(telemetryMessage.environmentMetrics.temperature)
-					telemetry.current = telemetryMessage.environmentMetrics.hasCurrent.then(telemetryMessage.environmentMetrics.current)
-					telemetry.voltage = telemetryMessage.environmentMetrics.hasVoltage.then(telemetryMessage.environmentMetrics.voltage)
-					telemetry.weight = telemetryMessage.environmentMetrics.hasWeight.then(telemetryMessage.environmentMetrics.weight)
-					telemetry.distance = telemetryMessage.environmentMetrics.hasDistance.then(telemetryMessage.environmentMetrics.distance)
-					telemetry.windSpeed = telemetryMessage.environmentMetrics.hasWindSpeed.then(telemetryMessage.environmentMetrics.windSpeed)
-					telemetry.windGust = telemetryMessage.environmentMetrics.hasWindGust.then(telemetryMessage.environmentMetrics.windGust)
-					telemetry.windLull = telemetryMessage.environmentMetrics.hasWindLull.then(telemetryMessage.environmentMetrics.windLull)
-					telemetry.windDirection = telemetryMessage.environmentMetrics.hasWindDirection.then(Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection))
-					telemetry.irLux = telemetryMessage.environmentMetrics.hasIrLux.then(telemetryMessage.environmentMetrics.irLux)
-					telemetry.lux = telemetryMessage.environmentMetrics.hasLux.then(telemetryMessage.environmentMetrics.lux)
-					telemetry.whiteLux = telemetryMessage.environmentMetrics.hasWhiteLux.then(telemetryMessage.environmentMetrics.whiteLux)
-					telemetry.uvLux = telemetryMessage.environmentMetrics.hasUvLux.then(telemetryMessage.environmentMetrics.uvLux)
-					telemetry.radiation = telemetryMessage.environmentMetrics.hasRadiation.then(telemetryMessage.environmentMetrics.radiation)
-					telemetry.rainfall1H = telemetryMessage.environmentMetrics.hasRainfall1H.then(telemetryMessage.environmentMetrics.rainfall1H)
-					telemetry.rainfall24H = telemetryMessage.environmentMetrics.hasRainfall24H.then(telemetryMessage.environmentMetrics.rainfall24H)
-					telemetry.soilTemperature = telemetryMessage.environmentMetrics.hasSoilTemperature.then(telemetryMessage.environmentMetrics.soilTemperature)
-					telemetry.soilMoisture = telemetryMessage.environmentMetrics.hasSoilMoisture.then(telemetryMessage.environmentMetrics.soilMoisture)
-					telemetry.metricsType = 1
-				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
-					// Local Stats for Live activity
-					telemetry.uptimeSeconds = Int32(telemetryMessage.localStats.uptimeSeconds)
-					telemetry.channelUtilization = telemetryMessage.localStats.channelUtilization
-					telemetry.airUtilTx = telemetryMessage.localStats.airUtilTx
-					telemetry.numPacketsTx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsTx)
-					telemetry.numPacketsRx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRx)
-					telemetry.numPacketsRxBad = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRxBad)
-					telemetry.numRxDupe = Int32(truncatingIfNeeded: telemetryMessage.localStats.numRxDupe)
-					telemetry.numTxRelay = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTxRelay)
-					telemetry.numTxRelayCanceled = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTxRelayCanceled)
-					telemetry.numOnlineNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numOnlineNodes)
-					telemetry.numTotalNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTotalNodes)
-					telemetry.metricsType = 4
-					Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
-				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
-					Logger.data.info("📈 [Power Metrics] Received for Node: \(packet.from.toHex(), privacy: .public)")
-					telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.hasCh1Voltage.then(telemetryMessage.powerMetrics.ch1Voltage)
-					telemetry.powerCh1Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch1Current)
-					telemetry.powerCh2Voltage = telemetryMessage.powerMetrics.hasCh2Voltage.then(telemetryMessage.powerMetrics.ch2Voltage)
-					telemetry.powerCh2Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch2Current)
-					telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.hasCh3Voltage.then(telemetryMessage.powerMetrics.ch3Voltage)
-					telemetry.powerCh3Current = telemetryMessage.powerMetrics.hasCh3Current.then(telemetryMessage.powerMetrics.ch3Current)
-					telemetry.metricsType = 2
-				}
-				telemetry.snr = packet.rxSnr
-				telemetry.rssi = packet.rxRssi
-				telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: telemetryMessage.time)))
-				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
-					return
-				}
-				mutableTelemetries.add(telemetry)
-				if packet.rxTime > 0 {
-					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
-				} else {
-					fetchedNode[0].lastHeard = Date()
-				}
-				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
+	Task { @MainActor in
+		if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
+			if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
+				/// Other unhandled telemetry packets
+				return
 			}
-			try context.save()
-			Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) Saved for Node: \(packet.from.toHex(), privacy: .public)")
-			if telemetry.metricsType == 0 {
-				// Connected Device Metrics
-				// ------------------------
-				// Low Battery notification
-				if connectedNode == Int64(packet.from) {
-					let batteryLevel = telemetry.batteryLevel ?? 0
-					if UserDefaults.lowBatteryNotifications && batteryLevel > 0 && batteryLevel < 4 {
-						let manager = LocalNotificationManager()
-						manager.notifications = [
-							Notification(
-								id: ("notification.id.\(UUID().uuidString)"),
-								title: "Critically Low Battery!",
-								subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
-								content: "Time to charge your radio, there is \(telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator)% battery remaining.",
-								target: "nodes",
-								path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
-							)
-						]
-						manager.schedule()
+			let telemetry = TelemetryEntity(context: context)
+			let fetchNodeTelemetryRequest = NodeInfoEntity.fetchRequest()
+			fetchNodeTelemetryRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+			do {
+				let fetchedNode = try context.fetch(fetchNodeTelemetryRequest)
+				if fetchedNode.count == 1 {
+					/// Currently only Device Metrics and Environment Telemetry are supported in the app
+					if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
+						// Device Metrics
+						Logger.data.info("📈 [Telemetry] Device Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+						telemetry.airUtilTx = telemetryMessage.deviceMetrics.hasAirUtilTx.then(telemetryMessage.deviceMetrics.airUtilTx)
+						telemetry.channelUtilization = telemetryMessage.deviceMetrics.hasChannelUtilization.then(telemetryMessage.deviceMetrics.channelUtilization)
+						telemetry.batteryLevel = telemetryMessage.deviceMetrics.hasBatteryLevel.then(Int32(telemetryMessage.deviceMetrics.batteryLevel))
+						telemetry.voltage = telemetryMessage.deviceMetrics.hasVoltage.then(telemetryMessage.deviceMetrics.voltage)
+						telemetry.uptimeSeconds = telemetryMessage.deviceMetrics.hasUptimeSeconds.then(Int32(telemetryMessage.deviceMetrics.uptimeSeconds))
+						telemetry.metricsType = 0
+						Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
+					} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
+						// Environment Metrics
+						Logger.data.info("📈 [Telemetry] Environment Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+						telemetry.barometricPressure = telemetryMessage.environmentMetrics.hasBarometricPressure.then(telemetryMessage.environmentMetrics.barometricPressure)
+						telemetry.current = telemetryMessage.environmentMetrics.hasCurrent.then(telemetryMessage.environmentMetrics.current)
+						telemetry.iaq = telemetryMessage.environmentMetrics.hasIaq.then(Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq))
+						telemetry.gasResistance = telemetryMessage.environmentMetrics.hasGasResistance.then(telemetryMessage.environmentMetrics.gasResistance)
+						telemetry.relativeHumidity = telemetryMessage.environmentMetrics.hasRelativeHumidity.then(telemetryMessage.environmentMetrics.relativeHumidity)
+						telemetry.temperature = telemetryMessage.environmentMetrics.hasTemperature.then(telemetryMessage.environmentMetrics.temperature)
+						telemetry.current = telemetryMessage.environmentMetrics.hasCurrent.then(telemetryMessage.environmentMetrics.current)
+						telemetry.voltage = telemetryMessage.environmentMetrics.hasVoltage.then(telemetryMessage.environmentMetrics.voltage)
+						telemetry.weight = telemetryMessage.environmentMetrics.hasWeight.then(telemetryMessage.environmentMetrics.weight)
+						telemetry.distance = telemetryMessage.environmentMetrics.hasDistance.then(telemetryMessage.environmentMetrics.distance)
+						telemetry.windSpeed = telemetryMessage.environmentMetrics.hasWindSpeed.then(telemetryMessage.environmentMetrics.windSpeed)
+						telemetry.windGust = telemetryMessage.environmentMetrics.hasWindGust.then(telemetryMessage.environmentMetrics.windGust)
+						telemetry.windLull = telemetryMessage.environmentMetrics.hasWindLull.then(telemetryMessage.environmentMetrics.windLull)
+						telemetry.windDirection = telemetryMessage.environmentMetrics.hasWindDirection.then(Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.windDirection))
+						telemetry.irLux = telemetryMessage.environmentMetrics.hasIrLux.then(telemetryMessage.environmentMetrics.irLux)
+						telemetry.lux = telemetryMessage.environmentMetrics.hasLux.then(telemetryMessage.environmentMetrics.lux)
+						telemetry.whiteLux = telemetryMessage.environmentMetrics.hasWhiteLux.then(telemetryMessage.environmentMetrics.whiteLux)
+						telemetry.uvLux = telemetryMessage.environmentMetrics.hasUvLux.then(telemetryMessage.environmentMetrics.uvLux)
+						telemetry.radiation = telemetryMessage.environmentMetrics.hasRadiation.then(telemetryMessage.environmentMetrics.radiation)
+						telemetry.rainfall1H = telemetryMessage.environmentMetrics.hasRainfall1H.then(telemetryMessage.environmentMetrics.rainfall1H)
+						telemetry.rainfall24H = telemetryMessage.environmentMetrics.hasRainfall24H.then(telemetryMessage.environmentMetrics.rainfall24H)
+						telemetry.soilTemperature = telemetryMessage.environmentMetrics.hasSoilTemperature.then(telemetryMessage.environmentMetrics.soilTemperature)
+						telemetry.soilMoisture = telemetryMessage.environmentMetrics.hasSoilMoisture.then(telemetryMessage.environmentMetrics.soilMoisture)
+						telemetry.metricsType = 1
+					} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
+						// Local Stats for Live activity
+						telemetry.uptimeSeconds = Int32(telemetryMessage.localStats.uptimeSeconds)
+						telemetry.channelUtilization = telemetryMessage.localStats.channelUtilization
+						telemetry.airUtilTx = telemetryMessage.localStats.airUtilTx
+						telemetry.numPacketsTx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsTx)
+						telemetry.numPacketsRx = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRx)
+						telemetry.numPacketsRxBad = Int32(truncatingIfNeeded: telemetryMessage.localStats.numPacketsRxBad)
+						telemetry.numRxDupe = Int32(truncatingIfNeeded: telemetryMessage.localStats.numRxDupe)
+						telemetry.numTxRelay = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTxRelay)
+						telemetry.numTxRelayCanceled = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTxRelayCanceled)
+						telemetry.numOnlineNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numOnlineNodes)
+						telemetry.numTotalNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTotalNodes)
+						telemetry.metricsType = 4
+						Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
+					} else if telemetryMessage.variant == Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
+						Logger.data.info("📈 [Telemetry] Power Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+						telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.hasCh1Voltage.then(telemetryMessage.powerMetrics.ch1Voltage)
+						telemetry.powerCh1Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch1Current)
+						telemetry.powerCh2Voltage = telemetryMessage.powerMetrics.hasCh2Voltage.then(telemetryMessage.powerMetrics.ch2Voltage)
+						telemetry.powerCh2Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch2Current)
+						telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.hasCh3Voltage.then(telemetryMessage.powerMetrics.ch3Voltage)
+						telemetry.powerCh3Current = telemetryMessage.powerMetrics.hasCh3Current.then(telemetryMessage.powerMetrics.ch3Current)
+						telemetry.metricsType = 2
 					}
+					telemetry.snr = packet.rxSnr
+					telemetry.rssi = packet.rxRssi
+					telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: telemetryMessage.time)))
+					guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
+						return
+					}
+					mutableTelemetries.add(telemetry)
+					if packet.rxTime > 0 {
+						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
+					} else {
+						fetchedNode[0].lastHeard = Date()
+					}
+					fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 				}
-			} else if telemetry.metricsType == 4 {
-				// Update our live activity if there is one running, not available on mac
+				try context.save()
+				Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) Saved for Node: \(packet.from.toHex(), privacy: .public)")
+				if telemetry.metricsType == 0 {
+					// Connected Device Metrics
+					// ------------------------
+					// Low Battery notification
+					if connectedNode == Int64(packet.from) {
+						let batteryLevel = telemetry.batteryLevel ?? 0
+						if UserDefaults.lowBatteryNotifications && batteryLevel > 0 && batteryLevel < 4 {
+							let manager = LocalNotificationManager()
+							manager.notifications = [
+								Notification(
+									id: ("notification.id.\(UUID().uuidString)"),
+									title: "Critically Low Battery!",
+									subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
+									content: "Time to charge your radio, there is \(telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator)% battery remaining.",
+									target: "nodes",
+									path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
+								)
+							]
+							manager.schedule()
+						}
+					}
+				} else if telemetry.metricsType == 4 {
+					// Update our live activity if there is one running, not available on mac
 #if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
 
-				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
-				let date = Date.now...fifteenMinutesLater
-				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32($0) },
-																				  channelUtilization: telemetry.channelUtilization,
-																				  airtime: telemetry.airUtilTx,
-																				  sentPackets: UInt32(telemetry.numPacketsTx),
-																				  receivedPackets: UInt32(telemetry.numPacketsRx),
-																				  badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
-																				  dupeReceivedPackets: UInt32(telemetry.numRxDupe),
-																				  packetsSentRelay: UInt32(telemetry.numTxRelay),
-																				  packetsCanceledRelay: UInt32(telemetry.numTxRelayCanceled),
-																				  nodesOnline: UInt32(telemetry.numOnlineNodes),
-																				  totalNodes: UInt32(telemetry.numTotalNodes),
-																				  timerRange: date)
+					let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
+					let date = Date.now...fifteenMinutesLater
+					let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32($0) },
+																					  channelUtilization: telemetry.channelUtilization,
+																					  airtime: telemetry.airUtilTx,
+																					  sentPackets: UInt32(telemetry.numPacketsTx),
+																					  receivedPackets: UInt32(telemetry.numPacketsRx),
+																					  badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
+																					  dupeReceivedPackets: UInt32(telemetry.numRxDupe),
+																					  packetsSentRelay: UInt32(telemetry.numTxRelay),
+																					  packetsCanceledRelay: UInt32(telemetry.numTxRelayCanceled),
+																					  nodesOnline: UInt32(telemetry.numOnlineNodes),
+																					  totalNodes: UInt32(telemetry.numTotalNodes),
+																					  timerRange: date)
 
-				let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)
+					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)
 					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
 
 					let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
@@ -861,14 +869,15 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					}
 #endif
 #endif
+				}
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				Logger.data.error("💥 Error Saving Telemetry for Node \(packet.from, privacy: .public) Error: \(nsError, privacy: .public)")
 			}
-		} catch {
-			context.rollback()
-			let nsError = error as NSError
-			Logger.data.error("💥 Error Saving Telemetry for Node \(packet.from, privacy: .public) Error: \(nsError, privacy: .public)")
+		} else {
+			Logger.data.error("💥 Error Fetching NodeInfoEntity for Node \(packet.from.toHex(), privacy: .public)")
 		}
-	} else {
-		Logger.data.error("💥 Error Fetching NodeInfoEntity for Node \(packet.from.toHex(), privacy: .public)")
 	}
 }
 
@@ -879,7 +888,7 @@ func textMessageAppPacket(
 	connectedNode: Int64,
 	storeForward: Bool = false,
 	context: NSManagedObjectContext,
-	appState: AppState
+	appState: AppState?
 ) {
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
 	let rangeRef = Reference(Int.self)
@@ -1015,7 +1024,7 @@ func textMessageAppPacket(
 				if newMessage.fromUser != nil && newMessage.toUser != nil {
 					// Set Unread Message Indicators
 					if packet.to == connectedNode {
-						appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+						appState?.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
 					}
 					if !(newMessage.fromUser?.mute ?? false) {
 						// Create an iOS Notification for the received DM message
@@ -1043,7 +1052,7 @@ func textMessageAppPacket(
 					do {
 						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 						if !fetchedMyInfo.isEmpty {
-							appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+							appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
 							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)

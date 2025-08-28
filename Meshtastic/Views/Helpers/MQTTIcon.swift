@@ -25,11 +25,10 @@ struct MQTTIcon: View {
 				.imageScale(.large)
 				.foregroundColor(connected ? .green : .secondary)
 				.symbolRenderingMode(.hierarchical)
-		}.popover(isPresented: self.$isPopoverOpen, arrowEdge: .bottom, content: {
+		}.popover(isPresented: self.$isPopoverOpen, content: {
 			VStack(spacing: 0.5) {
 				Text("Topic: \(topic)".localized)
 					.padding(20)
-				Button("Close", action: { self.isPopoverOpen = false }).padding([.bottom], 20)
 			}
 			.presentationCompactAdaptation(.popover)
 		})
