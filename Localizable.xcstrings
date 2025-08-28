@@ -603,6 +603,12 @@
     },
     "%@ can be up to %@ bytes long." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kann bis zu %@ Byte lang sein."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1624,6 +1630,7 @@
       }
     },
     "8" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -5863,6 +5870,12 @@
     },
     "Call Sign" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rufzeichen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5897,6 +5910,12 @@
     },
     "Call Sign must not be empty" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Rufzeichen darf nicht leer sein."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35787,6 +35806,12 @@
     },
     "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die letzten 4 Zeichen der MAC-Adresse des Geräts werden an den Kurznamen angehängt, um den BLE-Namen des Geräts festzulegen. Der Kurzname kann bis zu 4 Byte lang sein."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38583,6 +38608,12 @@
     },
     "Unmessagable" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht benachrichtigbar"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39509,6 +39540,12 @@
     },
     "Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird verwendet, um nicht überwachte oder Infrastrukturknoten zu identifizieren, damit Nachrichten nicht an Knoten gesendet werden, die niemals antworten werden."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39589,6 +39626,12 @@
     },
     "User Config" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerkonfiguration"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39623,6 +39666,12 @@
     },
     "User Details" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerdaten"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
