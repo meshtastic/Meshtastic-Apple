@@ -14326,6 +14326,17 @@
         }
       }
     },
+    "Finish " : {
+      "comment" : "Space at the end has been added to not interfere with translations for 'Finish' in RouteRecorder",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ziel"
+          }
+        }
+      }
+    },
     "Firmware" : {
       "localizations" : {
         "de" : {
