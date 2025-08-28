@@ -13,6 +13,7 @@ struct AppSettings: View {
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
 	@State private var purgeStaleNodes: Bool = false
+	@State private var showAutoConnect: Bool = false
 	@AppStorage("purgeStaleNodeDays") private var  purgeStaleNodeDays: Double = 0
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
@@ -47,12 +48,13 @@ struct AppSettings: View {
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
-#if DEBUG
-					Toggle(isOn: autoconnectBinding) {
-						Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
+
+					if showAutoConnect {
+						Toggle(isOn: autoconnectBinding) {
+							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
+						}
+						.tint(.accentColor)
 					}
-					.tint(.accentColor)
-#endif
 				}
 				Section(header: Text("environment")) {
 					VStack(alignment: .leading) {
@@ -73,6 +75,13 @@ struct AppSettings: View {
 					.onFirstAppear {
 						purgeStaleNodes = purgeStaleNodeDays > 0
 						Logger.services.info("ℹ️ Purge Stale Nodes toggle initialized to \(purgeStaleNodes)")
+#if DEBUG
+						showAutoConnect = true
+#else
+						if Bundle.main.isTestFlight {
+							showAutoConnect = true
+						}
+#endif
 					}
 					.onChange(of: purgeStaleNodes) { _, newValue in
 						purgeStaleNodeDays = purgeStaleNodeDays > 0 ? purgeStaleNodeDays : 7
