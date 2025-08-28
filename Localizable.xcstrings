@@ -2038,6 +2038,12 @@
     },
     "About" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über Meshtastic"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2898,6 +2904,24 @@
     },
     "After %lld Days" : {
       "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nach %lld Tag"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nach %lld Tagen"
+                }
+              }
+            }
+          }
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -3962,6 +3986,12 @@
     },
     "App Data" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Daten"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7393,7 +7423,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Daten löschen"
+            "value" : "App-Daten löschen"
           }
         },
         "fr" : {
@@ -7482,6 +7512,12 @@
     },
     "Clear Stale Nodes" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veraltete Knoten löschen"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11725,6 +11761,12 @@
     },
     "Documentation" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumentation"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12875,6 +12917,12 @@
     },
     "environment" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umwelt"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13949,6 +13997,12 @@
     },
     "Favorited and ignored nodes are always retained. Nodes without PKC keys are cleared from the app database on the schedule set by the user, nodes with PKC keys are cleared only if the interval is set to 7 days or longer. This feature only purges nodes from the app that are not stored in the device node database." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten, die als Favorit markiert oder ignoriert wurden, bleiben immer erhalten. Knoten ohne PKC-Schlüssel werden gemäß dem festgelegten Zeitplan aus der App-Datenbank gelöscht. Knoten mit PKC-Schlüsseln werden nur gelöscht, wenn das Intervall auf 7 Tage oder länger eingestellt ist. Diese Funktion löscht nur Knoten aus der App, die nicht in der Geräteknoten-Datenbank gespeichert sind."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27101,6 +27155,12 @@
     },
     "Project information" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projektinformationen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27199,6 +27259,12 @@
     },
     "Provide anonymous usage statistics and crash reports." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teile anonyme Nutzungsstatistiken und Absturzberichte."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34180,6 +34246,12 @@
     },
     "Sponsor App Development" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Entwicklung unterstützen"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39211,6 +39283,12 @@
     },
     "Usage and Crash Data" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telemetriedaten erfassen"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
