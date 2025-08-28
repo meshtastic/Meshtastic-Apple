@@ -49,12 +49,13 @@ struct AppSettings: View {
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
-
+					
 					if showAutoConnect {
 						Toggle(isOn: autoconnectBinding) {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
 						}
 						.tint(.accentColor)
+					}
 					Button {
 						isPresentingAppIconSheet.toggle()
 					} label: {
