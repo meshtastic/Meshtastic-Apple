@@ -1176,13 +1176,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Overlay"
+                  "value" : "%lld Feature"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Overlays"
+                  "value" : "%lld Features"
                 }
               }
             }
@@ -19990,7 +19990,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Geodaten verwalten"
+            "value" : "Kartendaten verwalten"
           }
         }
       }
@@ -31122,7 +31122,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GeoJSON-Datei auswählen"
+            "value" : "Datei auswählen"
           }
         }
       }
@@ -34692,7 +34692,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "'%1$@' mit %2$lld Overlays wurde erfolgreich hochgeladen"
+            "value" : "'%1$@' mit %2$lld Features wurde erfolgreich hochgeladen"
           }
         },
         "en" : {
@@ -39069,7 +39069,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lade Geodaten hoch, um Karten-Overlays zu aktivieren"
+            "value" : "Lade Kartendaten hoch, um Overlays zu aktivieren"
           }
         },
         "it" : {
@@ -39109,7 +39109,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Geodaten hochladen"
+            "value" : "Kartendaten hochladen"
           }
         }
       }
@@ -39159,7 +39159,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hochgeladene Geodaten"
+            "value" : "Hochgeladene Kartendaten"
           }
         }
       }
