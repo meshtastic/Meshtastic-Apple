@@ -19,4 +19,8 @@ extension Bundle {
 	// public var appVersionShort: String { getInfo("CFBundleShortVersion") }
 
 	fileprivate func getInfo(_ str: String) -> String { infoDictionary?[str] as? String ?? "⚠️" }
+
+	public var isTestFlight: Bool {
+		return appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+	}
 }

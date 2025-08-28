@@ -44,8 +44,13 @@ struct MeshtasticAppleApp: App {
 #if !targetEnvironment(macCatalyst)
 		
 #if DEBUG
-		environment = "TestFlight"
+		environment = "Local"
+#else
+		if Bundle.main.isTestFlight {
+			environment = "TestFlight"
+		}
 #endif
+		
 		Datadog.initialize(
 			with: Datadog.Configuration(
 				clientToken: clientToken,
@@ -99,10 +104,10 @@ struct MeshtasticAppleApp: App {
 
 		// Initialize map data manager
 		MapDataManager.shared.initialize()
-	#if DEBUG
+#if DEBUG
 		// Show tips in development
 		try? Tips.resetDatastore()
-	#endif
+#endif
 		if !UserDefaults.firstLaunch {
 			// If this is first launch, we will show onboarding screens which
 			// Step through the authorization process.  Do not start discovery
