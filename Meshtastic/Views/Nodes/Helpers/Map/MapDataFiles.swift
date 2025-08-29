@@ -6,7 +6,7 @@ struct MapDataFiles: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject private var mapDataManager = MapDataManager.shared
-	
+
 	@State private var isShowingFilePicker = false
 	@State private var isProcessing = false
 	@State private var processingProgress: Double = 0.0
@@ -14,7 +14,7 @@ struct MapDataFiles: View {
 	@State private var errorMessage = ""
 	@State private var showSuccess = false
 	@State private var successMessage = ""
-	
+
 	var body: some View {
 		Form {
 			Section(header: Text("Upload Map Overlays")) {
@@ -39,14 +39,14 @@ struct MapDataFiles: View {
 				}
 				.disabled(isProcessing)
 				.padding(.horizontal)
-				
+
 				// Processing Indicator
 				if isProcessing {
 					VStack(spacing: 12) {
 						ProgressView(value: processingProgress)
 							.progressViewStyle(LinearProgressViewStyle())
 							.padding(.horizontal)
-						
+
 						Text("Processing file...")
 							.font(.caption)
 							.foregroundColor(.secondary)
@@ -54,9 +54,9 @@ struct MapDataFiles: View {
 				}
 			}
 			Section(header: Text("Uploaded Map Overlays")) {
-				
+
 				let uploadedFiles = mapDataManager.getUploadedFiles()
-				
+
 				if uploadedFiles.isEmpty {
 					ContentUnavailableView("No files uploaded", systemImage: "doc.text")
 				} else {
@@ -98,29 +98,29 @@ struct MapDataFiles: View {
 			mapDataManager.initialize()
 		}
 	}
-	
+
 	// MARK: - File Handling
-	
+
 	private func handleFileSelection(_ result: Result<[URL], Error>) {
 		do {
 			guard let selectedFile = try result.get().first else { return }
-			
+
 			// Start processing
 			isProcessing = true
 			processingProgress = 0.0
-			
+
 			// Process file asynchronously
 			Task {
 				do {
 					// Simulate progress
 					await simulateProgress()
-					
+
 					let metadata = try await mapDataManager.processUploadedFile(from: selectedFile)
-					
+
 					await MainActor.run {
 						isProcessing = false
 						processingProgress = 1.0
-						
+
 						successMessage = "Successfully uploaded '\(metadata.originalName)' with \(metadata.overlayCount) overlays".localized
 						showSuccess = true
 					}
@@ -128,7 +128,7 @@ struct MapDataFiles: View {
 					await MainActor.run {
 						isProcessing = false
 						processingProgress = 0.0
-						
+
 						errorMessage = error.localizedDescription
 						showError = true
 					}
@@ -139,7 +139,7 @@ struct MapDataFiles: View {
 			showError = true
 		}
 	}
-	
+
 	private func simulateProgress() async {
 		for i in 1...10 {
 			await MainActor.run {
@@ -148,7 +148,7 @@ struct MapDataFiles: View {
 			try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
 		}
 	}
-	
+
 	private func deleteFile(_ file: MapDataMetadata) {
 		Task {
 			do {
@@ -169,7 +169,7 @@ struct MapDataFileRow: View {
 	let file: MapDataMetadata
 	let showDivider: Bool
 	let onDelete: () -> Void
-	
+
 	var body: some View {
 		HStack {
 			VStack {
@@ -177,7 +177,7 @@ struct MapDataFileRow: View {
 					Text(file.originalName)
 						.font(.headline)
 						.lineLimit(1)
-					
+
 					Spacer()
 					Text(file.fileSizeString)
 						.font(.caption)
@@ -198,7 +198,7 @@ struct MapDataFileRow: View {
 						.padding(.vertical, 2)
 						.background(Color.secondary.opacity(0.2))
 						.cornerRadius(4)
-					
+
 					Text("\(file.overlayCount) \(file.overlayCount > 1 ? "features".localized : "feature".localized)")
 						.font(.caption2)
 						.foregroundColor(.secondary)

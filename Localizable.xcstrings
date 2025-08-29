@@ -3979,6 +3979,9 @@
         }
       }
     },
+    "App Icon" : {
+
+    },
     "App Notifications" : {
 
     },
@@ -7292,6 +7295,9 @@
           }
         }
       }
+    },
+    "Chirpy" : {
+
     },
     "Clear" : {
       "localizations" : {
@@ -17390,6 +17396,9 @@
           }
         }
       }
+    },
+    "Icons" : {
+
     },
     "If DOP is set, use HDOP / VDOP values instead of PDOP" : {
       "localizations" : {
