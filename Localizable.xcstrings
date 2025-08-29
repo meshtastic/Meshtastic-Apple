@@ -23117,71 +23117,6 @@
         }
       }
     },
-    "Node info received for: %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Knoteninformation empfangen für: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Information du noeud reçue pour : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מידע אודות מכשיר התקבל: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ricevute informazioni sul nodo per: %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ノード情報を受信しました: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odebrano informacje o węźle dla: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nodinformation mottagen för: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Информације о чвору примљене за: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Node info received for: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Node info received for: %@"
-          }
-        }
-      }
-    },
     "Node Map" : {
       "localizations" : {
         "de" : {
@@ -26082,71 +26017,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位置封包"
-          }
-        }
-      }
-    },
-    "Position Packet received from node: %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position empfangen von Knoten: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paquet de la position reçu du noeud : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הודעת מיקום התקבלו מ-%@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posizione Pacchetto ricevuto dal nodo: %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ノード %@ から位置パケットを受信しました"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odebrano pakiet pozycji od węzła: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Positionspaket mottaget från nod: %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пакет позиције примљен од чвора: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position Packet received from node: %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position Packet received from node: %@"
           }
         }
       }
@@ -35698,41 +35568,6 @@
         }
       }
     },
-    "The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again, but this also may indicate a more serious security problem. Contact the user through another trusted channel to determine if the key change was due to a factory reset or other intentional action." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La chiave pubblica più recente di questo nodo non corrisponde alla chiave registrata in precedenza. È possibile eliminare il nodo e fargli scambiare nuovamente le chiavi, ma questo potrebbe indicare un problema di sicurezza più serio. Contattare l'utente attraverso un altro canale fidato per determinare se la modifica della chiave è dovuta a un reset di fabbrica o a un'altra azione intenzionale."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このノードの最新の公開キーが以前記録されたキーと一致しません。ノードを削除して再度キー交換を行うことができますが、これはより深刻なセキュリティ問題を示している可能性もあります。信頼できる別のチャンネルを通じてユーザーに連絡し、キーの変更が工場リセットやその他の intentional action によるものかどうかを確認してください。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Најновији јавни кључ за овај чвор се не подудара са претходно снимљеним кључем. Можете избрисати чвор и дозволити му да поново размени кључеве, али ово такође може указивати на озбиљнији безбедносни проблем. Контактирајте корисника преко другог поузданог канала како бисте утврдили да ли је промена кључа резултат фабричког ресетовања или друге намерне акције."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "该节点的最新公钥与之前记录的公钥不匹配。您可以删除该节点，让它重新交换公钥，但这也可能表明存在更严重的安全问题。通过其他可信渠道联系用户，以确定公钥更改是否是由于出厂重置或其他故意行为造成的。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此節點最新的公開金鑰與先前記錄的不符。您可以刪除此節點並讓它重新交換金鑰，但這也可能代表出現了更嚴重的安全問題。請透過其他可信的聯絡方式與該使用者確認金鑰變更是否因為恢復原廠設定或其他有意的操作所導致。"
-          }
-        }
-      }
-    },
     "The packet is too large" : {
       "localizations" : {
         "de" : {
@@ -35833,41 +35668,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "被授權向此節點發送管理訊息的主要公鑰。"
-          }
-        }
-      }
-    },
-    "The public key does not match the recorded key. You may delete the node and let it exchange keys again, but this may indicate a more serious security problem. Contact the user through another trusted channel, to determine if the key change was due to a factory reset or other intentional action." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La chiave pubblica non corrisponde alla chiave registrata. È possibile eliminare il nodo e fargli scambiare nuovamente le chiavi, ma questo potrebbe indicare un problema di sicurezza più serio. Contattare l'utente attraverso un altro canale fidato, per determinare se la modifica della chiave è dovuta a un reset di fabbrica o a un'altra azione intenzionale."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "公開キーが記録されたキーと一致しません。ノードを削除して再度キー交換を行うことができますが、これはより深刻なセキュリティ問題を示している可能性があります。信頼できる別のチャンネルを通じてユーザーに連絡し、キーの変更が工場リセットやその他の意図的な操作によるものかどうか確認してください。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Јавни кључ се не подудара са снимљеним кључем. Можете избрисати чвор и дозволити му да поново размени кључеве, али ово може указивати на озбиљнији безбедносни проблем. Контактирајте корисника преко другог поузданог канала како бисте утврдили да ли је промена кључа резултат фабричког ресетовања или друге намерне акције."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "公钥与记录的公钥不匹配。您可以删除节点，让它重新交换公钥，但这可能表明存在更严重的安全问题。通过其他可信渠道联系用户，以确定公钥更改是否是由于出厂重置或其他故意行为造成的。"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "公開金鑰與原先記錄的不符。您可以刪除此節點並讓它重新交換金鑰，但這可能表示存在更嚴重的安全問題。請透過其他可信的聯絡方式與該使用者確認，此次金鑰變更是否因為恢復原廠設定或其他有意的操作所造成。"
           }
         }
       }
