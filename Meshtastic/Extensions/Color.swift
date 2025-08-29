@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 
 extension Color {
-	
+
 	/// Initialize a Color from a hex string (e.g., "#FF0000" or "FF0000")
 	init(hex: String) {
 		let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)

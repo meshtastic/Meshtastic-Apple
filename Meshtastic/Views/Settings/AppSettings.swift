@@ -12,6 +12,7 @@ struct AppSettings: View {
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
+	@State private var isPresentingAppIconSheet = false
 	@State private var purgeStaleNodes: Bool = false
 	@State private var showAutoConnect: Bool = false
 	@AppStorage("purgeStaleNodeDays") private var  purgeStaleNodeDays: Double = 0
@@ -48,12 +49,21 @@ struct AppSettings: View {
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
-
+					
 					if showAutoConnect {
 						Toggle(isOn: autoconnectBinding) {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
 						}
 						.tint(.accentColor)
+					}
+					Button {
+						isPresentingAppIconSheet.toggle()
+					} label: {
+						Label("App Icon", systemImage: "app")
+					}
+					.sheet(isPresented: $isPresentingAppIconSheet) {
+						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
+							.presentationDetents([.medium])
 					}
 				}
 				Section(header: Text("environment")) {

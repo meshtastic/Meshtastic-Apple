@@ -25,9 +25,9 @@ struct MapSettingsForm: View {
 	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@Binding var meshMap: Bool
 	@Binding var enabledOverlayConfigs: Set<UUID>
-	
+
 	var body: some View {
-		
+
 		NavigationStack {
 			Form {
 				Section(header: Text("Map Options")) {
@@ -119,7 +119,7 @@ struct MapSettingsForm: View {
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
 					}
 				}
-				
+
 				Section(header: Text("Map Overlays")) {
 					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
 					// Master toggle for map overlays
@@ -138,7 +138,7 @@ struct MapSettingsForm: View {
 					}
 					.tint(.accentColor)
 					.disabled(!hasUserData && !mapOverlaysEnabled)
-					
+
 					// Show individual file toggles when overlays are enabled
 					if mapOverlaysEnabled && hasUserData {
 						if !mapDataManager.getUploadedFiles().isEmpty {
@@ -202,7 +202,7 @@ struct MapSettingsForm: View {
 					}
 				}
 			}
-			
+
 #if targetEnvironment(macCatalyst)
 			Spacer()
 			Button {
@@ -224,6 +224,6 @@ struct MapSettingsForm: View {
 			// Initialize map data manager
 			mapDataManager.initialize()
 		}
-		
+
 	}
 }
