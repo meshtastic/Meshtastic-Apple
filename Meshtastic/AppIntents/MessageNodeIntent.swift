@@ -23,7 +23,7 @@ struct MessageNodeIntent: AppIntent {
 		Summary("Send \(\.$messageContent) to \(\.$nodeNumber)")
 	}
 	func perform() async throws -> some IntentResult {
-		if !AccessoryManager.shared.isConnected {
+		if await !AccessoryManager.shared.isConnected {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
