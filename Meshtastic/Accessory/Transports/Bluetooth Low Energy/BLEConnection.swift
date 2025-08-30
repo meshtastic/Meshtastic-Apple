@@ -100,9 +100,17 @@ actor BLEConnection: Connection {
 		if let error {
 			// Inform the AccessoryManager of the error and intent to reconnect
 			if shouldReconnect {
-				connectionStreamContinuation?.yield(.error(error))
+				if let cbError = error as? CBError {
+					connectionStreamContinuation?.yield(.error(AccessoryError.coreBluetoothError(cbError)))
+				} else {
+					connectionStreamContinuation?.yield(.error(error))
+				}///
 			} else {
-				connectionStreamContinuation?.yield(.errorWithoutReconnect(error))
+				if let cbError = error as? CBError {
+					connectionStreamContinuation?.yield(.errorWithoutReconnect(AccessoryError.coreBluetoothError(cbError)))
+				} else {
+					connectionStreamContinuation?.yield(.errorWithoutReconnect(error))
+				}
 			}
 		} else {
 			connectionStreamContinuation?.yield(.disconnected(shouldReconnect: shouldReconnect))
