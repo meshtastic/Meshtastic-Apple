@@ -169,6 +169,7 @@
 		DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */; };
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
+		DD6260572E634D0400E50C4F /* TransportError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6260562E634CF800E50C4F /* TransportError.swift */; };
 		DD6D5A332CA1178300ED3032 /* TraceRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6D5A322CA1178300ED3032 /* TraceRoute.swift */; };
 		DD6F65722C6AB8EC0053C113 /* SecureInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65712C6AB8EC0053C113 /* SecureInput.swift */; };
 		DD6F65742C6CB80A0053C113 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65732C6CB80A0053C113 /* View.swift */; };
@@ -493,6 +494,7 @@
 		DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalNotificationConfig.swift; sourceTree = "<group>"; };
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
+		DD6260562E634CF800E50C4F /* TransportError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransportError.swift; sourceTree = "<group>"; };
 		DD63CB4E2DD4FBEA00AFCAE2 /* MeshtasticDataModelV 51.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 51.xcdatamodel"; sourceTree = "<group>"; };
 		DD68BAE72C417A74004C01A0 /* MeshtasticDataModelV 40.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 40.xcdatamodel"; sourceTree = "<group>"; };
 		DD6D5A322CA1178300ED3032 /* TraceRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRoute.swift; sourceTree = "<group>"; };
@@ -805,6 +807,7 @@
 				23D316922E5618D2002FA4FB /* AsyncGate.swift */,
 				23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */,
 				23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */,
+				DD6260562E634CF800E50C4F /* TransportError.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1651,6 +1654,7 @@
 				6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */,
+				DD6260572E634D0400E50C4F /* TransportError.swift in Sources */,
 				DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */,
 				DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */,
 				231251382E3BC96400E6ED07 /* BLEAuthorizationHelper.swift in Sources */,
