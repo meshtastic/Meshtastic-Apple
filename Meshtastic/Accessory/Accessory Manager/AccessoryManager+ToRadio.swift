@@ -185,7 +185,7 @@ extension AccessoryManager {
 		} else {
 			throw AccessoryError.ioFailed("sendTime: Unable to serialize admin packet")
 		}
-		let messageDescription = "🕛 Sent Set Time Admin Message to the connectecd node."
+		let messageDescription = "🕛 Sent Set Time Admin Message to the connected node."
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 	
