@@ -22,6 +22,7 @@ enum AccessoryError: Error, LocalizedError {
 	case tooManyRetries
 	case eventStreamCancelled
 	case coreBluetoothError(CBError)
+	case coreBluetoothATTError(CBATTError)
 	
 	var errorDescription: String? {
 		switch self {
@@ -55,6 +56,17 @@ enum AccessoryError: Error, LocalizedError {
 			default:
 				// Fallback for other CBError codes
 				return "A Bluetooth error occurred: \(cbError.localizedDescription)"
+			}
+		case .coreBluetoothATTError(let cbATTError):
+			// Map specific CBError values to a more user-friendly message
+			switch cbATTError.code {
+			case .insufficientAuthentication: // 5
+				return "\(cbATTError.localizedDescription) - Please try connecting again and check the PIN carefully.".localized
+			case .insufficientEncryption: // 15
+				return "\(cbATTError.localizedDescription) - Please try connecting again and check the PIN carefully.".localized
+			default:
+				// Fallback for other CBError codes
+				return "A Bluetooth ATT error occurred: \(cbATTError.localizedDescription)"
 			}
 		}
 	}
