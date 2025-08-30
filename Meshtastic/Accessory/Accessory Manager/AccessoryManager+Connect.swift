@@ -129,8 +129,10 @@ extension AccessoryManager {
 			
 			// Step 7: Update UI and status to connected
 			Step { @MainActor _ in
-				Logger.transport.info("🔗👟 [Connect] Step 7: Update UI and status")
-
+				Logger.transport.info("🔗👟 [Connect] Step 7: Update Time, UI and status")
+				// Send time to device
+				try? await self.sendTime()
+				
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 				self.updateState(.subscribed)

@@ -162,7 +162,33 @@ extension AccessoryManager {
 		}
 		await self.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
 	}
-
+	
+	public func sendTime() async throws {
+		guard let deviceNum = self.activeDeviceNum.map({ UInt32($0) }) else {
+			Logger.mesh.error("🚫 Unable to send time, connected node is disconnected or invalid")
+			return
+		}
+		var adminPacket = AdminMessage()
+		adminPacket.setTimeOnly = UInt32(Date().timeIntervalSince1970)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = deviceNum
+		meshPacket.from = deviceNum
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = 0
+		var dataMessage = DataMessage()
+		if let serializedData: Data = try? adminPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.adminApp
+			meshPacket.decoded = dataMessage
+		} else {
+			throw AccessoryError.ioFailed("sendTime: Unable to serialize admin packet")
+		}
+		let messageDescription = "🕛 Sent Set Time Admin Message to the connected node."
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+	}
+	
 	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) async throws {
 		var adminPacket = AdminMessage()
 		adminPacket.shutdownSeconds = 5
