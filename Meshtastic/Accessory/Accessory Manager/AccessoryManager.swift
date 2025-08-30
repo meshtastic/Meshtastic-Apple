@@ -6,6 +6,7 @@
 import Foundation
 import SwiftUI
 import MeshtasticProtobufs
+import CoreBluetooth
 import OSLog
 import CocoaMQTT
 import Combine
@@ -20,6 +21,8 @@ enum AccessoryError: Error, LocalizedError {
 	case disconnected(String)
 	case tooManyRetries
 	case eventStreamCancelled
+	case coreBluetoothError(CBError)
+	case coreBluetoothATTError(CBATTError)
 	
 	var errorDescription: String? {
 		switch self {
@@ -41,6 +44,30 @@ enum AccessoryError: Error, LocalizedError {
 			return "Too Many Retries"
 		case .eventStreamCancelled:
 			return "Event stream cancelled"
+		case .coreBluetoothError(let cbError):
+			// Map specific CBError values to a more user-friendly message
+			switch cbError.code {
+			case .connectionTimeout: // 6
+				return "The node unexpectedly disconnected, it will automatically reconnect to the preferred radio when it comes back in range.".localized
+			case .peripheralDisconnected: // 7
+				return "The node is sleeping, disable power saving for a reliable connection to your phone.".localized
+			case .peerRemovedPairingInformation: // 14
+				return "The node has deleted its stored pairing information, but your device has not. To resolve this, you must forget the node under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
+			default:
+				// Fallback for other CBError codes
+				return "A Bluetooth error occurred: \(cbError.localizedDescription)"
+			}
+		case .coreBluetoothATTError(let cbATTError):
+			// Map specific CBError values to a more user-friendly message
+			switch cbATTError.code {
+			case .insufficientAuthentication: // 5
+				return "\(cbATTError.localizedDescription) - Please try connecting again and check the PIN carefully.".localized
+			case .insufficientEncryption: // 15
+				return "\(cbATTError.localizedDescription) - Please try connecting again and check the PIN carefully.".localized
+			default:
+				// Fallback for other CBError codes
+				return "A Bluetooth ATT error occurred: \(cbATTError.localizedDescription)"
+			}
 		}
 	}
 }
@@ -349,14 +376,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.processFromRadio(fromRadio)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(60.0))
+				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
 			}
 
 		case .logMessage(let message):
 			self.didReceiveLog(message: message)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(60.0))
+				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
 			}
 		
 		case .rssiUpdate(let rssi):
@@ -698,7 +725,7 @@ extension AccessoryManager {
 				}
 			}
 		}
-		await self.heartbeatTimer?.reset(delay: .seconds(60.0))
+		await self.heartbeatTimer?.reset(delay: .seconds(15.0))
 	}
 }
 
