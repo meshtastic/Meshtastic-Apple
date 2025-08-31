@@ -271,7 +271,7 @@ struct DeviceOnboarding: View {
 					makeRow(
 						icon: "custom.bluetooth",
 						title: "Bluetooth Connected Nodes".localized,
-						subtitle: "The most reliable messagaging experience is with Bluetooth Low Energy connected nodes.".localized
+						subtitle: "The most reliable messaging experience is with Bluetooth Low Energy connected nodes.".localized
 					)
 					makeRow(
 						icon: "person.and.background.dotted",
