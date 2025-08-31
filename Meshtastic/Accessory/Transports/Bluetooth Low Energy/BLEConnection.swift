@@ -102,12 +102,16 @@ actor BLEConnection: Connection {
 			if shouldReconnect {
 				if let cbError = error as? CBError {
 					connectionStreamContinuation?.yield(.error(AccessoryError.coreBluetoothError(cbError)))
+				} else if let attError = error as? CBATTError {
+					connectionStreamContinuation?.yield(.error(AccessoryError.coreBluetoothATTError(attError)))
 				} else {
 					connectionStreamContinuation?.yield(.error(error))
-				}///
+				}
 			} else {
 				if let cbError = error as? CBError {
 					connectionStreamContinuation?.yield(.errorWithoutReconnect(AccessoryError.coreBluetoothError(cbError)))
+				} else if let attError = error as? CBATTError {
+					connectionStreamContinuation?.yield(.errorWithoutReconnect(AccessoryError.coreBluetoothATTError(attError)))
 				} else {
 					connectionStreamContinuation?.yield(.errorWithoutReconnect(error))
 				}
@@ -406,76 +410,32 @@ actor BLEConnection: Connection {
 	}
 	
 	func handlePeripheralError(error: Error) async throws {
+		/// Explicit retries for a few specific errors where we want to re-connect, all other errors should not reconnect automatically
 		var shouldReconnect = false
 		switch error {
-		case let atError as CBATTError:
-			 switch atError.code {
-			 case .insufficientAuthentication: // 5
-				 Logger.transport.error("🛜 [BLEConnection] Insufficient authentication")
-				 shouldReconnect = false
-
-			 case .insufficientEncryption: // 15
-				 Logger.transport.error("🛜 [BLEConnection] Insufficient encryption")
-				 shouldReconnect = false
-
+		case let attError as CBATTError:
+			 switch attError.code {
 			 default:
-				 Logger.transport.error("🛜 [BLEConnection] CBATTError: \(atError.code.rawValue)")
-				 shouldReconnect = true
+				 // All CBATTErrors should not try and reconnect
+				 Logger.transport.error("🛜 [BLEConnection] Disconnected with CBATTError code: \(attError.code.rawValue) - \(attError.localizedDescription)")
 			 }
 		case let cbError as CBError:
 			switch cbError.code {
-			case .unknown: // 0
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to unknown error.")
-			case .invalidParameters: // 1
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to invalid parameters.")
-			case .invalidHandle: // 2
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to invalid handle.")
-			case .notConnected: // 3
-				Logger.transport.error("🛜 [BLEConnection] Disconnected because device was not connected.")
-			case .outOfSpace: // 4
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to out of space.")
-			case .operationCancelled: // 5
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to operation cancelled.")
 			case .connectionTimeout: // 6
+				// Happens when the node goes out of range or the shutdown or reset buttons are presses
 				// Should disconnect, show error, and retry when re-advertised
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to connection timeout.")
+				Logger.transport.error("🛜 [BLEConnection] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
 				shouldReconnect = true
 			case .peripheralDisconnected: // 7
-				// Likely prompting for a PIN
+				// Happens when the node reboots or shuts down intentionally via the firmware or app
 				// Should disconnect, show error, and retry when re-advertised
-				Logger.transport.error("🛜 [BLEConnection] Disconnected by peripheral.")
+				Logger.transport.error("🛜 [BLEConnection] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
 				shouldReconnect = true
-			case .uuidNotAllowed: // 8
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to UUID not allowed.")
-			case .alreadyAdvertising: // 9
-				Logger.transport.error("🛜 [BLEConnection] Disconnected because already advertising.")
-			case .connectionFailed: // 10
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to connection failure.")
-			case .connectionLimitReached: // 11
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to connection limit reached.")
-			case .unknownDevice, .unkownDevice: // 12
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to unknown device.")
-			case .operationNotSupported: // 13
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to operation not supported.")
-			case .peerRemovedPairingInformation: // 14
-				// Should disconnect and not retry
-				Logger.transport.error("🛜 [BLEConnection] Disconnected because peer removed pairing information.")
-			case .encryptionTimedOut: // 15
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to encryption timeout.")
-			case .tooManyLEPairedDevices: // 16
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to too many LE paired devices.")
-				
-				// leGatt cases are watchOS only
-			case .leGattExceededBackgroundNotificationLimit: // 17
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to exceeding LE GATT background notification limit.")
-			case .leGattNearBackgroundNotificationLimit: // 18
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to nearing LE GATT background notification limit.")
-				
-			@unknown default:
-				Logger.transport.error("🛜 [BLEConnection] Disconnected due to unknown future error code: \(cbError.code.rawValue)")
+			default:
+				Logger.transport.error("🛜 [BLEConnection] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
 			}
 		case let otherError:
-			Logger.transport.error("🛜 [BLEConnection] Disconnected with non-CBError: \(otherError.localizedDescription)")
+			Logger.transport.error("🛜 [BLEConnection] Disconnected with non CBError or CBATTError: \(otherError.localizedDescription)")
 		}
 		
 		// Inform the active connection that there was an error and it should disconnect

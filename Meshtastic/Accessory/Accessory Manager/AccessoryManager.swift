@@ -37,7 +37,7 @@ enum AccessoryError: Error, LocalizedError {
 		case .appError(let message):
 			return "Application error: \(message)"
 		case .timeout:
-			return "Timeout"
+			return "Connection Timeout"
 		case .disconnected(let message):
 			return "Disconnected: \(message)"
 		case .tooManyRetries:
@@ -48,25 +48,25 @@ enum AccessoryError: Error, LocalizedError {
 			// Map specific CBError values to a more user-friendly message
 			switch cbError.code {
 			case .connectionTimeout: // 6
-				return "The node unexpectedly disconnected, it will automatically reconnect to the preferred radio when it comes back in range.".localized
+				return "The Bluetooth connection to the radio unexpectedly disconnected, it will automatically reconnect to the preferred radio when it comes back in range or is powered back on.".localized
 			case .peripheralDisconnected: // 7
-				return "The node disconnected, it will automatically reconnect to the preferred radio when it is powered back on or finishes rebooting.".localized
+				return "The Bluetooth connection to the radio was disconnected, it will automatically reconnect to the preferred radio when it is powered back on or finishes rebooting.".localized
 			case .peerRemovedPairingInformation: // 14
 				return "The node has deleted its stored pairing information, but your device has not. To resolve this, you must forget the node under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
 			default:
 				// Fallback for other CBError codes
 				return "A Bluetooth error occurred: \(cbError.localizedDescription)"
 			}
-		case .coreBluetoothATTError(let cbATTError):
-			// Map specific CBError values to a more user-friendly message
-			switch cbATTError.code {
+		case .coreBluetoothATTError(let attError):
+			// Map specific CBATTError values to a more user-friendly message
+			switch attError.code {
 			case .insufficientAuthentication: // 5
-				return "\(cbATTError.localizedDescription) - Please try connecting again and check the PIN carefully.".localized
+				return "Bluetooth \(attError.localizedDescription) Please try connecting again and check the BLE PIN carefully.".localized
 			case .insufficientEncryption: // 15
-				return "\(cbATTError.localizedDescription) - Please try connecting again and check the PIN carefully.".localized
+				return "Bluetooth \(attError.localizedDescription) Please try connecting again and check the BLE PIN carefully.".localized
 			default:
 				// Fallback for other CBError codes
-				return "A Bluetooth ATT error occurred: \(cbATTError.localizedDescription)"
+				return "A Bluetooth Attribute Protocol error occurred: \(attError.localizedDescription)"
 			}
 		}
 	}
