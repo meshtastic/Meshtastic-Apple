@@ -198,7 +198,7 @@ struct ChannelMessageList: View {
 						}
 					}
 					.scrollDismissesKeyboard(.interactively)
-					.onAppear {
+					.onFirstAppear {
 						DispatchQueue.main.async {
 							if channel.unreadMessages == 0 {
 								withAnimation {
