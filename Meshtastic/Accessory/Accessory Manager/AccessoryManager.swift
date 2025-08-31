@@ -52,7 +52,7 @@ enum AccessoryError: Error, LocalizedError {
 			case .peripheralDisconnected: // 7
 				return "The Bluetooth connection to the radio was disconnected, it will automatically reconnect to the preferred radio when it is powered back on or finishes rebooting.".localized
 			case .peerRemovedPairingInformation: // 14
-				return "The node has deleted its stored pairing information, but your device has not. To resolve this, you must forget the node under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
+				return "The radio has deleted its stored pairing information, but your device has not. To resolve this, you must forget the radio under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
 			default:
 				// Fallback for other CBError codes
 				return "A Bluetooth error occurred: \(cbError.localizedDescription)"
