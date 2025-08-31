@@ -231,7 +231,7 @@ struct DeviceOnboarding: View {
 					makeRow(
 						icon: "arrow.trianglehead.2.clockwise",
 						title: "Minimum Firmware Version".localized,
-						subtitle: "For the best connection experience minimum firmware version 2.7.4 is required.".localized
+						subtitle: "For the best connection experience, minimum firmware version 2.7.4 is required.".localized
 					)
 				}
 				.padding()
