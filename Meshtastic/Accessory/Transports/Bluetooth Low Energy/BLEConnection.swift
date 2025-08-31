@@ -408,6 +408,20 @@ actor BLEConnection: Connection {
 	func handlePeripheralError(error: Error) async throws {
 		var shouldReconnect = false
 		switch error {
+		case let atError as CBATTError:
+			 switch atError.code {
+			 case .insufficientAuthentication: // 5
+				 Logger.transport.error("🛜 [BLEConnection] Insufficient authentication")
+				 shouldReconnect = false
+
+			 case .insufficientEncryption: // 15
+				 Logger.transport.error("🛜 [BLEConnection] Insufficient encryption")
+				 shouldReconnect = false
+
+			 default:
+				 Logger.transport.error("🛜 [BLEConnection] CBATTError: \(atError.code.rawValue)")
+				 shouldReconnect = true
+			 }
 		case let cbError as CBError:
 			switch cbError.code {
 			case .unknown: // 0

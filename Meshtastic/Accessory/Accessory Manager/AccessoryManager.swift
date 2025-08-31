@@ -50,7 +50,7 @@ enum AccessoryError: Error, LocalizedError {
 			case .connectionTimeout: // 6
 				return "The node unexpectedly disconnected, it will automatically reconnect to the preferred radio when it comes back in range.".localized
 			case .peripheralDisconnected: // 7
-				return "The node is sleeping, disable power saving for a reliable connection to your phone.".localized
+				return "The node disconnected, it will automatically reconnect to the preferred radio when it is powered back on or finishes rebooting.".localized
 			case .peerRemovedPairingInformation: // 14
 				return "The node has deleted its stored pairing information, but your device has not. To resolve this, you must forget the node under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
 			default:
