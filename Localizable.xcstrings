@@ -4073,7 +4073,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Benachrichtigungen"
+            "value" : "Mitteilungseinstellungen"
           }
         }
       }
@@ -8171,7 +8171,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Benachrichtigungsberechtigungen konfigurieren"
+            "value" : "Mitteilungsberechtigungen konfigurieren"
           }
         }
       }
@@ -9095,7 +9095,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kritische Warnungen"
+            "value" : "Kritische Hinweise"
           }
         }
       }
@@ -23993,7 +23993,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Benachrichtigungen für Kanal- und Direktnachrichten."
+            "value" : "Mitteilungen für Kanal- und Direktnachrichten."
           }
         }
       }
@@ -24003,7 +24003,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Benachrichtigungen bei niedrigem Akkustand des verbundenen Funkgeräts."
+            "value" : "Mitteilungen bei niedrigem Akkustand des verbundenen Funkgeräts."
           }
         }
       }
@@ -24013,7 +24013,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Benachrichtigungen für neu entdeckte Knoten."
+            "value" : "Mitteilungen für neu entdeckte Knoten."
           }
         }
       }
@@ -31519,7 +31519,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Als kritisch eingestufte Pakete ignorieren den Stummschalter und die 'Nicht stören'-Einstellungen im Benachrichtigungszentrum."
+            "value" : "Als kritisch eingestufte Mitteilungen ignorieren den Stummschalter und die 'Nicht stören'-Einstellungen des Benachrichtigungszentrums."
           }
         }
       }
@@ -31961,7 +31961,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Benachrichtigungen senden"
+            "value" : "Mitteilungen senden"
           }
         }
       }
