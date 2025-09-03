@@ -231,55 +231,19 @@ class BLETransport: Transport {
 		switch error {
 		case let cbError as CBError:
 			switch cbError.code {
-			case .unknown: // 0
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to unknown error.")
-			case .invalidParameters: // 1
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to invalid parameters.")
-			case .invalidHandle: // 2
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to invalid handle.")
-			case .notConnected: // 3
-				Logger.transport.error("🛜 [BLETransport] Disconnected because device was not connected.")
-			case .outOfSpace: // 4
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to out of space.")
-			case .operationCancelled: // 5
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to operation cancelled.")
 			case .connectionTimeout: // 6
+				// Happens when the node goes out of range or the shutdown or reset buttons are presses
 				// Should disconnect, show error, and retry when re-advertised
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to connection timeout.")
+				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
 				shouldReconnect = true
 			case .peripheralDisconnected: // 7
-				// Likely prompting for a PIN
+				// Happens when the node reboots or shuts down intentionally via the firmware or app
 				// Should disconnect, show error, and retry when re-advertised
-				Logger.transport.error("🛜 [BLETransport] Disconnected by peripheral.")
+				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
 				shouldReconnect = true
-			case .uuidNotAllowed: // 8
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to UUID not allowed.")
-			case .alreadyAdvertising: // 9
-				Logger.transport.error("🛜 [BLETransport] Disconnected because already advertising.")
-			case .connectionFailed: // 10
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to connection failure.")
-			case .connectionLimitReached: // 11
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to connection limit reached.")
-			case .unknownDevice, .unkownDevice: // 12
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to unknown device.")
-			case .operationNotSupported: // 13
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to operation not supported.")
-			case .peerRemovedPairingInformation: // 14
-				// Should disconnect and not retry
-				Logger.transport.error("🛜 [BLETransport] Disconnected because peer removed pairing information.")
-			case .encryptionTimedOut: // 15
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to encryption timeout.")
-			case .tooManyLEPairedDevices: // 16
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to too many LE paired devices.")
-				
-			// leGatt cases are watchOS only
-			case .leGattExceededBackgroundNotificationLimit: // 17
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to exceeding LE GATT background notification limit.")
-			case .leGattNearBackgroundNotificationLimit: // 18
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to nearing LE GATT background notification limit.")
-				
-			@unknown default:
-				Logger.transport.error("🛜 [BLETransport] Disconnected due to unknown future error code: \(cbError.code.rawValue)")
+			default:
+				// Fallback for other CBError codes
+				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
 			}
 		case let otherError:
 			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription)")

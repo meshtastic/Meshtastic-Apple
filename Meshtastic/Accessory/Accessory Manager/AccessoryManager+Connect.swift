@@ -66,7 +66,7 @@ extension AccessoryManager {
 						UserDefaults.preferredPeripheralId = device.id.uuidString
 					}
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
-					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: true)
+					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
 				}
 			}
 			

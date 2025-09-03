@@ -282,4 +282,3 @@ struct ChannelMessageList: View {
 		}
 	}
 }
-

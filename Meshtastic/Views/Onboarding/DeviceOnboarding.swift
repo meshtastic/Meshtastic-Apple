@@ -228,6 +228,11 @@ struct DeviceOnboarding: View {
 						title: "Background Connections".localized,
 						subtitle: "Background network connections are not supported and may disconnect when you leave the app.".localized
 					)
+					makeRow(
+						icon: "arrow.trianglehead.2.clockwise",
+						title: "Minimum Firmware Version".localized,
+						subtitle: "For the best connection experience, minimum firmware version 2.7.4 is required.".localized
+					)
 				}
 				.padding()
 			}
@@ -264,9 +269,9 @@ struct DeviceOnboarding: View {
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
 					makeRow(
-						icon: "network",
-						title: "Network-based Nodes".localized,
-						subtitle: "The Meshtastic App can connect to and manage network-enabled nodes.".localized
+						icon: "custom.bluetooth",
+						title: "Bluetooth Connected Nodes".localized,
+						subtitle: "The most reliable messaging experience is with Bluetooth Low Energy connected nodes.".localized
 					)
 					makeRow(
 						icon: "person.and.background.dotted",
@@ -320,14 +325,25 @@ struct DeviceOnboarding: View {
 		subtitle: String
 	) -> some View {
 		HStack(alignment: .center) {
-			Image(systemName: icon)
-				.resizable()
-				.symbolRenderingMode(.multicolor)
-				.font(.subheadline)
-				.aspectRatio(contentMode: .fit)
-				.padding(.horizontal)
-				.padding(.vertical, 8)
-				.frame(width: 72, height: 60)
+			if icon.starts(with: "custom.") {
+				Image(icon)
+					.resizable()
+					.symbolRenderingMode(.multicolor)
+					.font(.subheadline)
+					.aspectRatio(contentMode: .fit)
+					.padding(.horizontal)
+					.padding(.vertical, 8)
+					.frame(width: 72, height: 60)
+			} else {
+				Image(systemName: icon)
+					.resizable()
+					.symbolRenderingMode(.multicolor)
+					.font(.subheadline)
+					.aspectRatio(contentMode: .fit)
+					.padding(.horizontal)
+					.padding(.vertical, 8)
+					.frame(width: 72, height: 60)
+			}
 			VStack(alignment: .leading) {
 				Text(title)
 					.font(.subheadline.weight(.semibold))

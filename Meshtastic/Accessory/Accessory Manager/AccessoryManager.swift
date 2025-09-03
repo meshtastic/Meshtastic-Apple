@@ -6,6 +6,7 @@
 import Foundation
 import SwiftUI
 import MeshtasticProtobufs
+import CoreBluetooth
 import OSLog
 import CocoaMQTT
 import Combine
@@ -20,6 +21,8 @@ enum AccessoryError: Error, LocalizedError {
 	case disconnected(String)
 	case tooManyRetries
 	case eventStreamCancelled
+	case coreBluetoothError(CBError)
+	case coreBluetoothATTError(CBATTError)
 	
 	var errorDescription: String? {
 		switch self {
@@ -34,13 +37,37 @@ enum AccessoryError: Error, LocalizedError {
 		case .appError(let message):
 			return "Application error: \(message)"
 		case .timeout:
-			return "Timeout"
+			return "Connection Timeout"
 		case .disconnected(let message):
 			return "Disconnected: \(message)"
 		case .tooManyRetries:
 			return "Too Many Retries"
 		case .eventStreamCancelled:
 			return "Event stream cancelled"
+		case .coreBluetoothError(let cbError):
+			// Map specific CBError values to a more user-friendly message
+			switch cbError.code {
+			case .connectionTimeout: // 6
+				return "The Bluetooth connection to the radio unexpectedly disconnected, it will automatically reconnect to the preferred radio when it comes back in range or is powered back on.".localized
+			case .peripheralDisconnected: // 7
+				return "The Bluetooth connection to the radio was disconnected, it will automatically reconnect to the preferred radio when it is powered back on or finishes rebooting.".localized
+			case .peerRemovedPairingInformation: // 14
+				return "The radio has deleted its stored pairing information, but your device has not. To resolve this, you must forget the radio under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
+			default:
+				// Fallback for other CBError codes
+				return "A Bluetooth error occurred: \(cbError.localizedDescription)"
+			}
+		case .coreBluetoothATTError(let attError):
+			// Map specific CBATTError values to a more user-friendly message
+			switch attError.code {
+			case .insufficientAuthentication: // 5
+				return "Bluetooth \(attError.localizedDescription) Please try connecting again and check the BLE PIN carefully.".localized
+			case .insufficientEncryption: // 15
+				return "Bluetooth \(attError.localizedDescription) Please try connecting again and check the BLE PIN carefully.".localized
+			default:
+				// Fallback for other CBError codes
+				return "A Bluetooth Attribute Protocol error occurred: \(attError.localizedDescription)"
+			}
 		}
 	}
 }
@@ -349,14 +376,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.processFromRadio(fromRadio)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(60.0))
+				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
 			}
 
 		case .logMessage(let message):
 			self.didReceiveLog(message: message)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(60.0))
+				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
 			}
 		
 		case .rssiUpdate(let rssi):
@@ -698,7 +725,7 @@ extension AccessoryManager {
 				}
 			}
 		}
-		await self.heartbeatTimer?.reset(delay: .seconds(60.0))
+		await self.heartbeatTimer?.reset(delay: .seconds(15.0))
 	}
 }
 
