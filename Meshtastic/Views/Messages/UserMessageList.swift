@@ -22,7 +22,6 @@ struct UserMessageList: View {
 	// Scroll state
 	@State private var showScrollToBottomButton = false
 	@State private var hasReachedBottom = false
-	@State private var gotFirstUnreadMessage: Bool = false
 	@State private var messageToHighlight: Int64 = 0
 
 	var body: some View {
@@ -123,34 +122,27 @@ struct UserMessageList: View {
 											Spacer(minLength: 50)
 										}
 									}
-//									.overlay {
-//										RoundedRectangle(cornerRadius: 10)
-//											.stroke(.blue, lineWidth: 2)
-//											.opacity(((messageToHighlight  == message.messageId) || (replyMessageId == message.messageId)) ? 1 : 0)
-//									}
 									.padding([.leading, .trailing])
 									.frame(maxWidth: .infinity)
 									.id(message.messageId)
 									.onAppear {
-										if gotFirstUnreadMessage {
-											if !message.read {
-												message.read = true
-												do {
-													for unreadMessage in user.messageList.filter({ !$0.read }) {
-														unreadMessage.read = true
-													}
-													try context.save()
-													Logger.data.info("📖 [App] Read message \(message.messageId, privacy: .public) ")
-													appState.unreadDirectMessages = user.unreadMessages
-												} catch {
-													Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+										if !message.read {
+											message.read = true
+											do {
+												for unreadMessage in user.messageList.filter({ !$0.read }) {
+													unreadMessage.read = true
 												}
+												try context.save()
+												Logger.data.info("📖 [App] Read message \(message.messageId, privacy: .public) ")
+												appState.unreadDirectMessages = user.unreadMessages
+											} catch {
+												Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 											}
-											// Check if we've reached the bottom message
-											if message.messageId == user.messageList.last?.messageId {
-												hasReachedBottom = true
-												showScrollToBottomButton = false
-											}
+										}
+										// Check if we've reached the bottom message
+										if message.messageId == user.messageList.last?.messageId {
+											hasReachedBottom = true
+											showScrollToBottomButton = false
 										}
 									}
 								}
@@ -180,7 +172,6 @@ struct UserMessageList: View {
 								}
 							}
 						}
-						gotFirstUnreadMessage = true
 					}
 					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
 						withAnimation {

@@ -23,8 +23,6 @@ struct ChannelMessageList: View {
 	// Scroll state
 	@State private var showScrollToBottomButton = false
 	@State private var hasReachedBottom = false
-	@State private var gotFirstUnreadMessage: Bool = false
-
 	@State private var messageToHighlight: Int64 = 0
 	
 	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
@@ -155,37 +153,29 @@ struct ChannelMessageList: View {
 										Spacer(minLength: 50)
 									}
 								}
-//								.overlay {
-//									RoundedRectangle(cornerRadius: 18)
-//										.stroke(.blue, lineWidth: 2)
-//										.opacity(((messageToHighlight  == message.messageId) || (replyMessageId == message.messageId)) ? 1 : 0)
-//								}
 								.padding([.leading, .trailing])
 								.frame(maxWidth: .infinity)
 								.id(message.messageId)
 								.onAppear {
-									if gotFirstUnreadMessage {
-										if !message.read {
-											message.read = true
-											do {
-												for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
-													unreadMessage.read = true
-												}
-												try context.save()
-												Logger.data.info("📖 [App] Read message \(message.messageId, privacy: .public) ")
-												appState.unreadChannelMessages = myInfo.unreadMessages
-												context.refresh(myInfo, mergeChanges: true)
-											} catch {
-												Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+									if !message.read {
+										message.read = true
+										do {
+											for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
+												unreadMessage.read = true
 											}
-										}
-										// Check if we've reached the bottom message
-										if message.messageId == allPrivateMessages.last?.messageId {
-											hasReachedBottom = true
-											showScrollToBottomButton = false
+											try context.save()
+											Logger.data.info("📖 [App] Read message \(message.messageId, privacy: .public) ")
+											appState.unreadChannelMessages = myInfo.unreadMessages
+											context.refresh(myInfo, mergeChanges: true)
+										} catch {
+											Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 										}
 									}
-								}
+									// Check if we've reached the bottom message
+									if message.messageId == allPrivateMessages.last?.messageId {
+										hasReachedBottom = true
+										showScrollToBottomButton = false
+									}								}
 							}
 							// Invisible spacer to detect reaching bottom
 							Color.clear
@@ -210,7 +200,6 @@ struct ChannelMessageList: View {
 									withAnimation {
 										scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
 										showScrollToBottomButton = true
-										gotFirstUnreadMessage = true
 									}
 								}
 							}
