@@ -93,19 +93,31 @@ actor TCPConnection: Connection {
 	}
 
 	private func receiveData(min: Int, max: Int) async throws -> Data {
-		try await withCheckedThrowingContinuation { cont in
-			connection?.receive(minimumIncompleteLength: min, maximumLength: max) { content, _, isComplete, error in
-				if let error = error {
-					cont.resume(throwing: error)
-					return
+		let capturedConnection = connection
+		return try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { cont in
+				connection?.receive(minimumIncompleteLength: min, maximumLength: max) { content, _, isComplete, error in
+					if let error = error {
+						cont.resume(throwing: error)
+						return
+					}
+					if isComplete {
+						// cont.resume(returning: Data())
+						cont.resume(throwing: AccessoryError.disconnected("Error while receiving data"))
+						return
+					}
+					if let content {
+						cont.resume(returning: content)
+					} else {
+						cont.resume(returning: Data())
+					}
 				}
-				if isComplete {
-					// cont.resume(returning: Data())
-					cont.resume(throwing: AccessoryError.disconnected("Error while receiving data"))
-					return
-				}
-				cont.resume(returning: content ?? Data())
 			}
+		} onCancel: {
+			// ✨ onCancel cannot directly resume the continuation (it doesn’t know if it’s already been resumed).
+			// A safe pattern is to cancel the underlying NWConnection. That forces the receive completion
+			// handler to fire with an error, where you can safely resume the continuation.
+			capturedConnection?.cancel()
 		}
 	}
 
@@ -225,3 +237,4 @@ actor TCPConnection: Connection {
 		
 	}
 }
+
