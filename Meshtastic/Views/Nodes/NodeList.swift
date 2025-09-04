@@ -7,6 +7,7 @@
 import SwiftUI
 import CoreLocation
 import OSLog
+import CoreData
 
 struct NodeList: View {
 	@Environment(\.managedObjectContext)
@@ -19,57 +20,35 @@ struct NodeList: View {
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var searchText = ""
-	@State private var viaLora = true
-	@State private var viaMqtt = true
-	@State private var isOnline = false
-	@State private var isPkiEncrypted = false
-	@State private var isFavorite = false
-	@State private var isIgnored = false
-	@State private var isEnvironment = false
-	// Force refresh ID to make SwiftUI rebuild the view hierarchy
-	@State private var forceRefreshID = UUID()
-	@State private var distanceFilter = false
-	@State private var maxDistance: Double = 800000
-	@State private var hopsAway: Double = -1.0
-	@State private var roleFilter = false
-	@State private var deviceRoles: Set<Int> = []
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingPositionSentAlert = false
 	@State private var isPresentingPositionFailedAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
 	@State private var shareContactNode: NodeInfoEntity?
-	
-	var boolFilters: [Bool] {[
-		isFavorite,
-		isIgnored,
-		isOnline,
-		isPkiEncrypted,
-		isEnvironment,
-		distanceFilter,
-		roleFilter
-	]}
+	@StateObject var filters = NodeFilterParameters()
 	
 	@State var isEditingFilters = false
 	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
-	
-	@FetchRequest(
-		sortDescriptors: [
-			NSSortDescriptor(key: "ignored", ascending: true),
-			NSSortDescriptor(key: "favorite", ascending: false),
-			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true)
-		],
-		animation: .spring
-	)
-	var nodes: FetchedResults<NodeInfoEntity>
 	
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
 			return getNodeInfo(id: num, context: context)
 		}
 		return nil
+	}
+	
+	private func fetchNodes(withFilters: NodeFilterParameters) -> [NodeInfoEntity] {
+		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
+		request.sortDescriptors = [
+			NSSortDescriptor(key: "ignored", ascending: true),
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "lastHeard", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true)
+		]
+		request.predicate = withFilters.buildPredicate()
+		return (try? context.fetch(request)) ?? []
 	}
 	
 	@ViewBuilder
@@ -140,7 +119,7 @@ struct NodeList: View {
 	}
 	
 	var body: some View {
-		// Use forceRefreshID to completely rebuild the view when notifications update the selected node
+		let nodes = fetchNodes(withFilters: filters)
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 				NodeListItem(
@@ -157,18 +136,7 @@ struct NodeList: View {
 			}
 			.sheet(isPresented: $isEditingFilters) {
 				NodeListFilter(
-					viaLora: $viaLora,
-					viaMqtt: $viaMqtt,
-					isOnline: $isOnline,
-					isPkiEncrypted: $isPkiEncrypted,
-					isFavorite: $isFavorite,
-					isIgnored: $isIgnored,
-					isEnvironment: $isEnvironment,
-					distanceFilter: $distanceFilter,
-					maximumDistance: $maxDistance,
-					hopsAway: $hopsAway,
-					roleFilter: $roleFilter,
-					deviceRoles: $deviceRoles
+					filters: filters
 				)
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
@@ -279,52 +247,6 @@ struct NodeList: View {
 			ContentUnavailableView("", systemImage: "line.3.horizontal")
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onChange(of: searchText) {
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: viaLora) {
-			if !viaLora && !viaMqtt {
-				viaMqtt = true
-			}
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: viaMqtt) {
-			if !viaLora && !viaMqtt {
-				viaLora = true
-			}
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: [boolFilters]) {
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: [deviceRoles]) {
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: hopsAway) {
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: maxDistance) {
-			Task {
-				await searchNodeList()
-			}
-		}
-		.onChange(of: distanceFilter) {
-			Task {
-				await searchNodeList()
-			}
-		}
 		.onChange(of: selectedNode) {
 			if selectedNode != nil {
 				columnVisibility = .doubleColumn
@@ -335,15 +257,10 @@ struct NodeList: View {
 		}
 		.onChange(of: router.navigationState) {
 			if let selected = router.navigationState.nodeListSelectedNodeNum {
-				// Force a complete view rebuild by generating a new UUID
-				Logger.services.info("👷‍♂️ [App] Forcing view rebuild with new ID: \(self.forceRefreshID, privacy: .public)")
 				// First clear selection
-				self.forceRefreshID = UUID()
 				self.selectedNode = nil
 				// Then after a short delay, set the new selection. Makes it obvious to use page is refreshing too.
 				DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-					// Generate another UUID to ensure view gets rebuilt
-					self.forceRefreshID = UUID()
 					self.selectedNode = getNodeInfo(id: selected, context: context)
 					Logger.services.info("👷‍♂️ [App] Complete view refresh with node: \(selected, privacy: .public)")
 				}
@@ -356,13 +273,9 @@ struct NodeList: View {
 			NotificationCenter.default.addObserver(forName: NSNotification.Name("ForceNavigationRefresh"), object: nil, queue: .main) { notification in
 				if let nodeNum = notification.userInfo?["nodeNum"] as? Int64 {
 					// Force complete refresh of view
-					self.forceRefreshID = UUID()
 					self.selectedNode = getNodeInfo(id: nodeNum, context: self.context)
 					Logger.services.info("NodeList directly updated from notification for node: \(nodeNum, privacy: .public)")
 				}
-			}
-			Task {
-				await searchNodeList()
 			}
 		}
 		.onDisappear {
@@ -370,17 +283,28 @@ struct NodeList: View {
 			NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ForceNavigationRefresh"), object: nil)
 		}
 	}
-	
-	private func searchNodeList() async {
-		/// Case Insensitive Search Text Predicates
-		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.hwDisplayName", "user.longName", "user.shortName"].map { property in
-			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
-		}
-		/// Create a compound predicate using each text search preicate as an OR
-		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
-		/// Create an array of predicates to hold our AND predicates
+}
+
+extension NodeFilterParameters {
+	func buildPredicate() -> NSPredicate? {
 		var predicates: [NSPredicate] = []
-		/// Mqtt
+		
+		// (same predicate logic you have, but organized in functions)
+		if !searchText.isEmpty {
+			let searchKeys = [
+				"user.userId", "user.numString", "user.hwModel",
+				"user.hwDisplayName", "user.longName", "user.shortName"
+			]
+			let textPredicates = searchKeys.map {
+				NSPredicate(format: "%K CONTAINS[c] %@", $0, searchText)
+			}
+			predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: textPredicates))
+		}
+		
+		if isFavorite {
+			predicates.append(NSPredicate(format: "favorite == YES"))
+		}
+		
 		if !(viaLora && viaMqtt) {
 			if viaLora {
 				let loraPredicate = NSPredicate(format: "viaMqtt == NO")
@@ -390,6 +314,7 @@ struct NodeList: View {
 				predicates.append(mqttPredicate)
 			}
 		}
+		
 		/// Role
 		if roleFilter && deviceRoles.count > 0 {
 			var rolesArray: [NSPredicate] = []
@@ -454,15 +379,8 @@ struct NodeList: View {
 				predicates.append(distancePredicate)
 			}
 		}
-		if predicates.count > 0 || !searchText.isEmpty {
-			if !searchText.isEmpty {
-				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
-				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])
-			} else {
-				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
-			}
-		} else {
-			nodes.nsPredicate = nil
-		}
+		
+		return predicates.isEmpty ? nil : NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
 	}
 }
+

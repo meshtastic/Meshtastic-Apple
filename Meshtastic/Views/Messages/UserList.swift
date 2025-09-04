@@ -15,29 +15,22 @@ struct UserList: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var searchText = ""
-	@State private var viaLora = true
-	@State private var viaMqtt = true
-	@State private var isOnline = false
-	@State private var isPkiEncrypted = false
-	@State private var isFavorite = false
-	@State private var isIgnored = false
-	@State private var isEnvironment = false
-	@State private var distanceFilter = false
-	@State private var maxDistance: Double = 800000
-	@State private var hopsAway: Double = -1.0
-	@State private var roleFilter = false
-	@State private var deviceRoles: Set<Int> = []
+//	@State private var viaLora = true
+//	@State private var viaMqtt = true
+//	@State private var isOnline = false
+//	@State private var isPkiEncrypted = false
+//	@State private var isFavorite = false
+//	@State private var isIgnored = false
+//	@State private var isEnvironment = false
+//	@State private var distanceFilter = false
+//	@State private var maxDistance: Double = 800000
+//	@State private var hopsAway: Double = -1.0
+//	@State private var roleFilter = false
+//	@State private var deviceRoles: Set<Int> = []
 	@State private var editingFilters = false
 	@State private var showingHelp = false
 	@State private var showingTrustConfirm: Bool = false
-
-	var boolFilters: [Bool] {[
-		isFavorite,
-		isOnline,
-		isEnvironment,
-		distanceFilter,
-		roleFilter
-	]}
+	@StateObject private var filters: NodeFilterParameters = NodeFilterParameters()
 
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
@@ -49,20 +42,7 @@ struct UserList: View {
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		VStack {
 			FilteredUserList(
-				searchText: searchText,
-				viaLora: viaLora,
-				viaMqtt: viaMqtt,
-				isOnline: isOnline,
-				isPkiEncrypted: isPkiEncrypted,
-				isFavorite: isFavorite,
-				isIgnored: isIgnored,
-				isEnvironment: isEnvironment,
-				distanceFilter: distanceFilter,
-				maxDistance: maxDistance,
-				hopsAway: hopsAway,
-				roleFilter: roleFilter,
-				deviceRoles: deviceRoles,
-				userSelection: $userSelection
+				filters: filters
 			) { users in
 				List(users, selection: $userSelection) { (user: UserEntity) in
 					let mostRecent = user.messageList.last
@@ -198,7 +178,7 @@ struct UserList: View {
 				.navigationTitle(String.localizedStringWithFormat("Contacts (%@)", String(users.count)))
 			}
 			.sheet(isPresented: $editingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isPkiEncrypted: $isPkiEncrypted, isFavorite: $isFavorite, isIgnored: $isIgnored, isEnvironment: $isEnvironment, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, roleFilter: $roleFilter, deviceRoles: $deviceRoles)
+				NodeListFilter(filterTitle: "Contact Filters", filters: filters)
 			}
 			.sheet(isPresented: $showingHelp) {
 				DirectMessagesHelp()
@@ -233,7 +213,7 @@ struct UserList: View {
 				.padding(5)
 			}
 			.padding(.bottom, 5)
-			.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a contact")
+			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a contact")
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
 		}
@@ -249,36 +229,23 @@ struct FilteredUserList<Content: View>: View {
 	}
 
 	init(
-		searchText: String,
-		viaLora: Bool,
-		viaMqtt: Bool,
-		isOnline: Bool,
-		isPkiEncrypted: Bool,
-		isFavorite: Bool,
-		isIgnored: Bool,
-		isEnvironment: Bool,
-		distanceFilter: Bool,
-		maxDistance: Double,
-		hopsAway: Double,
-		roleFilter: Bool,
-		deviceRoles: Set<Int>,
-		userSelection: Binding<UserEntity?>,
+		filters: NodeFilterParameters,
 		@ViewBuilder content: @escaping (FetchedResults<UserEntity>) -> Content
 	) {
 		self.content = content
 		// Build predicates based on filter variables
 		var predicates: [NSPredicate] = []
 		// Search text predicates
-		if !searchText.isEmpty {
+		if !filters.searchText.isEmpty {
 			let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
-				return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
+				return NSPredicate(format: "%K CONTAINS[c] %@", property, filters.searchText)
 			}
 			let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 			predicates.append(textSearchPredicate)
 		}
 		// Mqtt and lora
-		if !(viaLora && viaMqtt) {
-			if viaLora {
+		if !(filters.viaLora && filters.viaMqtt) {
+			if filters.viaLora {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
 				predicates.append(loraPredicate)
 			} else {
@@ -287,9 +254,9 @@ struct FilteredUserList<Content: View>: View {
 			}
 		}
 		// Roles
-		if roleFilter && deviceRoles.count > 0 {
+		if filters.roleFilter && filters.deviceRoles.count > 0 {
 			var rolesArray: [NSPredicate] = []
-			for dr in deviceRoles {
+			for dr in filters.deviceRoles {
 				let deviceRolePredicate = NSPredicate(format: "role == %i", Int32(dr))
 				rolesArray.append(deviceRolePredicate)
 			}
@@ -297,33 +264,33 @@ struct FilteredUserList<Content: View>: View {
 			predicates.append(compoundPredicate)
 		}
 		// Hops Away
-		if hopsAway == 0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
+		if filters.hopsAway == 0 {
+			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(filters.hopsAway))
 			predicates.append(hopsAwayPredicate)
-		} else if hopsAway > -1.0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(hopsAway))
+		} else if filters.hopsAway > -1.0 {
+			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(filters.hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
 		// Online
-		if isOnline {
+		if filters.isOnline {
 			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
 		}
 		// Encrypted
-		if isPkiEncrypted {
+		if filters.isPkiEncrypted {
 			let isPkiEncryptedPredicate = NSPredicate(format: "pkiEncrypted == YES")
 			predicates.append(isPkiEncryptedPredicate)
 		}
 		// Favorites
-		if isFavorite {
+		if filters.isFavorite {
 			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
 		// Distance
-		if distanceFilter {
+		if filters.distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation
 			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-				let d: Double = maxDistance * 1.1
+				let d: Double = filters.maxDistance * 1.1
 				let r: Double = 6371009
 				let meanLatitidue = pointOfInterest.latitude * .pi / 180
 				let deltaLatitude = d / r * 180 / .pi
