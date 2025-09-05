@@ -12,25 +12,26 @@ struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
 	@State var editMode = EditMode.active
 	var filterTitle = "Node Filters"
-	@Binding var viaLora: Bool
-	@Binding var viaMqtt: Bool
-	@Binding var isOnline: Bool
-	@Binding var isPkiEncrypted: Bool
-	@Binding var isFavorite: Bool
-	@Binding var isIgnored: Bool
-	@Binding var isEnvironment: Bool
-	@Binding var distanceFilter: Bool
-	@Binding var maximumDistance: Double
-	@Binding var hopsAway: Double
-	@Binding var roleFilter: Bool
-	@Binding var deviceRoles: Set<Int>
-
+//	@Binding var viaLora: Bool
+//	@Binding var viaMqtt: Bool
+//	@Binding var isOnline: Bool
+//	@Binding var isPkiEncrypted: Bool
+//	@Binding var isFavorite: Bool
+//	@Binding var isIgnored: Bool
+//	@Binding var isEnvironment: Bool
+//	@Binding var distanceFilter: Bool
+//	@Binding var maximumDistance: Double
+//	@Binding var hopsAway: Double
+//	@Binding var roleFilter: Bool
+//	@Binding var deviceRoles: Set<Int>
+	@ObservedObject var filters: NodeFilterParameters
+	
 	var body: some View {
 
 		NavigationStack {
 			Form {
 				Section(header: Text(filterTitle)) {
-					Toggle(isOn: $viaLora) {
+					Toggle(isOn: $filters.viaLora) {
 
 						Label {
 							Text("Via Lora")
@@ -41,7 +42,7 @@ struct NodeListFilter: View {
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $viaMqtt) {
+					Toggle(isOn: $filters.viaMqtt) {
 
 						Label {
 							Text("Via Mqtt")
@@ -53,7 +54,7 @@ struct NodeListFilter: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
-					Toggle(isOn: $isOnline) {
+					Toggle(isOn: $filters.isOnline) {
 
 						Label {
 							Text("Online")
@@ -66,7 +67,7 @@ struct NodeListFilter: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
-					Toggle(isOn: $isPkiEncrypted) {
+					Toggle(isOn: $filters.isPkiEncrypted) {
 
 						Label {
 							Text("Encrypted")
@@ -79,7 +80,7 @@ struct NodeListFilter: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
-					Toggle(isOn: $isFavorite) {
+					Toggle(isOn: $filters.isFavorite) {
 
 						Label {
 							Text("Favorites")
@@ -93,7 +94,7 @@ struct NodeListFilter: View {
 					.listRowSeparator(.visible)
 
 					if filterTitle == "Node Filters" {
-						Toggle(isOn: $isIgnored) {
+						Toggle(isOn: $filters.isIgnored) {
 
 							Label {
 								Text("Ignored")
@@ -106,7 +107,7 @@ struct NodeListFilter: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
 
-						Toggle(isOn: $isEnvironment) {
+						Toggle(isOn: $filters.isEnvironment) {
 							Label {
 								Text("Environment")
 							} icon: {
@@ -117,7 +118,7 @@ struct NodeListFilter: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
 					}
-					Toggle(isOn: $distanceFilter) {
+					Toggle(isOn: $filters.distanceFilter) {
 
 						Label {
 							Text("Distance")
@@ -127,11 +128,11 @@ struct NodeListFilter: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					.listRowSeparator(distanceFilter ? .hidden : .visible)
-					if distanceFilter {
+					.listRowSeparator(filters.distanceFilter ? .hidden : .visible)
+					if filters.distanceFilter {
 						HStack {
 							Label("Show nodes", systemImage: "lines.measurement.horizontal")
-							Picker("", selection: $maximumDistance) {
+							Picker("", selection: $filters.maxDistance) {
 								ForEach(MeshMapDistances.allCases) { di in
 									Text(di.description)
 										.tag(di.id)
@@ -143,7 +144,7 @@ struct NodeListFilter: View {
 					VStack(alignment: .leading) {
 						Label("Hops Away", systemImage: "hare")
 						Slider(
-							value: $hopsAway,
+							value: $filters.hopsAway,
 							in: -1...7,
 							step: 1
 						) {
@@ -153,16 +154,16 @@ struct NodeListFilter: View {
 						} maximumValueLabel: {
 							Text("7")
 						}
-						if hopsAway >= 0 {
-							if hopsAway == 0 {
+						if filters.hopsAway >= 0 {
+							if filters.hopsAway == 0 {
 								Text("Direct")
-							} else if hopsAway == 1 {
+							} else if filters.hopsAway == 1 {
 								Text("1 hop away")
 							} else {
-								Text("\(Int(hopsAway)) or less hops away")							}
+								Text("\(Int(filters.hopsAway)) or less hops away")							}
 						}
 					}
-					Toggle(isOn: $roleFilter) {
+					Toggle(isOn: $filters.roleFilter) {
 
 						Label {
 							Text("Roles")
@@ -171,9 +172,9 @@ struct NodeListFilter: View {
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if roleFilter {
+					if filters.roleFilter {
 						VStack {
-							List(DeviceRoles.allCases, selection: $deviceRoles) { dr in
+							List(DeviceRoles.allCases, selection: $filters.deviceRoles) { dr in
 								Label {
 									Text("\(dr.name)")
 								} icon: {

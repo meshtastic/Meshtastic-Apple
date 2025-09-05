@@ -17,6 +17,7 @@
 		10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F32E2047D600536CE6 /* DatadogTrace */; };
 		230BC3972E31071E0046BF2A /* AccessoryManager+Discovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */; };
 		231251382E3BC96400E6ED07 /* BLEAuthorizationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */; };
+		231A53782E69ADB900216B99 /* NodeFilterParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231A53772E69ADB900216B99 /* NodeFilterParameters.swift */; };
 		231B3F212D087A4C0069A07D /* MetricTableColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F202D087A4C0069A07D /* MetricTableColumn.swift */; };
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
@@ -321,6 +322,7 @@
 		108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityToNodeInfo.swift; sourceTree = "<group>"; };
 		230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Discovery.swift"; sourceTree = "<group>"; };
 		231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEAuthorizationHelper.swift; sourceTree = "<group>"; };
+		231A53772E69ADB900216B99 /* NodeFilterParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeFilterParameters.swift; sourceTree = "<group>"; };
 		231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnList.swift; sourceTree = "<group>"; };
 		231B3F202D087A4C0069A07D /* MetricTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTableColumn.swift; sourceTree = "<group>"; };
 		231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultColumns.swift; sourceTree = "<group>"; };
@@ -1303,6 +1305,7 @@
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
+				231A53772E69ADB900216B99 /* NodeFilterParameters.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
 				BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */,
@@ -1676,6 +1679,7 @@
 				DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */,
 				DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */,
 				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
+				231A53782E69ADB900216B99 /* NodeFilterParameters.swift in Sources */,
 				232ED4C52E2C5EDD009DA392 /* TCPConnection.swift in Sources */,
 				DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */,
 				BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */,
