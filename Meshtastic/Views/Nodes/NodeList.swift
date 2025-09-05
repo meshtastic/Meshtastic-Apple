@@ -19,7 +19,6 @@ struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
-	@State private var searchText = ""
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingPositionSentAlert = false
 	@State private var isPresentingPositionFailedAlert = false
@@ -156,7 +155,7 @@ struct NodeList: View {
 				.controlSize(.regular)
 				.padding(5)
 			}
-			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
+			.searchable(text: $filters.searchText, placement: .automatic, prompt: "Find a node")
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(nodes.count)))
