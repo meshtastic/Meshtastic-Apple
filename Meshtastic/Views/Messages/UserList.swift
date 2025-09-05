@@ -11,172 +11,170 @@ import OSLog
 import TipKit
 
 struct UserList: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State private var searchText = ""
-//	@State private var viaLora = true
-//	@State private var viaMqtt = true
-//	@State private var isOnline = false
-//	@State private var isPkiEncrypted = false
-//	@State private var isFavorite = false
-//	@State private var isIgnored = false
-//	@State private var isEnvironment = false
-//	@State private var distanceFilter = false
-//	@State private var maxDistance: Double = 800000
-//	@State private var hopsAway: Double = -1.0
-//	@State private var roleFilter = false
-//	@State private var deviceRoles: Set<Int> = []
 	@State private var editingFilters = false
 	@State private var showingHelp = false
 	@State private var showingTrustConfirm: Bool = false
 	@StateObject private var filters: NodeFilterParameters = NodeFilterParameters()
-
+	
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
-
+	
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
-
+	
+	private func fetchUsers(withFilters: NodeFilterParameters) -> [UserEntity] {
+		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
+		request.sortDescriptors = [
+			NSSortDescriptor(key: "lastMessage", ascending: false),
+			NSSortDescriptor(key: "userNode.favorite", ascending: false),
+			NSSortDescriptor(key: "pkiEncrypted", ascending: false),
+			NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
+			NSSortDescriptor(key: "longName", ascending: true)
+		]
+		request.predicate = withFilters.buildPredicate()
+		return (try? context.fetch(request)) ?? []
+	}
+	
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
+		let users = fetchUsers(withFilters: filters)
 		VStack {
-			FilteredUserList(
-				filters: filters
-			) { users in
-				List(users, selection: $userSelection) { (user: UserEntity) in
-					let mostRecent = user.messageList.last
-					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
-					let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-					let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-					if user.num != accessoryManager.activeDeviceNum ?? 0 {
-						NavigationLink(value: user) {
-							ZStack {
-								Image(systemName: "circle.fill")
-									.opacity(user.unreadMessages > 0 ? 1 : 0)
-									.font(.system(size: 10))
-									.foregroundColor(.accentColor)
-									.brightness(0.2)
-							}
-
-							CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
-
-							VStack(alignment: .leading) {
-								HStack {
-									if user.pkiEncrypted {
-										if !user.keyMatch {
-											/// Public Key on the User and the Public Key on the Last Message don't match
-											Image(systemName: "key.slash")
-												.foregroundColor(.red)
-										} else {
-											Image(systemName: "lock.fill")
-												.foregroundColor(.green)
-										}
+			List(users, selection: $userSelection) { user in
+				let mostRecent = user.messageList.last
+				let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
+				let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+				let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+				if user.num != accessoryManager.activeDeviceNum ?? 0 {
+					NavigationLink(value: user) {
+						ZStack {
+							Image(systemName: "circle.fill")
+								.opacity(user.unreadMessages > 0 ? 1 : 0)
+								.font(.system(size: 10))
+								.foregroundColor(.accentColor)
+								.brightness(0.2)
+						}
+						
+						CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
+						
+						VStack(alignment: .leading) {
+							HStack {
+								if user.pkiEncrypted {
+									if !user.keyMatch {
+										/// Public Key on the User and the Public Key on the Last Message don't match
+										Image(systemName: "key.slash")
+											.foregroundColor(.red)
 									} else {
-										Image(systemName: "lock.open.fill")
-											.foregroundColor(.yellow)
+										Image(systemName: "lock.fill")
+											.foregroundColor(.green)
 									}
-									Text(user.longName ?? "Unknown".localized)
-										.font(.headline)
-										.allowsTightening(true)
-									Spacer()
-									if user.userNode?.favorite ?? false {
-										Image(systemName: "star.fill")
-											.foregroundColor(.yellow)
-									}
-									if user.messageList.count > 0 {
-										if lastMessageDay == currentDay {
-											Text(lastMessageTime, style: .time )
-												.font(.footnote)
-												.foregroundColor(.secondary)
-										} else if lastMessageDay == (currentDay - 1) {
-											Text("Yesterday")
-												.font(.footnote)
-												.foregroundColor(.secondary)
-										} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-											Text(lastMessageTime.formattedDate(format: dateFormatString))
-												.font(.footnote)
-												.foregroundColor(.secondary)
-										} else if lastMessageDay < (currentDay - 1800) {
-											Text(lastMessageTime.formattedDate(format: dateFormatString))
-												.font(.footnote)
-												.foregroundColor(.secondary)
-										}
-									}
+								} else {
+									Image(systemName: "lock.open.fill")
+										.foregroundColor(.yellow)
 								}
-
+								Text(user.longName ?? "Unknown".localized)
+									.font(.headline)
+									.allowsTightening(true)
+								Spacer()
+								if user.userNode?.favorite ?? false {
+									Image(systemName: "star.fill")
+										.foregroundColor(.yellow)
+								}
 								if user.messageList.count > 0 {
-									HStack(alignment: .top) {
-										Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+									if lastMessageDay == currentDay {
+										Text(lastMessageTime, style: .time )
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay == (currentDay - 1) {
+										Text("Yesterday")
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+										Text(lastMessageTime.formattedDate(format: dateFormatString))
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay < (currentDay - 1800) {
+										Text(lastMessageTime.formattedDate(format: dateFormatString))
 											.font(.footnote)
 											.foregroundColor(.secondary)
 									}
 								}
 							}
-						}
-						.frame(height: 62)
-						.contextMenu {
-							Button {
-								if node != nil && !(user.userNode?.favorite ?? false) {
-									user.userNode?.favorite = !(user.userNode?.favorite ?? false)
-									Task {
-										try await accessoryManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
-										Logger.data.info("Favorited a node")
-									}
-								} else {
-									user.userNode?.favorite = !(user.userNode?.favorite ?? false)
-									Task {
-										try await accessoryManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
-										Logger.data.info("Unfavorited a node")
-									}
-								}
-								context.refresh(user, mergeChanges: true)
-								do {
-									try context.save()
-								} catch {
-									context.rollback()
-									Logger.data.error("Save Node Favorite Error")
-								}
-							} label: {
-								Label((user.userNode?.favorite ?? false) ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
-							}
-							Button {
-								user.mute = !user.mute
-								do {
-									try context.save()
-								} catch {
-									context.rollback()
-									Logger.data.error("Save User Mute Error")
-								}
-							} label: {
-								Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
-							}
+							
 							if user.messageList.count > 0 {
-								Button(role: .destructive) {
-									isPresentingDeleteUserMessagesConfirm = true
-									userSelection = user
-								} label: {
-									Label("Delete Messages", systemImage: "trash")
+								HStack(alignment: .top) {
+									Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+										.font(.footnote)
+										.foregroundColor(.secondary)
 								}
-							}
-						}
-						.confirmationDialog(
-							"This conversation will be deleted.",
-							isPresented: $isPresentingDeleteUserMessagesConfirm,
-							titleVisibility: .visible
-						) {
-							Button(role: .destructive) {
-								deleteUserMessages(user: userSelection!, context: context)
-								context.refresh(node!.user!, mergeChanges: true)
-							} label: {
-								Text("Delete")
 							}
 						}
 					}
+					.frame(height: 62)
+					.contextMenu {
+						Button {
+							if node != nil && !(user.userNode?.favorite ?? false) {
+								user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+								Task {
+									try await accessoryManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+									Logger.data.info("Favorited a node")
+								}
+							} else {
+								user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+								Task {
+									try await accessoryManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+									Logger.data.info("Unfavorited a node")
+								}
+							}
+							context.refresh(user, mergeChanges: true)
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								Logger.data.error("Save Node Favorite Error")
+							}
+						} label: {
+							Label((user.userNode?.favorite ?? false) ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
+						}
+						Button {
+							user.mute = !user.mute
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								Logger.data.error("Save User Mute Error")
+							}
+						} label: {
+							Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
+						}
+						if user.messageList.count > 0 {
+							Button(role: .destructive) {
+								isPresentingDeleteUserMessagesConfirm = true
+								userSelection = user
+							} label: {
+								Label("Delete Messages", systemImage: "trash")
+							}
+						}
+					}
+					.confirmationDialog(
+						"This conversation will be deleted.",
+						isPresented: $isPresentingDeleteUserMessagesConfirm,
+						titleVisibility: .visible
+					) {
+						Button(role: .destructive) {
+							deleteUserMessages(user: userSelection!, context: context)
+							context.refresh(node!.user!, mergeChanges: true)
+						} label: {
+							Text("Delete")
+						}
+					}
 				}
-				.listStyle(.plain)
-				.navigationTitle(String.localizedStringWithFormat("Contacts (%@)", String(users.count)))
 			}
+			.listStyle(.plain)
+			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)", String(users.count)))
+			
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", filters: filters)
 			}
@@ -214,38 +212,26 @@ struct UserList: View {
 			}
 			.padding(.bottom, 5)
 			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a contact")
-				.disableAutocorrection(true)
-				.scrollDismissesKeyboard(.immediately)
+			.disableAutocorrection(true)
+			.scrollDismissesKeyboard(.immediately)
 		}
 	}
 }
 
-struct FilteredUserList<Content: View>: View {
-	@FetchRequest var fetchRequest: FetchedResults<UserEntity>
-	let content: (FetchedResults<UserEntity>) -> Content
-
-	var body: some View {
-		content(fetchRequest)
-	}
-
-	init(
-		filters: NodeFilterParameters,
-		@ViewBuilder content: @escaping (FetchedResults<UserEntity>) -> Content
-	) {
-		self.content = content
-		// Build predicates based on filter variables
+fileprivate extension NodeFilterParameters {
+	func buildPredicate() -> NSPredicate? {
 		var predicates: [NSPredicate] = []
 		// Search text predicates
-		if !filters.searchText.isEmpty {
+		if !searchText.isEmpty {
 			let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
-				return NSPredicate(format: "%K CONTAINS[c] %@", property, filters.searchText)
+				return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 			}
 			let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
 			predicates.append(textSearchPredicate)
 		}
 		// Mqtt and lora
-		if !(filters.viaLora && filters.viaMqtt) {
-			if filters.viaLora {
+		if !(viaLora && viaMqtt) {
+			if viaLora {
 				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
 				predicates.append(loraPredicate)
 			} else {
@@ -254,9 +240,9 @@ struct FilteredUserList<Content: View>: View {
 			}
 		}
 		// Roles
-		if filters.roleFilter && filters.deviceRoles.count > 0 {
+		if roleFilter && deviceRoles.count > 0 {
 			var rolesArray: [NSPredicate] = []
-			for dr in filters.deviceRoles {
+			for dr in deviceRoles {
 				let deviceRolePredicate = NSPredicate(format: "role == %i", Int32(dr))
 				rolesArray.append(deviceRolePredicate)
 			}
@@ -264,33 +250,33 @@ struct FilteredUserList<Content: View>: View {
 			predicates.append(compoundPredicate)
 		}
 		// Hops Away
-		if filters.hopsAway == 0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(filters.hopsAway))
+		if hopsAway == 0 {
+			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
-		} else if filters.hopsAway > -1.0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(filters.hopsAway))
+		} else if hopsAway > -1.0 {
+			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
 		}
 		// Online
-		if filters.isOnline {
+		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
 		}
 		// Encrypted
-		if filters.isPkiEncrypted {
+		if isPkiEncrypted {
 			let isPkiEncryptedPredicate = NSPredicate(format: "pkiEncrypted == YES")
 			predicates.append(isPkiEncryptedPredicate)
 		}
 		// Favorites
-		if filters.isFavorite {
+		if isFavorite {
 			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
 		// Distance
-		if filters.distanceFilter {
+		if distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation
 			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-				let d: Double = filters.maxDistance * 1.1
+				let d: Double = maxDistance * 1.1
 				let r: Double = 6371009
 				let meanLatitidue = pointOfInterest.latitude * .pi / 180
 				let deltaLatitude = d / r * 180 / .pi
@@ -313,19 +299,9 @@ struct FilteredUserList<Content: View>: View {
 		predicates.append(isIgnoredPredicate)
 		let isConnectedNodePredicate = NSPredicate(format: "NOT (numString CONTAINS %@)", String(UserDefaults.preferredPeripheralNum))
 		predicates.append(isConnectedNodePredicate)
+		
 		// Combine all predicates
 		let finalPredicate = predicates.isEmpty ? NSPredicate(value: true) : NSCompoundPredicate(type: .and, subpredicates: predicates)
-		// Initialize the fetch request with the combined predicate
-		_fetchRequest = FetchRequest<UserEntity>(
-			sortDescriptors: [
-				NSSortDescriptor(key: "lastMessage", ascending: false),
-				NSSortDescriptor(key: "userNode.favorite", ascending: false),
-				NSSortDescriptor(key: "pkiEncrypted", ascending: false),
-				NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
-				NSSortDescriptor(key: "longName", ascending: true)
-			],
-			predicate: finalPredicate,
-			animation: .spring
-		)
+		return finalPredicate
 	}
 }

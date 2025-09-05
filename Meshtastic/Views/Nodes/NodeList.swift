@@ -284,7 +284,7 @@ struct NodeList: View {
 	}
 }
 
-extension NodeFilterParameters {
+fileprivate extension NodeFilterParameters {
 	func buildPredicate() -> NSPredicate? {
 		var predicates: [NSPredicate] = []
 		
