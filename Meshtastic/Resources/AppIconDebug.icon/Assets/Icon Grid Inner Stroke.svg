@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(-1,0,0,1,511.941,614.467)">
+        <g id="Normal">
+            <g id="Grid">
+                <g>
+                    <g>
+                        <path d="M0,-207.125C-58.02,-207.125 -105.125,-160.02 -105.125,-102C-105.125,-43.98 -58.02,3.125 0,3.125C58.02,3.125 105.125,-43.98 105.125,-102C105.125,-160.02 58.02,-207.125 0,-207.125ZM0,-200.875C54.571,-200.875 98.875,-156.571 98.875,-102C98.875,-47.429 54.571,-3.125 0,-3.125C-54.571,-3.125 -98.875,-47.429 -98.875,-102C-98.875,-156.571 -54.571,-200.875 0,-200.875Z" style="fill:rgb(39,107,62);"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

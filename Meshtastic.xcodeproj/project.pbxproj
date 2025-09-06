@@ -23,6 +23,8 @@
 		231B3F272D0885240069A07D /* MetricsColumnDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F262D0885240069A07D /* MetricsColumnDetail.swift */; };
 		232ED4C32E2C5E89009DA392 /* TCPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232ED4C22E2C5E89009DA392 /* TCPTransport.swift */; };
 		232ED4C52E2C5EDD009DA392 /* TCPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */; };
+		2339EA982E6C65570032C234 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 2339EA972E6C65570032C234 /* AppIcon.icon */; };
+		2339EA9A2E6C65DC0032C234 /* AppIconDebug.icon in Resources */ = {isa = PBXBuildFile; fileRef = 2339EA992E6C65DC0032C234 /* AppIconDebug.icon */; };
 		233E99B62D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99B52D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift */; };
 		233E99B82D849C6500CC3A77 /* HumidityCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99B72D849C6500CC3A77 /* HumidityCompactWidget.swift */; };
 		233E99BA2D849C7000CC3A77 /* PressureCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99B92D849C7000CC3A77 /* PressureCompactWidget.swift */; };
@@ -327,6 +329,8 @@
 		231B3F262D0885240069A07D /* MetricsColumnDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnDetail.swift; sourceTree = "<group>"; };
 		232ED4C22E2C5E89009DA392 /* TCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCPTransport.swift; sourceTree = "<group>"; };
 		232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCPConnection.swift; sourceTree = "<group>"; };
+		2339EA972E6C65570032C234 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		2339EA992E6C65DC0032C234 /* AppIconDebug.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIconDebug.icon; sourceTree = "<group>"; };
 		233E99B32D84969500CC3A77 /* MeshtasticDataModelV 50.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 50.xcdatamodel"; sourceTree = "<group>"; };
 		233E99B52D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherConditionsCompactWidget.swift; sourceTree = "<group>"; };
 		233E99B72D849C6500CC3A77 /* HumidityCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HumidityCompactWidget.swift; sourceTree = "<group>"; };
@@ -1190,6 +1194,8 @@
 		DDC2E18926CE24F70042C5E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				2339EA992E6C65DC0032C234 /* AppIconDebug.icon */,
+				2339EA972E6C65570032C234 /* AppIcon.icon */,
 				DDB75A192A05EB67006ED576 /* alpha.png */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
@@ -1507,6 +1513,8 @@
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
 				25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */,
 				DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
+				2339EA9A2E6C65DC0032C234 /* AppIconDebug.icon in Resources */,
+				2339EA982E6C65570032C234 /* AppIcon.icon in Resources */,
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
 				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
@@ -2024,6 +2032,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDebug;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				ASSETCATALOG_OTHER_FLAGS = "--enable-icon-stack-fallback-generation=disabled";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
@@ -2057,6 +2066,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				ASSETCATALOG_OTHER_FLAGS = "--enable-icon-stack-fallback-generation=disabled";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
