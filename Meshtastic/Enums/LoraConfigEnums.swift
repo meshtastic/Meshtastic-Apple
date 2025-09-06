@@ -104,7 +104,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .jp:
 			return "Japan".localized
 		case .anz:
-			return "Australia / New Zealand".localized
+			return "Australia / Brazil / New Zealand".localized
 		case .anz433:
 			return "Australia / New Zealand 433MHz".localized
 		case .kr:
