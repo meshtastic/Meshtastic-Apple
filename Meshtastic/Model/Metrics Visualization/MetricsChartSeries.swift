@@ -30,6 +30,9 @@ class MetricsChartSeries: ObservableObject {
 	// A closure that will provide the foreground style given the data set and overall chart range
 	let foregroundStyle: (ClosedRange<Float>?) -> AnyShapeStyle?
 
+	// For drawing the lines in the chart
+	let strokeStyle: StrokeStyle
+	
 	// A closure that will provide the Chart Content for this series
 	let chartBodyClosure:
 		(MetricsChartSeries, ClosedRange<Float>?, TelemetryEntity) -> AnyChartContent?  // Closure to render the chart
@@ -51,6 +54,7 @@ class MetricsChartSeries: ObservableObject {
 		minumumYAxisSpan: Float? = nil,
 		conversion: ((Value) -> Value)? = nil,
 		visible: Bool = true,
+		strokeStyle: StrokeStyle = StrokeStyle(lineWidth: 4),
 		foregroundStyle: @escaping ((ClosedRange<Float>?) -> ForegroundStyle?) = { _ in nil },
 		@ChartContentBuilder chartBody: @escaping (MetricsChartSeries, ClosedRange<Float>?, Date, Value) -> ChartBody?
 	) {
@@ -62,7 +66,8 @@ class MetricsChartSeries: ObservableObject {
 		self.initialYAxisRange = initialYAxisRange
 		self.minumumYAxisSpan = minumumYAxisSpan
 		self.visible = visible
-
+		self.strokeStyle = strokeStyle
+		
 		// By saving these closures, MetricsChartSeries can be type agnostic
 		// This is a less elegant form of type erasure, but doesn't require a new Any-type
 		self.foregroundStyle = { range in foregroundStyle(range).map({ AnyShapeStyle($0) }) }

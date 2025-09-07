@@ -50,7 +50,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -76,11 +76,42 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
 
+			MetricsChartSeries(
+				id: "dewPoint",
+				keyPath: \.dewPoint,
+				name: "Dew Point",
+				abbreviatedName: "Dew",
+				minumumYAxisSpan: 50.0,
+				conversion: { t in t.map { Float($0.localeTemperature()) } },
+				strokeStyle: StrokeStyle(lineWidth: 4, dash: [2, 2]),
+				foregroundStyle: { chartRange in
+					let locale = NSLocale.current as NSLocale
+					let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
+					let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
+					let lowerBound = chartRange.map { Double($0.lowerBound) } ?? 0.0
+					let upperBound = chartRange.map { Double($0.upperBound) } ?? 100.0
+					let stops: [Gradient.Stop] = generateStops(minTemp: lowerBound, maxTemp: upperBound, tempUnit: format, opacity: 1.0)
+					return LinearGradient(stops: stops, startPoint: .bottom, endPoint: .top)
+				},
+				chartBody: { series, chartRange, time, dewPoint in
+					if let dewPoint {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(
+								series.abbreviatedName, dewPoint.localeTemperature())
+						)
+						.interpolationMethod(.catmullRom)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(series.strokeStyle)
+						.alignsMarkStylesWithPlotArea()
+					}
+				}),
+			
 			// Barometric Pressure Series Configuration
 			MetricsChartSeries(
 				id: "barometricPressure",
@@ -102,7 +133,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -130,7 +161,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -156,7 +187,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -182,7 +213,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -208,7 +239,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -234,7 +265,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -261,7 +292,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -288,7 +319,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 						PointMark(
 							x: .value("Time", time),
@@ -327,7 +358,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -353,7 +384,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -379,7 +410,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -405,7 +436,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -431,7 +462,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				}),
@@ -457,7 +488,7 @@ extension MetricsSeriesList {
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
-						.lineStyle(StrokeStyle(lineWidth: 4))
+						.lineStyle(series.strokeStyle)
 						.alignsMarkStylesWithPlotArea()
 					}
 				})

@@ -21,9 +21,14 @@ struct MetricsColumnDetail: View {
 				Section("Chart") {
 					ForEach(seriesList) { series in
 						HStack {
-							Circle()
-								.fill(series.foregroundStyle(0.0...100.0) ?? AnyShapeStyle(.clear))
-								.frame(width: 20.0, height: 20.0)
+							Path { path in
+								path.move(to: CGPoint(x: 10, y: 0))
+								path.addLine(to: CGPoint(x: 10, y: 20))
+							}
+							.stroke(series.foregroundStyle(0.0...100.0) ?? AnyShapeStyle(.clear),
+									style: series.strokeStyle)
+							.frame(width: 20.0, height: 20.0)
+							.rotationEffect(.degrees(90.0))
 							Text(series.name)
 							Spacer()
 							if series.visible {

@@ -39,6 +39,19 @@ extension MetricsColumnList {
 					} ?? Text(verbatim: Constants.nilValueIndicator)
 				}),
 
+			// Relative Humidity Series Configuration
+			MetricsTableColumn(
+				id: "dewPoint",
+				keyPath: \.dewPoint,
+				name: "Dew Point",
+				abbreviatedName: "Dew",
+				minWidth: 30, maxWidth: 45,
+				tableBody: { _, dewPoint in
+					dewPoint.map {
+						Text("\($0.formattedTemperature())")
+					} ?? Text(verbatim: Constants.nilValueIndicator)
+				}),
+			
 			// Barometric Pressure Series Configuration
 			MetricsTableColumn(
 				id: "barometricPressure",
