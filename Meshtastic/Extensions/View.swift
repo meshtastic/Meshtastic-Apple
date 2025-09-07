@@ -7,9 +7,25 @@
 
 import SwiftUI
 
-public extension View {
+extension View {
 	func onFirstAppear(_ action: @escaping () -> Void) -> some View {
 		modifier(FirstAppear(action: action))
+	}
+	
+	@ViewBuilder func olderThanOS26( _ contentBuilder: (@escaping (Self) -> some View) ) -> some View {
+		if #available(iOS 26.0, macOS 26.0, *) {
+			self
+		} else {
+			contentBuilder(self)
+		}
+	}
+	
+	@ViewBuilder func `if`<Content: View>(_ condition: @autoclosure () -> Bool, transform: (Self) -> Content) -> some View {
+		if condition() {
+			transform(self)
+		} else {
+			self
+		}
 	}
 }
 
