@@ -52,4 +52,10 @@ public class TelemetryEntity: NSManagedObject, Identifiable {
 	@ManagedAttribute<Float>(attributeName: "soilTemperature") public var soilTemperature: Float?
 	@ManagedAttribute<UInt32>(attributeName: "soilMoisture") public var soilMoisture: UInt32?
 
+	public var dewPoint: Float? {
+		guard let temp = self.temperature, let rh = self.relativeHumidity else {
+			return nil
+		}
+		return Float(calculateDewPoint(temp: temp, relativeHumidity: rh, convertToLocale: false))
+	}
 }
