@@ -42,19 +42,7 @@ struct MeshMap: View {
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 	/// Filter
-	@State private var searchText = ""
-	@State private var viaLora = true
-	@State private var viaMqtt = true
-	@State private var isOnline = false
-	@State private var isPkiEncrypted = false
-	@State private var isFavorite = false
-	@State private var isIgnored = false
-	@State private var isEnvironment = false
-	@State private var distanceFilter = false
-	@State private var maxDistance: Double = 800000
-	@State private var hopsAway: Double = -1.0
-	@State private var roleFilter = false
-	@State private var deviceRoles: Set<Int> = []
+	@StateObject var filters = NodeFilterParameters()
 
 	var body: some View {
 
@@ -160,18 +148,7 @@ struct MeshMap: View {
 			}
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(
-					viaLora: $viaLora,
-					viaMqtt: $viaMqtt,
-					isOnline: $isOnline,
-					isPkiEncrypted: $isPkiEncrypted,
-					isFavorite: $isFavorite,
-					isIgnored: $isIgnored,
-					isEnvironment: $isEnvironment,
-					distanceFilter: $distanceFilter,
-					maximumDistance: $maxDistance,
-					hopsAway: $hopsAway,
-					roleFilter: $roleFilter,
-					deviceRoles: $deviceRoles
+					filters: filters
 				)
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
