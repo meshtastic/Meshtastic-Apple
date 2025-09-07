@@ -168,7 +168,7 @@ struct ChannelList: View {
 						}
 					}
 				}
-				.olderThaniOS26Modifier { $0.padding([.top, .bottom]) }
+				.olderThanOS26 { $0.padding([.top, .bottom]) }
 				.listStyle(.plain)
 				.navigationTitle("Channels")
 			}

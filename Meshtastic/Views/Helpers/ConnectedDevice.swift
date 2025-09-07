@@ -65,7 +65,8 @@ struct ConnectedDevice: View {
 					.accessibilityLabel("No Bluetooth device connected".localized)
 				}
             }
-		}.iOS26Modifier { $0.padding(.horizontal, 5.0) }
+		}
+		.if(.os26) { $0.padding(.leading, 5.0) }
     }
 }
 

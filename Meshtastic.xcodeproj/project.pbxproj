@@ -43,7 +43,6 @@
 		2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */; };
 		2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE142D0A24930086C749 /* MetricsSeriesList.swift */; };
 		2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */; };
-		23769D882E39521400E3601C /* View+iOS26Modifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23769D872E39521400E3601C /* View+iOS26Modifier.swift */; };
 		237AEB8F2E1FE457003B7CE3 /* Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237AEB8E2E1FE456003B7CE3 /* Transport.swift */; };
 		237AEB912E1FE46D003B7CE3 /* AccessoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237AEB902E1FE46D003B7CE3 /* AccessoryManager.swift */; };
 		237AEB932E1FE4BA003B7CE3 /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237AEB922E1FE4BA003B7CE3 /* Connection.swift */; };
@@ -170,6 +169,7 @@
 		DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */; };
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
+		DD62605B2E6D2D3700E50C4F /* Bool.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD62605A2E6D2D3200E50C4F /* Bool.swift */; };
 		DD6D5A332CA1178300ED3032 /* TraceRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6D5A322CA1178300ED3032 /* TraceRoute.swift */; };
 		DD6F65722C6AB8EC0053C113 /* SecureInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65712C6AB8EC0053C113 /* SecureInput.swift */; };
 		DD6F65742C6CB80A0053C113 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65732C6CB80A0053C113 /* View.swift */; };
@@ -348,7 +348,6 @@
 		2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartSeries.swift; sourceTree = "<group>"; };
 		2373AE142D0A24930086C749 /* MetricsSeriesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsSeriesList.swift; sourceTree = "<group>"; };
 		2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultSeries.swift; sourceTree = "<group>"; };
-		23769D872E39521400E3601C /* View+iOS26Modifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+iOS26Modifier.swift"; sourceTree = "<group>"; };
 		237AEB8E2E1FE456003B7CE3 /* Transport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transport.swift; sourceTree = "<group>"; };
 		237AEB902E1FE46D003B7CE3 /* AccessoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryManager.swift; sourceTree = "<group>"; };
 		237AEB922E1FE4BA003B7CE3 /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
@@ -495,6 +494,7 @@
 		DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalNotificationConfig.swift; sourceTree = "<group>"; };
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
+		DD62605A2E6D2D3200E50C4F /* Bool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bool.swift; sourceTree = "<group>"; };
 		DD63CB4E2DD4FBEA00AFCAE2 /* MeshtasticDataModelV 51.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 51.xcdatamodel"; sourceTree = "<group>"; };
 		DD68BAE72C417A74004C01A0 /* MeshtasticDataModelV 40.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 40.xcdatamodel"; sourceTree = "<group>"; };
 		DD6D5A322CA1178300ED3032 /* TraceRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRoute.swift; sourceTree = "<group>"; };
@@ -1237,7 +1237,6 @@
 				DD6F65712C6AB8EC0053C113 /* SecureInput.swift */,
 				8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */,
 				237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */,
-				23769D872E39521400E3601C /* View+iOS26Modifier.swift */,
 				23A1AFB62E42BD2500E46C96 /* RXTXIndicatorView.swift */,
 			);
 			path = Helpers;
@@ -1317,6 +1316,7 @@
 			isa = PBXGroup;
 			children = (
 				DD007BB12AA59B9A00F5FA12 /* CoreData */,
+				DD62605A2E6D2D3200E50C4F /* Bool.swift */,
 				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
 				DDDB444529F8A96500EE2349 /* Character.swift */,
 				DD1BD0EA2C601795008C0C70 /* CLLocation.swift */,
@@ -1583,7 +1583,6 @@
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
-				23769D882E39521400E3601C /* View+iOS26Modifier.swift in Sources */,
 				237AEB992E20098B003B7CE3 /* BLEConnection.swift in Sources */,
 				231B3F272D0885240069A07D /* MetricsColumnDetail.swift in Sources */,
 				DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */,
@@ -1697,6 +1696,7 @@
 				23F488122E32980B002C776F /* AccessoryManager+Position.swift in Sources */,
 				6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */,
 				D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */,
+				DD62605B2E6D2D3700E50C4F /* Bool.swift in Sources */,
 				D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */,
