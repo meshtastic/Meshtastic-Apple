@@ -1,6 +1,6 @@
 //
 //  ChannelMessageList.swift
-//  MeshtasticApple
+//  Meshtastic
 //
 //  Created by Garth Vander Houwen on 12/24/21.
 //
@@ -20,7 +20,6 @@ struct ChannelMessageList: View {
 	@State private var replyMessageId: Int64 = 0
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageToHighlight: Int64 = 0
-	
 	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
 	
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
@@ -38,7 +37,7 @@ struct ChannelMessageList: View {
 		)
 		_allPrivateMessages = FetchRequest(fetchRequest: request)
 	}
-
+	
 	func markMessagesAsRead() {
 		do {
 			for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
@@ -170,6 +169,7 @@ struct ChannelMessageList: View {
 					}
 				}
 				.defaultScrollAnchor(.bottom)
+				.defaultScrollAnchorTopAlignment()
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
 				.onChange(of: messageFieldFocused) {

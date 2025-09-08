@@ -195,5 +195,6 @@ struct ChannelList: View {
 			.padding(5)
 		}
 		.padding(.bottom, 5)
+		.navigationTitle("Channels")
 	}
 }
