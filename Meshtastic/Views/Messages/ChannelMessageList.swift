@@ -1,5 +1,5 @@
 //
-//  UserMessageList.swift
+//  ChannelMessageList.swift
 //  MeshtasticApple
 //
 //  Created by Garth Vander Houwen on 12/24/21.
@@ -54,12 +54,11 @@ struct ChannelMessageList: View {
 	}
 	
 	var body: some View {
-		VStack {
+		NavigationStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
 						ForEach(allPrivateMessages) { message in
-							// Get the previous message, if it exists
 							let thisMessageIndex = allPrivateMessages.firstIndex(of: message) ?? 0
 							let previousMessage =  thisMessageIndex > 0 ? allPrivateMessages[thisMessageIndex - 1] : nil
 							let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
@@ -77,9 +76,8 @@ struct ChannelMessageList: View {
 												messageToHighlight = messageNum
 											}
 											scrollView.scrollTo(messageNum, anchor: .center)
-											// Reset highlight after delay
 											Task {
-												try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+												try? await Task.sleep(nanoseconds: 1_000_000_000)
 												withAnimation(.easeInOut(duration: 0.5)) {
 													messageToHighlight = -1
 												}
@@ -106,17 +104,17 @@ struct ChannelMessageList: View {
 										.padding(.all, 5)
 										.offset(y: -7)
 								}
-
+								
 								VStack(alignment: currentUser ? .trailing : .leading) {
 									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-
+									
 									if !currentUser && message.fromUser != nil {
 										Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 											.font(.caption)
 											.foregroundColor(.gray)
 											.offset(y: 8)
 									}
-
+									
 									HStack {
 										MessageText(
 											message: message,
@@ -126,17 +124,17 @@ struct ChannelMessageList: View {
 											self.replyMessageId = message.messageId
 											self.messageFieldFocused = true
 										}
-
+										
 										if currentUser && message.canRetry {
 											RetryButton(message: message, destination: .channel(channel))
 										}
 									}
-
+									
 									TapbackResponses(message: message) {
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										context.refresh(myInfo, mergeChanges: true)
 									}
-
+									
 									HStack {
 										let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 										if currentUser && message.receivedACK {
@@ -144,10 +142,7 @@ struct ChannelMessageList: View {
 												.foregroundStyle(ackErrorVal?.color ?? Color.red)
 												.font(.caption2)
 										} else if currentUser && message.ackError == 0 {
-											// Empty Error
-											Text("Waiting to be acknowledged. . .").font(
-												.caption2)
-												.foregroundColor(.orange)
+											Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
 										} else if currentUser && !isDetectionSensorMessage {
 											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 												.foregroundStyle(ackErrorVal?.color ?? Color.red)
@@ -157,7 +152,7 @@ struct ChannelMessageList: View {
 								}
 								.padding(.bottom)
 								.id(allPrivateMessages.firstIndex(of: message))
-
+								
 								if !currentUser {
 									Spacer(minLength: 50)
 								}
@@ -169,14 +164,12 @@ struct ChannelMessageList: View {
 								markMessagesAsRead()
 							}
 						}
-						// Invisible spacer to detect reaching bottom
 						Color.clear
 							.frame(height: 1)
 							.id("bottomAnchor")
 					}
 				}
 				.defaultScrollAnchor(.bottom)
-				// .defaultScrollAnchorTopAlignment()
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
 				.onChange(of: messageFieldFocused) {
@@ -186,32 +179,34 @@ struct ChannelMessageList: View {
 						}
 					}
 				}
-			}
-			TextMessageField(
-				destination: .channel(channel),
-				replyMessageId: $replyMessageId,
-				isFocused: $messageFieldFocused
-			)
-		}
-		.navigationBarTitleDisplayMode(.inline)
-		.toolbar {
-			ToolbarItem(placement: .principal) {
-				HStack {
-					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
-					Text(String(channel.name ?? "Unknown".localized).camelCaseToWords()).font(.headline)
+				.safeAreaInset(edge: .bottom) {
+					TextMessageField(
+						destination: .channel(channel),
+						replyMessageId: $replyMessageId,
+						isFocused: $messageFieldFocused
+					)
+					.background(.bar)
 				}
 			}
-			ToolbarItem(placement: .navigationBarTrailing) {
-				ZStack {
-					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?",
-						// mqttProxyConnected defaults to false, so if it's not enabled it will still be false
-						mqttProxyConnected: accessoryManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
-						mqttUplinkEnabled: channel.uplinkEnabled,
-						mqttDownlinkEnabled: channel.downlinkEnabled,
-						mqttTopic: accessoryManager.mqttManager.topic
-					)
+			.navigationBarTitleDisplayMode(.inline)
+			.toolbar {
+				ToolbarItem(placement: .principal) {
+					HStack {
+						CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
+						Text(String(channel.name ?? "Unknown").camelCaseToWords()).font(.headline)
+					}
+				}
+				ToolbarItem(placement: .navigationBarTrailing) {
+					ZStack {
+						ConnectedDevice(
+							deviceConnected: accessoryManager.isConnected,
+							name: accessoryManager.activeConnection?.device.shortName ?? "?",
+							mqttProxyConnected: accessoryManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
+							mqttUplinkEnabled: channel.uplinkEnabled,
+							mqttDownlinkEnabled: channel.downlinkEnabled,
+							mqttTopic: accessoryManager.mqttManager.topic
+						)
+					}
 				}
 			}
 		}
