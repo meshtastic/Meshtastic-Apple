@@ -53,160 +53,155 @@ struct ChannelMessageList: View {
 	}
 	
 	var body: some View {
-		NavigationStack {
-			ScrollViewReader { scrollView in
-				ScrollView {
-					LazyVStack {
-						ForEach(allPrivateMessages) { message in
-							let thisMessageIndex = allPrivateMessages.firstIndex(of: message) ?? 0
-							let previousMessage =  thisMessageIndex > 0 ? allPrivateMessages[thisMessageIndex - 1] : nil
-							let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
-							if message.displayTimestamp(aboveMessage: previousMessage) {
-								Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
-									.font(.caption)
-									.foregroundColor(.gray)
-							}
-							if message.replyID > 0 {
-								let messageReply = allPrivateMessages.first(where: { $0.messageId == message.replyID })
-								HStack {
-									Button {
-										if let messageNum = messageReply?.messageId {
+		ScrollViewReader { scrollView in
+			ScrollView {
+				LazyVStack {
+					ForEach(allPrivateMessages) { message in
+						let thisMessageIndex = allPrivateMessages.firstIndex(of: message) ?? 0
+						let previousMessage =  thisMessageIndex > 0 ? allPrivateMessages[thisMessageIndex - 1] : nil
+						let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
+						if message.displayTimestamp(aboveMessage: previousMessage) {
+							Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
+								.font(.caption)
+								.foregroundColor(.gray)
+						}
+						if message.replyID > 0 {
+							let messageReply = allPrivateMessages.first(where: { $0.messageId == message.replyID })
+							HStack {
+								Button {
+									if let messageNum = messageReply?.messageId {
+										withAnimation(.easeInOut(duration: 0.5)) {
+											messageToHighlight = messageNum
+										}
+										scrollView.scrollTo(messageNum, anchor: .center)
+										Task {
+											try? await Task.sleep(nanoseconds: 1_000_000_000)
 											withAnimation(.easeInOut(duration: 0.5)) {
-												messageToHighlight = messageNum
-											}
-											scrollView.scrollTo(messageNum, anchor: .center)
-											Task {
-												try? await Task.sleep(nanoseconds: 1_000_000_000)
-												withAnimation(.easeInOut(duration: 0.5)) {
-													messageToHighlight = -1
-												}
+												messageToHighlight = -1
 											}
 										}
-									} label: {
-										Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
-											.padding(10)
-											.overlay(
-												RoundedRectangle(cornerRadius: 18)
-													.stroke(Color.blue, lineWidth: 0.5)
-											)
-										Image(systemName: "arrowshape.turn.up.left.fill")
-											.symbolRenderingMode(.hierarchical)
-											.imageScale(.large).foregroundColor(.accentColor)
-											.padding(.trailing)
 									}
+								} label: {
+									Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+										.padding(10)
+										.overlay(
+											RoundedRectangle(cornerRadius: 18)
+												.stroke(Color.blue, lineWidth: 0.5)
+										)
+									Image(systemName: "arrowshape.turn.up.left.fill")
+										.symbolRenderingMode(.hierarchical)
+										.imageScale(.large).foregroundColor(.accentColor)
+										.padding(.trailing)
 								}
-							}
-							HStack(alignment: .bottom) {
-								if currentUser { Spacer(minLength: 50) }
-								if !currentUser {
-									CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, node: getNodeInfo(id: Int64(message.fromUser?.num ?? 0), context: context))
-										.padding(.all, 5)
-										.offset(y: -7)
-								}
-								
-								VStack(alignment: currentUser ? .trailing : .leading) {
-									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-									
-									if !currentUser && message.fromUser != nil {
-										Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
-											.font(.caption)
-											.foregroundColor(.gray)
-											.offset(y: 8)
-									}
-									
-									HStack {
-										MessageText(
-											message: message,
-											tapBackDestination: .channel(channel),
-											isCurrentUser: currentUser
-										) {
-											self.replyMessageId = message.messageId
-											self.messageFieldFocused = true
-										}
-										
-										if currentUser && message.canRetry {
-											RetryButton(message: message, destination: .channel(channel))
-										}
-									}
-									
-									TapbackResponses(message: message) {
-										appState.unreadChannelMessages = myInfo.unreadMessages
-										context.refresh(myInfo, mergeChanges: true)
-									}
-									
-									HStack {
-										let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-										if currentUser && message.receivedACK {
-											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-												.foregroundStyle(ackErrorVal?.color ?? Color.red)
-												.font(.caption2)
-										} else if currentUser && message.ackError == 0 {
-											Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
-										} else if currentUser && !isDetectionSensorMessage {
-											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-												.foregroundStyle(ackErrorVal?.color ?? Color.red)
-												.font(.caption2)
-										}
-									}
-								}
-								.padding(.bottom)
-								.id(allPrivateMessages.firstIndex(of: message))
-								
-								if !currentUser {
-									Spacer(minLength: 50)
-								}
-							}
-							.padding([.leading, .trailing])
-							.frame(maxWidth: .infinity)
-							.id(message.messageId)
-							.onAppear {
-								markMessagesAsRead()
 							}
 						}
-						Color.clear
-							.frame(height: 1)
-							.id("bottomAnchor")
-					}
-				}
-				.defaultScrollAnchor(.bottom)
-				.defaultScrollAnchorTopAlignment()
-				.defaultScrollAnchorBottomSizeChanges()
-				.scrollDismissesKeyboard(.immediately)
-				.onChange(of: messageFieldFocused) {
-					if messageFieldFocused {
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+						HStack(alignment: .bottom) {
+							if currentUser { Spacer(minLength: 50) }
+							if !currentUser {
+								CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, node: getNodeInfo(id: Int64(message.fromUser?.num ?? 0), context: context))
+									.padding(.all, 5)
+									.offset(y: -7)
+							}
+							
+							VStack(alignment: currentUser ? .trailing : .leading) {
+								let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
+								
+								if !currentUser && message.fromUser != nil {
+									Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
+										.font(.caption)
+										.foregroundColor(.gray)
+										.offset(y: 8)
+								}
+								
+								HStack {
+									MessageText(
+										message: message,
+										tapBackDestination: .channel(channel),
+										isCurrentUser: currentUser
+									) {
+										self.replyMessageId = message.messageId
+										self.messageFieldFocused = true
+									}
+									
+									if currentUser && message.canRetry {
+										RetryButton(message: message, destination: .channel(channel))
+									}
+								}
+								
+								TapbackResponses(message: message) {
+									appState.unreadChannelMessages = myInfo.unreadMessages
+									context.refresh(myInfo, mergeChanges: true)
+								}
+								
+								HStack {
+									let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+									if currentUser && message.receivedACK {
+										Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
+											.foregroundStyle(ackErrorVal?.color ?? Color.red)
+											.font(.caption2)
+									} else if currentUser && message.ackError == 0 {
+										Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
+									} else if currentUser && !isDetectionSensorMessage {
+										Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
+											.foregroundStyle(ackErrorVal?.color ?? Color.red)
+											.font(.caption2)
+									}
+								}
+							}
+							.padding(.bottom)
+							.id(allPrivateMessages.firstIndex(of: message))
+							
+							if !currentUser {
+								Spacer(minLength: 50)
+							}
+						}
+						.padding([.leading, .trailing])
+						.frame(maxWidth: .infinity)
+						.id(message.messageId)
+						.onAppear {
+							markMessagesAsRead()
 						}
 					}
-				}
-				.safeAreaInset(edge: .bottom) {
-					TextMessageField(
-						destination: .channel(channel),
-						replyMessageId: $replyMessageId,
-						isFocused: $messageFieldFocused
-					)
-					.background(.bar)
+					Color.clear
+						.frame(height: 1)
+						.id("bottomAnchor")
 				}
 			}
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .principal) {
-					HStack {
-						CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
-						Text(String(channel.name ?? "Unknown").camelCaseToWords()).font(.headline)
+			.defaultScrollAnchor(.bottom)
+			.defaultScrollAnchorTopAlignment()
+			.defaultScrollAnchorBottomSizeChanges()
+			.scrollDismissesKeyboard(.immediately)
+			.onChange(of: messageFieldFocused) {
+				if messageFieldFocused {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 					}
 				}
-				ToolbarItem(placement: .navigationBarTrailing) {
-					ZStack {
-						ConnectedDevice(
-							deviceConnected: accessoryManager.isConnected,
-							name: accessoryManager.activeConnection?.device.shortName ?? "?",
-							mqttProxyConnected: accessoryManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
-							mqttUplinkEnabled: channel.uplinkEnabled,
-							mqttDownlinkEnabled: channel.downlinkEnabled,
-							mqttTopic: accessoryManager.mqttManager.topic
-						)
-					}
+			}
+			TextMessageField(
+				destination: .channel(channel),
+				replyMessageId: $replyMessageId,
+				isFocused: $messageFieldFocused
+			)
+		}
+		.navigationBarTitleDisplayMode(.inline)
+		.toolbar {
+			ToolbarItem(placement: .principal) {
+				HStack {
+					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
+					Text(String(channel.name ?? "Unknown").camelCaseToWords()).font(.headline)
+				}
+			}
+			ToolbarItem(placement: .navigationBarTrailing) {
+				ZStack {
+					ConnectedDevice(
+						deviceConnected: accessoryManager.isConnected,
+						name: accessoryManager.activeConnection?.device.shortName ?? "?",
+						mqttProxyConnected: accessoryManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
+						mqttUplinkEnabled: channel.uplinkEnabled,
+						mqttDownlinkEnabled: channel.downlinkEnabled,
+						mqttTopic: accessoryManager.mqttManager.topic
+					)
 				}
 			}
 		}
