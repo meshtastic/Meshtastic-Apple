@@ -19,65 +19,56 @@ struct TextMessageField: View {
 	var body: some View {
 		SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
 			VStack(spacing: 0) {
-				HStack(alignment: .top) {
-					if replyMessageId != 0 {
-						HStack {
-							Button {
-								withAnimation(.easeInOut(duration: 0.2)) {
-									replyMessageId = 0
-								}
-								isFocused = false
-							} label: {
-								Image(systemName: "x.circle.fill")
+				HStack(alignment: .bottom) {
+					if replyMessageId != 0 || isFocused {
+						Button {
+							withAnimation(.easeInOut(duration: 0.2)) {
+								replyMessageId = 0
 							}
+							isFocused = false
+						} label: {
+							Image(systemName: "x.circle.fill")
+								.font(.largeTitle)
+						}
+						if replyMessageId != 0 {
 							Text("Reply")
 						}
-						.padding(.top)
 					}
-
-					ZStack {
-						TextField("Message", text: $typingMessage, axis: .vertical)
-							.onChange(of: typingMessage) { _, value in
-								totalBytes = value.utf8.count
-								while totalBytes > Self.maxbytes {
-									typingMessage = String(typingMessage.dropLast())
-									totalBytes = typingMessage.utf8.count
-								}
+					TextField("Message", text: $typingMessage, axis: .vertical)
+						.padding(10)
+						.background(
+							Capsule()
+								.strokeBorder(.tertiary, lineWidth: 1)
+								.background(Capsule().fill(Color.white))
+						)
+						.clipShape(Capsule())
+						.onChange(of: typingMessage) { _, value in
+							totalBytes = value.utf8.count
+							while totalBytes > Self.maxbytes {
+								typingMessage = String(typingMessage.dropLast())
+								totalBytes = typingMessage.utf8.count
 							}
-							.keyboardType(.default)
-							// Remove toolbar here
-							.padding(.horizontal, 8)
-							.focused($isFocused)
-							.multilineTextAlignment(.leading)
-							.frame(minHeight: 50)
-							.onSubmit {
+						}
+						.keyboardType(.default)
+						.focused($isFocused)
+						.multilineTextAlignment(.leading)
+						.onSubmit {
 #if targetEnvironment(macCatalyst)
-								sendMessage()
+							sendMessage()
 #endif
-							}
-
-						Text(typingMessage)
-							.opacity(0)
-							.padding(.all, 0)
-					}
-					.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
-					
-					Button(action: sendMessage) {
-						Image(systemName: "arrow.up.circle.fill")
-							.font(.largeTitle)
-							.foregroundColor(.accentColor)
+						}
+					if typingMessage.length > 0 {
+						Button(action: sendMessage) {
+							Image(systemName: "arrow.up.circle.fill")
+								.font(.largeTitle)
+								.foregroundColor(.accentColor)
+						}
 					}
 				}
-				.padding(.horizontal, 15)
-				.padding(.top, 15)
-				.padding(.bottom, 10)
+				.padding(15)
 				Divider()
 				if isFocused {
 					HStack {
-						Button("Dismiss") {
-							isFocused = false
-						}
-						Spacer()
 						AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
 						Spacer()
 						RequestPositionButton(action: requestPosition)
