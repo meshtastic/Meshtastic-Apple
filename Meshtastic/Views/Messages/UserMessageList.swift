@@ -14,14 +14,9 @@ struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.managedObjectContext) var context
-	// Keyboard State
 	@FocusState var messageFieldFocused: Bool
-	// View State Items
 	@ObservedObject var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
-	// Scroll state
-	@State private var showScrollToBottomButton = false
-	@State private var hasReachedBottom = false
 	@State private var messageToHighlight: Int64 = 0
 
 	var body: some View {
@@ -139,11 +134,6 @@ struct UserMessageList: View {
 												Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 											}
 										}
-										// Check if we've reached the bottom message
-										if message.messageId == user.messageList.last?.messageId {
-											hasReachedBottom = true
-											showScrollToBottomButton = false
-										}
 									}
 								}
 							}
@@ -151,71 +141,28 @@ struct UserMessageList: View {
 							Color.clear
 								.frame(height: 1)
 								.id("bottomAnchor")
-								.onAppear {
-									hasReachedBottom = true
-									showScrollToBottomButton = false
-								}
 						}
 					}
-					.scrollDismissesKeyboard(.interactively)
-					.onFirstAppear {
-						if user.unreadMessages == 0 {
-							withAnimation {
-								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-								hasReachedBottom = true
-							}
-						} else {
-							if let firstUnreadMessageId = user.messageList.first(where: { !$0.read })?.messageId {
-								withAnimation {
-									scrollView.scrollTo(firstUnreadMessageId, anchor: .top)
-									showScrollToBottomButton = true
-								}
-							}
-						}
-					}
-					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
-						withAnimation {
-							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-							hasReachedBottom = true
-							showScrollToBottomButton = false
-						}
-					}
-					.onChange(of: user.messageList) {
-						if hasReachedBottom {
-							withAnimation {
+					.defaultScrollAnchor(.bottom)
+					.defaultScrollAnchorTopAlignment()
+					.defaultScrollAnchorBottomSizeChanges()
+					.scrollDismissesKeyboard(.immediately)
+					.onChange(of: messageFieldFocused) {
+						if messageFieldFocused {
+							DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 							}
-						} else {
-							showScrollToBottomButton = true
 						}
-					}
-					// Scroll to bottom button
-					if showScrollToBottomButton {
-						Button {
-							withAnimation {
-								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-								hasReachedBottom = true
-								showScrollToBottomButton = false
-							}
-						} label: {
-							ScrollToBottomButtonView()
-						}
-						.padding(.bottom, 8)
-						.padding(.trailing, 16)
-						.transition(.opacity)
 					}
 				}
 			}
-
 			TextMessageField(
 				destination: .user(user),
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused
-			) {
-				context.refresh(user, mergeChanges: true)
-			}
+			)
 		}
-		.navigationBarTitleDisplayMode(.large)
+		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			if !user.keyMatch {
 				ToolbarItem(placement: .bottomBar) {

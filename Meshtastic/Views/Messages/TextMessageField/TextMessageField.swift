@@ -9,7 +9,6 @@ struct TextMessageField: View {
 	let destination: MessageDestination
 	@Binding var replyMessageId: Int64
 	@FocusState.Binding var isFocused: Bool
-	let onSubmit: () -> Void
 
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
@@ -122,7 +121,6 @@ struct TextMessageField: View {
 				typingMessage = ""
 				isFocused = false
 				replyMessageId = 0
-				onSubmit()
 
 				if sendPositionWithMessage {
 					try await accessoryManager.sendPosition(

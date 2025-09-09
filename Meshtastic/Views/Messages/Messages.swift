@@ -71,14 +71,18 @@ struct Messages: View {
 			switch router.navigationState.messages {
 			case .channels(let channelId, let messageId):
 				ChannelList(node: $node, channelSelection: $channelSelection)
+					// Removed navigationTitle and navigationBarTitleDisplayMode here.
+					// ChannelList.swift now handles this within its own NavigationStack.
 			case .directMessages(let userNum, let messageId):
 				UserList(node: $node, userSelection: $userSelection)
+					// Removed navigationTitle here. UserList will handle this.
 			case nil:
 				Text("Select a conversation type")
 			}
 		} detail: {
 			if let myInfo = node?.myInfo, let channelSelection {
 				ChannelMessageList(myInfo: myInfo, channel: channelSelection)
+					// The toolbar is now defined inside ChannelMessageList.swift
 			} else if let userSelection {
 				UserMessageList(user: userSelection)
 			} else if case .channels = router.navigationState.messages {

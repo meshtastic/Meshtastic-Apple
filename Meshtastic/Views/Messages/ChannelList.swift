@@ -170,7 +170,6 @@ struct ChannelList: View {
 				}
 				.olderThanOS26 { $0.padding([.top, .bottom]) }
 				.listStyle(.plain)
-				.navigationTitle("Channels")
 			}
 		}
 		.sheet(isPresented: $showingHelp) {
@@ -196,5 +195,6 @@ struct ChannelList: View {
 			.padding(5)
 		}
 		.padding(.bottom, 5)
+		.navigationTitle("Channels")
 	}
 }
