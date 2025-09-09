@@ -8,7 +8,7 @@
 import SwiftUI
 import OSLog
 
-func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> String {
+func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String where S.Element == TelemetryEntity {
 	var csvString: String = ""
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
