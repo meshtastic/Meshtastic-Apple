@@ -55,28 +55,11 @@ struct EnvironmentMetricsLog: View {
 					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 						// Add a table for mac and ipad
 						Table(environmentMetrics) {
-							TableColumn("Temperature") { em in
-								columnList.column(withId: "temperature")?.body(em)
+							TableColumnForEach(columnList.visible) { col in
+								TableColumn(col.name) { em in
+									col.body(em)
+								}
 							}
-							TableColumn("Humidity") { em in
-								columnList.column(withId: "relativeHumidity")?.body(em)
-							}
-							TableColumn("Barometric Pressure") { em in
-								columnList.column(withId: "barometricPressure")?.body(em)
-							}
-							TableColumn("Indoor Air Quality") { em in
-								columnList.column(withId: "iaq")?.body(em)
-							}
-							TableColumn("Wind Speed") { em in
-								columnList.column(withId: "windSpeed")?.body(em)
-							}
-							TableColumn("Wind Direction") { em in
-								columnList.column(withId: "windDirection")?.body(em)
-							}
-							TableColumn("Timestamp") { em in
-								columnList.column(withId: "time")?.body(em)
-							}
-							.width(min: 180)
 						}
 					} else {
 						ScrollView {
