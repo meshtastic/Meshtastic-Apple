@@ -14,11 +14,11 @@ struct UserList: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var router: Router
 	@State private var editingFilters = false
 	@State private var showingHelp = false
 	@State private var showingTrustConfirm: Bool = false
 	@StateObject private var filters: NodeFilterParameters = NodeFilterParameters()
-	
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
 	

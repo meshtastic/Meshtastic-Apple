@@ -25,12 +25,16 @@ struct SaveChannelSettingsIntent: AppIntent {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
+		let urlString = channelUrl.absoluteString.lowercased()
+
 		// Ensure the URL contains the expected "meshtastic.org/e/#" structure
-		if channelUrl.absoluteString.lowercased().contains("meshtastic.org/e/#") {
+		if urlString.contains("meshtastic.org/e/#") {
 			// Split the URL to get the portion after "#"
-			let components = channelUrl.absoluteString.components(separatedBy: "#")
-			// Add channels flag based on the URL query parameter (if present)
-			let addChannels = Bool(channelUrl["add"] ?? "false") ?? false
+			let components = urlString.components(separatedBy: "#")
+			
+			// Use the custom URL extension on the urlString, not the URL object
+			let addChannels = Bool(URL(string: urlString)?["add"] ?? "false") ?? false
+			
 			var channelSettings: String?
 			// Extract the Base64 encoded channel settings (after "#")
 			if let lastComponent = components.last {
@@ -39,13 +43,12 @@ struct SaveChannelSettingsIntent: AppIntent {
 
 			// If valid channel settings are extracted, attempt to save them
 			if let channelSettings = channelSettings {
-				Task {
-					do {
-						// Call the AcessoryManager to save the channel settings
-						try await AccessoryManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
-					} catch {
-						throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
-					}
+				// The `Task` is redundant here, `perform` is already an async function
+				do {
+					// Call the AcessoryManager to save the channel settings
+					try await AccessoryManager.shared.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
+				} catch {
+					throw AppIntentErrors.AppIntentError.message("Failed to save the channel settings.")
 				}
 			} else {
 				throw AppIntentErrors.AppIntentError.message("Invalid Channel URL: Unable to extract settings.")

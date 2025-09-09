@@ -5,76 +5,74 @@
 import SwiftUI
 
 struct ContentView: View {
-	@ObservedObject var appState: AppState
+	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State var router: Router
-	@State var isShowingDeviceOnboardingFlow: Bool = false
+	@EnvironmentObject var router: Router
 
-	init(appState: AppState, router: Router) {
-		self.appState = appState
-		self.router = router
+	init() {
 		UITabBar.appearance().scrollEdgeAppearance = UITabBarAppearance(idiom: .unspecified)
 	}
 
 	var body: some View {
-		TabView(selection: $appState.router.navigationState.selectedTab) {
-			Messages(
-				router: appState.router,
-				unreadChannelMessages: $appState.unreadChannelMessages,
-				unreadDirectMessages: $appState.unreadDirectMessages
-			)
+		TabView(selection: $router.navigationState.selectedTab) {
+			Messages()
 			.tabItem {
 				Label("Messages", systemImage: "message")
 			}
 			.tag(NavigationState.Tab.messages)
 			.badge(appState.totalUnreadMessages)
 
-			Connect(
-					router: appState.router
-				)
+			Connect()
 				.tabItem {
 					Label("Connect", systemImage: "link")
 				}
 				.tag(NavigationState.Tab.connect)
 
-			NodeList(
-				router: appState.router
-			)
+			NodeList()
 			.tabItem {
 				Label("Nodes", systemImage: "flipphone")
 			}
 			.tag(NavigationState.Tab.nodes)
 
-			MeshMap(router: appState.router)
+			MeshMap()
 				.tabItem {
 					Label("Mesh Map", systemImage: "map")
 				}
 				.tag(NavigationState.Tab.map)
 
-			Settings(
-				router: appState.router
-			)
+			Settings()
 			.tabItem {
 				Label("Settings", systemImage: "gear")
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)
-		}.sheet(
-			isPresented: $isShowingDeviceOnboardingFlow,
-			onDismiss: {
-				UserDefaults.firstLaunch = false
-				accessoryManager.startDiscovery()
-			}, content: {
-				DeviceOnboarding()
+		}
+		.sheet(item: $appState.activeSheet) { sheet in
+			switch sheet {
+			case .deviceOnboarding:
+				DeviceOnboarding(onboardingCompleted: {
+					appState.activeSheet = nil
+					UserDefaults.firstLaunch = false
+					accessoryManager.startDiscovery()
+				})
+			case .channelSettings(let channelSettings, let addChannels):
+				SaveChannelQRCode(
+					channelSetLink: channelSettings,
+					addChannels: addChannels,
+					accessoryManager: accessoryManager
+				)
 			}
-		)
+		}
 		.onAppear {
 			if UserDefaults.firstLaunch {
-				isShowingDeviceOnboardingFlow = true
+				appState.activeSheet = .deviceOnboarding
 			}
 		}
-		.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
-			isShowingDeviceOnboardingFlow = newValue
-		}
+	}
+}
+
+extension View {
+	func hideKeyboard() {
+		UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
 	}
 }

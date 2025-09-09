@@ -14,8 +14,7 @@ struct NodeList: View {
 	var context
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	
-	@StateObject var router: Router
+	@EnvironmentObject var router: Router
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?

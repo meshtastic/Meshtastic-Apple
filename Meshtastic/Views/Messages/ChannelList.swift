@@ -13,12 +13,9 @@ struct ChannelList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-
-	@Binding
-	var node: NodeInfoEntity?
-
-	@Binding
-	var channelSelection: ChannelEntity?
+	@EnvironmentObject var router: Router
+	@Binding var node: NodeInfoEntity?
+	@Binding var channelSelection: ChannelEntity?
 
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 	@State private var isPresentingTraceRouteSentAlert = false

@@ -13,6 +13,7 @@ import MeshtasticProtobufs
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var router: Router
 	@FetchRequest(
 		sortDescriptors: [
 			NSSortDescriptor(key: "favorite", ascending: false),
@@ -27,9 +28,6 @@ struct Settings: View {
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
 	@State private var moduleOverride: Bool = false
-
-	@ObservedObject
-	var router: Router
 
 	// MARK: Helper
 

@@ -13,19 +13,12 @@ import TipKit
 struct Messages: View {
 
 	@Environment(\.managedObjectContext) var context
-
-	@ObservedObject
-	var router: Router
-
-	@Binding
-	var unreadChannelMessages: Int
-
-	@Binding
-	var unreadDirectMessages: Int
+	@EnvironmentObject var router: Router
+	@EnvironmentObject var appState: AppState
 
 	@State var node: NodeInfoEntity?
-	@State private var userSelection: UserEntity? // Nothing selected by default.
-	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
+	@State private var userSelection: UserEntity?
+	@State private var channelSelection: ChannelEntity?
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 
@@ -35,7 +28,7 @@ struct Messages: View {
 				NavigationLink(value: MessagesNavigationState.channels()) {
 					Label {
 						Text("Channels")
-							.badge(unreadChannelMessages)
+							.badge(appState.unreadChannelMessages)
 							.font(.title2)
 							.padding()
 					} icon: {
@@ -49,7 +42,7 @@ struct Messages: View {
 				NavigationLink(value: MessagesNavigationState.directMessages()) {
 					Label {
 						Text("Direct Messages")
-							.badge(unreadDirectMessages)
+							.badge(appState.unreadDirectMessages)
 							.font(.title2)
 							.padding()
 					} icon: {
@@ -71,18 +64,14 @@ struct Messages: View {
 			switch router.navigationState.messages {
 			case .channels(let channelId, let messageId):
 				ChannelList(node: $node, channelSelection: $channelSelection)
-					// Removed navigationTitle and navigationBarTitleDisplayMode here.
-					// ChannelList.swift now handles this within its own NavigationStack.
 			case .directMessages(let userNum, let messageId):
 				UserList(node: $node, userSelection: $userSelection)
-					// Removed navigationTitle here. UserList will handle this.
 			case nil:
 				Text("Select a conversation type")
 			}
 		} detail: {
 			if let myInfo = node?.myInfo, let channelSelection {
 				ChannelMessageList(myInfo: myInfo, channel: channelSelection)
-					// The toolbar is now defined inside ChannelMessageList.swift
 			} else if let userSelection {
 				UserMessageList(user: userSelection)
 			} else if case .channels = router.navigationState.messages {

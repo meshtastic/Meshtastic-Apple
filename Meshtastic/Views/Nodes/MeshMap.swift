@@ -16,9 +16,7 @@ struct MeshMap: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-
-	@ObservedObject
-	var router: Router
+	@EnvironmentObject var router: Router
 
 	/// Parameters
 	@State var showUserLocation: Bool = true

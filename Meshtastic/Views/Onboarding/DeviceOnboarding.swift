@@ -12,12 +12,20 @@ struct DeviceOnboarding: View {
 		case bluetooth
 	}
 	
+	// The closure to be executed when onboarding is completed
+	var onboardingCompleted: (() -> Void)
+	
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var navigationPath: [SetupGuide] = []
 	@State var locationStatus = LocationsHandler.shared.manager.authorizationStatus
 	@AppStorage("provideLocation") private var provideLocation: Bool = false
 	@AppStorage("provideLocationInterval") private var provideLocationInterval: Int = 30
 	@Environment(\.dismiss) var dismiss
+	
+	init(onboardingCompleted: @escaping (() -> Void)) {
+		self.onboardingCompleted = onboardingCompleted
+	}
+	
 	/// The Title View
 	var title: some View {
 		VStack {
@@ -356,6 +364,7 @@ struct DeviceOnboarding: View {
 			}.multilineTextAlignment(.leading)
 		}.accessibilityElement(children: .combine)
 	}
+	
 	// MARK: Navigation
 	func goToNextStep(after step: SetupGuide?) async {
 		switch step {
@@ -378,12 +387,14 @@ struct DeviceOnboarding: View {
 			let status = LocationsHandler.shared.manager.authorizationStatus
 			if status != .notDetermined && status != .restricted && status != .denied {
 				navigationPath.append(.localNetwork)
+			} else {
+				fallthrough
 			}
 		case .localNetwork:
 			navigationPath.append(.bluetooth)
-			
 		case .bluetooth:
-			dismiss()
+			// Call the completion closure here to signal the end of onboarding
+			onboardingCompleted()
 		}
 	}
 	
@@ -447,5 +458,4 @@ struct DeviceOnboarding: View {
 	func requestBluetoothPermissions() async {
 		_ = await BluetoothAuthorizationHelper.requestBluetoothAuthorization()
 	}
-
 }

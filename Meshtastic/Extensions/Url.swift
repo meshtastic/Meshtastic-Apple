@@ -1,8 +1,8 @@
 //
-//  Url.swift
-//  Meshtastic
+//  Url.swift
+//  Meshtastic
 //
-//  Copyright(c) Garth Vander Houwen 5/5/23.
+//  Copyright(c) Garth Vander Houwen 5/5/23.
 //
 
 import Foundation
@@ -18,19 +18,13 @@ extension URL {
 		}
 		return UInt64(resourceValues.totalFileAllocatedSize ?? resourceValues.fileAllocatedSize ?? 0)
 	}
+	
+	/// A subscript that retrieves the value of a specific query parameter from the URL.
 	subscript(queryParam: String) -> String? {
 		guard let url = URLComponents(string: self.absoluteString) else { return nil }
-		if let parameters = url.queryItems {
-			return parameters.first(where: { $0.name == queryParam })?.value
-		} else if let paramPairs = url.fragment?.components(separatedBy: "?").last?.components(separatedBy: "&") {
-			for pair in paramPairs where pair.contains(queryParam) {
-				return pair.components(separatedBy: "=").last
-			}
-			return nil
-		} else {
-			return nil
-		}
+		return url.queryItems?.first(where: { $0.name == queryParam })?.value
 	}
+	
 	var attributes: [FileAttributeKey: Any]? {
 		do {
 			return try FileManager.default.attributesOfItem(atPath: path)

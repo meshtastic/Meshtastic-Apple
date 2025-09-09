@@ -1024,7 +1024,11 @@ func textMessageAppPacket(
 				if newMessage.fromUser != nil && newMessage.toUser != nil {
 					// Set Unread Message Indicators
 					if packet.to == connectedNode {
-						appState?.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+						
+						Task { @MainActor in
+							appState?.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+						}
+					
 					}
 					if !(newMessage.fromUser?.mute ?? false) {
 						// Create an iOS Notification for the received DM message
@@ -1052,7 +1056,10 @@ func textMessageAppPacket(
 					do {
 						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 						if !fetchedMyInfo.isEmpty {
-							appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+							Task { @MainActor in
+								appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+							}
+							
 							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)

@@ -7,20 +7,17 @@ import SwiftUI
 class Router: ObservableObject {
 
 	@Published
-	var navigationState: NavigationState
+	var navigationState: NavigationState = NavigationState(selectedTab: .connect)
 
 	private var cancellables: Set<AnyCancellable> = []
-
-	init(
-		navigationState: NavigationState = NavigationState(
-			selectedTab: .connect
-		)
-	) {
-		self.navigationState = navigationState
-
-		$navigationState.sink { destination in
-			Logger.services.info("🛣 [App] Routed to \(destination.selectedTab.rawValue, privacy: .public)")
-		}.store(in: &cancellables)
+	
+	// Add logic to listen for state changes and update badge count, similar to the original AppState
+	init() {
+		$navigationState
+			.sink { _ in
+				// You can add logic here to react to navigation state changes if needed
+			}
+			.store(in: &cancellables)
 	}
 
 	func route(url: URL) {
