@@ -40,7 +40,7 @@ struct TextMessageField: View {
 						.background(
 							Capsule()
 								.strokeBorder(.tertiary, lineWidth: 1)
-								.background(Capsule().fill(Color(.secondarySystemBackground)))
+								.background(Capsule().fill(Color(.systemBackground)))
 						)
 						.clipShape(Capsule())
 						.onChange(of: typingMessage) { _, value in
