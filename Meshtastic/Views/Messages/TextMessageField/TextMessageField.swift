@@ -58,7 +58,7 @@ struct TextMessageField: View {
 							sendMessage()
 #endif
 						}
-						.foregroundColor(.secondary)
+						.foregroundColor(.primary)
 					if !typingMessage.isEmpty {
 						Button(action: sendMessage) {
 							Image(systemName: "arrow.up.circle.fill")
