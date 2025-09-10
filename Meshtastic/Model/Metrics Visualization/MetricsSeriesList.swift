@@ -44,7 +44,7 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 	// configuraiton, such as:
 	//   1. starting with a desired fixed range
 	//   2. obeying a minimum span
-	func chartRange(forData data: [TelemetryEntity]) -> ClosedRange<Float> {
+	func chartRange<S: Sequence>(forData data: S) -> ClosedRange<Float> where S.Element == TelemetryEntity {
 		var globalLower: Float = .infinity
 		var globalUpper: Float = -.infinity
 

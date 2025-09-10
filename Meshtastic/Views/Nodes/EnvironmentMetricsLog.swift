@@ -7,6 +7,7 @@
 import SwiftUI
 import Charts
 import OSLog
+import CoreData
 
 struct EnvironmentMetricsLog: View {
 
@@ -21,19 +22,27 @@ struct EnvironmentMetricsLog: View {
 	@StateObject var seriesList = MetricsSeriesList.environmentDefaultChartSeries
 
 	@State var isEditingColumnConfiguration = false
-
+	
+	@FetchRequest private var chartData: FetchedResults<TelemetryEntity>
+	
+	init(node: NodeInfoEntity) {
+		self.node = node
+		
+		// Build fetch request:
+		let request: NSFetchRequest<TelemetryEntity> = TelemetryEntity.fetchRequest()
+		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
+		request.predicate = NSPredicate(format: "nodeTelemetry == %@ AND metricsType == 1 AND time >= %@", node, oneWeekAgo as NSDate)
+		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
+		_chartData = FetchRequest(fetchRequest: request)
+	}
+	
 	var body: some View {
 		VStack {
 			if node.hasEnvironmentMetrics {
-				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-				let environmentMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).reversed() as? [TelemetryEntity] ?? []
-				let chartData = environmentMetrics
-					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
-					.sorted { $0.time! < $1.time! }
 				let chartRange = applyMargins(seriesList.chartRange(forData: chartData))
 				VStack {
 					if chartData.count > 0 {
-						GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+						GroupBox(label: Label("\(chartData.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 							Chart(seriesList.visible) { series in
 								ForEach(chartData, id: \.time) { dataPoint in
 									series.body(dataPoint, inChartRange: chartRange)
@@ -54,29 +63,12 @@ struct EnvironmentMetricsLog: View {
 					// to be bumped to 17.4 -- Until that happens, the existing non-configurable table is used.
 					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 						// Add a table for mac and ipad
-						Table(environmentMetrics) {
-							TableColumn("Temperature") { em in
-								columnList.column(withId: "temperature")?.body(em)
+						Table(chartData) {
+							TableColumnForEach(columnList.visible) { col in
+								TableColumn(col.name) { em in
+									col.body(em)
+								}
 							}
-							TableColumn("Humidity") { em in
-								columnList.column(withId: "relativeHumidity")?.body(em)
-							}
-							TableColumn("Barometric Pressure") { em in
-								columnList.column(withId: "barometricPressure")?.body(em)
-							}
-							TableColumn("Indoor Air Quality") { em in
-								columnList.column(withId: "iaq")?.body(em)
-							}
-							TableColumn("Wind Speed") { em in
-								columnList.column(withId: "windSpeed")?.body(em)
-							}
-							TableColumn("Wind Direction") { em in
-								columnList.column(withId: "windDirection")?.body(em)
-							}
-							TableColumn("Timestamp") { em in
-								columnList.column(withId: "time")?.body(em)
-							}
-							.width(min: 180)
 						}
 					} else {
 						ScrollView {
@@ -88,7 +80,7 @@ struct EnvironmentMetricsLog: View {
 											.fontWeight(.bold)
 									}
 								}
-								ForEach(environmentMetrics, id: \.self) { em  in
+								ForEach(chartData) { em  in
 									GridRow {
 										ForEach(columnList.visible) { col in
 											col.body(em)
@@ -142,7 +134,7 @@ struct EnvironmentMetricsLog: View {
 						}
 					}
 					Button {
-						exportString = telemetryToCsvFile(telemetry: environmentMetrics, metricsType: 1)
+						exportString = telemetryToCsvFile(telemetry: chartData, metricsType: 1)
 						isExporting = true
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
@@ -192,3 +184,4 @@ struct EnvironmentMetricsLog: View {
 		return lower...upper
 	}
 }
+

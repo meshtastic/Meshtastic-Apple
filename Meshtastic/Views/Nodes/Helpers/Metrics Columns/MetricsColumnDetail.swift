@@ -14,11 +14,31 @@ struct MetricsColumnDetail: View {
 	@State private var currentDetent = PresentationDetent.medium
 
 	@Environment(\.dismiss) private var dismiss
-
+	
+	enum ViewOption: String, CaseIterable, Identifiable {
+		case chart = "Chart"
+		case table = "Table"
+		
+		var id: String { rawValue }
+	}
+	
+	@State private var selectedView: ViewOption = .chart
+	
 	var body: some View {
 		NavigationStack {
 			Form {
-				Section("Chart") {
+				Section {
+					Picker("", selection: $selectedView) {
+						ForEach(ViewOption.allCases) { option in
+							Text(option.rawValue)
+								.tag(option)
+						}
+					}
+					.pickerStyle(.segmented)
+				}.listRowBackground(Color.clear)
+				
+				switch selectedView {
+				case .chart:
 					ForEach(seriesList) { series in
 						HStack {
 							Path { path in
@@ -40,29 +60,25 @@ struct MetricsColumnDetail: View {
 								seriesList.toggleVisibity(for: series)
 							}
 					}
-				}
-				// Dynamic table column using SwiftUI Table requires TableColumnForEach which requires the target
-				// to be bumped to 17.4 -- Until that happens, the existing non-configurable table is used.
-				if !(UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
-					Section("Table") {
-						ForEach(columnList.columns) { column in
-							HStack {
-								Text(column.name)
-								Spacer()
-								if column.visible {
-									Image(systemName: "checkmark")
-										.foregroundColor(.blue)
-								}
-							}.contentShape(Rectangle())  // Ensures the entire row is tappable
-								.onTapGesture {
-									columnList.objectWillChange.send()
-									columnList.toggleVisibity(for: column)
-								}
-						}
+				case .table:
+					ForEach(columnList.columns) { column in
+						HStack {
+							Text(column.name)
+							Spacer()
+							if column.visible {
+								Image(systemName: "checkmark")
+									.foregroundColor(.blue)
+							}
+						}.contentShape(Rectangle())  // Ensures the entire row is tappable
+							.onTapGesture {
+								columnList.objectWillChange.send()
+								columnList.toggleVisibity(for: column)
+							}
 					}
 				}
 			}
 			.listStyle(.insetGrouped)
+			.listSectionSpacing(12)
 #if targetEnvironment(macCatalyst)
 			Spacer()
 			Button {
