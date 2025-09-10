@@ -69,6 +69,10 @@ struct TextMessageField: View {
 				Divider()
 				if isFocused {
 					HStack {
+						Button("Dismiss") {
+							isFocused = false
+						}
+						Spacer()
 						AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
 						Spacer()
 						RequestPositionButton(action: requestPosition)
