@@ -40,7 +40,7 @@ struct TextMessageField: View {
 						.background(
 							Capsule()
 								.strokeBorder(.tertiary, lineWidth: 1)
-								.background(Capsule().fill(Color.white))
+								.background(Capsule().fill(Color(.secondarySystemBackground)))
 						)
 						.clipShape(Capsule())
 						.onChange(of: typingMessage) { _, value in
@@ -58,6 +58,7 @@ struct TextMessageField: View {
 							sendMessage()
 #endif
 						}
+						.foregroundColor(.secondary)
 					if !typingMessage.isEmpty {
 						Button(action: sendMessage) {
 							Image(systemName: "arrow.up.circle.fill")
