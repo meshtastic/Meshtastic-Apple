@@ -32,6 +32,7 @@ struct TextMessageField: View {
 						}
 						if replyMessageId != 0 {
 							Text("Reply")
+								.padding(.bottom, 10)
 						}
 					}
 					TextField("Message", text: $typingMessage, axis: .vertical)
@@ -69,9 +70,6 @@ struct TextMessageField: View {
 				Divider()
 				if isFocused {
 					HStack {
-						Button("Dismiss") {
-							isFocused = false
-						}
 						Spacer()
 						AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
 						Spacer()
