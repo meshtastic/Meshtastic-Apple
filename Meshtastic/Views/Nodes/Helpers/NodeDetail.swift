@@ -448,6 +448,15 @@ struct NodeDetail: View {
 							node: node
 						)
 						if connectedNode.num != node.num {
+							if !(node.user?.unmessagable ?? true) {
+								Button(action: {
+									if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
+										UIApplication.shared.open(url)
+									}
+								}) {
+									Label("Message", systemImage: "message")
+								}
+							}
 							ExchangePositionsButton(
 								node: node
 							)

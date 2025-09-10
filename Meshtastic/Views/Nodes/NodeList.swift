@@ -58,7 +58,7 @@ struct NodeList: View {
 		/// Allow users to mute notifications for a node even if they are not connected
 		if let user = node.user {
 			NodeAlertsButton(context: context, node: node, user: user)
-			if !user.unmessagable {
+			if !user.unmessagable && user.num == UserDefaults.preferredPeripheralNum {
 				Button(action: {
 					shareContactNode = node
 				}) {
@@ -80,9 +80,6 @@ struct NodeList: View {
 						Label("Message", systemImage: "message")
 					}
 				}
-				TraceRouteButton(
-					node: node
-				)
 				Button {
 					Task {
 						do {
@@ -104,6 +101,9 @@ struct NodeList: View {
 				} label: {
 					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 				}
+				TraceRouteButton(
+					node: node
+				)
 				IgnoreNodeButton(
 					node: node
 				)
