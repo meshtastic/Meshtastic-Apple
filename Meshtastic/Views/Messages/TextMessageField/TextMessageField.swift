@@ -57,7 +57,7 @@ struct TextMessageField: View {
 							sendMessage()
 #endif
 						}
-					if typingMessage.length > 0 {
+					if !typingMessage.isEmpty {
 						Button(action: sendMessage) {
 							Image(systemName: "arrow.up.circle.fill")
 								.font(.largeTitle)
