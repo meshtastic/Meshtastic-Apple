@@ -30,7 +30,7 @@ struct Connect: View {
 	
 	var body: some View {
 		NavigationStack {
-			VStack {
+			VStack(spacing: 0) {
 				List {
 					Section {
 						if let connectedDevice = accessoryManager.activeConnection?.device,
@@ -338,6 +338,7 @@ struct Connect: View {
 					Spacer()
 				}
 				.padding(.bottom, 10)
+				.background(Color(.tertiarySystemGroupedBackground))
 			}
 			.navigationTitle("Connect")
 			.navigationBarItems(
