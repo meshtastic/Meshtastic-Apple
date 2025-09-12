@@ -43,18 +43,18 @@ struct DeviceOnboarding: View {
 					VStack(alignment: .leading, spacing: 16) {
 						makeRow(
 							icon: "antenna.radiowaves.left.and.right",
-							title: "Stay Connected Anywhere".localized,
-							subtitle: "Communicate off-the-grid with your friends and community without cell service.".localized
+							title: String(localized: "Stay Connected Anywhere"),
+							subtitle: String(localized: "Communicate off-the-grid with your friends and community without cell service.")
 						)
 						makeRow(
 							icon: "point.3.connected.trianglepath.dotted",
-							title: "Create Your Own Networks".localized,
-							subtitle: "Easily set up private mesh networks for secure and reliable communication in remote areas.".localized
+							title: String(localized: "Create Your Own Networks"),
+							subtitle: String(localized: "Easily set up private mesh networks for secure and reliable communication in remote areas.")
 						)
 						makeRow(
 							icon: "location",
-							title: "Track and Share Locations".localized,
-							subtitle: "Share your location in real-time and keep your group coordinated with integrated GPS features.".localized
+							title: String(localized: "Track and Share Locations"),
+							subtitle: String(localized: "Share your location in real-time and keep your group coordinated with integrated GPS features.")
 						)
 					}
 					.padding()
@@ -94,18 +94,18 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 					makeRow(
 						icon: "message",
-						title: "Incoming Messages".localized,
-						subtitle: "Notifications for channel and direct messages.".localized
+						title: String(localized: "Incoming Messages"),
+						subtitle: String(localized: "Notifications for channel and direct messages.")
 					)
 					makeRow(
 						icon: "flipphone",
-						title: "New Nodes".localized,
-						subtitle: "Notifications for newly discovered nodes.".localized
+						title: String(localized: "New Nodes"),
+						subtitle: String(localized: "Notifications for newly discovered nodes.")
 					)
 					makeRow(
 						icon: "battery.25percent",
-						title: "Low Battery".localized,
-						subtitle: "Notifications for low battery alerts for the connected device.".localized
+						title: String(localized: "Low Battery"),
+						subtitle: String(localized: "Notifications for low battery alerts for the connected device.")
 					)
 					Text("Critical Alerts")
 						.font(.title2.bold())
@@ -113,7 +113,7 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 					makeRow(
 						icon: "exclamationmark.triangle.fill",
-						subtitle: "Select packets sent as critical will ignore the mute switch and Do Not Disturb settings in the OS notification center.".localized
+						subtitle: String(localized: "Select packets sent as critical will ignore the mute switch and Do Not Disturb settings in the OS notification center.")
 					)
 				}
 				.padding()
@@ -151,8 +151,8 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 					makeRow(
 						icon: "location",
-						title: "Share Location".localized,
-						subtitle: "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node.".localized
+						title: String(localized: "Share Location"),
+						subtitle: String(localized: "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node.")
 					)
 					Toggle(isOn: $provideLocation ) {
 						Label {
@@ -171,18 +171,18 @@ struct DeviceOnboarding: View {
 					}
 					makeRow(
 						icon: "lines.measurement.horizontal",
-						title: "Distance Measurements".localized,
-						subtitle: "Display the distance between your phone and other Meshtastic nodes with positions.".localized
+						title: String(localized: "Distance Measurements"),
+						subtitle: String(localized: "Display the distance between your phone and other Meshtastic nodes with positions.")
 					)
 					makeRow(
 						icon: "line.3.horizontal.decrease.circle",
-						title: "Distance Filters".localized,
-						subtitle: "Filter the node list and mesh map based on proximity to your phone.".localized
+						title: String(localized: "Distance Filters"),
+						subtitle: String(localized: "Filter the node list and mesh map based on proximity to your phone.")
 					)
 					makeRow(
 						icon: "mappin",
-						title: "Mesh Map Location",
-						subtitle: "Enables the blue location dot for your phone in the mesh map.".localized
+						title: String(localized: "Mesh Map Location"),
+						subtitle: String(localized: "Enables the blue location dot for your phone in the mesh map.")
 					)
 				}
 				.padding()
@@ -389,8 +389,8 @@ struct DeviceOnboarding: View {
 	
 	// MARK: Formatting
 	func createLocationString() -> AttributedString {
-		var fullText = AttributedString("Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from settings.")
-		if let range = fullText.range(of: "settings") {
+		var fullText = AttributedString(localized: "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from settings.")
+		if let range = fullText.range(of: String(localized: "settings")) {
 			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
 			fullText[range].foregroundColor = .blue
 		}

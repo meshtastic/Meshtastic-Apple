@@ -248,7 +248,7 @@ struct Routes: View {
 							hasChanges = true
 						}
 						Map {
-							Annotation("Start", coordinate: lineCoords.first ?? LocationsHandler.DefaultLocation) {
+							Annotation(String(localized: "Start"), coordinate: lineCoords.first ?? LocationsHandler.DefaultLocation) {
 								ZStack {
 									Circle()
 										.fill(Color(.green))
@@ -257,7 +257,7 @@ struct Routes: View {
 								}
 							}
 							.annotationTitles(.automatic)
-							Annotation("Finish", coordinate: lineCoords.last ?? LocationsHandler.DefaultLocation) {
+							Annotation(String(localized: "Finish ", comment: "Space at the end has been added to not interfere with translations for 'Finish' in RouteRecorder"), coordinate: lineCoords.last ?? LocationsHandler.DefaultLocation) {
 								ZStack {
 									Circle()
 										.fill(Color(.black))
@@ -306,7 +306,7 @@ struct Routes: View {
 				)
 			}
 		}
-		.navigationTitle(selectedRoute != nil ? name : "Route List")
+		.navigationTitle(selectedRoute != nil ? name : String(localized: "Route List"))
 		.navigationBarTitleDisplayMode(.inline)
 	}
 }

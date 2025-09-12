@@ -450,7 +450,7 @@ enum MapDataError: Error, LocalizedError {
 		case .unsupportedFormat:
 			return "Unsupported file format. Supported formats: JSON, GeoJSON, KML, KMZ, GZ, ZLIB."
 		case .invalidContent:
-			return "Invalid file content. Please check the file format."
+			return String(localized: "Invalid file content. Please check the file format.")
 		case .directoryCreationFailed:
 			return "Failed to create storage directory."
 		case .invalidDestination:

@@ -603,6 +603,12 @@
     },
     "%@ can be up to %@ bytes long." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kann bis zu %@ Byte lang sein."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1168,6 +1174,46 @@
         }
       }
     },
+    "%lld features" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Feature"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Features"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld feature"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld features"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld or less hops away" : {
       "localizations" : {
         "de" : {
@@ -1584,6 +1630,7 @@
       }
     },
     "8" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -1998,6 +2045,12 @@
     },
     "About" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über Meshtastic"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2026,6 +2079,12 @@
     },
     "About Meshtastic" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über Meshtastic"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2852,6 +2911,24 @@
     },
     "After %lld Days" : {
       "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nach %lld Tag"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nach %lld Tagen"
+                }
+              }
+            }
+          }
+        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -3607,7 +3684,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ambient Lighting"
+            "value" : "Ambientebeleuchtung"
           }
         },
         "fr" : {
@@ -3665,7 +3742,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ambient Lighting Config"
+            "value" : "Ambientebeleuchtungskonfiguration"
           }
         },
         "fr" : {
@@ -3916,6 +3993,12 @@
     },
     "App Data" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Daten"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3986,10 +4069,23 @@
 
     },
     "App Notifications" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungseinstellungen"
+          }
+        }
+      }
     },
     "App Settings" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Einstellungen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4295,6 +4391,12 @@
     },
     "Available modem presets, default is Long Fast." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfügbare Modem-Voreinstellungen, Standard ist „Long Range - Fast“."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5775,6 +5877,12 @@
     },
     "Call Sign" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rufzeichen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5809,6 +5917,12 @@
     },
     "Call Sign must not be empty" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Rufzeichen darf nicht leer sein."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7341,7 +7455,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Daten löschen"
+            "value" : "App-Daten löschen"
           }
         },
         "fr" : {
@@ -7430,6 +7544,12 @@
     },
     "Clear Stale Nodes" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veraltete Knoten löschen"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7826,6 +7946,16 @@
         }
       }
     },
+    "Communicate off-the-grid with your friends and community without cell service." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bleibe mit deinen Freunden und deiner Community in Verbindung, auch abseits vom Mobilfunknetz."
+          }
+        }
+      }
+    },
     "Communicating" : {
       "localizations" : {
         "it" : {
@@ -8027,10 +8157,24 @@
       "isCommentAutoGenerated" : true
     },
     "Configure Location Permissions" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standortberechtigungen konfigurieren"
+          }
+        }
+      }
     },
     "Configure notification permissions" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungsberechtigungen konfigurieren"
+          }
+        }
+      }
     },
     "Confirm" : {
       "localizations" : {
@@ -8426,6 +8570,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "同意透過 MQTT 傳輸未加密的節點資料"
+          }
+        }
+      }
+    },
+    "Contact Filters" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontaktfilter"
           }
         }
       }
@@ -8892,6 +9046,16 @@
         }
       }
     },
+    "Create Your Own Networks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstelle deine eigenen Netzwerke"
+          }
+        }
+      }
+    },
     "Created: %@" : {
       "localizations" : {
         "de" : {
@@ -8927,7 +9091,14 @@
       }
     },
     "Critical Alerts" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kritische Hinweise"
+          }
+        }
+      }
     },
     "Current" : {
       "localizations" : {
@@ -9777,6 +9948,12 @@
     },
     "Description" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschreibung"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10917,6 +11094,12 @@
     },
     "Direct Message Help" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hilfe für Direktnachrichten"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11575,6 +11758,16 @@
         }
       }
     },
+    "Display the distance between your phone and other Meshtastic nodes with positions." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Darstellung der Entfernung zwischen deinem Handy und anderen Meshtastic-Knoten mit Positionsangabe."
+          }
+        }
+      }
+    },
     "Display Units" : {
       "localizations" : {
         "it" : {
@@ -11649,8 +11842,34 @@
         }
       }
     },
+    "Distance Filters" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distanzfilter"
+          }
+        }
+      }
+    },
+    "Distance Measurements" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distanzmessungen"
+          }
+        }
+      }
+    },
     "Documentation" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumentation"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12007,6 +12226,16 @@
         }
       }
     },
+    "Easily set up private mesh networks for secure and reliable communication in remote areas." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richte einfach private Mesh-Netzwerke für eine sichere und zuverlässige Kommunikation in abgelegenen Gebieten ein."
+          }
+        }
+      }
+    },
     "Echo" : {
       "localizations" : {
         "fr" : {
@@ -12153,6 +12382,12 @@
     },
     "Elev. Gain" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Höhenunterschied"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12276,7 +12511,14 @@
       }
     },
     "Enable Location Sharing" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standortfreigabe aktivieren"
+          }
+        }
+      }
     },
     "Enable Notifications" : {
       "localizations" : {
@@ -12498,6 +12740,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "啟用具備原生 I2S 音訊輸出的裝置，透過喇叭以類似蜂鳴器的方式播放 RTTTL。以 T-Watch S3 和 T-Deck 為例，它們就具備此功能。"
+          }
+        }
+      }
+    },
+    "Enables the blue location dot for your phone in the mesh map." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiviert den blauen Standort-Punkt für dein Handy in der Mesh-Karte."
           }
         }
       }
@@ -12795,6 +13047,12 @@
     },
     "environment" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umgebung"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13345,6 +13603,12 @@
     },
     "Expire" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitpunkt"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13373,6 +13637,12 @@
     },
     "Expires" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisches Löschen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13429,6 +13699,12 @@
     },
     "Export" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportieren"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13851,6 +14127,12 @@
     },
     "Favorited and ignored nodes are always retained. Nodes without PKC keys are cleared from the app database on the schedule set by the user, nodes with PKC keys are cleared only if the interval is set to 7 days or longer. This feature only purges nodes from the app that are not stored in the device node database." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knoten, die als Favorit markiert oder ignoriert wurden, bleiben immer erhalten. Knoten ohne PKC-Schlüssel werden gemäß dem festgelegten Zeitplan aus der App-Datenbank gelöscht. Knoten mit PKC-Schlüsseln werden nur gelöscht, wenn das Intervall auf 7 Tage oder länger eingestellt ist. Diese Funktion löscht nur Knoten aus der App, die nicht in der Geräteknoten-Datenbank gespeichert sind."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13901,6 +14183,12 @@
     },
     "Favorites and nodes with recent messages show up at the top of the contact list." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoriten und Knoten mit aktuellen Nachrichten werden oben in der Kontaktliste angezeigt."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14090,6 +14378,16 @@
     "Files Available" : {
       "comment" : "Data source label when files exist but none are active"
     },
+    "Filter the node list and mesh map based on proximity to your phone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtere die Knotenliste und die Mesh-Karte nach der Nähe zu deinem Handy."
+          }
+        }
+      }
+    },
     "Find a contact" : {
       "localizations" : {
         "de" : {
@@ -14218,6 +14516,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成"
+          }
+        }
+      }
+    },
+    "Finish " : {
+      "comment" : "Space at the end has been added to not interfere with translations for 'Finish' in RouteRecorder",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ziel"
           }
         }
       }
@@ -15612,7 +15921,14 @@
       }
     },
     "Get started" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los geht's"
+          }
+        }
+      }
     },
     "Get the latest alpha firmware" : {
       "localizations" : {
@@ -16212,6 +16528,12 @@
     },
     "Heading: %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurs: %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17368,6 +17690,12 @@
     },
     "Icon" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17721,6 +18049,12 @@
     },
     "Import Route" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route importieren"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17823,6 +18157,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "包含"
+          }
+        }
+      }
+    },
+    "Incoming Messages" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eingehende Nachrichten"
           }
         }
       }
@@ -18149,6 +18493,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入"
+          }
+        }
+      }
+    },
+    "Invalid file content. Please check the file format." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ungültiger Dateiinhalt. Bitte überprüfe das Dateiformat."
           }
         }
       }
@@ -18599,6 +18953,12 @@
     },
     "LED State" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LED Status"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18898,7 +19258,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Standrot:"
+            "value" : "Standort:"
           }
         },
         "it" : {
@@ -19181,6 +19541,12 @@
     },
     "Long press to favorite or mute the contact or delete a conversation." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durch langes Gedrückthalten kannst du den Kontakt zu deinen Favoriten hinzufügen, stumm schalten oder eine Unterhaltung löschen."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19639,6 +20005,16 @@
         }
       }
     },
+    "Low Battery" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niedriger Akkustand"
+          }
+        }
+      }
+    },
     "M5 Stack Card KB / RAK Keypad" : {
       "localizations" : {
         "de" : {
@@ -19841,7 +20217,15 @@
       }
     },
     "Manage map data" : {
-      "comment" : "Link to manage uploaded map data"
+      "comment" : "Link to manage uploaded map data",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartendaten verwalten"
+          }
+        }
+      }
     },
     "Managed Device" : {
       "localizations" : {
@@ -20398,6 +20782,16 @@
         }
       }
     },
+    "Mesh Map Location" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort auf der Mesh-Karte"
+          }
+        }
+      }
+    },
     "Meshtastic" : {
 
     },
@@ -20431,6 +20825,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic 節點 %@ 向您分享頻道資訊"
+          }
+        }
+      }
+    },
+    "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from settings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic verwendet den Standort deines Handys, um eine Reihe von Funktionen zu ermöglichen. Du kannst deine Standortberechtigungen jederzeit in den Einstellungen aktualisieren."
           }
         }
       }
@@ -22176,6 +22580,16 @@
         }
       }
     },
+    "New Nodes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Knoten"
+          }
+        }
+      }
+    },
     "New Zealand 865MHz" : {
       "localizations" : {
         "it" : {
@@ -22443,6 +22857,12 @@
     "No Data" : {
       "comment" : "Data source label when no files are available",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Daten vorhanden"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22602,7 +23022,14 @@
       }
     },
     "No files uploaded" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Dateien hochgeladen"
+          }
+        }
+      }
     },
     "No Interface" : {
       "localizations" : {
@@ -23557,6 +23984,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "筆記"
+          }
+        }
+      }
+    },
+    "Notifications for channel and direct messages." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen für Kanal- und Direktnachrichten."
+          }
+        }
+      }
+    },
+    "Notifications for low battery alerts for the connected device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen bei niedrigem Akkustand des verbundenen Funkgeräts."
+          }
+        }
+      }
+    },
+    "Notifications for newly discovered nodes." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen für neu entdeckte Knoten."
           }
         }
       }
@@ -25395,7 +25852,14 @@
       }
     },
     "Phone Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standorteinstellungen"
+          }
+        }
+      }
     },
     "Pin %lld" : {
       "localizations" : {
@@ -25545,6 +26009,12 @@
     },
     "Please connect to a radio to configure settings." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte verbinde dich mit einem Funkgerät, um die Einstellungen zu ändern."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25579,6 +26049,12 @@
     },
     "Please set a region" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte lege eine Region fest"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26553,6 +27029,12 @@
     },
     "Presets" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voreinstellungen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26879,6 +27361,12 @@
     },
     "Processing file..." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei wird verarbeitet…"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26913,6 +27401,12 @@
     },
     "Project information" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projektinformationen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27011,6 +27505,12 @@
     },
     "Provide anonymous usage statistics and crash reports." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teile anonyme Nutzungsstatistiken und Absturzberichte."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29426,8 +29926,24 @@
         }
       }
     },
+    "Route List" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Routenliste"
+          }
+        }
+      }
+    },
     "Route Recorder" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route aufzeichnen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29456,6 +29972,12 @@
     },
     "Route recording paused" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Routenaufzeichnung pausiert"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29592,6 +30114,12 @@
     },
     "Routes" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Routenliste"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30913,7 +31441,14 @@
       }
     },
     "Select Map File" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei auswählen"
+          }
+        }
+      }
     },
     "Select Node" : {
       "localizations" : {
@@ -30975,6 +31510,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇節點"
+          }
+        }
+      }
+    },
+    "Select packets sent as critical will ignore the mute switch and Do Not Disturb settings in the OS notification center." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als kritisch eingestufte Mitteilungen ignorieren den Stummschalter und die 'Nicht stören'-Einstellungen des Benachrichtigungszentrums."
           }
         }
       }
@@ -31412,7 +31957,14 @@
       }
     },
     "Send Notifications" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen senden"
+          }
+        }
+      }
     },
     "Send Reboot OTA" : {
       "localizations" : {
@@ -32583,6 +33135,16 @@
         }
       }
     },
+    "settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen"
+          }
+        }
+      }
+    },
     "Settings" : {
       "localizations" : {
         "de" : {
@@ -32734,7 +33296,14 @@
       }
     },
     "Share Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort teilen"
+          }
+        }
+      }
     },
     "Share QR Code" : {
       "localizations" : {
@@ -32830,6 +33399,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "分享 QR Code 及連結"
+          }
+        }
+      }
+    },
+    "Share your location in real-time and keep your group coordinated with integrated GPS features." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teile deinen Standort in Echtzeit und koordiniere deine Gruppe mithilfe integrierter GPS-Funktionen."
           }
         }
       }
@@ -33957,6 +34536,12 @@
     },
     "Sponsor App Development" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Entwicklung unterstützen"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34259,6 +34844,16 @@
         }
       }
     },
+    "Stay Connected Anywhere" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überall in Verbindung bleiben"
+          }
+        }
+      }
+    },
     "Store & Forward" : {
       "localizations" : {
         "it" : {
@@ -34471,6 +35066,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "子系統"
+          }
+        }
+      }
+    },
+    "Successfully uploaded '%@' with %lld overlays" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "'%1$@' mit %2$lld Features wurde erfolgreich hochgeladen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Successfully uploaded '%1$@' with %2$lld overlays"
           }
         }
       }
@@ -35458,6 +36069,12 @@
     },
     "The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die letzten 4 Zeichen der MAC-Adresse des Geräts werden an den Kurznamen angehängt, um den BLE-Namen des Geräts festzulegen. Der Kurzname kann bis zu 4 Byte lang sein."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35692,6 +36309,12 @@
     },
     "The region where you will be using your radios." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Region, in der du deine Funkgeräte verwenden wirst."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35803,6 +36426,12 @@
     },
     "The state of the LED (on/off)" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status der LED (an/aus)"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37298,6 +37927,16 @@
         }
       }
     },
+    "Track and Share Locations" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standorte verfolgen und teilen"
+          }
+        }
+      }
+    },
     "Tracker" : {
       "localizations" : {
         "ja" : {
@@ -38242,6 +38881,12 @@
     },
     "Unmessagable" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht benachrichtigbar"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38716,6 +39361,12 @@
     },
     "Upload Error" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hochladen fehlgeschlagen"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38750,6 +39401,12 @@
     },
     "Upload GeoJSON files to display custom map overlays. Files are stored locally and can be up to 10MB." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade GeoJSON-Dateien hoch, um eigene Karten-Overlays anzuzeigen. Die Dateien werden lokal gespeichert und dürfen bis zu 10 MB groß sein."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38820,6 +39477,12 @@
     "Upload map data to enable overlays" : {
       "comment" : "Prompt to upload map data when none is available",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Kartendaten hoch, um Overlays zu aktivieren"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38853,10 +39516,23 @@
       }
     },
     "Upload Map Overlays" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartendaten hochladen"
+          }
+        }
+      }
     },
     "Upload Success" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hochladen erfolgreich"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38890,7 +39566,14 @@
       }
     },
     "Uploaded Map Overlays" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hochgeladene Kartendaten"
+          }
+        }
+      }
     },
     "Uptime" : {
       "localizations" : {
@@ -38928,6 +39611,12 @@
     },
     "Usage and Crash Data" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telemetriedaten erfassen"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39000,6 +39689,12 @@
     },
     "Use my Location" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort verwenden"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39016,6 +39711,12 @@
     },
     "Use Preset" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voreinstellung verwenden"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39082,6 +39783,16 @@
         }
       }
     },
+    "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende das GPS deines Handys anstelle des GPS deines Funkgeräts."
+          }
+        }
+      }
+    },
     "Used to create a shared key with a remote device." : {
       "localizations" : {
         "it" : {
@@ -39112,6 +39823,12 @@
     },
     "Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird verwendet, um nicht überwachte oder Infrastrukturknoten zu identifizieren, damit Nachrichten nicht an Knoten gesendet werden, die niemals antworten werden."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39192,6 +39909,12 @@
     },
     "User Config" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerkonfiguration"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39226,6 +39949,12 @@
     },
     "User Details" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerdaten"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39295,6 +40024,12 @@
     "User Uploaded" : {
       "comment" : "Data source label for user uploaded files",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten verfügbar"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40271,7 +41006,14 @@
       }
     },
     "Welcome to" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Willkommen bei"
+          }
+        }
+      }
     },
     "What does the lock mean?" : {
       "localizations" : {

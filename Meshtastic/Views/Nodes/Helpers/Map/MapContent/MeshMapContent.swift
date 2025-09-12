@@ -172,7 +172,7 @@ struct MeshMapContent: MapContent {
 				let routeCoords = locations.compactMap {(loc) -> CLLocationCoordinate2D in
 					return loc.locationCoordinate ?? LocationsHandler.DefaultLocation
 				}
-				Annotation("Start", coordinate: routeCoords.first ?? LocationsHandler.DefaultLocation) {
+				Annotation(String(localized: "Start"), coordinate: routeCoords.first ?? LocationsHandler.DefaultLocation) {
 					ZStack {
 						Circle()
 							.fill(Color(.green))
@@ -181,7 +181,7 @@ struct MeshMapContent: MapContent {
 					}
 				}
 				.annotationTitles(.automatic)
-				Annotation("Finish", coordinate: routeCoords.last ?? LocationsHandler.DefaultLocation) {
+				Annotation(String(localized: "Finish ", comment: "Space at the end has been added to not interfere with translations for 'Finish' in RouteRecorder"), coordinate: routeCoords.last ?? LocationsHandler.DefaultLocation) {
 					ZStack {
 						Circle()
 							.fill(Color(.black))

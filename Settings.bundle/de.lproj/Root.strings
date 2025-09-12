@@ -1,0 +1,18 @@
+// german localization
+
+"Will share your phone GPS location with your node." = "Teile den GPS-Standort deines Handys mit deinem Funkgerät.";
+"Share Location" = "Standort teilen";
+"Interval" = "Intervall";
+"Ten Seconds" = "10 s";
+"Fifteen Seconds" = "15 s";
+"Thirty Seconds" = "30 s";
+"Forty Five Seconds" = "45 s";
+"One Minute" = "1 min";
+"Five Minutes" = "5 min";
+"Ten Minutes" = "10 min";
+"Fifteen Minutes" = "15 min";
+"Accurate Locations Only" = "Nur genaue Standorte";
+"Notifications" = "Mitteilungen";
+"Channel Messages" = "Kanalnachrichten";
+"New Nodes" = "Neu entdeckte Knoten";
+"Low Battery" = "Niedriger Akkustand";

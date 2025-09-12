@@ -173,7 +173,7 @@ struct UserList: View {
 				}
 			}
 			.listStyle(.plain)
-			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)", String(users.count)))
+			.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(users.count)))
 			
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", filters: filters)
