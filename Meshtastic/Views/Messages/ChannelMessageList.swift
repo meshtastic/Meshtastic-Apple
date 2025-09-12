@@ -130,7 +130,6 @@ struct ChannelMessageList: View {
 								
 								TapbackResponses(message: message) {
 									appState.unreadChannelMessages = myInfo.unreadMessages
-									context.refresh(myInfo, mergeChanges: true)
 								}
 								
 								HStack {
