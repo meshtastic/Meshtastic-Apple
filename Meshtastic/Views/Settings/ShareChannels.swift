@@ -36,6 +36,7 @@ struct ShareChannels: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var dismiss
+	@Environment(\.colorScheme) private var colorScheme
 	@State var channelSet: ChannelSet = ChannelSet()
 	@State var includeChannel0 = true
 	@State var includeChannel1 = true
@@ -55,7 +56,10 @@ struct ShareChannels: View {
 
 		VStack {
 			TipView(ShareChannelsTip(), arrowEdge: .bottom)
+				.tipBackground(colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.secondarySystemBackground))
+				.listRowSeparator(.hidden)
 		}
+		.padding(.horizontal)
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
 			ScrollView {

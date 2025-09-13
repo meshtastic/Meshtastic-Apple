@@ -54,6 +54,7 @@ struct TextMessageField: View {
 						.focused($isFocused)
 						.multilineTextAlignment(.leading)
 						.onSubmit {
+							
 #if targetEnvironment(macCatalyst)
 							sendMessage()
 #endif
@@ -69,18 +70,35 @@ struct TextMessageField: View {
 				}
 				.padding(15)
 				if isFocused {
-					Divider()
-					HStack {
+					if #available(iOS 26.0, macOS 26.0, *) {
+						HStack {
+							Spacer()
+							AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+							Spacer()
+							RequestPositionButton(action: requestPosition)
+							Spacer()
+							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
+						}
+						.padding(.vertical, 8)
+						.padding(.horizontal)
+						.background(.ultraThinMaterial, in: Capsule())
 						Spacer()
-						AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
-						Spacer()
-						RequestPositionButton(action: requestPosition)
-						Spacer()
-						TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
+							.frame(height: 10)
+						
+					} else {
+						Divider()
+						HStack {
+							Spacer()
+							AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+							Spacer()
+							RequestPositionButton(action: requestPosition)
+							Spacer()
+							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
+						}
+						.padding(.horizontal, 15)
+						.padding(.vertical, 10)
+						.background(.bar)
 					}
-					.padding(.horizontal, 15)
-					.padding(.vertical, 10)
-					.background(.bar)
 				}
 			}
 		}

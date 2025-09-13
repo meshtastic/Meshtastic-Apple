@@ -13,16 +13,10 @@ import TipKit
 struct Messages: View {
 
 	@Environment(\.managedObjectContext) var context
-
-	@ObservedObject
-	var router: Router
-
-	@Binding
-	var unreadChannelMessages: Int
-
-	@Binding
-	var unreadDirectMessages: Int
-
+	@Environment(\.colorScheme) private var colorScheme
+	@ObservedObject	var router: Router
+	@Binding var unreadChannelMessages: Int
+	@Binding var unreadDirectMessages: Int
 	@State var node: NodeInfoEntity?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
@@ -63,6 +57,8 @@ struct Messages: View {
 
 				TipView(MessagesTip(), arrowEdge: .top)
 					.tipViewStyle(PersistentTip())
+					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
+					.listRowSeparator(.hidden)
 			}
 			.navigationTitle("Messages")
 			.navigationBarTitleDisplayMode(.large)

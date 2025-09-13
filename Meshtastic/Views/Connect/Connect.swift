@@ -20,6 +20,7 @@ struct Connect: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Environment(\.colorScheme) private var colorScheme
 	@State var router: Router
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
@@ -37,6 +38,8 @@ struct Connect: View {
 						   accessoryManager.isConnected || accessoryManager.isConnecting {
 							TipView(ConnectionTip(), arrowEdge: .bottom)
 								.tipViewStyle(PersistentTip())
+								.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
+								.listRowSeparator(.hidden)
 							VStack(alignment: .leading) {
 								HStack {
 									VStack(alignment: .center) {
