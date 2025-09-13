@@ -55,7 +55,10 @@ struct ShareChannels: View {
 
 		VStack {
 			TipView(ShareChannelsTip(), arrowEdge: .bottom)
+				.tipBackground(Color(.secondarySystemBackground))
+				.listRowSeparator(.hidden)
 		}
+		.padding(.horizontal)
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
 			ScrollView {

@@ -26,6 +26,7 @@ struct Channels: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
+	@Environment(\.colorScheme) private var colorScheme
 
 	var node: NodeInfoEntity?
 
@@ -62,6 +63,8 @@ struct Channels: View {
 		VStack {
 			List {
 				TipView(CreateChannelsTip(), arrowEdge: .bottom)
+					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
+					.listRowSeparator(.hidden)
 				if node != nil && node?.myInfo != nil {
 					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
 						Button(action: {

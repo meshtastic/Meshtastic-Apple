@@ -12,6 +12,7 @@ import MeshtasticProtobufs
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
+	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FetchRequest(
 		sortDescriptors: [
@@ -445,6 +446,8 @@ struct Settings: View {
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
 									.tipViewStyle(PersistentTip())
+									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
+									.listRowSeparator(.hidden)
 							} else {
 								if accessoryManager.isConnected {
 									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")
