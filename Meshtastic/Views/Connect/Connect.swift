@@ -20,7 +20,6 @@ struct Connect: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.colorScheme) var colorScheme
 	@State var router: Router
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
