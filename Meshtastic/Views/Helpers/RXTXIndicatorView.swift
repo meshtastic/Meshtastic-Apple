@@ -31,7 +31,7 @@ struct RXTXIndicatorWidget: View {
 			}
 			#if targetEnvironment(macCatalyst)
 				if #available(macOS 26.0, *) {
-					// Dont show popover that crashes on mac 26
+					// Don't show popover that crashes on mac 26
 				} else {
 					self.isPopoverOpen.toggle()
 				}
