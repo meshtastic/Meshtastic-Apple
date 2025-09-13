@@ -237,13 +237,13 @@ struct MQTTConfig: View {
 						.keyboardType(.default)
 						.scrollDismissesKeyboard(.interactively)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
-						if address != "mqtt.meshtastic.org" && !proxyToClientEnabled {
-							Toggle(isOn: $tlsEnabled) {
-								Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-								Text("Your MQTT Server must support TLS.")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+					if address != "mqtt.meshtastic.org" && !proxyToClientEnabled {
+						Toggle(isOn: $tlsEnabled) {
+							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+							Text("Your MQTT Server must support TLS.")
 						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
