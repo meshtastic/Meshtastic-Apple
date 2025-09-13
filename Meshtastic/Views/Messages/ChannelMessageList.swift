@@ -130,7 +130,6 @@ struct ChannelMessageList: View {
 								
 								TapbackResponses(message: message) {
 									appState.unreadChannelMessages = myInfo.unreadMessages
-									context.refresh(myInfo, mergeChanges: true)
 								}
 								
 								HStack {
@@ -159,7 +158,9 @@ struct ChannelMessageList: View {
 						.frame(maxWidth: .infinity)
 						.id(message.messageId)
 						.onAppear {
-							markMessagesAsRead()
+							if !message.read {
+								markMessagesAsRead()
+							}
 						}
 					}
 					Color.clear
