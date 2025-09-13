@@ -20,6 +20,7 @@ struct Connect: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Environment(\.colorScheme) var colorScheme
 	@State var router: Router
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
@@ -314,7 +315,7 @@ struct Connect: View {
 						.textCase(nil)
 					}
 				}
-				
+				.scrollContentBackground(.hidden)
 				HStack(alignment: .center) {
 					Spacer()
 #if targetEnvironment(macCatalyst)
@@ -338,8 +339,9 @@ struct Connect: View {
 					Spacer()
 				}
 				.padding(.bottom, 10)
-				.background(Color(.tertiarySystemGroupedBackground))
+				
 			}
+			.background(Color(.systemGroupedBackground))
 			.navigationTitle("Connect")
 			.navigationBarItems(
 				leading: MeshtasticLogo(),
