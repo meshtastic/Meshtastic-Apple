@@ -227,7 +227,6 @@ struct NodeList: View {
 					)
 					.edgesIgnoringSafeArea([.leading, .trailing])
 					.navigationBarItems(
-						leading: MeshtasticLogo(),
 						trailing: ZStack {
 							ConnectedDevice(
 								deviceConnected: accessoryManager.isConnected,
@@ -236,7 +235,7 @@ struct NodeList: View {
 							)
 						}
 						// Make sure the ZStack passes through accessibility to the ConnectedDevice component
-							.accessibilityElement(children: .contain)
+						.accessibilityElement(children: .contain)
 					)
 				}
 			} else {

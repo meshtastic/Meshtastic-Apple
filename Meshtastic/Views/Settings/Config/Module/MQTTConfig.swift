@@ -157,7 +157,6 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.asciiCapable)
-					.scrollDismissesKeyboard(.interactively)
 					.disableAutocorrection(true)
 					.listRowSeparator(.hidden)
 					Text("The root topic to use for MQTT.")
@@ -216,7 +215,6 @@ struct MQTTConfig: View {
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
-						.scrollDismissesKeyboard(.interactively)
 						HStack {
 							Label("Password", systemImage: "wallet.pass")
 							TextField("Password", text: $password)
@@ -235,10 +233,9 @@ struct MQTTConfig: View {
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
-						.scrollDismissesKeyboard(.interactively)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					}
-					if address != "mqtt.meshtastic.org" && !proxyToClientEnabled {
+					if !address.contains("mqtt.meshtastic.org") && !proxyToClientEnabled {
 						Toggle(isOn: $tlsEnabled) {
 							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
 							Text("Your MQTT Server must support TLS.")
@@ -249,7 +246,7 @@ struct MQTTConfig: View {
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
 					.font(.callout)
 			}
-			.scrollDismissesKeyboard(.interactively)
+			.scrollDismissesKeyboard(.immediately)
 			.disabled(!accessoryManager.isConnected || node?.mqttConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {

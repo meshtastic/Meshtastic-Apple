@@ -262,7 +262,7 @@ import OSLog
 				return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 			}
 			// Fallback 2: Default location if no other location is available.
-			Logger.services.warning("📍 [App] No Location and no last known location, something is really wrong. Teleporting user to Apple Park")
+			Logger.services.warning("📍 [App] No Location and no last known location, check your location settings. Falling back to default location.")
 			return DefaultLocation
 		}
 	}
