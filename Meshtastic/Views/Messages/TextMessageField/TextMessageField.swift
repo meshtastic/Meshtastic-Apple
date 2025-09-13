@@ -38,11 +38,11 @@ struct TextMessageField: View {
 					TextField("Message", text: $typingMessage, axis: .vertical)
 						.padding(10)
 						.background(
-							Capsule()
+							RoundedRectangle(cornerRadius: 20)
 								.strokeBorder(.tertiary, lineWidth: 1)
-								.background(Capsule().fill(Color(.systemBackground)))
+								.background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground)))
 						)
-						.clipShape(Capsule())
+						.clipShape(RoundedRectangle(cornerRadius: 20))
 						.onChange(of: typingMessage) { _, value in
 							totalBytes = value.utf8.count
 							while totalBytes > Self.maxbytes {
