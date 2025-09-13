@@ -236,7 +236,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.audioConfig) {
+			if isModuleSupported(.extnotifConfig) {
 				NavigationLink(value: SettingsNavigationState.ringtone) {
 					Label {
 						Text("Ringtone")

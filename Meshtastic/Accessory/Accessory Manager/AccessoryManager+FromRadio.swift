@@ -164,6 +164,10 @@ extension AccessoryManager {
 		if moduleConfigPacket.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfigPacket.cannedMessage) {
 			try? getCannedMessageModuleMessages(destNum: deviceNum, wantResponse: true)
 		}
+		// Get the Ringtone if the Module is External Notifications
+		if moduleConfigPacket.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(moduleConfigPacket.externalNotification) {
+			try? getRingtone(destNum: deviceNum, wantResponse: true)
+		}
 	}
 
 	func handleDeviceMetadata(_ metadata: DeviceMetadata) {

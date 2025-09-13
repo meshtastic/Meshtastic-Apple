@@ -13,13 +13,9 @@ struct ChannelList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-
-	@Binding
-	var node: NodeInfoEntity?
-
-	@Binding
-	var channelSelection: ChannelEntity?
-
+	@Binding var node: NodeInfoEntity?
+	@Binding var channelSelection: ChannelEntity?
+	@State private var channelToDeleteMessages: ChannelEntity?
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var showingHelp = false
@@ -123,7 +119,7 @@ struct ChannelList: View {
 									if channel.allPrivateMessages.count > 0 {
 										Button(role: .destructive) {
 											isPresentingDeleteChannelMessagesConfirm = true
-											channelSelection = channel
+											channelToDeleteMessages = channel
 										} label: {
 											Label("Delete Messages", systemImage: "trash")
 										}
@@ -158,9 +154,9 @@ struct ChannelList: View {
 									titleVisibility: .visible
 								) {
 									Button(role: .destructive) {
-										deleteChannelMessages(channel: channelSelection!, context: context)
+										deleteChannelMessages(channel: channelToDeleteMessages!, context: context)
 										context.refresh(myInfo, mergeChanges: true)
-										channelSelection = nil
+										channelToDeleteMessages = nil
 									} label: {
 										Text("Delete")
 									}

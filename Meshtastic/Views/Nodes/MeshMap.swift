@@ -74,6 +74,7 @@ struct MeshMap: View {
 							.mapControlVisibility(.automatic)
 					}
 					.controlSize(.regular)
+					.offset(y: 100)
 					.onMapCameraChange(frequency: MapCameraUpdateFrequency.continuous, { context in
 						distance = context.camera.distance
 					})
@@ -126,7 +127,7 @@ struct MeshMap: View {
 				}
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
-						.presentationDetents([.fraction(0.85), .large])
+						.presentationDetents([.large])
 
 				}
 				.onChange(of: router.navigationState) {

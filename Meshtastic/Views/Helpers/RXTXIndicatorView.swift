@@ -29,7 +29,16 @@ struct RXTXIndicatorWidget: View {
 					}
 				}
 			}
-			self.isPopoverOpen.toggle()
+			#if targetEnvironment(macCatalyst)
+				if #available(macOS 26.0, *) {
+					// Dont show popover that crashes on mac 26
+				} else {
+					self.isPopoverOpen.toggle()
+				}
+			#else
+				self.isPopoverOpen.toggle()
+			#endif
+			
 		}) {
 			VStack(spacing: 3.0) {
 				HStack(spacing: 2.0) {
