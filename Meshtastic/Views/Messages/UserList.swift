@@ -18,10 +18,9 @@ struct UserList: View {
 	@State private var showingHelp = false
 	@State private var showingTrustConfirm: Bool = false
 	@StateObject private var filters: NodeFilterParameters = NodeFilterParameters()
-	
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
-	
+	@State private var userToDeleteMessages: UserEntity?
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	
 	private func fetchUsers(withFilters: NodeFilterParameters) -> [UserEntity] {
@@ -152,7 +151,7 @@ struct UserList: View {
 						if user.messageList.count > 0 {
 							Button(role: .destructive) {
 								isPresentingDeleteUserMessagesConfirm = true
-								userSelection = user
+								userToDeleteMessages = user
 							} label: {
 								Label("Delete Messages", systemImage: "trash")
 							}
@@ -164,7 +163,7 @@ struct UserList: View {
 						titleVisibility: .visible
 					) {
 						Button(role: .destructive) {
-							deleteUserMessages(user: userSelection!, context: context)
+							deleteUserMessages(user: userToDeleteMessages!, context: context)
 							context.refresh(node!.user!, mergeChanges: true)
 						} label: {
 							Text("Delete")
