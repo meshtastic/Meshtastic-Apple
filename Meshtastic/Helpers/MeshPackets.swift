@@ -585,8 +585,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
-			let ringtone = adminMessage.getRingtoneResponse
-			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
+			if let rt = try?  RTTTLConfig(serializedBytes: packet.decoded.payload) {
+				upsertRtttlConfigPacket(ringtone: rt.ringtone, nodeNum: Int64(packet.from), context: context)
+			}
 		} else {
 			Logger.mesh.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 		}

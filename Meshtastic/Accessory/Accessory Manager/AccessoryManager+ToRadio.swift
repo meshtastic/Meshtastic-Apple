@@ -47,6 +47,43 @@ extension AccessoryManager {
 			try await send(toRadio, debugDescription: logString)
 		}
 	}
+	
+	public func getRingtone(destNum: Int64, wantResponse: Bool) throws {
+		guard let deviceNum = self.activeConnection?.device.num else {
+			Logger.services.error("Error while sending RttttlConfig request.  No active device.")
+			throw AccessoryError.ioFailed("No active device")
+		}
+
+		var adminPacket = AdminMessage()
+		adminPacket.getRingtoneRequest = true
+
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(destNum)
+		meshPacket.from	= UInt32(deviceNum)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.decoded.wantResponse = wantResponse
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("Error serializing admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = wantResponse
+
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let logString = String.localizedStringWithFormat("Requested RTTTTL Config Module ringtone for node: %@".localized, String(deviceNum))
+		Task {
+			try await send(toRadio, debugDescription: logString)
+		}
+	}
 
 	public func saveTimeZone(config: Config.DeviceConfig, user: Int64) async throws -> Int64 {
 		var adminPacket = AdminMessage()
