@@ -68,8 +68,8 @@ struct TextMessageField: View {
 					}
 				}
 				.padding(15)
-				Divider()
 				if isFocused {
+					Divider()
 					HStack {
 						Spacer()
 						AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
