@@ -92,7 +92,7 @@ struct MessageContextMenuItems: View {
 					let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
 					let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 					if ackDate >= sixMonthsAgo! {
-						Text("Ack Time: \(ackDate.formattedDate(format: "h:mm:ss.SSSS a"))")
+						Text("Ack Time: \(ackDate.formattedDate(format: MessageText.timeFormatString))")
 							.foregroundColor(.gray)
 					}
 				}

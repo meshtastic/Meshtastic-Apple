@@ -10,7 +10,13 @@ struct MessageText: View {
 		options: 0,
 		locale: Locale.current
 	)
+	static let localeTimeFormat = DateFormatter.dateFormat(
+		fromTemplate: "jmmssa",
+		options: 0,
+		locale: Locale.current
+	)
 	static let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
+	static let timeFormatString = (localeTimeFormat ?? "j:mm:ss:a")
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	
