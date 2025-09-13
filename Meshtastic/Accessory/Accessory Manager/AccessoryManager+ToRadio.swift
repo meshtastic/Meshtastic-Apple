@@ -50,7 +50,7 @@ extension AccessoryManager {
 	
 	public func getRingtone(destNum: Int64, wantResponse: Bool) throws {
 		guard let deviceNum = self.activeConnection?.device.num else {
-			Logger.services.error("Error while sending RttttlConfig request.  No active device.")
+			Logger.services.error("Error while sending RtttlConfig request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
 
@@ -79,7 +79,7 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		let logString = String.localizedStringWithFormat("Requested RTTTTL Config Module ringtone for node: %@".localized, String(deviceNum))
+		let logString = String.localizedStringWithFormat("Requested RTTTL Config Module ringtone for node: %@".localized, String(deviceNum))
 		Task {
 			try await send(toRadio, debugDescription: logString)
 		}
