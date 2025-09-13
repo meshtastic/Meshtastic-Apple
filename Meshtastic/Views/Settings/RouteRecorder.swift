@@ -49,6 +49,16 @@ struct RouteRecorder: View {
 				}
 				.mapStyle(mapStyle)
 			}
+			.mapControls {
+				MapScaleView(scope: routerecorderscope)
+					.mapControlVisibility(.automatic)
+				MapPitchToggle(scope: routerecorderscope)
+					.mapControlVisibility(.automatic)
+				MapCompass(scope: routerecorderscope)
+					.mapControlVisibility(.automatic)
+			}
+			.controlSize(.regular)
+			.offset(y: 100)
 			.mapScope(routerecorderscope)
 			.safeAreaInset(edge: .bottom) {
 				ZStack {
