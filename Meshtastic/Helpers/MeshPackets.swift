@@ -585,7 +585,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
-			if let rt = try?  RTTTLConfig(serializedBytes: packet.decoded.payload) {
+			if let rt = try? RTTTLConfig(serializedBytes: packet.decoded.payload) {
 				upsertRtttlConfigPacket(ringtone: rt.ringtone, nodeNum: Int64(packet.from), context: context)
 			}
 		} else {
