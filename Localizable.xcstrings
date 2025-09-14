@@ -1629,41 +1629,6 @@
         }
       }
     },
-    "8" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "8"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "8"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "8"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "8"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "8"
-          }
-        }
-      }
-    },
     "12 Hour Clock" : {
       "localizations" : {
         "ja" : {
@@ -9238,35 +9203,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電流：%lld"
-          }
-        }
-      }
-    },
-    "Currently showing modules that may not be supported by this node." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostra i moduli che potrebbero non essere supportati al momento da questo nodo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "現在、このノードでサポートされていない可能性のあるモジュールを表示しています。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тренутно су приказани модули који можда нису подржани од стране овог чвора."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "目前顯示的模組可能不受此節點支援。"
           }
         }
       }
