@@ -67,13 +67,6 @@ struct DeviceMetricsLog: View {
 										RuleMark(x: .value("Second", chartSelection, unit: .second))
 											.foregroundStyle(.tertiary.opacity(0.5))
 									}
-									RuleMark(y: .value("Network Status Orange", 25))
-										.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-										.foregroundStyle(.orange)
-									RuleMark(y: .value("Network Status Red", 50))
-										.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-										.foregroundStyle(.red)
-
 									if let airUtilTx = point.airUtilTx {
 										Plot {
 											PointMark(
@@ -88,6 +81,12 @@ struct DeviceMetricsLog: View {
 									}
 								}
 							}
+							RuleMark(y: .value("Network Status Orange", 25))
+								.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+								.foregroundStyle(.orange)
+							RuleMark(y: .value("Network Status Red", 50))
+								.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+								.foregroundStyle(.red)
 						}
 						.chartXAxis(content: {
 							AxisMarks(position: .top)
