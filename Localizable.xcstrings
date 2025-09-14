@@ -9243,6 +9243,7 @@
       }
     },
     "Currently showing modules that may not be supported by this node." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
