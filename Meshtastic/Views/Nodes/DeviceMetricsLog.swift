@@ -38,64 +38,43 @@ struct DeviceMetricsLog: View {
 					GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 						Chart {
 							ForEach(chartData, id: \.self) { point in
-								if let batteryLevel = point.batteryLevel {
-									Plot {
-										LineMark(
-											x: .value("x", point.time!),
-											y: .value("y", batteryLevel)
-										)
+								if let pointTime = point.time { 
+									if let batteryLevel = point.batteryLevel {
+										Plot {
+											LineMark(
+												x: .value("x", pointTime),
+												y: .value("y", batteryLevel)
+											)
+										}
+										.accessibilityLabel("Line Series")
+										.accessibilityValue("X: \(pointTime), Y: \(batteryLevel)")
+										.foregroundStyle(batteryChartColor)
+										.interpolationMethod(.linear)
 									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(batteryLevel)")
-									.foregroundStyle(batteryChartColor)
-									.interpolationMethod(.linear)
-								}
-								if let channelUtilization = point.channelUtilization {
-									Plot {
-										PointMark(
-											x: .value("x", point.time!),
-											y: .value("y", channelUtilization)
-										)
-										.symbolSize(25)
+									if let channelUtilization = point.channelUtilization {
+										Plot {
+											PointMark(
+												x: .value("x", pointTime),
+												y: .value("y", channelUtilization)
+											)
+											.symbolSize(25)
+										}
+										.accessibilityLabel("Line Series")
+										.accessibilityValue("X: \(pointTime), Y: \(channelUtilization)")
+										.foregroundStyle(channelUtilizationChartColor)
 									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(channelUtilization)")
-									.foregroundStyle(channelUtilizationChartColor)
-								}
-								if let chartSelection {
-									RuleMark(x: .value("Second", chartSelection, unit: .second))
-										.foregroundStyle(.tertiary.opacity(0.5))
-//												.annotation(
-//													position: .automatic,
-//													overflowResolution: .init(x: .fit, y: .disabled)
-//												) {
-//													ZStack {
-//														Text("\(getTelemetry(for: chartSelection))")
-//													}
-//													.padding()
-//													.background {
-//														RoundedRectangle(cornerRadius: 4)
-//															.foregroundStyle(Color.accentColor.opacity(0.2))
-//													}
-//												}
-								}
-								RuleMark(y: .value("Network Status Orange", 25))
-									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-									.foregroundStyle(.orange)
-								RuleMark(y: .value("Network Status Red", 50))
-									.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-									.foregroundStyle(.red)
-								if let airUtilTx = point.airUtilTx {
-									Plot {
-										PointMark(
-											x: .value("x", point.time!),
-											y: .value("y", airUtilTx)
-										)
-										.symbolSize(25)
+									if let airUtilTx = point.airUtilTx {
+										Plot {
+											PointMark(
+												x: .value("x", pointTime),
+												y: .value("y", airUtilTx)
+											)
+											.symbolSize(25)
+										}
+										.accessibilityLabel("Line Series")
+										.accessibilityValue("X: \(pointTime), Y: \(airUtilTx)")
+										.foregroundStyle(airtimeChartColor)
 									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(airUtilTx)")
-									.foregroundStyle(airtimeChartColor)
 								}
 							}
 						}
