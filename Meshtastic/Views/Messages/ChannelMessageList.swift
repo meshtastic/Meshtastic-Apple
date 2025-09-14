@@ -98,7 +98,7 @@ struct ChannelMessageList: View {
 						HStack(alignment: .bottom) {
 							if currentUser { Spacer(minLength: 50) }
 							if !currentUser {
-								CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, node: getNodeInfo(id: Int64(message.fromUser?.num ?? 0), context: context))
+								CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44)
 									.padding(.all, 5)
 									.offset(y: -7)
 							}

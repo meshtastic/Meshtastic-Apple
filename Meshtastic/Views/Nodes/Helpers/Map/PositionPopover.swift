@@ -40,7 +40,7 @@ struct PositionPopover: View {
 							}
 							.frame(width: 90, height: 90)
 					}
-					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65, node: getNodeInfo(id: Int64(position.nodePosition?.user?.num ?? 0), context: context))
+					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 				}
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
 					.font(.largeTitle)

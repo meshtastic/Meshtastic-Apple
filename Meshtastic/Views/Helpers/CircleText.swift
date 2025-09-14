@@ -10,16 +10,9 @@ struct CircleText: View {
 	var text: String
 	var color: Color
 	var circleSize: CGFloat = 45
-	var node: NodeInfoEntity?
 
 	var body: some View {
-			if let node = node {
-					NavigationLink(destination: NodeDetail(node: node)) {
-						circleContent
-					}
-			} else {
-				circleContent
-		}
+		circleContent
 	}
 
 	var circleContent: some View {
