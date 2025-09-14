@@ -22423,7 +22423,6 @@
       }
     },
     "Network Status Orange" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -22458,7 +22457,6 @@
       }
     },
     "Network Status Red" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {

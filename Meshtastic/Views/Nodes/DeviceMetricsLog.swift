@@ -38,7 +38,7 @@ struct DeviceMetricsLog: View {
 					GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 						Chart {
 							ForEach(chartData, id: \.self) { point in
-								if let pointTime = point.time { 
+								if let pointTime = point.time {
 									if let batteryLevel = point.batteryLevel {
 										Plot {
 											LineMark(
@@ -63,6 +63,17 @@ struct DeviceMetricsLog: View {
 										.accessibilityValue("X: \(pointTime), Y: \(channelUtilization)")
 										.foregroundStyle(channelUtilizationChartColor)
 									}
+									if let chartSelection {
+										RuleMark(x: .value("Second", chartSelection, unit: .second))
+											.foregroundStyle(.tertiary.opacity(0.5))
+									}
+									RuleMark(y: .value("Network Status Orange", 25))
+										.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+										.foregroundStyle(.orange)
+									RuleMark(y: .value("Network Status Red", 50))
+										.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+										.foregroundStyle(.red)
+
 									if let airUtilTx = point.airUtilTx {
 										Plot {
 											PointMark(
