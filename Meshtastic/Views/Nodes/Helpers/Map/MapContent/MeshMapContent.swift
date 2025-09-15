@@ -47,7 +47,7 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
 		ForEach(positions, id: \.id) { position in
-			if !showFavorites || (position.nodePosition?.favorite == true) {
+			if (!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true) {
 				
 				let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 				let positionName = position.nodePosition?.user?.longName ?? "?"
