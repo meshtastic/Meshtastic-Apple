@@ -251,7 +251,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return true
 		}
 	}
-	func protoEnumValue() -> Config.LoRaConfig.RegionCode.AllCases. {
+	func protoEnumValue() -> Config.LoRaConfig.RegionCode {
 
 		switch self {
 		case .unset:
@@ -305,19 +305,6 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .kz863:
 			return Config.LoRaConfig.RegionCode.kz863
 		}
-	}
-}
-
-func handleStatus(_ status: MyApi_Status) {
-	switch status {
-	case .statusActive:
-		print("Status is active.")
-	case .statusPending:
-		print("Status is pending.")
-	case .statusDeprecated: // This will produce a compile-time warning.
-		print("Encountered a deprecated status.")
-	@unknown default:
-		print("Encountered a new or unknown status: \(status)")
 	}
 }
 
