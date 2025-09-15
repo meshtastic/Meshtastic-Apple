@@ -1,41 +1,31 @@
-//
-//  AnimatedPin.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 9/15/25.
-//
-
 import SwiftUI
 import MapKit
 import CoreLocation
 
-struct AnimatedNodePin: View {
-	// Properties for the view to render
+struct AnimatedNodePin: View, Equatable {
 	let nodeColor: UIColor
 	let shortName: String?
 	let hasDetectionSensorMetrics: Bool
 	let isOnline: Bool
-	
-	// Properties for the animation
 	let calculatedDelay: Double
-	
-	@State private var isPulsing: Bool = false
-	
+	private let swiftUIColor: Color
+
+	init(nodeColor: UIColor, shortName: String?, hasDetectionSensorMetrics: Bool, isOnline: Bool, calculatedDelay: Double) {
+		self.nodeColor = nodeColor
+		self.shortName = shortName
+		self.hasDetectionSensorMetrics = hasDetectionSensorMetrics
+		self.isOnline = isOnline
+		self.calculatedDelay = calculatedDelay
+		self.swiftUIColor = Color(nodeColor)
+	}
+
 	var body: some View {
-		let swiftUIColor = Color(nodeColor)
-		
 		ZStack {
+			// Pass the calculatedDelay to the PulsingCircle view
 			if isOnline {
-				Circle()
-					.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
-					.frame(width: 55, height: 55)
-					.scaleEffect(isPulsing ? 1.2 : 0.8)
-					.animation(
-						.easeInOut(duration: 0.8).repeatForever(autoreverses: true).delay(calculatedDelay),
-						value: isPulsing
-					)
+				PulsingCircle(nodeColor: nodeColor, calculatedDelay: calculatedDelay)
 			}
-			
+
 			if hasDetectionSensorMetrics {
 				Image(systemName: "sensor.fill")
 					.symbolRenderingMode(.palette)
@@ -48,11 +38,33 @@ struct AnimatedNodePin: View {
 				CircleText(text: shortName ?? "?", color: swiftUIColor, circleSize: 40)
 			}
 		}
-		.onAppear {
-			isPulsing = isOnline
-		}
-		.onChange(of: isOnline) {_, newIsOnline in
-			isPulsing = newIsOnline
-		}
+	}
+
+	static func == (lhs: AnimatedNodePin, rhs: AnimatedNodePin) -> Bool {
+		return lhs.nodeColor == rhs.nodeColor &&
+			   lhs.shortName == rhs.shortName &&
+			   lhs.hasDetectionSensorMetrics == rhs.hasDetectionSensorMetrics &&
+			   lhs.isOnline == rhs.isOnline &&
+			   lhs.calculatedDelay == rhs.calculatedDelay // Also check delay
+	}
+}
+
+struct PulsingCircle: View {
+	let nodeColor: UIColor
+	let calculatedDelay: Double
+	@State private var isPulsing = false
+
+	var body: some View {
+		Circle()
+			.fill(Color(nodeColor.lighter()).opacity(0.4))
+			.frame(width: 55, height: 55)
+			.scaleEffect(isPulsing ? 1.2 : 0.8)
+			.animation(
+				.easeInOut(duration: 0.8).repeatForever(autoreverses: true).delay(calculatedDelay),
+				value: isPulsing
+			)
+			.onAppear {
+				isPulsing = true
+			}
 	}
 }
