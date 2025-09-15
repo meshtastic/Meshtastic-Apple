@@ -210,6 +210,7 @@
 		DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA951592BC6624100CEA535 /* TelemetryWeather.swift */; };
 		DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */; };
 		DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */; };
+		DDA9F5E82E77FAC100E70DEB /* AnimatedNodePin.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9F5E72E77FAA600E70DEB /* AnimatedNodePin.swift */; };
 		DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAB580C2B0DAA9E00147258 /* Routes.swift */; };
 		DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */; };
 		DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */; };
@@ -547,6 +548,7 @@
 		DDA951592BC6624100CEA535 /* TelemetryWeather.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TelemetryWeather.swift; sourceTree = "<group>"; };
 		DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEnums.swift; sourceTree = "<group>"; };
 		DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndoorAirQuality.swift; sourceTree = "<group>"; };
+		DDA9F5E72E77FAA600E70DEB /* AnimatedNodePin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedNodePin.swift; sourceTree = "<group>"; };
 		DDAB580B2B0D913500147258 /* MeshtasticDataModelV20.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV20.xcdatamodel; sourceTree = "<group>"; };
 		DDAB580C2B0DAA9E00147258 /* Routes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Routes.swift; sourceTree = "<group>"; };
 		DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEntityExtension.swift; sourceTree = "<group>"; };
@@ -1352,6 +1354,7 @@
 		DDDC22362BA9232C002C44F1 /* MapContent */ = {
 			isa = PBXGroup;
 			children = (
+				DDA9F5E72E77FAA600E70DEB /* AnimatedNodePin.swift */,
 				DDDC22372BA92344002C44F1 /* MeshMapContent.swift */,
 				DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */,
 			);
@@ -1763,6 +1766,7 @@
 				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
 				3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
+				DDA9F5E82E77FAC100E70DEB /* AnimatedNodePin.swift in Sources */,
 				DDF82CBD2D5BC69200DC25EC /* NavigateToButton.swift in Sources */,
 				8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */,
 				2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */,
