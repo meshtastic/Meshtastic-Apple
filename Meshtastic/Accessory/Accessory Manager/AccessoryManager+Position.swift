@@ -27,7 +27,7 @@ extension AccessoryManager {
 		}
 	}
 
-	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) async throws {
+	public func sendPosition(channel: Int32, destNum: Int64, hopsAway: Int32 = 0, wantResponse: Bool) async throws {
 		guard let fromNodeNum = activeConnection?.device.num else {
 			throw AccessoryError.ioFailed("Not connected to any device")
 		}
@@ -41,6 +41,9 @@ extension AccessoryManager {
 		meshPacket.to = UInt32(destNum)
 		meshPacket.channel = UInt32(channel)
 		meshPacket.from	= UInt32(fromNodeNum)
+		if hopsAway > 0 {
+			meshPacket.hopLimit = UInt32(truncatingIfNeeded: hopsAway)
+		}
 		var dataMessage = DataMessage()
 		if let serializedData: Data = try? positionPacket.serializedData() {
 			dataMessage.payload = serializedData

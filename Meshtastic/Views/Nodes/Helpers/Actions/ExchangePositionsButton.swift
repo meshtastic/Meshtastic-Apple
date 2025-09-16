@@ -16,6 +16,7 @@ struct ExchangePositionsButton: View {
 					try await accessoryManager.sendPosition(
 						channel: node.channel,
 						destNum: node.num,
+						hopsAway: node.hopsAway,
 						wantResponse: true
 					)
 					Task { @MainActor in
