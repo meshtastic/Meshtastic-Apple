@@ -6,6 +6,9 @@
     {
       "layers" : [
         {
+          "blend-mode" : "normal",
+          "glass" : false,
+          "hidden" : false,
           "image-name" : "ham.png",
           "name" : "ham",
           "position" : {
