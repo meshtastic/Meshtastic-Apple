@@ -59,6 +59,7 @@
 		23D316932E5618D2002FA4FB /* AsyncGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D316922E5618D2002FA4FB /* AsyncGate.swift */; };
 		23D9D9392E50DA97005D1C18 /* ResettableTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */; };
 		23E23F922E392C2B00919073 /* LogRecord+StringRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */; };
+		23F061B32E7B056600A1E2EA /* Logger+DataDog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F061B22E7B056600A1E2EA /* Logger+DataDog.swift */; };
 		23F488122E32980B002C776F /* AccessoryManager+Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F488112E32980B002C776F /* AccessoryManager+Position.swift */; };
 		23FF00B62E323C75001DF095 /* AccessoryManager+Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FF00B52E323C75001DF095 /* AccessoryManager+Connect.swift */; };
 		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
@@ -366,6 +367,7 @@
 		23D316922E5618D2002FA4FB /* AsyncGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncGate.swift; sourceTree = "<group>"; };
 		23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResettableTimer.swift; sourceTree = "<group>"; };
 		23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogRecord+StringRepresentation.swift"; sourceTree = "<group>"; };
+		23F061B22E7B056600A1E2EA /* Logger+DataDog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+DataDog.swift"; sourceTree = "<group>"; };
 		23F488112E32980B002C776F /* AccessoryManager+Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Position.swift"; sourceTree = "<group>"; };
 		23FF00B52E323C75001DF095 /* AccessoryManager+Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Connect.swift"; sourceTree = "<group>"; };
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
@@ -1344,6 +1346,7 @@
 				DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */,
 				DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */,
 				DDD5BB0C2C285F00007E03CA /* Logger.swift */,
+				23F061B22E7B056600A1E2EA /* Logger+DataDog.swift */,
 				DD6F65732C6CB80A0053C113 /* View.swift */,
 			);
 			path = Extensions;
@@ -1655,6 +1658,7 @@
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD1BD0F32C63C65E008C0C70 /* SecurityConfig.swift in Sources */,
 				DD1BEF4C2E030D310090CE24 /* KeyBackupStatus.swift in Sources */,
+				23F061B32E7B056600A1E2EA /* Logger+DataDog.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DD6F65722C6AB8EC0053C113 /* SecureInput.swift in Sources */,
 				DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */,
