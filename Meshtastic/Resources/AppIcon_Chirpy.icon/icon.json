@@ -1,32 +1,31 @@
 {
   "fill" : {
-    "automatic-gradient" : "display-p3:0.54507,0.90596,0.61177,1.00000"
+    "automatic-gradient" : "extended-gray:1.00000,1.00000"
   },
   "groups" : [
     {
       "layers" : [
         {
-          "glass" : true,
           "image-name" : "chirpy-2.svg",
           "name" : "chirpy-2",
           "position-specializations" : [
             {
               "idiom" : "square",
               "value" : {
-                "scale" : 0.38,
+                "scale" : 0.48,
                 "translation-in-points" : [
-                  -2.3671875,
-                  -1.484375
+                  -18.390625,
+                  127.2421875
                 ]
               }
             },
             {
               "idiom" : "watchOS",
               "value" : {
-                "scale" : 0.38,
+                "scale" : 0.52,
                 "translation-in-points" : [
-                  0.3125,
-                  -15.3828125
+                  -7,
+                  145.9296875
                 ]
               }
             }

@@ -1,0 +1,79 @@
+{
+  "fill" : {
+    "solid" : "display-p3:0.17335,0.17642,0.23072,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "M-POWERED.svg",
+          "name" : "M-POWERED",
+          "position-specializations" : [
+            {
+              "value" : {
+                "scale" : 1,
+                "translation-in-points" : [
+                  1.6953125,
+                  12.1875
+                ]
+              }
+            },
+            {
+              "idiom" : "square",
+              "value" : {
+                "scale" : 1.05,
+                "translation-in-points" : [
+                  -20.074908088235293,
+                  -22.122702205882355
+                ]
+              }
+            },
+            {
+              "idiom" : "watchOS",
+              "value" : {
+                "scale" : 1.05,
+                "translation-in-points" : [
+                  -15.328125,
+                  -35.484375
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "position-specializations" : [
+        {
+          "value" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              15.359375,
+              7.6484375
+            ]
+          }
+        },
+        {
+          "idiom" : "watchOS",
+          "value" : {
+            "scale" : 1.1,
+            "translation-in-points" : [
+              7.7109375,
+              120.0546875
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}
