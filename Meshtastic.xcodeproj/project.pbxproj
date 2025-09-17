@@ -203,7 +203,8 @@
 		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
-		DD98EB1F2E79466A0016320A /* AppIcon_Ham.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD98EB1E2E79466A0016320A /* AppIcon_Ham.icon */; };
+		DD98EB212E7A31140016320A /* AppIcon_Ham.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD98EB202E7A31140016320A /* AppIcon_Ham.icon */; };
+		DD98EB232E7A32F70016320A /* AppIcon_Chirpy.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD98EB222E7A32F70016320A /* AppIcon_Chirpy.icon */; };
 		DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* IntervalEnums.swift */; };
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
@@ -540,7 +541,8 @@
 		DD9681A22BBB22BE00FD2C47 /* MeshtasticDataModelV32.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV32.xcdatamodel; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
-		DD98EB1E2E79466A0016320A /* AppIcon_Ham.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon_Ham.icon; sourceTree = "<group>"; };
+		DD98EB202E7A31140016320A /* AppIcon_Ham.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon_Ham.icon; sourceTree = "<group>"; };
+		DD98EB222E7A32F70016320A /* AppIcon_Chirpy.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon_Chirpy.icon; sourceTree = "<group>"; };
 		DD994B68295F88B60013760A /* IntervalEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalEnums.swift; sourceTree = "<group>"; };
 		DD9A1A912BA2D2D3001E602E /* MeshtasticDataModelV 30.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 30.xcdatamodel"; sourceTree = "<group>"; };
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
@@ -1201,8 +1203,9 @@
 			isa = PBXGroup;
 			children = (
 				2339EA972E6C65570032C234 /* AppIcon.icon */,
+				DD98EB222E7A32F70016320A /* AppIcon_Chirpy.icon */,
+				DD98EB202E7A31140016320A /* AppIcon_Ham.icon */,
 				2339EA992E6C65DC0032C234 /* AppIconDebug.icon */,
-				DD98EB1E2E79466A0016320A /* AppIcon_Ham.icon */,
 				DDB75A192A05EB67006ED576 /* alpha.png */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
@@ -1521,9 +1524,10 @@
 			files = (
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
 				25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */,
+				DD98EB232E7A32F70016320A /* AppIcon_Chirpy.icon in Resources */,
 				DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
 				2339EA9A2E6C65DC0032C234 /* AppIconDebug.icon in Resources */,
-				DD98EB1F2E79466A0016320A /* AppIcon_Ham.icon in Resources */,
+				DD98EB212E7A31140016320A /* AppIcon_Ham.icon in Resources */,
 				2339EA982E6C65570032C234 /* AppIcon.icon in Resources */,
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
