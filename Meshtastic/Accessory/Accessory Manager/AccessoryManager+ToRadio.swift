@@ -307,7 +307,6 @@ extension AccessoryManager {
 						if newMessage.toUser?.pkiEncrypted ?? false {
 							newMessage.publicKey = newMessage.toUser?.publicKey
 							newMessage.pkiEncrypted = true
-				
 						}
 					}
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
