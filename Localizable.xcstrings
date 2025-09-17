@@ -15802,18 +15802,18 @@
         }
       }
     },
-    "Generated from your public key and sent out to other nodes on the mesh to allow them to compute a shared secret key." : {
+    "Generated from your private key and sent to other nodes on the mesh so they can compute a shared secret key." : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "パブリックキーから生成され、メッシュ上の他のノードに送信されて、共有秘密キーの計算を可能にします。"
+            "value" : "秘密キーから生成され、メッシュ上の他のノードに送信されて、共有秘密キーの計算を可能にします。"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Генерисано из твог јавног кључа и послато другим чворовима на мрежи како би им омогућило да израчунају заједнички тајни кључ.\n"
+            "value" : "Генерисано из твог приватног кључа и послато другим чворовима на мрежи како би им омогућило да израчунају заједнички тајни кључ.\n"
           }
         }
       }
