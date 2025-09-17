@@ -26,6 +26,8 @@ struct TelemetryConfig: View {
 	@State var powerMeasurementEnabled = false
 	@State var powerUpdateInterval = 0
 	@State var powerScreenEnabled = false
+	
+	@State var broadcastDeviceMetrics: Bool = true
 
 	var body: some View {
 		VStack {
@@ -33,31 +35,40 @@ struct TelemetryConfig: View {
 				ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
 
 				Section(header: Text("Update Interval")) {
-					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
-						ForEach(UpdateIntervals.allCases) { ui in
-							if ui.rawValue >= 900 {
-								Text(ui.description)
+					Toggle(isOn: $broadcastDeviceMetrics) {
+						Label("Broadcast Device Metrics", systemImage: "minus.plus.batteryblock.fill")
+						}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+					if broadcastDeviceMetrics {
+						Picker("Device Metrics", selection: $deviceUpdateInterval ) {
+							ForEach(UpdateIntervals.allCases) { ui in
+								if ui.rawValue >= 900 {
+									Text(ui.description)
+								}
 							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
+						Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
+							.foregroundColor(.gray)
+							.font(.callout)
+							.listRowSeparator(.visible)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					.listRowSeparator(.hidden)
-					Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
-						.foregroundColor(.gray)
-						.font(.callout)
-						.listRowSeparator(.visible)
-					Picker("Environment Metrics", selection: $environmentUpdateInterval ) {
-						ForEach(UpdateIntervals.allCases) { ui in
-							if ui.rawValue >= 900 {
-								Text(ui.description)
+					if environmentMeasurementEnabled {
+						Picker("Environment Metrics", selection: $environmentUpdateInterval ) {
+							ForEach(UpdateIntervals.allCases) { ui in
+								if ui.rawValue >= 900 {
+									Text(ui.description)
+								}
 							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
+						Text("How often environment metrics are sent out over the mesh. Default is 30 minutes.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					.listRowSeparator(.hidden)
-					Text("How often environment metrics are sent out over the mesh. Default is 30 minutes.")
-						.foregroundColor(.gray)
-						.font(.callout)
 				}
 				Section(header: Text("Sensor Options")) {
 					Text("Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3.")
@@ -82,24 +93,27 @@ struct TelemetryConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
-					Picker("Power Metrics", selection: $powerUpdateInterval ) {
-						ForEach(UpdateIntervals.allCases) { ui in
-							if ui.rawValue >= 900 {
-								Text(ui.description)
+					if powerMeasurementEnabled {
+						Picker("Power Metrics", selection: $powerUpdateInterval ) {
+							ForEach(UpdateIntervals.allCases) { ui in
+								if ui.rawValue >= 900 {
+									Text(ui.description)
+								}
 							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
+						Text("How often power metrics are sent out over the mesh. Default is 30 minutes.")
+							.foregroundColor(.gray)
+							.font(.callout)
+							.listRowSeparator(.visible)
+						Toggle(isOn: $powerScreenEnabled) {
+							Label("Power Screen", systemImage: "tv")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.pickerStyle(DefaultPickerStyle())
-					.listRowSeparator(.hidden)
-					Text("How often power metrics are sent out over the mesh. Default is 30 minutes.")
-						.foregroundColor(.gray)
-						.font(.callout)
-					.listRowSeparator(.visible)
-					Toggle(isOn: $powerScreenEnabled) {
-						Label("Power Screen", systemImage: "tv")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
+					
 			}
 			.disabled(!accessoryManager.isConnected || node?.telemetryConfig == nil)
 
@@ -107,7 +121,11 @@ struct TelemetryConfig: View {
 				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 				if connectedNode != nil {
 					var tc = ModuleConfig.TelemetryConfig()
-					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
+					if broadcastDeviceMetrics {
+						tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
+					} else {
+						tc.deviceUpdateInterval = UInt32.max
+					}
 					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
 					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
 					tc.environmentScreenEnabled = environmentScreenEnabled
@@ -161,9 +179,16 @@ struct TelemetryConfig: View {
 					}
 				}
 			}
+			.onChange(of: broadcastDeviceMetrics) { _, newBroadcastDeviceMetrics in
+				if !newBroadcastDeviceMetrics && deviceUpdateInterval != UInt32.max {
+					hasChanges = true
+				}
+			}
 			.onChange(of: deviceUpdateInterval) { _, newDeviceInterval in
 				if newDeviceInterval != node?.telemetryConfig?.deviceUpdateInterval ?? -1 { hasChanges = true }
-			}
+				if deviceUpdateInterval == UInt32.max {
+					self.broadcastDeviceMetrics = false
+				}			}
 			.onChange(of: environmentUpdateInterval) { _, newEnvInterval in
 				if newEnvInterval != node?.telemetryConfig?.environmentUpdateInterval ?? -1 { hasChanges = true	}
 			}
@@ -197,5 +222,10 @@ struct TelemetryConfig: View {
 		self.powerUpdateInterval = Int(node?.telemetryConfig?.powerUpdateInterval ?? 1800)
 		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false
 		self.hasChanges = false
+
+		if self.deviceUpdateInterval == Int32.max {
+			self.broadcastDeviceMetrics = false
+			self.deviceUpdateInterval = 1800
+		}
 	}
 }

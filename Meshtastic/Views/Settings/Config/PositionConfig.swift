@@ -43,6 +43,8 @@ struct PositionConfig: View {
 	@State var broadcastSmartMinimumDistance = 0
 	@State var broadcastSmartMinimumIntervalSecs = 0
 	@State var positionFlags = 811
+	
+	@State var broadcastPosition: Bool = true
 
 	/// Position Flags
 	/// Altitude value - 1
@@ -78,55 +80,62 @@ struct PositionConfig: View {
 	@ViewBuilder
 	var positionPacketSection: some View {
 		Section(header: Text("Position Packet")) {
-
-			VStack(alignment: .leading) {
-				Picker("Broadcast Interval", selection: $positionBroadcastSeconds) {
-					ForEach(UpdateIntervals.allCases) { at in
-						if at.rawValue >= 300 {
-							Text(at.description)
-						}
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("The maximum interval that can elapse without a node broadcasting a position")
-					.foregroundColor(.gray)
-					.font(.callout)
-			}
-
-			Toggle(isOn: $smartPositionEnabled) {
-				Label("Smart Position", systemImage: "brain")
+			
+			
+			Toggle(isOn: $broadcastPosition) {
+				Label("Broadcast Position", systemImage: "location.circle.fill")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-			if smartPositionEnabled {
+			if broadcastPosition {
 				VStack(alignment: .leading) {
-					Picker("Minimum Interval", selection: $broadcastSmartMinimumIntervalSecs) {
+					Picker("Broadcast Interval", selection: $positionBroadcastSeconds) {
 						ForEach(UpdateIntervals.allCases) { at in
-							Text(at.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
-						.foregroundColor(.gray)
-						.font(.callout)
-				}
-				VStack(alignment: .leading) {
-					Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
-						ForEach(10..<151) {
-							if $0 == 0 {
-								Text("Unset")
-							} else {
-								if $0.isMultiple(of: 5) {
-									Text("\($0)")
-										.tag($0)
-								}
+							if at.rawValue >= 300 {
+								Text(at.description)
 							}
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Text("The minimum distance change in meters to be considered for a smart position broadcast.")
+					Text("The maximum interval that can elapse without a node broadcasting a position")
 						.foregroundColor(.gray)
 						.font(.callout)
+				}
+				
+				Toggle(isOn: $smartPositionEnabled) {
+					Label("Smart Position", systemImage: "brain")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+				if smartPositionEnabled {
+					VStack(alignment: .leading) {
+						Picker("Minimum Interval", selection: $broadcastSmartMinimumIntervalSecs) {
+							ForEach(UpdateIntervals.allCases) { at in
+								Text(at.description)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
+							.foregroundColor(.gray)
+							.font(.callout)
+					}
+					VStack(alignment: .leading) {
+						Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
+							ForEach(10..<151) {
+								if $0 == 0 {
+									Text("Unset")
+								} else {
+									if $0.isMultiple(of: 5) {
+										Text("\($0)")
+											.tag($0)
+									}
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("The minimum distance change in meters to be considered for a smart position broadcast.")
+							.foregroundColor(.gray)
+							.font(.callout)
+					}
 				}
 			}
 		}
@@ -327,7 +336,11 @@ struct PositionConfig: View {
 				pc.gpsMode = Config.PositionConfig.GpsMode(rawValue: gpsMode) ?? Config.PositionConfig.GpsMode.notPresent
 				pc.fixedPosition = fixedPosition
 				pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
-				pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
+				if broadcastPosition {
+					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
+				} else {
+					pc.positionBroadcastSecs = UInt32.max
+				}
 				pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
 				pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
 				pc.rxGpio = UInt32(rxGpio)
@@ -443,6 +456,10 @@ struct PositionConfig: View {
 				}
 			}
 		}
+		.onChange(of: broadcastPosition) { _, newBroadcastPosition in
+			let oldBroadcastPosition = node?.positionConfig?.positionBroadcastSeconds ?? 0 == UInt32.max
+			if newBroadcastPosition != oldBroadcastPosition { hasChanges = true }
+		}
 		.onChange(of: gpsMode) { _, newGpsMode in
 			if newGpsMode != node?.positionConfig?.gpsMode ?? 0 { hasChanges = true }
 		}
@@ -516,6 +533,11 @@ struct PositionConfig: View {
 		self.includeSpeed = pf.contains(.Speed)
 		self.includeHeading = pf.contains(.Heading)
 		self.hasChanges = false
+		
+		if positionBroadcastSeconds == Int32.max {
+			broadcastPosition = false
+			self.positionBroadcastSeconds = 900
+		}
 	}
 
 	private func setFixedPosition() {
