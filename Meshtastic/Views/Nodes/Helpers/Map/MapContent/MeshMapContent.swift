@@ -51,7 +51,8 @@ struct MeshMapContent: MapContent {
 				
 				let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 				let positionName = position.nodePosition?.user?.longName ?? "?"
-				let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5 // Add this here
+				// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
+				let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
 				
 				Annotation(positionName, coordinate: position.coordinate) {
 					LazyVStack {
