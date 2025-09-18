@@ -375,8 +375,8 @@ struct DeviceOnboarding: View {
 				fallthrough
 			}
 		case .location:
-			let status = LocationsHandler.shared.manager.authorizationStatus
-			if status != .notDetermined && status != .restricted && status != .denied {
+			locationStatus = LocationsHandler.shared.manager.authorizationStatus
+			if locationStatus != .notDetermined && locationStatus != .restricted {
 				navigationPath.append(.localNetwork)
 			}
 		case .localNetwork:

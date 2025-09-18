@@ -204,6 +204,9 @@
 		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
+		DD98EB212E7A31140016320A /* AppIcon_Ham.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD98EB202E7A31140016320A /* AppIcon_Ham.icon */; };
+		DD98EB292E7A42CC0016320A /* AppIcon_Chirpy.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD98EB282E7A42CC0016320A /* AppIcon_Chirpy.icon */; };
+		DD98EB2B2E7A838D0016320A /* AppIcon_MPowered.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD98EB2A2E7A838D0016320A /* AppIcon_MPowered.icon */; };
 		DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* IntervalEnums.swift */; };
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
@@ -211,6 +214,7 @@
 		DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA951592BC6624100CEA535 /* TelemetryWeather.swift */; };
 		DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */; };
 		DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */; };
+		DDA9F5E82E77FAC100E70DEB /* AnimatedNodePin.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9F5E72E77FAA600E70DEB /* AnimatedNodePin.swift */; };
 		DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAB580C2B0DAA9E00147258 /* Routes.swift */; };
 		DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */; };
 		DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */; };
@@ -540,6 +544,9 @@
 		DD9681A22BBB22BE00FD2C47 /* MeshtasticDataModelV32.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV32.xcdatamodel; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
+		DD98EB202E7A31140016320A /* AppIcon_Ham.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon_Ham.icon; sourceTree = "<group>"; };
+		DD98EB282E7A42CC0016320A /* AppIcon_Chirpy.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon_Chirpy.icon; sourceTree = "<group>"; };
+		DD98EB2A2E7A838D0016320A /* AppIcon_MPowered.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon_MPowered.icon; sourceTree = "<group>"; };
 		DD994B68295F88B60013760A /* IntervalEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalEnums.swift; sourceTree = "<group>"; };
 		DD9A1A912BA2D2D3001E602E /* MeshtasticDataModelV 30.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 30.xcdatamodel"; sourceTree = "<group>"; };
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
@@ -549,6 +556,7 @@
 		DDA951592BC6624100CEA535 /* TelemetryWeather.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TelemetryWeather.swift; sourceTree = "<group>"; };
 		DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEnums.swift; sourceTree = "<group>"; };
 		DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndoorAirQuality.swift; sourceTree = "<group>"; };
+		DDA9F5E72E77FAA600E70DEB /* AnimatedNodePin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedNodePin.swift; sourceTree = "<group>"; };
 		DDAB580B2B0D913500147258 /* MeshtasticDataModelV20.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV20.xcdatamodel; sourceTree = "<group>"; };
 		DDAB580C2B0DAA9E00147258 /* Routes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Routes.swift; sourceTree = "<group>"; };
 		DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEntityExtension.swift; sourceTree = "<group>"; };
@@ -1198,8 +1206,11 @@
 		DDC2E18926CE24F70042C5E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				2339EA992E6C65DC0032C234 /* AppIconDebug.icon */,
 				2339EA972E6C65570032C234 /* AppIcon.icon */,
+				2339EA992E6C65DC0032C234 /* AppIconDebug.icon */,
+				DD98EB282E7A42CC0016320A /* AppIcon_Chirpy.icon */,
+				DD98EB202E7A31140016320A /* AppIcon_Ham.icon */,
+				DD98EB2A2E7A838D0016320A /* AppIcon_MPowered.icon */,
 				DDB75A192A05EB67006ED576 /* alpha.png */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
@@ -1355,6 +1366,7 @@
 		DDDC22362BA9232C002C44F1 /* MapContent */ = {
 			isa = PBXGroup;
 			children = (
+				DDA9F5E72E77FAA600E70DEB /* AnimatedNodePin.swift */,
 				DDDC22372BA92344002C44F1 /* MeshMapContent.swift */,
 				DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */,
 			);
@@ -1517,11 +1529,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
+				DD98EB292E7A42CC0016320A /* AppIcon_Chirpy.icon in Resources */,
 				25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */,
 				DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
 				2339EA9A2E6C65DC0032C234 /* AppIconDebug.icon in Resources */,
+				DD98EB212E7A31140016320A /* AppIcon_Ham.icon in Resources */,
 				2339EA982E6C65570032C234 /* AppIcon.icon in Resources */,
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
+				DD98EB2B2E7A838D0016320A /* AppIcon_MPowered.icon in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
 				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
 				DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
@@ -1767,6 +1782,7 @@
 				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
 				3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
+				DDA9F5E82E77FAC100E70DEB /* AnimatedNodePin.swift in Sources */,
 				DDF82CBD2D5BC69200DC25EC /* NavigateToButton.swift in Sources */,
 				8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */,
 				2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */,
@@ -2056,7 +2072,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.2;
+				MARKETING_VERSION = 2.7.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -2090,7 +2106,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.2;
+				MARKETING_VERSION = 2.7.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -2121,7 +2137,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.2;
+				MARKETING_VERSION = 2.7.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2153,7 +2169,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.2;
+				MARKETING_VERSION = 2.7.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

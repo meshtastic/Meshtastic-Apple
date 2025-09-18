@@ -68,7 +68,6 @@ struct LoRaConfig: View {
 								Text(r.description)
 							}
 						}
-						.fixedSize()
 						Text("The region where you will be using your radios.")
 							.foregroundColor(.gray)
 							.font(.callout)
