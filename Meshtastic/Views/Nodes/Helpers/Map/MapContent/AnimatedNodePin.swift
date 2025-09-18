@@ -45,7 +45,7 @@ struct AnimatedNodePin: View, Equatable {
 			   lhs.shortName == rhs.shortName &&
 			   lhs.hasDetectionSensorMetrics == rhs.hasDetectionSensorMetrics &&
 			   lhs.isOnline == rhs.isOnline &&
-			   lhs.calculatedDelay == rhs.calculatedDelay // Also check delay
+			   lhs.calculatedDelay == rhs.calculatedDelay // Include calculatedDelay to ensure changes in animation timing trigger UI updates
 	}
 }
 
