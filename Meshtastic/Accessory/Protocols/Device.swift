@@ -17,6 +17,7 @@ struct Device: Identifiable, Hashable {
 	var shortName: String?
 	var longName: String?
 	var firmwareVersion: String?
+	var hardwareModel: String?
 	var rssi: Int?
 	var lastUpdate: Date?
 

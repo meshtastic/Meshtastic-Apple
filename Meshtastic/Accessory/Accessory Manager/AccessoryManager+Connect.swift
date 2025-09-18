@@ -147,6 +147,27 @@ extension AccessoryManager {
 				if transport.requiresPeriodicHeartbeat {
 					await self.setupPeriodicHeartbeat()
 				}
+				
+				
+				
+				if let device = self.activeConnection?.device {
+					var version: String?
+					if let firmwareVersion = device.firmwareVersion {
+						if let lastDotIndex = firmwareVersion.lastIndex(of: ".") {
+							version = String(firmwareVersion[...(lastDotIndex)].dropLast())
+						} else {
+							version = firmwareVersion
+						}
+					}
+				
+					let connectionAttributes: [String: any Encodable] = [
+						"firmware_version": version,
+						"transport_type": device.transportType.rawValue,  // e.g., "websocket", "http/2", "quic"
+						"hardware_model": device.hardwareModel,
+						"nodes": self.expectedNodeDBSize
+					]
+					Logger.datadog.action(name: "connect", attributes: connectionAttributes )
+				}
 			}
 		}
 		

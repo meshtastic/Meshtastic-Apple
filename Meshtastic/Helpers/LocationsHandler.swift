@@ -74,12 +74,12 @@ import OSLog
 			// we'll resume the continuation with .notDetermined to prevent a leak.
 			Task { @MainActor in // Ensure this task runs on the MainActor
 				do {
-					try await Task.sleep(for: .seconds(10)) // Wait for 10 seconds
+					try await Task.sleep(for: .seconds(5)) // Wait for 5 seconds
 					if let currentContinuation = self.permissionContinuation {
 						// If the continuation hasn't been nilled out yet, it means
 						// locationManagerDidChangeAuthorization hasn't been called.
 						Logger.services.warning("📍 [App] Location permission request timed out. Resuming continuation with .notDetermined.")
-						currentContinuation.resume(returning: .notDetermined)
+						currentContinuation.resume(returning: .denied)
 						self.permissionContinuation = nil // Clear the reference
 					}
 				} catch is CancellationError {

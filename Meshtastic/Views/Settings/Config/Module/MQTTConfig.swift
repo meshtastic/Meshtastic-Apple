@@ -20,6 +20,8 @@ struct MQTTConfig: View {
 	@State var enabled = false
 	@State var proxyToClientEnabled = false
 	@State var address = ""
+	@State var defaultServer = true
+	@State var showTls = true
 	@State var username = ""
 	@State var password = ""
 	@State var encryptionEnabled = true
@@ -196,7 +198,7 @@ struct MQTTConfig: View {
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
-					if address != "mqtt.meshtastic.org" {
+					if !defaultServer {
 						HStack {
 							Label("Username", systemImage: "person.text.rectangle")
 							TextField("Username", text: $username)
@@ -235,7 +237,7 @@ struct MQTTConfig: View {
 						.keyboardType(.default)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					}
-					if !address.contains("mqtt.meshtastic.org") && !proxyToClientEnabled {
+					if showTls {
 						Toggle(isOn: $tlsEnabled) {
 							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
 							Text("Your MQTT Server must support TLS.")
@@ -291,6 +293,13 @@ struct MQTTConfig: View {
 				if address.lowercased() == "mqtt.meshtastic.org" {
 					username = "meshdev"
 					password = "large4cats"
+					defaultServer = true
+					if proxyToClientEnabled {
+						showTls = false
+					}
+				} else {
+					defaultServer = false
+					showTls = true
 				}
 				if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 			}
@@ -316,7 +325,7 @@ struct MQTTConfig: View {
 				if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 			}
 			.onChange(of: tlsEnabled) { _, newTlsEnabled in
-				if address.lowercased() == "mqtt.meshtastic.org" {
+				if defaultServer {
 					tlsEnabled = false
 				} else {
 					if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
@@ -426,6 +435,11 @@ struct MQTTConfig: View {
 		self.enabled = node?.mqttConfig?.enabled ?? false
 		self.proxyToClientEnabled = node?.mqttConfig?.proxyToClientEnabled ?? false
 		self.address = node?.mqttConfig?.address ?? ""
+		if address.lowercased().contains("mqtt.meshtastic.org") {
+			defaultServer = true
+		} else {
+			defaultServer = false
+		}
 		self.username = node?.mqttConfig?.username ?? ""
 		self.password = node?.mqttConfig?.password ?? ""
 		self.root = node?.mqttConfig?.root ?? "msh"

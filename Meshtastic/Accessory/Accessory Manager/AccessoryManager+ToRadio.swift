@@ -362,6 +362,10 @@ extension AccessoryManager {
 					meshPacket.id = UInt32(newMessage.messageId)
 					if toUserNum > 0 {
 						meshPacket.to = UInt32(toUserNum)
+						let hopsAway = newMessage.toUser?.userNode?.hopsAway ?? 0
+						if hopsAway > Int32(truncatingIfNeeded: newMessage.toUser?.userNode?.loRaConfig?.hopLimit ?? 0) {
+							meshPacket.hopLimit = UInt32(truncatingIfNeeded: hopsAway)
+						}
 					} else {
 						meshPacket.to = Constants.maximumNodeNum
 					}

@@ -75,11 +75,6 @@ struct MeshtasticAppleApp: App {
 				trackBackgroundEvents: true
 			)
 		)
-		let attributes: [String: Encodable] = [
-			"firmware_version": UserDefaults.firmwareVersion,
-			"hardware_model": UserDefaults.hardwareModel
-		]
-		RUMMonitor.shared().addAttributes(attributes)
 #if DEBUG
 		SessionReplay.enable(
 		  with: SessionReplay.Configuration(
