@@ -112,6 +112,7 @@ extension AccessoryManager {
 				if let user = nodeInfo.user {
 					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
 					updateDevice(deviceId: activeDevice.id, key: \.longName, value: user.longName ?? "Unknown".localized)
+					updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: user.hwModel)
 				}
 			}
 		}
