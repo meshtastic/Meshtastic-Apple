@@ -297,7 +297,6 @@ struct MQTTConfig: View {
 					if proxyToClientEnabled {
 						showTls = false
 					}
-				
 				} else {
 					defaultServer = false
 					showTls = true
