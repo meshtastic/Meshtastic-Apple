@@ -181,7 +181,6 @@ struct ChannelForm: View {
 						Label("Downlink Enabled", systemImage: "arrowshape.down")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
 				}
 			}
 			.onChange(of: channelName) {
