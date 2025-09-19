@@ -308,7 +308,12 @@ class BLETransport: Transport {
 			Logger.transport.error("🛜 [BLE] No peripherals found in restore state dictionary.")
 			return
 		}
-
+		let id = peripheral.identifier
+		let device = Device(id: id,
+							name: peripheral.name ?? "Unknown",
+							transportType: .ble,
+							identifier: id.uuidString)
+		
 		Logger.transport.error("🛜 [BLE] Found peripheral to restore: \(peripheral.name ?? "Unknown", privacy: .public) ID: \(peripheral.identifier, privacy: .public) State: \(cbPeripheralStateDescription(peripheral.state), privacy: .public).")
 		
 		/// Create a new BLEConnection object and set it as the active connection.
@@ -316,6 +321,11 @@ class BLETransport: Transport {
 		self.activeConnection = restoredConnection
 		
 		Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
+		
+		/// Tell the accessory manager to complete the connection
+		Task {
+			try? await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection)
+		}
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {

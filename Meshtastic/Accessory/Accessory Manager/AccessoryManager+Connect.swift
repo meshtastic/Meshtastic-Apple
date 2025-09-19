@@ -14,7 +14,7 @@ private let maxRetries = 10
 private let retryDelay: Duration = .seconds(1)
 
 extension AccessoryManager {
-	func connect(to device: Device) async throws {
+	func connect(to device: Device, withConnection: Connection? = nil) async throws {
 		
 		// Prevent new connection if one is active
 		if activeConnection != nil {
@@ -51,7 +51,12 @@ extension AccessoryManager {
 			Step(timeout: .seconds(2)) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
-					let connection = try await transport.connect(to: device)
+					let connection: Connection
+					if let providedConnection = withConnection {
+						connection = providedConnection
+					} else {
+						connection = try await transport.connect(to: device)
+					}
 					let eventStream = try await connection.connect()
 					self.updateState(.communicating)
 					self.connectionEventTask = Task {
@@ -160,13 +165,12 @@ extension AccessoryManager {
 						}
 					}
 				
-					let connectionAttributes: [String: any Encodable] = [
-						"firmware_version": version,
-						"transport_type": device.transportType.rawValue,  // e.g., "websocket", "http/2", "quic"
-						"hardware_model": device.hardwareModel,
-						"nodes": self.expectedNodeDBSize
-					]
-					Logger.datadog.action(name: "connect", attributes: connectionAttributes )
+					let connectionWasRestored = (withConnection != nil)
+					Logger.datadog.action(.connect(firmwareVersion: version,
+													transportType: device.transportType.rawValue,
+												   hardwareModel: device.hardwareModel,
+												   nodes: self.expectedNodeDBSize,
+												  connectionRestored: connectionWasRestored))
 				}
 			}
 		}
@@ -355,3 +359,4 @@ actor SequentialSteps {
 		}
 	}
 }
+
