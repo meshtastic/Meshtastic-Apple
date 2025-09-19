@@ -42,6 +42,8 @@ struct AppSettings: View {
 					Text("PKI based node administration, requires firmware version 2.5+")
 						.foregroundStyle(.secondary)
 						.font(.caption)
+#if targetEnvironment(macCatalyst)
+#else
 					Toggle(isOn: $usageDataAndCrashReporting) {
 						Label("Usage and Crash Data", systemImage: "pencil.and.list.clipboard")
 					}
@@ -49,7 +51,7 @@ struct AppSettings: View {
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
-					
+#endif
 					if showAutoConnect {
 						Toggle(isOn: autoconnectBinding) {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
