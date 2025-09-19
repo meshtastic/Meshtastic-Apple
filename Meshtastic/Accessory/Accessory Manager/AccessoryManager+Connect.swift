@@ -36,7 +36,7 @@ extension AccessoryManager {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
-				Logger.transport.info("🔗👟 [Connect] Starting connection to \(device.id)")
+				Logger.transport.info("🔗👟 [Connect] Starting connection to \(device.id, privacy: .public)")
 				if retryAttempt > 0 {
 					try await self.closeConnection() // clean-up before retries.
 					self.updateState(.retrying(attempt: retryAttempt + 1))
@@ -49,7 +49,7 @@ extension AccessoryManager {
 			
 			// Step 1: Setup the connection
 			Step(timeout: .seconds(2)) { @MainActor _ in
-				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id)")
+				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
 					let connection = try await transport.connect(to: device)
 					let eventStream = try await connection.connect()
