@@ -1027,7 +1027,7 @@ func textMessageAppPacket(
 					if packet.to == connectedNode {
 						appState?.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
 					}
-					if !(newMessage.fromUser?.mute ?? false) {
+					if !(newMessage.fromUser?.mute ?? false) && newMessage.isEmoji == false {
 						// Create an iOS Notification for the received DM message
 						let manager = LocalNotificationManager()
 						manager.notifications = [
@@ -1058,7 +1058,7 @@ func textMessageAppPacket(
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)
 								}
-								if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
+								if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false {
 									// Create an iOS Notification for the received channel message
 									let manager = LocalNotificationManager()
 									manager.notifications = [

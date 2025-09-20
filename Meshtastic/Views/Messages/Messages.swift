@@ -27,39 +27,49 @@ struct Messages: View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			List(selection: $router.navigationState.messages) {
 				NavigationLink(value: MessagesNavigationState.channels()) {
+					Spacer()
 					Label {
 						Text("Channels")
 							.badge(unreadChannelMessages)
 							.font(.title2)
 							.padding()
 					} icon: {
-						Image(systemName: "person.3")
+						Image(systemName: "person.2")
 							.symbolRenderingMode(.hierarchical)
 							.foregroundColor(.accentColor)
 							.font(.title2)
 							.padding()
 					}
 				}
+				.alignmentGuide(.listRowSeparatorLeading) {
+					$0[.leading]
+				}
 				NavigationLink(value: MessagesNavigationState.directMessages()) {
+					Spacer()
 					Label {
 						Text("Direct Messages")
 							.badge(unreadDirectMessages)
 							.font(.title2)
 							.padding()
 					} icon: {
-						Image(systemName: "person.circle")
+						Image(systemName: "person")
 							.symbolRenderingMode(.hierarchical)
 							.foregroundColor(.accentColor)
 							.font(.title2)
 							.padding()
 					}
 				}
-
+				.alignmentGuide(.listRowSeparatorLeading) {
+					$0[.leading]
+				}
+				Spacer()
 				TipView(MessagesTip(), arrowEdge: .top)
 					.tipViewStyle(PersistentTip())
-					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
+					.listRowSeparator(.hidden)
+				Spacer()
 					.listRowSeparator(.hidden)
 			}
+			.listStyle(.plain)
 			.navigationTitle("Messages")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())

@@ -112,6 +112,9 @@ struct UserList: View {
 						}
 					}
 					.frame(height: 62)
+					.alignmentGuide(.listRowSeparatorLeading) {
+						$0[.leading]
+					}
 					.contextMenu {
 						Button {
 							if node != nil && !(user.userNode?.favorite ?? false) {
