@@ -156,13 +156,14 @@ struct LoRaConfig: View {
 							TextField("Frequency Slot", value: $channelNum, formatter: formatter)
 								.toolbar {
 									ToolbarItemGroup(placement: .keyboard) {
+										Spacer()
 										Button("Dismiss") {
 											focusedField = nil
 										}
 										.font(.subheadline)
 									}
 								}
-								.keyboardType(.decimalPad)
+								.keyboardType(.numberPad)
 								.scrollDismissesKeyboard(.immediately)
 								.focused($focusedField, equals: .channelNum)
 								.disabled(overrideFrequency > 0.0)
