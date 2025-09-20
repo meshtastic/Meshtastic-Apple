@@ -323,9 +323,9 @@ class BLETransport: Transport {
 		Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
 		
 		/// Tell the accessory manager to complete the connection
-		Task {
-			try? await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection)
-		}
+		//Task {
+		//	try? await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection)
+		//}
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {
