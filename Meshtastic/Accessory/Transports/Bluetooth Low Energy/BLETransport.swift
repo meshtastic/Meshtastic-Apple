@@ -97,16 +97,6 @@ class BLETransport: Transport {
 		}
 	}
 
-	private func setupCentralManager() async throws {
-		try await withCheckedThrowingContinuation { cont in
-			self.setupCompleteContinuation = cont
-			centralManager = CBCentralManager(delegate: delegate,
-											  queue: .global(qos: .utility),
-											  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
-			)
-		}
-	}
-
 	private func stopScanning() {
 		Logger.transport.debug("🛜 [BLE] Stop Scanning: BLE Discovery has been stopped.")
 		centralManager.stopScan()
@@ -316,8 +306,6 @@ class BLETransport: Transport {
 		/// look in the logs for the messages below.
 		Logger.transport.error("🛜 [BLE] Will Restore State was called. Attempting to restore connection.")
 		
-		self.centralManager = central
-		
 		/// Find the peripheral that was connected before
 		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
 			  let peripheral = peripherals.first else {
@@ -465,4 +453,3 @@ func cbPeripheralStateDescription(_ state: CBPeripheralState) -> String {
 		return "unhandled state"
 	}
 }
-
