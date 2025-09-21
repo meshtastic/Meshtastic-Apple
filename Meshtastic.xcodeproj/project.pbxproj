@@ -1323,8 +1323,8 @@
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
-				231A53772E69ADB900216B99 /* NodeFilterParameters.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
+				231A53772E69ADB900216B99 /* NodeFilterParameters.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
 				BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */,
 			);

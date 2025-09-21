@@ -1,8 +1,8 @@
 //
-//  NodeListSplit.swift
+//  NodeList.swift
 //  Meshtastic
 //
-//  Created by Garth Vander Houwen on 9/8/23.
+//  Copyright(c) Garth Vander Houwen 9/8/23.
 //
 import SwiftUI
 import CoreLocation
@@ -10,14 +10,9 @@ import OSLog
 import CoreData
 
 struct NodeList: View {
-	@Environment(\.managedObjectContext)
-	var context
-	
+	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	
 	@StateObject var router: Router
-	
-	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingPositionSentAlert = false
@@ -26,9 +21,7 @@ struct NodeList: View {
 	@State private var deleteNodeId: Int64 = 0
 	@State private var shareContactNode: NodeInfoEntity?
 	@StateObject var filters = NodeFilterParameters()
-	
 	@State var isEditingFilters = false
-	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 	
 	var connectedNode: NodeInfoEntity? {
@@ -55,7 +48,6 @@ struct NodeList: View {
 		node: NodeInfoEntity,
 		connectedNode: NodeInfoEntity?
 	) -> some View {
-		/// Allow users to mute notifications for a node even if they are not connected
 		if let user = node.user {
 			NodeAlertsButton(context: context, node: node, user: user)
 			if !user.unmessagable && user.num == UserDefaults.preferredPeripheralNum {
@@ -67,9 +59,7 @@ struct NodeList: View {
 			}
 		}
 		if let connectedNode {
-			/// Favoriting a node requires being connected
 			FavoriteNodeButton(node: node)
-			/// Don't show message, trace route, position exchange or delete context menu items for the connected node
 			if connectedNode.num != node.num {
 				if !(node.user?.unmessagable ?? true) {
 					Button(action: {
@@ -119,13 +109,15 @@ struct NodeList: View {
 	
 	var body: some View {
 		let nodes = fetchNodes(withFilters: filters)
-		NavigationSplitView(columnVisibility: $columnVisibility) {
+		NavigationSplitView {
 			List(nodes, id: \.self, selection: $selectedNode) { node in
-				NodeListItem(
-					node: node,
-					isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
-					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
-				)
+				NavigationLink(value: node) {
+					NodeListItem(
+						node: node,
+						isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
+						connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+					)
+				}
 				.contextMenu {
 					contextMenuActions(
 						node: node,
@@ -160,125 +152,80 @@ struct NodeList: View {
 			.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(nodes.count)))
 			.listStyle(.plain)
+			.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
+				Button("OK") {     }.keyboardShortcut(.defaultAction)
+			} message: {
+				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+			}
 			.alert(
-				"Position Exchange Requested",
-				isPresented: $isPresentingPositionSentAlert) {
-					Button("OK") {	}.keyboardShortcut(.defaultAction)
+				"Position Exchange Failed",
+				isPresented: $isPresentingPositionFailedAlert) {
+					Button("OK") {     }.keyboardShortcut(.defaultAction)
 				} message: {
-					Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+					Text("Failed to get a valid position to exchange")
 				}
 				.alert(
-					"Position Exchange Failed",
-					isPresented: $isPresentingPositionFailedAlert) {
-						Button("OK") {	}.keyboardShortcut(.defaultAction)
+					"Trace Route Sent",
+					isPresented: $isPresentingTraceRouteSentAlert) {
+						Button("OK") {     }.keyboardShortcut(.defaultAction)
 					} message: {
-						Text("Failed to get a valid position to exchange")
+						Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
 					}
-					.alert(
-						"Trace Route Sent",
-						isPresented: $isPresentingTraceRouteSentAlert) {
-							Button("OK") {	}.keyboardShortcut(.defaultAction)
-						} message: {
-							Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
-						}
-						.confirmationDialog(
-							"Are you sure?",
-							isPresented: $isPresentingDeleteNodeAlert,
-							titleVisibility: .visible
-						) {
-							Button("Delete Node") {
-								let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
-								if connectedNode != nil {
-									if deleteNode != nil {
-										Task {
-											do {
-												try await accessoryManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
-											} catch {
-												Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
-											}
+					.confirmationDialog(
+						"Are you sure?",
+						isPresented: $isPresentingDeleteNodeAlert,
+						titleVisibility: .visible
+					) {
+						Button("Delete Node") {
+							let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+							if connectedNode != nil {
+								if deleteNode != nil {
+									Task {
+										do {
+											try await accessoryManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
+										} catch {
+											Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
 										}
 									}
 								}
 							}
 						}
-						.sheet(item: $shareContactNode) { selectedNode in
-							ShareContactQRDialog(node: selectedNode.toProto())
-						}
-						.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
-						.navigationBarItems(
-							leading: MeshtasticLogo(),
-							trailing: ZStack {
-								ConnectedDevice(
-									deviceConnected: accessoryManager.isConnected,
-									name: accessoryManager.activeConnection?.device.shortName ?? "?",
-									phoneOnly: true
-								)
-							}
-							// Make sure the ZStack passes through accessibility to the ConnectedDevice component
-								.accessibilityElement(children: .contain)
-						)
-		} content: {
-			if let node = selectedNode {
-				NavigationStack {
-					NodeDetail(
-						connectedNode: connectedNode,
-						node: node,
-						columnVisibility: columnVisibility
-					)
-					.edgesIgnoringSafeArea([.leading, .trailing])
-					.navigationBarItems(
-						trailing: ZStack {
+					}
+					.sheet(item: $shareContactNode) { selectedNode in
+						ShareContactQRDialog(node: selectedNode.toProto())
+					}
+					.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
+					.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
 							ConnectedDevice(
 								deviceConnected: accessoryManager.isConnected,
 								name: accessoryManager.activeConnection?.device.shortName ?? "?",
 								phoneOnly: true
 							)
 						}
-						// Make sure the ZStack passes through accessibility to the ConnectedDevice component
-						.accessibilityElement(children: .contain)
-					)
-				}
-			} else {
-				ContentUnavailableView("Select Node", systemImage: "flipphone")
-			}
+						.accessibilityElement(children: .contain))
 		} detail: {
-			ContentUnavailableView("", systemImage: "line.3.horizontal")
-		}
-		.navigationSplitViewStyle(.balanced)
-		.onChange(of: selectedNode) {
-			if selectedNode != nil {
-				columnVisibility = .doubleColumn
+			if let node = selectedNode {
+				NodeDetail(
+					connectedNode: connectedNode,
+					node: node
+				)
 			} else {
-				columnVisibility = .all
+				ContentUnavailableView("Select a Node", systemImage: "flipphone")
+			}
+		}
+		.onChange(of: router.navigationState.nodeListSelectedNodeNum) {_, newNum in
+			if let num = newNum {
+				self.selectedNode = getNodeInfo(id: num, context: context)
+			} else {
+				self.selectedNode = nil
+			}
+		}
+		.onChange(of: selectedNode) {_, node in
+			if let num = node?.num {
+				router.navigationState.nodeListSelectedNodeNum = num
+			} else {
 				router.navigationState.nodeListSelectedNodeNum = nil
 			}
-		}
-		.onChange(of: router.navigationState) {
-			if let selected = router.navigationState.nodeListSelectedNodeNum {
-				// First clear selection
-				self.selectedNode = nil
-				// Then after a short delay, set the new selection. Makes it obvious to use page is refreshing too.
-				DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-					self.selectedNode = getNodeInfo(id: selected, context: context)
-					Logger.services.info("👷‍♂️ [App] Complete view refresh with node: \(selected, privacy: .public)")
-				}
-			} else {
-				self.selectedNode = nil
-			}
-		}
-		.onAppear {
-			// Set up notification observer for forced refreshes from notifications
-			NotificationCenter.default.addObserver(forName: NSNotification.Name("ForceNavigationRefresh"), object: nil, queue: .main) { notification in
-				if let nodeNum = notification.userInfo?["nodeNum"] as? Int64 {
-					// Force complete refresh of view
-					self.selectedNode = getNodeInfo(id: nodeNum, context: self.context)
-					Logger.services.info("NodeList directly updated from notification for node: \(nodeNum, privacy: .public)")
-				}
-			}
-		}
-		.onDisappear {
-			// Remove observer when view disappears
-			NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ForceNavigationRefresh"), object: nil)
 		}
 	}
 }
@@ -381,4 +328,3 @@ fileprivate extension NodeFilterParameters {
 		return predicates.isEmpty ? nil : NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
 	}
 }
-

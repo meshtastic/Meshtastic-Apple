@@ -24,12 +24,9 @@ struct NodeDetail: View {
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
-	// The node the device is currently connected to
 	var connectedNode: NodeInfoEntity?
-	// The node information being displayed on the detail screen
-	@ObservedObject
-	var node: NodeInfoEntity
-	var columnVisibility = NavigationSplitViewVisibility.all
+	@ObservedObject	var node: NodeInfoEntity
+	
 	var body: some View {
 		NavigationStack {
 			List {
@@ -116,31 +113,31 @@ struct NodeDetail: View {
 					}
 					.accessibilityElement(children: .combine)
 					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
-							if let user = node.user, user.keyMatch {
-								let publicKey = node.num == connectedNode?.num
-									? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
-									: user.publicKey?.base64EncodedString() ?? ""
-								HStack {
-									Label {
-										Text("Public Key")
-									} icon: {
-										Image(systemName: "lock.fill")
-											.foregroundColor(.green)
-									}
-									Spacer()
-									Button(action: {
-										context.perform {
-											UIPasteboard.general.string = publicKey
-										}
-									}) {
-										HStack {
-											Image(systemName: "key.horizontal.fill")
-											Text("Copy")
-										}
-									}
-								}
-								.accessibilityElement(children: .combine)
+					if let user = node.user, user.keyMatch {
+						let publicKey = node.num == connectedNode?.num
+						? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
+						: user.publicKey?.base64EncodedString() ?? ""
+						HStack {
+							Label {
+								Text("Public Key")
+							} icon: {
+								Image(systemName: "lock.fill")
+									.foregroundColor(.green)
 							}
+							Spacer()
+							Button(action: {
+								context.perform {
+									UIPasteboard.general.string = publicKey
+								}
+							}) {
+								HStack {
+									Image(systemName: "key.horizontal.fill")
+									Text("Copy")
+								}
+							}
+						}
+						.accessibilityElement(children: .combine)
+					}
 					if let metadata = node.metadata {
 						HStack {
 							Label {
@@ -245,14 +242,9 @@ struct NodeDetail: View {
 						}
 					}
 				}
-				// Note, as you add widgets, you should add to the `hasDataForLatestPositions` array
-				// This will make sure the "Environment" section is only displayed when the node has a position
-				// to use with WeatherKit, or has actual data in the most recent EnvironmentMetrics entity
-				// that will be rendered in this section.
 				if node.hasPositions && UserDefaults.environmentEnableWeatherKit
 					|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
 					Section("Environment") {
-						// Group weather/environment data for better VoiceOver experience
 						VStack {
 							if !node.hasEnvironmentMetrics {
 								LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
@@ -328,7 +320,6 @@ struct NodeDetail: View {
 								}
 							}
 						}
-						// Apply accessibility properties to the environment section
 						.accessibilityElement(children: .combine)
 					}
 				}
@@ -343,7 +334,6 @@ struct NodeDetail: View {
 					}
 				}
 				Section("Logs") {
-					// Metrics
 					NavigationLink {
 						DeviceMetricsLog(node: node)
 					} label: {
@@ -499,7 +489,6 @@ struct NodeDetail: View {
 										Logger.mesh.error("Faild to send node metadata request from node details")
 									}
 								}
-
 							} label: {
 								Label {
 									Text("Refresh device metadata")
@@ -558,7 +547,7 @@ struct NodeDetail: View {
 				}
 			}
 			.listStyle(.insetGrouped)
-			.navigationBarTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized), displayMode: .inline)
+			.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
 		}
 	}
 }
