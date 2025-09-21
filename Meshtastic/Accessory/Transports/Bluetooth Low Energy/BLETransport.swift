@@ -296,7 +296,7 @@ class BLETransport: Transport {
 	
 	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) {
 		/// GVH - To test this you need to simulate the app getting killed in the background by the OS you can do this by stopping  the debugger while the app is connected to a device in the background
-		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the forground and
+		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
 		/// look in the logs for the messages below.
 		Logger.transport.error("🛜 [BLE] Will Restore State was called. Attempting to restore connection.")
 		
