@@ -14,11 +14,11 @@ extension AccessoryManager {
 		AsyncStream { continuation in
 			let tasks = transports.map { transport in
 				Task {
-					Logger.transport.info("🔎 [Discovery] Discovery stream started for transport \(String(describing: transport.type))")
+					Logger.transport.info("🔎 [Discovery] Discovery stream started for transport \(String(describing: transport.type), privacy: .public)")
 					for await event in transport.discoverDevices() {
 						continuation.yield(event)
 					}
-					Logger.transport.info("🔎 [Discovery] Discovery stream closed for transport \(String(describing: transport.type))")
+					Logger.transport.info("🔎 [Discovery] Discovery stream closed for transport \(String(describing: transport.type), privacy: .public)")
 				}
 			}
 			continuation.onTermination = { _ in 
