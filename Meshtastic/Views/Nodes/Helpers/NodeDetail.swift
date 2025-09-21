@@ -26,6 +26,7 @@ struct NodeDetail: View {
 	@State private var dateFormatRelative: Bool = true
 	var connectedNode: NodeInfoEntity?
 	@ObservedObject	var node: NodeInfoEntity
+	@State private var environmentSectionHeight: CGFloat = 0
 	
 	var body: some View {
 		NavigationStack {
@@ -245,9 +246,14 @@ struct NodeDetail: View {
 				if node.hasPositions && UserDefaults.environmentEnableWeatherKit
 					|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
 					Section("Environment") {
-						VStack {
+						VStack(spacing: 0) {
 							if !node.hasEnvironmentMetrics {
 								LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+									.frame(height: environmentSectionHeight) // Use the state to set the frame
+									.onPreferenceChange(MetricsTileHeightKey.self) { newHeight in
+										// Update the state with the new height
+										self.environmentSectionHeight = newHeight
+									}
 							} else {
 								VStack {
 									if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
