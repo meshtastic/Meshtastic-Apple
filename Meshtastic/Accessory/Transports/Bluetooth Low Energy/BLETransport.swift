@@ -309,7 +309,7 @@ class BLETransport: Transport {
 			return
 		}
 		let id = peripheral.identifier
-		let device = Device(id: id,	name: peripheral.name ?? "Unknown",	transportType: .ble, identifier: id.uuidString)
+		let device = Device(id: id, name: peripheral.name ?? "Unknown", transportType: .ble, identifier: id.uuidString)
 		
 		Logger.transport.error("🛜 [BLE] Found peripheral to restore: \(peripheral.name ?? "Unknown", privacy: .public) ID: \(peripheral.identifier, privacy: .public) State: \(cbPeripheralStateDescription(peripheral.state), privacy: .public).")
 		/// Create a new BLEConnection object and set it as the active connection if the state is connected
