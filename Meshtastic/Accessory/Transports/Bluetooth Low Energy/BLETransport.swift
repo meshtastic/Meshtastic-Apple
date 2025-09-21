@@ -13,6 +13,7 @@ import OSLog
 class BLETransport: Transport {
 
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
+	private let kCentralRestoreID = "com.meshtastic.central"
 
 	let type: TransportType = .ble
 	private var centralManager: CBCentralManager?
@@ -23,6 +24,7 @@ class BLETransport: Transport {
 	private var activeConnection: BLEConnection?
 	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
 	private var setupCompleteContinuation: CheckedContinuation<Void, Error>?
+	
 
 	var status: TransportStatus = .uninitialized
 
@@ -83,7 +85,10 @@ class BLETransport: Transport {
 	private func setupCentralManager() async throws {
 		try await withCheckedThrowingContinuation { cont in
 			self.setupCompleteContinuation = cont
-			centralManager = CBCentralManager(delegate: delegate, queue: .global())
+			centralManager = CBCentralManager(delegate: delegate,
+											  queue: .global(qos: .utility),
+											  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+			)
 		}
 	}
 
@@ -289,8 +294,32 @@ class BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
-	func handleWillRestoreState(dict: [String: Any]) {
-		Logger.transport.debug("🛜 [BLE] Will Restore State was called, unhandled. \(dict, privacy: .public)")
+	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) {
+		/// GVH - To test this you need to simulate the app getting killed in the background by the OS you can do this by stopping  the debugger while the app is connected to a device in the background
+		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
+		/// look in the logs for the messages below.
+		Logger.transport.error("🛜 [BLE] Will Restore State was called. Attempting to restore connection.")
+		
+		self.centralManager = central
+		
+		/// Find the peripheral that was connected before
+		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
+			  let peripheral = peripherals.first else {
+			Logger.transport.error("🛜 [BLE] No peripherals found in restore state dictionary.")
+			return
+		}
+		let id = peripheral.identifier
+		let device = Device(id: id, name: peripheral.name ?? "Unknown", transportType: .ble, identifier: id.uuidString)
+		
+		Logger.transport.error("🛜 [BLE] Found peripheral to restore: \(peripheral.name ?? "Unknown", privacy: .public) ID: \(peripheral.identifier, privacy: .public) State: \(cbPeripheralStateDescription(peripheral.state), privacy: .public).")
+		/// Create a new BLEConnection object and set it as the active connection if the state is connected
+		if peripheral.state == .connected {
+			let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
+			self.activeConnection = restoredConnection
+			Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
+		}
+		/// Otherwise let the existing reconnection logic in the accessory manager handle reconnection for us
+		Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
 	}
 	
 	func manuallyConnect(withConnectionString: String) async throws {
@@ -339,20 +368,36 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 		}
 	}
 	
-//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-//		self.transport?.handleWillRestoreState(dict: dict)
-//	}
+	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
+		self.transport?.handleWillRestoreState(dict: dict, central: central)
+	}
 }
 
 /// Returns a human-readable description for a CBManagerState value.
 private func cbManagerStateDescription(_ state: CBManagerState) -> String {
-    switch state {
-    case .unknown: return "unknown"
-    case .resetting: return "resetting"
-    case .unsupported: return "unsupported"
-    case .unauthorized: return "unauthorized"
-    case .poweredOff: return "poweredOff"
-    case .poweredOn: return "poweredOn"
-    @unknown default: return "unhandled state"
-    }
+	switch state {
+	case .unknown: return "unknown"
+	case .resetting: return "resetting"
+	case .unsupported: return "unsupported"
+	case .unauthorized: return "unauthorized"
+	case .poweredOff: return "poweredOff"
+	case .poweredOn: return "poweredOn"
+	@unknown default: return "unhandled state"
+	}
+}
+
+/// Returns a human-readable description for a CBPeripheralState value.
+func cbPeripheralStateDescription(_ state: CBPeripheralState) -> String {
+	switch state {
+	case .disconnected:
+		return "disconnected"
+	case .connecting:
+		return "connecting"
+	case .connected:
+		return "connected"
+	case .disconnecting:
+		return "disconnecting"
+	@unknown default:
+		return "unhandled state"
+	}
 }
