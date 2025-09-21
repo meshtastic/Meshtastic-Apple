@@ -147,7 +147,7 @@ struct NodeList: View {
 				.controlSize(.regular)
 				.padding(5)
 			}
-			.searchable(text: $filters.searchText, placement: .automatic, prompt: "Find a node")
+			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
 			.disableAutocorrection(true)
 			.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(nodes.count)))
