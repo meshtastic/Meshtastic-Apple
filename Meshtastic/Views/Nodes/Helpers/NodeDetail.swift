@@ -250,7 +250,7 @@ struct NodeDetail: View {
 							if !node.hasEnvironmentMetrics {
 								LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
 									.frame(height: environmentSectionHeight) // Use the state to set the frame
-									.onPreferenceChange(MetricsTileHeightKey.self) { newHeight in
+									.onPreferenceChange(WeatherKitTilesHeightKey.self) { newHeight in
 										// Update the state with the new height
 										self.environmentSectionHeight = newHeight
 									}

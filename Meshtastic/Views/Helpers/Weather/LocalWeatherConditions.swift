@@ -37,28 +37,28 @@ struct LocalWeatherConditions: View {
 						PressureCompactWidget(pressure: String(pressure?.value ?? 0.0 / 100), unit: pressure?.unit.symbol ?? "??", low: pressure?.value ?? 0.0 <= 1009.144)
 						WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
 					}
-					.padding(.top, 10)
 					
 					HStack {
 						AsyncImage(url: attributionLogo) { image in
 							image
 								.resizable()
 								.scaledToFit()
+							    .frame(height: 10)
 						} placeholder: {
 							ProgressView()
 								.controlSize(.mini)
 						}
-						.frame(height: 10)
 						Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
 							.font(.caption2)
 					}
-					.padding(2)
+					.offset(y: -2)
+					.padding(.bottom, -15)
 				}
 				.background(
 					// Use GeometryReader here to get the VGrid's height
 					GeometryReader { proxy in
 						// Set the preference key with the VGrid's height
-						Color.clear.preference(key: MetricsTileHeightKey.self, value: proxy.size.height)
+						Color.clear.preference(key: WeatherKitTilesHeightKey.self, value: proxy.size.height)
 					}
 				)
 			}
