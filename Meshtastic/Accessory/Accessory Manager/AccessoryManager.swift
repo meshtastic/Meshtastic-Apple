@@ -402,7 +402,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					shouldAutomaticallyConnectToPreferredPeripheral = true
 				}
 				
-				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheral, privacy: .public))")
+				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription, privacy: .public) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheral, privacy: .public))")
 
 				lastConnectionError = error
 				
