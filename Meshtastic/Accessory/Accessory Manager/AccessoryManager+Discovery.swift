@@ -67,7 +67,7 @@ extension AccessoryManager {
 						self.devices = devices.sorted { $0.name < $1.name }
 						
 					case .deviceLost(let deviceId):
-						devices.removeAll { $0.id == deviceId }
+						devices = devices.filter { $0.id != deviceId }
 					
 					case .deviceReportedRssi(let deviceId, let newRssi):
 						updateDevice(deviceId: deviceId, key: \.rssi, value: newRssi)
