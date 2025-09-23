@@ -1,8 +1,8 @@
 //
-//  UserList.swift
-//  Meshtastic
+//  UserList.swift
+//  Meshtastic
 //
-//  Copyright(c) Garth Vander Houwen 8/29/23.
+//  Copyright(c) Garth Vander Houwen 8/29/23.
 //
 
 import SwiftUI
@@ -22,23 +22,24 @@ struct UserList: View {
 	@Binding var userSelection: UserEntity?
 	@State private var userToDeleteMessages: UserEntity?
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
-	@State private var predicate: NSPredicate?
-	@FetchRequest(
-		entity: UserEntity.entity(),
-		sortDescriptors: [
+	
+	private func fetchUsers(withFilters: NodeFilterParameters) -> [UserEntity] {
+		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
+		request.sortDescriptors = [
 			NSSortDescriptor(key: "lastMessage", ascending: false),
 			NSSortDescriptor(key: "userNode.favorite", ascending: false),
 			NSSortDescriptor(key: "pkiEncrypted", ascending: false),
 			NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 			NSSortDescriptor(key: "longName", ascending: true)
 		]
-	)
-	private var users: FetchedResults<UserEntity>
+		request.predicate = withFilters.buildPredicate()
+		return (try? context.fetch(request)) ?? []
+	}
 	
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
-		
+		let users = fetchUsers(withFilters: filters)
 		VStack {
 			List(users, selection: $userSelection) { user in
 				let mostRecent = user.messageList.last
@@ -215,22 +216,6 @@ struct UserList: View {
 			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a contact")
 			.autocorrectionDisabled(true)
 			.scrollDismissesKeyboard(.immediately)
-			.onAppear {
-				// Initialize the predicate when the view appears
-				users.nsPredicate = filters.buildPredicate()
-			}
-			// Use .onChange to update the fetch request's predicate when filters change
-			.onChange(of: filters.searchText) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.isFavorite) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.isOnline) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.hopsAway) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.isPkiEncrypted) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.viaLora) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.viaMqtt) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.roleFilter) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.deviceRoles) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.distanceFilter) { users.nsPredicate = filters.buildPredicate() }
-			.onChange(of: filters.maxDistance) { users.nsPredicate = filters.buildPredicate() }
 		}
 	}
 }
