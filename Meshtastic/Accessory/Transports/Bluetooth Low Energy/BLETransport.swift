@@ -275,6 +275,7 @@ class BLETransport: Transport {
 	func handleDidConnect(peripheral: CBPeripheral, central: CBCentralManager) {
 		if let restoredConnectContinuation {
 			restoredConnectContinuation.resume()
+			self.restoredConnectContinuation = nil
 			return
 		}
 		Logger.transport.debug("🛜 [BLE] Handle Did Connect Connected to peripheral \(peripheral.name ?? "Unknown", privacy: .public)")
