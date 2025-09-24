@@ -23,7 +23,7 @@ class BLETransport: Transport {
 	private var connectingPeripheral: CBPeripheral?
 	private var activeConnection: BLEConnection?
 	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
-	private var restoredConnectContinuation: CheckedContinuation<Void, Never>?
+	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
 	var status: TransportStatus = .uninitialized
@@ -291,6 +291,12 @@ class BLETransport: Transport {
 	}
 
 	func handleDidFailToConnect(peripheral: CBPeripheral, error: Error?) {
+		if let restoredConnectContinuation {
+			restoredConnectContinuation.resume(throwing: AccessoryError.connectionFailed("Connection failed during restoration"))
+			self.restoredConnectContinuation = nil
+			return
+		}
+		
 		guard let cont = connectContinuation,
 			  let connPeripheral = connectingPeripheral,
 			  peripheral.identifier == connPeripheral.identifier else {
@@ -334,21 +340,27 @@ class BLETransport: Transport {
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 				self.activeConnection = restoredConnection
 				Task {
-					// Make sure we're in poweredOn before continuing
-					try await self.setupCompleteGate.wait()
-					
-					Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  Waiting for didConnect from delegate.")
-					
-					// Complete the connect with centralManager.connect and wait for the didConnect.
-					await withCheckedContinuation { cont in
-						self.restoredConnectContinuation = cont
-						centralManager.connect(peripheral)
-					}
-					
-					Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  ✅ didConnect Received!")
-					Task { @MainActor in
-						// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
-						try? await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
+					do {
+						// Make sure we're in poweredOn before continuing
+						try await self.setupCompleteGate.wait()
+						
+						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  Waiting for didConnect from delegate.")
+						
+						// Complete the connect with centralManager.connect and wait for the didConnect.
+						try await withCheckedThrowingContinuation { cont in
+							self.restoredConnectContinuation = cont
+							centralManager.connect(peripheral)
+						}
+						
+						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  ✅ didConnect Received!")
+						Task { @MainActor in
+							// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
+							try? await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
+							restoreInProgress = false
+						}
+					} catch {
+						// We had a conneciton failure during restoration.
+						Logger.transport.error("🛜 [BLE] Error restoring peripheral in connecting state. \(error, privacy: .public)")
 						restoreInProgress = false
 					}
 				}
