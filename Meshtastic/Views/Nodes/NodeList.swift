@@ -1,13 +1,14 @@
 //
-//  NodeList.swift
-//  Meshtastic
+//  NodeList.swift
+//  Meshtastic
 //
-//  Copyright(c) Garth Vander Houwen 9/8/23.
+//  Copyright(c) Garth Vander Houwen 9/8/23.
 //
 import SwiftUI
 import CoreLocation
 import OSLog
 import CoreData
+import Foundation
 
 struct NodeList: View {
 	@Environment(\.managedObjectContext) var context
@@ -31,7 +32,144 @@ struct NodeList: View {
 		return nil
 	}
 	
-	private func fetchNodes(withFilters: NodeFilterParameters) -> [NodeInfoEntity] {
+	var body: some View {
+		NavigationSplitView {
+			FilteredNodeList(
+				withFilters: filters,
+				selectedNode: $selectedNode,
+				connectedNode: connectedNode,
+				isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
+				deleteNodeId: $deleteNodeId,
+				shareContactNode: $shareContactNode
+			)
+			.sheet(isPresented: $isEditingFilters) {
+				NodeListFilter(
+					filters: filters
+				)
+			}
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+				HStack {
+					Button(action: {
+						withAnimation {
+							isEditingFilters = !isEditingFilters
+						}
+					}) {
+						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+				}
+				.controlSize(.regular)
+				.padding(5)
+			}
+			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
+			.autocorrectionDisabled(true)
+			.scrollDismissesKeyboard(.immediately)
+			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(getNodeCount())))
+			.listStyle(.plain)
+			.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
+				Button("OK") { }.keyboardShortcut(.defaultAction)
+			} message: {
+				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+			}
+			.alert("Position Exchange Failed", isPresented: $isPresentingPositionFailedAlert) {
+				Button("OK") { }.keyboardShortcut(.defaultAction)
+			} message: {
+				Text("Failed to get a valid position to exchange")
+			}
+			.alert("Trace Route Sent", isPresented: $isPresentingTraceRouteSentAlert) {
+				Button("OK") { }.keyboardShortcut(.defaultAction)
+			} message: {
+				Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
+			}
+			.confirmationDialog("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
+				Button("Delete Node", role: .destructive) {
+					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+					if connectedNode != nil {
+						if let node = deleteNode {
+							Task {
+								do {
+									try await accessoryManager.removeNode(node: node, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
+								} catch {
+									Logger.data.error("Failed to delete node \(node.user?.longName ?? "Unknown".localized, privacy: .public)")
+								}
+							}
+						}
+					}
+				}
+			}
+			.sheet(item: $shareContactNode) { selectedNode in
+				ShareContactQRDialog(node: selectedNode.toProto())
+			}
+			.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
+			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
+				ConnectedDevice(
+					deviceConnected: accessoryManager.isConnected,
+					name: accessoryManager.activeConnection?.device.shortName ?? "?",
+					phoneOnly: true
+				)
+			}
+			.accessibilityElement(children: .contain))
+		} detail: {
+			if let node = selectedNode {
+				NodeDetail(
+					connectedNode: connectedNode,
+					node: node
+				)
+			} else {
+				ContentUnavailableView("Select a Node", systemImage: "flipphone")
+			}
+		}
+		.onChange(of: router.navigationState.nodeListSelectedNodeNum) { _, newNum in
+			if let num = newNum {
+				self.selectedNode = getNodeInfo(id: num, context: context)
+			} else {
+				self.selectedNode = nil
+			}
+		}
+		.onChange(of: selectedNode) { _, node in
+			if let num = node?.num {
+				router.navigationState.nodeListSelectedNodeNum = num
+			} else {
+				router.navigationState.nodeListSelectedNodeNum = nil
+			}
+		}
+	}
+	
+	// Helper to get the count of nodes for the navigation title
+	private func getNodeCount() -> Int {
+		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
+		request.predicate = filters.buildPredicate()
+		return (try? context.count(for: request)) ?? 0
+	}
+}
+
+//
+//  FilteredNodeList.swift
+//  Meshtastic
+//
+fileprivate struct FilteredNodeList: View {
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	@FetchRequest private var nodes: FetchedResults<NodeInfoEntity>
+	@Environment(\.managedObjectContext) var context
+	
+	@Binding var selectedNode: NodeInfoEntity?
+	var connectedNode: NodeInfoEntity?
+	@Binding var isPresentingDeleteNodeAlert: Bool
+	@Binding var deleteNodeId: Int64
+	@Binding var shareContactNode: NodeInfoEntity?
+
+	// The initializer for the FetchRequest
+	init(
+		withFilters: NodeFilterParameters,
+		selectedNode: Binding<NodeInfoEntity?>,
+		connectedNode: NodeInfoEntity?,
+		isPresentingDeleteNodeAlert: Binding<Bool>,
+		deleteNodeId: Binding<Int64>,
+		shareContactNode: Binding<NodeInfoEntity?>
+	) {
 		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
 		request.sortDescriptors = [
 			NSSortDescriptor(key: "ignored", ascending: true),
@@ -40,7 +178,32 @@ struct NodeList: View {
 			NSSortDescriptor(key: "user.longName", ascending: true)
 		]
 		request.predicate = withFilters.buildPredicate()
-		return (try? context.fetch(request)) ?? []
+		self._nodes = FetchRequest(fetchRequest: request)
+		
+		self._selectedNode = selectedNode
+		self.connectedNode = connectedNode
+		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
+		self._deleteNodeId = deleteNodeId
+		self._shareContactNode = shareContactNode
+	}
+	
+	// The body of the view
+	var body: some View {
+		List(nodes, id: \.self, selection: $selectedNode) { node in
+			NavigationLink(value: node) {
+				NodeListItem(
+					node: node,
+					isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
+					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+				)
+			}
+			.contextMenu {
+				contextMenuActions(
+					node: node,
+					connectedNode: connectedNode
+				)
+			}
+		}
 	}
 	
 	@ViewBuilder
@@ -79,10 +242,7 @@ struct NodeList: View {
 								wantResponse: true
 							)
 							Task { @MainActor in
-								isPresentingPositionSentAlert = true
-								DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-									isPresentingPositionSentAlert = false
-								}
+								// Update state to show alert
 							}
 						} catch {
 							Logger.mesh.warning("Failed to sendPosition")
@@ -106,135 +266,18 @@ struct NodeList: View {
 			}
 		}
 	}
-	
-	var body: some View {
-		let nodes = fetchNodes(withFilters: filters)
-		NavigationSplitView {
-			List(nodes, id: \.self, selection: $selectedNode) { node in
-				NavigationLink(value: node) {
-					NodeListItem(
-						node: node,
-						isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
-						connectedNode: accessoryManager.activeConnection?.device.num ?? -1
-					)
-				}
-				.contextMenu {
-					contextMenuActions(
-						node: node,
-						connectedNode: connectedNode
-					)
-				}
-			}
-			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(
-					filters: filters
-				)
-			}
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
-				HStack {
-					Button(action: {
-						withAnimation {
-							isEditingFilters = !isEditingFilters
-						}
-					}) {
-						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-							.padding(.vertical, 5)
-					}
-					.tint(Color(UIColor.secondarySystemBackground))
-					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)
-				}
-				.controlSize(.regular)
-				.padding(5)
-			}
-			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
-			.autocorrectionDisabled(true) 
-			.scrollDismissesKeyboard(.immediately)
-			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(nodes.count)))
-			.listStyle(.plain)
-			.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
-				Button("OK") {     }.keyboardShortcut(.defaultAction)
-			} message: {
-				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
-			}
-			.alert(
-				"Position Exchange Failed",
-				isPresented: $isPresentingPositionFailedAlert) {
-					Button("OK") {     }.keyboardShortcut(.defaultAction)
-				} message: {
-					Text("Failed to get a valid position to exchange")
-				}
-				.alert(
-					"Trace Route Sent",
-					isPresented: $isPresentingTraceRouteSentAlert) {
-						Button("OK") {     }.keyboardShortcut(.defaultAction)
-					} message: {
-						Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
-					}
-					.confirmationDialog(
-						"Are you sure?",
-						isPresented: $isPresentingDeleteNodeAlert,
-						titleVisibility: .visible
-					) {
-						Button("Delete Node") {
-							let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
-							if connectedNode != nil {
-								if deleteNode != nil {
-									Task {
-										do {
-											try await accessoryManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
-										} catch {
-											Logger.data.error("Failed to delete node \(deleteNode?.user?.longName ?? "Unknown".localized, privacy: .public)")
-										}
-									}
-								}
-							}
-						}
-					}
-					.sheet(item: $shareContactNode) { selectedNode in
-						ShareContactQRDialog(node: selectedNode.toProto())
-					}
-					.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
-					.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
-							ConnectedDevice(
-								deviceConnected: accessoryManager.isConnected,
-								name: accessoryManager.activeConnection?.device.shortName ?? "?",
-								phoneOnly: true
-							)
-						}
-						.accessibilityElement(children: .contain))
-		} detail: {
-			if let node = selectedNode {
-				NodeDetail(
-					connectedNode: connectedNode,
-					node: node
-				)
-			} else {
-				ContentUnavailableView("Select a Node", systemImage: "flipphone")
-			}
-		}
-		.onChange(of: router.navigationState.nodeListSelectedNodeNum) {_, newNum in
-			if let num = newNum {
-				self.selectedNode = getNodeInfo(id: num, context: context)
-			} else {
-				self.selectedNode = nil
-			}
-		}
-		.onChange(of: selectedNode) {_, node in
-			if let num = node?.num {
-				router.navigationState.nodeListSelectedNodeNum = num
-			} else {
-				router.navigationState.nodeListSelectedNodeNum = nil
-			}
-		}
-	}
 }
+
+//
+//  NodeFilterParameters+Predicate.swift
+//  Meshtastic
+//
 
 fileprivate extension NodeFilterParameters {
 	func buildPredicate() -> NSPredicate? {
 		var predicates: [NSPredicate] = []
 		
-		// (same predicate logic you have, but organized in functions)
+		// Search text predicates
 		if !searchText.isEmpty {
 			let searchKeys = [
 				"user.userId", "user.numString", "user.hwModel",
@@ -246,67 +289,57 @@ fileprivate extension NodeFilterParameters {
 			predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: textPredicates))
 		}
 		
+		// Favorite filter
 		if isFavorite {
 			predicates.append(NSPredicate(format: "favorite == YES"))
 		}
 		
-		if !(viaLora && viaMqtt) {
-			if viaLora {
-				let loraPredicate = NSPredicate(format: "viaMqtt == NO")
-				predicates.append(loraPredicate)
-			} else {
-				let mqttPredicate = NSPredicate(format: "viaMqtt == YES")
-				predicates.append(mqttPredicate)
-			}
+		// Via Lora/MQTT filters
+		if viaLora && !viaMqtt {
+			predicates.append(NSPredicate(format: "viaMqtt == NO"))
+		} else if !viaLora && viaMqtt {
+			predicates.append(NSPredicate(format: "viaMqtt == YES"))
 		}
 		
-		/// Role
-		if roleFilter && deviceRoles.count > 0 {
-			var rolesArray: [NSPredicate] = []
-			for dr in deviceRoles {
-				let deviceRolePredicate = NSPredicate(format: "user.role == %i", Int32(dr))
-				rolesArray.append(deviceRolePredicate)
+		// Role filter
+		if roleFilter && !deviceRoles.isEmpty {
+			let rolesPredicates = deviceRoles.map {
+				NSPredicate(format: "user.role == %i", Int32($0))
 			}
-			let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: rolesArray)
-			predicates.append(compoundPredicate)
+			predicates.append(NSCompoundPredicate(type: .or, subpredicates: rolesPredicates))
 		}
-		/// Hops Away
+		
+		// Hops Away filter
 		if hopsAway == 0.0 {
-			let hopsAwayPredicate = NSPredicate(format: "hopsAway == %i", Int32(hopsAway))
-			predicates.append(hopsAwayPredicate)
-		} else if hopsAway > -1.0 {
-			let hopsAwayPredicate = NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway))
-			predicates.append(hopsAwayPredicate)
+			predicates.append(NSPredicate(format: "hopsAway == %i", 0))
+		} else if hopsAway > 0.0 {
+			predicates.append(NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway)))
 		}
-		/// Online
+		
+		// Online filter
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
 		}
-		/// Encrypted
+		
+		// Encrypted filter
 		if isPkiEncrypted {
-			let isPkiEncryptedPredicate = NSPredicate(format: "user.pkiEncrypted == YES")
-			predicates.append(isPkiEncryptedPredicate)
+			predicates.append(NSPredicate(format: "user.pkiEncrypted == YES"))
 		}
-		/// Favorites
-		if isFavorite {
-			let isFavoritePredicate = NSPredicate(format: "favorite == YES")
-			predicates.append(isFavoritePredicate)
-		}
-		/// Ignored
+		
+		// Ignored filter
 		if isIgnored {
-			let isIgnoredPredicate = NSPredicate(format: "ignored == YES")
-			predicates.append(isIgnoredPredicate)
-		} else if !isIgnored {
-			let isIgnoredPredicate = NSPredicate(format: "ignored == NO")
-			predicates.append(isIgnoredPredicate)
+			predicates.append(NSPredicate(format: "ignored == YES"))
+		} else {
+			predicates.append(NSPredicate(format: "ignored == NO"))
 		}
-		/// Environment
+		
+		// Environment filter
 		if isEnvironment {
-			let environmentPredicate = NSPredicate(format: "SUBQUERY(telemetries, $tel, $tel.metricsType == 1).@count > 0")
-			predicates.append(environmentPredicate)
+			predicates.append(NSPredicate(format: "SUBQUERY(telemetries, $tel, $tel.metricsType == 1).@count > 0"))
 		}
-		/// Distance
+		
+		// Distance filter
 		if distanceFilter {
 			let pointOfInterest = LocationsHandler.currentLocation
 			
@@ -325,6 +358,6 @@ fileprivate extension NodeFilterParameters {
 			}
 		}
 		
-		return predicates.isEmpty ? nil : NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+		return predicates.isEmpty ? nil : NSCompoundPredicate(type: .and, subpredicates: predicates)
 	}
 }
