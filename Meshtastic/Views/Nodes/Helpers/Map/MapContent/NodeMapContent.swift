@@ -90,45 +90,40 @@ struct NodeMapContent: MapContent {
 				Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
 					LazyVStack {
 							ZStack {
-								Circle()
-									.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
-									.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
-									.frame(width: 50, height: 50)
-									if pf.contains(.Heading) {
-										Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
-											.symbolEffect(.pulse.byLayer)
-											.padding(5)
-											.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
-											.background(Color(nodeColor.darker()))
-											.clipShape(Circle())
-											.rotationEffect(headingDegrees)
-											.onTapGesture {
-												selectedPosition = (selectedPosition == position ? nil : position)
-											}
-											.popover(item: $selectedPosition) { selection in
-												PositionPopover(position: selection)
-													.padding()
-													.opacity(0.8)
-													.presentationCompactAdaptation(.popover)
-											}
+								if pf.contains(.Heading) {
+									Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
+										.padding(5)
+										.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
+										.background(Color(nodeColor.darker()))
+										.clipShape(Circle())
+										.rotationEffect(headingDegrees)
+										.onTapGesture {
+											selectedPosition = (selectedPosition == position ? nil : position)
+										}
+										.popover(item: $selectedPosition) { selection in
+											PositionPopover(position: selection)
+												.padding()
+												.opacity(0.8)
+												.presentationCompactAdaptation(.popover)
+										}
 
-									} else {
-										Image(systemName: "flipphone")
-											.symbolEffect(.pulse.byLayer)
-											.padding(5)
-											.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
-											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
-											.clipShape(Circle())
-											.onTapGesture {
-												selectedPosition = (selectedPosition == position ? nil : position)
-											}
-											.popover(item: $selectedPosition) { selection in
-												PositionPopover(position: selection)
-													.padding()
-													.opacity(0.8)
-													.presentationCompactAdaptation(.popover)
-											}
-									}
+								} else {
+									Image(systemName: "flipphone")
+										.symbolEffect(.pulse.byLayer)
+										.padding(5)
+										.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
+										.background(Color(UIColor(hex: UInt32(node.num)).darker()))
+										.clipShape(Circle())
+										.onTapGesture {
+											selectedPosition = (selectedPosition == position ? nil : position)
+										}
+										.popover(item: $selectedPosition) { selection in
+											PositionPopover(position: selection)
+												.padding()
+												.opacity(0.8)
+												.presentationCompactAdaptation(.popover)
+										}
+								}
 							}
 						}
 					}

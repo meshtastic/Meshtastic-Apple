@@ -25,11 +25,6 @@ struct PositionPopover: View {
 			VStack {
 				HStack {
 					ZStack {
-						if position.nodePosition?.isOnline ?? false {
-							Circle()
-								.fill(Color(nodeColor.lighter()).opacity(0.4))
-								.frame(width: 90, height: 90)
-						}
 						CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 					}
 					Text(position.nodePosition?.user?.longName ?? "Unknown")

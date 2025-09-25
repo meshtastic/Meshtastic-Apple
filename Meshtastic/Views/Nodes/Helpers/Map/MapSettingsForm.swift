@@ -216,7 +216,7 @@ struct MapSettingsForm: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.medium, .large], selection: $currentDetent)
+		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))

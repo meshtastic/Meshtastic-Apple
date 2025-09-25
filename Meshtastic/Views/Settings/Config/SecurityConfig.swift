@@ -177,7 +177,6 @@ struct SecurityConfig: View {
 					Text("The primary public key authorized to send admin messages to this node.")
 						.foregroundStyle(.secondary)
 						.font(idiom == .phone ? .caption : .callout)
-					Divider()
 					Label("Secondary Admin Key", systemImage: "key.viewfinder")
 					SecureInput("Secondary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
 						.background(
@@ -187,7 +186,6 @@ struct SecurityConfig: View {
 					Text("The secondary public key authorized to send admin messages to this node.")
 						.foregroundStyle(.secondary)
 						.font(idiom == .phone ? .caption : .callout)
-					Divider()
 					Label("Tertiary Admin Key", systemImage: "key.viewfinder")
 					SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey3)
 						.background(

@@ -23,13 +23,14 @@ struct Device: Identifiable, Hashable {
 
 	var connectionState: ConnectionState
 
-	init(id: UUID, name: String, transportType: TransportType, identifier: String, connectionState: ConnectionState = .disconnected, rssi: Int? = nil) {
+	init(id: UUID, name: String, transportType: TransportType, identifier: String, connectionState: ConnectionState = .disconnected, rssi: Int? = nil, num: Int64? = nil) {
 		self.id = id
 		self.name = name
 		self.transportType = transportType
 		self.identifier = identifier
 		self.connectionState = connectionState
 		self.rssi = rssi
+		self.num = num
 	}
 
 	var rssiString: String {
