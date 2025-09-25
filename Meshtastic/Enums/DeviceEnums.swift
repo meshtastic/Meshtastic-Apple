@@ -72,7 +72,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 		case .lostAndFound:
 			return "Broadcasts location as message to default channel regularly for to assist with device recovery.".localized
 		case .routerLate:
-			return "Infrastructure node that always rebroadcasts packets once but only after all other modes. Visible in Nodes list. Not a good cheoice for rooftop nodes.".localized
+			return "Infrastructure node that always rebroadcasts packets once but only after all other modes. Visible in Nodes list. Not a good choice for rooftop nodes.".localized
 		case .clientBase:
 			return "Used for rooftop nodes to distribute messages more widely from multiple nearby client mute nodes.".localized
 		}
