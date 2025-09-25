@@ -68,7 +68,7 @@ struct SecurityConfig: View {
 								RoundedRectangle(cornerRadius: 10.0)
 									.stroke(isValidKeyPair ? Color.clear : Color.red, lineWidth: 2.0)
 							)
-						Text("Generated from your public key and sent out to other nodes on the mesh to allow them to compute a shared secret key.")
+						Text("Generated from your private key and sent to other nodes on the mesh so they can compute a shared secret key.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 						Divider()
