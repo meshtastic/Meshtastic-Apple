@@ -6919,7 +6919,7 @@
       }
     },
     "Channel Details" : {
-	"localizations" : {
+      "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18303,6 +18303,7 @@
       }
     },
     "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes. Relays messages with minimal overhead. Not visible in Nodes list." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18367,6 +18368,7 @@
       }
     },
     "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
