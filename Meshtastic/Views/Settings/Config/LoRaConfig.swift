@@ -173,7 +173,6 @@ struct LoRaConfig: View {
 						Spacer()
 						TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
 							.keyboardType(.decimalPad)
-							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .frequencyOverride)
 					}
 
