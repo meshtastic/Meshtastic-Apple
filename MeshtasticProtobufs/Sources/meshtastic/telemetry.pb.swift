@@ -200,6 +200,10 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// SEN5X PM SENSORS
   case sen5X // = 43
+
+  ///
+  /// TSL2561 light sensor
+  case tsl2561 // = 44
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -252,6 +256,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 41: self = .ads1X15Alt
     case 42: self = .sfa30
     case 43: self = .sen5X
+    case 44: self = .tsl2561
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -302,6 +307,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .ads1X15Alt: return 41
     case .sfa30: return 42
     case .sen5X: return 43
+    case .tsl2561: return 44
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -357,6 +363,7 @@ extension TelemetrySensorType: CaseIterable {
     .ads1X15Alt,
     .sfa30,
     .sen5X,
+    .tsl2561,
   ]
 }
 
@@ -1619,6 +1626,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     41: .same(proto: "ADS1X15_ALT"),
     42: .same(proto: "SFA30"),
     43: .same(proto: "SEN5X"),
+    44: .same(proto: "TSL2561"),
   ]
 }
 

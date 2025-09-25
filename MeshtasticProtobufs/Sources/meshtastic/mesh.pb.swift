@@ -466,8 +466,8 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case tLoraPager // = 103
 
   ///
-  /// GAT562 Mesh Trial Tracker
-  case gat562MeshTrialTracker // = 104
+  /// M5Stack Reserved
+  case m5StackReserved // = 104
 
   ///
   /// RAKwireless WisMesh Tag
@@ -485,6 +485,22 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   /// MeshSolar is an integrated power management and communication solution designed for outdoor low-power devices.
   /// https://heltec.org/project/meshsolar/
   case heltecMeshSolar // = 108
+
+  ///
+  /// Lilygo T-Echo Lite
+  case tEchoLite // = 109
+
+  ///
+  /// New Heltec LoRA32 with ESP32-S3 CPU
+  case heltecV4 // = 110
+
+  ///
+  /// M5Stack C6L
+  case m5StackC6L // = 111
+
+  ///
+  /// M5Stack Cardputer Adv
+  case m5StackCardputerAdv // = 112
 
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -603,11 +619,15 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 101: self = .qwantzTinyArms
     case 102: self = .tDeckPro
     case 103: self = .tLoraPager
-    case 104: self = .gat562MeshTrialTracker
+    case 104: self = .m5StackReserved
     case 105: self = .wismeshTag
     case 106: self = .rak3312
     case 107: self = .thinknodeM5
     case 108: self = .heltecMeshSolar
+    case 109: self = .tEchoLite
+    case 110: self = .heltecV4
+    case 111: self = .m5StackC6L
+    case 112: self = .m5StackCardputerAdv
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -719,11 +739,15 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .qwantzTinyArms: return 101
     case .tDeckPro: return 102
     case .tLoraPager: return 103
-    case .gat562MeshTrialTracker: return 104
+    case .m5StackReserved: return 104
     case .wismeshTag: return 105
     case .rak3312: return 106
     case .thinknodeM5: return 107
     case .heltecMeshSolar: return 108
+    case .tEchoLite: return 109
+    case .heltecV4: return 110
+    case .m5StackC6L: return 111
+    case .m5StackCardputerAdv: return 112
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -840,11 +864,15 @@ extension HardwareModel: CaseIterable {
     .qwantzTinyArms,
     .tDeckPro,
     .tLoraPager,
-    .gat562MeshTrialTracker,
+    .m5StackReserved,
     .wismeshTag,
     .rak3312,
     .thinknodeM5,
     .heltecMeshSolar,
+    .tEchoLite,
+    .heltecV4,
+    .m5StackC6L,
+    .m5StackCardputerAdv,
     .privateHw,
   ]
 }
@@ -4184,11 +4212,15 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     101: .same(proto: "QWANTZ_TINY_ARMS"),
     102: .same(proto: "T_DECK_PRO"),
     103: .same(proto: "T_LORA_PAGER"),
-    104: .same(proto: "GAT562_MESH_TRIAL_TRACKER"),
+    104: .same(proto: "M5STACK_RESERVED"),
     105: .same(proto: "WISMESH_TAG"),
     106: .same(proto: "RAK3312"),
     107: .same(proto: "THINKNODE_M5"),
     108: .same(proto: "HELTEC_MESH_SOLAR"),
+    109: .same(proto: "T_ECHO_LITE"),
+    110: .same(proto: "HELTEC_V4"),
+    111: .same(proto: "M5STACK_C6L"),
+    112: .same(proto: "M5STACK_CARDPUTER_ADV"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

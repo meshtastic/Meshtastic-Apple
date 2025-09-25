@@ -1013,6 +1013,11 @@ public struct ModuleConfig {
     /// ESP32 Only
     public var save: Bool = false
 
+    ///
+    /// Bool indicating that the node should cleanup / destroy it's RangeTest.csv file.
+    /// ESP32 Only
+    public var clearOnReboot_p: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
@@ -1081,6 +1086,11 @@ public struct ModuleConfig {
     ///
     /// Enable/Disable the health telemetry module on-device display
     public var healthScreenEnabled: Bool = false
+
+    ///
+    /// Enable/Disable the device telemetry module to send metrics to the mesh
+    /// Note: We will still send telemtry to the connected phone / client every minute over the API
+    public var deviceTelemetryEnabled: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2403,6 +2413,7 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     1: .same(proto: "enabled"),
     2: .same(proto: "sender"),
     3: .same(proto: "save"),
+    4: .standard(proto: "clear_on_reboot"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2414,6 +2425,7 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.sender) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.save) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.clearOnReboot_p) }()
       default: break
       }
     }
@@ -2429,6 +2441,9 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if self.save != false {
       try visitor.visitSingularBoolField(value: self.save, fieldNumber: 3)
     }
+    if self.clearOnReboot_p != false {
+      try visitor.visitSingularBoolField(value: self.clearOnReboot_p, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2436,6 +2451,7 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.enabled != rhs.enabled {return false}
     if lhs.sender != rhs.sender {return false}
     if lhs.save != rhs.save {return false}
+    if lhs.clearOnReboot_p != rhs.clearOnReboot_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2457,6 +2473,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     11: .standard(proto: "health_measurement_enabled"),
     12: .standard(proto: "health_update_interval"),
     13: .standard(proto: "health_screen_enabled"),
+    14: .standard(proto: "device_telemetry_enabled"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2478,6 +2495,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 11: try { try decoder.decodeSingularBoolField(value: &self.healthMeasurementEnabled) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.healthUpdateInterval) }()
       case 13: try { try decoder.decodeSingularBoolField(value: &self.healthScreenEnabled) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.deviceTelemetryEnabled) }()
       default: break
       }
     }
@@ -2523,6 +2541,9 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if self.healthScreenEnabled != false {
       try visitor.visitSingularBoolField(value: self.healthScreenEnabled, fieldNumber: 13)
     }
+    if self.deviceTelemetryEnabled != false {
+      try visitor.visitSingularBoolField(value: self.deviceTelemetryEnabled, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2540,6 +2561,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.healthMeasurementEnabled != rhs.healthMeasurementEnabled {return false}
     if lhs.healthUpdateInterval != rhs.healthUpdateInterval {return false}
     if lhs.healthScreenEnabled != rhs.healthScreenEnabled {return false}
+    if lhs.deviceTelemetryEnabled != rhs.deviceTelemetryEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

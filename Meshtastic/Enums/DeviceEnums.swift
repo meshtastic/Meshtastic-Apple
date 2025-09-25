@@ -19,9 +19,9 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case sensor = 6
 	case tak = 7
 	case takTracker = 10
-	case repeater = 4
 	case router = 2
 	case routerLate = 11
+	case clientBase = 12
 
 	var id: Int { self.rawValue }
 	var name: String {
@@ -32,8 +32,6 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Client Mute".localized
 		case .router:
 			return "Router".localized
-		case .repeater:
-			return "Repeater".localized
 		case .tracker:
 			return "Tracker".localized
 		case .sensor:
@@ -48,6 +46,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Lost and Found".localized
 		case .routerLate:
 			return "Router Late".localized
+		case .clientBase:
+			return "Client Base".localized
 		}
 
 	}
@@ -59,8 +59,6 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Device that does not forward packets from other devices.".localized
 		case .router:
 			return "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes.  Needs exceptional coverage. Visible in Nodes list.".localized
-		case .repeater:
-			return "Infrastructure node on a tower or mountain top only.  Not to be used for roofs or mobile nodes. Relays messages with minimal overhead. Not visible in Nodes list.".localized
 		case .tracker:
 			return "Broadcasts GPS position packets as priority.".localized
 		case .sensor:
@@ -74,7 +72,9 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 		case .lostAndFound:
 			return "Broadcasts location as message to default channel regularly for to assist with device recovery.".localized
 		case .routerLate:
-			return "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list.".localized
+			return "Infrastructure node that always rebroadcasts packets once but only after all other modes. Visible in Nodes list. Not a good cheoice for rooftop nodes.".localized
+		case .clientBase:
+			return "Used for rooftop nodes to distribute messages more widely from multiple nearby client mute nodes.".localized
 		}
 	}
 
@@ -86,8 +86,6 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "speaker.slash"
 		case .router, .routerLate:
 			return "wifi.router"
-		case .repeater:
-			return "repeat"
 		case .tracker:
 			return "mappin.and.ellipse.circle"
 		case .sensor:
@@ -100,6 +98,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "eye.slash"
 		case .lostAndFound:
 			return "map"
+		case .clientBase:
+			return "house"
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.Role {
@@ -111,8 +111,6 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.clientMute
 		case .router:
 			return Config.DeviceConfig.Role.router
-		case .repeater:
-			return Config.DeviceConfig.Role.repeater
 		case .tracker:
 			return Config.DeviceConfig.Role.tracker
 		case .sensor:
@@ -127,6 +125,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.lostAndFound
 		case .routerLate:
 			return Config.DeviceConfig.Role.routerLate
+		case .clientBase:
+			return Config.DeviceConfig.Role.clientBase
 		}
 	}
 }
