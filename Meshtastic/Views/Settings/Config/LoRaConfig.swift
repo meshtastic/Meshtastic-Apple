@@ -154,17 +154,7 @@ struct LoRaConfig: View {
 							Text("Frequency Slot")
 								.fixedSize()
 							TextField("Frequency Slot", value: $channelNum, formatter: formatter)
-								.toolbar {
-									ToolbarItemGroup(placement: .keyboard) {
-										Spacer()
-										Button("Dismiss") {
-											focusedField = nil
-										}
-										.font(.subheadline)
-									}
-								}
 								.keyboardType(.numberPad)
-								.scrollDismissesKeyboard(.immediately)
 								.focused($focusedField, equals: .channelNum)
 								.disabled(overrideFrequency > 0.0)
 						}
@@ -195,6 +185,7 @@ struct LoRaConfig: View {
 					}
 				}
 			}
+			.scrollDismissesKeyboard(.immediately)
 			.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
