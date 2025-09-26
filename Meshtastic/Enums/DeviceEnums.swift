@@ -14,6 +14,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case client = 0
 	case clientMute = 1
 	case clientHidden = 8
+	case clientBase = 12
 	case tracker = 5
 	case lostAndFound = 9
 	case sensor = 6
@@ -48,6 +49,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Lost and Found".localized
 		case .routerLate:
 			return "Router Late".localized
+		case .clientBase:
+			return "Client Base".localized
 		}
 
 	}
@@ -75,6 +78,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Broadcasts location as message to default channel regularly for to assist with device recovery.".localized
 		case .routerLate:
 			return "Infrastructure node that always rebroadcasts packets once but only after all other modes, ensuring additional coverage for local clusters. Visible in Nodes list.".localized
+		case .clientBase:
+			return "Behaves as router for packets to and from any favorited node, otherwise acts as client. Supported on firmware 2.7.10+ only.".localized
 		}
 	}
 
@@ -100,6 +105,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "eye.slash"
 		case .lostAndFound:
 			return "map"
+		case .clientBase:
+			return "house"
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.Role {
@@ -127,6 +134,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.lostAndFound
 		case .routerLate:
 			return Config.DeviceConfig.Role.routerLate
+		case .clientBase:
+			return Config.DeviceConfig.Role.clientBase
 		}
 	}
 }
