@@ -45,18 +45,20 @@ struct MapSettingsForm: View {
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
-						HStack {
-							Label("Show nodes", systemImage: "lines.measurement.horizontal")
-							Picker("", selection: $meshMapDistance) {
-								ForEach(MeshMapDistances.allCases) { di in
-									Text(di.description)
-										.tag(di.id)
+						if LocationsHandler.currentLocation != nil {
+							HStack {
+								Label("Show nodes", systemImage: "lines.measurement.horizontal")
+								Picker("", selection: $meshMapDistance) {
+									ForEach(MeshMapDistances.allCases) { di in
+										Text(di.description)
+											.tag(di.id)
+									}
 								}
+								.pickerStyle(DefaultPickerStyle())
 							}
-							.pickerStyle(DefaultPickerStyle())
-						}
-						.onChange(of: meshMapDistance) { _, newMeshMapDistance in
-							UserDefaults.meshMapDistance = newMeshMapDistance
+							.onChange(of: meshMapDistance) { _, newMeshMapDistance in
+								UserDefaults.meshMapDistance = newMeshMapDistance
+							}
 						}
 						Toggle(isOn: $enableMapWaypoints) {
 							Label {

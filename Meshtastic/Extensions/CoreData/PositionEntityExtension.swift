@@ -13,33 +13,44 @@ import SwiftUI
 
 extension PositionEntity {
 
-	@MainActor static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
-		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
-		request.fetchLimit = 1000
-		request.returnsObjectsAsFaults = false
-		request.includesSubentities = true
-		request.returnsDistinctResults = true
-		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
-		let positionPredicate = NSPredicate(format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true")
+	@MainActor
+	static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
 		
-		if let pointOfInterest = LocationsHandler.currentLocation {
+		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
+		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
+		let positionPredicate = NSPredicate(format: "nodePosition != nil AND nodePosition.user != nil AND latest == true AND nodePosition.user.shortName != ''")
+		request.predicate = positionPredicate
+
+		// Distance Predicate
+		if let cl = LocationsHandler.currentLocation {
 			
-			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-				let d: Double = UserDefaults.meshMapDistance * 1.1
-				let r: Double = 6371009
-				let meanLatitidue = pointOfInterest.latitude * .pi / 180
-				let deltaLatitude = d / r * 180 / .pi
-				let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
-				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
-				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
-				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
-				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-				let distancePredicate = NSPredicate(format: "(%lf <= (longitudeI / 1e7)) AND ((longitudeI / 1e7) <= %lf) AND (%lf <= (latitudeI / 1e7)) AND ((latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude, minLatitude, maxLatitude)
-				request.predicate = NSCompoundPredicate(type: .and, subpredicates: [positionPredicate, distancePredicate])
-			} else {
-				request.predicate = positionPredicate
-			}
+			let d: Double = UserDefaults.meshMapDistance * 1.1
+			let r: Double = 6371009 // Earth's mean radius in meters
+			
+			// Calculate Bounding Box
+			let meanLatitidue = cl.latitude * .pi / 180
+			let deltaLatitude = d / r * 180 / .pi
+			let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
+			
+			let minLatitude: Double = cl.latitude - deltaLatitude
+			let maxLatitude: Double = cl.latitude + deltaLatitude
+			let minLongitude: Double = cl.longitude - deltaLongitude
+			let maxLongitude: Double = cl.longitude + deltaLongitude
+			
+			// Scale bounding box values by 1e7 and use integer attributes (longitudeI, latitudeI)
+			let scale: Double = 1e7
+			let minLongitudeI = Int(minLongitude * scale)
+			let maxLongitudeI = Int(maxLongitude * scale)
+			let minLatitudeI = Int(minLatitude * scale)
+			let maxLatitudeI = Int(maxLatitude * scale)
+			
+			// Use integer comparison in the predicate
+			let distancePredicate = NSPredicate(format: "(%ld <= longitudeI) AND (longitudeI <= %ld) AND (%ld <= latitudeI) AND (latitudeI <= %ld)",
+											   minLongitudeI, maxLongitudeI, minLatitudeI, maxLatitudeI)
+			
+			request.predicate = NSCompoundPredicate(type: .and, subpredicates: [positionPredicate, distancePredicate])
 		}
+		
 		return request
 	}
 	var latitude: Double? {
