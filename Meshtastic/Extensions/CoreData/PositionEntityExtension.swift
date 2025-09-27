@@ -21,27 +21,27 @@ extension PositionEntity {
 		request.returnsDistinctResults = true
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
 		let positionPredicate = NSPredicate(format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true")
-
-		let pointOfInterest = LocationsHandler.currentLocation
-
-		if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-			let d: Double = UserDefaults.meshMapDistance * 1.1
-			let r: Double = 6371009
-			let meanLatitidue = pointOfInterest.latitude * .pi / 180
-			let deltaLatitude = d / r * 180 / .pi
-			let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
-			let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
-			let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
-			let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
-			let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-			let distancePredicate = NSPredicate(format: "(%lf <= (longitudeI / 1e7)) AND ((longitudeI / 1e7) <= %lf) AND (%lf <= (latitudeI / 1e7)) AND ((latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude, minLatitude, maxLatitude)
-			request.predicate = NSCompoundPredicate(type: .and, subpredicates: [positionPredicate, distancePredicate])
-		} else {
-			request.predicate = positionPredicate
+		
+		if let pointOfInterest = LocationsHandler.currentLocation {
+			
+			if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
+				let d: Double = UserDefaults.meshMapDistance * 1.1
+				let r: Double = 6371009
+				let meanLatitidue = pointOfInterest.latitude * .pi / 180
+				let deltaLatitude = d / r * 180 / .pi
+				let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
+				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
+				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
+				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
+				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
+				let distancePredicate = NSPredicate(format: "(%lf <= (longitudeI / 1e7)) AND ((longitudeI / 1e7) <= %lf) AND (%lf <= (latitudeI / 1e7)) AND ((latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude, minLatitude, maxLatitude)
+				request.predicate = NSCompoundPredicate(type: .and, subpredicates: [positionPredicate, distancePredicate])
+			} else {
+				request.predicate = positionPredicate
+			}
 		}
 		return request
 	}
-
 	var latitude: Double? {
 
 		let d = Double(latitudeI)

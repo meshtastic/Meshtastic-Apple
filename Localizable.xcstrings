@@ -15976,22 +15976,6 @@
         }
       }
     },
-    "Generated from your private key and sent to other nodes on the mesh so they can compute a shared secret key." : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "秘密キーから生成され、メッシュ上の他のノードに送信されて、共有秘密キーの計算を可能にします。"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Генерисано из твог приватног кључа и послато другим чворовима на мрежи како би им омогућило да израчунају заједнички тајни кључ.\n"
-          }
-        }
-      }
-    },
     "Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets." : {
       "localizations" : {
         "it" : {
@@ -42335,6 +42319,9 @@
           }
         }
       }
+    },
+    "Your public key is generated from your private key and sent to other nodes on the mesh so they can compute a shared secret key with you." : {
+
     },
     "Your region has a %lld%% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh." : {
       "localizations" : {
