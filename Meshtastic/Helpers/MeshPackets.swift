@@ -943,44 +943,21 @@ func textMessageAppPacket(
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
-
 			// Updated logic for handling toUser
-			if packet.to != Constants.maximumNodeNum {
-				if storeForwardBroadcast {
-					// For S&F broadcast messages, treat as a channel message (not a DM)
-					newMessage.toUser = nil
-				} else if let existingUser = fetchedUsers.first(where: { $0.num == packet.to }) {
-					// If a regular, NOT S&F packet, and the user exists in the DB already
-					newMessage.toUser = existingUser
-				} else {
-					// If a regular, NOT S&F packet, and the user DOES NOT exist in the DB already
-					do {
-						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
-						newMessage.toUser = newUser
-					} catch CoreDataError.invalidInput(let message) {
-						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
-					} catch {
-						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
-					}
-				}
-			}
-			
-			if let existingUser = fetchedUsers.first(where: { $0.num == packet.from }) {
-				newMessage.fromUser = existingUser
-				/// Set the public key for the message
-				if newMessage.fromUser?.pkiEncrypted ?? false && packet.pkiEncrypted {
-					newMessage.pkiEncrypted = true
-					newMessage.publicKey = packet.publicKey
-				}
-				/// Check for key mismatch
-				if let nodeKey = newMessage.fromUser?.publicKey {
-					if newMessage.toUser != nil && packet.pkiEncrypted && !packet.publicKey.isEmpty {
-						if nodeKey != newMessage.publicKey {
-							newMessage.fromUser?.keyMatch = false
-							newMessage.fromUser?.newPublicKey = newMessage.publicKey
-							let nodeKey = String(nodeKey.base64EncodedString()).prefix(8)
-							let messageKey = String(newMessage.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
-							Logger.data.error("🔑 Key mismatch original key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
+				if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
+					if !storeForwardBroadcast {
+						newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+					} else if storeForwardBroadcast {
+						// For S&F broadcast messages, treat as a channel message (not a DM)
+						newMessage.toUser = nil
+					} else {
+						do {
+							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+							newMessage.toUser = newUser
+						} catch CoreDataError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch {
+							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 						}
 					}
 				}
