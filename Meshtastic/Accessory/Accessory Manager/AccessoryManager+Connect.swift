@@ -10,8 +10,8 @@ import OSLog
 import MeshtasticProtobufs
 import CoreBluetooth
 
-private let maxRetries = 3
-private let retryDelay: Duration = .seconds(3)
+private let maxRetries = 1
+private let retryDelay: Duration = .seconds(2)
 
 extension AccessoryManager {
 	func connect(to device: Device, withConnection: Connection? = nil, wantConfig: Bool = true, wantDatabase: Bool = true, versionCheck: Bool = true) async throws {
