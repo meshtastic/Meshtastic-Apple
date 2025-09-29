@@ -12,6 +12,7 @@ struct PositionPopover: View {
 	
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var router: Router
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.openURL) var openURL
@@ -27,13 +28,13 @@ struct PositionPopover: View {
 				HStack {
 					ZStack {
 						Button {
-						if let url = URL(string: "meshtastic:///nodes?nodenum=\(position.nodePosition?.num ?? 0)") {
-							openURL(url)
-							dismiss() // Dismiss the sheet after opening the URL.
+							if let nodeNum = position.nodePosition?.num {
+								router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
+								dismiss()
+							}
+						} label: {
+							CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 						}
-					} label: {
-						CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
-					}
 				}
 					Text(position.nodePosition?.user?.longName ?? "Unknown")
 						.font(.largeTitle)

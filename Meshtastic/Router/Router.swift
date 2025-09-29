@@ -86,6 +86,11 @@ class Router: ObservableObject {
 		navigationState.selectedTab = .nodes
 		navigationState.nodeListSelectedNodeNum = nodeId
 	}
+	func navigateToNodeDetail(nodeNum: Int64) {
+		Logger.services.info("🛣 [App] Direct route to node detail \(nodeNum, privacy: .public)")
+		navigationState.selectedTab = .nodes
+		navigationState.nodeListSelectedNodeNum = nodeNum
+	}
 
 	private func routeMap(_ components: URLComponents) {
 		let nodeId = components.queryItems?

@@ -17,9 +17,7 @@ import DatadogSessionReplay
 struct MeshtasticAppleApp: App {
 
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) private var appDelegate
-
-	@ObservedObject	var appState: AppState
-
+	@StateObject var appState: AppState
 	private let persistenceController: PersistenceController
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
@@ -91,7 +89,7 @@ struct MeshtasticAppleApp: App {
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 
-		self._appState = ObservedObject(wrappedValue: appState)
+		self._appState = StateObject(wrappedValue: appState)
 
 		self.persistenceController = persistenceController
 		// Wire up router
@@ -228,6 +226,7 @@ struct MeshtasticAppleApp: App {
 		.environment(\.managedObjectContext, persistenceController.container.viewContext)
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
+		.environmentObject(appState.router) 
 	}
 
 }
