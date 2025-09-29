@@ -990,6 +990,10 @@ func textMessageAppPacket(
 					/// Make a new from user if they are unknown
 					do {
 						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+						let newNode = NodeInfoEntity(context: context)
+						newNode.id = Int64(newUser.num)
+						newNode.num = Int64(newUser.num)
+						newNode.user = newUser
 						newMessage.fromUser = newUser
 					} catch CoreDataError.invalidInput(let message) {
 						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")

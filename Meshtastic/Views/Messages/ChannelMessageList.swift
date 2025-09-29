@@ -13,6 +13,7 @@ import SwiftUI
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@Environment(\.managedObjectContext) var context
+	@Environment(\.openURL) var openURL
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FocusState var messageFieldFocused: Bool
 	@ObservedObject var myInfo: MyInfoEntity
@@ -98,7 +99,12 @@ struct ChannelMessageList: View {
 						HStack(alignment: .bottom) {
 							if currentUser { Spacer(minLength: 50) }
 							if !currentUser {
-								CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44)
+								CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 50)
+									.onTapGesture(count: 2) { // Attach the long press gesture
+										if let url = URL(string: "meshtastic:///nodes?nodenum=\(message.fromUser?.num ?? 0)") {
+											openURL(url) // Call the openURL action with the target URL
+										}
+									}
 									.padding(.all, 5)
 									.offset(y: -7)
 							}

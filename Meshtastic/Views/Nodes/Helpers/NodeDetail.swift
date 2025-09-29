@@ -552,6 +552,7 @@ struct NodeDetail: View {
 					}
 				}
 			}
+			.defaultScrollAnchor(.top)
 			.listStyle(.insetGrouped)
 			.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
 		}
