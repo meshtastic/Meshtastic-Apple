@@ -307,6 +307,7 @@ struct Connect: View {
 									Task { try await accessoryManager.disconnect() }
 								}
 								clearCoreDataDatabase(context: context, includeRoutes: false)
+								clearNotifications()
 								if let radio = accessoryManager.devices.first(where: { $0.id.uuidString == selectedPeripherialId }) {
 									Task {
 										try await accessoryManager.connect(to: radio)

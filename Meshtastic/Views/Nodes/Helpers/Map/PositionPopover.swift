@@ -14,6 +14,7 @@ struct PositionPopover: View {
 	@Environment(\.managedObjectContext) var context
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.dismiss) private var dismiss
+	@Environment(\.openURL) var openURL
 	var position: PositionEntity
 	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
@@ -25,8 +26,15 @@ struct PositionPopover: View {
 			VStack {
 				HStack {
 					ZStack {
+						Button {
+						if let url = URL(string: "meshtastic:///nodes?nodenum=\(position.nodePosition?.num ?? 0)") {
+							openURL(url)
+							dismiss() // Dismiss the sheet after opening the URL.
+						}
+					} label: {
 						CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 					}
+				}
 					Text(position.nodePosition?.user?.longName ?? "Unknown")
 						.font(.largeTitle)
 				}

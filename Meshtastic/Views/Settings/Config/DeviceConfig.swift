@@ -180,6 +180,7 @@ struct DeviceConfig: View {
 									try await Task.sleep(for: .seconds(1))
 									try await accessoryManager.disconnect()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
+									clearNotifications()
 								} catch {
 									Logger.mesh.error("NodeDB Reset Failed")
 								}
@@ -206,6 +207,7 @@ struct DeviceConfig: View {
 									try await Task.sleep(for: .seconds(1))
 									try await accessoryManager.disconnect()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
+									clearNotifications()
 								} catch {
 									Logger.mesh.error("Factory Reset Failed")
 								}
@@ -218,6 +220,7 @@ struct DeviceConfig: View {
 									try? await Task.sleep(for: .seconds(1))
 									try await accessoryManager.disconnect()
 									clearCoreDataDatabase(context: context, includeRoutes: false)
+									clearNotifications()
 								} catch {
 									Logger.mesh.error("Factory Reset Failed")
 								}
