@@ -105,3 +105,9 @@ struct Notification {
 	var userNum: Int64?
 	var critical: Bool = false
 }
+
+public func clearNotifications() {
+	let center = UNUserNotificationCenter.current()
+	center.removeAllDeliveredNotifications()
+	center.removeAllPendingNotificationRequests()
+}
