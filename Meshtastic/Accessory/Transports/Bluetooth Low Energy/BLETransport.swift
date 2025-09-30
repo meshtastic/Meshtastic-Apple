@@ -135,7 +135,7 @@ class BLETransport: Transport {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
 					try await connection.disconnect(withError: AccessoryError.disconnected("Bluetooth powered off"), shouldReconnect: true)
-					self.activeConnection = nil
+					await self.connectionDidDisconnect()
 				}
 			}
 			status = .ready
@@ -213,8 +213,7 @@ class BLETransport: Transport {
 		} onCancel: {
 			self.connectContinuation?.resume(throwing: CancellationError())
 			self.connectContinuation = nil
-			self.activeConnection = nil
-			self.connectingPeripheral = nil
+			await self.connectionDidDisconnect()
 		}
 		Logger.transport.debug("🛜 [BLE] Connect complete.")
 		return returnConnection
@@ -227,7 +226,7 @@ class BLETransport: Transport {
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
 					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
-					self.activeConnection = nil
+					await self.connectionDidDisconnect()
 				}
 			}
 		}
@@ -265,7 +264,7 @@ class BLETransport: Transport {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Disconnecting the active connection.")
 			Task {
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
-				self.activeConnection = nil
+				await self.connectionDidDisconnect()
 			}
 		} else {
 			Logger.transport.error("🚨 [BLETransport] unhandled error.  May be in an inconsistent state.")
@@ -389,7 +388,14 @@ class BLETransport: Transport {
 	}
 
 	// BLETransport handles portions of the connection process, so it needs to be informed that we've closed up shop.
-	func connectionDidDisconnect() {
+	func connectionDidDisconnect() async {
+		// Make sure we remove this device from the discovered list so that we send a
+		// new discovery event in when it is next seen.
+		if let peripheral = await activeConnection?.peripheral {
+			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
+			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
+		}
+		
 		self.activeConnection = nil
 		self.connectingPeripheral = nil
 		restoreInProgress = false

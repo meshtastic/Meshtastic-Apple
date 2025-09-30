@@ -82,7 +82,9 @@ actor BLEConnection: Connection {
 			}
 		}
 		
-		transport?.connectionDidDisconnect()
+		Task {
+			await transport?.connectionDidDisconnect()
+		}
 		
 		central.cancelPeripheralConnection(peripheral)
 		peripheral.delegate = nil
