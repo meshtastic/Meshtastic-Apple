@@ -82,9 +82,7 @@ actor BLEConnection: Connection {
 			}
 		}
 		
-		Task {
-			await transport?.connectionDidDisconnect()
-		}
+		transport?.connectionDidDisconnect(fromPeripheral: peripheral)
 		
 		central.cancelPeripheralConnection(peripheral)
 		peripheral.delegate = nil
@@ -165,7 +163,7 @@ actor BLEConnection: Connection {
 				let decodedInfo = try FromRadio(serializedBytes: data)
 				connectionStreamContinuation?.yield(.data(decodedInfo))
 			} catch {
-				try? await self.disconnect(withError: error, shouldReconnect: true)
+				try? self.disconnect(withError: error, shouldReconnect: true)
 				throw error  // Re-throw to propagate up to the caller for handling
 			}
 		} while true
@@ -193,17 +191,19 @@ actor BLEConnection: Connection {
 	}
 	
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
-		if self.peripheral.state != .connected {
+				// Make sure we're connected
+		guard self.peripheral.state == .connected else {
 			throw AccessoryError.ioFailed("BLE peripheral not connected")
 		}
+		
 		return try await withTaskCancellationHandler {
 			try await discoverServices()
 			startRSSITask()
 			return self.getPacketStream()
 		} onCancel: {
 			Task {
-				await continueConnectionProcess(throwing: CancellationError())
-				await self.transport?.connectionDidDisconnect()
+				await self.continueConnectionProcess(throwing: CancellationError())
+				await self.notifyTransportOfDisconnect()
 			}
 		}
 	}
@@ -217,20 +217,29 @@ actor BLEConnection: Connection {
 		self.connectContinuation = nil
 	}
 	
+	private func notifyTransportOfDisconnect() {
+		transport?.connectionDidDisconnect(fromPeripheral: peripheral)
+	}
+	
 	func startRSSITask() {
 		if let task = self.rssiTask {
 			task.cancel()
 		}
-		self.rssiTask = Task {
+		self.rssiTask = Task { [weak self] in
+			guard let self else { return }
 			do {
 				while !Task.isCancelled {
 					try await Task.sleep(for: .seconds(10))
-					peripheral.readRSSI()
+					await self.requestRSSIRead()
 				}
 			} catch {
 				
 			}
 		}
+	}
+	
+	private func requestRSSIRead() {
+		peripheral.readRSSI()
 	}
 	
 	func didDiscoverServices(error: Error? ) {
@@ -495,3 +504,4 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 		Task { await connection?.didReadRSSI(RSSI: RSSI, error: error) }
 	}
 }
+
