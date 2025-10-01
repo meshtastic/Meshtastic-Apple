@@ -677,7 +677,6 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 		do {
 			let fetchedMessage = try context.fetch(fetchMessageRequest)
 			if fetchedMessage.count > 0 {
-
 				if fetchedMessage[0].toUser != nil {
 					// Real ACK from DM Recipient
 					if packet.to != packet.from {
@@ -686,8 +685,34 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				}
 				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
 				if routingMessage.errorReason == Routing.Error.none {
-
 					fetchedMessage[0].receivedACK = true
+				} else if routingMessage.errorReason == Routing.Error.pkiFailed {
+					Task { @MainActor in
+						let am = AccessoryManager.shared
+						if let user = fetchedMessage[0].toUser {
+							var contact = SharedContact()
+							contact.nodeNum = UInt32(truncatingIfNeeded: fetchedMessage[0].toUser?.num ?? 0)
+							contact.user = user.toProto()
+							do {
+								let contactString = try contact.serializedData().base64EncodedString()
+								try? await am.addContactFromURL(base64UrlString: contactString)
+								
+								let message = fetchedMessage[0]
+								let payload = message.messagePayload ?? ""
+								let userNum = message.toUser?.num ?? 0
+								let channel = message.channel
+								let isEmoji = message.isEmoji
+								let replyID = message.replyID
+								context.delete(message)
+								try context.save()
+								user.objectWillChange.send()
+								try? await am.sendMessage(message: payload, toUserNum: userNum, channel: channel, isEmoji: isEmoji, replyID: replyID )
+								return
+							} catch {
+								Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
+							}
+						}
+					}
 				}
 				fetchedMessage[0].ackSNR = packet.rxSnr
 				if packet.rxTime > 0 {

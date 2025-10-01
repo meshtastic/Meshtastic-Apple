@@ -13073,6 +13073,7 @@
       }
     },
     "Encrypted Send Failed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
