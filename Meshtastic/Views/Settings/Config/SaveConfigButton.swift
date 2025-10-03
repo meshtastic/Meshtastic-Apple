@@ -15,6 +15,7 @@ struct SaveConfigButton: View {
 				} label: {
 					Label("Save", systemImage: "square.and.arrow.down")
 				}
+				.padding(.bottom)
 				.controlSize(.large)
 				.buttonStyle(.borderedProminent)
 				.confirmationDialog(
@@ -36,7 +37,7 @@ struct SaveConfigButton: View {
 				} label: {
 					Label("Save", systemImage: "square.and.arrow.down")
 				}
-				.disabled(!accessoryManager.isConnected || !hasChanges)
+				.padding(.bottom)
 				.controlSize(.large)
 				.buttonStyle(.borderedProminent)
 				.buttonBorderShape(.capsule)

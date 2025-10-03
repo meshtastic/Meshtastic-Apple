@@ -9,7 +9,7 @@ import OSLog
 import SwiftUI
 
 struct StoreForwardConfig: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
@@ -28,102 +28,103 @@ struct StoreForwardConfig: View {
 	@State var historyReturnMax = 0
 	/// Time window for history
 	@State var historyReturnWindow = 0
-
+	
 	var body: some View {
-		VStack {
-			Form {
-				ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
-
-				Section(header: Text("Options")) {
-					Toggle(isOn: $enabled) {
-						Label("Enabled", systemImage: "envelope.arrow.triangle.branch")
-						Text("Enables the store and forward module.")
+		Form {
+			ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
+			
+			Section(header: Text("Options")) {
+				Toggle(isOn: $enabled) {
+					Label("Enabled", systemImage: "envelope.arrow.triangle.branch")
+					Text("Enables the store and forward module.")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			}
+			
+			if enabled {
+				Section(header: Text("Settings")) {
+					Toggle(isOn: $heartbeat) {
+						Label("Send Heartbeat", systemImage: "waveform.path.ecg")
+						Text("Send a heartbeat to advertise the server's presence.")
+					}
+					Picker("Number of records", selection: $records) {
+						Text("Unset").tag(0)
+						Text("25").tag(25)
+						Text("50").tag(50)
+						Text("75").tag(75)
+						Text("100").tag(100)
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Picker("History Return Max", selection: $historyReturnMax) {
+						Text("Unset").tag(0)
+						Text("25").tag(25)
+						Text("50").tag(50)
+						Text("75").tag(75)
+						Text("100").tag(100)
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Picker("History Return Window", selection: $historyReturnWindow) {
+						Text("Unset").tag(0)
+						Text("One Minute").tag(60)
+						Text("Five Minutes").tag(300)
+						Text("Ten Minutes").tag(600)
+						Text("Fifteen Minutes").tag(900)
+						Text("Thirty Minutes").tag(1800)
+						Text("One Hour").tag(3600)
+						Text("Two Hours").tag(7200)
+					}
+					.pickerStyle(DefaultPickerStyle())
+				}
+				
+				Section(header: Text("Server Option")) {
+					Toggle(isOn: $isServer) {
+						Label("Server", systemImage: "server.rack")
+						Text("Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				}
-
-				if enabled {
-					Section(header: Text("Settings")) {
-						Toggle(isOn: $heartbeat) {
-							Label("Send Heartbeat", systemImage: "waveform.path.ecg")
-							Text("Send a heartbeat to advertise the server's presence.")
-						}
-						Picker("Number of records", selection: $records) {
-							Text("Unset").tag(0)
-							Text("25").tag(25)
-							Text("50").tag(50)
-							Text("75").tag(75)
-							Text("100").tag(100)
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Picker("History Return Max", selection: $historyReturnMax) {
-							Text("Unset").tag(0)
-							Text("25").tag(25)
-							Text("50").tag(50)
-							Text("75").tag(75)
-							Text("100").tag(100)
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Picker("History Return Window", selection: $historyReturnWindow) {
-							Text("Unset").tag(0)
-							Text("One Minute").tag(60)
-							Text("Five Minutes").tag(300)
-							Text("Ten Minutes").tag(600)
-							Text("Fifteen Minutes").tag(900)
-							Text("Thirty Minutes").tag(1800)
-							Text("One Hour").tag(3600)
-							Text("Two Hours").tag(7200)
-						}
-						.pickerStyle(DefaultPickerStyle())
-					}
-
-					Section(header: Text("Server Option")) {
-						Toggle(isOn: $isServer) {
-							Label("Server", systemImage: "server.rack")
-							Text("Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM.")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						if isServer {
-							Text("Store and forward servers require an ESP32 device with PSRAM or Linux Native.")
-								.foregroundColor(.gray)
-								.font(.callout)
-						}
+					if isServer {
+						Text("Store and forward servers require an ESP32 device with PSRAM or Linux Native.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
 				}
 			}
-			.scrollDismissesKeyboard(.interactively)
-			.disabled(!accessoryManager.isConnected || node?.storeForwardConfig == nil)
 		}
-
-		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-			if connectedNode != nil {
-				/// Let the user set isServer for the connected node, for nodes on the mesh set isServer based
-				/// on receipt of a primary heartbeat
-				if connectedNode?.num ?? 0 == node?.num ?? -1 {
-					connectedNode?.storeForwardConfig?.isRouter = isServer
-					do {
-						try context.save()
-					} catch {
-						Logger.mesh.error("Failed to save isServer: \(error.localizedDescription, privacy: .public)")
-					}
-				}
-
-				var sfc = ModuleConfig.StoreForwardConfig()
-				sfc.isServer = isServer
-				sfc.enabled = self.enabled
-				sfc.heartbeat = self.heartbeat
-				sfc.records = UInt32(self.records)
-				sfc.historyReturnMax = UInt32(self.historyReturnMax)
-				sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
-
-				Task {
-					_ = try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
-					Task { @MainActor in
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+		.scrollDismissesKeyboard(.interactively)
+		.disabled(!accessoryManager.isConnected || node?.storeForwardConfig == nil)
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
+					if connectedNode != nil {
+						/// Let the user set isServer for the connected node, for nodes on the mesh set isServer based
+						/// on receipt of a primary heartbeat
+						if connectedNode?.num ?? 0 == node?.num ?? -1 {
+							connectedNode?.storeForwardConfig?.isRouter = isServer
+							do {
+								try context.save()
+							} catch {
+								Logger.mesh.error("Failed to save isServer: \(error.localizedDescription, privacy: .public)")
+							}
+						}
+						
+						var sfc = ModuleConfig.StoreForwardConfig()
+						sfc.isServer = isServer
+						sfc.enabled = self.enabled
+						sfc.heartbeat = self.heartbeat
+						sfc.records = UInt32(self.records)
+						sfc.historyReturnMax = UInt32(self.historyReturnMax)
+						sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
+						
+						Task {
+							_ = try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
+							Task { @MainActor in
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save
+								hasChanges = false
+								goBack()
+							}
+						}
 					}
 				}
 			}
@@ -183,7 +184,7 @@ struct StoreForwardConfig: View {
 			if oldHistoryReturnWindow != newHistoryReturnWindow && newHistoryReturnWindow != node!.storeForwardConfig?.historyReturnWindow ?? -1 { hasChanges = true }
 		}
 	}
-
+	
 	func setStoreAndForwardValues() {
 		self.enabled = (node?.storeForwardConfig?.enabled ?? false)
 		self.isServer = (node?.storeForwardConfig?.isRouter ?? false)

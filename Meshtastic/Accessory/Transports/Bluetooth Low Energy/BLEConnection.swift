@@ -504,4 +504,3 @@ class BLEConnectionDelegate: NSObject, CBPeripheralDelegate {
 		Task { await connection?.didReadRSSI(RSSI: RSSI, error: error) }
 	}
 }
-

@@ -73,34 +73,42 @@ struct PowerConfig: View {
 				} header: {
 					Text("Battery")
 				}
-//				Section {
-//					Picker("config.power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//					Picker("config.power.ls.secs", selection: $lsSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//					Picker("config.power.min.wake.secs", selection: $minWakeSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//				} header: {
-//					Text("config.power.section.sleep")
-//				}
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					guard let deviceNum = accessoryManager.activeDeviceNum,
+						  let connectedNode = getNodeInfo(id: deviceNum, context: context),
+						  let fromUser = connectedNode.user,
+						  let toUser = node?.user else {
+						return
+					}
+					
+					var config = Config.PowerConfig()
+					config.isPowerSaving = isPowerSaving
+					config.onBatteryShutdownAfterSecs = shutdownOnPowerLoss ? UInt32(shutdownAfterSecs) : 0
+					config.adcMultiplierOverride = adcOverride ? adcMultiplier : 0
+					config.waitBluetoothSecs = UInt32(waitBluetoothSecs)
+					config.lsSecs = UInt32(lsSecs)
+					config.minWakeSecs = UInt32(minWakeSecs)
+					Task {
+						_ = try await accessoryManager.savePowerConfig(
+							config: config,
+							fromUser: fromUser,
+							toUser: toUser
+						)
+						Task { @MainActor in
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
+					}
+				}
+			}
+		}
 		.navigationTitle("Power Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
@@ -176,36 +184,6 @@ struct PowerConfig: View {
 		}
 		.onChange(of: minWakeSecs) { _, newMinWakeSecs in
 			if newMinWakeSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
-		}
-
-		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			guard let deviceNum = accessoryManager.activeDeviceNum,
-				  let connectedNode = getNodeInfo(id: deviceNum, context: context),
-				  let fromUser = connectedNode.user,
-				  let toUser = node?.user else {
-				return
-			}
-
-			var config = Config.PowerConfig()
-			config.isPowerSaving = isPowerSaving
-			config.onBatteryShutdownAfterSecs = shutdownOnPowerLoss ? UInt32(shutdownAfterSecs) : 0
-			config.adcMultiplierOverride = adcOverride ? adcMultiplier : 0
-			config.waitBluetoothSecs = UInt32(waitBluetoothSecs)
-			config.lsSecs = UInt32(lsSecs)
-			config.minWakeSecs = UInt32(minWakeSecs)
-			Task {
-				_ = try await accessoryManager.savePowerConfig(
-					config: config,
-					fromUser: fromUser,
-					toUser: toUser
-				)
-				Task { @MainActor in
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
-				}
-			}
 		}
 	}
 

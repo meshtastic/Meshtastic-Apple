@@ -237,4 +237,3 @@ actor TCPConnection: Connection {
 		
 	}
 }
-

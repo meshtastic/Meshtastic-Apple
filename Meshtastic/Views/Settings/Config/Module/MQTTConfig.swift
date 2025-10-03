@@ -10,7 +10,7 @@ import OSLog
 import SwiftUI
 
 struct MQTTConfig: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
@@ -36,9 +36,9 @@ struct MQTTConfig: View {
 	@AppStorage("mapReportingOptIn") private var mapReportingOptIn: Bool = false
 	@State var mapPublishIntervalSecs = 3600
 	@State var mapPositionPrecision: Double = 14.0
-
+	
 	let locale = Locale.current
-
+	
 	var body: some View {
 		VStack {
 			Form {
@@ -50,23 +50,23 @@ struct MQTTConfig: View {
 							.foregroundColor(.red)
 					}
 				}
-
+				
 				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
-
+				
 				Section(header: Text("Options")) {
-
+					
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "dot.radiowaves.up.forward")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+					
 					Toggle(isOn: $proxyToClientEnabled) {
-
+						
 						Label("MQTT Client Proxy", systemImage: "iphone.radiowaves.left.and.right")
 						Text("Utilizes the network connection on your phone to connect to MQTT.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+					
 					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
 							Label("Connect to MQTT via Proxy", systemImage: "server.rack")
@@ -75,16 +75,16 @@ struct MQTTConfig: View {
 									.fixedSize(horizontal: false, vertical: true)
 									.foregroundColor(.red)
 							}
-
+							
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-
+					
 					Toggle(isOn: $encryptionEnabled) {
 						Label("Encryption Enabled", systemImage: "lock.icloud")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+					
 					if !proxyToClientEnabled {
 						Toggle(isOn: $jsonEnabled) {
 							Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
@@ -93,7 +93,7 @@ struct MQTTConfig: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
-
+				
 				Section(header: Text("Map Report")) {
 					Toggle(isOn: $mapReportingEnabled) {
 						Label("Enabled", systemImage: "map")
@@ -164,7 +164,7 @@ struct MQTTConfig: View {
 					Text("The root topic to use for MQTT.")
 						.foregroundColor(.gray)
 						.font(.callout)
-
+					
 					if nearbyTopics.count > 0 {
 						Picker("Nearby Topics", selection: $selectedTopic ) {
 							ForEach(nearbyTopics, id: \.self) { nt in
@@ -178,7 +178,7 @@ struct MQTTConfig: View {
 							.font(.callout)
 					}
 				}
-
+				
 				Section(header: Text("Server")) {
 					HStack {
 						Label("Address", systemImage: "server.rack")
@@ -250,31 +250,34 @@ struct MQTTConfig: View {
 			}
 			.scrollDismissesKeyboard(.immediately)
 			.disabled(!accessoryManager.isConnected || node?.mqttConfig == nil)
-
-			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-				if connectedNode != nil {
-					var mqtt = ModuleConfig.MQTTConfig()
-					mqtt.enabled = self.enabled
-					mqtt.proxyToClientEnabled = self.proxyToClientEnabled
-					mqtt.address = self.address
-					mqtt.username = self.username
-					mqtt.password = self.password
-					mqtt.root = self.root
-					mqtt.encryptionEnabled = self.encryptionEnabled
-					mqtt.jsonEnabled = self.jsonEnabled
-					mqtt.tlsEnabled = self.tlsEnabled
-					mqtt.mapReportingEnabled = self.mapReportingEnabled
-					mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
-					mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
-					Task {
-						do {
-							_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
+			.safeAreaInset(edge: .bottom, alignment: .center) {
+				HStack(spacing: 0) {
+					SaveConfigButton(node: node, hasChanges: $hasChanges) {
+						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
+						if connectedNode != nil {
+							var mqtt = ModuleConfig.MQTTConfig()
+							mqtt.enabled = self.enabled
+							mqtt.proxyToClientEnabled = self.proxyToClientEnabled
+							mqtt.address = self.address
+							mqtt.username = self.username
+							mqtt.password = self.password
+							mqtt.root = self.root
+							mqtt.encryptionEnabled = self.encryptionEnabled
+							mqtt.jsonEnabled = self.jsonEnabled
+							mqtt.tlsEnabled = self.tlsEnabled
+							mqtt.mapReportingEnabled = self.mapReportingEnabled
+							mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
+							mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
+							Task {
+								do {
+									_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
+									Task { @MainActor in
+										// Should show a saved successfully alert once I know that to be true
+										// for now just disable the button after a successful save
+										hasChanges = false
+										goBack()
+									}
+								}
 							}
 						}
 					}
@@ -386,9 +389,9 @@ struct MQTTConfig: View {
 			}
 		}
 	}
-
+	
 	func setMqttValues() {
-
+		
 		nearbyTopics = []
 		let geocoder = CLGeocoder()
 		if LocationsHandler.shared.locationsArray.count > 0 {
@@ -399,7 +402,7 @@ struct MQTTConfig: View {
 					Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription, privacy: .public)")
 					return
 				}
-
+				
 				if let placemarks = placemarks, let placemark = placemarks.first {
 					/// Country Topic unless your region is a country
 					if !(region?.isCountry ?? false) {
@@ -431,7 +434,7 @@ struct MQTTConfig: View {
 				}
 			})
 		}
-
+		
 		self.enabled = node?.mqttConfig?.enabled ?? false
 		self.proxyToClientEnabled = node?.mqttConfig?.proxyToClientEnabled ?? false
 		self.address = node?.mqttConfig?.address ?? ""

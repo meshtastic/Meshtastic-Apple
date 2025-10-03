@@ -9,13 +9,13 @@ import OSLog
 import SwiftUI
 
 struct ExternalNotificationConfig: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-
+	
 	var node: NodeInfoEntity?
-
+	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var enabled = false
@@ -33,162 +33,163 @@ struct ExternalNotificationConfig: View {
 	@State var outputMilliseconds = 0
 	@State var nagTimeout = 0
 	@State var useI2SAsBuzzer = false
-
+	
 	var body: some View {
-		VStack {
-			Form {
-				ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
-
-				Section(header: Text("Options")) {
-
-					Toggle(isOn: $enabled) {
-						Label("Enabled", systemImage: "megaphone")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					Toggle(isOn: $alertBell) {
-						Label("Alert when receiving a bell", systemImage: "bell")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					Toggle(isOn: $alertMessage) {
-						Label("Alert when receiving a message", systemImage: "message")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					Toggle(isOn: $usePWM) {
-						Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
-						Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					Toggle(isOn: $useI2SAsBuzzer) {
-						Label("Use I2S As Buzzer", systemImage: "light.beacon.max.fill")
-						Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+		Form {
+			ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
+			
+			Section(header: Text("Options")) {
+				
+				Toggle(isOn: $enabled) {
+					Label("Enabled", systemImage: "megaphone")
 				}
-				Section(header: Text("Advanced GPIO Options")) {
-					Section(header: Text("Primary GPIO")
-						.font(.caption)
-						.foregroundColor(.gray)
-						.textCase(.uppercase)) {
-							Toggle(isOn: $active) {
-								Label("Active", systemImage: "togglepower")
-								Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-							Picker("Output pin GPIO", selection: $output) {
-								ForEach(0..<49) {
-									if $0 == 0 {
-										Text("Unset")
-									} else {
-										Text("Pin \($0)")
-									}
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							.listRowSeparator(.visible)
-
-							Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
-								ForEach(OutputIntervals.allCases) { oi in
-									Text(oi.description)
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							.listRowSeparator(.hidden)
-							Text("When using in GPIO mode, keep the output on for this long. ")
-								.foregroundColor(.gray)
-								.font(.callout)
-								.listRowSeparator(.visible)
-
-							Picker("Nag timeout", selection: $nagTimeout ) {
-								ForEach(NagIntervals.allCases) { oi in
-									Text(oi.description)
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							.listRowSeparator(.hidden)
-							Text("Specifies how long the monitored GPIO should output.")
-								.foregroundColor(.gray)
-								.font(.callout)
-						}
-
-					Section(header: Text("Optional GPIO")
-						.font(.caption)
-						.foregroundColor(.gray)
-						.textCase(.uppercase)) {
-							Toggle(isOn: $alertBellBuzzer) {
-								Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							Toggle(isOn: $alertBellVibra) {
-								Label("Alert GPIO vibra motor when receiving a bell", systemImage: "bell")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							Toggle(isOn: $alertMessageBuzzer) {
-								Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							Toggle(isOn: $alertMessageBuzzer) {
-								Label("Alert GPIO vibra motor when receiving a message", systemImage: "message")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
-								ForEach(0..<49) {
-									if $0 == 0 {
-										Text("Unset")
-									} else {
-										Text("Pin \($0)")
-									}
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							Picker("Output pin vibra GPIO", selection: $outputVibra) {
-								ForEach(0..<49) {
-									if $0 == 0 {
-										Text("Unset")
-									} else {
-										Text("Pin \($0)")
-									}
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-						}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+				Toggle(isOn: $alertBell) {
+					Label("Alert when receiving a bell", systemImage: "bell")
 				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+				Toggle(isOn: $alertMessage) {
+					Label("Alert when receiving a message", systemImage: "message")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+				Toggle(isOn: $usePWM) {
+					Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
+					Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+				Toggle(isOn: $useI2SAsBuzzer) {
+					Label("Use I2S As Buzzer", systemImage: "light.beacon.max.fill")
+					Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
-			.disabled(!accessoryManager.isConnected || node?.externalNotificationConfig == nil)
-		}
-
-		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-			if connectedNode != nil {
-				var enc = ModuleConfig.ExternalNotificationConfig()
-				enc.enabled = enabled
-				enc.alertBell = alertBell
-				enc.alertBellBuzzer = alertBellBuzzer
-				enc.alertBellVibra = alertBellVibra
-				enc.alertMessage = alertMessage
-				enc.alertMessageBuzzer = alertMessageBuzzer
-				enc.alertMessageVibra = alertMessageVibra
-				enc.active = active
-				enc.output = UInt32(output)
-				enc.nagTimeout = UInt32(nagTimeout)
-				enc.outputBuzzer = UInt32(outputBuzzer)
-				enc.outputVibra = UInt32(outputVibra)
-				enc.outputMs = UInt32(outputMilliseconds)
-				enc.usePwm = usePWM
-				enc.useI2SAsBuzzer = useI2SAsBuzzer
-				Task {
-					do {
-						_ = try await accessoryManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!)
-						Task { @MainActor in
-							hasChanges = false
-							goBack()
+			Section(header: Text("Advanced GPIO Options")) {
+				Section(header: Text("Primary GPIO")
+					.font(.caption)
+					.foregroundColor(.gray)
+					.textCase(.uppercase)) {
+						Toggle(isOn: $active) {
+							Label("Active", systemImage: "togglepower")
+							Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
 						}
-					} catch {
-						Logger.mesh.error("Unable to save external notiication module config")
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						
+						Picker("Output pin GPIO", selection: $output) {
+							ForEach(0..<49) {
+								if $0 == 0 {
+									Text("Unset")
+								} else {
+									Text("Pin \($0)")
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.visible)
+						
+						Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
+							ForEach(OutputIntervals.allCases) { oi in
+								Text(oi.description)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
+						Text("When using in GPIO mode, keep the output on for this long. ")
+							.foregroundColor(.gray)
+							.font(.callout)
+							.listRowSeparator(.visible)
+						
+						Picker("Nag timeout", selection: $nagTimeout ) {
+							ForEach(NagIntervals.allCases) { oi in
+								Text(oi.description)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
+						Text("Specifies how long the monitored GPIO should output.")
+							.foregroundColor(.gray)
+							.font(.callout)
+					}
+				
+				Section(header: Text("Optional GPIO")
+					.font(.caption)
+					.foregroundColor(.gray)
+					.textCase(.uppercase)) {
+						Toggle(isOn: $alertBellBuzzer) {
+							Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Toggle(isOn: $alertBellVibra) {
+							Label("Alert GPIO vibra motor when receiving a bell", systemImage: "bell")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Toggle(isOn: $alertMessageBuzzer) {
+							Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Toggle(isOn: $alertMessageBuzzer) {
+							Label("Alert GPIO vibra motor when receiving a message", systemImage: "message")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
+							ForEach(0..<49) {
+								if $0 == 0 {
+									Text("Unset")
+								} else {
+									Text("Pin \($0)")
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Picker("Output pin vibra GPIO", selection: $outputVibra) {
+							ForEach(0..<49) {
+								if $0 == 0 {
+									Text("Unset")
+								} else {
+									Text("Pin \($0)")
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+					}
+			}
+		}
+		.disabled(!accessoryManager.isConnected || node?.externalNotificationConfig == nil)
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
+					if connectedNode != nil {
+						var enc = ModuleConfig.ExternalNotificationConfig()
+						enc.enabled = enabled
+						enc.alertBell = alertBell
+						enc.alertBellBuzzer = alertBellBuzzer
+						enc.alertBellVibra = alertBellVibra
+						enc.alertMessage = alertMessage
+						enc.alertMessageBuzzer = alertMessageBuzzer
+						enc.alertMessageVibra = alertMessageVibra
+						enc.active = active
+						enc.output = UInt32(output)
+						enc.nagTimeout = UInt32(nagTimeout)
+						enc.outputBuzzer = UInt32(outputBuzzer)
+						enc.outputVibra = UInt32(outputVibra)
+						enc.outputMs = UInt32(outputMilliseconds)
+						enc.usePwm = usePWM
+						enc.useI2SAsBuzzer = useI2SAsBuzzer
+						Task {
+							do {
+								_ = try await accessoryManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!)
+								Task { @MainActor in
+									hasChanges = false
+									goBack()
+								}
+							} catch {
+								Logger.mesh.error("Unable to save external notiication module config")
+							}
+						}
 					}
 				}
 			}

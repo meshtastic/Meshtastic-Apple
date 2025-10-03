@@ -9,16 +9,16 @@ import OSLog
 import SwiftUI
 
 struct SerialConfig: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-
+	
 	var node: NodeInfoEntity?
-
+	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
-
+	
 	@State var enabled = false
 	@State var echo = false
 	@State var rxd = 0
@@ -27,25 +27,25 @@ struct SerialConfig: View {
 	@State var timeout = 0
 	@State var overrideConsoleSerialPort = false
 	@State var mode = 0
-
+	
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues)
-
+				
 				Section(header: Text("Options")) {
-
+					
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "terminal")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+					
 					Toggle(isOn: $echo) {
 						Label("Echo", systemImage: "repeat")
 						Text("If set, any packets you send will be echoed back to your device.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+					
 					Picker("Baud", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in
 							Text(sbr.description)
@@ -63,7 +63,7 @@ struct SerialConfig: View {
 					Text("The amount of time to wait before we consider your packet as done.")
 						.foregroundColor(.gray)
 						.font(.callout)
-
+					
 					Picker("Mode", selection: $mode ) {
 						ForEach(SerialModeTypes.allCases) { smt in
 							Text(smt.description)
@@ -72,7 +72,7 @@ struct SerialConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 				}
 				Section(header: Text("GPIO")) {
-
+					
 					Picker("Receive data (rxd) GPIO pin", selection: $rxd) {
 						ForEach(0..<49) {
 							if $0 == 0 {
@@ -84,7 +84,7 @@ struct SerialConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.visible)
-
+					
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
 						ForEach(0..<49) {
 							if $0 == 0 {
@@ -102,28 +102,31 @@ struct SerialConfig: View {
 				}
 			}
 			.disabled(!accessoryManager.isConnected || node?.serialConfig == nil)
-
-			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-				if connectedNode != nil {
-					var sc = ModuleConfig.SerialConfig()
-					sc.enabled = enabled
-					sc.echo = echo
-					sc.rxd = UInt32(rxd)
-					sc.txd = UInt32(txd)
-					sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
-					sc.timeout = UInt32(timeout)
-					sc.overrideConsoleSerialPort = overrideConsoleSerialPort
-					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
-
-					Task {
-						_ = try await accessoryManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!)
-
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
+			.safeAreaInset(edge: .bottom, alignment: .center) {
+				HStack(spacing: 0) {
+					SaveConfigButton(node: node, hasChanges: $hasChanges) {
+						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
+						if connectedNode != nil {
+							var sc = ModuleConfig.SerialConfig()
+							sc.enabled = enabled
+							sc.echo = echo
+							sc.rxd = UInt32(rxd)
+							sc.txd = UInt32(txd)
+							sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
+							sc.timeout = UInt32(timeout)
+							sc.overrideConsoleSerialPort = overrideConsoleSerialPort
+							sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
+							
+							Task {
+								_ = try await accessoryManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!)
+								
+								Task { @MainActor in
+									// Should show a saved successfully alert once I know that to be true
+									// for now just disable the button after a successful save
+									hasChanges = false
+									goBack()
+								}
+							}
 						}
 					}
 				}

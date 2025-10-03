@@ -219,7 +219,6 @@ struct LoRaConfig: View {
 					}
 				}
 			}
-			.offset(y: -15)
 		}
 		.navigationTitle("LoRa Config")
 		.navigationBarItems(

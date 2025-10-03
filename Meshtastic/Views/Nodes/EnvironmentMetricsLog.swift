@@ -184,4 +184,3 @@ struct EnvironmentMetricsLog: View {
 		return lower...upper
 	}
 }
-
