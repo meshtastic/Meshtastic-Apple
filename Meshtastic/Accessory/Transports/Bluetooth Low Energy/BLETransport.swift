@@ -326,7 +326,27 @@ class BLETransport: Transport {
 		// TODO: maybe serialize the whole device into UserDefaults on connect?
 		let id = peripheral.identifier
 		let nodeNum = UserDefaults.preferredPeripheralNum != 0 ? Int64(UserDefaults.preferredPeripheralNum) : nil
-		let device = Device(id: id, name: peripheral.name ?? "Unknown", transportType: .ble, identifier: id.uuidString, num: nodeNum)
+		var device = Device(id: id, name: peripheral.name ?? "Unknown", transportType: .ble, identifier: id.uuidString, num: nodeNum, wasRestored: true)
+		
+		// Get the device name
+		if let nodeNum {
+			let fetchMyInfoRequest = NodeInfoEntity.fetchRequest()
+			fetchMyInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+			do {
+				let fetchedMyInfo = try PersistenceController.shared.container.viewContext.fetch(fetchMyInfoRequest)
+				if fetchedMyInfo.count > 0 {
+					if let longName = fetchedMyInfo[0].user?.longName {
+						device.longName = longName
+					}
+					if let shortName = fetchedMyInfo[0].user?.shortName {
+						device.shortName = shortName
+					}
+				}
+			} catch {
+				// No-op
+			}
+		}
+		
 		discoveredPeripherals[id] = (peripheral: peripheral, lastSeen: Date())
 	
 		Logger.transport.error("🛜 [BLE] Found peripheral to restore: \(peripheral.name ?? "Unknown", privacy: .public) ID: \(peripheral.identifier, privacy: .public) State: \(cbPeripheralStateDescription(peripheral.state), privacy: .public).")
