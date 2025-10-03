@@ -333,6 +333,8 @@ extension AccessoryManager {
 					if newMessage.toUser?.pkiEncrypted ?? false {
 						meshPacket.pkiEncrypted = true
 						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
+						// Send a contact to the phone every time we send a dm so that any nodes that have rolled out of the db are there and we don't get a PKI Failed error
+						
 						// Auto Favorite nodes you DM so they don't roll out of the nodedb
 						if !(newMessage.toUser?.userNode?.favorite ?? true) {
 							newMessage.toUser?.userNode?.favorite = true

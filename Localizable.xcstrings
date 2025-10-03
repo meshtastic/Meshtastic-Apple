@@ -16096,6 +16096,7 @@
       }
     },
     "Get the latest alpha firmware" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
