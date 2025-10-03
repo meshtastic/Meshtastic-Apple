@@ -454,8 +454,8 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   case seeedWioTrackerL1Eink // = 100
 
   ///
-  /// Reserved ID for future and past use
-  case qwantzTinyArms // = 101
+  /// Muzi Works R1 Neo
+  case muziR1Neo // = 101
 
   ///
   /// Lilygo T-Deck Pro
@@ -501,6 +501,14 @@ public enum HardwareModel: SwiftProtobuf.Enum {
   ///
   /// M5Stack Cardputer Adv
   case m5StackCardputerAdv // = 112
+
+  ///
+  /// ESP32S3 main controller with GPS and TFT screen.
+  case heltecWirelessTrackerV2 // = 113
+
+  ///
+  /// LilyGo T-Watch Ultra
+  case tWatchUltra // = 114
 
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -616,7 +624,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 98: self = .link32
     case 99: self = .seeedWioTrackerL1
     case 100: self = .seeedWioTrackerL1Eink
-    case 101: self = .qwantzTinyArms
+    case 101: self = .muziR1Neo
     case 102: self = .tDeckPro
     case 103: self = .tLoraPager
     case 104: self = .m5StackReserved
@@ -628,6 +636,8 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case 110: self = .heltecV4
     case 111: self = .m5StackC6L
     case 112: self = .m5StackCardputerAdv
+    case 113: self = .heltecWirelessTrackerV2
+    case 114: self = .tWatchUltra
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -736,7 +746,7 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .link32: return 98
     case .seeedWioTrackerL1: return 99
     case .seeedWioTrackerL1Eink: return 100
-    case .qwantzTinyArms: return 101
+    case .muziR1Neo: return 101
     case .tDeckPro: return 102
     case .tLoraPager: return 103
     case .m5StackReserved: return 104
@@ -748,6 +758,8 @@ public enum HardwareModel: SwiftProtobuf.Enum {
     case .heltecV4: return 110
     case .m5StackC6L: return 111
     case .m5StackCardputerAdv: return 112
+    case .heltecWirelessTrackerV2: return 113
+    case .tWatchUltra: return 114
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -861,7 +873,7 @@ extension HardwareModel: CaseIterable {
     .link32,
     .seeedWioTrackerL1,
     .seeedWioTrackerL1Eink,
-    .qwantzTinyArms,
+    .muziR1Neo,
     .tDeckPro,
     .tLoraPager,
     .m5StackReserved,
@@ -873,6 +885,8 @@ extension HardwareModel: CaseIterable {
     .heltecV4,
     .m5StackC6L,
     .m5StackCardputerAdv,
+    .heltecWirelessTrackerV2,
+    .tWatchUltra,
     .privateHw,
   ]
 }
@@ -4209,7 +4223,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     98: .same(proto: "LINK_32"),
     99: .same(proto: "SEEED_WIO_TRACKER_L1"),
     100: .same(proto: "SEEED_WIO_TRACKER_L1_EINK"),
-    101: .same(proto: "QWANTZ_TINY_ARMS"),
+    101: .same(proto: "MUZI_R1_NEO"),
     102: .same(proto: "T_DECK_PRO"),
     103: .same(proto: "T_LORA_PAGER"),
     104: .same(proto: "M5STACK_RESERVED"),
@@ -4221,6 +4235,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     110: .same(proto: "HELTEC_V4"),
     111: .same(proto: "M5STACK_C6L"),
     112: .same(proto: "M5STACK_CARDPUTER_ADV"),
+    113: .same(proto: "HELTEC_WIRELESS_TRACKER_V2"),
+    114: .same(proto: "T_WATCH_ULTRA"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

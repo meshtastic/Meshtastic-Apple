@@ -334,30 +334,22 @@ extension AccessoryManager {
 						meshPacket.pkiEncrypted = true
 						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
 						// Send a contact to the phone every time we send a dm so that any nodes that have rolled out of the db are there and we don't get a PKI Failed error
-						
-						// Auto Favorite nodes you DM so they don't roll out of the nodedb
-						if !(newMessage.toUser?.userNode?.favorite ?? true) {
-							newMessage.toUser?.userNode?.favorite = true
-							do {
-								try context.save()
-								Logger.data.info("💾 Auto favorited node based on sending a message \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
-
-								guard let userNode = newMessage.toUser?.userNode else {
-									Logger.data.warning("⚠️ Unable to set favorite node: userNode is nil.")
-									return
+						Task { @MainActor in
+							let am = AccessoryManager.shared
+							if let user = newMessage.toUser {
+								var contact = SharedContact()
+								contact.manuallyVerified = false
+								contact.nodeNum = UInt32(truncatingIfNeeded: user.num)
+								user.userNode?.favorite = true
+								contact.user = user.toProto()
+								do {
+									let contactString = try contact.serializedData().base64EncodedString()
+									try? await am.addContactFromURL(base64UrlString: contactString)
+									try context.save()
+									user.objectWillChange.send()
+								} catch {
+									Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
 								}
-								Task {
-									do {
-										try await self.setFavoriteNode(node: userNode, connectedNodeNum: fromUserNum)
-									} catch {
-										Logger.data.warning("⚠️ Unable to set favorite node: userNode is nil.")
-										return
-									}
-								}
-							} catch {
-								context.rollback()
-								let nsError = error as NSError
-								Logger.data.error("Unresolved Core Data error when auto favoriting in Send Message Function. Error: \(nsError, privacy: .public)")
 							}
 						}
 					}

@@ -165,7 +165,7 @@ struct DeviceConfig: View {
 							isPresentingNodeDBResetConfirm = true
 						}
 						.disabled(node?.user == nil)
-						.buttonStyle(.bordered)
+						.buttonStyle(.borderedProminent)
 						.buttonBorderShape(.capsule)
 						.confirmationDialog(
 							"Are you sure?",
@@ -190,7 +190,7 @@ struct DeviceConfig: View {
 							isPresentingFactoryResetConfirm = true
 						}
 						.disabled(node?.user == nil)
-						.buttonStyle(.bordered)
+						.buttonStyle(.borderedProminent)
 						.buttonBorderShape(.capsule)
 						.confirmationDialog(
 							"Factory reset will delete device and app data.",
@@ -225,6 +225,7 @@ struct DeviceConfig: View {
 							}
 						}
 					}
+					.padding(.bottom)
 				}
 				HStack(spacing: 0) {
 					SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -251,7 +252,6 @@ struct DeviceConfig: View {
 							}
 						}
 					}
-					.padding(.bottom)
 				}
 			}
 			.navigationTitle("Device Config")

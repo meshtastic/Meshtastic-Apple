@@ -208,6 +208,10 @@ public enum Language: SwiftProtobuf.Enum {
   case czech // = 18
 
   ///
+  /// Danish
+  case danish // = 19
+
+  ///
   /// Simplified Chinese (experimental)
   case simplifiedChinese // = 30
 
@@ -241,6 +245,7 @@ public enum Language: SwiftProtobuf.Enum {
     case 16: self = .ukrainian
     case 17: self = .bulgarian
     case 18: self = .czech
+    case 19: self = .danish
     case 30: self = .simplifiedChinese
     case 31: self = .traditionalChinese
     default: self = .UNRECOGNIZED(rawValue)
@@ -268,6 +273,7 @@ public enum Language: SwiftProtobuf.Enum {
     case .ukrainian: return 16
     case .bulgarian: return 17
     case .czech: return 18
+    case .danish: return 19
     case .simplifiedChinese: return 30
     case .traditionalChinese: return 31
     case .UNRECOGNIZED(let i): return i
@@ -300,6 +306,7 @@ extension Language: CaseIterable {
     .ukrainian,
     .bulgarian,
     .czech,
+    .danish,
     .simplifiedChinese,
     .traditionalChinese,
   ]
@@ -453,7 +460,7 @@ public struct DeviceUIConfig {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  ///   
+  ///
   /// How the GPS coordinates are displayed on the OLED screen.
   public enum GpsCoordinateFormat: SwiftProtobuf.Enum {
     public typealias RawValue = Int
@@ -463,7 +470,7 @@ public struct DeviceUIConfig {
     /// DD.DDDDDD DDD.DDDDDD
     case dec // = 0
 
-    /// 
+    ///
     /// GPS coordinates are displayed in the degrees minutes seconds format:
     /// DD°MM'SS"C DDD°MM'SS"C, where C is the compass point representing the locations quadrant
     case dms // = 1
@@ -723,6 +730,7 @@ extension Language: SwiftProtobuf._ProtoNameProviding {
     16: .same(proto: "UKRAINIAN"),
     17: .same(proto: "BULGARIAN"),
     18: .same(proto: "CZECH"),
+    19: .same(proto: "DANISH"),
     30: .same(proto: "SIMPLIFIED_CHINESE"),
     31: .same(proto: "TRADITIONAL_CHINESE"),
   ]
