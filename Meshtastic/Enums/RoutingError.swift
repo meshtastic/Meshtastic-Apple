@@ -57,7 +57,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .notAuthorized:
 			return "Not Authorized".localized
 		case .pkiFailed:
-			return "Adding Contact to device".localized
+			return "Encrypted Send Failed".localized
 		case .pkiUnknownPubkey:
 			return "Unknown public key".localized
 		case .adminBadSessionKey:
