@@ -19,8 +19,8 @@ struct RangeTestConfig: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var enabled = false
-	@State var sender = 0
 	@State var save = false
+	@State private var sender: UpdateInterval = UpdateInterval(from: 0)
 	
 	var body: some View {
 		Form {
@@ -32,12 +32,11 @@ struct RangeTestConfig: View {
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.listRowSeparator(.visible)
-				Picker("Sender Interval", selection: $sender ) {
-					ForEach(SenderIntervals.allCases) { sci in
-						Text(sci.description)
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
+				UpdateIntervalPicker(
+					config: .rangeTestSender,
+					pickerLabel: "Sender Interval",
+					selectedInterval: $sender
+				)
 				.listRowSeparator(.hidden)
 				Text("This device will send out range test messages on the selected interval.")
 					.foregroundColor(.gray)
@@ -61,7 +60,7 @@ struct RangeTestConfig: View {
 						var rtc = ModuleConfig.RangeTestConfig()
 						rtc.enabled = enabled
 						rtc.save = save
-						rtc.sender = UInt32(sender)
+						rtc.sender = UInt32(sender.intValue)
 						Task {
 							_ = try await accessoryManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!)
 							Task { @MainActor in
@@ -115,7 +114,7 @@ struct RangeTestConfig: View {
 		.onChange(of: save) { _, newSave in
 			if newSave != node?.rangeTestConfig?.save { hasChanges = true }
 		}
-		.onChange(of: sender) { _, newSender in
+		.onChange(of: sender.intValue) { _, newSender in
 			if newSender != node?.rangeTestConfig?.sender ?? -1 { hasChanges = true }
 		}
 		
@@ -123,7 +122,7 @@ struct RangeTestConfig: View {
 	func setRangeTestValues() {
 		self.enabled = node?.rangeTestConfig?.enabled ?? false
 		self.save = node?.rangeTestConfig?.save ?? false
-		self.sender = Int(node?.rangeTestConfig?.sender ?? 0)
+		self.sender = UpdateInterval(from: Int(node?.rangeTestConfig?.sender ?? 0))
 		self.hasChanges = false
 	}
 }
