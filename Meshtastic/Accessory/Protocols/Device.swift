@@ -22,8 +22,8 @@ struct Device: Identifiable, Hashable {
 	var lastUpdate: Date?
 
 	var connectionState: ConnectionState
-
-	init(id: UUID, name: String, transportType: TransportType, identifier: String, connectionState: ConnectionState = .disconnected, rssi: Int? = nil, num: Int64? = nil) {
+	var wasRestored: Bool = false
+	init(id: UUID, name: String, transportType: TransportType, identifier: String, connectionState: ConnectionState = .disconnected, rssi: Int? = nil, num: Int64? = nil, wasRestored: Bool = false) {
 		self.id = id
 		self.name = name
 		self.transportType = transportType
@@ -31,6 +31,7 @@ struct Device: Identifiable, Hashable {
 		self.connectionState = connectionState
 		self.rssi = rssi
 		self.num = num
+		self.wasRestored = wasRestored
 	}
 
 	var rssiString: String {

@@ -53,7 +53,14 @@ struct Connect: View {
 									.padding(.trailing)
 									VStack(alignment: .leading) {
 										if node != nil {
-											Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
+											HStack {
+												Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
+												if connectedDevice.wasRestored {
+													Circle()
+														.fill(Color.gray)
+														.frame(width: 8, height: 8)
+												}
+											}
 										}
 										Text("Connection Name").font(.callout)+Text(": \(connectedDevice.name.addingVariationSelectors)")
 											.font(.callout).foregroundColor(Color.gray)
