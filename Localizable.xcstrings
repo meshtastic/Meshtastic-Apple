@@ -5488,6 +5488,9 @@
         }
       }
     },
+    "Broadcast Device Metrics" : {
+
+    },
     "Broadcast Interval" : {
       "localizations" : {
         "it" : {
@@ -12601,6 +12604,9 @@
           }
         }
       }
+    },
+    "Enable broadcasting device metrics to the mesh network. When disabled, metrics are only sent to connected clients." : {
+
     },
     "Enable broadcasting packets via UDP over the local network." : {
       "localizations" : {
