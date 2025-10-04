@@ -163,7 +163,7 @@ actor BLEConnection: Connection {
 				let decodedInfo = try FromRadio(serializedBytes: data)
 				connectionStreamContinuation?.yield(.data(decodedInfo))
 			} catch {
-				try? self.disconnect(withError: error, shouldReconnect: true)
+				try? await self.disconnect(withError: error, shouldReconnect: true)
 				throw error  // Re-throw to propagate up to the caller for handling
 			}
 		} while true
