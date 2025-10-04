@@ -382,7 +382,6 @@
         <relationship name="storeForwardConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="storeForwardConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="TelemetryConfigEntity" representedClassName="TelemetryConfigEntity" syncable="YES" codeGenerationType="class">
-        <attribute name="deviceTelemetryEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="deviceUpdateInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="environmentDisplayFahrenheit" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="environmentMeasurementEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
