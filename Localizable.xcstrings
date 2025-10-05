@@ -10932,6 +10932,9 @@
         }
       }
     },
+    "Device Options" : {
+
+    },
     "Device Role" : {
       "localizations" : {
         "it" : {
@@ -13318,6 +13321,9 @@
         }
       }
     },
+    "Environment Metrics Enabled" : {
+
+    },
     "Environment Metrics Log" : {
       "localizations" : {
         "it" : {
@@ -13351,6 +13357,9 @@
           }
         }
       }
+    },
+    "Environment Options" : {
+
     },
     "Erase all app data?" : {
       "localizations" : {
@@ -32344,6 +32353,7 @@
       }
     },
     "Sensor Options" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
