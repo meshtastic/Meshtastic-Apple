@@ -31,7 +31,7 @@ struct ExternalNotificationConfig: View {
 	@State var outputBuzzer = 0
 	@State var outputVibra = 0
 	@State var outputMilliseconds = 0
-	@State var nagTimeout = 0
+	@State private var nagTimeout: UpdateInterval = UpdateInterval(from: 0)
 	@State var useI2SAsBuzzer = false
 	
 	var body: some View {
@@ -67,94 +67,81 @@ struct ExternalNotificationConfig: View {
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
-			Section(header: Text("Advanced GPIO Options")) {
-				Section(header: Text("Primary GPIO")
-					.font(.caption)
-					.foregroundColor(.gray)
-					.textCase(.uppercase)) {
-						Toggle(isOn: $active) {
-							Label("Active", systemImage: "togglepower")
-							Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						
-						Picker("Output pin GPIO", selection: $output) {
-							ForEach(0..<49) {
-								if $0 == 0 {
-									Text("Unset")
-								} else {
-									Text("Pin \($0)")
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						.listRowSeparator(.visible)
-						
-						Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
-							ForEach(OutputIntervals.allCases) { oi in
-								Text(oi.description)
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						.listRowSeparator(.hidden)
-						Text("When using in GPIO mode, keep the output on for this long. ")
-							.foregroundColor(.gray)
-							.font(.callout)
-							.listRowSeparator(.visible)
-						
-						Picker("Nag timeout", selection: $nagTimeout ) {
-							ForEach(NagIntervals.allCases) { oi in
-								Text(oi.description)
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						.listRowSeparator(.hidden)
-						Text("Specifies how long the monitored GPIO should output.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
+			Section(header: Text("Primary GPIO")) {
+				Toggle(isOn: $active) {
+					Label("Active", systemImage: "togglepower")
+					Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				
-				Section(header: Text("Optional GPIO")
-					.font(.caption)
-					.foregroundColor(.gray)
-					.textCase(.uppercase)) {
-						Toggle(isOn: $alertBellBuzzer) {
-							Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
+				Picker("Output pin GPIO", selection: $output) {
+					ForEach(0..<49) {
+						if $0 == 0 {
+							Text("Unset")
+						} else {
+							Text("Pin \($0)")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Toggle(isOn: $alertBellVibra) {
-							Label("Alert GPIO vibra motor when receiving a bell", systemImage: "bell")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Toggle(isOn: $alertMessageBuzzer) {
-							Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Toggle(isOn: $alertMessageBuzzer) {
-							Label("Alert GPIO vibra motor when receiving a message", systemImage: "message")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
-							ForEach(0..<49) {
-								if $0 == 0 {
-									Text("Unset")
-								} else {
-									Text("Pin \($0)")
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Picker("Output pin vibra GPIO", selection: $outputVibra) {
-							ForEach(0..<49) {
-								if $0 == 0 {
-									Text("Unset")
-								} else {
-									Text("Pin \($0)")
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
 					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				.listRowSeparator(.visible)
+				
+				Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
+					ForEach(OutputIntervals.allCases) { oi in
+						Text(oi.description)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				.listRowSeparator(.hidden)
+				Text("When using in GPIO mode, keep the output on for this long. ")
+					.foregroundColor(.gray)
+					.font(.callout)
+					.listRowSeparator(.visible)
+				UpdateIntervalPicker(
+					config: .nagTimeout,
+					pickerLabel: "Nag Timeout",
+					selectedInterval: $nagTimeout
+				)
+				.listRowSeparator(.hidden)
+			}
+				
+			Section(header: Text("Optional GPIO")) {
+				Toggle(isOn: $alertBellBuzzer) {
+					Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Toggle(isOn: $alertBellVibra) {
+					Label("Alert GPIO vibra motor when receiving a bell", systemImage: "bell")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Toggle(isOn: $alertMessageBuzzer) {
+					Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Toggle(isOn: $alertMessageBuzzer) {
+					Label("Alert GPIO vibra motor when receiving a message", systemImage: "message")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
+					ForEach(0..<49) {
+						if $0 == 0 {
+							Text("Unset")
+						} else {
+							Text("Pin \($0)")
+						}
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Picker("Output pin vibra GPIO", selection: $outputVibra) {
+					ForEach(0..<49) {
+						if $0 == 0 {
+							Text("Unset")
+						} else {
+							Text("Pin \($0)")
+						}
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.externalNotificationConfig == nil)
@@ -173,7 +160,7 @@ struct ExternalNotificationConfig: View {
 						enc.alertMessageVibra = alertMessageVibra
 						enc.active = active
 						enc.output = UInt32(output)
-						enc.nagTimeout = UInt32(nagTimeout)
+						enc.nagTimeout = UInt32(nagTimeout.intValue)
 						enc.outputBuzzer = UInt32(outputBuzzer)
 						enc.outputVibra = UInt32(outputVibra)
 						enc.outputMs = UInt32(outputMilliseconds)
@@ -269,7 +256,7 @@ struct ExternalNotificationConfig: View {
 		.onChange(of: usePWM) { _, newPWM in
 			if newPWM != node?.externalNotificationConfig?.usePWM { hasChanges = true }
 		}
-		.onChange(of: nagTimeout) { _, newNagTimeout in
+		.onChange(of: nagTimeout.intValue) { _, newNagTimeout in
 			if newNagTimeout != node?.externalNotificationConfig?.nagTimeout ?? -1 { hasChanges = true }
 		}
 		.onChange(of: useI2SAsBuzzer) { _, newUseI2SAsBuzzer in
@@ -289,9 +276,10 @@ struct ExternalNotificationConfig: View {
 		self.outputBuzzer = Int(node?.externalNotificationConfig?.outputBuzzer ?? 0)
 		self.outputVibra = Int(node?.externalNotificationConfig?.outputVibra ?? 0)
 		self.outputMilliseconds = Int(node?.externalNotificationConfig?.outputMilliseconds ?? 0)
-		self.nagTimeout = Int(node?.externalNotificationConfig?.nagTimeout ?? 0)
+		self.nagTimeout =  UpdateInterval(from: Int(node?.externalNotificationConfig?.nagTimeout ?? 0))
 		self.usePWM = node?.externalNotificationConfig?.usePWM ?? false
 		self.useI2SAsBuzzer = node?.externalNotificationConfig?.useI2SAsBuzzer ?? false
 		self.hasChanges = false
 	}
 }
+

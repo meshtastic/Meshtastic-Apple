@@ -34,7 +34,7 @@ struct MQTTConfig: View {
 	@State var nearbyTopics = [String]()
 	@State var mapReportingEnabled = false
 	@AppStorage("mapReportingOptIn") private var mapReportingOptIn: Bool = false
-	@State var mapPublishIntervalSecs = 3600
+	@State private var mapPublishIntervalSecs: UpdateInterval = UpdateInterval(from: 3600)
 	@State var mapPositionPrecision: Double = 14.0
 	
 	let locale = Locale.current
@@ -118,14 +118,11 @@ struct MQTTConfig: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 					if mapReportingEnabled && mapReportingOptIn {
-						Picker("Map Publish Interval", selection: $mapPublishIntervalSecs ) {
-							ForEach(UpdateIntervals.allCases) { ui in
-								if ui.rawValue >= 3600 {
-									Text(ui.description)
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
+						UpdateIntervalPicker(
+							config: .broadcastMedium,
+							pickerLabel: "Map Publish Interval",
+							selectedInterval: $mapPublishIntervalSecs
+						)
 						VStack(alignment: .leading) {
 							Label("Approximate Location", systemImage: "location.slash.circle.fill")
 							Text("To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy.")
@@ -267,7 +264,7 @@ struct MQTTConfig: View {
 							mqtt.tlsEnabled = self.tlsEnabled
 							mqtt.mapReportingEnabled = self.mapReportingEnabled
 							mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
-							mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
+							mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs.intValue)
 							Task {
 								do {
 									_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
@@ -348,7 +345,7 @@ struct MQTTConfig: View {
 			.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
 				if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
 			}
-			.onChange(of: mapPublishIntervalSecs) { _, newMapPublishIntervalSecs in
+			.onChange(of: mapPublishIntervalSecs.intValue) { _, newMapPublishIntervalSecs in
 				if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 			}
 		}
@@ -452,9 +449,9 @@ struct MQTTConfig: View {
 		self.mqttConnected = accessoryManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
 		if node?.mqttConfig?.mapPublishIntervalSecs ?? 0 < 3600 {
-			self.mapPublishIntervalSecs = 3600
+			self.mapPublishIntervalSecs = UpdateInterval(from: 3600)
 		} else {
-			self.mapPublishIntervalSecs = Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)
+			self.mapPublishIntervalSecs = UpdateInterval(from: Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600))
 		}
 		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 14)
 		self.mapReportingOptIn = UserDefaults.mapReportingOptIn

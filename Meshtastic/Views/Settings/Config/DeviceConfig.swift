@@ -24,7 +24,7 @@ struct DeviceConfig: View {
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
 	@State var rebroadcastMode = 0
-	@State var nodeInfoBroadcastSecs = 10800
+	@State private var nodeInfoBroadcastSecs: UpdateInterval = UpdateInterval(from: 10800)
 	@State var doubleTapAsButtonPress = false
 	@State var ledHeartbeatEnabled = true
 	@State var tripleClickAsAdHocPing = true
@@ -78,16 +78,11 @@ struct DeviceConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
-				
-				Picker("Node Info Broadcast Interval", selection: $nodeInfoBroadcastSecs ) {
-					ForEach(UpdateIntervals.allCases) { ui in
-						if ui.rawValue >= 3600 {
-							Text(ui.description)
-						}
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
+				UpdateIntervalPicker(
+					config: .broadcastLong,
+					pickerLabel: "Node Info Broadcast Interval",
+					selectedInterval: $nodeInfoBroadcastSecs
+				)
 			}
 			Section(header: Text("Hardware")) {
 				
@@ -236,7 +231,7 @@ struct DeviceConfig: View {
 							dc.buttonGpio = UInt32(buttonGPIO)
 							dc.buzzerGpio = UInt32(buzzerGPIO)
 							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
-							dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
+							dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs.intValue)
 							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 							dc.disableTripleClick = !tripleClickAsAdHocPing
 							dc.tzdef = tzdef
@@ -303,7 +298,7 @@ struct DeviceConfig: View {
 		.onChange(of: rebroadcastMode) { oldRebroadcastMode, newRebroadcastMode in
 			if oldRebroadcastMode != newRebroadcastMode && newRebroadcastMode != node?.deviceConfig?.rebroadcastMode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: nodeInfoBroadcastSecs) { oldNodeInfoBroadcastSecs, newNodeInfoBroadcastSecs in
+		.onChange(of: nodeInfoBroadcastSecs.intValue) { oldNodeInfoBroadcastSecs, newNodeInfoBroadcastSecs in
 			if oldNodeInfoBroadcastSecs != newNodeInfoBroadcastSecs && newNodeInfoBroadcastSecs != node?.deviceConfig?.nodeInfoBroadcastSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: doubleTapAsButtonPress) { oldDoubleTapAsButtonPress, newDoubleTapAsButtonPress in
@@ -327,9 +322,9 @@ struct DeviceConfig: View {
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
-		self.nodeInfoBroadcastSecs = Int(node?.deviceConfig?.nodeInfoBroadcastSecs ?? 900)
-		if nodeInfoBroadcastSecs < 3600 {
-			nodeInfoBroadcastSecs = 3600
+		self.nodeInfoBroadcastSecs = UpdateInterval(from: Int(node?.deviceConfig?.nodeInfoBroadcastSecs ?? 10800))
+		if nodeInfoBroadcastSecs.intValue < 10800 {
+			nodeInfoBroadcastSecs = UpdateInterval(from: 10800)
 		}
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.tripleClickAsAdHocPing = node?.deviceConfig?.tripleClickAsAdHocPing ?? false

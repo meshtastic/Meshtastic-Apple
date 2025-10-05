@@ -38,8 +38,8 @@ struct DetectionSensorConfig: View {
 	@State var name: String = ""
 	@State var triggerType = 0
 	@State var usePullup: Bool = false
-	@State var minimumBroadcastSecs = 0
-	@State var stateBroadcastSecs = 0
+	@State private var minimumBroadcastSecs: UpdateInterval = UpdateInterval(from: 0)
+	@State private var stateBroadcastSecs: UpdateInterval = UpdateInterval(from: 0)
 	@State var monitorPin = 0
 	
 	var body: some View {
@@ -130,24 +130,21 @@ struct DetectionSensorConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("Update Interval")) {
-					Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
-						ForEach(UpdateIntervals.allCases) { ui in
-							Text(ui.description).tag(ui.rawValue)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
+					UpdateIntervalPicker(
+						config: .detectionSensorMinimum,
+						pickerLabel: "Minimum time between detection broadcasts",
+						selectedInterval: $minimumBroadcastSecs
+					)
 					.listRowSeparator(.hidden)
 					Text("Mininum time between detection broadcasts. Default is 45 seconds.")
 						.font(.callout)
 						.foregroundStyle(.gray)
 						.listRowSeparator(.visible)
-					Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
-						Text("Never").tag(0)
-						ForEach(UpdateIntervals.allCases) { ui in
-							Text(ui.description).tag(ui.rawValue)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
+					UpdateIntervalPicker(
+						config: .detectionSensorState,
+						pickerLabel: "State Broadcast Interval",
+						selectedInterval: $stateBroadcastSecs
+					)
 					.listRowSeparator(.hidden)
 					Text("How often to send detection sensor state to mesh regardless of detection. Default is Never.")
 						.font(.callout)
@@ -169,8 +166,8 @@ struct DetectionSensorConfig: View {
 						dsc.monitorPin = UInt32(self.monitorPin)
 						dsc.detectionTriggerType = TriggerTypes(rawValue: triggerType)!.protoEnumValue()
 						dsc.usePullup = self.usePullup
-						dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
-						dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
+						dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs.intValue)
+						dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs.intValue)
 						Task {
 							do {
 								_ = try await accessoryManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!)
@@ -241,10 +238,10 @@ struct DetectionSensorConfig: View {
 		.onChange(of: monitorPin) { _, newMonitorPin in
 			if newMonitorPin != node?.detectionSensorConfig?.monitorPin ?? 0 { hasChanges = true }
 		}
-		.onChange(of: minimumBroadcastSecs) { _, newMinimumBroadcastSecs in
+		.onChange(of: minimumBroadcastSecs.intValue) { _, newMinimumBroadcastSecs in
 			if newMinimumBroadcastSecs != node?.detectionSensorConfig?.minimumBroadcastSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: stateBroadcastSecs) { _, newStateBroadcastSecs in
+		.onChange(of: stateBroadcastSecs.intValue) { _, newStateBroadcastSecs in
 			if newStateBroadcastSecs != node?.detectionSensorConfig?.stateBroadcastSecs ?? 0 { hasChanges = true }
 		}
 		.onChange(of: detectionNotificationsEnabled) { _, newDetectionNotificationsEnabled in
@@ -258,8 +255,8 @@ struct DetectionSensorConfig: View {
 		self.monitorPin = Int(node?.detectionSensorConfig?.monitorPin ?? 0)
 		self.usePullup = (node?.detectionSensorConfig?.usePullup ?? false)
 		self.triggerType = Int(node?.detectionSensorConfig?.triggerType ?? 0)
-		self.minimumBroadcastSecs = Int(node?.detectionSensorConfig?.minimumBroadcastSecs ?? 45)
-		self.stateBroadcastSecs = Int(node?.detectionSensorConfig?.stateBroadcastSecs ?? 0)
+		self.minimumBroadcastSecs = UpdateInterval(from: Int(node?.detectionSensorConfig?.minimumBroadcastSecs ?? 60))
+		self.stateBroadcastSecs = UpdateInterval(from: Int(node?.detectionSensorConfig?.stateBroadcastSecs ?? 0))
 		
 		self.hasChanges = false
 	}

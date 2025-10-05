@@ -39,9 +39,9 @@ struct PositionConfig: View {
 	@State var gpsEnGpio = 0
 	@State var fixedPosition = false
 	@State var gpsUpdateInterval = 0
-	@State var positionBroadcastSeconds = 0
+	@State private var positionBroadcastSeconds: UpdateInterval = UpdateInterval(from: 0)
 	@State var broadcastSmartMinimumDistance = 0
-	@State var broadcastSmartMinimumIntervalSecs = 0
+	@State private var broadcastSmartMinimumIntervalSecs: UpdateInterval = UpdateInterval(from: 0)
 	@State var positionFlags = 811
 	
 	/// Position Flags
@@ -80,14 +80,11 @@ struct PositionConfig: View {
 		Section(header: Text("Position Packet")) {
 			
 			VStack(alignment: .leading) {
-				Picker("Broadcast Interval", selection: $positionBroadcastSeconds) {
-					ForEach(UpdateIntervals.allCases) { at in
-						if at.rawValue >= 300 {
-							Text(at.description)
-						}
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
+				UpdateIntervalPicker(
+					config: .broadcastMedium,
+					pickerLabel: "Broadcast Interval",
+					selectedInterval: $positionBroadcastSeconds
+				)
 				Text("The maximum interval that can elapse without a node broadcasting a position")
 					.foregroundColor(.gray)
 					.font(.callout)
@@ -100,12 +97,11 @@ struct PositionConfig: View {
 			
 			if smartPositionEnabled {
 				VStack(alignment: .leading) {
-					Picker("Minimum Interval", selection: $broadcastSmartMinimumIntervalSecs) {
-						ForEach(UpdateIntervals.allCases) { at in
-							Text(at.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
+					UpdateIntervalPicker(
+						config: .smartBroadcastMinimum,
+						pickerLabel: "Minimum Interval",
+						selectedInterval: $broadcastSmartMinimumIntervalSecs
+					)
 					Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -327,8 +323,8 @@ struct PositionConfig: View {
 				pc.gpsMode = Config.PositionConfig.GpsMode(rawValue: gpsMode) ?? Config.PositionConfig.GpsMode.notPresent
 				pc.fixedPosition = fixedPosition
 				pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
-				pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
-				pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
+				pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds.intValue)
+				pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs.intValue)
 				pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
 				pc.rxGpio = UInt32(rxGpio)
 				pc.txGpio = UInt32(txGpio)
@@ -461,10 +457,10 @@ struct PositionConfig: View {
 		.onChange(of: smartPositionEnabled) { _, newSmartPositionEnabled in
 			if newSmartPositionEnabled != node?.positionConfig?.smartPositionEnabled { hasChanges = true }
 		}
-		.onChange(of: positionBroadcastSeconds) { _, newPositionBroadcastSeconds in
+		.onChange(of: positionBroadcastSeconds.intValue) { _, newPositionBroadcastSeconds in
 			if newPositionBroadcastSeconds != node?.positionConfig?.positionBroadcastSeconds ?? 0 { hasChanges = true }
 		}
-		.onChange(of: broadcastSmartMinimumIntervalSecs) { _, newBroadcastSmartMinimumIntervalSecs in
+		.onChange(of: broadcastSmartMinimumIntervalSecs.intValue) { _, newBroadcastSmartMinimumIntervalSecs in
 			if newBroadcastSmartMinimumIntervalSecs != node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 0 { hasChanges = true }
 		}
 		.onChange(of: broadcastSmartMinimumDistance) { _, newBroadcastSmartMinimumDistance in
@@ -503,8 +499,8 @@ struct PositionConfig: View {
 		self.gpsEnGpio = Int(node?.positionConfig?.gpsEnGpio ?? 0)
 		self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
 		self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
-		self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
-		self.broadcastSmartMinimumIntervalSecs = Int(node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 30)
+		self.positionBroadcastSeconds = UpdateInterval(from: Int(node?.positionConfig?.positionBroadcastSeconds ?? 3600))
+		self.broadcastSmartMinimumIntervalSecs = UpdateInterval(from: Int(node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 30))
 		self.broadcastSmartMinimumDistance = Int(node?.positionConfig?.broadcastSmartMinimumDistance ?? 50)
 		self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
 		let pf = PositionFlags(rawValue: self.positionFlags)
