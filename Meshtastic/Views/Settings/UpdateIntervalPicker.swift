@@ -9,6 +9,7 @@ import SwiftUI
 struct UpdateIntervalPicker: View {
 	let config: IntervalConfiguration
 	let pickerLabel: String
+	let formatter = DateComponentsFormatter()
 	
 	@Binding var selectedInterval: UpdateInterval
 	
@@ -34,7 +35,6 @@ struct UpdateIntervalPicker: View {
 			
 			if isOutOfRange {
 				let interval: TimeInterval = Double(selectedInterval.intValue)
-				let formatter = DateComponentsFormatter()
 				if let formattedString = formatter.string(from: interval) {
 					Text("⚠️ The configured value: (\(formattedString) seconds) is not one of the optimized options.")
 						.font(.caption)
