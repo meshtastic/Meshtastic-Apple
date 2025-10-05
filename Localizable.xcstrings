@@ -13358,7 +13358,7 @@
         }
       }
     },
-    "Environment Options" : {
+    "Environment Sensor Options" : {
 
     },
     "Erase all app data?" : {
@@ -27084,6 +27084,7 @@
       }
     },
     "Power Options" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -27196,6 +27197,9 @@
           }
         }
       }
+    },
+    "Power Sensor Options" : {
+
     },
     "Powered" : {
       "localizations" : {

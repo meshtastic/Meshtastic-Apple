@@ -66,7 +66,7 @@ struct TelemetryConfig: View {
 						.listRowSeparator(.visible)
 				}
 			}
-			Section(header: Text("Environment Options")) {
+			Section(header: Text("Environment Sensor Options")) {
 				Text("Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3.")
 					.foregroundColor(.gray)
 					.font(.callout)
@@ -99,7 +99,7 @@ struct TelemetryConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
-			Section(header: Text("Power Options")) {
+			Section(header: Text("Power Sensor Options")) {
 				Toggle(isOn: $powerMeasurementEnabled) {
 					Label("Enabled", systemImage: "bolt")
 				}
