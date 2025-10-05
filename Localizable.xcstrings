@@ -10932,6 +10932,9 @@
         }
       }
     },
+    "Device Options" : {
+
+    },
     "Device Role" : {
       "localizations" : {
         "it" : {
@@ -13318,6 +13321,9 @@
         }
       }
     },
+    "Environment Metrics Enabled" : {
+
+    },
     "Environment Metrics Log" : {
       "localizations" : {
         "it" : {
@@ -13351,6 +13357,9 @@
           }
         }
       }
+    },
+    "Environment Sensor Options" : {
+
     },
     "Erase all app data?" : {
       "localizations" : {
@@ -27075,6 +27084,7 @@
       }
     },
     "Power Options" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -27187,6 +27197,9 @@
           }
         }
       }
+    },
+    "Power Sensor Options" : {
+
     },
     "Powered" : {
       "localizations" : {
@@ -32344,6 +32357,7 @@
       }
     },
     "Sensor Options" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {

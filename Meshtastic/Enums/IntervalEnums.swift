@@ -24,11 +24,11 @@ enum IntervalConfiguration: CaseIterable {
 		case .all:
 			return FixedUpdateIntervals.allCases // Show all cases
 		case .broadcastShort:
-			return [.unset, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
+			return [.unset, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours, .never]
 		case .broadcastMedium:
-			return [.oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
+			return [.oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours, .never]
 		case .broadcastLong:
-			return [.threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
+			return [.threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours, .never]
 		case .detectionSensorMinimum:
 			return [.unset, .fifteenSeconds, .thirtySeconds, .oneMinute, .twoMinutes, .fiveMinutes, .tenMinutes, .fifteenMinutes, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
 		case .detectionSensorState:
@@ -72,6 +72,7 @@ enum FixedUpdateIntervals: Int, CaseIterable, Hashable {
 	case thirtySixHours = 129600
 	case fortyeightHours = 172800
 	case seventyTwoHours = 259200
+	case never = 2147483647 // Int.max
 }
 
 struct UpdateInterval: Hashable, Identifiable {
@@ -155,6 +156,8 @@ struct UpdateInterval: Hashable, Identifiable {
 				return "Forty Eight Hours".localized
 			case .seventyTwoHours:
 				return "Seventy Two Hours".localized
+			case .never:
+				return "Never".localized
 			}
 		case .manual(let value):
 			return "Custom: \(value) Seconds".localized

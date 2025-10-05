@@ -32,7 +32,7 @@ struct TelemetryConfig: View {
 		Form {
 			ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
 			
-			Section(header: Text("Update Interval")) {
+			Section(header: Text("Device Options")) {
 				if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
 					Toggle(isOn: $deviceTelemetryEnabled) {
 						Label("Broadcast Device Metrics", systemImage: "wifi")
@@ -65,54 +65,62 @@ struct TelemetryConfig: View {
 						.font(.callout)
 						.listRowSeparator(.visible)
 				}
-				
-				UpdateIntervalPicker(
-					config: .broadcastShort,
-					pickerLabel: "Environment Metrics",
-					selectedInterval: $environmentUpdateInterval
-				)
-				.listRowSeparator(.hidden)
-				Text("How often environment metrics are sent out over the mesh. Default is 30 minutes.")
-					.foregroundColor(.gray)
-					.font(.callout)
 			}
-			Section(header: Text("Sensor Options")) {
+			Section(header: Text("Environment Sensor Options")) {
 				Text("Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3.")
 					.foregroundColor(.gray)
 					.font(.callout)
+				
 				Toggle(isOn: $environmentMeasurementEnabled) {
-					Label("Enabled", systemImage: "chart.xyaxis.line")
+					Label("Environment Metrics Enabled", systemImage: "chart.xyaxis.line")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Toggle(isOn: $environmentScreenEnabled) {
-					Label("Show on device screen", systemImage: "display")
+				
+				if environmentMeasurementEnabled {
+					UpdateIntervalPicker(
+						config: .broadcastShort,
+						pickerLabel: "Environment Metrics",
+						selectedInterval: $environmentUpdateInterval
+					)
+					.listRowSeparator(.hidden)
+					Text("How often environment metrics are sent out over the mesh. Default is 30 minutes.")
+						.foregroundColor(.gray)
+						.font(.callout)
+						.listRowSeparator(.visible)
+					
+					Toggle(isOn: $environmentScreenEnabled) {
+						Label("Show on device screen", systemImage: "display")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $environmentDisplayFahrenheit) {
+						Label("Display Fahrenheit", systemImage: "thermometer")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Toggle(isOn: $environmentDisplayFahrenheit) {
-					Label("Display Fahrenheit", systemImage: "thermometer")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
-			Section(header: Text("Power Options")) {
+			Section(header: Text("Power Sensor Options")) {
 				Toggle(isOn: $powerMeasurementEnabled) {
 					Label("Enabled", systemImage: "bolt")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
-				UpdateIntervalPicker(
-					config: .broadcastShort,
-					pickerLabel: "Power Metrics",
-					selectedInterval: $powerUpdateInterval
-				)
-				.listRowSeparator(.hidden)
-				Text("How often power metrics are sent out over the mesh. Default is 30 minutes.")
-					.foregroundColor(.gray)
-					.font(.callout)
-					.listRowSeparator(.visible)
-				Toggle(isOn: $powerScreenEnabled) {
-					Label("Power Screen", systemImage: "tv")
+				
+				if powerMeasurementEnabled {
+					UpdateIntervalPicker(
+						config: .broadcastShort,
+						pickerLabel: "Power Metrics",
+						selectedInterval: $powerUpdateInterval
+					)
+					.listRowSeparator(.hidden)
+					Text("How often power metrics are sent out over the mesh. Default is 30 minutes.")
+						.foregroundColor(.gray)
+						.font(.callout)
+						.listRowSeparator(.visible)
+					Toggle(isOn: $powerScreenEnabled) {
+						Label("Power Screen", systemImage: "tv")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.telemetryConfig == nil)
