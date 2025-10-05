@@ -12,7 +12,7 @@ struct PowerConfig: View {
 	@State private var isPowerSaving = false
 
 	@State private var shutdownOnPowerLoss = false
-	@State private var shutdownAfterSecs = 0
+	@State private var shutdownAfterSecs: UpdateInterval = UpdateInterval(from: 0)
 	@State private var adcOverride = false
 	@State private var adcMultiplier: Float = 0.0
 
@@ -42,12 +42,11 @@ struct PowerConfig: View {
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				if shutdownOnPowerLoss {
-					Picker("After", selection: $shutdownAfterSecs) {
-						ForEach(PowerIntervals.allCases) { at in
-							Text(at.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
+					UpdateIntervalPicker(
+						config: .all,
+						pickerLabel: "After",
+						selectedInterval: $shutdownAfterSecs
+					)
 				}
 			} header: {
 				Text("Power")
@@ -88,7 +87,7 @@ struct PowerConfig: View {
 					
 					var config = Config.PowerConfig()
 					config.isPowerSaving = isPowerSaving
-					config.onBatteryShutdownAfterSecs = shutdownOnPowerLoss ? UInt32(shutdownAfterSecs) : 0
+					config.onBatteryShutdownAfterSecs = shutdownOnPowerLoss ? UInt32(shutdownAfterSecs.intValue) : 0
 					config.adcMultiplierOverride = adcOverride ? adcMultiplier : 0
 					config.waitBluetoothSecs = UInt32(waitBluetoothSecs)
 					config.lsSecs = UInt32(lsSecs)
@@ -167,7 +166,7 @@ struct PowerConfig: View {
 				hasChanges = true
 			}
 		}
-		.onChange(of: shutdownAfterSecs) { oldShutdownAfterSecs, newShutdownAfterSecs in
+		.onChange(of: shutdownAfterSecs.intValue) { oldShutdownAfterSecs, newShutdownAfterSecs in
 			if oldShutdownAfterSecs != newShutdownAfterSecs && newShutdownAfterSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: adcOverride) {
@@ -190,8 +189,8 @@ struct PowerConfig: View {
 	private func setPowerValues() {
 		isPowerSaving = node?.powerConfig?.isPowerSaving ?? isPowerSaving
 
-		shutdownAfterSecs = Int(node?.powerConfig?.onBatteryShutdownAfterSecs ?? Int32(shutdownAfterSecs))
-		shutdownOnPowerLoss = shutdownAfterSecs != 0
+		shutdownAfterSecs = UpdateInterval(from: Int(node?.powerConfig?.onBatteryShutdownAfterSecs ?? Int32(shutdownAfterSecs.intValue)))
+		shutdownOnPowerLoss = shutdownAfterSecs.intValue != 0
 
 		adcMultiplier = node?.powerConfig?.adcMultiplierOverride ?? adcMultiplier
 		adcOverride = adcMultiplier != 0

@@ -210,6 +210,7 @@
 		DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* IntervalEnums.swift */; };
 		DD9C700D2E8D5A9500106227 /* ChannelMessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C700C2E8D5A8900106227 /* ChannelMessageRow.swift */; };
 		DD9C700F2E8DE80800106227 /* UserMessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C700E2E8DE7FF00106227 /* UserMessageRow.swift */; };
+		DD9C70112E916EBD00106227 /* UpdateIntervalPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */; };
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
@@ -553,6 +554,7 @@
 		DD9A1A912BA2D2D3001E602E /* MeshtasticDataModelV 30.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 30.xcdatamodel"; sourceTree = "<group>"; };
 		DD9C700C2E8D5A8900106227 /* ChannelMessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageRow.swift; sourceTree = "<group>"; };
 		DD9C700E2E8DE7FF00106227 /* UserMessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageRow.swift; sourceTree = "<group>"; };
+		DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateIntervalPicker.swift; sourceTree = "<group>"; };
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA28B1B2D32C89200EF726F /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
@@ -950,6 +952,7 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */,
 				DDD5BB0E2C285F92007E03CA /* Logs */,
 				DD93800C2BA74CE3008BEC06 /* Channels */,
 				DD61937A2863876A00E59241 /* Config */,
@@ -1752,6 +1755,7 @@
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,
 				233E99CB2D85AAA900CC3A77 /* RainfallCompactWidget.swift in Sources */,
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
+				DD9C70112E916EBD00106227 /* UpdateIntervalPicker.swift in Sources */,
 				DD97E96828EFE9A00056DDA4 /* About.swift in Sources */,
 				DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */,
 				23AD54692E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift in Sources */,

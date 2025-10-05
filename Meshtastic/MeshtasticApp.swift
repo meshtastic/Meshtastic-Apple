@@ -38,8 +38,6 @@ struct MeshtasticAppleApp: App {
 		let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
 		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
 		var environment = "AppStore"
-
-#if !targetEnvironment(macCatalyst)
 		
 #if DEBUG
 		environment = "Local"
@@ -73,19 +71,18 @@ struct MeshtasticAppleApp: App {
 				trackBackgroundEvents: true
 			)
 		)
-#if DEBUG
-		SessionReplay.enable(
-		  with: SessionReplay.Configuration(
-			replaySampleRate: 100,
-			textAndInputPrivacyLevel: .maskSensitiveInputs,
-			imagePrivacyLevel: .maskNone,
-			touchPrivacyLevel: .show,
-			startRecordingImmediately: true,
-			featureFlags: [.swiftui: true]
-		  )
-		)
-#endif
-#endif
+		if Bundle.main.isTestFlight {
+			SessionReplay.enable(
+				with: SessionReplay.Configuration(
+					replaySampleRate: 100,
+					textAndInputPrivacyLevel: .maskSensitiveInputs,
+					imagePrivacyLevel: .maskNone,
+					touchPrivacyLevel: .show,
+					startRecordingImmediately: true,
+					featureFlags: [.swiftui: true]
+				)
+			)
+		}
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 

@@ -18,13 +18,13 @@ struct TelemetryConfig: View {
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
-	@State var deviceUpdateInterval = 0
-	@State var environmentUpdateInterval = 0
+	@State private var deviceUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
+	@State private var environmentUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
 	@State var environmentMeasurementEnabled = false
 	@State var environmentScreenEnabled = false
 	@State var environmentDisplayFahrenheit = false
 	@State var powerMeasurementEnabled = false
-	@State var powerUpdateInterval = 0
+	@State private var powerUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
 	@State var powerScreenEnabled = false
 	@State var deviceTelemetryEnabled = false
 
@@ -41,30 +41,24 @@ struct TelemetryConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					if deviceTelemetryEnabled {
-						Picker("Device Metrics", selection: $deviceUpdateInterval ) {
-						ForEach(UpdateIntervals.allCases) { ui in
-							if ui.rawValue >= 900 {
-								Text(ui.description)
-							}
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					.listRowSeparator(.hidden)
-					Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
-						.foregroundColor(.gray)
-						.font(.callout)
-						.listRowSeparator(.visible)
+						UpdateIntervalPicker(
+							config: .broadcastShort,
+							pickerLabel: "Device Metrics",
+							selectedInterval: $deviceUpdateInterval
+						)
+						.listRowSeparator(.hidden)
+						Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
+							.foregroundColor(.gray)
+							.font(.callout)
+							.listRowSeparator(.visible)
 					}
 				} else {
 					// Legacy behavior for older firmware
-					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
-						ForEach(UpdateIntervals.allCases) { ui in
-							if ui.rawValue >= 900 {
-								Text(ui.description)
-							}
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
+					UpdateIntervalPicker(
+						config: .broadcastShort,
+						pickerLabel: "Device Metrics",
+						selectedInterval: $deviceUpdateInterval
+					)
 					.listRowSeparator(.hidden)
 					Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
 						.foregroundColor(.gray)
@@ -72,14 +66,11 @@ struct TelemetryConfig: View {
 						.listRowSeparator(.visible)
 				}
 				
-				Picker("Environment Metrics", selection: $environmentUpdateInterval ) {
-					ForEach(UpdateIntervals.allCases) { ui in
-						if ui.rawValue >= 900 {
-							Text(ui.description)
-						}
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
+				UpdateIntervalPicker(
+					config: .broadcastShort,
+					pickerLabel: "Environment Metrics",
+					selectedInterval: $environmentUpdateInterval
+				)
 				.listRowSeparator(.hidden)
 				Text("How often environment metrics are sent out over the mesh. Default is 30 minutes.")
 					.foregroundColor(.gray)
@@ -108,14 +99,11 @@ struct TelemetryConfig: View {
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.listRowSeparator(.visible)
-				Picker("Power Metrics", selection: $powerUpdateInterval ) {
-					ForEach(UpdateIntervals.allCases) { ui in
-						if ui.rawValue >= 900 {
-							Text(ui.description)
-						}
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
+				UpdateIntervalPicker(
+					config: .broadcastShort,
+					pickerLabel: "Power Metrics",
+					selectedInterval: $powerUpdateInterval
+				)
 				.listRowSeparator(.hidden)
 				Text("How often power metrics are sent out over the mesh. Default is 30 minutes.")
 					.foregroundColor(.gray)
@@ -133,19 +121,20 @@ struct TelemetryConfig: View {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
 					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 					if connectedNode != nil {
-					var tc = ModuleConfig.TelemetryConfig()
-					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
-					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
-					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
-					tc.environmentScreenEnabled = environmentScreenEnabled
-					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-					tc.powerMeasurementEnabled = powerMeasurementEnabled
-					tc.powerUpdateInterval = UInt32(powerUpdateInterval)
-					tc.powerScreenEnabled = powerScreenEnabled
-					if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
-						tc.deviceTelemetryEnabled = deviceTelemetryEnabled
-					}
-					Task {
+						var tc = ModuleConfig.TelemetryConfig()
+						tc.deviceUpdateInterval = UInt32(deviceUpdateInterval.intValue)
+						tc.environmentUpdateInterval = UInt32(environmentUpdateInterval.intValue)
+						tc.environmentMeasurementEnabled = environmentMeasurementEnabled
+						tc.environmentScreenEnabled = environmentScreenEnabled
+						tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
+						tc.powerMeasurementEnabled = powerMeasurementEnabled
+						tc.powerUpdateInterval = UInt32(powerUpdateInterval.intValue)
+						tc.powerScreenEnabled = powerScreenEnabled
+						if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
+							tc.deviceTelemetryEnabled = deviceTelemetryEnabled
+						}
+						
+						Task {
 							_ = try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
 							Task { @MainActor in
 								// Should show a saved successfully alert once I know that to be true
@@ -192,10 +181,10 @@ struct TelemetryConfig: View {
 				}
 			}
 		}
-		.onChange(of: deviceUpdateInterval) { _, newDeviceInterval in
+		.onChange(of: deviceUpdateInterval.intValue) { _, newDeviceInterval in
 			if newDeviceInterval != node?.telemetryConfig?.deviceUpdateInterval ?? -1 { hasChanges = true }
 		}
-		.onChange(of: environmentUpdateInterval) { _, newEnvInterval in
+		.onChange(of: environmentUpdateInterval.intValue) { _, newEnvInterval in
 			if newEnvInterval != node?.telemetryConfig?.environmentUpdateInterval ?? -1 { hasChanges = true	}
 		}
 		.onChange(of: environmentMeasurementEnabled) { _, newEnvEnabled in
@@ -210,7 +199,7 @@ struct TelemetryConfig: View {
 		.onChange(of: powerMeasurementEnabled) { _, newPowerMeasurementEnabled in
 			if newPowerMeasurementEnabled != node?.telemetryConfig?.powerMeasurementEnabled { hasChanges = true	}
 		}
-		.onChange(of: powerUpdateInterval) { _, newPowerUpdateInterval in
+		.onChange(of: powerUpdateInterval.intValue) { _, newPowerUpdateInterval in
 			if newPowerUpdateInterval != node?.telemetryConfig?.powerUpdateInterval ?? -1 { hasChanges = true	}
 		}
 		.onChange(of: powerScreenEnabled) { _, newPowerScreenEnabled in
@@ -225,13 +214,13 @@ struct TelemetryConfig: View {
 	}
 	func setTelemetryValues() {
 		let deviceInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 1800)
-		self.deviceUpdateInterval = deviceInterval
-		self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 1800)
+		self.deviceUpdateInterval = UpdateInterval(from: deviceInterval)
+		self.environmentUpdateInterval = UpdateInterval(from: Int(node?.telemetryConfig?.environmentUpdateInterval ?? 1800))
 		self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
 		self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
 		self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
 		self.powerMeasurementEnabled = node?.telemetryConfig?.powerMeasurementEnabled ?? false
-		self.powerUpdateInterval = Int(node?.telemetryConfig?.powerUpdateInterval ?? 1800)
+		self.powerUpdateInterval = UpdateInterval(from: Int(node?.telemetryConfig?.powerUpdateInterval ?? 1800))
 		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false
 		
 		if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
