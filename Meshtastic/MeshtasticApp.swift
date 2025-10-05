@@ -10,9 +10,7 @@ import DatadogCrashReporting
 import DatadogRUM
 import DatadogTrace
 import DatadogLogs
-#if DEBUG
 import DatadogSessionReplay
-#endif
 @main
 struct MeshtasticAppleApp: App {
 
