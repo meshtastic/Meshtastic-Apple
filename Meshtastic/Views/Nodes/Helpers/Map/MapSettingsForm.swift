@@ -79,13 +79,15 @@ struct MapSettingsForm: View {
 						}
 					}
 					.tint(.accentColor)
-					Toggle(isOn: $nodeHistory) {
-						Label("Node History", systemImage: "building.columns.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.nodeHistory.toggle()
-						UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+					if !meshMap {
+						Toggle(isOn: $nodeHistory) {
+							Label("Node History", systemImage: "building.columns.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onTapGesture {
+							self.nodeHistory.toggle()
+							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+						}
 					}
 					Toggle(isOn: $enableMapRouteLines) {
 						Label("Route Lines", systemImage: "road.lanes")

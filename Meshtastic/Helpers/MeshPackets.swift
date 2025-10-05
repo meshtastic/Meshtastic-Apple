@@ -428,9 +428,21 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					}
 				}
 				Task {
-					Api().loadDeviceHardwareData { (hw) in
-						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
-						fetchedNode[0].user?.hwDisplayName = dh?.displayName
+					Api().loadDeviceHardwareData { (hw: [DeviceHardware]) in
+						guard !hw.isEmpty,
+							  let firstNode = fetchedNode.first,
+							  let user = firstNode.user else {
+							Logger.data.error("Error: Required DeviceHardware data is missing or array is empty.")
+							return
+						}
+
+						let dh = hw.first(where: { $0.hwModel == user.hwModelId })
+
+						if let deviceHardware = dh {
+							firstNode.user?.hwDisplayName = deviceHardware.displayName
+						} else {
+							Logger.data.error("No matching hardware model found for ID: \(user.hwModelId, privacy: .public)")
+						}
 					}
 				}
 			} else {
