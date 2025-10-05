@@ -33,9 +33,13 @@ struct UpdateIntervalPicker: View {
 			}
 			
 			if isOutOfRange {
-				Text("⚠️ The configured value: (\(selectedInterval.intValue) seconds) is not one of the predefined options.")
-					.font(.caption)
-					.foregroundColor(.orange)
+				let interval: TimeInterval = Double(selectedInterval.intValue)
+				let formatter = DateComponentsFormatter()
+				if let formattedString = formatter.string(from: interval) {
+					Text("⚠️ The configured value: (\(formattedString) seconds) is not one of the optimized options.")
+						.font(.caption)
+						.foregroundColor(.orange)
+				}
 			}
 		}
 	}

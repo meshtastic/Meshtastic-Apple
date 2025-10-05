@@ -26,22 +26,46 @@ struct TelemetryConfig: View {
 	@State var powerMeasurementEnabled = false
 	@State private var powerUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
 	@State var powerScreenEnabled = false
-	
+	@State var deviceTelemetryEnabled = false
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
 			
 			Section(header: Text("Update Interval")) {
-				UpdateIntervalPicker(
-					config: .broadcastShort,
-					pickerLabel: "Device Metrics",
-					selectedInterval: $deviceUpdateInterval
-				)
-				.listRowSeparator(.hidden)
-				Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
-					.foregroundColor(.gray)
-					.font(.callout)
-					.listRowSeparator(.visible)
+				if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
+					Toggle(isOn: $deviceTelemetryEnabled) {
+						Label("Broadcast Device Metrics", systemImage: "wifi")
+						Text("Enable broadcasting device metrics to the mesh network. When disabled, metrics are only sent to connected clients.")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					if deviceTelemetryEnabled {
+						UpdateIntervalPicker(
+							config: .broadcastShort,
+							pickerLabel: "Device Metrics",
+							selectedInterval: $deviceUpdateInterval
+						)
+						.listRowSeparator(.hidden)
+						Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
+							.foregroundColor(.gray)
+							.font(.callout)
+							.listRowSeparator(.visible)
+					}
+				} else {
+					// Legacy behavior for older firmware
+					UpdateIntervalPicker(
+						config: .broadcastShort,
+						pickerLabel: "Device Metrics",
+						selectedInterval: $deviceUpdateInterval
+					)
+					.listRowSeparator(.hidden)
+					Text("How often device metrics are sent out over the mesh. Default is 30 minutes.")
+						.foregroundColor(.gray)
+						.font(.callout)
+						.listRowSeparator(.visible)
+				}
+				
 				UpdateIntervalPicker(
 					config: .broadcastShort,
 					pickerLabel: "Environment Metrics",
@@ -106,6 +130,9 @@ struct TelemetryConfig: View {
 						tc.powerMeasurementEnabled = powerMeasurementEnabled
 						tc.powerUpdateInterval = UInt32(powerUpdateInterval.intValue)
 						tc.powerScreenEnabled = powerScreenEnabled
+						if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
+							tc.deviceTelemetryEnabled = deviceTelemetryEnabled
+						}
 						
 						Task {
 							_ = try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
@@ -178,10 +205,16 @@ struct TelemetryConfig: View {
 		.onChange(of: powerScreenEnabled) { _, newPowerScreenEnabled in
 			if newPowerScreenEnabled != node?.telemetryConfig?.powerScreenEnabled { hasChanges = true	}
 		}
+		.onChange(of: deviceTelemetryEnabled) { _, newDeviceTelemetryEnabled in
+			if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
+				if newDeviceTelemetryEnabled != node?.telemetryConfig?.deviceTelemetryEnabled { hasChanges = true }
+			}
+		}
 		
 	}
 	func setTelemetryValues() {
-		self.deviceUpdateInterval = UpdateInterval(from: Int(node?.telemetryConfig?.deviceUpdateInterval ?? 1800))
+		let deviceInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 1800)
+		self.deviceUpdateInterval = UpdateInterval(from: deviceInterval)
 		self.environmentUpdateInterval = UpdateInterval(from: Int(node?.telemetryConfig?.environmentUpdateInterval ?? 1800))
 		self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
 		self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
@@ -189,6 +222,14 @@ struct TelemetryConfig: View {
 		self.powerMeasurementEnabled = node?.telemetryConfig?.powerMeasurementEnabled ?? false
 		self.powerUpdateInterval = UpdateInterval(from: Int(node?.telemetryConfig?.powerUpdateInterval ?? 1800))
 		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false
+		
+		if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
+			self.deviceTelemetryEnabled = node?.telemetryConfig?.deviceTelemetryEnabled ?? false
+		} else {
+			// Legacy behavior: if deviceUpdateInterval is Int32.max, telemetry is disabled
+			self.deviceTelemetryEnabled = deviceInterval != Int(Int32.max)
+		}
+		
 		self.hasChanges = false
 	}
 }

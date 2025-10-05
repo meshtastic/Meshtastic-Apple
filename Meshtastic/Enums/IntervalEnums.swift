@@ -24,7 +24,7 @@ enum IntervalConfiguration: CaseIterable {
 		case .all:
 			return FixedUpdateIntervals.allCases // Show all cases
 		case .broadcastShort:
-			return [.thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
+			return [.unset, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
 		case .broadcastMedium:
 			return [.oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
 		case .broadcastLong:
