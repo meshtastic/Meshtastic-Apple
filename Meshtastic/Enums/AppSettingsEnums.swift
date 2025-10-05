@@ -65,7 +65,7 @@ enum MeshMapDistances: Double, CaseIterable, Identifiable {
 	var id: Double { self.rawValue }
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
-		return String.localizedStringWithFormat("up to %@ away".localized, distanceFormatter.string(fromDistance: Double(self.rawValue)))
+		return String.localizedStringWithFormat("%@".localized, distanceFormatter.string(fromDistance: Double(self.rawValue)))
 	}
 }
 

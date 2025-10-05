@@ -47,7 +47,7 @@ struct MapSettingsForm: View {
 					if meshMap {
 						if LocationsHandler.currentLocation != nil {
 							HStack {
-								Label("Show nodes", systemImage: "lines.measurement.horizontal")
+								Label("Distance", systemImage: "lines.measurement.horizontal")
 								Picker("", selection: $meshMapDistance) {
 									ForEach(MeshMapDistances.allCases) { di in
 										Text(di.description)
@@ -62,7 +62,7 @@ struct MapSettingsForm: View {
 						}
 						Toggle(isOn: $enableMapWaypoints) {
 							Label {
-								Text("Show Waypoints")
+								Text("Waypoints")
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.multicolor)

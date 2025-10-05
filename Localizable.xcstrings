@@ -34089,6 +34089,7 @@
       }
     },
     "Show Waypoints" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -39435,6 +39436,7 @@
       }
     },
     "up to %@ away" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -41226,6 +41228,9 @@
           }
         }
       }
+    },
+    "Waypoints" : {
+
     },
     "Weather Conditions" : {
       "localizations" : {
