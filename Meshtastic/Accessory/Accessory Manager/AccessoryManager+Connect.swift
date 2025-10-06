@@ -10,12 +10,12 @@ import OSLog
 import MeshtasticProtobufs
 import CoreBluetooth
 
-private let maxRetries = 10
-private let retryDelay: Duration = .seconds(1)
+private let maxRetries = 1
+private let retryDelay: Duration = .seconds(2)
 
 extension AccessoryManager {
-	func connect(to device: Device) async throws {
-		
+	func connect(to device: Device, withConnection: Connection? = nil, wantConfig: Bool = true, wantDatabase: Bool = true, versionCheck: Bool = true) async throws {
+		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck))")
 		// Prevent new connection if one is active
 		if activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
@@ -51,7 +51,12 @@ extension AccessoryManager {
 			Step(timeout: .seconds(2)) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
-					let connection = try await transport.connect(to: device)
+					let connection: Connection
+					if let providedConnection = withConnection {
+						connection = providedConnection
+					} else {
+						connection = try await transport.connect(to: device)
+					}
 					let eventStream = try await connection.connect()
 					self.updateState(.communicating)
 					self.connectionEventTask = Task {
@@ -72,24 +77,40 @@ extension AccessoryManager {
 			
 			// Step 2: Send Heartbeat before wantConfig (config)
 			Step { @MainActor _ in
+				guard wantConfig else {
+					Logger.transport.info("👟 [Connect] Step 2: wantConfig = false, skipping heartbeat")
+					return
+				}
 				Logger.transport.info("💓👟 [Connect] Step 2: Send heartbeat")
 				try await self.sendHeartbeat()
 			}
 			
 			// Step 3: Send WantConfig (config)
 			Step(timeout: .seconds(30)) { @MainActor _ in
+				guard wantConfig else {
+					Logger.transport.info("👟 [Connect] Step 4: wantConfig = false, skipping wantConfig")
+					return
+				}
 				Logger.transport.info("🔗👟 [Connect] Step 3: Send wantConfig (config)")
 				try await self.sendWantConfig()
 			}
 			
 			// Step 4: Send Heartbeat before wantConfig (database)
 			Step { @MainActor _ in
+				guard wantDatabase else {
+					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping heartbeat")
+					return
+				}
 				Logger.transport.info("💓 [Connect] Step 4: Send heartbeat")
 				try await self.sendHeartbeat()
 			}
 			
 			// Step 5: Send WantConfig (database)
 			Step(timeout: .seconds(3.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
+				guard wantDatabase else {
+					Logger.transport.info("👟 [Connect] Step 5: wantDatabase = false, skipping wantDatabase")
+					return
+				}
 				Logger.transport.info("🔗👟 [Connect] Step 5: Send wantConfig (database)")
 				self.updateState(.retrievingDatabase(nodeCount: 0))
 				self.allowDisconnect = true
@@ -98,12 +119,20 @@ extension AccessoryManager {
 			
 			// Step 5a: Wait for end of WantConfig (database)
 			Step { @MainActor _ in
+				guard wantDatabase else {
+					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping waitForWantDatabase")
+					return
+				}
 				Logger.transport.info("🔗👟 [Connect] Step 5a: Wait for the final database")
 				try await self.waitForWantDatabaseResponse()
 			}
 			
 			// Step 6: Version check
 			Step { @MainActor _ in
+				guard versionCheck else {
+					Logger.transport.info("👟 [Connect] Step 6: versionCheck = false, skipping version check")
+					return
+				}
 				Logger.transport.info("🔗👟 [Connect] Step 6: Version check")
 
 				guard let firmwareVersion = self.activeConnection?.device.firmwareVersion else {
@@ -133,6 +162,9 @@ extension AccessoryManager {
 				// Send time to device
 				try? await self.sendTime()
 				
+				// Allow disconnect here too
+				self.allowDisconnect = true
+
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 				self.updateState(.subscribed)
@@ -148,8 +180,6 @@ extension AccessoryManager {
 					await self.setupPeriodicHeartbeat()
 				}
 				
-				
-				
 				if let device = self.activeConnection?.device {
 					var version: String?
 					if let firmwareVersion = device.firmwareVersion {
@@ -160,13 +190,12 @@ extension AccessoryManager {
 						}
 					}
 				
-					let connectionAttributes: [String: any Encodable] = [
-						"firmware_version": version,
-						"transport_type": device.transportType.rawValue,  // e.g., "websocket", "http/2", "quic"
-						"hardware_model": device.hardwareModel,
-						"nodes": self.expectedNodeDBSize
-					]
-					Logger.datadog.action(name: "connect", attributes: connectionAttributes )
+					let connectionWasRestored = (withConnection != nil)
+					Logger.datadog.action(.connect(firmwareVersion: version,
+													transportType: device.transportType.rawValue,
+												   hardwareModel: device.hardwareModel,
+												   nodes: self.expectedNodeDBSize,
+												  connectionRestored: connectionWasRestored))
 				}
 			}
 		}

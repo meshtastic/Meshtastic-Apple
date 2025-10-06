@@ -83,15 +83,6 @@ struct Firmware: View {
 					.font(.caption)
 					.padding(.bottom)
 
-				Text("Get the latest alpha firmware")
-					.fixedSize(horizontal: false, vertical: true)
-					.font(.callout)
-				Link("\(latestAlpha?.title ?? "Unknown".localized)", destination: URL(string: "\(latestAlpha?.zipURL ?? "https://meshtastic.org")")!)
-					.font(.caption)
-				Link("Release Notes", destination: URL(string: "\(latestAlpha?.pageURL ?? "https://meshtastic.org")")!)
-					.font(.caption)
-					.padding(.bottom)
-
 				if currentDevice?.architecture == Meshtastic.Architecture.nrf52840 {
 					VStack(alignment: .leading) {
 

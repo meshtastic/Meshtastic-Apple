@@ -102,6 +102,10 @@ public struct ChannelSettings {
   /// Clears the value of `moduleSettings`. Subsequent reads from it will return its default value.
   public mutating func clearModuleSettings() {self._moduleSettings = nil}
 
+  ///
+  /// Whether or not we should receive notifactions / alerts through this channel
+  public var mute: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -250,6 +254,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     5: .standard(proto: "uplink_enabled"),
     6: .standard(proto: "downlink_enabled"),
     7: .standard(proto: "module_settings"),
+    8: .same(proto: "mute"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -265,6 +270,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       case 5: try { try decoder.decodeSingularBoolField(value: &self.uplinkEnabled) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.downlinkEnabled) }()
       case 7: try { try decoder.decodeSingularMessageField(value: &self._moduleSettings) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.mute) }()
       default: break
       }
     }
@@ -296,6 +302,9 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     try { if let v = self._moduleSettings {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     } }()
+    if self.mute != false {
+      try visitor.visitSingularBoolField(value: self.mute, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -307,6 +316,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if lhs.uplinkEnabled != rhs.uplinkEnabled {return false}
     if lhs.downlinkEnabled != rhs.downlinkEnabled {return false}
     if lhs._moduleSettings != rhs._moduleSettings {return false}
+    if lhs.mute != rhs.mute {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -28,3 +28,20 @@ extension NodeInfoEntity {
         return node
     }
 }
+
+extension UserEntity {
+	func toProto() -> User {
+		var userProto = User()
+			userProto.id = self.userId ?? ""
+			userProto.longName = self.longName ?? ""
+			userProto.shortName = self.shortName ?? ""
+			userProto.hwModel = HardwareModel(rawValue: Int(self.hwModelId)) ?? .unset
+			userProto.isLicensed = self.isLicensed
+			if userProto.hasIsUnmessagable == true {
+				userProto.isUnmessagable = self.unmessagable
+			}
+			userProto.role = Config.DeviceConfig.Role(rawValue: Int(self.role)) ?? .client
+			userProto.publicKey = self.publicKey?.subdata(in: 0..<self.publicKey!.count) ?? Data()
+		return userProto
+	}
+}

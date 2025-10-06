@@ -204,6 +204,14 @@ public enum Language: SwiftProtobuf.Enum {
   case bulgarian // = 17
 
   ///
+  /// Czech
+  case czech // = 18
+
+  ///
+  /// Danish
+  case danish // = 19
+
+  ///
   /// Simplified Chinese (experimental)
   case simplifiedChinese // = 30
 
@@ -236,6 +244,8 @@ public enum Language: SwiftProtobuf.Enum {
     case 15: self = .slovenian
     case 16: self = .ukrainian
     case 17: self = .bulgarian
+    case 18: self = .czech
+    case 19: self = .danish
     case 30: self = .simplifiedChinese
     case 31: self = .traditionalChinese
     default: self = .UNRECOGNIZED(rawValue)
@@ -262,6 +272,8 @@ public enum Language: SwiftProtobuf.Enum {
     case .slovenian: return 15
     case .ukrainian: return 16
     case .bulgarian: return 17
+    case .czech: return 18
+    case .danish: return 19
     case .simplifiedChinese: return 30
     case .traditionalChinese: return 31
     case .UNRECOGNIZED(let i): return i
@@ -293,6 +305,8 @@ extension Language: CaseIterable {
     .slovenian,
     .ukrainian,
     .bulgarian,
+    .czech,
+    .danish,
     .simplifiedChinese,
     .traditionalChinese,
   ]
@@ -437,12 +451,110 @@ public struct DeviceUIConfig {
     set {_uniqueStorage()._isClockfaceAnalog = newValue}
   }
 
+  ///
+  /// How the GPS coordinates are formatted on the OLED screen.
+  public var gpsFormat: DeviceUIConfig.GpsCoordinateFormat {
+    get {return _storage._gpsFormat}
+    set {_uniqueStorage()._gpsFormat = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// How the GPS coordinates are displayed on the OLED screen.
+  public enum GpsCoordinateFormat: SwiftProtobuf.Enum {
+    public typealias RawValue = Int
+
+    ///
+    /// GPS coordinates are displayed in the normal decimal degrees format:
+    /// DD.DDDDDD DDD.DDDDDD
+    case dec // = 0
+
+    ///
+    /// GPS coordinates are displayed in the degrees minutes seconds format:
+    /// DD°MM'SS"C DDD°MM'SS"C, where C is the compass point representing the locations quadrant
+    case dms // = 1
+
+    ///
+    /// Universal Transverse Mercator format:
+    /// ZZB EEEEEE NNNNNNN, where Z is zone, B is band, E is easting, N is northing
+    case utm // = 2
+
+    ///
+    /// Military Grid Reference System format:
+    /// ZZB CD EEEEE NNNNN, where Z is zone, B is band, C is the east 100k square, D is the north 100k square,
+    /// E is easting, N is northing
+    case mgrs // = 3
+
+    ///
+    /// Open Location Code (aka Plus Codes).
+    case olc // = 4
+
+    ///
+    /// Ordnance Survey Grid Reference (the National Grid System of the UK).
+    /// Format: AB EEEEE NNNNN, where A is the east 100k square, B is the north 100k square,
+    /// E is the easting, N is the northing
+    case osgr // = 5
+
+    ///
+    /// Maidenhead Locator System
+    /// Described here: https://en.wikipedia.org/wiki/Maidenhead_Locator_System
+    case mls // = 6
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .dec
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .dec
+      case 1: self = .dms
+      case 2: self = .utm
+      case 3: self = .mgrs
+      case 4: self = .olc
+      case 5: self = .osgr
+      case 6: self = .mls
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .dec: return 0
+      case .dms: return 1
+      case .utm: return 2
+      case .mgrs: return 3
+      case .olc: return 4
+      case .osgr: return 5
+      case .mls: return 6
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+  }
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
+
+#if swift(>=4.2)
+
+extension DeviceUIConfig.GpsCoordinateFormat: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [DeviceUIConfig.GpsCoordinateFormat] = [
+    .dec,
+    .dms,
+    .utm,
+    .mgrs,
+    .olc,
+    .osgr,
+    .mls,
+  ]
+}
+
+#endif  // swift(>=4.2)
 
 public struct NodeFilter {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -570,6 +682,7 @@ extension CompassMode: @unchecked Sendable {}
 extension Theme: @unchecked Sendable {}
 extension Language: @unchecked Sendable {}
 extension DeviceUIConfig: @unchecked Sendable {}
+extension DeviceUIConfig.GpsCoordinateFormat: @unchecked Sendable {}
 extension NodeFilter: @unchecked Sendable {}
 extension NodeHighlight: @unchecked Sendable {}
 extension GeoPoint: @unchecked Sendable {}
@@ -616,6 +729,8 @@ extension Language: SwiftProtobuf._ProtoNameProviding {
     15: .same(proto: "SLOVENIAN"),
     16: .same(proto: "UKRAINIAN"),
     17: .same(proto: "BULGARIAN"),
+    18: .same(proto: "CZECH"),
+    19: .same(proto: "DANISH"),
     30: .same(proto: "SIMPLIFIED_CHINESE"),
     31: .same(proto: "TRADITIONAL_CHINESE"),
   ]
@@ -642,6 +757,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     16: .standard(proto: "compass_mode"),
     17: .standard(proto: "screen_rgb_color"),
     18: .standard(proto: "is_clockface_analog"),
+    19: .standard(proto: "gps_format"),
   ]
 
   fileprivate class _StorageClass {
@@ -663,6 +779,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     var _compassMode: CompassMode = .dynamic
     var _screenRgbColor: UInt32 = 0
     var _isClockfaceAnalog: Bool = false
+    var _gpsFormat: DeviceUIConfig.GpsCoordinateFormat = .dec
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -695,6 +812,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       _compassMode = source._compassMode
       _screenRgbColor = source._screenRgbColor
       _isClockfaceAnalog = source._isClockfaceAnalog
+      _gpsFormat = source._gpsFormat
     }
   }
 
@@ -731,6 +849,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         case 16: try { try decoder.decodeSingularEnumField(value: &_storage._compassMode) }()
         case 17: try { try decoder.decodeSingularUInt32Field(value: &_storage._screenRgbColor) }()
         case 18: try { try decoder.decodeSingularBoolField(value: &_storage._isClockfaceAnalog) }()
+        case 19: try { try decoder.decodeSingularEnumField(value: &_storage._gpsFormat) }()
         default: break
         }
       }
@@ -797,6 +916,9 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       if _storage._isClockfaceAnalog != false {
         try visitor.visitSingularBoolField(value: _storage._isClockfaceAnalog, fieldNumber: 18)
       }
+      if _storage._gpsFormat != .dec {
+        try visitor.visitSingularEnumField(value: _storage._gpsFormat, fieldNumber: 19)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -824,6 +946,7 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         if _storage._compassMode != rhs_storage._compassMode {return false}
         if _storage._screenRgbColor != rhs_storage._screenRgbColor {return false}
         if _storage._isClockfaceAnalog != rhs_storage._isClockfaceAnalog {return false}
+        if _storage._gpsFormat != rhs_storage._gpsFormat {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -831,6 +954,18 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension DeviceUIConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DEC"),
+    1: .same(proto: "DMS"),
+    2: .same(proto: "UTM"),
+    3: .same(proto: "MGRS"),
+    4: .same(proto: "OLC"),
+    5: .same(proto: "OSGR"),
+    6: .same(proto: "MLS"),
+  ]
 }
 
 extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

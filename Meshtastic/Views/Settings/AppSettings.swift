@@ -153,6 +153,7 @@ struct AppSettings: View {
 								}
 							}
 							clearCoreDataDatabase(context: context, includeRoutes: true)
+							clearNotifications()
 							context.refreshAllObjects()
 						}
 					}

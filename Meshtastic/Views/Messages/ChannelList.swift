@@ -114,6 +114,9 @@ struct ChannelList: View {
 					ForEach(channels) { (channel: ChannelEntity) in
 						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 							makeChannelRow(myInfo: myInfo, channel: channel)
+								.alignmentGuide(.listRowSeparatorLeading) {
+									$0[.leading]
+								}
 								.frame(height: 62)
 								.contextMenu {
 									if channel.allPrivateMessages.count > 0 {

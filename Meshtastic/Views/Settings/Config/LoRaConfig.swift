@@ -56,173 +56,165 @@ struct LoRaConfig: View {
 	}()
 
 	var body: some View {
-		VStack {
-			Form {
-				ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
+		Form {
+			ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
 
-				Section(header: Text("Options")) {
+			Section(header: Text("Options")) {
 
-					VStack(alignment: .leading) {
-						Picker("Region", selection: $region ) {
-							ForEach(RegionCodes.allCases) { r in
-								Text(r.description)
-							}
-						}
-						Text("The region where you will be using your radios.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
-					.pickerStyle(DefaultPickerStyle())
-
-					Toggle(isOn: $usePreset) {
-						Label("Use Preset", systemImage: "list.bullet.rectangle")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					if usePreset {
-						VStack(alignment: .leading) {
-							Picker("Presets", selection: $modemPreset ) {
-								ForEach(ModemPresets.allCases) { m in
-									Text(m.description)
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							.fixedSize()
-							Text("Available modem presets, default is Long Fast.")
-								.foregroundColor(.gray)
-								.font(.callout)
+				VStack(alignment: .leading) {
+					Picker("Region", selection: $region ) {
+						ForEach(RegionCodes.allCases) { r in
+							Text(r.description)
 						}
 					}
+					Text("The region where you will be using your radios.")
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
-				Section(header: Text("Advanced")) {
+				.pickerStyle(DefaultPickerStyle())
 
-					Toggle(isOn: $ignoreMqtt) {
-						Label("Ignore MQTT", systemImage: "server.rack")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $okToMqtt) {
-						Label("Ok to MQTT", systemImage: "network")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Toggle(isOn: $usePreset) {
+					Label("Use Preset", systemImage: "list.bullet.rectangle")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					Toggle(isOn: $txEnabled) {
-						Label("Transmit Enabled", systemImage: "waveform.path")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					 if !usePreset {
-						 HStack {
-							 Picker("Bandwidth", selection: $bandwidth) {
-								 ForEach(Bandwidths.allCases) { bw in
-									 Text(bw.description)
-										 .tag(bw.rawValue == 250 ? 0 : bw.rawValue)
-								 }
-							 }
-						 }
-						 HStack {
-							 Picker("Spread Factor", selection: $spreadFactor) {
-								 ForEach(7..<13) {
-									 Text("\($0)")
-										 .tag($0 == 12 ? 0 : $0)
-								 }
-							 }
-						 }
-						 HStack {
-							 Picker("Coding Rate", selection: $codingRate) {
-								 ForEach(5..<9) {
-									 Text("\($0)")
-										 .tag($0 == 8 ? 0 : $0)
-								 }
-							 }
-						 }
-					}
+				if usePreset {
 					VStack(alignment: .leading) {
-						Picker("Number of hops", selection: $hopLimit) {
-							ForEach(0..<8) {
-								Text("\($0)")
-									.tag($0)
+						Picker("Presets", selection: $modemPreset ) {
+							ForEach(ModemPresets.allCases) { m in
+								Text(m.description)
 							}
 						}
-						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs.")
+						.pickerStyle(DefaultPickerStyle())
+						.fixedSize()
+						Text("Available modem presets, default is Long Fast.")
 							.foregroundColor(.gray)
 							.font(.callout)
-					}
-					.pickerStyle(DefaultPickerStyle())
-
-					VStack(alignment: .leading) {
-						HStack {
-							Text("Frequency Slot")
-								.fixedSize()
-							TextField("Frequency Slot", value: $channelNum, formatter: formatter)
-								.toolbar {
-									ToolbarItemGroup(placement: .keyboard) {
-										Button("Dismiss") {
-											focusedField = nil
-										}
-										.font(.subheadline)
-									}
-								}
-								.keyboardType(.decimalPad)
-								.scrollDismissesKeyboard(.immediately)
-								.focused($focusedField, equals: .channelNum)
-								.disabled(overrideFrequency > 0.0)
-						}
-						Text("Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name.")
-							.foregroundColor(.gray)
-							.font(.callout)
-					}
-
-					Toggle(isOn: $rxBoostedGain) {
-						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					HStack {
-						Label("Frequency Override", systemImage: "waveform.path.ecg")
-						Spacer()
-						TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
-							.keyboardType(.decimalPad)
-							.scrollDismissesKeyboard(.immediately)
-							.focused($focusedField, equals: .frequencyOverride)
-					}
-
-					HStack {
-						Image(systemName: "antenna.radiowaves.left.and.right")
-							.foregroundColor(.accentColor)
-						Stepper("\(txPower)dBm Transmit Power", value: $txPower, in: 1...30, step: 1)
-							.padding(5)
 					}
 				}
 			}
-			.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
+			Section(header: Text("Advanced")) {
 
-			SaveConfigButton(node: node, hasChanges: $hasChanges) {
-				if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-					var lc = Config.LoRaConfig()
-					lc.hopLimit = UInt32(hopLimit)
-					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
-					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-					lc.usePreset = usePreset
-					lc.txEnabled = txEnabled
-					lc.txPower = Int32(txPower)
-					lc.channelNum = UInt32(channelNum)
-					lc.bandwidth = UInt32(bandwidth)
-					lc.codingRate = UInt32(codingRate)
-					lc.spreadFactor = UInt32(spreadFactor)
-					lc.sx126XRxBoostedGain = rxBoostedGain
-					lc.overrideFrequency = overrideFrequency
-					lc.ignoreMqtt = ignoreMqtt
-					lc.configOkToMqtt = okToMqtt
-					if connectedNode.num == node?.user?.num ?? 0 {
-						UserDefaults.modemPreset = modemPreset
+				Toggle(isOn: $ignoreMqtt) {
+					Label("Ignore MQTT", systemImage: "server.rack")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Toggle(isOn: $okToMqtt) {
+					Label("Ok to MQTT", systemImage: "network")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+				Toggle(isOn: $txEnabled) {
+					Label("Transmit Enabled", systemImage: "waveform.path")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+				 if !usePreset {
+					 HStack {
+						 Picker("Bandwidth", selection: $bandwidth) {
+							 ForEach(Bandwidths.allCases) { bw in
+								 Text(bw.description)
+									 .tag(bw.rawValue == 250 ? 0 : bw.rawValue)
+							 }
+						 }
+					 }
+					 HStack {
+						 Picker("Spread Factor", selection: $spreadFactor) {
+							 ForEach(7..<13) {
+								 Text("\($0)")
+									 .tag($0 == 12 ? 0 : $0)
+							 }
+						 }
+					 }
+					 HStack {
+						 Picker("Coding Rate", selection: $codingRate) {
+							 ForEach(5..<9) {
+								 Text("\($0)")
+									 .tag($0 == 8 ? 0 : $0)
+							 }
+						 }
+					 }
+				}
+				VStack(alignment: .leading) {
+					Picker("Number of hops", selection: $hopLimit) {
+						ForEach(0..<8) {
+							Text("\($0)")
+								.tag($0)
+						}
 					}
-					Task {
-						_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: connectedNode.user!, toUser: node!.user!)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
+					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs.")
+						.foregroundColor(.gray)
+						.font(.callout)
+				}
+				.pickerStyle(DefaultPickerStyle())
+
+				VStack(alignment: .leading) {
+					HStack {
+						Text("Frequency Slot")
+							.fixedSize()
+						TextField("Frequency Slot", value: $channelNum, formatter: formatter)
+							.keyboardType(.numberPad)
+							.focused($focusedField, equals: .channelNum)
+							.disabled(overrideFrequency > 0.0)
+					}
+					Text("Your node’s operating frequency is calculated based on the region, modem preset, and this field. When 0, the slot is automatically calculated based on the primary channel name.")
+						.foregroundColor(.gray)
+						.font(.callout)
+				}
+
+				Toggle(isOn: $rxBoostedGain) {
+					Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+				HStack {
+					Label("Frequency Override", systemImage: "waveform.path.ecg")
+					Spacer()
+					TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
+						.keyboardType(.decimalPad)
+						.focused($focusedField, equals: .frequencyOverride)
+				}
+
+				HStack {
+					Image(systemName: "antenna.radiowaves.left.and.right")
+						.foregroundColor(.accentColor)
+					Stepper("\(txPower)dBm Transmit Power", value: $txPower, in: 1...30, step: 1)
+						.padding(5)
+				}
+			}
+		}
+		.scrollDismissesKeyboard(.immediately)
+		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+						var lc = Config.LoRaConfig()
+						lc.hopLimit = UInt32(hopLimit)
+						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+						lc.usePreset = usePreset
+						lc.txEnabled = txEnabled
+						lc.txPower = Int32(txPower)
+						lc.channelNum = UInt32(channelNum)
+						lc.bandwidth = UInt32(bandwidth)
+						lc.codingRate = UInt32(codingRate)
+						lc.spreadFactor = UInt32(spreadFactor)
+						lc.sx126XRxBoostedGain = rxBoostedGain
+						lc.overrideFrequency = overrideFrequency
+						lc.ignoreMqtt = ignoreMqtt
+						lc.configOkToMqtt = okToMqtt
+						if connectedNode.num == node?.user?.num ?? 0 {
+							UserDefaults.modemPreset = modemPreset
+						}
+						Task {
+							_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: connectedNode.user!, toUser: node!.user!)
+							Task { @MainActor in
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save
+								hasChanges = false
+								goBack()
+							}
 						}
 					}
 				}

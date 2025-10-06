@@ -13,17 +13,17 @@ struct PaxCounterConfig: View {
 	@Environment(\.managedObjectContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-
+	
 	let node: NodeInfoEntity?
-
+	
 	@State private var enabled = false
-	@State private var paxcounterUpdateInterval = 0
+	@State private var paxcounterUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
 	@State private var hasChanges: Bool = false
-
+	
 	var body: some View {
 		Form {
 			ConfigHeader(title: "PAX Counter Config", config: \.powerConfig, node: node, onAppear: setPaxValues)
-
+			
 			Section {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "figure.walk.motion")
@@ -32,14 +32,11 @@ struct PaxCounterConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.listRowSeparator(.visible)
 				if enabled {
-					Picker("Update Interval", selection: $paxcounterUpdateInterval) {
-						ForEach(UpdateIntervals.allCases) { at in
-							if at.rawValue >= 300 {
-								Text(at.description)
-							}
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
+					UpdateIntervalPicker(
+						config: .paxCounter,
+						pickerLabel: "Update Interval",
+						selectedInterval: $paxcounterUpdateInterval
+					)
 					.listRowSeparator(.hidden)
 					Text("How often we can send a message to the mesh when people are detected.")
 						.foregroundColor(.gray)
@@ -50,6 +47,35 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context),
+						  let fromUser = connectedNode.user,
+						  let toUser = node?.user else {
+						return
+					}
+					
+					var config = ModuleConfig.PaxcounterConfig()
+					config.enabled = enabled
+					config.paxcounterUpdateInterval = UInt32(paxcounterUpdateInterval.intValue)
+					
+					Task {
+						_ = try await accessoryManager.savePaxcounterModuleConfig(
+							config: config,
+							fromUser: fromUser,
+							toUser: toUser
+						)
+						Task { @MainActor in
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
+					}
+				}
+			}
+		}
 		.navigationTitle("PAX Counter Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(
@@ -87,39 +113,13 @@ struct PaxCounterConfig: View {
 		.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node?.paxCounterConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: paxcounterUpdateInterval) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
+		.onChange(of: paxcounterUpdateInterval.intValue) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
 			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval && newPaxcounterUpdateInterval != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
 		}
-
-		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context),
-				  let fromUser = connectedNode.user,
-				  let toUser = node?.user else {
-				return
-			}
-
-			var config = ModuleConfig.PaxcounterConfig()
-			config.enabled = enabled
-			config.paxcounterUpdateInterval = UInt32(paxcounterUpdateInterval)
-
-			Task {
-				_ = try await accessoryManager.savePaxcounterModuleConfig(
-					config: config,
-					fromUser: fromUser,
-					toUser: toUser
-				)
-				Task { @MainActor in
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
-				}
-			}
-		}
 	}
-
+	
 	private func setPaxValues() {
 		enabled = node?.paxCounterConfig?.enabled ?? enabled
-		paxcounterUpdateInterval = Int(node?.paxCounterConfig?.updateInterval ?? 1800)
+		paxcounterUpdateInterval = UpdateInterval(from: Int(node?.paxCounterConfig?.updateInterval ?? 1800))
 	}
 }

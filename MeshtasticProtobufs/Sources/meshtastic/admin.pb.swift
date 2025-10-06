@@ -1365,6 +1365,10 @@ public struct SharedContact {
   /// Add this contact to the blocked / ignored list
   public var shouldIgnore: Bool = false
 
+  ///
+  /// Set the IS_KEY_MANUALLY_VERIFIED bit
+  public var manuallyVerified: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -2498,6 +2502,7 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     1: .standard(proto: "node_num"),
     2: .same(proto: "user"),
     3: .standard(proto: "should_ignore"),
+    4: .standard(proto: "manually_verified"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2509,6 +2514,7 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.nodeNum) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._user) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.shouldIgnore) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.manuallyVerified) }()
       default: break
       }
     }
@@ -2528,6 +2534,9 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.shouldIgnore != false {
       try visitor.visitSingularBoolField(value: self.shouldIgnore, fieldNumber: 3)
     }
+    if self.manuallyVerified != false {
+      try visitor.visitSingularBoolField(value: self.manuallyVerified, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2535,6 +2544,7 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.nodeNum != rhs.nodeNum {return false}
     if lhs._user != rhs._user {return false}
     if lhs.shouldIgnore != rhs.shouldIgnore {return false}
+    if lhs.manuallyVerified != rhs.manuallyVerified {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

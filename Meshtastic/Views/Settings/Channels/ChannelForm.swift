@@ -25,10 +25,9 @@ struct ChannelForm: View {
 	@Binding var supportedVersion: Bool
 
 	var body: some View {
-
 		NavigationStack {
 			Form {
-				Section(header: Text("channel details")) {
+				Section(header: Text("Channel Details")) {
 					HStack {
 						Text("Name")
 						Spacer()
@@ -181,7 +180,6 @@ struct ChannelForm: View {
 						Label("Downlink Enabled", systemImage: "arrowshape.down")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
 				}
 			}
 			.onChange(of: channelName) {

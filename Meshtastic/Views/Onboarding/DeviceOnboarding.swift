@@ -276,7 +276,7 @@ struct DeviceOnboarding: View {
 					makeRow(
 						icon: "person.and.background.dotted",
 						title: "Background Connections".localized,
-						subtitle: "Bluetooth Low Energy supports background connections.  When possible, the applicaiton will remain connected to these accessories while the app is in the background".localized
+						subtitle: "Bluetooth Low Energy supports background connections. When possible, the application will remain connected to these accessories while the app is in the background.".localized
 					)
 				}
 				.padding()

@@ -23,7 +23,9 @@ struct AnimatedNodePin: View, Equatable {
 		ZStack {
 			// Pass the calculatedDelay to the PulsingCircle view
 			if isOnline {
-				PulsingCircle(nodeColor: nodeColor, calculatedDelay: calculatedDelay)
+				if #available(iOS 18, macOS 15, *) {
+					PulsingCircle(nodeColor: nodeColor, calculatedDelay: calculatedDelay)
+				}
 			}
 
 			if hasDetectionSensorMetrics {

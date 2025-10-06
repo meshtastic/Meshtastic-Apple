@@ -211,9 +211,12 @@ struct NodeWeatherForecast {
 
 struct NodeWeatherForecastView_Previews: PreviewProvider {
 	static var previews: some View {
-		NodeWeatherForecastView(location: CLLocation(latitude: LocationsHandler.currentLocation.latitude, longitude: LocationsHandler.currentLocation.longitude) )
-			.aspectRatio(2, contentMode: .fit)
-			.padding()
-			.previewLayout(.sizeThatFits)
+		
+		if let cl = LocationsHandler.currentLocation {
+			NodeWeatherForecastView(location: CLLocation(latitude: cl.latitude, longitude: cl.longitude) )
+				.aspectRatio(2, contentMode: .fit)
+				.padding()
+				.previewLayout(.sizeThatFits)
+		}
 	}
 }

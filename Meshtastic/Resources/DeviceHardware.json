@@ -962,14 +962,33 @@
 	"hwModelSlug": "SEEED_WIO_TRACKER_L1_EINK",
 	"platformioTarget": "seeed_wio_tracker_L1_eink",
 	"architecture": "nrf52840",
-	"activelySupported": false,
+	"activelySupported": true,
 	"supportLevel": 1,
 	"displayName": "Seeed Wio Tracker L1 E-Ink",
 	"tags": [
 	  "Seeed"
 	],
 	"requiresDfu": true,
-	"hasInkHud": true
+	"hasInkHud": true,
+	"images": [
+	  "wio_tracker_l1_eink.svg"
+	]
+  },
+  {
+	"hwModel": 96,
+	"hwModelSlug": "NOMADSTAR_METEOR_PRO",
+	"platformioTarget": "rak4631_nomadstar_meteor_pro",
+	"architecture": "nrf52840",
+	"activelySupported": true,
+	"supportLevel": 1,
+	"displayName": "NomadStar Meteor Pro",
+	"tags": [
+	  "NomadStar"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "meteor_pro.svg"
+	]
   },
   {
 	"hwModel": 97,
@@ -1028,11 +1047,27 @@
 	"hasMui": true
   },
   {
+	"hwModel": 101,
+	"hwModelSlug": "MUZI_R1_NEO",
+	"platformioTarget": "r1-neo",
+	"architecture": "nrf52840",
+	"activelySupported": false,
+	"supportLevel": 1,
+	"displayName": "muzi R1 Neo",
+	"tags": [
+	  "muzi"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "muzi_r1_neo.svg"
+	]
+  },
+  {
 	"hwModel": 102,
 	"hwModelSlug": "T_DECK_PRO",
 	"platformioTarget": "t-deck-pro",
 	"architecture": "esp32-s3",
-	"activelySupported": false,
+	"activelySupported": true,
 	"supportLevel": 1,
 	"displayName": "LILYGO T-Deck Pro",
 	"tags": [
@@ -1044,5 +1079,107 @@
 	"requiresDfu": true,
 	"hasMui": false,
 	"partitionScheme": "16MB"
+  },
+  {
+	"hwModel": 103,
+	"hwModelSlug": "T_LORA_PAGER",
+	"platformioTarget": "tlora-pager",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"supportLevel": 1,
+	"displayName": "LILYGO T-LoRa Pager",
+	"tags": [
+	  "LilyGo"
+	],
+	"requiresDfu": true,
+	"hasMui": false,
+	"partitionScheme": "16MB",
+	"images": [
+	  "lilygo-tlora-pager.svg"
+	]
+  },
+  {
+	"hwModel": 108,
+	"hwModelSlug": "HELTEC_MESH_SOLAR",
+	"platformioTarget": "heltec-mesh-solar",
+	"architecture": "nrf52840",
+	"activelySupported": false,
+	"supportLevel": 1,
+	"displayName": "Heltec MeshSolar",
+	"tags": [
+	  "Heltec"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "heltec-mesh-solar.svg"
+	]
+  },
+  {
+	"hwModel": 109,
+	"hwModelSlug": "T_ECHO_LITE",
+	"platformioTarget": "t-echo-lite",
+	"architecture": "nrf52840",
+	"activelySupported": false,
+	"supportLevel": 1,
+	"displayName": "LILYGO T-Echo Lite",
+	"tags": [
+	  "LilyGo"
+	],
+	"requiresDfu": true,
+	"hasInkHud": false,
+	"images": [
+	  "techo_lite.svg"
+	]
+  },
+  {
+	"hwModel": 111,
+	"hwModelSlug": "M5STACK_C6L",
+	"platformioTarget": "m5stack-unitc6l",
+	"architecture": "esp32-c6",
+	"supportLevel": 1,
+	"activelySupported": true,
+	"displayName": "M5Stack Unit C6L",
+	"tags": [
+	  "M5Stack"
+	],
+	"images": [
+	  "m5_c6l.svg"
+	]
+  },
+  {
+	"hwModel": 110,
+	"hwModelSlug": "HELTEC_V4",
+	"platformioTarget": "heltec-v4",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"supportLevel": 1,
+	"displayName": "Heltec V4",
+	"tags": [
+	  "Heltec"
+	],
+	"requiresDfu": true,
+	"hasMui": false,
+	"partitionScheme": "16MB",
+	"images": [
+	  "heltec_v4.svg"
+	]
+  },
+  {
+	"hwModel": 106,
+	"hwModelSlug": "RAK3312",
+	"platformioTarget": "rak3312",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"supportLevel": 1,
+	"displayName": "RAK3312",
+	"tags": [
+	  "RAK"
+	],
+	"requiresDfu": false,
+	"hasMui": false,
+	"partitionScheme": "16MB",
+	"images": [
+	  "rak_3312.svg"
+	]
   }
 ]
