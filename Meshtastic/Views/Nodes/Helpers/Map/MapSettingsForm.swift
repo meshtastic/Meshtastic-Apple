@@ -45,22 +45,24 @@ struct MapSettingsForm: View {
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
-						HStack {
-							Label("Show nodes", systemImage: "lines.measurement.horizontal")
-							Picker("", selection: $meshMapDistance) {
-								ForEach(MeshMapDistances.allCases) { di in
-									Text(di.description)
-										.tag(di.id)
+						if LocationsHandler.currentLocation != nil {
+							HStack {
+								Label("Distance", systemImage: "lines.measurement.horizontal")
+								Picker("", selection: $meshMapDistance) {
+									ForEach(MeshMapDistances.allCases) { di in
+										Text(di.description)
+											.tag(di.id)
+									}
 								}
+								.pickerStyle(DefaultPickerStyle())
 							}
-							.pickerStyle(DefaultPickerStyle())
-						}
-						.onChange(of: meshMapDistance) { _, newMeshMapDistance in
-							UserDefaults.meshMapDistance = newMeshMapDistance
+							.onChange(of: meshMapDistance) { _, newMeshMapDistance in
+								UserDefaults.meshMapDistance = newMeshMapDistance
+							}
 						}
 						Toggle(isOn: $enableMapWaypoints) {
 							Label {
-								Text("Show Waypoints")
+								Text("Waypoints")
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.multicolor)
@@ -77,13 +79,15 @@ struct MapSettingsForm: View {
 						}
 					}
 					.tint(.accentColor)
-					Toggle(isOn: $nodeHistory) {
-						Label("Node History", systemImage: "building.columns.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.nodeHistory.toggle()
-						UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+					if !meshMap {
+						Toggle(isOn: $nodeHistory) {
+							Label("Node History", systemImage: "building.columns.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onTapGesture {
+							self.nodeHistory.toggle()
+							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+						}
 					}
 					Toggle(isOn: $enableMapRouteLines) {
 						Label("Route Lines", systemImage: "road.lanes")
@@ -216,7 +220,7 @@ struct MapSettingsForm: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.medium, .large], selection: $currentDetent)
+		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))

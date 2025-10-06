@@ -22,13 +22,13 @@ struct BluetoothConfig: View {
 	var pinLength: Int = 6
 	let numberFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
-			formatter.numberStyle = .none
-			return formatter
+		formatter.numberStyle = .none
+		return formatter
 	}()
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Bluetooth", config: \.bluetoothConfig, node: node, onAppear: setBluetoothValues)
-
+			
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "antenna.radiowaves.left.and.right")
@@ -72,32 +72,34 @@ struct BluetoothConfig: View {
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.bluetoothConfig == nil)
-
-		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			if let myNodeNum = accessoryManager.activeDeviceNum,
-				let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
-				var bc = Config.BluetoothConfig()
-				bc.enabled = enabled
-				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
-				bc.fixedPin = UInt32(fixedPin) ?? 123456
-				Task {
-					// TODO: ADMINIndex?
-					_ = try await accessoryManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!)
-					Task { @MainActor in
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					if let myNodeNum = accessoryManager.activeDeviceNum,
+					   let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
+						var bc = Config.BluetoothConfig()
+						bc.enabled = enabled
+						bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
+						bc.fixedPin = UInt32(fixedPin) ?? 123456
+						Task {
+							// TODO: ADMINIndex?
+							_ = try await accessoryManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!)
+							Task { @MainActor in
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save
+								hasChanges = false
+								goBack()
+							}
+						}
 					}
 				}
 			}
 		}
-
 		.navigationTitle("Bluetooth Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
+				
 			}
 		)
 		.onFirstAppear {
@@ -118,7 +120,7 @@ struct BluetoothConfig: View {
 										Logger.mesh.info("🚨 Bluetooth config request failed")
 									}
 								}
-
+								
 							}
 						} else {
 							/// Legacy Administration

@@ -10,16 +10,12 @@ import DatadogCrashReporting
 import DatadogRUM
 import DatadogTrace
 import DatadogLogs
-#if DEBUG
 import DatadogSessionReplay
-#endif
 @main
 struct MeshtasticAppleApp: App {
 
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) private var appDelegate
-
-	@ObservedObject	var appState: AppState
-
+	@StateObject var appState: AppState
 	private let persistenceController: PersistenceController
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
@@ -40,8 +36,6 @@ struct MeshtasticAppleApp: App {
 		let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
 		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
 		var environment = "AppStore"
-
-#if !targetEnvironment(macCatalyst)
 		
 #if DEBUG
 		environment = "Local"
@@ -75,23 +69,22 @@ struct MeshtasticAppleApp: App {
 				trackBackgroundEvents: true
 			)
 		)
-#if DEBUG
-		SessionReplay.enable(
-		  with: SessionReplay.Configuration(
-			replaySampleRate: 100,
-			textAndInputPrivacyLevel: .maskSensitiveInputs,
-			imagePrivacyLevel: .maskNone,
-			touchPrivacyLevel: .show,
-			startRecordingImmediately: true,
-			featureFlags: [.swiftui: true]
-		  )
-		)
-#endif
-#endif
+		if Bundle.main.isTestFlight {
+			SessionReplay.enable(
+				with: SessionReplay.Configuration(
+					replaySampleRate: 100,
+					textAndInputPrivacyLevel: .maskSensitiveInputs,
+					imagePrivacyLevel: .maskNone,
+					touchPrivacyLevel: .show,
+					startRecordingImmediately: true,
+					featureFlags: [.swiftui: true]
+				)
+			)
+		}
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 
-		self._appState = ObservedObject(wrappedValue: appState)
+		self._appState = StateObject(wrappedValue: appState)
 
 		self.persistenceController = persistenceController
 		// Wire up router
@@ -228,6 +221,7 @@ struct MeshtasticAppleApp: App {
 		.environment(\.managedObjectContext, persistenceController.container.viewContext)
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
+		.environmentObject(appState.router) 
 	}
 
 }

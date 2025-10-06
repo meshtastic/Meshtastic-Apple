@@ -12,8 +12,10 @@ struct PositionPopover: View {
 	
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var router: Router
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.dismiss) private var dismiss
+	@Environment(\.openURL) var openURL
 	var position: PositionEntity
 	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
@@ -25,13 +27,15 @@ struct PositionPopover: View {
 			VStack {
 				HStack {
 					ZStack {
-						if position.nodePosition?.isOnline ?? false {
-							Circle()
-								.fill(Color(nodeColor.lighter()).opacity(0.4))
-								.frame(width: 90, height: 90)
+						Button {
+							if let nodeNum = position.nodePosition?.num {
+								router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
+								dismiss()
+							}
+						} label: {
+							CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 						}
-						CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
-					}
+				}
 					Text(position.nodePosition?.user?.longName ?? "Unknown")
 						.font(.largeTitle)
 				}

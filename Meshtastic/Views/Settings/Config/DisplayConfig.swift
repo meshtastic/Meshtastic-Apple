@@ -10,13 +10,13 @@ import OSLog
 import SwiftUI
 
 struct DisplayConfig: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-
+	
 	var node: NodeInfoEntity?
-
+	
 	@State var hasChanges = false
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
@@ -29,25 +29,25 @@ struct DisplayConfig: View {
 	@State var units = 0
 	@State var use12HourClock = false
 	@State var headingBold = false
-
+	
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Display", config: \.displayConfig, node: node, onAppear: setDisplayValues)
-
+			
 			Section(header: Text("Device Screen")) {
-
+				
 				Toggle(isOn: $compassNorthTop) {
 					Label("Always point north", systemImage: "location.north.circle")
 					Text("The compass heading on the screen outside of the circle will always point north.")
 				}
 				.tint(Color.accentColor)
-
+				
 				Toggle(isOn: $use12HourClock) {
 					Label("12 Hour Clock", systemImage: "clock")
 					Text("Sets the screen clock format to 12-hour.")
 				}
 				.tint(Color.accentColor)
-
+				
 				Toggle(isOn: $headingBold) {
 					Label("Bold Heading", systemImage: "bold")
 					Text("Bold the heading text on the screen.")
@@ -77,32 +77,32 @@ struct DisplayConfig: View {
 						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-
+				
 				VStack(alignment: .leading) {
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
 						ForEach(ScreenCarouselIntervals.allCases) { sci in
 							Text(sci.description)
 						}
 					}
-
+					
 					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-
+				
 				Toggle(isOn: $wakeOnTapOrMotion) {
 					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
 					Text("Requires that there be an accelerometer on your device.")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+				
 				Toggle(isOn: $flipScreen) {
 					Label("Flip Screen", systemImage: "pip.swap")
 					Text("Flip screen vertically")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+				
 				VStack(alignment: .leading) {
 					Picker("Display Mode", selection: $displayMode ) {
 						ForEach(DisplayModes.allCases) { dm in
@@ -128,38 +128,40 @@ struct DisplayConfig: View {
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.displayConfig == nil)
-
-		SaveConfigButton(node: node, hasChanges: $hasChanges) {
-			if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-				var dc = Config.DisplayConfig()
-				dc.screenOnSecs = UInt32(screenOnSeconds)
-				dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
-				dc.compassNorthTop = compassNorthTop
-				dc.wakeOnTapOrMotion = wakeOnTapOrMotion
-				dc.flipScreen = flipScreen
-				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
-				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
-				dc.units = Units(rawValue: units)!.protoEnumValue()
-				dc.use12HClock = use12HourClock
-				dc.headingBold = headingBold
-
-				Task {
-					_ = try await accessoryManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
-					Task { @MainActor in
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+						var dc = Config.DisplayConfig()
+						dc.screenOnSecs = UInt32(screenOnSeconds)
+						dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
+						dc.compassNorthTop = compassNorthTop
+						dc.wakeOnTapOrMotion = wakeOnTapOrMotion
+						dc.flipScreen = flipScreen
+						dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
+						dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
+						dc.units = Units(rawValue: units)!.protoEnumValue()
+						dc.use12HClock = use12HourClock
+						dc.headingBold = headingBold
+						
+						Task {
+							_ = try await accessoryManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
+							Task { @MainActor in
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save
+								hasChanges = false
+								goBack()
+							}
+						}
 					}
 				}
 			}
 		}
-
 		.navigationTitle("Display Config")
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
+				
 			}
 		)
 		.onFirstAppear {

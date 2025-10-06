@@ -40,21 +40,21 @@ struct WaypointForm: View {
 					.font(.largeTitle)
 				Divider()
 				Form {
-					let distance = CLLocation(latitude: LocationsHandler.currentLocation.latitude, longitude: LocationsHandler.currentLocation.longitude).distance(from: CLLocation(latitude: waypoint.coordinate.latitude, longitude: waypoint.coordinate.longitude ))
-					Section(header: Text("Coordinate") ) {
-						HStack {
-							Text("Location:")
-								.foregroundColor(.secondary)
-							Text("\(String(format: "%.5f", waypoint.coordinate.latitude) + "," + String(format: "%.5f", waypoint.coordinate.longitude))")
-								.textSelection(.enabled)
-								.foregroundColor(.secondary)
-								.font(.caption)
-
-						}
+					if let cl = LocationsHandler.currentLocation {
+						let distance = CLLocation(latitude: cl.latitude, longitude: cl.longitude).distance(from: CLLocation(latitude: waypoint.coordinate.latitude, longitude: waypoint.coordinate.longitude ))
+						Section(header: Text("Coordinate") ) {
+							HStack {
+								Text("Location:")
+									.foregroundColor(.secondary)
+								Text("\(String(format: "%.5f", waypoint.coordinate.latitude) + "," + String(format: "%.5f", waypoint.coordinate.longitude))")
+									.textSelection(.enabled)
+									.foregroundColor(.secondary)
+									.font(.caption)
+								
+							}
 							Button {
-								let currentLoc = LocationsHandler.currentLocation
-								waypoint.coordinate.longitude = currentLoc.longitude
-								waypoint.coordinate.latitude = currentLoc.latitude
+								waypoint.coordinate.longitude = cl.longitude
+								waypoint.coordinate.latitude = cl.latitude
 							} label: {
 								HStack {
 									Text("Use my Location")
@@ -62,10 +62,11 @@ struct WaypointForm: View {
 								}
 							}
 							.accessibilityLabel("Set to current location")
-						HStack {
-							if waypoint.coordinate.latitude != 0 && waypoint.coordinate.longitude != 0 {
-								DistanceText(meters: distance)
-									.foregroundColor(Color.gray)
+							HStack {
+								if waypoint.coordinate.latitude != 0 && waypoint.coordinate.longitude != 0 {
+									DistanceText(meters: distance)
+										.foregroundColor(Color.gray)
+								}
 							}
 						}
 					}
@@ -374,17 +375,19 @@ struct WaypointForm: View {
 							.padding(.bottom, 5)
 						}
 						/// Distance
-						if LocationsHandler.currentLocation.distance(from: LocationsHandler.DefaultLocation) > 0.0 {
-							let metersAway = waypoint.coordinate.distance(from: LocationsHandler.currentLocation)
-							Label {
-								Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
-									.foregroundColor(.primary)
-							} icon: {
-								Image(systemName: "lines.measurement.horizontal")
-									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
+						if let cl = LocationsHandler.currentLocation {
+							if cl.distance(from: cl) > 0.0 {
+								let metersAway = waypoint.coordinate.distance(from: cl)
+								Label {
+									Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
+										.foregroundColor(.primary)
+								} icon: {
+									Image(systemName: "lines.measurement.horizontal")
+										.symbolRenderingMode(.hierarchical)
+										.frame(width: 35)
+								}
+								.padding(.bottom, 5)
 							}
-							.padding(.bottom, 5)
 						}
 					}
 					.padding(.top)

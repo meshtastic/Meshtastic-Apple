@@ -10,6 +10,18 @@ import os.log
 import DatadogRUM
 import DatadogLogs
 
+enum DataDogLoggableAction {
+	// Add more cases as new loggable actions are required.
+	case connect(firmwareVersion: String?, transportType: String?, hardwareModel: String?, nodes: Int?, connectionRestored: Bool = false)
+	
+	var name: String {
+		switch self {
+		case .connect:
+			return "connect"
+		}
+	}
+}
+
 struct DatadogLogger {
 	private let osLogger: os.Logger
 	private let ddLogger: any DatadogLogs.LoggerProtocol
@@ -55,11 +67,23 @@ struct DatadogLogger {
 	}
 	
 	// MARK: - Methods for RUM actions
-	func action(name: String, attributes: [String: any Encodable]? = nil) {
+	func action(_ action: DataDogLoggableAction) {
+		var attributes = [String: any Encodable]()
+		switch action {
+		case .connect(let firmwareVersion, let transportType, let hardwareModel, let nodes, let connectionRestored):
+			attributes["firmwareVersion"] = firmwareVersion
+			attributes["transportType"] = transportType
+			attributes["hardwareModel"] = hardwareModel
+			attributes["nodes"] = nodes
+			if connectionRestored {
+				attributes["connectionRestored"] = true
+			}
+		}
+		
 		RUMMonitor.shared().addAction(
 			type: .custom,
-			name: name,
-			attributes: attributes ?? [:]
+			name: action.name,
+			attributes: attributes
 		)
 	}
 }

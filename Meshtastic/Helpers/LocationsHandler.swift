@@ -220,50 +220,18 @@ import OSLog
 			// If not recording, only keep the latest location.
 			locationsArray = [location]
 		}
-		// Store the last known location in UserDefaults for persistence.
-		UserDefaults.standard.set(location.coordinate.latitude, forKey: "lastKnownLatitude")
-		UserDefaults.standard.set(location.coordinate.longitude, forKey: "lastKnownLongitude")
-		UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastKnownLocationTimestamp")
 		return true
 	}
 	// Default location (Apple Park) used as a fallback.
 	// nonisolated because it is never mutated
 	nonisolated static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	/// Provides the current location, falling back to last known or a default if necessary.
-	static var currentLocation: CLLocationCoordinate2D {
+	static var currentLocation: CLLocationCoordinate2D? {
 		// Attempt to get the most recent location from the manager.
 		if let location = shared.manager.location {
 			return location.coordinate
 		} else {
-			// If manager.location is nil, check authorization status and potentially request.
-			let status = shared.manager.authorizationStatus
-			switch status {
-			case .notDetermined:
-				Logger.services.info("📍 [App] Location permission not determined, requesting authorization (WhenInUse)")
-				// Requesting WhenInUse authorization here. For "Always" authorization,
-				// `requestLocationAlwaysPermissions()` should be called explicitly,
-				// typically from a user action or app setup.
-				shared.manager.requestWhenInUseAuthorization()
-			case .denied, .restricted:
-				Logger.services.warning("📍 [App] Location access denied or restricted. Please enable location services in Settings to get accurate positioning!")
-				// Requesting WhenInUse authorization again, though user interaction is needed for denied/restricted.
-				shared.manager.requestWhenInUseAuthorization()
-			default:
-				break // For .authorizedAlways, .authorizedWhenInUse, .limited
-			}
-			// Fallback 1: Last known location from UserDefaults if it's recent (within 4 hours).
-			if let lat = UserDefaults.standard.object(forKey: "lastKnownLatitude") as? Double,
-			   let lon = UserDefaults.standard.object(forKey: "lastKnownLongitude") as? Double,
-			   let timestamp = UserDefaults.standard.object(forKey: "lastKnownLocationTimestamp") as? Double,
-			   lat >= -90 && lat <= 90, // Validate latitude
-			   lon >= -180 && lon <= 180, // Validate longitude
-			   Date().timeIntervalSince1970 - timestamp <= 14_400 { // 4 hours in seconds
-				Logger.services.info("📍 [App] Falling back to last known location (age: \(Int(Date().timeIntervalSince1970 - timestamp)) seconds)")
-				return CLLocationCoordinate2D(latitude: lat, longitude: lon)
-			}
-			// Fallback 2: Default location if no other location is available.
-			Logger.services.warning("📍 [App] No Location and no last known location, check your location settings. Falling back to default location.")
-			return DefaultLocation
+			return nil
 		}
 	}
 	/// Estimates the number of satellites in view based on horizontal and vertical accuracy.

@@ -267,6 +267,7 @@ public struct Config {
       /// Description: Infrastructure node for extending network coverage by relaying messages with minimal overhead. Not visible in Nodes list.
       /// Technical Details: Mesh packets will simply be rebroadcasted over this node. Nodes configured with this role will not originate NodeInfo, Position, Telemetry
       ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factor, and coding rate.
+      /// Deprecated in v2.7.11 because it creates "holes" in the mesh rebroadcast chain.
       case repeater // = 4
 
       ///
@@ -319,6 +320,13 @@ public struct Config {
       ///    but should not be given priority over other routers in order to avoid unnecessaraily
       ///    consuming hops.
       case routerLate // = 11
+
+      ///
+      /// Description: Treats packets from or to favorited nodes as ROUTER, and all other packets as CLIENT.
+      /// Technical Details: Used for stronger attic/roof nodes to distribute messages more widely
+      ///    from weaker, indoor, or less-well-positioned nodes. Recommended for users with multiple nodes
+      ///    where one CLIENT_BASE acts as a more powerful base station, such as an attic/roof node.
+      case clientBase // = 12
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -339,6 +347,7 @@ public struct Config {
         case 9: self = .lostAndFound
         case 10: self = .takTracker
         case 11: self = .routerLate
+        case 12: self = .clientBase
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -357,6 +366,7 @@ public struct Config {
         case .lostAndFound: return 9
         case .takTracker: return 10
         case .routerLate: return 11
+        case .clientBase: return 12
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -935,7 +945,7 @@ public struct Config {
     ///
     /// Deprecated in 2.7.4: Unused
     /// How the GPS coordinates are formatted on the OLED screen.
-    public var gpsFormat: Config.DisplayConfig.GpsCoordinateFormat = .dec
+    public var gpsFormat: Config.DisplayConfig.DeprecatedGpsCoordinateFormat = .unused
 
     ///
     /// Automatically toggles to the next page on the screen like a carousel, based the specified interval in seconds.
@@ -980,69 +990,34 @@ public struct Config {
     /// If true, the device will display the time in 12-hour format on screen.
     public var use12HClock: Bool = false
 
+    ///
+    /// If false (default), the device will use short names for various display screens.
+    /// If true, node names will show in long format
+    public var useLongNodeName: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
-    /// How the GPS coordinates are displayed on the OLED screen.
-    public enum GpsCoordinateFormat: SwiftProtobuf.Enum {
+    /// Deprecated in 2.7.4: Unused
+    public enum DeprecatedGpsCoordinateFormat: SwiftProtobuf.Enum {
       public typealias RawValue = Int
-
-      ///
-      /// GPS coordinates are displayed in the normal decimal degrees format:
-      /// DD.DDDDDD DDD.DDDDDD
-      case dec // = 0
-
-      ///
-      /// GPS coordinates are displayed in the degrees minutes seconds format:
-      /// DD°MM'SS"C DDD°MM'SS"C, where C is the compass point representing the locations quadrant
-      case dms // = 1
-
-      ///
-      /// Universal Transverse Mercator format:
-      /// ZZB EEEEEE NNNNNNN, where Z is zone, B is band, E is easting, N is northing
-      case utm // = 2
-
-      ///
-      /// Military Grid Reference System format:
-      /// ZZB CD EEEEE NNNNN, where Z is zone, B is band, C is the east 100k square, D is the north 100k square,
-      /// E is easting, N is northing
-      case mgrs // = 3
-
-      ///
-      /// Open Location Code (aka Plus Codes).
-      case olc // = 4
-
-      ///
-      /// Ordnance Survey Grid Reference (the National Grid System of the UK).
-      /// Format: AB EEEEE NNNNN, where A is the east 100k square, B is the north 100k square,
-      /// E is the easting, N is the northing
-      case osgr // = 5
+      case unused // = 0
       case UNRECOGNIZED(Int)
 
       public init() {
-        self = .dec
+        self = .unused
       }
 
       public init?(rawValue: Int) {
         switch rawValue {
-        case 0: self = .dec
-        case 1: self = .dms
-        case 2: self = .utm
-        case 3: self = .mgrs
-        case 4: self = .olc
-        case 5: self = .osgr
+        case 0: self = .unused
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
 
       public var rawValue: Int {
         switch self {
-        case .dec: return 0
-        case .dms: return 1
-        case .utm: return 2
-        case .mgrs: return 3
-        case .olc: return 4
-        case .osgr: return 5
+        case .unused: return 0
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1103,12 +1078,12 @@ public struct Config {
       case oledSh1106 // = 2
 
       ///
-      /// Can not be auto detected but set by proto. Used for 128x128 screens
+      /// Can not be auto detected but set by proto. Used for 128x64 screens
       case oledSh1107 // = 3
 
       ///
-      /// Can not be auto detected but set by proto. Used for 128x64 screens
-      case oledSh110712864 // = 4
+      /// Can not be auto detected but set by proto. Used for 128x128 screens
+      case oledSh1107128128 // = 4
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1121,7 +1096,7 @@ public struct Config {
         case 1: self = .oledSsd1306
         case 2: self = .oledSh1106
         case 3: self = .oledSh1107
-        case 4: self = .oledSh110712864
+        case 4: self = .oledSh1107128128
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1132,7 +1107,7 @@ public struct Config {
         case .oledSsd1306: return 1
         case .oledSh1106: return 2
         case .oledSh1107: return 3
-        case .oledSh110712864: return 4
+        case .oledSh1107128128: return 4
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1831,6 +1806,7 @@ extension Config.DeviceConfig.Role: CaseIterable {
     .lostAndFound,
     .takTracker,
     .routerLate,
+    .clientBase,
   ]
 }
 
@@ -1899,15 +1875,10 @@ extension Config.NetworkConfig.ProtocolFlags: CaseIterable {
   ]
 }
 
-extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
+extension Config.DisplayConfig.DeprecatedGpsCoordinateFormat: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
-    .dec,
-    .dms,
-    .utm,
-    .mgrs,
-    .olc,
-    .osgr,
+  public static let allCases: [Config.DisplayConfig.DeprecatedGpsCoordinateFormat] = [
+    .unused,
   ]
 }
 
@@ -1926,7 +1897,7 @@ extension Config.DisplayConfig.OledType: CaseIterable {
     .oledSsd1306,
     .oledSh1106,
     .oledSh1107,
-    .oledSh110712864,
+    .oledSh1107128128,
   ]
 }
 
@@ -2029,7 +2000,7 @@ extension Config.NetworkConfig.AddressMode: @unchecked Sendable {}
 extension Config.NetworkConfig.ProtocolFlags: @unchecked Sendable {}
 extension Config.NetworkConfig.IpV4Config: @unchecked Sendable {}
 extension Config.DisplayConfig: @unchecked Sendable {}
-extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
+extension Config.DisplayConfig.DeprecatedGpsCoordinateFormat: @unchecked Sendable {}
 extension Config.DisplayConfig.DisplayUnits: @unchecked Sendable {}
 extension Config.DisplayConfig.OledType: @unchecked Sendable {}
 extension Config.DisplayConfig.DisplayMode: @unchecked Sendable {}
@@ -2373,6 +2344,7 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     9: .same(proto: "LOST_AND_FOUND"),
     10: .same(proto: "TAK_TRACKER"),
     11: .same(proto: "ROUTER_LATE"),
+    12: .same(proto: "CLIENT_BASE"),
   ]
 }
 
@@ -2774,6 +2746,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     10: .standard(proto: "wake_on_tap_or_motion"),
     11: .standard(proto: "compass_orientation"),
     12: .standard(proto: "use_12h_clock"),
+    13: .standard(proto: "use_long_node_name"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2794,6 +2767,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 10: try { try decoder.decodeSingularBoolField(value: &self.wakeOnTapOrMotion) }()
       case 11: try { try decoder.decodeSingularEnumField(value: &self.compassOrientation) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self.use12HClock) }()
+      case 13: try { try decoder.decodeSingularBoolField(value: &self.useLongNodeName) }()
       default: break
       }
     }
@@ -2803,7 +2777,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.screenOnSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.screenOnSecs, fieldNumber: 1)
     }
-    if self.gpsFormat != .dec {
+    if self.gpsFormat != .unused {
       try visitor.visitSingularEnumField(value: self.gpsFormat, fieldNumber: 2)
     }
     if self.autoScreenCarouselSecs != 0 {
@@ -2836,6 +2810,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.use12HClock != false {
       try visitor.visitSingularBoolField(value: self.use12HClock, fieldNumber: 12)
     }
+    if self.useLongNodeName != false {
+      try visitor.visitSingularBoolField(value: self.useLongNodeName, fieldNumber: 13)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2852,19 +2829,15 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.wakeOnTapOrMotion != rhs.wakeOnTapOrMotion {return false}
     if lhs.compassOrientation != rhs.compassOrientation {return false}
     if lhs.use12HClock != rhs.use12HClock {return false}
+    if lhs.useLongNodeName != rhs.useLongNodeName {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Config.DisplayConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
+extension Config.DisplayConfig.DeprecatedGpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "DEC"),
-    1: .same(proto: "DMS"),
-    2: .same(proto: "UTM"),
-    3: .same(proto: "MGRS"),
-    4: .same(proto: "OLC"),
-    5: .same(proto: "OSGR"),
+    0: .same(proto: "UNUSED"),
   ]
 }
 
@@ -2881,7 +2854,7 @@ extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "OLED_SSD1306"),
     2: .same(proto: "OLED_SH1106"),
     3: .same(proto: "OLED_SH1107"),
-    4: .same(proto: "OLED_SH1107_128_64"),
+    4: .same(proto: "OLED_SH1107_128_128"),
   ]
 }
 

@@ -30,7 +30,7 @@ extension UserEntity {
 	}
 
 	var unreadMessages: Int {
-		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false }
+		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false && ($0 as AnyObject).isEmoji == false }
 		return unreadMessages.count
 	}
 	/// SVG Images for Vendors who are signed project backers

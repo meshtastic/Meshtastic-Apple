@@ -45,6 +45,20 @@ actor AsyncGate {
 		waiters.removeAll()
 	}
 
+	/// Fails all current waiters with the provided error.
+	/// - Parameter error: The error to throw to all waiters.
+	func throwAll(_ error: Error) {
+		for (_, cont) in waiters {
+			cont.resume(throwing: error)
+		}
+		waiters.removeAll()
+	}
+
+	/// Alias for `throwAll(_:)` for readability.
+	func fail(_ error: Error) {
+		throwAll(error)
+	}
+
 	/// Resets the gate back to closed.
 	/// Future waiters will suspend again until `open()` is called.
 	func reset() {

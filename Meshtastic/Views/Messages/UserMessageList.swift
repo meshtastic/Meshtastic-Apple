@@ -1,16 +1,17 @@
 //
-//  UserMessageList.swift
-//  MeshtasticApple
+//  UserMessageList.swift
+//  MeshtasticApple
 //
-//  Created by Garth Vander Houwen on 12/24/21.
+//  Created by Garth Vander Houwen on 12/24/21.
 //
 
 import SwiftUI
 import CoreData
 import OSLog
+import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 
 struct UserMessageList: View {
-
+	
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.managedObjectContext) var context
@@ -18,140 +19,75 @@ struct UserMessageList: View {
 	@ObservedObject var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
 	@State private var messageToHighlight: Int64 = 0
-
+	@State private var redrawTapbacksTrigger = UUID()
+	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
+	
+	private var allPrivateMessages: [MessageEntity] {
+		// Cast user.messageList to an array for easier indexing and ForEach.
+		return user.messageList.compactMap { $0 as MessageEntity }
+	}
+	
+	func handleInteractionComplete() {
+		markMessagesAsRead()
+		redrawTapbacksTrigger = UUID()
+	}
+	
+	func markMessagesAsRead() {
+		do {
+			for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
+				unreadMessage.read = true
+			}
+			try context.save()
+			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
+			appState.unreadDirectMessages = user.unreadMessages
+			context.refresh(user, mergeChanges: true)
+		} catch {
+			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+	
 	var body: some View {
 		VStack {
 			ScrollViewReader { scrollView in
-				ZStack(alignment: .bottomTrailing) {
-					ScrollView {
-						LazyVStack {
-							ForEach( Array(user.messageList.enumerated()), id: \.element.id) { index, message in
-								// Get the previous message, if it exists
-								let previousMessage = index > 0 ? user.messageList[index - 1] : nil
-								if message.displayTimestamp(aboveMessage: previousMessage) {
-									Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
-										.font(.caption)
-										.foregroundColor(.gray)
-								}
-								if user.num != accessoryManager.activeDeviceNum ?? -1 {
-									let currentUser: Bool = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
-
-									if message.replyID > 0 {
-										let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
-										HStack {
-											Button {
-												if let messageNum = messageReply?.messageId {
-													withAnimation(.easeInOut(duration: 0.5)) {
-														messageToHighlight = messageNum
-													}
-													scrollView.scrollTo(messageNum, anchor: .center)
-													// Reset highlight after delay
-													Task {
-														try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-														withAnimation(.easeInOut(duration: 0.5)) {
-															messageToHighlight = -1
-														}
-													}
-												}
-											} label: {
-												Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
-													.padding(10)
-													.overlay(
-														RoundedRectangle(cornerRadius: 18)
-															.stroke(Color.blue, lineWidth: 0.5)
-													)
-												Image(systemName: "arrowshape.turn.up.left.fill")
-													.symbolRenderingMode(.hierarchical)
-													.imageScale(.large).foregroundColor(.accentColor)
-													.padding(.trailing)
-											}
-										}
-									}
-									HStack(alignment: .top) {
-										if currentUser { Spacer(minLength: 50) }
-										VStack(alignment: currentUser ? .trailing : .leading) {
-											HStack {
-												MessageText(
-													message: message,
-													tapBackDestination: .user(user),
-													isCurrentUser: currentUser
-												) {
-													self.replyMessageId = message.messageId
-													self.messageFieldFocused = true
-												}
-
-												if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
-													RetryButton(message: message, destination: .user(user))
-												}
-											}
-
-											TapbackResponses(message: message) {
-												appState.unreadDirectMessages = user.unreadMessages
-											}
-
-											HStack {
-												let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-												if currentUser && message.receivedACK {
-													// Ack Received
-													if message.realACK {
-														Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
-															.font(.caption2)
-															.foregroundStyle(ackErrorVal?.color ?? Color.secondary)
-													} else {
-														Text("Acknowledged by another node").font(.caption2).foregroundColor(.orange)
-													}
-												} else if currentUser && message.ackError == 0 {
-													// Empty Error
-													Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
-												} else if currentUser && message.ackError > 0 {
-													Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-														.foregroundStyle(ackErrorVal?.color ?? Color.red)
-														.font(.caption2)
-												}
-											}
-										}
-										.padding(.bottom)
-										.id(user.messageList.firstIndex(of: message))
-
-										if !currentUser {
-											Spacer(minLength: 50)
-										}
-									}
-									.padding([.leading, .trailing])
-									.frame(maxWidth: .infinity)
-									.id(message.messageId)
-									.onAppear {
-										if !message.read {
-											message.read = true
-											do {
-												for unreadMessage in user.messageList.filter({ !$0.read }) {
-													unreadMessage.read = true
-												}
-												try context.save()
-												Logger.data.info("📖 [App] Read message \(message.messageId, privacy: .public) ")
-												appState.unreadDirectMessages = user.unreadMessages
-											} catch {
-												Logger.data.error("Failed to read message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
-											}
-										}
-									}
+				ScrollView {
+					LazyVStack {
+						ForEach(allPrivateMessages.indices, id: \.self) { index in
+							let message = allPrivateMessages[index]
+							let previousMessage = index > 0 ? allPrivateMessages[index - 1] : nil
+							
+							UserMessageRow(
+								message: message,
+								allMessages: allPrivateMessages,
+								previousMessage: previousMessage,
+								preferredPeripheralNum: preferredPeripheralNum,
+								user: user,
+								replyMessageId: $replyMessageId,
+								messageFieldFocused: $messageFieldFocused,
+								messageToHighlight: $messageToHighlight,
+								scrollView: scrollView,
+								onInteractionComplete: handleInteractionComplete
+							)
+							.onAppear {
+								if !message.read {
+									markMessagesAsRead() // Use the function to mark all unread
 								}
 							}
-							// Invisible spacer to detect reaching bottom
-							Color.clear
-								.frame(height: 1)
-								.id("bottomAnchor")
+							.id(redrawTapbacksTrigger)
 						}
+						// Invisible spacer to detect reaching bottom
+						Color.clear
+							.frame(height: 1)
+							.id("bottomAnchor")
 					}
-					.defaultScrollAnchor(.bottom)
-					.defaultScrollAnchorTopAlignment()
-					.defaultScrollAnchorBottomSizeChanges()
-					.scrollDismissesKeyboard(.immediately)
-					.onChange(of: messageFieldFocused) {
-						if messageFieldFocused {
-							DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-							}
+				}
+				.defaultScrollAnchor(.bottom)
+				.defaultScrollAnchorTopAlignment()
+				.defaultScrollAnchorBottomSizeChanges()
+				.scrollDismissesKeyboard(.immediately)
+				.onChange(of: messageFieldFocused) {
+					if messageFieldFocused {
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 						}
 					}
 				}
@@ -188,6 +124,7 @@ struct UserMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44)
+					Text(user.longName ?? "Unknown").font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

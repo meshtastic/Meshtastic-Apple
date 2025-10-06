@@ -11,10 +11,18 @@ import OSLog
 /// Device Hardware API
 struct DeviceHardware: Codable {
 	let hwModel: Int
-	let hwModelSlug, platformioTarget: String
+	let hwModelSlug: String
+	let platformioTarget: String
 	let architecture: Architecture
 	let activelySupported: Bool
 	let displayName: String
+	let supportLevel: Int?
+	let tags: [String]?
+	let images: [String]?
+	let requiresDfu: Bool?
+	let hasInkHud: Bool?
+	let partitionScheme: String?
+	let hasMui: Bool?
 }
 enum Architecture: String, Codable {
 	case esp32 = "esp32"
@@ -22,6 +30,7 @@ enum Architecture: String, Codable {
 	case esp32S3 = "esp32-s3"
 	case nrf52840 = "nrf52840"
 	case rp2040 = "rp2040"
+	case esp32C6 = "esp32-c6"
 }
 
 /// Firmware Release Lists
@@ -63,6 +72,9 @@ class Api: ObservableObject {
 					}
 				} catch {
 					Logger.services.error("JSON decode failure: \(error.localizedDescription, privacy: .public)")
+					if let decodingError = error as? DecodingError {
+						Logger.services.error("Decoding error details: \(decodingError)")
+					}
 				}
 				return
 			}

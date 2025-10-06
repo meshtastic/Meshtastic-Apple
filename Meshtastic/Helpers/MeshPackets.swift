@@ -428,9 +428,21 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					}
 				}
 				Task {
-					Api().loadDeviceHardwareData { (hw) in
-						let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user!.hwModelId })
-						fetchedNode[0].user?.hwDisplayName = dh?.displayName
+					Api().loadDeviceHardwareData { (hw: [DeviceHardware]) in
+						guard !hw.isEmpty,
+							  let firstNode = fetchedNode.first,
+							  let user = firstNode.user else {
+							Logger.data.error("Error: Required DeviceHardware data is missing or array is empty.")
+							return
+						}
+
+						let dh = hw.first(where: { $0.hwModel == user.hwModelId })
+
+						if let deviceHardware = dh {
+							firstNode.user?.hwDisplayName = deviceHardware.displayName
+						} else {
+							Logger.data.error("No matching hardware model found for ID: \(user.hwModelId, privacy: .public)")
+						}
 					}
 				}
 			} else {
@@ -456,6 +468,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
 					return nil
 				}
+				mutableTelemetries.add(newTelemetry)
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 
@@ -676,7 +689,6 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 		do {
 			let fetchedMessage = try context.fetch(fetchMessageRequest)
 			if fetchedMessage.count > 0 {
-
 				if fetchedMessage[0].toUser != nil {
 					// Real ACK from DM Recipient
 					if packet.to != packet.from {
@@ -685,9 +697,9 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				}
 				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
 				if routingMessage.errorReason == Routing.Error.none {
-
 					fetchedMessage[0].receivedACK = true
 				}
+				
 				fetchedMessage[0].ackSNR = packet.rxSnr
 				if packet.rxTime > 0 {
 					fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
@@ -752,7 +764,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						// Environment Metrics
 						Logger.data.info("📈 [Telemetry] Environment Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
 						telemetry.barometricPressure = telemetryMessage.environmentMetrics.hasBarometricPressure.then(telemetryMessage.environmentMetrics.barometricPressure)
-						telemetry.current = telemetryMessage.environmentMetrics.hasCurrent.then(telemetryMessage.environmentMetrics.current)
 						telemetry.iaq = telemetryMessage.environmentMetrics.hasIaq.then(Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq))
 						telemetry.gasResistance = telemetryMessage.environmentMetrics.hasGasResistance.then(telemetryMessage.environmentMetrics.gasResistance)
 						telemetry.relativeHumidity = telemetryMessage.environmentMetrics.hasRelativeHumidity.then(telemetryMessage.environmentMetrics.relativeHumidity)
@@ -795,7 +806,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.hasCh1Voltage.then(telemetryMessage.powerMetrics.ch1Voltage)
 						telemetry.powerCh1Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch1Current)
 						telemetry.powerCh2Voltage = telemetryMessage.powerMetrics.hasCh2Voltage.then(telemetryMessage.powerMetrics.ch2Voltage)
-						telemetry.powerCh2Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch2Current)
+						telemetry.powerCh2Current = telemetryMessage.powerMetrics.hasCh2Current.then(telemetryMessage.powerMetrics.ch2Current)
 						telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.hasCh3Voltage.then(telemetryMessage.powerMetrics.ch3Voltage)
 						telemetry.powerCh3Current = telemetryMessage.powerMetrics.hasCh3Current.then(telemetryMessage.powerMetrics.ch3Current)
 						telemetry.metricsType = 2
@@ -944,59 +955,63 @@ func textMessageAppPacket(
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
 			// Updated logic for handling toUser
-			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
-				if !storeForwardBroadcast {
-					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
-				} else if storeForwardBroadcast {
-					// For S&F broadcast messages, treat as a channel message (not a DM)
-					newMessage.toUser = nil
-				} else {
-					do {
-						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
-						newMessage.toUser = newUser
-					} catch CoreDataError.invalidInput(let message) {
-						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
-					} catch {
-						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
-					}
-				}
-			}
-			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
-				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
-				/// Set the public key for the message
-				if newMessage.fromUser?.pkiEncrypted ?? false && packet.pkiEncrypted {
-					newMessage.pkiEncrypted = true
-					newMessage.publicKey = packet.publicKey
-				}
-				/// Check for key mismatch
-				if let nodeKey = newMessage.fromUser?.publicKey {
-					if newMessage.toUser != nil && packet.pkiEncrypted && !packet.publicKey.isEmpty {
-						if nodeKey != newMessage.publicKey {
-							newMessage.fromUser?.keyMatch = false
-							newMessage.fromUser?.newPublicKey = newMessage.publicKey
-							let nodeKey = String(nodeKey.base64EncodedString()).prefix(8)
-							let messageKey = String(newMessage.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
-							Logger.data.error("🔑 Key mismatch original key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
+				if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
+					if !storeForwardBroadcast {
+						newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+					} else if storeForwardBroadcast {
+						// For S&F broadcast messages, treat as a channel message (not a DM)
+						newMessage.toUser = nil
+					} else {
+						do {
+							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+							newMessage.toUser = newUser
+						} catch CoreDataError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch {
+							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 						}
 					}
-				} else if packet.pkiEncrypted {
-					/// We have no key, set it if it is not empty
-					if !packet.publicKey.isEmpty {
-						newMessage.fromUser?.pkiEncrypted = true
-						newMessage.fromUser?.publicKey = packet.publicKey
+				}
+				if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
+					newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+					/// Set the public key for the message
+					if newMessage.fromUser?.pkiEncrypted ?? false && packet.pkiEncrypted {
+						newMessage.pkiEncrypted = true
+						newMessage.publicKey = packet.publicKey
+					}
+					/// Check for key mismatch
+					if let nodeKey = newMessage.fromUser?.publicKey {
+						if newMessage.toUser != nil && packet.pkiEncrypted && !packet.publicKey.isEmpty {
+							if nodeKey != newMessage.publicKey {
+								newMessage.fromUser?.keyMatch = false
+								newMessage.fromUser?.newPublicKey = newMessage.publicKey
+								let nodeKey = String(nodeKey.base64EncodedString()).prefix(8)
+								let messageKey = String(newMessage.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
+								Logger.data.error("🔑 Key mismatch original key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
+							}
+						}
+					} else if packet.pkiEncrypted {
+						/// We have no key, set it if it is not empty
+						if !packet.publicKey.isEmpty {
+							newMessage.fromUser?.pkiEncrypted = true
+							newMessage.fromUser?.publicKey = packet.publicKey
+						}
+					}
+				} else {
+					/// Make a new from user if they are unknown
+					do {
+						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+						let newNode = NodeInfoEntity(context: context)
+						newNode.id = Int64(newUser.num)
+						newNode.num = Int64(newUser.num)
+						newNode.user = newUser
+						newMessage.fromUser = newUser
+					} catch CoreDataError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch {
+						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 					}
 				}
-			} else {
-				/// Make a new from user if they are unknown
-				do {
-					let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
-					newMessage.fromUser = newUser
-				} catch CoreDataError.invalidInput(let message) {
-					Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
-				} catch {
-					Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
-				}
-			}
 			if packet.rxTime > 0 {
 				newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			} else {
@@ -1027,7 +1042,7 @@ func textMessageAppPacket(
 					if packet.to == connectedNode {
 						appState?.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
 					}
-					if !(newMessage.fromUser?.mute ?? false) {
+					if !(newMessage.fromUser?.mute ?? false) && newMessage.isEmoji == false {
 						// Create an iOS Notification for the received DM message
 						let manager = LocalNotificationManager()
 						manager.notifications = [
@@ -1058,7 +1073,7 @@ func textMessageAppPacket(
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)
 								}
-								if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
+								if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false {
 									// Create an iOS Notification for the received channel message
 									let manager = LocalNotificationManager()
 									manager.notifications = [

@@ -12,12 +12,14 @@ import SwiftUI
 
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
+	@EnvironmentObject var router: Router
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FocusState var messageFieldFocused: Bool
 	@ObservedObject var myInfo: MyInfoEntity
 	@ObservedObject var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
+	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageToHighlight: Int64 = 0
 	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
@@ -38,6 +40,11 @@ struct ChannelMessageList: View {
 		_allPrivateMessages = FetchRequest(fetchRequest: request)
 	}
 	
+	func handleInteractionComplete() {
+		markMessagesAsRead()
+		redrawTapbacksTrigger = UUID()
+	}
+	
 	func markMessagesAsRead() {
 		do {
 			for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
@@ -56,112 +63,28 @@ struct ChannelMessageList: View {
 		ScrollViewReader { scrollView in
 			ScrollView {
 				LazyVStack {
-					ForEach(allPrivateMessages) { message in
-						let thisMessageIndex = allPrivateMessages.firstIndex(of: message) ?? 0
-						let previousMessage =  thisMessageIndex > 0 ? allPrivateMessages[thisMessageIndex - 1] : nil
-						let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
-						if message.displayTimestamp(aboveMessage: previousMessage) {
-							Text(message.timestamp.formatted(date: .abbreviated, time: .shortened))
-								.font(.caption)
-								.foregroundColor(.gray)
-						}
-						if message.replyID > 0 {
-							let messageReply = allPrivateMessages.first(where: { $0.messageId == message.replyID })
-							HStack {
-								Button {
-									if let messageNum = messageReply?.messageId {
-										withAnimation(.easeInOut(duration: 0.5)) {
-											messageToHighlight = messageNum
-										}
-										scrollView.scrollTo(messageNum, anchor: .center)
-										Task {
-											try? await Task.sleep(nanoseconds: 1_000_000_000)
-											withAnimation(.easeInOut(duration: 0.5)) {
-												messageToHighlight = -1
-											}
-										}
-									}
-								} label: {
-									Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
-										.padding(10)
-										.overlay(
-											RoundedRectangle(cornerRadius: 18)
-												.stroke(Color.blue, lineWidth: 0.5)
-										)
-									Image(systemName: "arrowshape.turn.up.left.fill")
-										.symbolRenderingMode(.hierarchical)
-										.imageScale(.large).foregroundColor(.accentColor)
-										.padding(.trailing)
-								}
-							}
-						}
-						HStack(alignment: .bottom) {
-							if currentUser { Spacer(minLength: 50) }
-							if !currentUser {
-								CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44)
-									.padding(.all, 5)
-									.offset(y: -7)
-							}
-							
-							VStack(alignment: currentUser ? .trailing : .leading) {
-								let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-								
-								if !currentUser && message.fromUser != nil {
-									Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
-										.font(.caption)
-										.foregroundColor(.gray)
-										.offset(y: 8)
-								}
-								
-								HStack {
-									MessageText(
-										message: message,
-										tapBackDestination: .channel(channel),
-										isCurrentUser: currentUser
-									) {
-										self.replyMessageId = message.messageId
-										self.messageFieldFocused = true
-									}
-									
-									if currentUser && message.canRetry {
-										RetryButton(message: message, destination: .channel(channel))
-									}
-								}
-								
-								TapbackResponses(message: message) {
-									appState.unreadChannelMessages = myInfo.unreadMessages
-								}
-								
-								HStack {
-									let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-									if currentUser && message.receivedACK {
-										Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-											.foregroundStyle(ackErrorVal?.color ?? Color.red)
-											.font(.caption2)
-									} else if currentUser && message.ackError == 0 {
-										Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
-									} else if currentUser && !isDetectionSensorMessage {
-										Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-											.foregroundStyle(ackErrorVal?.color ?? Color.red)
-											.font(.caption2)
-									}
-								}
-							}
-							.padding(.bottom)
-							.id(allPrivateMessages.firstIndex(of: message))
-							
-							if !currentUser {
-								Spacer(minLength: 50)
-							}
-						}
-						.padding([.leading, .trailing])
-						.frame(maxWidth: .infinity)
-						.id(message.messageId)
-						.onAppear {
-							if !message.read {
-								markMessagesAsRead()
-							}
-						}
+					ForEach(allPrivateMessages.indices, id: \.self) { index in
+						  let message = allPrivateMessages[index]
+						  let previousMessage = index > 0 ? allPrivateMessages[index - 1] : nil
+						  
+						  ChannelMessageRow(
+							  message: message,
+							  allMessages: allPrivateMessages,
+							  previousMessage: previousMessage,
+							  preferredPeripheralNum: preferredPeripheralNum,
+							  channel: channel,
+							  replyMessageId: $replyMessageId,
+							  messageFieldFocused: $messageFieldFocused,
+							  messageToHighlight: $messageToHighlight,
+							  scrollView: scrollView,
+							  onInteractionComplete: handleInteractionComplete
+						  )
+						  .onAppear {
+							  if !message.read {
+								  markMessagesAsRead()
+							  }
+						  }
+						  .id(redrawTapbacksTrigger)
 					}
 					Color.clear
 						.frame(height: 1)
