@@ -83,7 +83,7 @@ struct NetworkConfig: View {
 						Section(header: Text("Ethernet Options")) {
 							Toggle(isOn: $ethEnabled) {
 								Label("Enabled", systemImage: "network")
-								Text("Enabling Ethernet will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices.")
+								Text("Enabling Ethernet will disable the bluetooth connection to the app.")
 							}
 							.tint(.accentColor)
 						}

@@ -12753,24 +12753,24 @@
         }
       }
     },
-    "Enabling Ethernet will disable the bluetooth connection to the app. TCP node connections are not available on Apple devices." : {
+    "Enabling Ethernet will disable the bluetooth connection to the app." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abilitando l'Ethernet verrà disabilita la connessione bluetooth all'applicazione. La connessione a nodi TCP non è disponibile su dispositivi Apple."
+            "value" : "Abilitando l'Ethernet verrà disabilita la connessione bluetooth all'applicazione."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ethernetを有効にすると、アプリへのBluetooth接続が無効になります。AppleデバイスではTCPノード接続は利用できません。"
+            "value" : "Ethernetを有効にすると、アプリへのBluetooth接続が無効になります。"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Омогућавање Ethernet-а ће онемогућити Bluetooth везу са апликацијом. TCP везе са чвором нису доступне на Apple уређајима.\n"
+            "value" : "Омогућавање Ethernet-а ће онемогућити Bluetooth везу са апликацијом."
           }
         }
       }
