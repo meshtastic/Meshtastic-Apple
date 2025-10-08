@@ -80,12 +80,15 @@ struct ChannelMessageList: View {
 							  onInteractionComplete: handleInteractionComplete
 						  )
 						  .onAppear {
-							  if !message.read {
+							  // Only mark as read if the app is in the foreground
+							  if !message.read && UIApplication.shared.applicationState == .active {
 								  message.read = true
+								  LocalNotificationManager().cancelNotificationForMessageId(message.messageId)
 								  // Race condition, sometimes the app doesn't update unread count if we run this too early
 								  // So, run it in the main queue after everything saves and stabilizes
 								  DispatchQueue.main.async {
 									  markMessagesAsRead()
+									  scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 								  }
 							  }
 						  }
