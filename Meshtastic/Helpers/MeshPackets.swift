@@ -1073,7 +1073,7 @@ func textMessageAppPacket(
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)
 								}
-								if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false {
+								if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false && newMessage.read == false {
 									// Create an iOS Notification for the received channel message
 									let manager = LocalNotificationManager()
 									manager.notifications = [

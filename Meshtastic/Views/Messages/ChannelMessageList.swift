@@ -81,7 +81,12 @@ struct ChannelMessageList: View {
 						  )
 						  .onAppear {
 							  if !message.read {
-								  markMessagesAsRead()
+								  message.read = true
+								  // Race condition, sometimes the app doesn't update unread count if we run this too early
+								  // So, run it in the main queue after everything saves and stabilizes
+								  DispatchQueue.main.async {
+									  markMessagesAsRead()
+								  }
 							  }
 						  }
 						  .id(redrawTapbacksTrigger)
