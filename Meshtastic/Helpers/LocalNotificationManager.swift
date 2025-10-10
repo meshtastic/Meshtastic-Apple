@@ -91,6 +91,17 @@ class LocalNotificationManager {
         }
     }
 
+	func cancelNotificationForMessageId(_ messageId: Int64) {
+		let center = UNUserNotificationCenter.current()
+		center.getPendingNotificationRequests { notifications in
+			for notification in notifications {
+				if let userInfo = notification.content.userInfo["messageId"] as? Int64, userInfo == messageId {
+					Logger.services.debug("Cancelling notification with id: \(notification.identifier)")
+					center.removePendingNotificationRequests(withIdentifiers: [notification.identifier])
+				}
+			}
+		}
+	}
 }
 
 struct Notification {
