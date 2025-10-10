@@ -56,6 +56,11 @@ struct DeviceOnboarding: View {
 							title: String(localized: "Track and Share Locations"),
 							subtitle: String(localized: "Share your location in real-time and keep your group coordinated with integrated GPS features.")
 						)
+						makeRow(
+							icon: "person.2.shield",
+							title: String(localized: "Anonymous Usage and Crash data"),
+							subtitle: String(localized: "We anonymously collect usage and crash data to improve the app. This helps us understand how the app is being used and where we can make improvements. The data we collect is non-personally identifiable and cannot be linked to you as an individual. You can opt out of this under app settings.")
+						)
 					}
 					.padding()
 				}
