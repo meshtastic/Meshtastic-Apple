@@ -41,7 +41,7 @@ struct ChannelsHelp: View {
 						.padding(.leading)
 						.foregroundColor(Color.yellow)
 						.font(.title)
-					Text("A yellow open lock lock means the channel is not securely encrypted but it not used for precise location data, it uses either no key at all or a 1 byte known key.")
+					Text("A yellow open lock means the channel is not securely encrypted but it is not used for precise location data, it uses either no key at all or a 1 byte known key.")
 						.fixedSize(horizontal: false, vertical: true)
 						.padding(.bottom)
 				}
