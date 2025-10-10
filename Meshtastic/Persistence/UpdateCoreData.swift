@@ -165,7 +165,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 	}
 }
 
-func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, packet.from.toHex())
 	Logger.mesh.info("📟 \(logString, privacy: .public)")
@@ -183,6 +183,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(packet.from)
 			newNode.num = Int64(packet.from)
+			newNode.favorite = favorite
 			if packet.rxTime > 0 {
 				newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 				newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))

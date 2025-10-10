@@ -3,6 +3,7 @@ import Combine
 import SwiftUI
 import SwiftProtobuf
 import MapKit
+import DatadogCore
 import OSLog
 
 struct AppSettings: View {
@@ -42,8 +43,6 @@ struct AppSettings: View {
 					Text("PKI based node administration, requires firmware version 2.5+")
 						.foregroundStyle(.secondary)
 						.font(.caption)
-#if targetEnvironment(macCatalyst)
-#else
 					Toggle(isOn: $usageDataAndCrashReporting) {
 						Label("Usage and Crash Data", systemImage: "pencil.and.list.clipboard")
 					}
@@ -51,7 +50,6 @@ struct AppSettings: View {
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
-#endif
 					if showAutoConnect {
 						Toggle(isOn: autoconnectBinding) {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
@@ -94,6 +92,11 @@ struct AppSettings: View {
 							showAutoConnect = true
 						}
 #endif
+					}
+					.onChange(of: usageDataAndCrashReporting) { oldUsageDataAndCrashReporting, newUsageDataAndCrashReporting in
+						if !newUsageDataAndCrashReporting {
+							Datadog.set(trackingConsent: .notGranted)
+						}
 					}
 					.onChange(of: purgeStaleNodes) { _, newValue in
 						purgeStaleNodeDays = purgeStaleNodeDays > 0 ? purgeStaleNodeDays : 7
