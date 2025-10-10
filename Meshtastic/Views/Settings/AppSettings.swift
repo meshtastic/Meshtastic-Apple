@@ -3,6 +3,7 @@ import Combine
 import SwiftUI
 import SwiftProtobuf
 import MapKit
+import DatadogCore
 import OSLog
 
 struct AppSettings: View {
@@ -91,6 +92,11 @@ struct AppSettings: View {
 							showAutoConnect = true
 						}
 #endif
+					}
+					.onChange(of: usageDataAndCrashReporting) { oldUsageDataAndCrashReporting, newUsageDataAndCrashReporting in
+						if !newUsageDataAndCrashReporting {
+							Datadog.set(trackingConsent: .notGranted)
+						}
 					}
 					.onChange(of: purgeStaleNodes) { _, newValue in
 						purgeStaleNodeDays = purgeStaleNodeDays > 0 ? purgeStaleNodeDays : 7
