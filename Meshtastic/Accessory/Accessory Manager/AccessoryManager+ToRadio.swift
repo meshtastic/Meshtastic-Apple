@@ -165,15 +165,8 @@ extension AccessoryManager {
 					nodeMeshPacket.decoded = dataNodeMessage
 
 					// Update local database with the new node info
-					upsertNodeInfoPacket(packet: nodeMeshPacket, context: context)
+					upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: true, context: context)
 				}
-
-				// Refresh the config from the node, in a background task
-				Task {
-					Logger.transport.debug("[AccessoryManager] sending wantConfig for addContactFromURL")
-					try? await sendWantConfig()
-				}
-
 			} catch {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
 				throw AccessoryError.appError("Unable to decode contact data from QR code.")
