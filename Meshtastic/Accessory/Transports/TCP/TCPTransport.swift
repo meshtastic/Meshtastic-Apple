@@ -97,7 +97,8 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		let device = Device(id: idString,
 							name: name,
 							transportType: .tcp,
-							identifier: "\(host):\(port)")
+							identifier: "\(host):\(port)",
+							connectionDetails: "\(ip):\(port)")
 		continuation?.yield(.deviceFound(device))
 	}
 
