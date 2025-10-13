@@ -9,12 +9,20 @@ import CoreData
 import MeshtasticProtobufs
 
 extension ChannelEntity {
+	var messagePredicate: NSPredicate {
+		return NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", self.index)
+	}
+
+	var messageFetchRequest: NSFetchRequest<MessageEntity> {
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
+		fetchRequest.predicate = messagePredicate
+		return fetchRequest
+	}
 
 	var allPrivateMessages: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", self.index)
+		let fetchRequest = messageFetchRequest
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
@@ -22,9 +30,8 @@ extension ChannelEntity {
 	var mostRecentPrivateMessage: MessageEntity? {
 		// Most recent channel message (descending, limit 1)
 		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
+		let fetchRequest = messageFetchRequest
 		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
-		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", self.index)
 		fetchRequest.fetchLimit = 1
 
 		return (try? context.fetch(fetchRequest))?.first
@@ -32,9 +39,10 @@ extension ChannelEntity {
 
 	func unreadMessages(context: NSManagedObjectContext) -> Int {
 		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
-		// sort is irrelvant.
-		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false AND read == false", self.index)
+		let fetchRequest = messageFetchRequest
+		fetchRequest.sortDescriptors = [] // sort is irrelvant.
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
+
 		return (try? context.count(for: fetchRequest)) ?? 0
 	}
 

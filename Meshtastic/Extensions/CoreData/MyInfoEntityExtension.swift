@@ -9,21 +9,30 @@ import Foundation
 import CoreData
 
 extension MyInfoEntity {
+	var messagePredicate: NSPredicate {
+		return NSPredicate(format: "toUser == nil")
+	}
+
+	var messageFetchRequest: NSFetchRequest<MessageEntity> {
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
+		fetchRequest.predicate = messagePredicate
+		return fetchRequest
+	}
 
 	var messageList: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = NSPredicate(format: "toUser == nil")
+		let fetchRequest = messageFetchRequest
 
-		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+		return (try? context.fetch(messageFetchRequest)) ?? [MessageEntity]()
 	}
 
 	func unreadMessages(context: NSManagedObjectContext) -> Int {
 		// Returns the count of unread *channel* messages
-		let fetchRequest = MessageEntity.fetchRequest()
-		// sort is irrelvant.
-		fetchRequest.predicate = NSPredicate(format: "toUser == nil AND isEmoji == false AND read == false")
+		let fetchRequest = messageFetchRequest
+		fetchRequest.sortDescriptors = [] // sort is irrelvant.
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
+
 		return (try? context.count(for: fetchRequest)) ?? 0
 	}
 
