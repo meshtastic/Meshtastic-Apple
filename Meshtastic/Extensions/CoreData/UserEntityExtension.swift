@@ -20,6 +20,20 @@ extension UserEntity {
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
+	var mostRecentMessage: MessageEntity? {
+		// Most contacts will have no DMs history, so we can return early.
+		guard self.lastMessage != nil else { return nil; }
+
+		// Most recent DM for this user (descending, limit 1)
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+		fetchRequest.predicate = NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10", self, self)
+		fetchRequest.fetchLimit = 1
+
+		return (try? context.fetch(fetchRequest))?.first
+	}
+
 	var sensorMessageList: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
 		let fetchRequest = MessageEntity.fetchRequest()
@@ -30,9 +44,16 @@ extension UserEntity {
 	}
 
 	var unreadMessages: Int {
-		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false && ($0 as AnyObject).isEmoji == false }
-		return unreadMessages.count
+		// Most contacts will have no DMs history, so we can return early.
+		guard self.lastMessage != nil else { return 0; }
+
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		// sort is irrelvant.
+		fetchRequest.predicate = NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10 AND read == false", self, self)
+		return (try? context.count(for: fetchRequest)) ?? 0
 	}
+
 	/// SVG Images for Vendors who are signed project backers
 	var hardwareImage: String? {
 		guard let hwModel else { return nil }
