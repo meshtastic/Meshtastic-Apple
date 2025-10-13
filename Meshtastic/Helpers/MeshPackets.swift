@@ -1040,7 +1040,10 @@ func textMessageAppPacket(
 				if newMessage.fromUser != nil && newMessage.toUser != nil {
 					// Set Unread Message Indicators
 					if packet.to == connectedNode {
-						appState?.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+						let unreadCount = newMessage.toUser?.unreadMessages(in: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+						Task { @MainActor in
+							appState?.unreadDirectMessages = unreadCount
+						}
 					}
 					if !(newMessage.fromUser?.mute ?? false) && newMessage.isEmoji == false {
 						// Create an iOS Notification for the received DM message

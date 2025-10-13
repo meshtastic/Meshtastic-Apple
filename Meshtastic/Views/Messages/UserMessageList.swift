@@ -39,7 +39,13 @@ struct UserMessageList: View {
 			}
 			try context.save()
 			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
-			appState.unreadDirectMessages = user.unreadMessages
+
+			if let connectedPeripheralNum = accessoryManager.activeDeviceNum,
+			   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
+			   let connectedUser = connectedNode.user {
+				appState.unreadDirectMessages = connectedUser.unreadMessages(in: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+			}
+
 			context.refresh(user, mergeChanges: true)
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")

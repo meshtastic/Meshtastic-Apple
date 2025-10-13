@@ -43,16 +43,20 @@ extension UserEntity {
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
-	var unreadMessages: Int {
+	func unreadMessages(in ctx: NSManagedObjectContext?, skipLastMessageCheck: Bool = false) -> Int {
 		// Most contacts will have no DMs history, so we can return early.
-		guard self.lastMessage != nil else { return 0; }
+		// (For our own node, set skipLastMessageCheck=true, because we don't update lastMessage on our own connected node.)
+		guard self.lastMessage != nil || skipLastMessageCheck else { return 0; }
 
-		let context = PersistenceController.shared.container.viewContext
+		let context = ctx ?? PersistenceController.shared.container.viewContext // default to viewContext
 		let fetchRequest = MessageEntity.fetchRequest()
 		// sort is irrelvant.
 		fetchRequest.predicate = NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10 AND read == false", self, self)
 		return (try? context.count(for: fetchRequest)) ?? 0
 	}
+
+	// Backwards-compatible property (uses viewContext)
+	var unreadMessages: Int { unreadMessages(in: nil) }
 
 	/// SVG Images for Vendors who are signed project backers
 	var hardwareImage: String? {
