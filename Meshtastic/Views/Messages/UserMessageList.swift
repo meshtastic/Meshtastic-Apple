@@ -21,17 +21,21 @@ struct UserMessageList: View {
 	@State private var messageToHighlight: Int64 = 0
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
-	
-	private var allPrivateMessages: [MessageEntity] {
-		// Cast user.messageList to an array for easier indexing and ForEach.
-		return user.messageList.compactMap { $0 as MessageEntity }
+	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
+
+	init(user: UserEntity) {
+		self.user = user
+
+		// Configure fetch request here
+		let request: NSFetchRequest<MessageEntity> = user.messageFetchRequest
+		_allPrivateMessages = FetchRequest(fetchRequest: request)
 	}
-	
+
 	func handleInteractionComplete() {
 		markMessagesAsRead()
 		redrawTapbacksTrigger = UUID()
 	}
-	
+
 	func markMessagesAsRead() {
 		do {
 			for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
@@ -51,19 +55,22 @@ struct UserMessageList: View {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
 	var body: some View {
+		// Cast user.messageList to an array for easier indexing and ForEach.
+		let messages = allPrivateMessages.compactMap { $0 as MessageEntity }
+
 		VStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
-						ForEach(allPrivateMessages.indices, id: \.self) { index in
-							let message = allPrivateMessages[index]
-							let previousMessage = index > 0 ? allPrivateMessages[index - 1] : nil
+						ForEach(messages.indices, id: \.self) { index in
+							let message = messages[index]
+							let previousMessage = index > 0 ? messages[index - 1] : nil
 							
 							UserMessageRow(
 								message: message,
-								allMessages: allPrivateMessages,
+								allMessages: messages,
 								previousMessage: previousMessage,
 								preferredPeripheralNum: preferredPeripheralNum,
 								user: user,

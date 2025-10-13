@@ -10,12 +10,20 @@ import CoreData
 import MeshtasticProtobufs
 
 extension UserEntity {
+	var messagePredicate: NSPredicate {
+		return NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10", self, self)
+	}
+
+	var messageFetchRequest: NSFetchRequest<MessageEntity> {
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
+		fetchRequest.predicate = messagePredicate
+		return fetchRequest
+	}
 
 	var messageList: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10", self, self)
+		let fetchRequest = messageFetchRequest
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
@@ -26,9 +34,8 @@ extension UserEntity {
 
 		// Most recent DM for this user (descending, limit 1)
 		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
+		let fetchRequest = messageFetchRequest
 		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
-		fetchRequest.predicate = NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10", self, self)
 		fetchRequest.fetchLimit = 1
 
 		return (try? context.fetch(fetchRequest))?.first
@@ -48,9 +55,10 @@ extension UserEntity {
 		// (For our own node, set skipLastMessageCheck=true, because we don't update lastMessage on our own connected node.)
 		guard self.lastMessage != nil || skipLastMessageCheck else { return 0; }
 
-		let fetchRequest = MessageEntity.fetchRequest()
-		// sort is irrelvant.
-		fetchRequest.predicate = NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10 AND read == false", self, self)
+		let fetchRequest = messageFetchRequest
+		fetchRequest.sortDescriptors = [] // sort is irrelvant.
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
+
 		return (try? context.count(for: fetchRequest)) ?? 0
 	}
 
