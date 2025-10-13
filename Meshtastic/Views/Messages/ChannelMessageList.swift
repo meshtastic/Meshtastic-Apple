@@ -92,7 +92,7 @@ struct ChannelMessageList: View {
 								  }
 							  }
 						  }
-						  .id(redrawTapbacksTrigger)
+
 					}
 					Color.clear
 						.frame(height: 1)

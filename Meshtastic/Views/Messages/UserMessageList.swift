@@ -93,7 +93,7 @@ struct UserMessageList: View {
 									}
 								}
 							}
-							.id(redrawTapbacksTrigger)
+
 						}
 						// Invisible spacer to detect reaching bottom
 						Color.clear
