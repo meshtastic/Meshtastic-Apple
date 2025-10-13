@@ -19,10 +19,23 @@ extension ChannelEntity {
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
-	var unreadMessages: Int {
+	var mostRecentPrivateMessage: MessageEntity? {
+		// Most recent channel message (descending, limit 1)
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", self.index)
+		fetchRequest.fetchLimit = 1
 
-		let unreadMessages = allPrivateMessages.filter { ($0 as AnyObject).read == false }
-		return unreadMessages.count
+		return (try? context.fetch(fetchRequest))?.first
+	}
+
+	var unreadMessages: Int {
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = MessageEntity.fetchRequest()
+		// sort is irrelvant.
+		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false AND read == false", self.index)
+		return (try? context.count(for: fetchRequest)) ?? 0
 	}
 
 	var protoBuf: Channel {
