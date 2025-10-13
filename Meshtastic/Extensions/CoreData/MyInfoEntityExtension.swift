@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 extension MyInfoEntity {
 
@@ -18,10 +19,16 @@ extension MyInfoEntity {
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
-	var unreadMessages: Int {
-		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false && ($0 as AnyObject).isEmoji == false }
-		return unreadMessages.count
+	func unreadMessages(context: NSManagedObjectContext) -> Int {
+		// Returns the count of unread *channel* messages
+		let fetchRequest = MessageEntity.fetchRequest()
+		// sort is irrelvant.
+		fetchRequest.predicate = NSPredicate(format: "toUser == nil AND isEmoji == false AND read == false")
+		return (try? context.count(for: fetchRequest)) ?? 0
 	}
+
+	// Backwards-compatible property (uses viewContext)
+	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.container.viewContext) }
 
 	var hasAdmin: Bool {
 		let adminChannel = channels?.filter { ($0 as AnyObject).name?.lowercased() == "admin" }

@@ -1040,7 +1040,7 @@ func textMessageAppPacket(
 				if newMessage.fromUser != nil && newMessage.toUser != nil {
 					// Set Unread Message Indicators
 					if packet.to == connectedNode {
-						let unreadCount = newMessage.toUser?.unreadMessages(in: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+						let unreadCount = newMessage.toUser?.unreadMessages(context: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 						Task { @MainActor in
 							appState?.unreadDirectMessages = unreadCount
 						}
@@ -1071,7 +1071,7 @@ func textMessageAppPacket(
 					do {
 						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 						if !fetchedMyInfo.isEmpty {
-							appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+							appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages(context: context)
 							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)

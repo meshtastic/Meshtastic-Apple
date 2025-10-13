@@ -43,7 +43,7 @@ struct UserMessageList: View {
 			if let connectedPeripheralNum = accessoryManager.activeDeviceNum,
 			   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
 			   let connectedUser = connectedNode.user {
-				appState.unreadDirectMessages = connectedUser.unreadMessages(in: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 			}
 
 			context.refresh(user, mergeChanges: true)

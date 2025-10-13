@@ -30,13 +30,16 @@ extension ChannelEntity {
 		return (try? context.fetch(fetchRequest))?.first
 	}
 
-	var unreadMessages: Int {
+	func unreadMessages(context: NSManagedObjectContext) -> Int {
 		let context = PersistenceController.shared.container.viewContext
 		let fetchRequest = MessageEntity.fetchRequest()
 		// sort is irrelvant.
 		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false AND read == false", self.index)
 		return (try? context.count(for: fetchRequest)) ?? 0
 	}
+
+	// Backwards-compatible property (uses viewContext)
+	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.container.viewContext) }
 
 	var protoBuf: Channel {
 		var channel = Channel()
