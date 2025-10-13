@@ -10,7 +10,7 @@ import CoreData
 
 extension MyInfoEntity {
 	var messagePredicate: NSPredicate {
-		return NSPredicate(format: "toUser == nil")
+		return NSPredicate(format: "toUser == nil AND isEmoji == false")
 	}
 
 	var messageFetchRequest: NSFetchRequest<MessageEntity> {
