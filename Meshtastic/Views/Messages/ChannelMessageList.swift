@@ -13,6 +13,7 @@ import SwiftUI
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var router: Router
+	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FocusState var messageFieldFocused: Bool
@@ -75,6 +76,11 @@ struct ChannelMessageList: View {
 		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
 	}
 
+	private func routerIsShowingThisChannel() -> Bool {
+		guard router.navigationState.selectedTab == .messages else { return false }
+		return scenePhase == .active
+	}
+
 	var body: some View {
 		// Cast allPrivateMessages to an array for easier indexing and ForEach.
 		let messages: [MessageEntity] = Array(allPrivateMessages)
@@ -109,7 +115,9 @@ struct ChannelMessageList: View {
 						  )
 						  .onAppear {
 							  // Only mark as read if the app is in the foreground
-							  if !message.read && UIApplication.shared.applicationState == .active {
+							  let appInForeground = UIApplication.shared.applicationState == .active
+							  Logger.data.info("onAppear with read=\(message.read) appInForeground=\(appInForeground)")
+							  if !message.read && appInForeground && routerIsShowingThisChannel() {
 								  message.read = true
 								  LocalNotificationManager().cancelNotificationForMessageId(message.messageId)
 								  // Race condition, sometimes the app doesn't update unread count if we run this too early

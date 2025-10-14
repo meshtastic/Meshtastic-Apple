@@ -11,9 +11,10 @@ import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 
 struct UserMessageList: View {
-	
 	@EnvironmentObject var appState: AppState
+	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.managedObjectContext) var context
 	@FocusState var messageFieldFocused: Bool
 	@ObservedObject var user: UserEntity
@@ -71,6 +72,11 @@ struct UserMessageList: View {
 		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
 	}
 
+	private func routerIsShowingThisUser() -> Bool {
+		guard router.navigationState.selectedTab == .messages else { return false }
+		return scenePhase == .active
+	}
+
 	var body: some View {
 		// Cast user.messageList to an array for easier indexing and ForEach.
 		let messages: [MessageEntity] = Array(allPrivateMessages)
@@ -106,7 +112,8 @@ struct UserMessageList: View {
 							)
 							.onAppear {
 								// Only mark as read if the app is in the foreground
-								if !message.read && UIApplication.shared.applicationState == .active {
+								let appInForeground = UIApplication.shared.applicationState == .active
+								if !message.read && appInForeground && routerIsShowingThisUser() {
 									message.read = true
 									LocalNotificationManager().cancelNotificationForMessageId(message.messageId)
 									// Race condition, sometimes the app doesn't update unread count if we run this too early
