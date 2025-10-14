@@ -23,7 +23,8 @@ struct ChannelMessageList: View {
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageToHighlight: Int64 = 0
 	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
-	
+	@State private var scrollToBottomWorkItem: DispatchWorkItem?
+
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
 		self.myInfo = myInfo
 		self.channel = channel
@@ -50,15 +51,30 @@ struct ChannelMessageList: View {
 			for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
 				unreadMessage.read = true
 			}
-			try context.save()
-			Logger.data.info("📖 [App] All unread messages marked as read.")
+
+			if context.hasChanges {
+				try context.save()
+				Logger.data.info("📖 [App] All unread messages marked as read.")
+			}
+
 			appState.unreadChannelMessages = myInfo.unreadMessages
 			context.refresh(myInfo, mergeChanges: true)
 		} catch {
 			Logger.data.error("Failed to read messages: \(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
+	func debouncedScrollToBottom(scrollView: ScrollViewProxy, lastMessageId: Int64?, delay: TimeInterval = 0.1) {
+		scrollToBottomWorkItem?.cancel()
+
+		let scrollTarget: AnyHashable = lastMessageId != nil ? lastMessageId : "bottomAnchor"
+		let work = DispatchWorkItem {
+			scrollView.scrollTo(scrollTarget, anchor: .bottom)
+		}
+		scrollToBottomWorkItem = work
+		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+	}
+
 	var body: some View {
 		// Cast allPrivateMessages to an array for easier indexing and ForEach.
 		let messages: [MessageEntity] = Array(allPrivateMessages)
@@ -70,6 +86,8 @@ struct ChannelMessageList: View {
 			for m in messages { dict[m.messageId] = prev; prev = m }
 			return dict
 		}()
+
+		let lastMessageId: Int64? = messages.last?.messageId
 
 		ScrollViewReader { scrollView in
 			ScrollView {
@@ -98,11 +116,10 @@ struct ChannelMessageList: View {
 								  // So, run it in the main queue after everything saves and stabilizes
 								  DispatchQueue.main.async {
 									  markMessagesAsRead()
-									  scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 								  }
+								  debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.1)
 							  }
 						  }
-
 					}
 					Color.clear
 						.frame(height: 1)
@@ -113,12 +130,21 @@ struct ChannelMessageList: View {
 			.defaultScrollAnchorTopAlignment()
 			.defaultScrollAnchorBottomSizeChanges()
 			.scrollDismissesKeyboard(.immediately)
+			.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+				// Keyboard is about to appear: keyboard show animation hasn't quite started yet.
+				// Schedule an immediate scroll to the bottom message by its messageId, in order to force LazyVStack to render that cell if it isn't rendered already
+				debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.0)
+			}
+			.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
+				// Keyboard is fully visible.
+				// Scroll after the keyboard is fully showing, with a short delay to allow things to settle (TextMessageField height update, for example)
+				debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.1)
+			}
 			.onChange(of: messageFieldFocused) {
 				if messageFieldFocused {
-					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-					}
-				}
+					// macOS doesn't have keyboard show animation, but we still want to scroll to the bottom.
+					debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.0)
+				 }
 			}
 			TextMessageField(
 				destination: .channel(channel),
