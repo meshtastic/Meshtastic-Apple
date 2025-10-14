@@ -64,10 +64,22 @@ struct Connect: View {
 										}
 										Text("Connection Name").font(.callout)+Text(": \(connectedDevice.name.addingVariationSelectors)")
 											.font(.callout).foregroundColor(Color.gray)
-										HStack(alignment: .firstTextBaseline) {
-											TransportIcon(transportType: connectedDevice.transportType)
+										HStack {
 											if connectedDevice.transportType == .ble {
-												connectedDevice.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0, width: 5, height: 20) }
+												// baseline aligned looks better for the signal meter
+												HStack(alignment: .firstTextBaseline) {
+													TransportIcon(transportType: connectedDevice.transportType)
+													connectedDevice.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0, width: 5, height: 20) }
+												}
+											} else if connectedDevice.transportType == .tcp {
+												// Not baseline aligned looks better for the connection string
+												HStack {
+													TransportIcon(transportType: connectedDevice.transportType)
+													Text("\(connectedDevice.connectionDetails ?? connectedDevice.identifier)")
+														.foregroundColor(.gray)
+												}
+											} else {
+												TransportIcon(transportType: connectedDevice.transportType)
 											}
 											Spacer()
 										}
@@ -297,7 +309,14 @@ struct Connect: View {
 											Text(device.name).font(.callout)
 										}
 										// Show transport type
-										TransportIcon(transportType: device.transportType)
+										HStack {
+											TransportIcon(transportType: device.transportType)
+											if device.transportType == .tcp {
+												// Show IP and Port
+												Text("\(device.connectionDetails ?? device.identifier)")
+													.foregroundColor(.gray)
+											}
+										}
 									}
 									Spacer()
 									VStack {
