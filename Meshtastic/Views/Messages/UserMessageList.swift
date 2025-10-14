@@ -58,15 +58,22 @@ struct UserMessageList: View {
 
 	var body: some View {
 		// Cast user.messageList to an array for easier indexing and ForEach.
-		let messages = allPrivateMessages.compactMap { $0 as MessageEntity }
+		let messages: [MessageEntity] = Array(allPrivateMessages)
+
+		// Precompute previous message
+		let previousByID: [Int64: MessageEntity?] = {
+			var dict = [Int64: MessageEntity?]()
+			var prev: MessageEntity?
+			for m in messages { dict[m.messageId] = prev; prev = m }
+			return dict
+		}()
 
 		VStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
-						ForEach(messages.indices, id: \.self) { index in
-							let message = messages[index]
-							let previousMessage = index > 0 ? messages[index - 1] : nil
+						ForEach(messages, id: \.messageId) { message in
+							let previousMessage: MessageEntity? = previousByID[message.messageId] ?? nil
 							
 							UserMessageRow(
 								message: message,

@@ -60,12 +60,22 @@ struct ChannelMessageList: View {
 	}
 	
 	var body: some View {
+		// Cast allPrivateMessages to an array for easier indexing and ForEach.
+		let messages: [MessageEntity] = Array(allPrivateMessages)
+
+		// Precompute previous message
+		let previousByID: [Int64: MessageEntity?] = {
+			var dict = [Int64: MessageEntity?]()
+			var prev: MessageEntity?
+			for m in messages { dict[m.messageId] = prev; prev = m }
+			return dict
+		}()
+
 		ScrollViewReader { scrollView in
 			ScrollView {
 				LazyVStack {
-					ForEach(allPrivateMessages.indices, id: \.self) { index in
-						  let message = allPrivateMessages[index]
-						  let previousMessage = index > 0 ? allPrivateMessages[index - 1] : nil
+					ForEach(messages, id: \.messageId) { message in
+						  let previousMessage: MessageEntity? = previousByID[message.messageId] ?? nil
 						  
 						  ChannelMessageRow(
 							  message: message,
