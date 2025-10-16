@@ -538,22 +538,45 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						return
 					}
 					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: deviceNum)
+
 				case .rangeTestApp:
-					guard let deviceNum = activeConnection?.device.num else {
-						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for rangeTestApp.")
-						return
-					}
-					if wantRangeTestPackets {
-						textMessageAppPacket(
-							packet: packet,
-							wantRangeTestPackets: true,
-							connectedNode: deviceNum,
-							context: context,
-							appState: appState
-						)
-					} else {
-						Logger.mesh.info("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
-					}
+				    guard let deviceNum = activeConnection?.device.num else {
+				        Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for rangeTestApp.")
+				        return
+				    }
+				
+				    // Try to find the NodeInfo for the sender of the packet.
+				    // If found, check its stored RangeTest config. If range testing is disabled for that node, ignore.
+				    if let senderNode = getNodeInfo(id: Int64(packet.from), context: context) {
+				        // senderNode.rangeTestConfig is a CoreData RangeTestConfigEntity (optional)
+				        let senderRangeEnabled = senderNode.rangeTestConfig?.enabled ?? false
+				
+				        if senderRangeEnabled {
+				            // Sender reports range testing enabled -> treat/forward as text/range test packet
+				            textMessageAppPacket(
+				                packet: packet,
+				                wantRangeTestPackets: true,
+				                connectedNode: deviceNum,
+				                context: context,
+				                appState: appState
+				            )
+				        } else {
+				            Logger.mesh.info("🕸️ MESH PACKET received for Range Test App but sender's rangeTest is disabled. Ignoring.")
+				        }
+				    } else {
+				        // No NodeInfo for sender — fall back to the app-level preference (existing behavior).
+				        if wantRangeTestPackets {
+				            textMessageAppPacket(
+				                packet: packet,
+				                wantRangeTestPackets: true,
+				                connectedNode: deviceNum,
+				                context: context,
+				                appState: appState
+				            )
+				        } else {
+				            Logger.mesh.info("🕸️ MESH PACKET received for Range Test App Range testing is disabled (no sender node info).")
+				        }
+				    }
 				case .telemetryApp:
 					guard let deviceNum = activeConnection?.device.num else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for telemetryApp.")
