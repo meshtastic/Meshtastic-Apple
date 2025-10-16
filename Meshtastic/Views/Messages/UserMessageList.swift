@@ -20,6 +20,7 @@ struct UserMessageList: View {
 	@State private var replyMessageId: Int64 = 0
 	@State private var messageToHighlight: Int64 = 0
 	@State private var redrawTapbacksTrigger = UUID()
+	@State private var scrollPosition: Int64?
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	
 	private var allPrivateMessages: [MessageEntity] {
@@ -72,12 +73,7 @@ struct UserMessageList: View {
 								if !message.read && UIApplication.shared.applicationState == .active {
 									message.read = true
 									LocalNotificationManager().cancelNotificationForMessageId(message.messageId)
-									// Race condition, sometimes the app doesn't update unread count if we run this too early
-									// So, run it in the main queue after everything saves and stabilizes
-									DispatchQueue.main.async {
-										markMessagesAsRead()
-										scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-									}
+									markMessagesAsRead()
 								}
 							}
 							.id(redrawTapbacksTrigger)
@@ -88,15 +84,19 @@ struct UserMessageList: View {
 							.id("bottomAnchor")
 					}
 				}
+				.scrollPosition(id: $scrollPosition, anchor: .bottom)
 				.defaultScrollAnchor(.bottom)
-				.defaultScrollAnchorTopAlignment()
-				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+						withAnimation {
+							scrollPosition = nil
 						}
+					}
+				}
+				.onChange(of: allPrivateMessages.count) {
+					withAnimation {
+						scrollPosition = nil
 					}
 				}
 			}
