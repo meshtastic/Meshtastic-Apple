@@ -115,17 +115,15 @@ struct ChannelMessageList: View {
 						  )
 						  .onAppear {
 							  // Only mark as read if the app is in the foreground
-							  let appInForeground = UIApplication.shared.applicationState == .active
-							  Logger.data.info("onAppear with read=\(message.read) appInForeground=\(appInForeground)")
-							  if !message.read && appInForeground && routerIsShowingThisChannel() {
+							  if !message.read && UIApplication.shared.applicationState == .active {
 								  message.read = true
 								  LocalNotificationManager().cancelNotificationForMessageId(message.messageId)
 								  // Race condition, sometimes the app doesn't update unread count if we run this too early
 								  // So, run it in the main queue after everything saves and stabilizes
 								  DispatchQueue.main.async {
 									  markMessagesAsRead()
+									  scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 								  }
-								  debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.1)
 							  }
 						  }
 					}
