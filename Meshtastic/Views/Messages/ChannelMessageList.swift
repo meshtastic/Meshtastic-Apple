@@ -98,6 +98,7 @@ struct ChannelMessageList: View {
 						.frame(height: 1)
 						.id("bottomAnchor")
 				}
+				.textSelection(.enabled)
 			}
 			.defaultScrollAnchor(.bottom)
 			.defaultScrollAnchorTopAlignment()
