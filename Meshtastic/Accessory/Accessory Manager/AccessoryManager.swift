@@ -665,6 +665,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					self.firstDatabaseNodeInfoContinuation = nil
 				}
 				
+				// Perform a single batch save after database retrieval completes
+				// This significantly improves performance on reconnect
+				do {
+					try context.save()
+					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+				} catch {
+					context.rollback()
+					let nsError = error as NSError
+					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
+				}
+				
 			default:
 				Logger.transport.error("[Accessory] Unknown nonce completed: \(configCompleteID)")
 			}
