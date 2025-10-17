@@ -136,9 +136,6 @@ struct ChannelMessageList: View {
 			.defaultScrollAnchorTopAlignment()
 			.defaultScrollAnchorBottomSizeChanges()
 			.scrollDismissesKeyboard(.immediately)
-			.onFirstAppear {
-				debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.1)
-			}
 			.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
 				// Keyboard is about to appear: keyboard show animation hasn't quite started yet.
 				// Schedule an immediate scroll to the bottom message by its messageId, in order to force LazyVStack to render that cell if it isn't rendered already
