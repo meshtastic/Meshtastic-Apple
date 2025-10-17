@@ -964,6 +964,8 @@ func textMessageAppPacket(
 					} else {
 						do {
 							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+							// Explicitly set unmessagable to false to ensure the user is messageable
+							newUser.unmessagable = false
 							newMessage.toUser = newUser
 						} catch CoreDataError.invalidInput(let message) {
 							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
@@ -1005,7 +1007,10 @@ func textMessageAppPacket(
 						newNode.id = Int64(newUser.num)
 						newNode.num = Int64(newUser.num)
 						newNode.user = newUser
+						// Explicitly set unmessagable to false to ensure the user is messageable
+						newUser.unmessagable = false
 						newMessage.fromUser = newUser
+						Logger.data.info("💾 Created new user \(newUser.longName ?? "Unknown", privacy: .public) for message from unknown node")
 					} catch CoreDataError.invalidInput(let message) {
 						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
 					} catch {
