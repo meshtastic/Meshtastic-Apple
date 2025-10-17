@@ -23,7 +23,6 @@ struct UserMessageList: View {
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
-	@State private var scrollToBottomWorkItem: DispatchWorkItem?
 
 	init(user: UserEntity) {
 		self.user = user
@@ -43,11 +42,8 @@ struct UserMessageList: View {
 			for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
 				unreadMessage.read = true
 			}
-
-			if context.hasChanges {
-				try context.save()
-				Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
-			}
+			try context.save()
+			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
 
 			if let connectedPeripheralNum = accessoryManager.activeDeviceNum,
 			   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
@@ -59,17 +55,6 @@ struct UserMessageList: View {
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}
-	}
-
-	func debouncedScrollToBottom(scrollView: ScrollViewProxy, lastMessageId: Int64?, delay: TimeInterval = 0.1) {
-		scrollToBottomWorkItem?.cancel()
-
-		let scrollTarget: AnyHashable = lastMessageId != nil ? lastMessageId : "bottomAnchor"
-		let work = DispatchWorkItem {
-			scrollView.scrollTo(scrollTarget, anchor: .bottom)
-		}
-		scrollToBottomWorkItem = work
-		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
 	}
 
 	private func routerIsShowingThisUser() -> Bool {
@@ -88,8 +73,6 @@ struct UserMessageList: View {
 			for m in messages { dict[m.messageId] = prev; prev = m }
 			return dict
 		}()
-
-		let lastMessageId: Int64? = messages.last?.messageId
 
 		VStack {
 			ScrollViewReader { scrollView in
@@ -123,6 +106,7 @@ struct UserMessageList: View {
 									}
 								}
 							}
+
 						}
 						// Invisible spacer to detect reaching bottom
 						Color.clear
@@ -134,21 +118,12 @@ struct UserMessageList: View {
 				.defaultScrollAnchorTopAlignment()
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
-				.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-					// Keyboard is about to appear: keyboard show animation hasn't quite started yet.
-					// Schedule an immediate scroll to the bottom message by its messageId, in order to force LazyVStack to render that cell if it isn't rendered already
-					debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.0)
-				}
-				.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
-					// Keyboard is fully visible.
-					// Scroll after the keyboard is fully showing, with a short delay to allow things to settle (TextMessageField height update, for example)
-					debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.1)
-				}
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
-						// macOS doesn't have keyboard show animation, but we still want to scroll to the bottom.
-						debouncedScrollToBottom(scrollView: scrollView, lastMessageId: lastMessageId, delay: 0.0)
-					 }
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+						}
+					}
 				}
 			}
 			TextMessageField(
