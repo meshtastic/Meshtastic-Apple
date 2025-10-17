@@ -113,6 +113,11 @@
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
 		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
 		D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D82B81509C0066FBC8 /* TapbackResponses.swift */; };
+		922325ADDA9F4E78879A6368 /* SelectableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8F5E5E2CD904C9F9F979EB0 /* SelectableText.swift */; };
+		9A04A5F9548C40609EEEB166 /* UnifiedMessageTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6357ACFE18EF4B3CAE38E8A2 /* UnifiedMessageTextView.swift */; };
+		D1A39FB33C6344BDA57DB0F5 /* UserMessageListUnified.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3C71853BB2480B84F6C3F3 /* UserMessageListUnified.swift */; };
+		E0A8267A32C64DA09510EBD1 /* ChannelMessageListUnified.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D5C7DD4C3E545A582B5FF05 /* ChannelMessageListUnified.swift */; };
+		64E10D05C85F45FDB0798FB1 /* SelectableMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8960637417741F5909FEE42 /* SelectableMessageBubble.swift */; };
 		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
 		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
 		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
@@ -423,6 +428,11 @@
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
 		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
 		D93068D82B81509C0066FBC8 /* TapbackResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackResponses.swift; sourceTree = "<group>"; };
+		E8F5E5E2CD904C9F9F979EB0 /* SelectableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableText.swift; sourceTree = "<group>"; };
+		6357ACFE18EF4B3CAE38E8A2 /* UnifiedMessageTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnifiedMessageTextView.swift; sourceTree = "<group>"; };
+		DB3C71853BB2480B84F6C3F3 /* UserMessageListUnified.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageListUnified.swift; sourceTree = "<group>"; };
+		2D5C7DD4C3E545A582B5FF05 /* ChannelMessageListUnified.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageListUnified.swift; sourceTree = "<group>"; };
+		E8960637417741F5909FEE42 /* SelectableMessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableMessageBubble.swift; sourceTree = "<group>"; };
 		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
 		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
 		D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
@@ -1238,11 +1248,16 @@
 				D9C9839E2B79D0C600BDBE6A /* TextMessageField */,
 				DDB8F4132A9EE5F000230ECE /* ChannelList.swift */,
 				DD798B062915928D005217CD /* ChannelMessageList.swift */,
+				2D5C7DD4C3E545A582B5FF05 /* ChannelMessageListUnified.swift */,
 				DDB8F40F2A9EE5B400230ECE /* Messages.swift */,
 				DDB8F4112A9EE5DD00230ECE /* UserList.swift */,
 				DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */,
+				DB3C71853BB2480B84F6C3F3 /* UserMessageListUnified.swift */,
 				B399E8A32B6F486400E4488E /* RetryButton.swift */,
 				D93068D62B8146690066FBC8 /* MessageText.swift */,
+				E8F5E5E2CD904C9F9F979EB0 /* SelectableText.swift */,
+E8960637417741F5909FEE42 /* SelectableMessageBubble.swift */,
+				6357ACFE18EF4B3CAE38E8A2 /* UnifiedMessageTextView.swift */,
 				D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */,
 				D93068D82B81509C0066FBC8 /* TapbackResponses.swift */,
 			);
@@ -1860,6 +1875,11 @@
 				232ED4C32E2C5E89009DA392 /* TCPTransport.swift in Sources */,
 				BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */,
 				D93068D72B8146690066FBC8 /* MessageText.swift in Sources */,
+				922325ADDA9F4E78879A6368 /* SelectableText.swift in Sources */,
+				9A04A5F9548C40609EEEB166 /* UnifiedMessageTextView.swift in Sources */,
+				D1A39FB33C6344BDA57DB0F5 /* UserMessageListUnified.swift in Sources */,
+				E0A8267A32C64DA09510EBD1 /* ChannelMessageListUnified.swift in Sources */,
+64E10D05C85F45FDB0798FB1 /* SelectableMessageBubble.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
