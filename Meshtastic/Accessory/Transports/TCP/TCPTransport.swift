@@ -78,10 +78,27 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		// Save the resolved service locally for later
 		services[service.name] = ResolvedService(id: idString, service: service, host: host, port: port)
 		
+		let name: String
+		if let txtRecords = service.txtRecordData().map({NetService.dictionary(fromTXTRecord: $0)}) {
+			var nodeNameString = ""
+			if let shortNameData = txtRecords["shortname"] {
+				nodeNameString += String(decoding: shortNameData, as: UTF8.self)
+			}
+			if let nodeId = txtRecords["id"], nodeId.count > 4 {
+				if nodeNameString.count > 0 {
+					nodeNameString += "_"
+				}
+				nodeNameString += String(decoding: nodeId.suffix(4), as: UTF8.self)
+			}
+			name = nodeNameString
+		} else {
+			name = "\(service.name) (\(ip))"
+		}
 		let device = Device(id: idString,
-							name: "\(service.name) (\(ip))",
+							name: name,
 							transportType: .tcp,
-							identifier: "\(host):\(port)")
+							identifier: "\(host):\(port)",
+							connectionDetails: "\(ip):\(port)")
 		continuation?.yield(.deviceFound(device))
 	}
 
