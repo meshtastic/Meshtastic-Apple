@@ -9,6 +9,12 @@ import CoreData
 import OSLog
 import MeshtasticProtobufs
 
+struct SaveChannelLinkData: Identifiable {
+	let id = UUID()
+	let data: String
+	let add: Bool
+}
+
 struct SaveChannelQRCode: View {
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.managedObjectContext) var context
