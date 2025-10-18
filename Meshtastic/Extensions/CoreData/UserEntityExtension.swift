@@ -130,6 +130,7 @@ public func createUser(num: Int64, context: NSManagedObjectContext) throws -> Us
 		newUser.longName = "Meshtastic \(last4)"
 		newUser.shortName = last4
 		newUser.hwModel = "UNSET"
+		newUser.unmessagable = false
 	}
 
 	return newUser
