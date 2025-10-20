@@ -54,7 +54,15 @@ struct MeshMapContent: MapContent {
 				// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
 				let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
 				
-				Annotation(positionName, coordinate: position.coordinate) {
+				let coordinateForNodePin: CLLocationCoordinate2D = if position.isPreciseLocation {
+					// Precise location: place node pin at actual location.
+					position.coordinate
+				} else {
+					// Imprecise location: fuzz slightly so overlapping nodes are visible and clickable at highest zoom levels.
+					position.fuzzedCoordinate
+				}
+
+				Annotation(positionName, coordinate: coordinateForNodePin) {
 					LazyVStack {
 						AnimatedNodePin(
 							nodeColor: nodeColor,
