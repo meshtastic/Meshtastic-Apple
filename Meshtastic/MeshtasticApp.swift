@@ -19,10 +19,8 @@ struct MeshtasticAppleApp: App {
 	private let persistenceController: PersistenceController
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
-	@State var saveChannels = false
+	@State var saveChannelLink: SaveChannelLinkData?
 	@State var incomingUrl: URL?
-	@State var channelSettings: String?
-	@State var addChannels = false
 
 	init() {
 
@@ -36,7 +34,7 @@ struct MeshtasticAppleApp: App {
 		let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
 		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
 		var environment = "AppStore"
-		
+
 #if DEBUG
 		environment = "Local"
 #else
@@ -44,7 +42,8 @@ struct MeshtasticAppleApp: App {
 			environment = "TestFlight"
 		}
 #endif
-		
+
+#if false
 		Datadog.initialize(
 			with: Datadog.Configuration(
 				clientToken: clientToken,
@@ -81,6 +80,7 @@ struct MeshtasticAppleApp: App {
 				)
 			)
 		}
+#endif
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 
@@ -110,20 +110,11 @@ struct MeshtasticAppleApp: App {
 				appState: appState,
 				router: appState.router
 			)
-			.sheet(isPresented: Binding(
-				get: {
-					saveChannels && !(channelSettings == nil)
-				},
-				set: { newValue in
-					saveChannels = newValue
-					if !newValue {
-						channelSettings = nil
-					}
-				}
-			)) {
+			.sheet(item: $saveChannelLink
+			) { link in
 				SaveChannelQRCode(
-					channelSetLink: channelSettings ?? "Empty Channel URL",
-					addChannels: addChannels,
+					channelSetLink: link.data,
+					addChannels: link.add,
 					accessoryManager: accessoryManager				)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.visible)
@@ -131,54 +122,54 @@ struct MeshtasticAppleApp: App {
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 				Logger.mesh.debug("URL received \(userActivity, privacy: .public)")
 				self.incomingUrl = userActivity.webpageURL
-				self.saveChannels = false
+				self.saveChannelLink = nil
+				var addChannels = false
 				if self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
 					ContactURLHandler.handleContactUrl(url: self.incomingUrl!, accessoryManager: accessoryManager)
 				} else if self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/") == true {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
-						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
+						addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
 						if (self.incomingUrl?.absoluteString.lowercased().contains("?")) != nil {
 							guard let cs = components.last!.components(separatedBy: "?").first else {
 								return
 							}
-							self.channelSettings = cs
+							self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
 						} else {
 							guard let cs = components.first else {
 								return
 							}
-							self.channelSettings = cs
+							self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
 						}
-						Logger.services.debug("Add Channel \(self.addChannels, privacy: .public)")
+						Logger.services.debug("Add Channel \(addChannels, privacy: .public)")
 					}
-						self.saveChannels = true
 					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				}
-				if self.saveChannels {
+				if self.saveChannelLink != nil {
 					Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString), privacy: .public)")
 				}
 			}
 			.onOpenURL(perform: { (url) in
 				Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
 				self.incomingUrl = url
+				var addChannels = false
 				if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
 					ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
 				} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
-						self.addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
+						addChannels = Bool(self.incomingUrl?["add"] ?? "false") ?? false
 						if self.incomingUrl?.absoluteString.lowercased().contains("?") != nil {
 							guard let cs = components.last!.components(separatedBy: "?").first else {
 								return
 							}
-							self.channelSettings = cs
+							self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
 						} else {
 							guard let cs = components.first else {
 								return
 							}
-							self.channelSettings = cs
+							self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
 						}
-						Logger.services.debug("Add Channel \(self.addChannels, privacy: .public)")
+						Logger.services.debug("Add Channel \(addChannels, privacy: .public)")
 					}
-						self.saveChannels = true
 					Logger.mesh.debug("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link", privacy: .public)")
 				} else if url.absoluteString.lowercased().contains("meshtastic:///") {
 					appState.router.route(url: url)
@@ -221,7 +212,7 @@ struct MeshtasticAppleApp: App {
 		.environment(\.managedObjectContext, persistenceController.container.viewContext)
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
-		.environmentObject(appState.router) 
+		.environmentObject(appState.router)
 	}
 
 }

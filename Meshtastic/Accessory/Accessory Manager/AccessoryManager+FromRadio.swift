@@ -106,8 +106,11 @@ extension AccessoryManager {
 			return
 		}
 
+		// Check if we're in database retrieval mode to defer saves for performance
+		let isRetrievingDatabase = if case .retrievingDatabase = self.state { true } else { false }
+		
 		// TODO: nodeInfoPacket's channel: parameter is not used
-		if let nodeInfo = nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, context: context) {
+		if let nodeInfo = nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, context: context, deferSave: isRetrievingDatabase) {
 			if let activeDevice = activeConnection?.device, activeDevice.num == nodeInfo.num {
 				if let user = nodeInfo.user {
 					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
