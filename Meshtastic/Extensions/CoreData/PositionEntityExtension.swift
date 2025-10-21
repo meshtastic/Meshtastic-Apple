@@ -96,10 +96,40 @@ extension PositionEntity {
 		}
 		return pointAnn
 	}
+
+	var isPreciseLocation: Bool {
+		precisionBits == 32 || precisionBits == 0
+	}
+
+	var fuzzedNodeCoordinate: CLLocationCoordinate2D? {
+		// With reduced precisionBits, many nodes can overlap on the map, making them unclickable.
+		// Use a hash of the position ID to fuzz coordinate slightly so that these nodes can be distinguished at the higest zoom levels. This allows them to be clicked individually.
+		if latitudeI != 0 && longitudeI != 0 {
+			// Derive two uniform pseudorandom numbers [0,1) from id.hashValue
+			let u1 = Double(id.hashValue & 0xFFFF) / 65536.0
+			let u2 = Double((id.hashValue >> 16) & 0xFFFF) / 65536.0
+
+			// Angle and radius
+			let offsetAngle = 2.0 * .pi * u1
+			let offsetRadius = 0.00001 * sqrt(u2) // 1.0e-5 degrees at equator is about 1.11 m or 4 ft
+
+			let dLat = sin(offsetAngle) * offsetRadius
+			let dLon = cos(offsetAngle) * offsetRadius
+
+			let coord = CLLocationCoordinate2D(
+				latitude: latitude! + dLat,
+				longitude: longitude! + dLon
+			)
+			return coord
+		} else {
+			return nil
+		}
+	}
 }
 
 extension PositionEntity: MKAnnotation {
 	public var coordinate: CLLocationCoordinate2D { nodeCoordinate ?? LocationsHandler.DefaultLocation }
+	public var fuzzedCoordinate: CLLocationCoordinate2D { fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation }
 	public var title: String? {  nodePosition?.user?.shortName ?? "Unknown".localized }
 	public var subtitle: String? {  time?.formatted() }
 }
