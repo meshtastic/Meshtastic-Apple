@@ -264,7 +264,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 	}
 }
 
-func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
+func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext, deferSave: Bool = false) -> NodeInfoEntity? {
 
 	let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
 	Logger.mesh.info("📟 \(logString, privacy: .public)")
@@ -375,8 +375,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					newNode.myInfo = fetchedMyInfo[0]
 				}
 				do {
-					try context.save()
-					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
+					if !deferSave {
+						try context.save()
+						Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
+					}
 					return newNode
 				} catch {
 					context.rollback()
@@ -500,8 +502,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					fetchedNode[0].myInfo = fetchedMyInfo[0]
 				}
 				do {
-					try context.save()
-					Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+					if !deferSave {
+						try context.save()
+						Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+					}
 					return fetchedNode[0]
 				} catch {
 					context.rollback()
