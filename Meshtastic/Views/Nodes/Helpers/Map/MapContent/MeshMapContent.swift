@@ -49,12 +49,6 @@ struct MeshMapContent: MapContent {
 		ForEach(positions, id: \.id) { position in
 			/// Apply favorits filter and don't show ignored nodes
 			if (!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true) {
-				
-				let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-				let positionName = position.nodePosition?.user?.longName ?? "?"
-				// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
-				let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
-				
 				let coordinateForNodePin: CLLocationCoordinate2D = if position.isPreciseLocation {
 					// Precise location: place node pin at actual location.
 					position.coordinate
@@ -62,16 +56,6 @@ struct MeshMapContent: MapContent {
 					// Imprecise location: fuzz slightly so overlapping nodes are visible and clickable at highest zoom levels.
 					position.fuzzedCoordinate
 				}
-
-				Annotation(positionName, coordinate: coordinateForNodePin) {
-					LazyVStack {
-						AnimatedNodePin(
-							nodeColor: nodeColor,
-							shortName: position.nodePosition?.user?.shortName,
-							hasDetectionSensorMetrics: position.nodePosition?.hasDetectionSensorMetrics ?? false,
-							isOnline: position.nodePosition?.isOnline ?? false,
-							calculatedDelay: calculatedDelay
-						)
 				if 12...15 ~= position.precisionBits || position.precisionBits == 32 {
 					
 					let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
@@ -89,7 +73,7 @@ struct MeshMapContent: MapContent {
 					// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
 					let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
 					
-					Annotation(positionName, coordinate: position.coordinate) {
+					Annotation(positionName, coordinate: coordinateForNodePin) {
 						LazyVStack {
 							AnimatedNodePin(
 								nodeColor: nodeColor,
