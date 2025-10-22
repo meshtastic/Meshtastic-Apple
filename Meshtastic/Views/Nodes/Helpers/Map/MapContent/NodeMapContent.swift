@@ -42,6 +42,7 @@ struct NodeMapContent: MapContent {
 
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
+		let nodeColorSwift = Color(nodeColor)
 
 		/// Node Annotations
 		ForEach(positionArray, id: \.id) { position in
@@ -115,16 +116,16 @@ struct NodeMapContent: MapContent {
 							Image(systemName: "location.north.circle")
 								.resizable()
 								.scaledToFit()
-								.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
-								.background(Color(UIColor(hex: UInt32(node.num))))
+								.foregroundStyle(nodeColorSwift.isLight() ? .black : .white)
+								.background(nodeColorSwift)
 								.clipShape(Circle())
 								.rotationEffect(headingDegrees)
 								.frame(width: 16, height: 16)
 
 						} else {
 							Circle()
-								.fill(Color(UIColor(hex: UInt32(node.num))))
-								.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white, lineWidth: 2)
+								.fill(nodeColorSwift)
+								.strokeBorder(nodeColorSwift.isLight() ? .black : .white, lineWidth: 2)
 								.frame(width: 12, height: 12)
 						}
 					}
