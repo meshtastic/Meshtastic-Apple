@@ -71,19 +71,6 @@ struct NodeMapContent: MapContent {
 						.foregroundStyle(.indigo.opacity(0.4))
 				}
 			}
-			/// Route Lines
-			if showRouteLines {
-				let gradient = LinearGradient(
-					colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-					startPoint: .leading, endPoint: .trailing
-				)
-				let dashed = StrokeStyle(
-					lineWidth: 3,
-					lineCap: .round, lineJoin: .round, dash: [10, 10]
-				)
-				MapPolyline(coordinates: lineCoords)
-					.stroke(gradient, style: dashed)
-			}
 			/// Lastest Position Pin
 			if position.latest {
 				/// Node Annotations
@@ -160,6 +147,20 @@ struct NodeMapContent: MapContent {
 					.annotationSubtitles(.hidden)
 				}
 			}
+		}
+
+		/// Route Lines
+		if showRouteLines {
+			let gradient = LinearGradient(
+				colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
+				startPoint: .leading, endPoint: .trailing
+			)
+			let dashed = StrokeStyle(
+				lineWidth: 3,
+				lineCap: .round, lineJoin: .round, dash: [10, 10]
+			)
+			MapPolyline(coordinates: lineCoords)
+				.stroke(gradient, style: dashed)
 		}
 	}
 
