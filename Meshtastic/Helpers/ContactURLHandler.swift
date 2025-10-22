@@ -7,7 +7,6 @@
 import SwiftUI
 import CoreData
 import OSLog
-import TipKit
 import MeshtasticProtobufs
 
 struct ContactURLHandler {

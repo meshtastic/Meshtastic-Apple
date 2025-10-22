@@ -7,7 +7,9 @@
 
 import SwiftUI
 import OSLog
+#if canImport(TipKit)
 import TipKit
+#endif
 import MeshtasticProtobufs
 
 struct Settings: View {
@@ -439,10 +441,12 @@ struct Settings: View {
 										}
 									}
 								}
-								TipView(AdminChannelTip(), arrowEdge: .top)
-									.tipViewStyle(PersistentTip())
-									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
-									.listRowSeparator(.hidden)
+								if #available(iOS 17, *) {
+									TipView(AdminChannelTip(), arrowEdge: .top)
+										.tipViewStyle(PersistentTip())
+										.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
+										.listRowSeparator(.hidden)
+								}
 							} else {
 								if accessoryManager.isConnected {
 									Text("Connected Node \(node?.user?.longName?.addingVariationSelectors ?? "Unknown".localized)")

@@ -8,7 +8,9 @@
 import SwiftUI
 import CoreData
 import OSLog
+#if canImport(TipKit)
 import TipKit
+#endif
 
 struct Messages: View {
 
@@ -63,9 +65,11 @@ struct Messages: View {
 					$0[.leading]
 				}
 				Spacer()
-				TipView(MessagesTip(), arrowEdge: .top)
-					.tipViewStyle(PersistentTip())
-					.listRowSeparator(.hidden)
+				if #available(iOS 17, *) {
+					TipView(MessagesTip(), arrowEdge: .top)
+						.tipViewStyle(PersistentTip())
+						.listRowSeparator(.hidden)
+				}
 				Spacer()
 					.listRowSeparator(.hidden)
 			}

@@ -8,7 +8,9 @@ import SwiftUI
 import CoreData
 import CoreImage.CIFilterBuiltins
 import MeshtasticProtobufs
+#if canImport(TipKit)
 import TipKit
+#endif
 
 struct QrCodeImage {
 	let context = CIContext()
@@ -54,9 +56,11 @@ struct ShareChannels: View {
 	var body: some View {
 
 		VStack {
-			TipView(ShareChannelsTip(), arrowEdge: .bottom)
-				.tipBackground(Color(.secondarySystemBackground))
-				.listRowSeparator(.hidden)
+			if #available(iOS 17, *) {
+				TipView(ShareChannelsTip(), arrowEdge: .bottom)
+					.tipBackground(Color(.secondarySystemBackground))
+					.listRowSeparator(.hidden)
+			}
 		}
 		.padding(.horizontal)
 		GeometryReader { bounds in

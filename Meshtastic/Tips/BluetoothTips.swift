@@ -5,8 +5,11 @@
 //  Copyright(c) Garth Vander Houwen 8/31/23.
 //
 import SwiftUI
+#if canImport(TipKit)
 import TipKit
+#endif
 
+@available(iOS 17, *)
 struct ConnectionTip: Tip {
 
 	var id: String {

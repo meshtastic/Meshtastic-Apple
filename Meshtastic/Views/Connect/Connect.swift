@@ -11,7 +11,9 @@ import CoreData
 import CoreLocation
 import CoreBluetooth
 import OSLog
+#if canImport(TipKit)
 import TipKit
+#endif
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -36,10 +38,12 @@ struct Connect: View {
 					Section {
 						if let connectedDevice = accessoryManager.activeConnection?.device,
 						   accessoryManager.isConnected || accessoryManager.isConnecting {
-							TipView(ConnectionTip(), arrowEdge: .bottom)
-								.tipViewStyle(PersistentTip())
-								.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
-								.listRowSeparator(.hidden)
+							if #available(iOS 17, *) {
+								TipView(ConnectionTip(), arrowEdge: .bottom)
+									.tipViewStyle(PersistentTip())
+									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
+									.listRowSeparator(.hidden)
+							}
 							VStack(alignment: .leading) {
 								HStack {
 									VStack(alignment: .center) {

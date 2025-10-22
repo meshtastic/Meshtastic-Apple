@@ -4,10 +4,13 @@
  //
  //  Copyright(c) Garth Vander Houwen 8/31/23.
  //
- import SwiftUI
- import TipKit
+import SwiftUI
+#if canImport(TipKit)
+import TipKit
+#endif
 
- struct ShareChannelsTip: Tip {
+@available(iOS 17, *)
+struct ShareChannelsTip: Tip {
 
 	var id: String {
 		return "tip.channels.share"
@@ -23,6 +26,7 @@
 	}
  }
 
+@available(iOS 17, *)
 struct CreateChannelsTip: Tip {
 
    var id: String {
@@ -39,6 +43,7 @@ struct CreateChannelsTip: Tip {
    }
 }
 
+@available(iOS 17, *)
 struct AdminChannelTip: Tip {
 
    var id: String {

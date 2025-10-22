@@ -3,7 +3,9 @@
 import SwiftUI
 import CoreData
 import OSLog
+#if canImport(TipKit)
 import TipKit
+#endif
 import MeshtasticProtobufs
 import DatadogCore
 import DatadogCrashReporting
@@ -94,7 +96,9 @@ struct MeshtasticAppleApp: App {
 		MapDataManager.shared.initialize()
 #if DEBUG
 		// Show tips in development
-		try? Tips.resetDatastore()
+		if #available(iOS 17, *) {
+			try? Tips.resetDatastore()
+		}
 #endif
 		if !UserDefaults.firstLaunch {
 			// If this is first launch, we will show onboarding screens which
@@ -185,18 +189,20 @@ struct MeshtasticAppleApp: App {
 				}
 			})
 			.task {
-				try? Tips.configure(
-					[
-						// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
-						.datastoreLocation(.applicationDefault),
-						// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
-						// You can adjust this on per tip level as well
-						.displayFrequency(.immediate)
-					]
-				)
-            }
+				if #available(iOS 17, *) {
+					try? Tips.configure(
+						[
+							// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
+							.datastoreLocation(.applicationDefault),
+							// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
+							// You can adjust this on per tip level as well
+							.displayFrequency(.immediate)
+						]
+					)
+				}
+			}
 		}
-		.onChange(of: scenePhase) { (_, newScenePhase) in
+		.onChange(of: scenePhase) { newScenePhase in
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
