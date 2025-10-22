@@ -44,9 +44,9 @@ struct NodeMapContent: MapContent {
 		let nodeColor = UIColor(hex: UInt32(node.num))
 
 		/// Node Annotations
-		ForEach(node.positions?.array as? [PositionEntity] ?? [], id: \.id) { position in
+		ForEach(positionArray, id: \.id) { position in
 
-			let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
+			let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
 			let headingDegrees = Angle.degrees(Double(position.heading))
 			/// Reduced Precision Map Circle
 			if position.latest && 12...15 ~= position.precisionBits {
@@ -107,8 +107,8 @@ struct NodeMapContent: MapContent {
 			}
 			/// Node History
 			if showNodeHistory {
-				if position.latest == false && position.nodePosition?.favorite ?? false {
-					let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
+				if position.latest == false && node.favorite {
+					let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
 					let headingDegrees = Angle.degrees(Double(position.heading))
 					Annotation("", coordinate: position.coordinate) {
 						LazyVStack {
@@ -116,16 +116,16 @@ struct NodeMapContent: MapContent {
 								Image(systemName: "location.north.circle")
 									.resizable()
 									.scaledToFit()
-									.foregroundStyle(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))).isLight() ? .black : .white)
-									.background(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))))
+									.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
+									.background(Color(UIColor(hex: UInt32(node.num))))
 									.clipShape(Circle())
 									.rotationEffect(headingDegrees)
 									.frame(width: 16, height: 16)
 
 							} else {
 								Circle()
-									.fill(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))))
-									.strokeBorder(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))).isLight() ? .black : .white, lineWidth: 2)
+									.fill(Color(UIColor(hex: UInt32(node.num))))
+									.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white, lineWidth: 2)
 									.frame(width: 12, height: 12)
 							}
 						}
