@@ -12,6 +12,7 @@ import Foundation
 import OSLog
 import MapKit
 
+@available(iOS 17, *)
 struct MeshMap: View {
 
 	@Environment(\.managedObjectContext) var context
@@ -134,7 +135,7 @@ struct MeshMap: View {
 					guard case .map = router.navigationState.selectedTab else { return }
 					// TODO: handle deep link for waypoints
 				}
-				.onChange(of: selectedMapLayer) { _, newMapLayer in
+				.onChange(of: selectedMapLayer) { newMapLayer in
 					switch selectedMapLayer {
 					case .standard:
 						UserDefaults.mapLayer = newMapLayer

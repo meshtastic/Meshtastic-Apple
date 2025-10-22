@@ -45,11 +45,13 @@ struct ContentView: View {
 			}
 			.tag(NavigationState.Tab.nodes)
 
-			MeshMap(router: appState.router)
-				.tabItem {
-					Label("Mesh Map", systemImage: "map")
-				}
-				.tag(NavigationState.Tab.map)
+			if #available(iOS 17, *) {
+			    MeshMap(router: appState.router)
+    				.tabItem {
+    					Label("Mesh Map", systemImage: "map")
+    				}
+    				.tag(NavigationState.Tab.map)
+			}
 
 			Settings(
 				router: appState.router

@@ -8,6 +8,7 @@ import SwiftUI
 import MapKit
 import CoreData
 
+@available(iOS 17, *)
 struct NodeMapContent: MapContent {
 
 	@ObservedObject var node: NodeInfoEntity

@@ -9,6 +9,7 @@ import SwiftUI
 import MapKit
 import OSLog
 
+@available(iOS 17, *)
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
 	@State private var currentDetent = PresentationDetent.medium

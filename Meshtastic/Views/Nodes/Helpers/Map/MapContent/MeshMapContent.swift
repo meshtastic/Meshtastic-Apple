@@ -15,6 +15,7 @@ struct IdentifiableOverlay: Identifiable {
 	var id: ObjectIdentifier { ObjectIdentifier(overlay as AnyObject) }
 }
 
+@available(iOS 17, *)
 struct MeshMapContent: MapContent {
 	
 	/// Parameters
