@@ -88,7 +88,12 @@ struct Connect: View {
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
 													.symbolRenderingMode(.multicolor)
-													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+													.backportModify { view in
+														if #available(iOS 17, *) {
+															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														}
+														return nil
+													}
 													.foregroundColor(.teal)
 												if let expectedNodeDBSize = accessoryManager.expectedNodeDBSize {
 													if UIDevice.current.userInterfaceIdiom == .phone {
@@ -115,7 +120,12 @@ struct Connect: View {
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
 													.symbolRenderingMode(.multicolor)
-													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+													.backportModify { view in
+														if #available(iOS 17, *) {
+															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														}
+														return nil
+													}													
 													.foregroundColor(.orange)
 												Text("Communicating").font(.callout)
 													.foregroundColor(.orange)
@@ -124,7 +134,12 @@ struct Connect: View {
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
 													.symbolRenderingMode(.multicolor)
-													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+													.backportModify { view in
+														if #available(iOS 17, *) {
+															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														}
+														return nil
+													}	
 													.foregroundColor(.orange)
 												Text("Retrying (attempt \(attempt))").font(.callout)
 													.foregroundColor(.orange)

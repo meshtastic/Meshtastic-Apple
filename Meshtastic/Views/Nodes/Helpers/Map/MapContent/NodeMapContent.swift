@@ -109,7 +109,12 @@ struct NodeMapContent: MapContent {
 
 								} else {
 									Image(systemName: "flipphone")
-										.symbolEffect(.pulse.byLayer)
+										.backportModify { view in
+											if #available(iOS 17, *) {
+												return view.symbolEffect(.pulse.byLayer)
+											}
+											return nil
+										}
 										.padding(5)
 										.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
 										.background(Color(UIColor(hex: UInt32(node.num)).darker()))

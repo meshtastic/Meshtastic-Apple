@@ -294,6 +294,7 @@
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
+		E58E90242EA8A7CB00468668 /* SwiftUIBackports.swift in Sources */ = {isa = PBXBuildFile; fileRef = E58E90232EA8A7BC00468668 /* SwiftUIBackports.swift */; };
 		E58E90262EA8A82C00468668 /* TipKitBackports.swift in Sources */ = {isa = PBXBuildFile; fileRef = E58E90252EA8A82A00468668 /* TipKitBackports.swift */; };
 /* End PBXBuildFile section */
 

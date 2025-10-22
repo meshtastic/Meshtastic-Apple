@@ -82,14 +82,20 @@ struct MessageText: View {
 					}
 					if tapBackDestination.overlaySensorMessage {
 						VStack {
-							isDetectionSensorMessage ? Image(systemName: "sensor.fill")
-										.padding()
-										.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-										.foregroundStyle(Color.orange)
-										.symbolRenderingMode(.multicolor)
-										.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-										.offset(x: 20, y: -20)
-							: nil
+							if isDetectionSensorMessage {
+								Image(systemName: "sensor.fill")
+									.padding()
+									.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+									.foregroundStyle(Color.orange)
+									.symbolRenderingMode(.multicolor)
+									.backportModify { view in
+										if #available(iOS 17, *) {
+											return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+										}
+										return nil
+									}
+									.offset(x: 20, y: -20)
+							}
 						}
 					} else {
 						EmptyView()
