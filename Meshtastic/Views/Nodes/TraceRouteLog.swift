@@ -22,8 +22,6 @@ struct TraceRouteLog: View {
 	@State private var selectedRoute: TraceRouteEntity?
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .all, showsTraffic: true)
-	@State var position = MapCameraPosition.automatic
 	let distanceFormatter = MKDistanceFormatter()
 	/// State for the circle of routes
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -209,7 +207,19 @@ struct TraceRouteLog: View {
 								.padding(.bottom, 125)
 						}
 					} else {
-						ContentUnavailableView("Select a Trace Route", systemImage: "signpost.right.and.left")
+						if #available(iOS 17.0, *) {
+							ContentUnavailableView("Select a Trace Route", systemImage: "signpost.right.and.left")
+						} else {
+							VStack(spacing: 12) {
+								Image(systemName: "signpost.right.and.left")
+									.font(.system(size: 40))
+									.foregroundColor(.secondary)
+								Text("Select a Trace Route")
+									.font(.headline)
+									.foregroundColor(.secondary)
+							}
+							.frame(maxWidth: .infinity, maxHeight: .infinity)
+						}
 					}
 				}
 				.edgesIgnoringSafeArea(.bottom)
@@ -232,10 +242,9 @@ struct TraceRouteLog: View {
 						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[i].num))
 						CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 125)
 							Text("\(String(format: "%.2f", hops[i].snr)) dB")
-								.font(idiom == .phone ? .caption2 : .headline)
+								.font(idiom == .phone ? .caption2.weight(.semibold) : .headline.weight(.semibold))
 								.foregroundColor(snrColor)
 								.allowsTightening(true)
-								.fontWeight(.semibold)
 					}
 				} else {
 					let i = (idx - 1) / 2

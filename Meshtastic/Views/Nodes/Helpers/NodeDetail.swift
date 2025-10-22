@@ -359,17 +359,19 @@ struct NodeDetail: View {
 							}
 						}
 						.disabled(!node.hasDeviceMetrics)
-						NavigationLink {
-							NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
-						} label: {
-							Label {
-								Text("Node Map")
-							} icon: {
-								Image(systemName: "map")
-									.symbolRenderingMode(.multicolor)
+						if #available(iOS 17, *) {
+							NavigationLink {
+								NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
+							} label: {
+								Label {
+									Text("Node Map")
+								} icon: {
+									Image(systemName: "map")
+										.symbolRenderingMode(.multicolor)
+								}
 							}
+							.disabled(!node.hasPositions)
 						}
-						.disabled(!node.hasPositions)
 						NavigationLink {
 							PositionLog(node: node)
 						} label: {

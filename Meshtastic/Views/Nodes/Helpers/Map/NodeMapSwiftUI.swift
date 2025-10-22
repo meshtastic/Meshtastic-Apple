@@ -7,8 +7,11 @@
 
 import SwiftUI
 import CoreLocation
-import MapKit
+#if canImport(MapKit)
+@preconcurrency import MapKit
+#endif
 
+@available(iOS 17, *)
 struct NodeMapSwiftUI: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager

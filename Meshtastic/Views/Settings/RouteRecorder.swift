@@ -12,6 +12,7 @@ import CoreLocation
 import CoreMotion
 import OSLog
 
+@available(iOS 17.0, *)
 struct RouteRecorder: View {
 
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared

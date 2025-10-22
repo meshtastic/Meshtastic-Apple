@@ -365,12 +365,14 @@ struct Settings: View {
 					}
 				}
 
-				NavigationLink(value: SettingsNavigationState.routeRecorder) {
-					Label {
-						Text("Route Recorder")
-					} icon: {
-						Image(systemName: "record.circle")
-							.foregroundColor(.red)
+				if #available(iOS 17.0, *) {
+					NavigationLink(value: SettingsNavigationState.routeRecorder) {
+						Label {
+							Text("Route Recorder")
+						} icon: {
+							Image(systemName: "record.circle")
+								.foregroundColor(.red)
+						}
 					}
 				}
 
@@ -474,7 +476,9 @@ struct Settings: View {
 				case .routes:
 					Routes()
 				case .routeRecorder:
-					RouteRecorder()
+					if #available(iOS 17.0, *) {
+						RouteRecorder()
+					}
 				case .lora:
 					LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .channels:
