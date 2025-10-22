@@ -111,23 +111,21 @@ struct NodeMapContent: MapContent {
 					let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
 					let headingDegrees = Angle.degrees(Double(position.heading))
 					Annotation("", coordinate: position.coordinate) {
-						LazyVStack {
-							if pf.contains(.Heading) {
-								Image(systemName: "location.north.circle")
-									.resizable()
-									.scaledToFit()
-									.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
-									.background(Color(UIColor(hex: UInt32(node.num))))
-									.clipShape(Circle())
-									.rotationEffect(headingDegrees)
-									.frame(width: 16, height: 16)
+						if pf.contains(.Heading) {
+							Image(systemName: "location.north.circle")
+								.resizable()
+								.scaledToFit()
+								.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
+								.background(Color(UIColor(hex: UInt32(node.num))))
+								.clipShape(Circle())
+								.rotationEffect(headingDegrees)
+								.frame(width: 16, height: 16)
 
-							} else {
-								Circle()
-									.fill(Color(UIColor(hex: UInt32(node.num))))
-									.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white, lineWidth: 2)
-									.frame(width: 12, height: 12)
-							}
+						} else {
+							Circle()
+								.fill(Color(UIColor(hex: UInt32(node.num))))
+								.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white, lineWidth: 2)
+								.frame(width: 12, height: 12)
 						}
 					}
 					.annotationTitles(.hidden)
