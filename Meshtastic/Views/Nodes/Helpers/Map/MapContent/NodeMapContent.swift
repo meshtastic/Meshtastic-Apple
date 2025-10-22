@@ -58,19 +58,6 @@ struct NodeMapContent: MapContent {
 						.stroke(.white, lineWidth: 2)
 				}
 			}
-			let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
-			let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
-					return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-			})
-			/// Convex Hull
-			if showConvexHull {
-				if loraCoords.count > 0 {
-					let hull = loraCoords.getConvexHull()
-					MapPolygon(coordinates: hull)
-						.stroke(.blue, lineWidth: 3)
-						.foregroundStyle(.indigo.opacity(0.4))
-				}
-			}
 			/// Lastest Position Pin
 			if position.latest {
 				/// Node Annotations
@@ -161,6 +148,20 @@ struct NodeMapContent: MapContent {
 			)
 			MapPolyline(coordinates: lineCoords)
 				.stroke(gradient, style: dashed)
+		}
+
+		let loraNodes = positionArray.filter { $0.nodePosition?.viaMqtt ?? true == false }
+		let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
+			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+		})
+		/// Convex Hull
+		if showConvexHull {
+			if loraCoords.count > 0 {
+				let hull = loraCoords.getConvexHull()
+				MapPolygon(coordinates: hull)
+					.stroke(.blue, lineWidth: 3)
+					.foregroundStyle(.indigo.opacity(0.4))
+			}
 		}
 	}
 
