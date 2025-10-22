@@ -11,7 +11,7 @@ import MeshtasticProtobufs
 import CoreBluetooth
 
 private let maxRetries = 1
-private let retryDelay: Duration = .seconds(2)
+private let retryDelay: TimeInterval = 2
 
 extension AccessoryManager {
 	func connect(to device: Device, withConnection: Connection? = nil, wantConfig: Bool = true, wantDatabase: Bool = true, versionCheck: Bool = true) async throws {
@@ -48,7 +48,7 @@ extension AccessoryManager {
 			}
 			
 			// Step 1: Setup the connection
-			Step(timeout: .seconds(2)) { @MainActor _ in
+			Step(timeout: 2) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
 					let connection: Connection
@@ -86,7 +86,7 @@ extension AccessoryManager {
 			}
 			
 			// Step 3: Send WantConfig (config)
-			Step(timeout: .seconds(30)) { @MainActor _ in
+			Step(timeout: 30) { @MainActor _ in
 				guard wantConfig else {
 					Logger.transport.info("👟 [Connect] Step 4: wantConfig = false, skipping wantConfig")
 					return
@@ -106,7 +106,7 @@ extension AccessoryManager {
 			}
 			
 			// Step 5: Send WantConfig (database)
-			Step(timeout: .seconds(3.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
+			Step(timeout: 3.0, onFailure: .retryStep(attempts: 3)) { @MainActor _ in
 				guard wantDatabase else {
 					Logger.transport.info("👟 [Connect] Step 5: wantDatabase = false, skipping wantDatabase")
 					return
@@ -229,11 +229,11 @@ actor SequentialSteps {
 	}
 	
 	struct Step {
-		let timeout: Duration?
+		let timeout: TimeInterval?
 		let failureBehavior: FailureBehavior
 		let operation: StepClosure
 		
-		init(timeout: Duration? = nil, onFailure: FailureBehavior = .retryAll, operation: @escaping StepClosure) {
+		init(timeout: TimeInterval? = nil, onFailure: FailureBehavior = .retryAll, operation: @escaping StepClosure) {
 			self.timeout = timeout
 			self.failureBehavior = onFailure
 			self.operation = operation
@@ -241,7 +241,7 @@ actor SequentialSteps {
 	}
 	
 	private enum SequentialStepError: Error, LocalizedError {
-		case timeout(stepNumber: Int, afterWaiting: Duration)
+		case timeout(stepNumber: Int, afterWaiting: TimeInterval)
 		
 		var errorDescription: String? {
 			switch self {
@@ -254,11 +254,11 @@ actor SequentialSteps {
 	var currentlyExecutingStep: Task<Void, any Error>?
 	var cancelled = false
 	var maxRetries: Int
-	var retryDelay: Duration
+	var retryDelay: TimeInterval
 	var isRunning: Bool = false
 	var externalError: Error?
 	
-	init(maxRetries: Int = 1, retryDelay: Duration = .seconds(3), @StepsBuilder _ builder: () -> [Step]) {
+	init(maxRetries: Int = 1, retryDelay: TimeInterval = 3, @StepsBuilder _ builder: () -> [Step]) {
 		self.maxRetries	= maxRetries
 		self.retryDelay = retryDelay
 		self.steps = builder()
@@ -274,14 +274,14 @@ actor SequentialSteps {
 				let currentStep = steps[stepNumber]
 				let isRetry = (attempt > 0)
 				if isRetry {
-					try await Task.sleep(for: retryDelay)
+					try await self.sleepFor(retryDelay)
 				}
 				do {
 					let stepRetries = if case let .retryStep(attempts) = currentStep.failureBehavior, attempts > 0 { attempts } else { 1 }
 					stepRetryLoop: for stepRetryAttempt in 0..<stepRetries {
 						if stepRetryAttempt > 0 {
 							Logger.transport.info("[Retry Step Loop] Retrying step \(stepNumber + 1) for the \(stepRetryAttempt + 1) time.")
-							try await Task.sleep(for: retryDelay)
+							try await self.sleepFor(retryDelay)
 						}
 						do {
 							// Starting a new attempt for this step.
@@ -360,12 +360,12 @@ actor SequentialSteps {
 		}
 	}
 	
-	func executeWithTimeout<ReturnType>(stepNumber: Int, timeout: Duration, operation: @escaping @Sendable () async throws -> ReturnType) -> Task<ReturnType, Error> {
+	func executeWithTimeout<ReturnType>(stepNumber: Int, timeout: TimeInterval, operation: @escaping @Sendable () async throws -> ReturnType) -> Task<ReturnType, Error> {
 		return Task {
 			try await withThrowingTaskGroup(of: ReturnType.self) { group -> ReturnType in
 				group.addTask(operation: operation)
 				group.addTask {
-					try await _Concurrency.Task.sleep(for: timeout)
+					try await self.sleepFor(timeout)
 					throw SequentialStepError.timeout(stepNumber: stepNumber, afterWaiting: timeout)
 				}
 				guard let success = try await group.next() else {
@@ -382,5 +382,15 @@ actor SequentialSteps {
 		static func buildBlock(_ components: Step...) -> [Step] {
 			return components
 		}
+	}
+}
+
+private extension SequentialSteps {
+	@inline(__always)
+	func sleepFor(_ seconds: TimeInterval) async throws {
+		guard seconds > 0 else { return }
+		let clamped = min(seconds, TimeInterval(UInt64.max) / 1_000_000_000)
+		let nanos = UInt64(clamped * 1_000_000_000)
+		try await Task.sleep(nanoseconds: nanos)
 	}
 }

@@ -376,14 +376,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.processFromRadio(fromRadio)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+				await self.heartbeatTimer?.reset(delay: 15.0)
 			}
 
 		case .logMessage(let message):
 			self.didReceiveLog(message: message)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+				await self.heartbeatTimer?.reset(delay: 15.0)
 			}
 		
 		case .rssiUpdate(let rssi):
@@ -725,7 +725,7 @@ extension AccessoryManager {
 				}
 			}
 		}
-		await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+		await self.heartbeatTimer?.reset(delay: 15.0)
 	}
 }
 

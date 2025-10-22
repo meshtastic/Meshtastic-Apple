@@ -5,7 +5,7 @@
 //  Created by jake on 8/16/25.
 //
 
-import Foundation  // For Duration and Task (though often implicit in Swift environments)
+import Foundation
 import OSLog
 
 /// A resettable timer implemented using Swift concurrency.
@@ -28,20 +28,20 @@ actor ResettableTimer {
 	}
 	
 	/// Resets the timer to a new delay, cancelling any previous scheduled execution.
-	/// - Parameter delay: The new delay duration before executing the action.
-	func reset(delay: Duration, withReason reason: String? = nil) {
+	/// - Parameter delay: The new delay duration, expressed in seconds, before executing the action.
+	func reset(delay: TimeInterval, withReason reason: String? = nil) {
 		if let debugName {
 			if let reason {
-				Logger.services.debug("⏱️ [\(debugName)] Resettable timer reset with new duration \(delay): \(reason)")
+				Logger.services.debug("⏱️ [\(debugName)] Resettable timer reset with new duration \(delay)s: \(reason)")
 			} else {
-				Logger.services.debug("⏱️ [\(debugName)] Resettable timer reset with new duration \(delay)")
+				Logger.services.debug("⏱️ [\(debugName)] Resettable timer reset with new duration \(delay)s")
 			}
 		}
 		currentTask?.cancel()
 		currentTask = Task {
 			repeat {
 				do {
-					try await Task.sleep(for: delay)
+					try await sleep(for: delay)
 					if Task.isCancelled { break }
 					await action()
 				} catch {
@@ -63,5 +63,15 @@ actor ResettableTimer {
 		}
 		currentTask?.cancel()
 		currentTask = nil
+	}
+}
+
+private extension ResettableTimer {
+	@inline(__always)
+	func sleep(for interval: TimeInterval) async throws {
+		guard interval > 0 else { return }
+		let clampedInterval = min(interval, TimeInterval(UInt64.max) / 1_000_000_000)
+		let nanos = UInt64(clampedInterval * 1_000_000_000)
+		try await Task.sleep(nanoseconds: nanos)
 	}
 }

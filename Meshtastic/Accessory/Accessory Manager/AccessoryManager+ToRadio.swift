@@ -190,7 +190,7 @@ extension AccessoryManager {
 		} else {
 			try await self.send(heartbeatToRadio)
 		}
-		await self.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
+		await self.heartbeatResponseTimer?.reset(delay: 5.0)
 	}
 	
 	public func sendTime() async throws {
