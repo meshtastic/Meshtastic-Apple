@@ -437,32 +437,24 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		var log = message
 		/// Debug Log Level
 		if log.starts(with: "DEBUG |") {
-			do {
-				let logString = log
-				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
-					log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private(mask: .none)) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
-				} else {
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-				}
-			} catch {
+			let logString = log
+			if let coordsMatch = CommonRegex.firstCoordinateMatch(in: logString) {
+				log = "\(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces))"
+				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+				let coordinates = coordsMatch.text.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+				Logger.radio.debug("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordinates, privacy: .private(mask: .none)) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+			} else {
 				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 				Logger.radio.debug("🕵🏻‍♂️ \(log.replacingOccurrences(of: "DEBUG |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 			}
 		} else if log.starts(with: "INFO  |") {
-			do {
-				let logString = log
-				if let coordsMatch = try CommonRegex.COORDS_REGEX.firstMatch(in: logString) {
-					log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordsMatch.0.replacingOccurrences(of: "[,]", with: "", options: .regularExpression), privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
-				} else {
-					log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
-					Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
-				}
-			} catch {
+			let logString = log
+			if let coordsMatch = CommonRegex.firstCoordinateMatch(in: logString) {
+				log = "\(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces))"
+				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+				let coordinates = coordsMatch.text.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
+				Logger.radio.info("🛰️ \(log.prefix(upTo: coordsMatch.range.lowerBound), privacy: .public) \(coordinates, privacy: .private) \(log.suffix(from: coordsMatch.range.upperBound), privacy: .public)")
+			} else {
 				log = log.replacingOccurrences(of: "[,]", with: "", options: .regularExpression)
 				Logger.radio.info("📢 \(log.replacingOccurrences(of: "INFO  |", with: "").trimmingCharacters(in: .whitespaces), privacy: .public)")
 			}
