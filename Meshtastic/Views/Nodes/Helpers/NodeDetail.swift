@@ -253,13 +253,15 @@ struct NodeDetail: View {
 						|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
 						Section("Environment") {
 							VStack(spacing: 0) {
-								if !node.hasEnvironmentMetrics {
-									LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
-										.frame(height: environmentSectionHeight) // Use the state to set the frame
-										.onPreferenceChange(WeatherKitTilesHeightKey.self) { newHeight in
-											// Update the state with the new height
-											self.environmentSectionHeight = newHeight
-										}
+								if (!node.hasEnvironmentMetrics) {
+									if #available(iOS 16, *) {
+										LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+											.frame(height: environmentSectionHeight) // Use the state to set the frame
+											.onPreferenceChange(WeatherKitTilesHeightKey.self) { newHeight in
+												// Update the state with the new height
+												self.environmentSectionHeight = newHeight
+											}
+									}
 								} else {
 									VStack {
 										if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
@@ -379,17 +381,19 @@ struct NodeDetail: View {
 							}
 						}
 						.disabled(!node.hasPositions)
-						NavigationLink {
-							EnvironmentMetricsLog(node: node)
-						} label: {
-							Label {
-								Text("Environment Metrics Log")
-							} icon: {
-								Image(systemName: "cloud.sun.rain")
-									.symbolRenderingMode(.multicolor)
+						if #available(iOS 17.4, *) {
+							NavigationLink {
+								EnvironmentMetricsLog(node: node)
+							} label: {
+								Label {
+									Text("Environment Metrics Log")
+								} icon: {
+									Image(systemName: "cloud.sun.rain")
+										.symbolRenderingMode(.multicolor)
+								}
 							}
+							.disabled(!node.hasEnvironmentMetrics)
 						}
-						.disabled(!node.hasEnvironmentMetrics)
 						NavigationLink {
 							TraceRouteLog(node: node)
 						} label: {

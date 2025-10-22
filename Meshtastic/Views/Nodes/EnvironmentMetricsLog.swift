@@ -9,6 +9,7 @@ import Charts
 import OSLog
 import CoreData
 
+@available(iOS 17.4, *)
 struct EnvironmentMetricsLog: View {
 
 	@Environment(\.managedObjectContext) var context

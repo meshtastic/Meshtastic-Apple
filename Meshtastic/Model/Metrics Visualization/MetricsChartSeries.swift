@@ -12,6 +12,7 @@ import SwiftUI
 // MetricsChartSeries stores metadata about an attribute in TelemetryEntity.
 // Given a keypath, this class holds information about how to render the attrbute in a
 // the chart.  MetricsChartSeries objects are collected in a MetricsSeriesList
+@available(iOS 17, *)
 class MetricsChartSeries: ObservableObject {
 
 	// Uniquely identify this column for presistance and iteration
@@ -101,6 +102,7 @@ class MetricsChartSeries: ObservableObject {
 	}
 }
 
+@available(iOS 17, *)
 extension MetricsChartSeries: Identifiable, Hashable {
 
 	static func == (lhs: MetricsChartSeries, rhs: MetricsChartSeries) -> Bool {
@@ -112,6 +114,7 @@ extension MetricsChartSeries: Identifiable, Hashable {
 	}
 }
 
+@available(iOS 17, *)
 extension Plottable {
 	var floatValue: Float? {
 		if let integerValue = self.primitivePlottable as? any BinaryInteger {

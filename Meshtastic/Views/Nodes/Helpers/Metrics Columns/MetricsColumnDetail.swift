@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(iOS 17, *)
 struct MetricsColumnDetail: View {
 	@ObservedObject var columnList: MetricsColumnList
 	@ObservedObject var seriesList: MetricsSeriesList

@@ -1,8 +1,11 @@
 import SwiftUI
 import MapKit
-import WeatherKit
+#if canImport(WeatherKit)
+@preconcurrency import WeatherKit
+#endif
 import OSLog
 
+@available(iOS 16, *)
 struct LocalWeatherConditions: View {
 	@State var location: CLLocation?
 	/// Weather

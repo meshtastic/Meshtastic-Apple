@@ -8,9 +8,12 @@
 import SwiftUI
 import CoreLocation
 import Charts
-import WeatherKit
+#if canImport(WeatherKit)
+@preconcurrency import WeatherKit
+#endif
 import OSLog
 
+@available(iOS 16, *)
 struct NodeWeatherForecastView: View {
 	var location: CLLocation
 
@@ -209,6 +212,7 @@ struct NodeWeatherForecast {
 	}
 }
 
+@available(iOS 16, *)
 struct NodeWeatherForecastView_Previews: PreviewProvider {
 	static var previews: some View {
 		

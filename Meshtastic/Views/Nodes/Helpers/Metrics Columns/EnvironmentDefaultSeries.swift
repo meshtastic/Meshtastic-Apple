@@ -10,6 +10,7 @@ import Foundation
 import SwiftUI
 
 // This is the default configuration used by the EnvironmentMetricsLog view for the chart
+@available(iOS 17, *)
 extension MetricsSeriesList {
 	static var environmentDefaultChartSeries: MetricsSeriesList {
 		MetricsSeriesList([

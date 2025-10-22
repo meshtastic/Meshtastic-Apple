@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+@available(iOS 17, *)
 class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplaceableCollection {
 
 	@Published var series: [MetricsChartSeries]
