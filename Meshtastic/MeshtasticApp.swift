@@ -201,6 +201,10 @@ struct MeshtasticAppleApp: App {
 					)
 				}
 			}
+			.environment(\.managedObjectContext, persistenceController.container.viewContext)
+			.environmentObject(appState)
+			.environmentObject(accessoryManager)
+			.environmentObject(appState.router)
 		}
 		.onChange(of: scenePhase) { newScenePhase in
 			switch newScenePhase {
@@ -224,10 +228,6 @@ struct MeshtasticAppleApp: App {
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}
 		}
-		.environment(\.managedObjectContext, persistenceController.container.viewContext)
-		.environmentObject(appState)
-		.environmentObject(accessoryManager)
-		.environmentObject(appState.router) 
 	}
 
 }
