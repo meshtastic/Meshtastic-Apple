@@ -5,9 +5,11 @@
 //  Created by Benjamin Faershtein on 11/9/24.
 //
 
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 
+@available(iOS 16.0, *)
 struct MessageNodeIntent: AppIntent {
 	static var title: LocalizedStringResource = "Send a Direct Message"
 
@@ -45,3 +47,5 @@ struct MessageNodeIntent: AppIntent {
 	return .result()
 	}
 }
+
+#endif

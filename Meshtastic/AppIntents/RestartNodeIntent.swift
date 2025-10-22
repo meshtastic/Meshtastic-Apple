@@ -5,9 +5,11 @@
 //  Created by Benjamin Faershtein on 8/24/24.
 //
 
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 
+@available(iOS 16.0, *)
 struct RestartNodeIntent: AppIntent {
 	static let title: LocalizedStringResource = "Restart"
 
@@ -36,3 +38,5 @@ struct RestartNodeIntent: AppIntent {
 		return .result()
 	}
 }
+
+#endif

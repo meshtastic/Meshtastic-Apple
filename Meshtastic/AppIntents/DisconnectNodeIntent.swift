@@ -5,9 +5,11 @@
 //  Created by Benjamin Faershtein on 4/2/25.
 //
 
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 
+@available(iOS 16.0, *)
 struct DisconnectNodeIntent: AppIntent {
 	static let title: LocalizedStringResource = "Disconnect Node"
 
@@ -28,3 +30,5 @@ struct DisconnectNodeIntent: AppIntent {
 	return .result()
 	}
 }
+
+#endif

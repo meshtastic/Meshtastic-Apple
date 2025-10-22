@@ -5,9 +5,11 @@
 //  Created by Benjamin Faershtein on 8/25/24.
 //
 
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 
+@available(iOS 16.0, *)
 struct FactoryResetNodeIntent: AppIntent {
 	static let title: LocalizedStringResource = "Factory Reset"
 	static let description: IntentDescription = "Perform a factory reset on the node you are connected to"
@@ -47,3 +49,5 @@ struct FactoryResetNodeIntent: AppIntent {
 		return .result()
 	}
 }
+
+#endif

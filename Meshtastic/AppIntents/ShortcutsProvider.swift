@@ -5,9 +5,11 @@
 //  Created by Benjamin Faershtein on 8/24/24.
 //
 
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 
+@available(iOS 16.0, *)
 struct ShortcutsProvider: AppShortcutsProvider {
 	static var appShortcuts: [AppShortcut] {
 		AppShortcut(intent: ShutDownNodeIntent(),
@@ -41,3 +43,5 @@ struct ShortcutsProvider: AppShortcutsProvider {
 					systemImageName: "antenna.radiowaves.left.and.right.slash")
 	}
 }
+
+#endif

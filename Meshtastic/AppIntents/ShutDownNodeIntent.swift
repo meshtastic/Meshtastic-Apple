@@ -5,9 +5,11 @@
 //  Created by Benjamin Faershtein on 8/24/24.
 //
 
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 
+@available(iOS 16.0, *)
 struct ShutDownNodeIntent: AppIntent {
 	static let title: LocalizedStringResource = "Shut Down"
 
@@ -38,3 +40,5 @@ struct ShutDownNodeIntent: AppIntent {
 		return .result()
 	}
 }
+
+#endif

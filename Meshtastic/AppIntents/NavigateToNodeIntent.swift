@@ -5,10 +5,12 @@
 //  Created by Benjamin Faershtein on 2/8/25.
 //
 
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 import CoreLocation
 import CoreData
+#if canImport(UIKit)
 import UIKit
 
 @available(iOS 16.4, *)
@@ -59,3 +61,6 @@ struct NavigateToNodeIntent: ForegroundContinuableIntent {
 		}
 	}
 }
+
+#endif
+#endif

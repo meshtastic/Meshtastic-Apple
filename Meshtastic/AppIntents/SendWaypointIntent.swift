@@ -5,11 +5,13 @@
 //  Created by Benjamin Faershtein on 8/9/24.
 //
 
+#if canImport(AppIntents)
 import CoreLocation
 import Foundation
 import AppIntents
 import MeshtasticProtobufs
 
+@available(iOS 16.0, *)
 struct SendWaypointIntent: AppIntent {
 
 	var defaultDate = Date.now.addingTimeInterval(60 * 480)
@@ -109,3 +111,5 @@ struct SendWaypointIntent: AppIntent {
 		return matches?.count == 1
 	}
 }
+
+#endif

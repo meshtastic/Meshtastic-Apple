@@ -5,11 +5,13 @@
 //  Created by Benjamin Faershtein on 8/10/24.
 //
 
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 import CoreLocation
 import CoreData
 
+@available(iOS 16, *)
 struct NodePositionIntent: AppIntent {
 
 	@Parameter(title: "Node Number")
@@ -49,3 +51,5 @@ struct NodePositionIntent: AppIntent {
 		}
 	}
 }
+
+#endif

@@ -1,6 +1,8 @@
+#if canImport(AppIntents)
 import Foundation
 import AppIntents
 
+@available(iOS 16.0, *)
 struct TracerouteIntent: AppIntent {
 	static var title: LocalizedStringResource = "Send a Traceroute"
 
@@ -25,3 +27,5 @@ struct TracerouteIntent: AppIntent {
 		return .result()
 	}
 }
+
+#endif
