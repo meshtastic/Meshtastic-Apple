@@ -31,18 +31,26 @@ struct MessageText: View {
 	@State private var isShowingDeleteConfirmation = false
 	
 	var body: some View {
-		
-		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
-			
-			let markdownText = LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
-			return Text(markdownText)
-				.tint(Self.linkBlue)
-				.padding(.vertical, 10)
-				.padding(.horizontal, 8)
-				.foregroundColor(.white)
-				.background(isCurrentUser ? .accentColor : Color(.gray))
-				.cornerRadius(15)
-				.overlay {
+		if #available(iOS 16, *) {
+			SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
+				messageContent
+			}
+		} else {
+			messageContent
+		}
+	}
+
+	@ViewBuilder
+	private var messageContent: some View {
+		let markdownText = LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
+		Text(markdownText)
+			.tint(Self.linkBlue)
+			.padding(.vertical, 10)
+			.padding(.horizontal, 8)
+			.foregroundColor(.white)
+			.background(isCurrentUser ? .accentColor : Color(.gray))
+			.cornerRadius(15)
+			.overlay {
 					/// Show the lock if the message is pki encrypted and has a real ack if sent by the current user, or is pki encrypted for incoming messages
 					if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
 						VStack(alignment: .trailing) {
@@ -75,12 +83,12 @@ struct MessageText: View {
 					if tapBackDestination.overlaySensorMessage {
 						VStack {
 							isDetectionSensorMessage ? Image(systemName: "sensor.fill")
-								.padding()
-								.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-								.foregroundStyle(Color.orange)
-								.symbolRenderingMode(.multicolor)
-								.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-								.offset(x: 20, y: -20)
+										.padding()
+										.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+										.foregroundStyle(Color.orange)
+										.symbolRenderingMode(.multicolor)
+										.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+										.offset(x: 20, y: -20)
 							: nil
 						}
 					} else {
@@ -157,8 +165,7 @@ struct MessageText: View {
 						}
 					}
 					Button("Cancel", role: .cancel) {}
-				}
-		}
+ 				}
 	}
 }
 

@@ -17,88 +17,97 @@ struct TextMessageField: View {
 	@State private var sendPositionWithMessage = false
 
 	var body: some View {
-		SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
-			VStack(spacing: 0) {
-				HStack(alignment: .bottom) {
-					if replyMessageId != 0 || isFocused {
-						Button {
-							withAnimation(.easeInOut(duration: 0.2)) {
-								replyMessageId = 0
-							}
-							isFocused = false
-						} label: {
-							Image(systemName: "x.circle.fill")
-								.font(.largeTitle)
+		if #available(iOS 16, *) {
+			SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
+				messageFieldContent
+			}
+		} else {
+			messageFieldContent
+		}
+	}
+
+	@ViewBuilder
+	private var messageFieldContent: some View {
+		VStack(spacing: 0) {
+			HStack(alignment: .bottom) {
+				if replyMessageId != 0 || isFocused {
+					Button {
+						withAnimation(.easeInOut(duration: 0.2)) {
+							replyMessageId = 0
 						}
-						if replyMessageId != 0 {
-							Text("Reply")
-								.padding(.bottom, 10)
-						}
+						isFocused = false
+					} label: {
+						Image(systemName: "x.circle.fill")
+							.font(.largeTitle)
 					}
-					TextField("Message", text: $typingMessage, axis: .vertical)
-						.padding(10)
-						.background(
-							RoundedRectangle(cornerRadius: 20)
-								.strokeBorder(.tertiary, lineWidth: 1)
-								.background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground)))
-						)
-						.clipShape(RoundedRectangle(cornerRadius: 20))
-						.onChange(of: typingMessage) { _, value in
-							totalBytes = value.utf8.count
-							while totalBytes > Self.maxbytes {
-								typingMessage = String(typingMessage.dropLast())
-								totalBytes = typingMessage.utf8.count
-							}
-						}
-						.keyboardType(.default)
-						.focused($isFocused)
-						.multilineTextAlignment(.leading)
-						.onSubmit {
-							
-#if targetEnvironment(macCatalyst)
-							sendMessage()
-#endif
-						}
-						.foregroundColor(.primary)
-					if !typingMessage.isEmpty {
-						Button(action: sendMessage) {
-							Image(systemName: "arrow.up.circle.fill")
-								.font(.largeTitle)
-								.foregroundColor(.accentColor)
-						}
+					if replyMessageId != 0 {
+						Text("Reply")
+							.padding(.bottom, 10)
 					}
 				}
-				.padding(15)
-				if isFocused {
-					if #available(iOS 26.0, macOS 26.0, *) {
-						HStack {
-							Spacer()
-							AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
-							Spacer()
-							RequestPositionButton(action: requestPosition)
-							Spacer()
-							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
+				TextField("Message", text: $typingMessage, axis: .vertical)
+					.padding(10)
+					.background(
+						RoundedRectangle(cornerRadius: 20)
+							.strokeBorder(.tertiary, lineWidth: 1)
+							.background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground)))
+					)
+					.clipShape(RoundedRectangle(cornerRadius: 20))
+					.onChange(of: typingMessage) { _, value in
+						totalBytes = value.utf8.count
+						while totalBytes > Self.maxbytes {
+							typingMessage = String(typingMessage.dropLast())
+							totalBytes = typingMessage.utf8.count
 						}
-						.padding(.vertical, 8)
-						.padding(.horizontal)
-						.background(.ultraThinMaterial, in: Capsule())
-						Spacer()
-							.frame(height: 10)
-						
-					} else {
-						Divider()
-						HStack {
-							Spacer()
-							AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
-							Spacer()
-							RequestPositionButton(action: requestPosition)
-							Spacer()
-							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
-						}
-						.padding(.horizontal, 15)
-						.padding(.vertical, 10)
-						.background(.bar)
 					}
+					.keyboardType(.default)
+					.focused($isFocused)
+					.multilineTextAlignment(.leading)
+					.onSubmit {
+						
+#if targetEnvironment(macCatalyst)
+						sendMessage()
+#endif
+					}
+					.foregroundColor(.primary)
+				if !typingMessage.isEmpty {
+					Button(action: sendMessage) {
+						Image(systemName: "arrow.up.circle.fill")
+							.font(.largeTitle)
+							.foregroundColor(.accentColor)
+					}
+				}
+			}
+			.padding(15)
+			if isFocused {
+				if #available(iOS 26.0, macOS 26.0, *) {
+					HStack {
+						Spacer()
+						AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+						Spacer()
+						RequestPositionButton(action: requestPosition)
+						Spacer()
+						TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
+					}
+					.padding(.vertical, 8)
+					.padding(.horizontal)
+					.background(.ultraThinMaterial, in: Capsule())
+					Spacer()
+						.frame(height: 10)
+					
+				} else {
+					Divider()
+					HStack {
+						Spacer()
+						AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+						Spacer()
+						RequestPositionButton(action: requestPosition)
+						Spacer()
+						TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
+					}
+					.padding(.horizontal, 15)
+					.padding(.vertical, 10)
+					.background(.bar)
 				}
 			}
 		}
