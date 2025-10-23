@@ -184,7 +184,7 @@ struct PositionConfig: View {
 				Label("Altitude", systemImage: "arrow.up")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			.onChange(of: includeAltitude) { _, newIncludeAltitude in
+			.onChangeBackport(of: includeAltitude) { _, newIncludeAltitude in
 				if newIncludeAltitude != PositionFlags(rawValue: self.positionFlags).contains(.Altitude) { hasChanges = true }
 			}
 			
@@ -192,7 +192,7 @@ struct PositionConfig: View {
 				Label("Number of satellites", systemImage: "skew")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			.onChange(of: includeSatsinview) { _, newIncludeSatsinview in
+			.onChangeBackport(of: includeSatsinview) { _, newIncludeSatsinview in
 				if newIncludeSatsinview != PositionFlags(rawValue: self.positionFlags).contains(.Satsinview) { hasChanges = true }
 			}
 			
@@ -200,7 +200,7 @@ struct PositionConfig: View {
 				Label("Sequence number", systemImage: "number")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			.onChange(of: includeSeqNo) { _, newIncludeSeqNo in
+			.onChangeBackport(of: includeSeqNo) { _, newIncludeSeqNo in
 				if newIncludeSeqNo != PositionFlags(rawValue: self.positionFlags).contains(.SeqNo) { hasChanges = true }
 			}
 			
@@ -208,7 +208,7 @@ struct PositionConfig: View {
 				Label("Timestamp", systemImage: "clock")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			.onChange(of: includeTimestamp) { _, newIncludeTimestamp in
+			.onChangeBackport(of: includeTimestamp) { _, newIncludeTimestamp in
 				if newIncludeTimestamp != PositionFlags(rawValue: self.positionFlags).contains(.Timestamp) { hasChanges = true }
 			}
 			
@@ -216,7 +216,7 @@ struct PositionConfig: View {
 				Label("Vehicle heading", systemImage: "location.circle")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			.onChange(of: includeHeading) { _, newIncludeHeading in
+			.onChangeBackport(of: includeHeading) { _, newIncludeHeading in
 				if newIncludeHeading != PositionFlags(rawValue: self.positionFlags).contains(.Heading) { hasChanges = true }
 			}
 			
@@ -224,7 +224,7 @@ struct PositionConfig: View {
 				Label("Vehicle speed", systemImage: "speedometer")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			.onChange(of: includeSpeed) { _, newIncludeSpeed in
+			.onChangeBackport(of: includeSpeed) { _, newIncludeSpeed in
 				if newIncludeSpeed != PositionFlags(rawValue: self.positionFlags).contains(.Speed) { hasChanges = true }
 			}
 		}
@@ -239,7 +239,7 @@ struct PositionConfig: View {
 					Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.onChange(of: includeAltitudeMsl) { _, newIncludeAltitudeMsl in
+				.onChangeBackport(of: includeAltitudeMsl) { _, newIncludeAltitudeMsl in
 					if newIncludeAltitudeMsl != PositionFlags(rawValue: self.positionFlags).contains(.AltitudeMsl) { hasChanges = true }
 				}
 				
@@ -247,7 +247,7 @@ struct PositionConfig: View {
 					Label("Altitude Geoidal Separation", systemImage: "globe.americas")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.onChange(of: includeGeoidalSeparation) { _, newIncludeGeoidalSeparation in
+				.onChangeBackport(of: includeGeoidalSeparation) { _, newIncludeGeoidalSeparation in
 					if newIncludeGeoidalSeparation != PositionFlags(rawValue: self.positionFlags).contains(.GeoidalSeparation) { hasChanges = true }
 				}
 			}
@@ -256,7 +256,7 @@ struct PositionConfig: View {
 				Text("Dilution of precision (DOP) PDOP used by default")
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			.onChange(of: includeDop) { _, newIncludeDop in
+			.onChangeBackport(of: includeDop) { _, newIncludeDop in
 				if newIncludeDop != PositionFlags(rawValue: self.positionFlags).contains(.Dop) { hasChanges = true }
 			}
 			
@@ -265,7 +265,7 @@ struct PositionConfig: View {
 					Text("If DOP is set, use HDOP / VDOP values instead of PDOP")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.onChange(of: includeHvdop) { _, newIncludeHvdop in
+				.onChangeBackport(of: includeHvdop) { _, newIncludeHvdop in
 					if newIncludeHvdop != PositionFlags(rawValue: self.positionFlags).contains(.Hvdop) { hasChanges = true }
 				}
 			}
@@ -429,7 +429,7 @@ struct PositionConfig: View {
 				}
 			}
 		}
-		.onChange(of: fixedPosition) { _, newFixed in
+		.onChangeBackport(of: fixedPosition) { _, newFixed in
 			if supportedVersion {
 				if let positionConfig = node?.positionConfig {
 					/// Fixed Position is off to start
@@ -442,31 +442,31 @@ struct PositionConfig: View {
 				}
 			}
 		}
-		.onChange(of: gpsMode) { _, newGpsMode in
+		.onChangeBackport(of: gpsMode) { _, newGpsMode in
 			if newGpsMode != node?.positionConfig?.gpsMode ?? 0 { hasChanges = true }
 		}
-		.onChange(of: rxGpio) { _, newRxGpio in
+		.onChangeBackport(of: rxGpio) { _, newRxGpio in
 			if newRxGpio != node?.positionConfig?.rxGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: txGpio) { _, newTxGpio in
+		.onChangeBackport(of: txGpio) { _, newTxGpio in
 			if newTxGpio != node?.positionConfig?.txGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: gpsEnGpio) { _, newGpsEnGpio in
+		.onChangeBackport(of: gpsEnGpio) { _, newGpsEnGpio in
 			if newGpsEnGpio != node?.positionConfig?.gpsEnGpio ?? 0 { hasChanges = true }
 		}
-		.onChange(of: smartPositionEnabled) { _, newSmartPositionEnabled in
+		.onChangeBackport(of: smartPositionEnabled) { _, newSmartPositionEnabled in
 			if newSmartPositionEnabled != node?.positionConfig?.smartPositionEnabled { hasChanges = true }
 		}
-		.onChange(of: positionBroadcastSeconds.intValue) { _, newPositionBroadcastSeconds in
+		.onChangeBackport(of: positionBroadcastSeconds.intValue) { _, newPositionBroadcastSeconds in
 			if newPositionBroadcastSeconds != node?.positionConfig?.positionBroadcastSeconds ?? 0 { hasChanges = true }
 		}
-		.onChange(of: broadcastSmartMinimumIntervalSecs.intValue) { _, newBroadcastSmartMinimumIntervalSecs in
+		.onChangeBackport(of: broadcastSmartMinimumIntervalSecs.intValue) { _, newBroadcastSmartMinimumIntervalSecs in
 			if newBroadcastSmartMinimumIntervalSecs != node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: broadcastSmartMinimumDistance) { _, newBroadcastSmartMinimumDistance in
+		.onChangeBackport(of: broadcastSmartMinimumDistance) { _, newBroadcastSmartMinimumDistance in
 			if newBroadcastSmartMinimumDistance != node?.positionConfig?.broadcastSmartMinimumDistance ?? 0 { hasChanges = true }
 		}
-		.onChange(of: gpsUpdateInterval) { _, newGpsUpdateInterval in
+		.onChangeBackport(of: gpsUpdateInterval) { _, newGpsUpdateInterval in
 			if newGpsUpdateInterval != node?.positionConfig?.gpsUpdateInterval ?? 0 { hasChanges = true }
 		}
 	}

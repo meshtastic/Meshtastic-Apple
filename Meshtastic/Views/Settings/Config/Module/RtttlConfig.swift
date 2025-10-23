@@ -30,7 +30,7 @@ struct RtttlConfig: View {
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
-						.onChange(of: ringtone) {
+						.onChange(of: ringtone) { _ in
 							var totalBytes = ringtone.utf8.count
 							// Only mess with the value if it is too big
 							while totalBytes > 228 {
@@ -102,9 +102,9 @@ struct RtttlConfig: View {
 				}
 			}
 		}
-		.onChange(of: ringtone) { _, newRingtone in
-			if node != nil && node!.rtttlConfig != nil {
-				if newRingtone != node!.rtttlConfig!.ringtone { hasChanges = true }
+		.onChange(of: ringtone) { newRingtone in
+			if let ringtoneConfig = node?.rtttlConfig {
+				if newRingtone != ringtoneConfig.ringtone { hasChanges = true }
 			}
 		}
 		

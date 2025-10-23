@@ -1,4 +1,8 @@
 import SwiftUI
+import CoreLocation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // Backport shims for running on iOS 15.4.1.
 // These definitions intentionally no-op on platforms that lack the
@@ -50,7 +54,7 @@ public extension View {
 
 @available(iOS, introduced: 13, obsoleted: 17)
 public extension View {
-    func onChange<Value: Equatable>(of value: Value, initial: Bool = false, _ action: @escaping (_ oldValue: Value, _ newValue: Value) -> Void) -> some View {
+    func onChangeBackport<Value: Equatable>(of value: Value, initial: Bool = false, _ action: @escaping (_ oldValue: Value, _ newValue: Value) -> Void) -> some View {
         modifier(OnChangeLegacyModifier(value: value, initial: initial, action: action))
     }
 }

@@ -110,10 +110,10 @@ struct PaxCounterConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) { oldEnabled, newEnabled in
+		.onChangeBackport(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node?.paxCounterConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: paxcounterUpdateInterval.intValue) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
+		.onChangeBackport(of: paxcounterUpdateInterval.intValue) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
 			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval && newPaxcounterUpdateInterval != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
 		}
 	}

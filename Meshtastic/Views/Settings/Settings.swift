@@ -426,7 +426,7 @@ struct Settings: View {
 									}
 								}
 								.pickerStyle(.navigationLink)
-								.onChange(of: selectedNode) { _, newValue in
+								.onChangeBackport(of: selectedNode) { _, newValue in
 									if selectedNode > 0,
 									   let destinationNode = nodes.first(where: { $0.num == newValue }),
 									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
@@ -531,13 +531,13 @@ struct Settings: View {
 					Firmware(node: node)
 				}
 			}
-			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
+			.onChangeBackport(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
 				// If the preferred node changes, then select the newly perferred node
 				// This should only happen during connect
 				preferredNodeNum = newConnectedNode
 				setSelectedNode(to: newConnectedNode)
 			}
-			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
+			.onChangeBackport(of: accessoryManager.isConnected) { _, isConnectedNow in
 				// If we are on this screen, haven't iniatialized the selection yet,
 				// And we transition, to connected, then initialize the selection
 				if isConnectedNow, self.selectedNode == 0 {

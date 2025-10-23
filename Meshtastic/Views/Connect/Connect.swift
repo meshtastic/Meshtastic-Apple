@@ -528,7 +528,7 @@ struct ManualConnectionMenu: View {
 				.keyboardType(.URL)
 				.autocapitalization(.none)
 				.disableAutocorrection(true)
-				.onChange(of: connectionString) { _, newValue in
+				.onChangeBackport(of: connectionString) { _, newValue in
 					// Filter to only allow valid characters for hostname/IP:port
 					let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-:")
 					let filtered = String(newValue.unicodeScalars.filter { allowedCharacters.contains($0) })
