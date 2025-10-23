@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import MapKit
 
 @available(iOS 17, *)
@@ -24,7 +25,7 @@ struct PositionPopover: View {
 	var body: some View {
 		// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-		NavigationStack {
+		NBNavigationStack {
 			VStack {
 				HStack {
 					ZStack {

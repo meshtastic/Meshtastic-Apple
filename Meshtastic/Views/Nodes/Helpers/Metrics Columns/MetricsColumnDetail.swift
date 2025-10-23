@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 
 @available(iOS 17, *)
 struct MetricsColumnDetail: View {
@@ -26,7 +27,7 @@ struct MetricsColumnDetail: View {
 	@State private var selectedView: ViewOption = .chart
 	
 	var body: some View {
-		NavigationStack {
+		NBNavigationStack {
 			Form {
 				Section {
 					Picker("", selection: $selectedView) {

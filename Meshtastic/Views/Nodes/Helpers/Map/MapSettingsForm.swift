@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import MapKit
 import OSLog
 
@@ -29,7 +30,7 @@ struct MapSettingsForm: View {
 
 	var body: some View {
 
-		NavigationStack {
+		NBNavigationStack {
 			Form {
 				Section(header: Text("Map Options")) {
 					Picker(selection: $mapLayer, label: Text("")) {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import CoreData
 import OSLog
 #if canImport(TipKit)
@@ -105,7 +106,7 @@ fileprivate struct FilteredUserList: View {
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 			if user.num != accessoryManager.activeDeviceNum ?? 0 {
-				NavigationLink(value: user) {
+				NBNavigationLink(value: user) {
 					ZStack {
 						Image(systemName: "circle.fill")
 							.opacity(user.unreadMessages > 0 ? 1 : 0)

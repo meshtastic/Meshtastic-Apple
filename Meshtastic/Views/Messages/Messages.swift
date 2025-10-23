@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import CoreData
 import OSLog
 #if canImport(TipKit)
@@ -23,76 +24,39 @@ struct Messages: View {
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
 
-	@State private var columnVisibility = NavigationSplitViewVisibility.all
-
 	var body: some View {
-		NavigationSplitView(columnVisibility: $columnVisibility) {
-			List(selection: $router.navigationState.messages) {
-				NavigationLink(value: MessagesNavigationState.channels()) {
-					Spacer()
-					Label {
-						Text("Channels")
-							.badge(unreadChannelMessages)
-							.font(.title2)
-							.padding()
-					} icon: {
-						Image(systemName: "person.2")
-							.symbolRenderingMode(.hierarchical)
-							.foregroundColor(.accentColor)
-							.font(.title2)
-							.padding()
-					}
-				}
-				.alignmentGuide(.listRowSeparatorLeading) {
-					$0[.leading]
-				}
-				NavigationLink(value: MessagesNavigationState.directMessages()) {
-					Spacer()
-					Label {
-						Text("Direct Messages")
-							.badge(unreadDirectMessages)
-							.font(.title2)
-							.padding()
-					} icon: {
-						Image(systemName: "person")
-							.symbolRenderingMode(.hierarchical)
-							.foregroundColor(.accentColor)
-							.font(.title2)
-							.padding()
-					}
-				}
-				.alignmentGuide(.listRowSeparatorLeading) {
-					$0[.leading]
-				}
-				Spacer()
-				if #available(iOS 17, *) {
-					TipView(MessagesTip(), arrowEdge: .top)
-						.tipViewStyle(PersistentTip())
-						.listRowSeparator(.hidden)
-				}
-				Spacer()
-					.listRowSeparator(.hidden)
+		Group {
+			if #available(iOS 16, *) {
+				splitViewBody
+			} else {
+				legacyBody
 			}
-			.listStyle(.plain)
-			.navigationTitle("Messages")
-			.navigationBarTitleDisplayMode(.large)
-			.navigationBarItems(leading: MeshtasticLogo())
+		}
+		.onChange(of: router.navigationState) {
+			setupNavigationState()
+		}
+	}
+
+	@available(iOS 16, *)
+	private var splitViewBody: some View {
+		NavigationSplitView {
+			listWithSelection
+				.listStyle(.plain)
+				.navigationTitle("Messages")
+				.navigationBarTitleDisplayMode(.large)
+				.navigationBarItems(leading: MeshtasticLogo())
 		} content: {
 			switch router.navigationState.messages {
-			case .channels(let channelId, let messageId):
+			case .channels:
 				ChannelList(node: $node, channelSelection: $channelSelection)
-					// Removed navigationTitle and navigationBarTitleDisplayMode here.
-					// ChannelList.swift now handles this within its own NavigationStack.
-			case .directMessages(let userNum, let messageId):
+			case .directMessages:
 				UserList(node: $node, userSelection: $userSelection)
-					// Removed navigationTitle here. UserList will handle this.
 			case nil:
 				Text("Select a conversation type")
 			}
 		} detail: {
 			if let myInfo = node?.myInfo, let channelSelection {
 				ChannelMessageList(myInfo: myInfo, channel: channelSelection)
-					// The toolbar is now defined inside ChannelMessageList.swift
 			} else if let userSelection {
 				UserMessageList(user: userSelection)
 			} else if case .channels = router.navigationState.messages {
@@ -100,9 +64,98 @@ struct Messages: View {
 			} else if case .directMessages = router.navigationState.messages {
 				Text("Select a conversation")
 			}
-		}.onChange(of: router.navigationState) {
-			setupNavigationState()
 		}
+	}
+
+	private var legacyBody: some View {
+		NBNavigationStack(
+			path: Binding<[MessagesNavigationState]>(
+				get: {
+					if let state = router.navigationState.messages {
+						return [state]
+					}
+					return []
+				},
+				set: { newPath in
+					router.navigationState.messages = newPath.last
+				}
+			)
+		) {
+			listWithoutSelection
+				.listStyle(.plain)
+				.navigationTitle("Messages")
+				.navigationBarTitleDisplayMode(.large)
+				.navigationBarItems(leading: MeshtasticLogo())
+		}
+		.nbNavigationDestination(for: MessagesNavigationState.self) { destination in
+			switch destination {
+			case .channels:
+				ChannelList(node: $node, channelSelection: $channelSelection)
+			case .directMessages:
+				UserList(node: $node, userSelection: $userSelection)
+			}
+		}
+	}
+
+	@available(iOS 16, *)
+	private var listWithSelection: some View {
+		List(selection: $router.navigationState.messages) {
+			conversationRows
+		}
+	}
+
+	private var listWithoutSelection: some View {
+		List {
+			conversationRows
+		}
+	}
+
+	@ViewBuilder
+	private var conversationRows: some View {
+		NBNavigationLink(value: MessagesNavigationState.channels()) {
+			Spacer()
+			Label {
+				Text("Channels")
+					.badge(unreadChannelMessages)
+					.font(.title2)
+					.padding()
+			} icon: {
+				Image(systemName: "person.2")
+					.symbolRenderingMode(.hierarchical)
+					.foregroundColor(.accentColor)
+					.font(.title2)
+					.padding()
+			}
+		}
+		.alignmentGuide(.listRowSeparatorLeading) {
+			$0[.leading]
+		}
+		NBNavigationLink(value: MessagesNavigationState.directMessages()) {
+			Spacer()
+			Label {
+				Text("Direct Messages")
+					.badge(unreadDirectMessages)
+					.font(.title2)
+					.padding()
+			} icon: {
+				Image(systemName: "person")
+					.symbolRenderingMode(.hierarchical)
+					.foregroundColor(.accentColor)
+					.font(.title2)
+					.padding()
+			}
+		}
+		.alignmentGuide(.listRowSeparatorLeading) {
+			$0[.leading]
+		}
+		Spacer()
+		if #available(iOS 17, *) {
+			TipView(MessagesTip(), arrowEdge: .top)
+				.tipViewStyle(PersistentTip())
+				.listRowSeparator(.hidden)
+		}
+		Spacer()
+			.listRowSeparator(.hidden)
 	}
 
 	private func setupNavigationState() {

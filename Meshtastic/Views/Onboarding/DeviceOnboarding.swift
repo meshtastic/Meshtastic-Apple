@@ -1,6 +1,7 @@
 import CoreBluetooth
 import OSLog
 import SwiftUI
+import NavigationBackport
 import Foundation
 import MapKit
 
@@ -305,9 +306,9 @@ struct DeviceOnboarding: View {
 	}
 	
 	var body: some View {
-		NavigationStack(path: $navigationPath) {
+		NBNavigationStack(path: $navigationPath) {
 			welcomeView
-				.navigationDestination(for: SetupGuide.self) { guide in
+				.nbNavigationDestination(for: SetupGuide.self) { guide in
 					switch guide {
 					case .notifications:
 						notificationView

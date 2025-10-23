@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import CoreData
 import CoreLocation
 import Foundation
@@ -46,7 +47,7 @@ struct MeshMap: View {
 	@StateObject var filters = NodeFilterParameters()
 
 	var body: some View {
-		NavigationStack {
+		NBNavigationStack {
 			ZStack {
 				MapReader { reader in
 					Map(

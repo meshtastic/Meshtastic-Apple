@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/8/23.
 //
 import SwiftUI
+import NavigationBackport
 import CoreLocation
 import OSLog
 import CoreData
@@ -33,93 +34,11 @@ struct NodeList: View {
 	}
 	
 	var body: some View {
-		NavigationSplitView {
-			FilteredNodeList(
-				withFilters: filters,
-				selectedNode: $selectedNode,
-				connectedNode: connectedNode,
-				isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
-				deleteNodeId: $deleteNodeId,
-				shareContactNode: $shareContactNode
-			)
-			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(
-					filters: filters
-				)
-			}
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
-				HStack {
-					Button(action: {
-						withAnimation {
-							isEditingFilters = !isEditingFilters
-						}
-					}) {
-						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-							.padding(.vertical, 5)
-					}
-					.tint(Color(UIColor.secondarySystemBackground))
-					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)
-				}
-				.controlSize(.regular)
-				.padding(5)
-			}
-			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
-			.autocorrectionDisabled(true)
-			.scrollDismissesKeyboard(.immediately)
-			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(getNodeCount())))
-			.listStyle(.plain)
-			.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
-				Button("OK") { }.keyboardShortcut(.defaultAction)
-			} message: {
-				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
-			}
-			.alert("Position Exchange Failed", isPresented: $isPresentingPositionFailedAlert) {
-				Button("OK") { }.keyboardShortcut(.defaultAction)
-			} message: {
-				Text("Failed to get a valid position to exchange")
-			}
-			.alert("Trace Route Sent", isPresented: $isPresentingTraceRouteSentAlert) {
-				Button("OK") { }.keyboardShortcut(.defaultAction)
-			} message: {
-				Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
-			}
-			.confirmationDialog("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
-				Button("Delete Node", role: .destructive) {
-					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
-					if connectedNode != nil {
-						if let node = deleteNode {
-							Task {
-								do {
-									try await accessoryManager.removeNode(node: node, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
-								} catch {
-									Logger.data.error("Failed to delete node \(node.user?.longName ?? "Unknown".localized, privacy: .public)")
-								}
-							}
-						}
-					}
-				}
-			}
-			.sheet(item: $shareContactNode) { selectedNode in
-				ShareContactQRDialog(node: selectedNode.toProto())
-			}
-			.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
-			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?",
-					phoneOnly: true
-				)
-			}
-			.accessibilityElement(children: .contain))
-		} detail: {
-			if let node = selectedNode {
-				NodeDetail(
-					connectedNode: connectedNode,
-					node: node
-				)
+		Group {
+			if #available(iOS 16, *) {
+				splitViewBody
 			} else {
-				ContentUnavailableView("Select a Node", systemImage: "flipphone")
+				legacyBody
 			}
 		}
 		.onChange(of: router.navigationState.nodeListSelectedNodeNum) { _, newNum in
@@ -135,6 +54,118 @@ struct NodeList: View {
 			} else {
 				router.navigationState.nodeListSelectedNodeNum = nil
 			}
+		}
+	}
+
+	@available(iOS 16, *)
+	private var splitViewBody: some View {
+		NavigationSplitView {
+			sharedListContent
+				.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
+		} detail: {
+			if let node = selectedNode {
+				NodeDetail(
+					connectedNode: connectedNode,
+					node: node
+				)
+			} else {
+				ContentUnavailableView("Select a Node", systemImage: "flipphone")
+			}
+		}
+		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
+			ConnectedDevice(
+				deviceConnected: accessoryManager.isConnected,
+				name: accessoryManager.activeConnection?.device.shortName ?? "?",
+				phoneOnly: true
+			)
+		}
+		.accessibilityElement(children: .contain))
+	}
+
+	private var legacyBody: some View {
+		NBNavigationStack {
+			sharedListContent
+				.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
+					ConnectedDevice(
+						deviceConnected: accessoryManager.isConnected,
+						name: accessoryManager.activeConnection?.device.shortName ?? "?",
+						phoneOnly: true
+					)
+				}
+				.accessibilityElement(children: .contain))
+		}
+	}
+
+	@ViewBuilder
+	private var sharedListContent: some View {
+		FilteredNodeList(
+			withFilters: filters,
+			selectedNode: $selectedNode,
+			connectedNode: connectedNode,
+			isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
+			deleteNodeId: $deleteNodeId,
+			shareContactNode: $shareContactNode
+		)
+		.sheet(isPresented: $isEditingFilters) {
+			NodeListFilter(
+				filters: filters
+			)
+		}
+		.safeAreaInset(edge: .bottom, alignment: .trailing) {
+			HStack {
+				Button(action: {
+					withAnimation {
+						isEditingFilters = !isEditingFilters
+					}
+				}) {
+					Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+			}
+			.controlSize(.regular)
+			.padding(5)
+		}
+		.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
+		.autocorrectionDisabled(true)
+		.scrollDismissesKeyboard(.immediately)
+		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(getNodeCount())))
+		.listStyle(.plain)
+		.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
+			Button("OK") { }.keyboardShortcut(.defaultAction)
+		} message: {
+			Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+		}
+		.alert("Position Exchange Failed", isPresented: $isPresentingPositionFailedAlert) {
+			Button("OK") { }.keyboardShortcut(.defaultAction)
+		} message: {
+			Text("Failed to get a valid position to exchange")
+		}
+		.alert("Trace Route Sent", isPresented: $isPresentingTraceRouteSentAlert) {
+			Button("OK") { }.keyboardShortcut(.defaultAction)
+		} message: {
+			Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
+		}
+		.confirmationDialog("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
+			Button("Delete Node", role: .destructive) {
+				let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+				if connectedNode != nil {
+					if let node = deleteNode {
+						Task {
+							do {
+								try await accessoryManager.removeNode(node: node, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
+							} catch {
+								Logger.data.error("Failed to delete node \(node.user?.longName ?? "Unknown".localized, privacy: .public)")
+							}
+						}
+					}
+				}
+			}
+		}
+		.sheet(item: $shareContactNode) { selectedNode in
+			ShareContactQRDialog(node: selectedNode.toProto())
 		}
 	}
 	
@@ -189,8 +220,48 @@ fileprivate struct FilteredNodeList: View {
 	
 	// The body of the view
 	var body: some View {
+		if #available(iOS 16, *) {
+			splitList
+		} else {
+			legacyList
+		}
+	}
+
+	@available(iOS 16, *)
+	private var splitList: some View {
 		List(nodes, id: \.self, selection: $selectedNode) { node in
 			NavigationLink(value: node) {
+				NodeListItem(
+					node: node,
+					isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
+					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+				)
+			}
+			.contextMenu {
+				contextMenuActions(
+					node: node,
+					connectedNode: connectedNode
+				)
+			}
+		}
+	}
+
+	private var legacyList: some View {
+		List(nodes, id: \.self) { node in
+			NBNavigationLink {
+				NodeDetail(
+					connectedNode: connectedNode,
+					node: node
+				)
+				.onAppear {
+					selectedNode = node
+				}
+				.onDisappear {
+					if selectedNode == node {
+						selectedNode = nil
+					}
+				}
+			} label: {
 				NodeListItem(
 					node: node,
 					isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,

@@ -4,6 +4,7 @@
  */
 
 import SwiftUI
+import NavigationBackport
 import WeatherKit
 import MapKit
 import CoreLocation
@@ -29,7 +30,7 @@ struct NodeDetail: View {
 	@State private var environmentSectionHeight: CGFloat = 0
 	
 	var body: some View {
-		NavigationStack {
+		NBNavigationStack {
 			ScrollViewReader { scrollView in
 				Color.clear
 					.frame(height: 0) // Ensure it has no height

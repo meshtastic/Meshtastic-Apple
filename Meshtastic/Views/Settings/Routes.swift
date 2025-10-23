@@ -12,7 +12,6 @@ import OSLog
 
 struct Routes: View {
 
-	@State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var selectedRoute: RouteEntity?

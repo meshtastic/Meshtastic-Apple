@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import MapKit
 import CoreData
 import CoreLocation
@@ -32,7 +33,7 @@ struct Connect: View {
 	@State var selectedPeripherialId = ""
 	
 	var body: some View {
-		NavigationStack {
+		NBNavigationStack {
 			VStack(spacing: 0) {
 				List {
 					Section {

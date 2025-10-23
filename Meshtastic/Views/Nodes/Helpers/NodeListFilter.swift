@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import NavigationBackport
 
 struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
@@ -28,7 +29,7 @@ struct NodeListFilter: View {
 	
 	var body: some View {
 
-		NavigationStack {
+		NBNavigationStack {
 			Form {
 				Section(header: Text(filterTitle)) {
 					Toggle(isOn: $filters.viaLora) {

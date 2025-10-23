@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import MapKit
 
 struct ChannelForm: View {
@@ -25,7 +26,7 @@ struct ChannelForm: View {
 	@Binding var supportedVersion: Bool
 
 	var body: some View {
-		NavigationStack {
+		NBNavigationStack {
 			Form {
 				Section(header: Text("Channel Details")) {
 					HStack {

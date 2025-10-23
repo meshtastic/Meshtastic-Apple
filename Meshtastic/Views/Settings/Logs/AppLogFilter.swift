@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import SwiftUI
+import NavigationBackport
 
 enum LogCategories: Int, CaseIterable, Identifiable {
 
@@ -109,7 +110,7 @@ struct AppLogFilter: View {
 
 	var body: some View {
 
-		NavigationStack {
+		NBNavigationStack {
 			Form {
 				Section(header: HStack {
 					Text("Categories")

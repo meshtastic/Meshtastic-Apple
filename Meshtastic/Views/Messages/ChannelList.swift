@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import CoreData
 import OSLog
 
@@ -36,7 +37,7 @@ struct ChannelList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
-		NavigationLink(value: channel) {
+		NBNavigationLink(value: channel) {
 			let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0

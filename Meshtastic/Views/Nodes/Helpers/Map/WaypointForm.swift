@@ -9,6 +9,7 @@ import CoreLocation
 import MapKit
 import MeshtasticProtobufs
 import OSLog
+import NavigationBackport
 import SwiftUI
 
 @available(iOS 17, *)
@@ -35,7 +36,7 @@ struct WaypointForm: View {
 	@State private var waypointFailedAlert: Bool = false
 
 	var body: some View {
-		NavigationStack {
+		NBNavigationStack {
 			if editMode {
 				Text((waypoint.id > 0) ? "Editing Waypoint" : "Create Waypoint")
 					.font(.largeTitle)

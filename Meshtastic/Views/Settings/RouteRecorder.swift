@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import CoreData
 import MapKit
 import CoreLocation
@@ -87,7 +88,7 @@ struct RouteRecorder: View {
 				.padding()
 			}
 			.sheet(isPresented: $isShowingDetails) {
-				NavigationStack {
+				NBNavigationStack {
 					VStack {
 						if locationsHandler.isRecording {
 							HStack(alignment: .center) {

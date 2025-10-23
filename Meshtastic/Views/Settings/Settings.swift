@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NavigationBackport
 import OSLog
 #if canImport(TipKit)
 import TipKit
@@ -69,7 +70,7 @@ struct Settings: View {
 					.foregroundColor(.gray)
 			}
 
-			NavigationLink(value: SettingsNavigationState.lora) {
+			NBNavigationLink(value: SettingsNavigationState.lora) {
 				Label {
 					Text("LoRa")
 				} icon: {
@@ -78,7 +79,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.channels) {
+			NBNavigationLink(value: SettingsNavigationState.channels) {
 				Label {
 					Text("Channels")
 				} icon: {
@@ -87,7 +88,7 @@ struct Settings: View {
 			}
 			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
-			NavigationLink(value: SettingsNavigationState.security) {
+			NBNavigationLink(value: SettingsNavigationState.security) {
 				Label {
 					Text("Security")
 				} icon: {
@@ -95,7 +96,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.shareQRCode) {
+			NBNavigationLink(value: SettingsNavigationState.shareQRCode) {
 				Label {
 					Text("Share QR Code")
 				} icon: {
@@ -108,7 +109,7 @@ struct Settings: View {
 
 	var deviceConfigurationSection: some View {
 		Section("Device Configuration") {
-			NavigationLink(value: SettingsNavigationState.user) {
+			NBNavigationLink(value: SettingsNavigationState.user) {
 				Label {
 					Text("User")
 				} icon: {
@@ -116,7 +117,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.bluetooth) {
+			NBNavigationLink(value: SettingsNavigationState.bluetooth) {
 				Label {
 					Text("Bluetooth")
 				} icon: {
@@ -124,7 +125,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.device) {
+			NBNavigationLink(value: SettingsNavigationState.device) {
 				Label {
 					Text("Device")
 				} icon: {
@@ -132,7 +133,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.display) {
+			NBNavigationLink(value: SettingsNavigationState.display) {
 				Label {
 					Text("Display")
 				} icon: {
@@ -140,7 +141,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.network) {
+			NBNavigationLink(value: SettingsNavigationState.network) {
 				Label {
 					Text("Network")
 				} icon: {
@@ -148,7 +149,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.position) {
+			NBNavigationLink(value: SettingsNavigationState.position) {
 				Label {
 					Text("Position")
 				} icon: {
@@ -156,7 +157,7 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.power) {
+			NBNavigationLink(value: SettingsNavigationState.power) {
 				Label {
 					Text("Power")
 				} icon: {
@@ -169,7 +170,7 @@ struct Settings: View {
 	var moduleConfigurationSection: some View {
 		Section {
 			if isModuleSupported(.ambientlightingConfig) {
-				NavigationLink(value: SettingsNavigationState.ambientLighting) {
+				NBNavigationLink(value: SettingsNavigationState.ambientLighting) {
 					Label {
 						Text("Ambient Lighting")
 					} icon: {
@@ -179,7 +180,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.cannedmsgConfig) {
-				NavigationLink(value: SettingsNavigationState.cannedMessages) {
+				NBNavigationLink(value: SettingsNavigationState.cannedMessages) {
 					Label {
 						Text("Canned Messages")
 					} icon: {
@@ -189,7 +190,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.detectionsensorConfig) {
-				NavigationLink(value: SettingsNavigationState.detectionSensor) {
+				NBNavigationLink(value: SettingsNavigationState.detectionSensor) {
 					Label {
 						Text("Detection Sensor")
 					} icon: {
@@ -199,7 +200,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.extnotifConfig) {
-				NavigationLink(value: SettingsNavigationState.externalNotification) {
+				NBNavigationLink(value: SettingsNavigationState.externalNotification) {
 					Label {
 						Text("External Notification")
 					} icon: {
@@ -209,7 +210,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.mqttConfig) {
-				NavigationLink(value: SettingsNavigationState.mqtt) {
+				NBNavigationLink(value: SettingsNavigationState.mqtt) {
 					Label {
 						Text("MQTT")
 					} icon: {
@@ -219,7 +220,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.rangetestConfig) {
-				NavigationLink(value: SettingsNavigationState.rangeTest) {
+				NBNavigationLink(value: SettingsNavigationState.rangeTest) {
 					Label {
 						Text("Range Test")
 					} icon: {
@@ -229,7 +230,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.paxcounterConfig) {
-				NavigationLink(value: SettingsNavigationState.paxCounter) {
+				NBNavigationLink(value: SettingsNavigationState.paxCounter) {
 					Label {
 						Text("PAX Counter")
 					} icon: {
@@ -239,7 +240,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.extnotifConfig) {
-				NavigationLink(value: SettingsNavigationState.ringtone) {
+				NBNavigationLink(value: SettingsNavigationState.ringtone) {
 					Label {
 						Text("Ringtone")
 					} icon: {
@@ -249,7 +250,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.serialConfig) {
-				NavigationLink(value: SettingsNavigationState.serial) {
+				NBNavigationLink(value: SettingsNavigationState.serial) {
 					Label {
 						Text("Serial")
 					} icon: {
@@ -259,7 +260,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.storeforwardConfig) {
-				NavigationLink(value: SettingsNavigationState.storeAndForward) {
+				NBNavigationLink(value: SettingsNavigationState.storeAndForward) {
 					Label {
 						Text("Store & Forward")
 					} icon: {
@@ -269,7 +270,7 @@ struct Settings: View {
 			}
 
 			if isModuleSupported(.telemetryConfig) {
-				NavigationLink(value: SettingsNavigationState.telemetry) {
+				NBNavigationLink(value: SettingsNavigationState.telemetry) {
 					Label {
 						Text("Telemetry")
 					} icon: {
@@ -294,7 +295,7 @@ struct Settings: View {
 
 	var loggingSection: some View {
 		Section(header: Text("Logging")) {
-			NavigationLink(value: SettingsNavigationState.debugLogs) {
+			NBNavigationLink(value: SettingsNavigationState.debugLogs) {
 				Label {
 					Text("Logs")
 				} icon: {
@@ -306,7 +307,7 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
-			NavigationLink(value: SettingsNavigationState.appFiles) {
+			NBNavigationLink(value: SettingsNavigationState.appFiles) {
 				Label {
 					Text("App Files")
 				} icon: {
@@ -318,7 +319,7 @@ struct Settings: View {
 
 	var firmwareSection: some View {
 		Section(header: Text("Firmware")) {
-			NavigationLink(value: SettingsNavigationState.firmwareUpdates) {
+			NBNavigationLink(value: SettingsNavigationState.firmwareUpdates) {
 				Label {
 					Text("Firmware Updates")
 				} icon: {
@@ -330,7 +331,7 @@ struct Settings: View {
 	}
 
 	var body: some View {
-		NavigationStack(
+		NBNavigationStack(
 			path: Binding<[SettingsNavigationState]>(
 				get: {
 					[router.navigationState.settings].compactMap { $0 }
@@ -342,7 +343,7 @@ struct Settings: View {
 		) {
 			let node = nodes.first(where: { $0.num == preferredNodeNum })
 			List {
-				NavigationLink(value: SettingsNavigationState.about) {
+				NBNavigationLink(value: SettingsNavigationState.about) {
 					Label {
 						Text("About Meshtastic")
 					} icon: {
@@ -350,14 +351,14 @@ struct Settings: View {
 					}
 				}
 
-				NavigationLink(value: SettingsNavigationState.appSettings) {
+				NBNavigationLink(value: SettingsNavigationState.appSettings) {
 					Label {
 						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
 					}
 				}
-				NavigationLink(value: SettingsNavigationState.routes) {
+				NBNavigationLink(value: SettingsNavigationState.routes) {
 					Label {
 						Text("Routes")
 					} icon: {
@@ -366,7 +367,7 @@ struct Settings: View {
 				}
 
 				if #available(iOS 17.0, *) {
-					NavigationLink(value: SettingsNavigationState.routeRecorder) {
+					NBNavigationLink(value: SettingsNavigationState.routeRecorder) {
 						Label {
 							Text("Route Recorder")
 						} icon: {
@@ -468,7 +469,7 @@ struct Settings: View {
 					firmwareSection
 				}
 			}
-			.navigationDestination(for: SettingsNavigationState.self) { destination in
+			.nbNavigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
 				switch destination {
 				case .about:
