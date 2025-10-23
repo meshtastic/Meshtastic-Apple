@@ -348,7 +348,12 @@ if #available(iOS 16.2, *) {
 						.textCase(nil)
 					}
 				}
-				.scrollContentBackground(.hidden)
+				.backportModify { list in
+					if #available(iOS 16, *) {
+						return list.scrollContentBackground(.hidden)
+					}
+					return nil
+				}
 				HStack(alignment: .center) {
 					Spacer()
 #if targetEnvironment(macCatalyst)

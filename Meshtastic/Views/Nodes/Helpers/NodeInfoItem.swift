@@ -15,59 +15,82 @@ struct NodeInfoItem: View {
 	@State private var currentDevice: DeviceHardware?
 
 	var body: some View {
+		if node.user != nil {
+			content
+		}
+	}
+
+	@ViewBuilder private var content: some View {
+		if #available(iOS 16.0, *) {
+			ViewThatFits(in: .horizontal) {
+				hardwareSection
+				modelSection
+			}
+		} else {
+			VStack {
+				hardwareSection
+				modelSection
+			}
+		}
+	}
+
+	@ViewBuilder private var hardwareSection: some View {
 		if let user = node.user {
-		ViewThatFits(in: .horizontal) {
 			HStack {
 				Spacer()
-					if user.hwModel != "UNSET" {
-						VStack(alignment: .center) {
-							Spacer()
-							Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "seal.fill")
-								.resizable()
-								.aspectRatio(contentMode: .fill)
-								.frame(width: 75, height: 75)
-								.foregroundStyle(currentDevice?.activelySupported ?? false ? .green : .red)
-							Text( currentDevice?.activelySupported ?? false ? "Full Support" : "Community Support")
-								.foregroundStyle(.gray)
-								.font(.callout)
-						}
-						.accessibilityElement(children: .combine)
-						Spacer()
-					}
+				if user.hwModel != "UNSET" {
 					VStack(alignment: .center) {
-						HStack {
-							if user.hardwareImage != "UNSET" {
-								Image(user.hardwareImage ?? "UNSET")
-									.resizable()
-									.aspectRatio(contentMode: .fit)
-									.frame(maxHeight: 150)
-									.cornerRadius(5)
-							} else {
-								Image(systemName: "person.crop.circle.badge.questionmark")
-									.resizable()
-									.aspectRatio(contentMode: .fit)
-									.frame(width: 75, height: 75)
-									.cornerRadius(5)
-							}
-						}
-						.accessibilityElement(children: .combine)
+						Spacer()
+						Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "seal.fill")
+							.resizable()
+							.aspectRatio(contentMode: .fill)
+							.frame(width: 75, height: 75)
+							.foregroundStyle(currentDevice?.activelySupported ?? false ? .green : .red)
+						Text(currentDevice?.activelySupported ?? false ? "Full Support" : "Community Support")
+							.foregroundStyle(.gray)
+							.font(.callout)
 					}
+					.accessibilityElement(children: .combine)
 					Spacer()
 				}
-				.accessibilityElement(children: .combine)
-				.onAppear {
-					Api().loadDeviceHardwareData { (hw) in
-						for device in hw {
-							let currentHardware = node.user?.hwModel ?? "UNSET"
-							let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "").uppercased()
-							if deviceString == currentHardware {
-								currentDevice = device
-							}
+				VStack(alignment: .center) {
+					HStack {
+						if user.hardwareImage != "UNSET" {
+							Image(user.hardwareImage ?? "UNSET")
+								.resizable()
+								.aspectRatio(contentMode: .fit)
+								.frame(maxHeight: 150)
+								.cornerRadius(5)
+						} else {
+							Image(systemName: "person.crop.circle.badge.questionmark")
+								.resizable()
+								.aspectRatio(contentMode: .fit)
+								.frame(width: 75, height: 75)
+								.cornerRadius(5)
+						}
+					}
+					.accessibilityElement(children: .combine)
+				}
+				Spacer()
+			}
+			.accessibilityElement(children: .combine)
+			.onAppear {
+				Api().loadDeviceHardwareData { (hw) in
+					for device in hw {
+						let currentHardware = node.user?.hwModel ?? "UNSET"
+						let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "").uppercased()
+						if deviceString == currentHardware {
+							currentDevice = device
 						}
 					}
 				}
 			}
 			.listRowSeparator(.hidden)
+		}
+	}
+
+	@ViewBuilder private var modelSection: some View {
+		if let user = node.user {
 			HStack {
 				Label {
 					Text("Model")

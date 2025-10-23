@@ -15,6 +15,7 @@ import OSLog
 struct ShareContactQRDialog: View {
     let node: NodeInfo
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     var qrString: String {
 		var contact = SharedContact()
 		contact.nodeNum = node.num
@@ -56,19 +57,39 @@ struct ShareContactQRDialog: View {
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
-			ShareLink("Share QR Code & Link",
-						item: Image(uiImage: qrImage),
-					  subject: Text("Add Meshtastic Node \(node.user.shortName) as a contact"),
-					  message: Text(qrString),
-					  preview: SharePreview("Add Meshtastic Node \(node.user.shortName) as a contact",
-						image: Image(uiImage: qrImage))
-			)
+            if #available(iOS 16.0, *) {
+                ShareLink("Share QR Code & Link",
+                        item: Image(uiImage: qrImage),
+                      subject: Text("Add Meshtastic Node \(node.user.shortName) as a contact"),
+                      message: Text(qrString),
+                      preview: SharePreview("Add Meshtastic Node \(node.user.shortName) as a contact",
+                        image: Image(uiImage: qrImage))
+                )
+            } else {
+                Button("Share QR Code & Link") {
+                    presentLegacyShareSheet()
+                }
+                .buttonStyle(.borderedProminent)
+            }
             Button("Done") { dismiss() }
                 .buttonStyle(.borderedProminent)
                 .padding(.bottom)
         }
         .padding()
         .frame(maxWidth: 350)
+    }
+
+    private func presentLegacyShareSheet() {
+        #if canImport(UIKit)
+            let activityItems: [Any] = [qrString, qrImage]
+            let activityController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+            activityController.popoverPresentationController?.sourceRect = .zero
+            if let window = UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+                let root = window.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+                root.present(activityController, animated: true)
+            }
+        #endif
     }
 }
 
