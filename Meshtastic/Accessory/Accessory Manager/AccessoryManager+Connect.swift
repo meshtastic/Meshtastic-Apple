@@ -274,14 +274,14 @@ actor SequentialSteps {
 				let currentStep = steps[stepNumber]
 				let isRetry = (attempt > 0)
 				if isRetry {
-					try await self.sleepFor(retryDelay)
+					try await Task.sleepBackport(seconds: retryDelay)
 				}
 				do {
 					let stepRetries = if case let .retryStep(attempts) = currentStep.failureBehavior, attempts > 0 { attempts } else { 1 }
 					stepRetryLoop: for stepRetryAttempt in 0..<stepRetries {
 						if stepRetryAttempt > 0 {
 							Logger.transport.info("[Retry Step Loop] Retrying step \(stepNumber + 1) for the \(stepRetryAttempt + 1) time.")
-							try await self.sleepFor(retryDelay)
+							try await Task.sleepBackport(seconds: retryDelay)
 						}
 						do {
 							// Starting a new attempt for this step.
@@ -365,7 +365,7 @@ actor SequentialSteps {
 			try await withThrowingTaskGroup(of: ReturnType.self) { group -> ReturnType in
 				group.addTask(operation: operation)
 				group.addTask {
-					try await self.sleepFor(timeout)
+					try await Task.sleepBackport(seconds: timeout)
 					throw SequentialStepError.timeout(stepNumber: stepNumber, afterWaiting: timeout)
 				}
 				guard let success = try await group.next() else {
@@ -382,15 +382,5 @@ actor SequentialSteps {
 		static func buildBlock(_ components: Step...) -> [Step] {
 			return components
 		}
-	}
-}
-
-private extension SequentialSteps {
-	@inline(__always)
-	func sleepFor(_ seconds: TimeInterval) async throws {
-		guard seconds > 0 else { return }
-		let clamped = min(seconds, TimeInterval(UInt64.max) / 1_000_000_000)
-		let nanos = UInt64(clamped * 1_000_000_000)
-		try await Task.sleep(nanoseconds: nanos)
 	}
 }

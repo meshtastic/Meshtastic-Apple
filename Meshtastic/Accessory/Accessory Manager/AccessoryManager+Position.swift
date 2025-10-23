@@ -14,7 +14,7 @@ extension AccessoryManager {
 	func initializeLocationProvider() {
 		self.locationTask = Task {
 			repeat {
-				try? await Task.sleep(for: .seconds(30)) // sleep for 30 seconds. This throws if task is cancelled
+				try? await Task.sleepBackport(seconds: 30) // sleep for 30 seconds. This throws if task is cancelled
 
 				guard let fromNodeNum = activeConnection?.device.num else {
 					return

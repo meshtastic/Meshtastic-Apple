@@ -50,7 +50,7 @@ class SerialTransport: Transport {
 						}
 						portsAlreadyNotified.removeAll(where: {$0 == knownPort})
 					}
-					try? await Task.sleep(for: .seconds(5))
+					try? await Task.sleepBackport(seconds: 5)
 				}
 			}
 			cont.onTermination = { _ in

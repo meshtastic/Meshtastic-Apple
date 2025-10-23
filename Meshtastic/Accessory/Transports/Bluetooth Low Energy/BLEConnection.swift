@@ -229,7 +229,7 @@ actor BLEConnection: Connection {
 			guard let self else { return }
 			do {
 				while !Task.isCancelled {
-					try await Task.sleep(for: .seconds(10))
+					try await Task.sleepBackport(seconds: 10)
 					await self.requestRSSIRead()
 				}
 			} catch {

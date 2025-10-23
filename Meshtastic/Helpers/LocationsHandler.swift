@@ -75,7 +75,7 @@ import OSLog
 			// we'll resume the continuation with .notDetermined to prevent a leak.
 			Task { @MainActor in // Ensure this task runs on the MainActor
 				do {
-					try await Task.sleep(nanoseconds: 5_000_000_000) // Wait for 5 seconds
+					try await Task.sleepBackport(seconds: 5) // Wait for 5 seconds
 					if let currentContinuation = self.permissionContinuation {
 						// If the continuation hasn't been nilled out yet, it means
 						// locationManagerDidChangeAuthorization hasn't been called.

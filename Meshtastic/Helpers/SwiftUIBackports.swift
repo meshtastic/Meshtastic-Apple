@@ -182,3 +182,17 @@ public extension CLLocationManager {
         }
     }
 }
+
+// Compat helpers for Task sleep APIs that require iOS 16+.
+extension Task where Success == Never, Failure == Never {
+    /// Sleeps for the specified number of seconds while remaining compatible with iOS 15.
+    static func sleepBackport(seconds: Double) async throws {
+        let clampedSeconds = max(seconds, 0)
+        if #available(iOS 16.0, *) {
+            try await sleep(for: .seconds(clampedSeconds))
+        } else {
+            let nanoseconds = UInt64(clampedSeconds * 1_000_000_000)
+            try await sleep(nanoseconds: nanoseconds)
+        }
+    }
+}

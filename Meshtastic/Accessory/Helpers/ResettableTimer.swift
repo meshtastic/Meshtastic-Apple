@@ -41,7 +41,7 @@ actor ResettableTimer {
 		currentTask = Task {
 			repeat {
 				do {
-					try await sleep(for: delay)
+					try await Task.sleepBackport(seconds: delay)
 					if Task.isCancelled { break }
 					await action()
 				} catch {
@@ -63,15 +63,5 @@ actor ResettableTimer {
 		}
 		currentTask?.cancel()
 		currentTask = nil
-	}
-}
-
-private extension ResettableTimer {
-	@inline(__always)
-	func sleep(for interval: TimeInterval) async throws {
-		guard interval > 0 else { return }
-		let clampedInterval = min(interval, TimeInterval(UInt64.max) / 1_000_000_000)
-		let nanos = UInt64(clampedInterval * 1_000_000_000)
-		try await Task.sleep(nanoseconds: nanos)
 	}
 }

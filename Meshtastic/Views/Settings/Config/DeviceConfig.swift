@@ -171,7 +171,7 @@ struct DeviceConfig: View {
 								Task {
 									do {
 										try await accessoryManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!)
-										try await Task.sleep(for: .seconds(1))
+										try await Task.sleepBackport(seconds: 1)
 										try await accessoryManager.disconnect()
 										clearCoreDataDatabase(context: context, includeRoutes: false)
 										clearNotifications()
@@ -196,7 +196,7 @@ struct DeviceConfig: View {
 								Task {
 									do {
 										try await accessoryManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!)
-										try await Task.sleep(for: .seconds(1))
+										try await Task.sleepBackport(seconds: 1)
 										try await accessoryManager.disconnect()
 										clearCoreDataDatabase(context: context, includeRoutes: false)
 										clearNotifications()
@@ -209,7 +209,7 @@ struct DeviceConfig: View {
 								Task {
 									do {
 										try await accessoryManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!, resetDevice: true)
-										try? await Task.sleep(for: .seconds(1))
+										try? await Task.sleepBackport(seconds: 1)
 										try await accessoryManager.disconnect()
 										clearCoreDataDatabase(context: context, includeRoutes: false)
 										clearNotifications()

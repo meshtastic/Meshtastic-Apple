@@ -91,7 +91,7 @@ class BLETransport: Transport {
 					self.discoveredPeripherals.removeValue(forKey: deviceId)
 				}
 		
-				try? await Task.sleep(for: .seconds(15)) // Cleanup every 15 seconds
+				try? await Task.sleepBackport(seconds: 15) // Cleanup every 15 seconds
 			}
 			Logger.transport.debug("🛜 [BLE] Discovery clean up task has been canecelled.")
 		}
