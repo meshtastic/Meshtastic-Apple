@@ -173,13 +173,17 @@ struct Connect: View {
 										Button {
 											if !liveActivityStarted {
 #if canImport(ActivityKit)
+if #available(iOS 16.2, *) {
 												Logger.services.info("Start live activity.")
 												startNodeActivity()
+}
 #endif
 											} else {
 #if canImport(ActivityKit)
+if #available(iOS 16.2, *) {
 												Logger.services.info("Stop live activity.")
 												endActivity()
+}
 #endif
 											}
 										} label: {
@@ -417,6 +421,7 @@ struct Connect: View {
 	}
 #if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
+	@available(iOS 16.2, *)
 	func startNodeActivity() {
 		liveActivityStarted = true
 		// 15 Minutes Local Stats Interval
@@ -451,6 +456,7 @@ struct Connect: View {
 		}
 	}
 	
+	@available(iOS 16.2, *)
 	func endActivity() {
 		liveActivityStarted = false
 		Task {

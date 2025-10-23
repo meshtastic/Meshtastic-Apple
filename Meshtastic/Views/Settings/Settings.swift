@@ -459,7 +459,9 @@ struct Settings: View {
 					radioConfigurationSection
 					deviceConfigurationSection
 					moduleConfigurationSection
-					loggingSection
+					if #available(iOS 16.0, *) {
+						loggingSection
+					}
 #if DEBUG
 					developersSection
 #endif
@@ -524,7 +526,14 @@ struct Settings: View {
 				case .telemetry:
 					TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .debugLogs:
-					AppLog()
+					if #available(iOS 16.0, *) {
+						AppLog()
+					} else {
+						Text("Debug logs require iOS 16 or newer.")
+							.font(.callout)
+							.foregroundStyle(.secondary)
+							.padding()
+					}
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:

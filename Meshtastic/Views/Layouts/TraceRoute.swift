@@ -10,6 +10,7 @@ struct Rotation: LayoutValueKey {
 	static let defaultValue: Binding<Angle>? = nil
 }
 
+@available(iOS 16.0, *)
 struct TraceRouteComponent<V: View>: View {
 	var animation: Animation?
 	@ViewBuilder let content: () -> V
@@ -22,6 +23,7 @@ struct TraceRouteComponent<V: View>: View {
 	}
 }
 
+@available(iOS 16.0, *)
 struct TraceRoute: Layout {
 	var animatableData: AnimatablePair<CGFloat, CGFloat> {
 		get {

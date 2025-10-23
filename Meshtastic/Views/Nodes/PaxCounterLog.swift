@@ -9,6 +9,7 @@ import SwiftUI
 import Charts
 import OSLog
 
+@available(iOS 17.0, *)
 struct PaxCounterLog: View {
 
 	@Environment(\.managedObjectContext) var context

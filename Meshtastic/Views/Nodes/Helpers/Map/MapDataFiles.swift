@@ -2,6 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
 
+@available(iOS 17.0, *)
 struct MapDataFiles: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -213,6 +214,7 @@ struct MapDataFileRow: View {
 	}
 }
 
+@available(iOS 17.0, *)
 #Preview {
 	NavigationView {
 		MapDataFiles()

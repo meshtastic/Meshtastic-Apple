@@ -14,6 +14,7 @@ struct PositionAltitude {
 	var altitude: Measurement<UnitLength>
 }
 
+@available(iOS 16.0, *)
 struct PositionAltitudeChart: View {
 	@Environment(\.dismiss) private var dismiss
 	@ObservedObject var node: NodeInfoEntity

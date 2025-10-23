@@ -125,10 +125,15 @@ struct TraceRouteLog: View {
 								GeometryReader { geometry in
 									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 45 : 85)
 									Spacer()
-									TraceRoute(radius: size < 600 ? size : 600, rotation: angle) {
+									if #available(iOS 16.0, *) {
+										TraceRoute(radius: size < 600 ? size : 600, rotation: angle) {
+											contents()
+										}
+										.padding(.leading, idiom == .phone ? 0 : 20)
+									} else {
 										contents()
+										.padding(.leading, idiom == .phone ? 0 : 20)
 									}
-									.padding(.leading, idiom == .phone ? 0 : 20)
 									Spacer()
 								}
 								.scaledToFit()
@@ -233,28 +238,36 @@ struct TraceRouteLog: View {
 	}
 	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
 		ForEach(0..<indexes, id: \.self) { idx in
-			TraceRouteComponent(animation: animation) {
-				let hops = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? [] // getTraceRouteHops(context: PersistenceController.preview.container.viewContext)//
-				if idx % 2 == 0 {
-					let i = idx / 2
-					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
-					VStack {
-						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[i].num))
-						CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 125)
-							Text("\(String(format: "%.2f", hops[i].snr)) dB")
-								.font(idiom == .phone ? .caption2.weight(.semibold) : .headline.weight(.semibold))
-								.foregroundColor(snrColor)
-								.allowsTightening(true)
-					}
-				} else {
-					let i = (idx - 1) / 2
-					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
-					Image(systemName: "arrowshape.right.fill")
-						.resizable()
-						.frame(width: idiom == .phone ? 25 : 60, height: idiom == .phone ? 25 : 60)
-						.foregroundColor(snrColor.opacity(0.7))
+			if #available(iOS 16.0, *) {
+				TraceRouteComponent(animation: animation) {
+					routeItem(at: idx)
 				}
+			} else {
+				routeItem(at: idx)
 			}
+		}
+	}
+
+	@ViewBuilder private func routeItem(at idx: Int) -> some View {
+		let hops = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? []
+		if idx % 2 == 0 {
+			let i = idx / 2
+			let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
+			VStack {
+				let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[i].num))
+				CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 125)
+					Text("\(String(format: "%.2f", hops[i].snr)) dB")
+						.font(idiom == .phone ? .caption2.weight(.semibold) : .headline.weight(.semibold))
+						.foregroundColor(snrColor)
+						.allowsTightening(true)
+			}
+		} else {
+			let i = (idx - 1) / 2
+			let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
+			Image(systemName: "arrowshape.right.fill")
+				.resizable()
+				.frame(width: idiom == .phone ? 25 : 60, height: idiom == .phone ? 25 : 60)
+				.foregroundColor(snrColor.opacity(0.7))
 		}
 	}
 }

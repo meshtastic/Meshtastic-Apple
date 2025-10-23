@@ -348,17 +348,19 @@ struct NodeDetail: View {
 						}
 					}
 					Section("Logs") {
-						NavigationLink {
-							DeviceMetricsLog(node: node)
-						} label: {
-							Label {
-								Text("Device Metrics Log")
-							} icon: {
-								Image(systemName: "flipphone")
-									.symbolRenderingMode(.multicolor)
+						if #available(iOS 17, *) {
+							NavigationLink {
+								DeviceMetricsLog(node: node)
+							} label: {
+								Label {
+									Text("Device Metrics Log")
+								} icon: {
+									Image(systemName: "flipphone")
+										.symbolRenderingMode(.multicolor)
+								}
 							}
+							.disabled(!node.hasDeviceMetrics)
 						}
-						.disabled(!node.hasDeviceMetrics)
 						if #available(iOS 17, *) {
 							NavigationLink {
 								NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
@@ -372,17 +374,19 @@ struct NodeDetail: View {
 							}
 							.disabled(!node.hasPositions)
 						}
-						NavigationLink {
-							PositionLog(node: node)
-						} label: {
-							Label {
-								Text("Position Log")
-							} icon: {
-								Image(systemName: "mappin.and.ellipse")
-									.symbolRenderingMode(.multicolor)
+						if #available(iOS 17, *) {
+							NavigationLink {
+								PositionLog(node: node)
+							} label: {
+								Label {
+									Text("Position Log")
+								} icon: {
+									Image(systemName: "mappin.and.ellipse")
+										.symbolRenderingMode(.multicolor)
+								}
 							}
+							.disabled(!node.hasPositions)
 						}
-						.disabled(!node.hasPositions)
 						if #available(iOS 17.4, *) {
 							NavigationLink {
 								EnvironmentMetricsLog(node: node)
@@ -407,40 +411,46 @@ struct NodeDetail: View {
 							}
 						}
 						.disabled(node.traceRoutes?.count ?? 0 == 0)
-						NavigationLink {
-							PowerMetricsLog(node: node)
-						} label: {
-							Label {
-								Text("Power Metrics Log")
-							} icon: {
-								Image(systemName: "bolt")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasPowerMetrics)
-						NavigationLink {
-							DetectionSensorLog(node: node)
-						} label: {
-							Label {
-								Text("Detection Sensor Log")
-							} icon: {
-								Image(systemName: "sensor")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasDetectionSensorMetrics)
-						if node.hasPax {
+						if #available(iOS 17, *) {
 							NavigationLink {
-								PaxCounterLog(node: node)
+								PowerMetricsLog(node: node)
 							} label: {
 								Label {
-									Text("paxcounter.log")
+									Text("Power Metrics Log")
 								} icon: {
-									Image(systemName: "figure.walk.motion")
+									Image(systemName: "bolt")
 										.symbolRenderingMode(.multicolor)
 								}
 							}
-							.disabled(!node.hasPax)
+							.disabled(!node.hasPowerMetrics)
+						}
+						if #available(iOS 17, *) {
+							NavigationLink {
+								DetectionSensorLog(node: node)
+							} label: {
+								Label {
+									Text("Detection Sensor Log")
+								} icon: {
+									Image(systemName: "sensor")
+										.symbolRenderingMode(.multicolor)
+								}
+							}
+							.disabled(!node.hasDetectionSensorMetrics)
+						}
+						if #available(iOS 17, *) {
+							if node.hasPax {
+								NavigationLink {
+									PaxCounterLog(node: node)
+								} label: {
+									Label {
+										Text("paxcounter.log")
+									} icon: {
+										Image(systemName: "figure.walk.motion")
+											.symbolRenderingMode(.multicolor)
+									}
+								}
+								.disabled(!node.hasPax)
+							}
 						}
 					}
 					Section("Actions") {

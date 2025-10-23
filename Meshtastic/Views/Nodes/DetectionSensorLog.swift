@@ -10,6 +10,7 @@ import Charts
 import MeshtasticProtobufs
 import OSLog
 
+@available(iOS 16.0, *)
 struct DetectionSensorLog: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager

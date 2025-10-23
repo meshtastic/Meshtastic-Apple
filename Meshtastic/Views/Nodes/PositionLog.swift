@@ -7,6 +7,7 @@
 import SwiftUI
 import OSLog
 
+@available(iOS 17.0, *)
 struct PositionLog: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager

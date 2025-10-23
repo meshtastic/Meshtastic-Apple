@@ -17,6 +17,7 @@ enum AqiDisplayMode: Int, CaseIterable, Identifiable {
 	var id: Int { self.rawValue }
 }
 
+@available(iOS 16.0, *)
 struct AirQualityIndex: View {
 	var aqi: Int
 	var displayMode: IaqDisplayMode = .pill
@@ -75,6 +76,7 @@ struct AirQualityIndex: View {
 	}
 }
 
+@available(iOS 16.0, *)
 struct AirQualityIndex_Previews: PreviewProvider {
 	static var previews: some View {
 		VStack {

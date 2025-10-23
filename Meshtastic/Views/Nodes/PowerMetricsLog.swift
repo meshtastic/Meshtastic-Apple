@@ -10,6 +10,7 @@ import SwiftUI
 import Charts
 import OSLog
 
+@available(iOS 17.0, *)
 struct PowerMetricsLog: View {
 
 	@Environment(\.managedObjectContext) var context

@@ -8,6 +8,7 @@
 import SwiftUI
 @preconcurrency import OSLog
 
+@available(iOS 16.0, *)
 struct AppLog: View {
 
 	@State private var logs: [OSLogEntryLog] = []
@@ -214,6 +215,7 @@ struct AppLog: View {
 	}
 }
 
+@available(iOS 16.0, *)
 extension AppLog {
 	@MainActor
 	private func searchAppLogs() async -> [OSLogEntryLog] {

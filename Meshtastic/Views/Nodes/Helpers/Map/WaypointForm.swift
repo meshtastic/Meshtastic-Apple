@@ -11,6 +11,7 @@ import MeshtasticProtobufs
 import OSLog
 import SwiftUI
 
+@available(iOS 17, *)
 struct WaypointForm: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager

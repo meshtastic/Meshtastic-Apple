@@ -8,6 +8,7 @@ import SwiftUI
 import Charts
 import OSLog
 
+@available(iOS 17.0, *)
 struct DeviceMetricsLog: View {
 
 	@Environment(\.managedObjectContext) var context
