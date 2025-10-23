@@ -15,7 +15,7 @@ import OSLog
 
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
 	public var manager = CLLocationManager()
-	private var background: CLBackgroundActivitySession?
+	private var background: AnyObject?
 	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 
 	@Published var locationsArray: [CLLocation] = [CLLocation]()
@@ -27,6 +27,8 @@ import OSLog
 	@Published var distanceTraveled = 0.0
 	@Published var elevationGain = 0.0
 
+	private var liveUpdatesTask: Task<Void, Never>?
+
 	@Published
 	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
 		didSet { UserDefaults.standard.set(updatesStarted, forKey: "liveUpdatesStarted") }
@@ -35,8 +37,7 @@ import OSLog
 	@Published
 	var backgroundActivity: Bool = UserDefaults.standard.bool(forKey: "BGActivitySessionStarted") {
 		didSet {
-			// Invalidate or create the background activity session based on the new value.
-			backgroundActivity ? self.background = CLBackgroundActivitySession() : self.background?.invalidate()
+			updateBackgroundActivitySession()
 			UserDefaults.standard.set(backgroundActivity, forKey: "BGActivitySessionStarted")
 		}
 	}
@@ -74,7 +75,7 @@ import OSLog
 			// we'll resume the continuation with .notDetermined to prevent a leak.
 			Task { @MainActor in // Ensure this task runs on the MainActor
 				do {
-					try await Task.sleep(for: .seconds(5)) // Wait for 5 seconds
+					try await Task.sleep(nanoseconds: 5_000_000_000) // Wait for 5 seconds
 					if let currentContinuation = self.permissionContinuation {
 						// If the continuation hasn't been nilled out yet, it means
 						// locationManagerDidChangeAuthorization hasn't been called.
@@ -120,6 +121,11 @@ import OSLog
 		self.isRequestingPermission = false // Reset the flag as the request has completed
 	}
 
+	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+		guard updatesStarted, let location = locations.last else { return }
+		handleLocationUpdate(location, isStationary: false)
+	}
+
 	override init() {
 		super.init()
 		self.manager.delegate = self
@@ -141,41 +147,43 @@ import OSLog
 			return
 		}
 		Logger.services.info("📍 [App] Starting location updates")
-		// Using a Task for asynchronous operations. The @MainActor isolation of the class
-		// ensures that all state changes within this Task (accessing @Published properties)
-		// will be performed on the main actor.
-		Task { @MainActor in
-			do {
-				self.updatesStarted = true
-				// `liveUpdates()` provides a stream of location updates.
-				let updates = CLLocationUpdate.liveUpdates()
-				for try await update in updates {
-					// Check for task cancellation to allow graceful stopping.
-					try Task.checkCancellation()
-					// If `updatesStarted` is set to false (e.g., by `stopLocationUpdates`),
-					// break out of the loop to stop processing updates.
-					if !self.updatesStarted {
-						Logger.services.info("🛑 [App] Location updates loop stopped due to updatesStarted being false.")
-						break
-					}
-					if let loc = update.location {
-						self.isStationary = update.isStationary
-						let locationAdded = addLocation(loc, smartPostion: enableSmartPosition)
-						if !isRecording && locationAdded {
-							self.count = 1
-						} else if locationAdded && isRecording {
-							self.count += 1
+		self.updatesStarted = true
+		if #available(iOS 17.0, *) {
+			liveUpdatesTask?.cancel()
+			liveUpdatesTask = Task { @MainActor in
+				do {
+					let updates = CLLocationUpdate.liveUpdates()
+					for try await update in updates {
+						// Check for task cancellation to allow graceful stopping.
+						try Task.checkCancellation()
+						// If `updatesStarted` is set to false (e.g., by `stopLocationUpdates`),
+						// break out of the loop to stop processing updates.
+						if !self.updatesStarted {
+							Logger.services.info("🛑 [App] Location updates loop stopped due to updatesStarted being false.")
+							break
+						}
+						if let loc = update.location {
+							let stationary: Bool
+							if #available(iOS 18.0, *) {
+								stationary = update.stationary
+							} else {
+								stationary = false
+							}
+							self.handleLocationUpdate(loc, isStationary: stationary)
 						}
 					}
+				} catch is CancellationError {
+					// Handle explicit task cancellation gracefully.
+					Logger.services.info("📍 [App] Location updates task was cancelled.")
+				} catch {
+					// Catch any other errors during location updates.
+					Logger.services.error("💥 [App] Could not start location updates: \(error.localizedDescription, privacy: .public)")
 				}
-			} catch is CancellationError {
-				// Handle explicit task cancellation gracefully.
-				Logger.services.info("📍 [App] Location updates task was cancelled.")
-			} catch {
-				// Catch any other errors during location updates.
-				Logger.services.error("💥 [App] Could not start location updates: \(error.localizedDescription, privacy: .public)")
+				// The Task completes implicitly here.
+				liveUpdatesTask = nil
 			}
-			// The Task completes implicitly here.
+		} else {
+			manager.startUpdatingLocation()
 		}
 	}
 	/// Stops receiving live location updates.
@@ -183,7 +191,41 @@ import OSLog
 		Logger.services.info("🛑 [App] Stopping location updates")
 		// Setting `updatesStarted` to false will cause the `liveUpdates()` loop to break.
 		self.updatesStarted = false
+		if #available(iOS 17.0, *) {
+			liveUpdatesTask?.cancel()
+			liveUpdatesTask = nil
+		} else {
+			manager.stopUpdatingLocation()
+		}
 	}
+
+	private func updateBackgroundActivitySession() {
+		if backgroundActivity {
+			startBackgroundActivitySession()
+		} else {
+			stopBackgroundActivitySession()
+		}
+	}
+
+	private func startBackgroundActivitySession() {
+		stopBackgroundActivitySession()
+		background = manager.startBackgroundActivitySessionCompat()
+	}
+
+	private func stopBackgroundActivitySession() {
+		manager.invalidateBackgroundActivitySessionCompat(background)
+		background = nil
+	}
+	private func handleLocationUpdate(_ location: CLLocation, isStationary: Bool) {
+		self.isStationary = isStationary
+		let locationAdded = addLocation(location, smartPostion: enableSmartPosition)
+		if !isRecording && locationAdded {
+			self.count = 1
+		} else if locationAdded && isRecording {
+			self.count += 1
+		}
+	}
+
 	/// Adds a location to the array and updates tracking metrics, applying smart position filters if enabled.
 	/// - Parameters:
 	///   - location: The `CLLocation` object to add.

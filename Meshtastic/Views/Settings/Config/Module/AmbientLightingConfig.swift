@@ -21,7 +21,7 @@ struct AmbientLightingConfig: View {
 	@State var ledState: Bool = false
 	@State var current = 0
 	@State private var color = Color(red: 51, green: 199, blue: 88) // Color(.sRGB, red: 0.98, green: 0.9, blue: 0.2)
-	@State private var components: Color.Resolved?
+	@State private var components: ColorComponentsCompat?
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue)
@@ -60,7 +60,7 @@ struct AmbientLightingConfig: View {
 						var al = ModuleConfig.AmbientLightingConfig()
 						al.ledState = ledState
 						al.current = UInt32(current)
-						components = color.resolve(in: environment)
+						components = color.resolvedComponents(in: environment)
 						if let components {
 							al.red = UInt32(components.red * 255)
 							al.green = UInt32(components.green * 255)

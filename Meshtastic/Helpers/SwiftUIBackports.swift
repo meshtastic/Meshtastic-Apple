@@ -113,3 +113,72 @@ public extension View {
         }
     }
 }
+
+public struct ColorComponentsCompat {
+    public let red: Double
+    public let green: Double
+    public let blue: Double
+    public let opacity: Double
+}
+
+public extension Color {
+    /// Resolves a SwiftUI `Color` into sRGB components across iOS versions.
+    func resolvedComponents(in environment: EnvironmentValues) -> ColorComponentsCompat {
+        if #available(iOS 17.0, *) {
+            let resolved = self.resolve(in: environment)
+            return ColorComponentsCompat(
+                red: Double(resolved.red),
+                green: Double(resolved.green),
+                blue: Double(resolved.blue),
+                opacity: Double(resolved.opacity)
+            )
+        } else {
+            #if canImport(UIKit)
+            let traitCollection = UITraitCollection(userInterfaceStyle: environment.colorScheme == .dark ? .dark : .light)
+            let uiColor = UIColor(self).resolvedColor(with: traitCollection)
+
+            var red: CGFloat = 0
+            var green: CGFloat = 0
+            var blue: CGFloat = 0
+            var alpha: CGFloat = 0
+
+            if !uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha),
+               let sRGB = CGColorSpace(name: CGColorSpace.sRGB),
+               let converted = uiColor.cgColor.converted(to: sRGB, intent: .relativeColorimetric, options: nil),
+               let components = converted.components,
+               components.count >= 3 {
+                red = components[0]
+                green = components[1]
+                blue = components[2]
+                alpha = components.count > 3 ? components[3] : 1
+            }
+
+            return ColorComponentsCompat(
+                red: Double(red),
+                green: Double(green),
+                blue: Double(blue),
+                opacity: Double(alpha)
+            )
+            #else
+            return ColorComponentsCompat(red: 0, green: 0, blue: 0, opacity: 0)
+            #endif
+        }
+    }
+}
+
+public extension CLLocationManager {
+    /// Starts a background activity session when available on the current platform.
+    func startBackgroundActivitySessionCompat() -> AnyObject? {
+        if #available(iOS 17.0, *) {
+            return CLBackgroundActivitySession()
+        }
+        return nil
+    }
+
+    /// Invalidates a previously created background session when supported.
+    func invalidateBackgroundActivitySessionCompat(_ session: AnyObject?) {
+        if #available(iOS 17.0, *) {
+            (session as? CLBackgroundActivitySession)?.invalidate()
+        }
+    }
+}
