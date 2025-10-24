@@ -26,8 +26,6 @@ struct Connect: View {
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
-	@State var presentingSwitchPreferredPeripheral = false
-	@State var selectedPeripherialId = ""
 	
 	var body: some View {
 		NavigationStack {
@@ -264,60 +262,24 @@ struct Connect: View {
 					.textCase(nil)
 					
 					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
-						Section(header: HStack {
-							Text("Available Radios").font(.title)
-							Spacer()
-							ManualConnectionMenu()
-						}) {
-							ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
-								HStack {
-									if UserDefaults.preferredPeripheralId == device.id.uuidString {
-										Image(systemName: "star.fill")
-											.imageScale(.large).foregroundColor(.yellow)
-											.padding(.trailing)
-									} else {
-										Image(systemName: "circle.fill")
-											.imageScale(.large).foregroundColor(.gray)
-											.padding(.trailing)
-									}
-									VStack(alignment: .leading) {
-										Button(action: {
-											if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-												if accessoryManager.allowDisconnect {
-													Task { try await accessoryManager.disconnect() }
-												}
-												presentingSwitchPreferredPeripheral = true
-												selectedPeripherialId = device.id.uuidString
-											} else {
-												Task {
-													try? await accessoryManager.connect(to: device)
-												}
-											}
-										}) {
-											Text(device.name).font(.callout)
-										}
-										// Show transport type
-										TransportIcon(transportType: device.transportType)
-									}
-									Spacer()
-									VStack {
-										device.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0) }
-									}
-								}.padding([.bottom, .top])
-							}
-						}
-						.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-							Button("Connect to new radio?", role: .destructive) {
-								UserDefaults.preferredPeripheralId = selectedPeripherialId
-								UserDefaults.preferredPeripheralNum = 0
-								if accessoryManager.allowDisconnect {
-									Task { try await accessoryManager.disconnect() }
+						Group {
+							Section(header: HStack {
+								Text("Available Radios").font(.title)
+								Spacer()
+								ManualConnectionMenu()
+							}) {
+								ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
+									DeviceConnectRow(device: device)
 								}
-								clearCoreDataDatabase(context: context, includeRoutes: false)
-								clearNotifications()
-								if let radio = accessoryManager.devices.first(where: { $0.id.uuidString == selectedPeripherialId }) {
-									Task {
-										try await accessoryManager.connect(to: radio)
+							}
+							if UserDefaults.manualConnections.count > 0 {
+								Section(header: Text("Manual Connections").font(.title)) {
+									ForEach(UserDefaults.manualConnections) { device in
+										DeviceConnectRow(device: device)
+									}.onDelete { offsets in
+										var list = UserDefaults.manualConnections
+										list.remove(atOffsets: offsets)
+										UserDefaults.manualConnections = list
 									}
 								}
 							}
@@ -472,6 +434,10 @@ struct TransportIcon: View {
 }
 
 struct ManualConnectionMenu: View {
+
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Environment(\.managedObjectContext) var context
+
 	private struct IterableTransport: Identifiable {
 		let id: UUID
 		let icon: Image
@@ -490,7 +456,9 @@ struct ManualConnectionMenu: View {
 	@State private var selectedTransport: IterableTransport?
 	@State private var showAlert: Bool = false
 	@State private var connectionString = ""
-	
+	@State var presentingSwitchPreferredPeripheral = false
+	@State var deviceForManualConnection: Device?
+
 	var body: some View {
 		Menu {
 			ForEach(transports) { transport in
@@ -520,11 +488,93 @@ struct ManualConnectionMenu: View {
 			
 			Button("OK", action: {
 				if !connectionString.isEmpty {
-					Task {
-						try await selectedTransport.transport.manuallyConnect(withConnectionString: connectionString)
+					if let device = selectedTransport.transport.device(forManualConnection: connectionString) {
+						if UserDefaults.preferredPeripheralId == device.id.uuidString {
+							Task {
+								try await selectedTransport.transport.manuallyConnect(toDevice: device)
+							}
+						} else {
+							deviceForManualConnection = device
+							presentingSwitchPreferredPeripheral = true
+						}
 					}
 				}
 			})
-		}
+		}.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+			Button("Connect to new radio?", role: .destructive) {
+				   if let device = deviceForManualConnection {
+					   UserDefaults.preferredPeripheralId = device.id.uuidString
+					   UserDefaults.preferredPeripheralNum = 0
+					   if accessoryManager.allowDisconnect {
+						   Task { try await accessoryManager.disconnect() }
+					   }
+					   clearCoreDataDatabase(context: context, includeRoutes: false)
+					   clearNotifications()
+					   Task {
+						   try await selectedTransport?.transport.manuallyConnect(toDevice: device)
+					   }
+					   
+					   // Clean up just in case
+					   deviceForManualConnection = nil
+				   }
+			   }
+		   }
+	}
+}
+
+struct DeviceConnectRow: View {
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	@State var presentingSwitchPreferredPeripheral = false
+	var device: Device
+	
+	var body: some View {
+		HStack {
+			if UserDefaults.preferredPeripheralId == device.id.uuidString {
+				Image(systemName: "star.fill")
+					.imageScale(.large).foregroundColor(.yellow)
+					.padding(.trailing)
+			} else {
+				Image(systemName: "circle.fill")
+					.imageScale(.large).foregroundColor(.gray)
+					.padding(.trailing)
+			}
+			VStack(alignment: .leading) {
+				Button(action: {
+					if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
+						if accessoryManager.allowDisconnect {
+							Task { try await accessoryManager.disconnect() }
+						}
+						presentingSwitchPreferredPeripheral = true
+					} else {
+						Task {
+							try? await accessoryManager.connect(to: device)
+						}
+					}
+				}) {
+					Text(device.name).font(.callout)
+				}
+				// Show transport type
+				TransportIcon(transportType: device.transportType)
+			}
+			Spacer()
+			VStack {
+				device.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0) }
+			}
+		}.padding([.bottom, .top])
+			.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+				Button("Connect to new radio?", role: .destructive) {
+					UserDefaults.preferredPeripheralId = device.id.uuidString
+					UserDefaults.preferredPeripheralNum = 0
+					if accessoryManager.allowDisconnect {
+						Task { try await accessoryManager.disconnect() }
+					}
+					clearCoreDataDatabase(context: context, includeRoutes: false)
+					clearNotifications()
+					Task {
+						try await accessoryManager.connect(to: device)
+					}
+				}
+			}
 	}
 }

@@ -67,7 +67,12 @@ extension AccessoryManager {
 					}
 					self.activeConnection = (device: device, connection: connection)
 					
-					if UserDefaults.preferredPeripheralId.count < 1 {
+					// if we don't have a peripheralId, set it now at the beginning of the
+					// connect process (because I think it is used in other parts of the app
+					// during the connect process?
+					// Otherwise,  UserDefault.preferredPeripheralId is set in the Connect
+					// view, as part of the "Connect to new radio?" confirmation dialog logic.
+					if UserDefaults.preferredPeripheralId.isEmpty {
 						UserDefaults.preferredPeripheralId = device.id.uuidString
 					}
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
@@ -168,6 +173,11 @@ extension AccessoryManager {
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 				self.updateState(.subscribed)
+				
+				// If we successfully connected to a manual connection, then save it to the list
+				if device.isManualConnection {
+					self.saveManualConnection(device: device)
+				}
 			}
 			
 			// Step 8: Update UI and status to connected
@@ -213,6 +223,15 @@ extension AccessoryManager {
 		
 		// All done, one way or another, clean up
 		self.connectionStepper = nil
+	}
+	
+	fileprivate func saveManualConnection(device: Device) {
+		var manualConnections = UserDefaults.manualConnections
+		
+		if manualConnections.first(where: {$0.id == device.id}) == nil {
+			manualConnections.append(device)
+			UserDefaults.manualConnections = manualConnections
+		}
 	}
 }
 

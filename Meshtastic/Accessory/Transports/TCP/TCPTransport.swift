@@ -73,7 +73,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		let ip = service.ipv4Address ?? "Unknown IP"
 
 		// Use a mishmash of things and hash for stable? ID.
-		let idString = "\(service.name):\(host):\(ip):\(port)".toUUIDFormatHash() ?? UUID()
+		let idString = "\(service.name):\(host):\(ip):\(port)".toUUIDFormatHash()
 		
 		// Save the resolved service locally for later
 		services[service.name] = ResolvedService(id: idString, service: service, host: host, port: port)
@@ -134,14 +134,54 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		}
 	}
 	
-	func manuallyConnect(withConnectionString: String) async throws {
-		let hashedIdentifier = withConnectionString.toUUIDFormatHash() ?? UUID()
-		let manualDevice = Device(id: hashedIdentifier,
-								  name: "\(withConnectionString) (Manual)",
-								  transportType: .tcp, identifier: withConnectionString)
-		try await AccessoryManager.shared.connect(to: manualDevice)
+	func device(forManualConnection connectionString: String) -> Device? {
+		let parts = connectionString.split(separator: ":")
+		var identifier: String
+		
+		switch parts.count {
+		case 1:
+			// host & default port
+			identifier = "\(parts[0]):4403"
+			
+		case 2:
+			// host & port
+			if parts[1].isValidTCPPort {
+				identifier = "\(parts[0]):\(parts[1])"
+			}
+			fallthrough
+			
+		default:
+			return nil
+		}
+		let hashedIdentifier = identifier.toUUIDFormatHash()
+		return Device(id: hashedIdentifier,
+					name: "\(connectionString) (Manual)",
+					transportType: .tcp,
+					  identifier: connectionString,
+					  isManualConnection: true)
+	}
+	
+	func manuallyConnect(toDevice device: Device) async throws {
+		try await AccessoryManager.shared.connect(to: device)
 	}
 
+}
+
+extension StringProtocol {
+	var isValidTCPPort: Bool {
+		// Check if the string is non-empty and contains only digits
+		guard !isEmpty, allSatisfy({ $0.isNumber }) else {
+			return false
+		}
+		
+		// Parse the string to an integer
+		guard let port = Int(self) else {
+			return false // Fails if the string can't be converted to an integer
+		}
+		
+		// Check if the port is in the valid TCP range (0–65535)
+		return port >= 0 && port <= 65535
+	}
 }
 
 extension NetService {
