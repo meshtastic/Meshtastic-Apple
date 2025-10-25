@@ -86,14 +86,14 @@ struct Messages: View {
 				.navigationTitle("Messages")
 				.navigationBarTitleDisplayMode(.large)
 				.navigationBarItems(leading: MeshtasticLogo())
-		}
-		.nbNavigationDestination(for: MessagesNavigationState.self) { destination in
-			switch destination {
-			case .channels:
-				ChannelList(node: $node, channelSelection: $channelSelection)
-			case .directMessages:
-				UserList(node: $node, userSelection: $userSelection)
-			}
+				.nbNavigationDestination(for: MessagesNavigationState.self) { destination in
+					switch destination {
+					case .channels:
+						ChannelList(node: $node, channelSelection: $channelSelection)
+					case .directMessages:
+						UserList(node: $node, userSelection: $userSelection)
+					}
+				}
 		}
 	}
 
