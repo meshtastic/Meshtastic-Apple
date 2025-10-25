@@ -430,9 +430,10 @@ struct Settings: View {
 								}
 								.backport.apply { view in
 									if #available(iOS 16.0, *) {
-										return view.pickerStyle(.navigationLink)
+										view.pickerStyle(.navigationLink)
+									} else {
+										view
 									}
-									return nil
 								}
 								.backport.onChange(of: selectedNode) { _, newValue in
 									if selectedNode > 0,

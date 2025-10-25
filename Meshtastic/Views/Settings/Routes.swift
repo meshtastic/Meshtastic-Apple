@@ -198,9 +198,9 @@ struct Routes: View {
 							.foregroundColor(Color.gray)
 							.backport.apply { view in
 								if #available(iOS 16, *) {
-									return AnyView(view.lineLimit(3...5))
+									view.lineLimit(3...5)
 								} else {
-									return AnyView(view.lineLimit(5))
+									view.lineLimit(5)
 								}
 							}
 						}

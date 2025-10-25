@@ -51,9 +51,9 @@ struct SecureInput: View {
 						.textSelection(.enabled)
 						.backport.apply { field in
 							if #available(iOS 16.0, *) {
-								return AnyView(field.lineLimit(...3))
+								field.lineLimit(...3)
 							} else {
-								return AnyView(field.lineLimit(3))
+								field.lineLimit(3)
 							}
 						}
 						.background(

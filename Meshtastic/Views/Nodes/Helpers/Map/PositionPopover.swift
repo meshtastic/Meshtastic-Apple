@@ -211,9 +211,10 @@ struct PositionPopover: View {
 									.font(.largeTitle)
 									.backport.apply { view in
 										if #available(iOS 17, *) {
-											return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+											view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+										} else {
+											view
 										}
-										return nil
 									}
 									.padding(.bottom)
 							}

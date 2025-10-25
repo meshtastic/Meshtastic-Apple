@@ -91,9 +91,10 @@ struct Connect: View {
 													.symbolRenderingMode(.multicolor)
 													.backport.apply { view in
 														if #available(iOS 17, *) {
-															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+															view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														} else {
+															view
 														}
-														return nil
 													}
 													.foregroundColor(.teal)
 												if let expectedNodeDBSize = accessoryManager.expectedNodeDBSize {
@@ -123,9 +124,10 @@ struct Connect: View {
 													.symbolRenderingMode(.multicolor)
 													.backport.apply { view in
 														if #available(iOS 17, *) {
-															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+															view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														} else {
+															view
 														}
-														return nil
 													}													
 													.foregroundColor(.orange)
 												Text("Communicating").font(.callout)
@@ -137,9 +139,10 @@ struct Connect: View {
 													.symbolRenderingMode(.multicolor)
 													.backport.apply { view in
 														if #available(iOS 17, *) {
-															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+															view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														} else {
+															view
 														}
-														return nil
 													}	
 													.foregroundColor(.orange)
 												Text("Retrying (attempt \(attempt))").font(.callout)
@@ -351,9 +354,10 @@ if #available(iOS 16.2, *) {
 				}
 				.backport.apply { list in
 					if #available(iOS 16, *) {
-						return list.scrollContentBackground(.hidden)
+						list.scrollContentBackground(.hidden)
+					} else {
+						list
 					}
-					return nil
 				}
 				HStack(alignment: .center) {
 					Spacer()

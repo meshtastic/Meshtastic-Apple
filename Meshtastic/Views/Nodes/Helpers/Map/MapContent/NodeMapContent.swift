@@ -112,9 +112,10 @@ struct NodeMapContent: MapContent {
 									Image(systemName: "flipphone")
 										.backport.apply { view in
 											if #available(iOS 17, *) {
-												return view.symbolEffect(.pulse.byLayer)
+												view.symbolEffect(.pulse.byLayer)
+											} else {
+												view
 											}
-											return nil
 										}
 										.padding(5)
 										.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)

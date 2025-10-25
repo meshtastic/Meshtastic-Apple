@@ -28,12 +28,9 @@ public extension Backport where Wrapped: View {
 		}
 	}
 
-    func apply<Modified: View>(_ transform: (Wrapped) -> Modified?) -> some View {
-        if let modified = transform(self.wrapped) {
-            return AnyView(modified)
-        } else {
-            return AnyView(self.wrapped)
-        }
+    @ViewBuilder
+    func apply(@ViewBuilder _ transform: (Wrapped) -> some View) -> some View {
+        transform(self.wrapped)
     }
 
     func defaultScrollAnchor(_ anchor: UnitPoint) -> some View { 

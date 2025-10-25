@@ -33,9 +33,10 @@ struct AnimatedNodePin: View, Equatable {
 					.symbolRenderingMode(.palette)
 					.backport.apply { view in
 						if #available(iOS 17, *) {
-							return view.symbolEffect(.variableColor)
+							view.symbolEffect(.variableColor)
+						} else {
+							view
 						}
-						return nil
 					}
 					.padding()
 					.foregroundStyle(.white)
