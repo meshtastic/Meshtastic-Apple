@@ -209,7 +209,7 @@ struct PositionPopover: View {
 									.symbolRenderingMode(.hierarchical)
 									.foregroundColor(.accentColor)
 									.font(.largeTitle)
-									.backportModify { view in
+									.backport.apply { view in
 										if #available(iOS 17, *) {
 											return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 										}
@@ -242,9 +242,9 @@ struct PositionPopover: View {
 				}
 			}
 		}
-		.presentationDetents([.fraction(0.65), .large])
-		.presentationContentInteraction(.scrolls)
-		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .large))
+		.backport.presentationDetents([.fraction(0.65), .large])
+		.backport.presentationContentInteraction(.scrolls)
+		.backport.presentationDragIndicator(.visible)
+		.backport.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }

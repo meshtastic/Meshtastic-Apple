@@ -286,8 +286,8 @@ struct RouteRecorder: View {
 						}
 					}
 				}
-				.presentationDetents([.fraction(0.45), .fraction(0.65)])
-				.presentationDragIndicator(.hidden)
+				.backport.presentationDetents([.fraction(0.45), .fraction(0.65)])
+				.backport.presentationDragIndicator(.hidden)
 				.interactiveDismissDisabled(false)
 				.onAppear {
 					UIApplication.shared.isIdleTimerDisabled = true
@@ -295,7 +295,7 @@ struct RouteRecorder: View {
 				.onDisappear(perform: {
 					UIApplication.shared.isIdleTimerDisabled = false
 				})
-				.onChange(of: locationsHandler.locationsArray.last) { _, newLoc in
+				.backport.onChange(of: locationsHandler.locationsArray.last) { _, newLoc in
 					if locationsHandler.isRecording {
 						if let loc = newLoc {
 							if recording != nil {

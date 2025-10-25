@@ -75,7 +75,7 @@ struct ContentView: View {
 				isShowingDeviceOnboardingFlow = true
 			}
 		}
-		.onChangeBackport(of: UserDefaults.showDeviceOnboarding) {_, newValue in
+		.backport.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 			isShowingDeviceOnboardingFlow = newValue
 		}
 	}

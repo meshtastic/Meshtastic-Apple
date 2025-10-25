@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/8/23.
 //
 import SwiftUI
+import SwiftUIBackports
 import NavigationBackport
 import CoreLocation
 import OSLog
@@ -41,14 +42,14 @@ struct NodeList: View {
 				legacyBody
 			}
 		}
-		.onChange(of: router.navigationState.nodeListSelectedNodeNum) { _, newNum in
+		.backport.onChange(of: router.navigationState.nodeListSelectedNodeNum) { _, newNum in
 			if let num = newNum {
 				self.selectedNode = getNodeInfo(id: num, context: context)
 			} else {
 				self.selectedNode = nil
 			}
 		}
-		.onChange(of: selectedNode) { _, node in
+		.backport.onChange(of: selectedNode) { _, node in
 			if let num = node?.num {
 				router.navigationState.nodeListSelectedNodeNum = num
 			} else {
@@ -69,7 +70,7 @@ struct NodeList: View {
 					node: node
 				)
 			} else {
-				ContentUnavailableView("Select a Node", systemImage: "flipphone")
+				Backport.ContentUnavailableView("Select a Node", systemImage: "flipphone")
 			}
 		}
 		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
@@ -130,7 +131,7 @@ struct NodeList: View {
 		}
 		.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
 		.autocorrectionDisabled(true)
-		.scrollDismissesKeyboard(.immediately)
+		.backport.scrollDismissesKeyboard(.immediately)
 		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(getNodeCount())))
 		.listStyle(.plain)
 		.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
@@ -248,7 +249,7 @@ fileprivate struct FilteredNodeList: View {
 
 	private var legacyList: some View {
 		List(nodes, id: \.self) { node in
-			NBNavigationLink {
+			NavigationLink {
 				NodeDetail(
 					connectedNode: connectedNode,
 					node: node

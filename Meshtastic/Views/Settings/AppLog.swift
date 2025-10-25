@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftUIBackports
 @preconcurrency import OSLog
 
 @available(iOS 16.0, *)
@@ -30,10 +31,9 @@ struct AppLog: View {
 		.minute()
 		.second()
 		.secondFraction(.fractional(3))
-
-	var body: some View {
+	
+	var content: some View {
 		HStack {
-
 			if idiom == .phone {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
 					TableColumn("Message", value: \.composedMessage) { value in
@@ -67,7 +67,7 @@ struct AppLog: View {
 				.disabled(selection != nil)
 				.overlay {
 					if logs.isEmpty {
-						ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
+						Backport.ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
 					}
 				}
 				.refreshable {
@@ -118,7 +118,7 @@ struct AppLog: View {
 				.disabled(selection != nil)
 				.overlay {
 					if logs.isEmpty {
-						ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
+						Backport.ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
 					}
 				}
 				.refreshable {
@@ -127,87 +127,91 @@ struct AppLog: View {
 				}
 			}
 		}
-		.onChange(of: sortOrder) { _, sortOrder in
-			withAnimation {
-				logs.sort(using: sortOrder)
-			}
-		}
-		.onChange(of: searchText) {
-			Task {
-				await logs = searchAppLogs()
-				logs.sort(using: sortOrder)
-			}
-		}
-		.onChange(of: [categories]) {
-			Task {
-				await logs = searchAppLogs()
-				logs.sort(using: sortOrder)
-			}
-		}
-		.onChange(of: [levels]) {
-			Task {
-				await logs = searchAppLogs()
-				logs.sort(using: sortOrder)
-			}
-		}
-		.onChange(of: selection) { _, newSelection in
-			presentingErrorDetails = true
-			let log = logs.first {
-			   $0.id == newSelection
-			 }
-			selectedLog = log
-		}
-		.sheet(isPresented: $isEditingFilters) {
-			AppLogFilter(categories: $categories, levels: $levels)
-		}
-		.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
-			LogDetail(log: log)
-				.padding()
-		}
-		.task {
-			logs = await searchAppLogs()
-			logs.sort(using: sortOrder)
-		}
-		.fileExporter(
-			isPresented: $isExporting,
-			document: CsvDocument(emptyCsv: exportString),
-			contentType: .commaSeparatedText,
-			defaultFilename: String("Meshtastic Application Logs"),
-			onCompletion: { result in
-				switch result {
-				case .success:
-					self.isExporting = false
-					Logger.services.info("Application log download succeeded.")
-				case .failure(let error):
-					Logger.services.error("Application log download failed: \(error.localizedDescription, privacy: .public)")
+	}
+
+	var body: some View {
+		content
+			.backport.onChange(of: sortOrder) { _, sortOrder in
+				withAnimation {
+					logs.sort(using: sortOrder)
 				}
 			}
-		)
-		.navigationBarTitle("Debug Logs\(logs.isEmpty ? "" : " (\(logs.count))")", displayMode: .inline)
-		.toolbar {
+			.backport.onChange(of: searchText) { _, _ in
+				Task {
+					await logs = searchAppLogs()
+					logs.sort(using: sortOrder)
+				}
+			}
+			.backport.onChange(of: [categories]) { _, _ in
+				Task {
+					await logs = searchAppLogs()
+					logs.sort(using: sortOrder)
+				}
+			}
+			.backport.onChange(of: [levels]) { _, _ in
+				Task {
+					await logs = searchAppLogs()
+					logs.sort(using: sortOrder)
+				}
+			}
+			.backport.onChange(of: selection) { _, newSelection in
+				presentingErrorDetails = true
+				let log = logs.first {
+					$0.id == newSelection
+				}
+				selectedLog = log
+			}
+			.sheet(isPresented: $isEditingFilters) {
+				AppLogFilter(categories: $categories, levels: $levels)
+			}
+			.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
+				LogDetail(log: log)
+					.padding()
+			}
+			.task {
+				logs = await searchAppLogs()
+				logs.sort(using: sortOrder)
+			}
+			.fileExporter(
+				isPresented: $isExporting,
+				document: CsvDocument(emptyCsv: exportString),
+				contentType: .commaSeparatedText,
+				defaultFilename: String("Meshtastic Application Logs"),
+				onCompletion: { result in
+					switch result {
+					case .success:
+						self.isExporting = false
+						Logger.services.info("Application log download succeeded.")
+					case .failure(let error):
+						Logger.services.error("Application log download failed: \(error.localizedDescription, privacy: .public)")
+					}
+				}
+			)
+			.navigationBarTitle("Debug Logs\(logs.isEmpty ? "" : " (\(logs.count))")", displayMode: .inline)
+			.toolbar {
 #if targetEnvironment(macCatalyst)
-			ToolbarItem(placement: .topBarLeading) {
-				Button(action: {
-					Task {
-						await logs = searchAppLogs()
-						logs.sort(using: sortOrder)
-					}
-				}) {
-					Image(systemName: "arrow.clockwise.circle")
-				}
-			}
-#endif
-			if !logs.isEmpty {
-				ToolbarItem(placement: .navigationBarTrailing) {
+				ToolbarItem(placement: .topBarLeading) {
 					Button(action: {
-						exportString = logToCsvFile(log: logs)
-						isExporting = true
+						Task {
+							await logs = searchAppLogs()
+							logs.sort(using: sortOrder)
+						}
 					}) {
-						Image(systemName: "square.and.arrow.down")
+						Image(systemName: "arrow.clockwise.circle")
+					}
+				}
+#endif
+				if !logs.isEmpty {
+					ToolbarItem(placement: .navigationBarTrailing) {
+						Button(action: {
+							exportString = logToCsvFile(log: logs)
+							isExporting = true
+						}) {
+							Image(systemName: "square.and.arrow.down")
+						}
 					}
 				}
 			}
-		}
 	}
 	func didDismiss() {
 		selection = nil

@@ -19,6 +19,7 @@ enum IaqDisplayMode: Int, CaseIterable, Identifiable {
 	var id: Int { self.rawValue }
 }
 
+@available(iOS 16.0, *)
 struct IndoorAirQuality: View {
 	@State var isLegendOpen = false
 	var iaq: Int = 0
@@ -82,11 +83,12 @@ struct IndoorAirQuality: View {
 			VStack(spacing: 0.5) {
 				IAQScale()
 			}
-			.presentationCompactAdaptation(.popover)
+			.backport.presentationCompactAdaptation(.popover)
 		})
 	}
 }
 
+@available(iOS 16.0, *)
 struct IndoorAirQuality_Previews: PreviewProvider {
 	static var previews: some View {
 		VStack {

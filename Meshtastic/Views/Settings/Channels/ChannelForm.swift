@@ -25,168 +25,171 @@ struct ChannelForm: View {
 	@Binding var hasValidKey: Bool
 	@Binding var supportedVersion: Bool
 
+	var content: some View {
+		Form {
+			Section(header: Text("Channel Details")) {
+				HStack {
+					Text("Name")
+					Spacer()
+					TextField(
+						"Channel Name",
+						text: $channelName
+					)
+					.disableAutocorrection(true)
+					.keyboardType(.alphabet)
+					.foregroundColor(Color.gray)
+					.backport.onChange(of: channelName) { _, _ in
+						channelName = channelName.replacingOccurrences(of: " ", with: "")
+						var totalBytes = channelName.utf8.count
+						// Only mess with the value if it is too big
+						while totalBytes > 11 {
+							channelName = String(channelName.dropLast())
+							totalBytes = channelName.utf8.count
+						}
+						hasChanges = true
+					}
+				}
+				HStack {
+					Picker("Key Size", selection: $channelKeySize) {
+						Text("Empty").tag(0)
+						Text("Default").tag(-1)
+						Text("1 byte").tag(1)
+						Text("128 bit").tag(16)
+						Text("256 bit").tag(32)
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Spacer()
+					Button {
+						if channelKeySize == -1 {
+							channelKey = "AQ=="
+						} else {
+							let key = generateChannelKey(size: channelKeySize)
+							channelKey = key
+						}
+					} label: {
+						Image(systemName: "lock.rotation")
+							.font(.title)
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.small)
+				}
+				HStack(alignment: .center) {
+					Text("Key")
+					Spacer()
+					TextField(
+						"Key",
+						text: $channelKey,
+						axis: .vertical
+					)
+					.padding(6)
+					.disableAutocorrection(true)
+					.keyboardType(.alphabet)
+					.foregroundColor(Color.gray)
+					.textSelection(.enabled)
+					.background(
+						RoundedRectangle(cornerRadius: 10.0)
+							.stroke(
+								hasValidKey ?
+								Color.clear :
+									Color.red
+								, lineWidth: 2.0)
+
+					)
+					.backport.onChange(of: channelKey) { _, _ in
+
+						let tempKey = Data(base64Encoded: channelKey) ?? Data()
+						if tempKey.count == channelKeySize || channelKeySize == -1 {
+							hasValidKey = true
+						} else {
+							hasValidKey = false
+						}
+						hasChanges = true
+					}
+					.disabled(channelKeySize <= 0)
+				}
+				HStack {
+					if channelRole == 1 {
+						Picker("Channel Role", selection: $channelRole) {
+							Text("Primary").tag(1)
+						}
+						.pickerStyle(.automatic)
+						.disabled(true)
+					} else {
+						Text("Channel Role")
+						Spacer()
+						Picker("Channel Role", selection: $channelRole) {
+							Text("Disabled").tag(0)
+							Text("Secondary").tag(2)
+						}
+						.pickerStyle(.segmented)
+					}
+				}
+			}
+			Section(header: Text("Position")) {
+				VStack(alignment: .leading) {
+					Toggle(isOn: $positionsEnabled) {
+						Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.disabled(!supportedVersion)
+				}
+
+				if positionsEnabled {
+					if (channelKey != "AQ==" && channelKeySize > 1)  && channelRole > 0 {
+						VStack(alignment: .leading) {
+							Toggle(isOn: $preciseLocation) {
+								Label("Precise Location", systemImage: "scope")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.disabled(!supportedVersion)
+							.listRowSeparator(.visible)
+							.backport.onChange(of: preciseLocation) { _, pl in
+								if pl == false {
+									positionPrecision = 15
+								}
+							}
+						}
+					}
+					if !preciseLocation {
+						VStack(alignment: .leading) {
+							Label("Approximate Location", systemImage: "location.slash.circle.fill")
+
+							Slider(value: $positionPrecision, in: 12...15, step: 1) {
+							} minimumValueLabel: {
+								Image(systemName: "plus")
+							} maximumValueLabel: {
+								Image(systemName: "minus")
+							}
+							Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
+								.foregroundColor(.gray)
+								.font(.callout)
+						}
+					}
+				}
+			}
+			Section(header: Text("MQTT")) {
+				Toggle(isOn: $uplink) {
+					Label("Uplink Enabled", systemImage: "arrowshape.up")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.listRowSeparator(.visible)
+
+				Toggle(isOn: $downlink) {
+					Label("Downlink Enabled", systemImage: "arrowshape.down")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			}
+		}
+	}
+
 	var body: some View {
 		NBNavigationStack {
-			Form {
-				Section(header: Text("Channel Details")) {
-					HStack {
-						Text("Name")
-						Spacer()
-						TextField(
-							"Channel Name",
-							text: $channelName
-						)
-						.disableAutocorrection(true)
-						.keyboardType(.alphabet)
-						.foregroundColor(Color.gray)
-						.onChange(of: channelName) {
-							channelName = channelName.replacing(" ", with: "")
-							var totalBytes = channelName.utf8.count
-							// Only mess with the value if it is too big
-							while totalBytes > 11 {
-								channelName = String(channelName.dropLast())
-								totalBytes = channelName.utf8.count
-							}
-							hasChanges = true
-						}
-					}
-					HStack {
-						Picker("Key Size", selection: $channelKeySize) {
-							Text("Empty").tag(0)
-							Text("Default").tag(-1)
-							Text("1 byte").tag(1)
-							Text("128 bit").tag(16)
-							Text("256 bit").tag(32)
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Spacer()
-						Button {
-							if channelKeySize == -1 {
-								channelKey = "AQ=="
-							} else {
-								let key = generateChannelKey(size: channelKeySize)
-								channelKey = key
-							}
-						} label: {
-							Image(systemName: "lock.rotation")
-								.font(.title)
-						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.small)
-					}
-					HStack(alignment: .center) {
-						Text("Key")
-						Spacer()
-						TextField(
-							"Key",
-							text: $channelKey,
-							axis: .vertical
-						)
-						.padding(6)
-						.disableAutocorrection(true)
-						.keyboardType(.alphabet)
-						.foregroundColor(Color.gray)
-						.textSelection(.enabled)
-						.background(
-							RoundedRectangle(cornerRadius: 10.0)
-								.stroke(
-									hasValidKey ?
-									Color.clear :
-										Color.red
-									, lineWidth: 2.0)
-
-						)
-						.onChange(of: channelKey) {
-
-							let tempKey = Data(base64Encoded: channelKey) ?? Data()
-							if tempKey.count == channelKeySize || channelKeySize == -1 {
-								hasValidKey = true
-							} else {
-								hasValidKey = false
-							}
-							hasChanges = true
-						}
-						.disabled(channelKeySize <= 0)
-					}
-					HStack {
-						if channelRole == 1 {
-							Picker("Channel Role", selection: $channelRole) {
-								Text("Primary").tag(1)
-							}
-							.pickerStyle(.automatic)
-							.disabled(true)
-						} else {
-							Text("Channel Role")
-							Spacer()
-							Picker("Channel Role", selection: $channelRole) {
-								Text("Disabled").tag(0)
-								Text("Secondary").tag(2)
-							}
-							.pickerStyle(.segmented)
-						}
-					}
-				}
-
-				Section(header: Text("Position")) {
-					VStack(alignment: .leading) {
-						Toggle(isOn: $positionsEnabled) {
-							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.disabled(!supportedVersion)
-					}
-
-					if positionsEnabled {
-						if (channelKey != "AQ==" && channelKeySize > 1)  && channelRole > 0 {
-							VStack(alignment: .leading) {
-								Toggle(isOn: $preciseLocation) {
-									Label("Precise Location", systemImage: "scope")
-								}
-								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-								.disabled(!supportedVersion)
-								.listRowSeparator(.visible)
-								.onChange(of: preciseLocation) { _, pl in
-									if pl == false {
-										positionPrecision = 15
-									}
-								}
-							}
-						}
-						if !preciseLocation {
-							VStack(alignment: .leading) {
-								Label("Approximate Location", systemImage: "location.slash.circle.fill")
-
-								Slider(value: $positionPrecision, in: 12...15, step: 1) {
-								} minimumValueLabel: {
-									Image(systemName: "plus")
-								} maximumValueLabel: {
-									Image(systemName: "minus")
-								}
-								Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
-									.foregroundColor(.gray)
-									.font(.callout)
-							}
-						}
-					}
-				}
-				Section(header: Text("MQTT")) {
-					Toggle(isOn: $uplink) {
-						Label("Uplink Enabled", systemImage: "arrowshape.up")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
-
-					Toggle(isOn: $downlink) {
-						Label("Downlink Enabled", systemImage: "arrowshape.down")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				}
-			}
-			.onChange(of: channelName) {
+			content
+			.backport.onChange(of: channelName) { _, _ in
 				hasChanges = true
 			}
-			.onChange(of: channelKeySize) {
+			.backport.onChange(of: channelKeySize) { _, _ in
 				if channelKeySize == -1 {
 					channelKey = "AQ=="
 				} else {
@@ -195,10 +198,10 @@ struct ChannelForm: View {
 				}
 				hasChanges = true
 			}
-			.onChange(of: channelKey) {
+			.backport.onChange(of: channelKey) { _, _ in
 				hasChanges = true
 			}
-			.onChange(of: channelKeySize) {
+			.backport.onChange(of: channelKeySize) { _, _ in
 				if channelKeySize == -1 {
 					if channelRole == 0 {
 						preciseLocation = false
@@ -206,10 +209,10 @@ struct ChannelForm: View {
 					channelKey = "AQ=="
 				}
 			}
-			.onChange(of: channelRole) {
+			.backport.onChange(of: channelRole) { _, _ in
 				hasChanges = true
 			}
-			.onChange(of: preciseLocation) { _, loc in
+			.backport.onChange(of: preciseLocation) { _, loc in
 				if loc == true {
 					if channelKey == "AQ==" || channelKeySize <= 1 {
 						preciseLocation = false
@@ -221,10 +224,10 @@ struct ChannelForm: View {
 				}
 				hasChanges = true
 			}
-			.onChange(of: positionPrecision) {
+			.backport.onChange(of: positionPrecision) { _, _ in
 				hasChanges = true
 			}
-			.onChange(of: positionsEnabled) { _, pe in
+			.backport.onChange(of: positionsEnabled) { _, pe in
 				if pe {
 					if positionPrecision == 0 {
 						positionPrecision = 15
@@ -234,10 +237,10 @@ struct ChannelForm: View {
 				}
 				hasChanges = true
 			}
-			.onChange(of: uplink) {
+			.backport.onChange(of: uplink) { _, _ in
 				hasChanges = true
 			}
-			.onChange(of: downlink) {
+			.backport.onChange(of: downlink) { _, _ in
 				hasChanges = true
 			}
 			.onFirstAppear {

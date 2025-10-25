@@ -189,31 +189,31 @@ struct TelemetryConfig: View {
 				}
 			}
 		}
-		.onChangeBackport(of: deviceUpdateInterval.intValue) { _, newDeviceInterval in
+		.backport.onChange(of: deviceUpdateInterval.intValue) { _, newDeviceInterval in
 			if newDeviceInterval != node?.telemetryConfig?.deviceUpdateInterval ?? -1 { hasChanges = true }
 		}
-		.onChangeBackport(of: environmentUpdateInterval.intValue) { _, newEnvInterval in
+		.backport.onChange(of: environmentUpdateInterval.intValue) { _, newEnvInterval in
 			if newEnvInterval != node?.telemetryConfig?.environmentUpdateInterval ?? -1 { hasChanges = true	}
 		}
-		.onChangeBackport(of: environmentMeasurementEnabled) { _, newEnvEnabled in
+		.backport.onChange(of: environmentMeasurementEnabled) { _, newEnvEnabled in
 			if newEnvEnabled != node?.telemetryConfig?.environmentMeasurementEnabled { hasChanges = true }
 		}
-		.onChangeBackport(of: environmentScreenEnabled) { _, newEnvScreenEnabled in
+		.backport.onChange(of: environmentScreenEnabled) { _, newEnvScreenEnabled in
 			if newEnvScreenEnabled != node?.telemetryConfig?.environmentScreenEnabled { hasChanges = true	}
 		}
-		.onChangeBackport(of: environmentDisplayFahrenheit) { _, newEnvDisplayF in
+		.backport.onChange(of: environmentDisplayFahrenheit) { _, newEnvDisplayF in
 			if newEnvDisplayF != node?.telemetryConfig?.environmentDisplayFahrenheit { hasChanges = true	}
 		}
-		.onChangeBackport(of: powerMeasurementEnabled) { _, newPowerMeasurementEnabled in
+		.backport.onChange(of: powerMeasurementEnabled) { _, newPowerMeasurementEnabled in
 			if newPowerMeasurementEnabled != node?.telemetryConfig?.powerMeasurementEnabled { hasChanges = true	}
 		}
-		.onChangeBackport(of: powerUpdateInterval.intValue) { _, newPowerUpdateInterval in
+		.backport.onChange(of: powerUpdateInterval.intValue) { _, newPowerUpdateInterval in
 			if newPowerUpdateInterval != node?.telemetryConfig?.powerUpdateInterval ?? -1 { hasChanges = true	}
 		}
-		.onChangeBackport(of: powerScreenEnabled) { _, newPowerScreenEnabled in
+		.backport.onChange(of: powerScreenEnabled) { _, newPowerScreenEnabled in
 			if newPowerScreenEnabled != node?.telemetryConfig?.powerScreenEnabled { hasChanges = true	}
 		}
-		.onChangeBackport(of: deviceTelemetryEnabled) { _, newDeviceTelemetryEnabled in
+		.backport.onChange(of: deviceTelemetryEnabled) { _, newDeviceTelemetryEnabled in
 			if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
 				if newDeviceTelemetryEnabled != node?.telemetryConfig?.deviceTelemetryEnabled { hasChanges = true }
 			}

@@ -49,8 +49,8 @@ struct UserConfig: View {
 						Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
 						
 						TextField("Long Name", text: $longName)
-							.onChange(of: longName) {
-								var newValue = longName.withoutVariationSelectors
+							.backport.onChange(of: longName) { _, newLong in
+								var newValue = newLong.withoutVariationSelectors
 								var totalBytes = newValue.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > (isLicensed ? 6 : 36) {
@@ -79,8 +79,8 @@ struct UserConfig: View {
 						Label("Short Name", systemImage: "circlebadge.fill")
 						TextField("Short Name", text: $shortName)
 							.foregroundColor(.gray)
-							.onChange(of: shortName) {
-								let newValue = shortName.withoutVariationSelectors
+							.backport.onChange(of: shortName) { _, newShort in
+								let newValue = newShort.withoutVariationSelectors
 								let totalBytes = newValue.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 4 {
@@ -134,7 +134,7 @@ struct UserConfig: View {
 									}
 								}
 								.keyboardType(.decimalPad)
-								.scrollDismissesKeyboard(.immediately)
+								.backport.scrollDismissesKeyboard(.immediately)
 								.focused($focusedField, equals: .frequencyOverride)
 						}
 						HStack {
@@ -224,16 +224,16 @@ struct UserConfig: View {
 			self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.00
 			self.hasChanges = false
 		}
-		.onChange(of: shortName) { oldShort, newShort in
+		.backport.onChange(of: shortName) { oldShort, newShort in
 			if oldShort != newShort && newShort != node?.user?.shortName ?? "Unknown" { hasChanges = true }
 		}
-		.onChange(of: longName) { oldLong, newLong in
+		.backport.onChange(of: longName) { oldLong, newLong in
 			if oldLong != newLong && newLong != node?.user?.longName ?? "Unknown" { hasChanges = true }
 		}
-		.onChange(of: isUnmessagable) { oldIsUnmessagable, newIsUnmessagable in
+		.backport.onChange(of: isUnmessagable) { oldIsUnmessagable, newIsUnmessagable in
 			if oldIsUnmessagable != newIsUnmessagable && newIsUnmessagable != node?.user?.unmessagable ?? true { hasChanges = true }
 		}
-		.onChange(of: isLicensed) { _, newIsLicensed in
+		.backport.onChange(of: isLicensed) { _, newIsLicensed in
 			if node != nil && node!.user != nil {
 				if newIsLicensed != node?.user!.isLicensed {
 					hasChanges = true
@@ -245,10 +245,10 @@ struct UserConfig: View {
 				}
 			}
 		}
-		.onChange(of: overrideFrequency) {
+		.backport.onChange(of: overrideFrequency) { _, _ in
 			if isLicensed { hasChanges = true }
 		}
-		.onChange(of: txPower) {
+		.backport.onChange(of: txPower) { _, _ in
 			if isLicensed { hasChanges = true }
 		}
 	}

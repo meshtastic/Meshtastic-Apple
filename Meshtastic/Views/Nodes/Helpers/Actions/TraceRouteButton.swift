@@ -29,8 +29,13 @@ struct TraceRouteButton: View {
 					Text("Trace Route (in \(completion.secondsRemaining.formatted(.number.precision(.fractionLength(0))))s)")
 						.foregroundStyle(.secondary)
 				} icon: {
-					Image("progress.ring.dashed", variableValue: completion.percentComplete)
-						.foregroundStyle(.secondary)
+					if #available(iOS 16.0, *) {
+					    Image("progress.ring.dashed", variableValue: completion.percentComplete)
+    						.foregroundStyle(.secondary)
+					} else {
+					   	Image("progress.ring.dashed")
+    						.foregroundStyle(.secondary)
+					}
 				}.disabled(true)
 			} else {
 				Label {

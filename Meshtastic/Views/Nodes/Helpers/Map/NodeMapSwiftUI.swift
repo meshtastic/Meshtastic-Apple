@@ -77,10 +77,10 @@ struct NodeMapSwiftUI: View {
 			.sheet(isPresented: $isEditingSettings) {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 			}
-			.onChange(of: selectedMapLayer) { _, newMapLayer in
+			.backport.onChange(of: selectedMapLayer) { _, newMapLayer in
 				updateMapStyle(for: newMapLayer)
 			}
-			.onChange(of: node) {
+			.backport.onChange(of: node) { _, _ in
 				handleNodeChange()
 			}
 			.onAppear {

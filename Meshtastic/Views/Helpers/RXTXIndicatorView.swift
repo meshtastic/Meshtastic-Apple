@@ -92,7 +92,7 @@ struct RXTXIndicatorWidget: View {
 					}.padding(10)
 					.contentShape(Rectangle()) // Make sure the whole thing is tappable
 				}.buttonStyle(.plain)
-				.presentationCompactAdaptation(.popover)
+				.backport.presentationCompactAdaptation(.popover)
 			}
 		}.buttonStyle(.borderless)
 	}
@@ -111,7 +111,7 @@ struct LEDIndicator: View {
 			.overlay(
 				Circle()
 					.stroke(colorScheme == .light ? Color.black : Color.white, lineWidth: 0.5)
-			).onChange(of: flash) { _, _ in
+			).backport.onChange(of: flash) { _, _ in
 				brightness = 1.0
 				withAnimation(.easeOut(duration: 0.3)) {
 					brightness = 0.0

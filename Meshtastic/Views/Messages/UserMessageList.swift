@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftUIBackports
 import CoreData
 import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
@@ -88,11 +89,11 @@ struct UserMessageList: View {
 							.id("bottomAnchor")
 					}
 				}
-				.defaultScrollAnchor(.bottom)
+				.backport.defaultScrollAnchor(.bottom)
 				.defaultScrollAnchorTopAlignment()
 				.defaultScrollAnchorBottomSizeChanges()
-				.scrollDismissesKeyboard(.immediately)
-				.onChange(of: messageFieldFocused) {
+				.backport.scrollDismissesKeyboard(.immediately)
+				.backport.onChange(of: messageFieldFocused) { _, _ in
 					if messageFieldFocused {
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
@@ -107,35 +108,37 @@ struct UserMessageList: View {
 			)
 		}
 		.navigationBarTitleDisplayMode(.inline)
-		.toolbar {
-			if !user.keyMatch {
-				ToolbarItem(placement: .bottomBar) {
-					VStack {
-						HStack {
-							Image(systemName: "key.slash.fill")
-								.symbolRenderingMode(.multicolor)
-								.foregroundStyle(.red)
-								.font(.caption2)
-							Text("There is an issue with this contact's public key.")
-								.foregroundStyle(.secondary)
-								.font(.caption2)
+		.backport.toolbar {
+			Backport.ToolbarItem(placement: .bottomBar) {
+				if !user.keyMatch {
+						VStack {
+							HStack {
+								Image(systemName: "key.slash.fill")
+									.symbolRenderingMode(.multicolor)
+									.foregroundStyle(.red)
+									.font(.caption2)
+								Text("There is an issue with this contact's public key.")
+									.foregroundStyle(.secondary)
+									.font(.caption2)
+							}
+							Link(destination: URL(string: "meshtastic:///nodes?nodenum=\(user.num)")!) {
+								Text("Details...")
+									.font(.caption2)
+									.offset(y: -15)
+							}
 						}
-						Link(destination: URL(string: "meshtastic:///nodes?nodenum=\(user.num)")!) {
-							Text("Details...")
-								.font(.caption2)
-								.offset(y: -15)
-						}
-					}
-					.offset(y: -15)
+						.offset(y: -15)
+				} else {
+					EmptyView()
 				}
 			}
-			ToolbarItem(placement: .principal) {
+			Backport.ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44)
 					Text(user.longName ?? "Unknown").font(.headline)
 				}
 			}
-			ToolbarItem(placement: .navigationBarTrailing) {
+			Backport.ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
 					ConnectedDevice(
 						deviceConnected: accessoryManager.isConnected,

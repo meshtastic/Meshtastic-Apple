@@ -90,7 +90,7 @@ struct StoreForwardConfig: View {
 				}
 			}
 		}
-		.scrollDismissesKeyboard(.interactively)
+		.backport.scrollDismissesKeyboard(.interactively)
 		.disabled(!accessoryManager.isConnected || node?.storeForwardConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
@@ -165,22 +165,22 @@ struct StoreForwardConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) { oldEnabled, newEnabled in
+		.backport.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
 		}
-		.onChange(of: isServer) { oldIsServer, newIsServer in
+		.backport.onChange(of: isServer) { oldIsServer, newIsServer in
 			if oldIsServer != newIsServer && newIsServer != node!.storeForwardConfig!.isRouter { hasChanges = true }
 		}
-		.onChange(of: heartbeat) { oldHeartbeat, newHeartbeat in
+		.backport.onChange(of: heartbeat) { oldHeartbeat, newHeartbeat in
 			if oldHeartbeat != newHeartbeat && newHeartbeat != node?.storeForwardConfig?.heartbeat ?? true { hasChanges = true }
 		}
-		.onChange(of: records) { oldRecords, newRecords in
+		.backport.onChange(of: records) { oldRecords, newRecords in
 			if oldRecords != newRecords && newRecords != node!.storeForwardConfig?.records ?? -1 { hasChanges = true }
 		}
-		.onChange(of: historyReturnMax) { oldHistoryReturnMax, newHistoryReturnMax in
+		.backport.onChange(of: historyReturnMax) { oldHistoryReturnMax, newHistoryReturnMax in
 			if oldHistoryReturnMax != newHistoryReturnMax && newHistoryReturnMax != node!.storeForwardConfig?.historyReturnMax ?? -1 { hasChanges = true }
 		}
-		.onChange(of: historyReturnWindow) { oldHistoryReturnWindow, newHistoryReturnWindow in
+		.backport.onChange(of: historyReturnWindow) { oldHistoryReturnWindow, newHistoryReturnWindow in
 			if oldHistoryReturnWindow != newHistoryReturnWindow && newHistoryReturnWindow != node!.storeForwardConfig?.historyReturnWindow ?? -1 { hasChanges = true }
 		}
 	}

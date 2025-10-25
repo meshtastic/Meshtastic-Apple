@@ -46,7 +46,7 @@ struct NetworkConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: wifiSsid) {
+								.backport.onChange(of: wifiSsid) { _, _ in
 									var totalBytes = wifiSsid.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 32 {
@@ -63,7 +63,7 @@ struct NetworkConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: wifiPsk) {
+								.backport.onChange(of: wifiPsk) { _, _ in
 									var totalBytes = wifiPsk.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 63 {
@@ -98,7 +98,7 @@ struct NetworkConfig: View {
 				}
 			}
 		}
-		.scrollDismissesKeyboard(.interactively)
+		.backport.scrollDismissesKeyboard(.interactively)
 		.disabled(!accessoryManager.isConnected || node?.networkConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
@@ -168,21 +168,21 @@ struct NetworkConfig: View {
 				}
 			}
 		}
-		.onChange(of: wifiEnabled) { _, newEnabled in
+		.backport.onChange(of: wifiEnabled) { _, newEnabled in
 			if newEnabled != node?.networkConfig?.wifiEnabled { hasChanges = true }
 		}
-		.onChange(of: wifiSsid) { _, newSSID in
+		.backport.onChange(of: wifiSsid) { _, newSSID in
 			if newSSID != node?.networkConfig?.wifiSsid { hasChanges = true }
 		}
-		.onChange(of: wifiPsk) { _, newPsk in
+		.backport.onChange(of: wifiPsk) { _, newPsk in
 			if newPsk != node?.networkConfig?.wifiPsk { hasChanges = true }
 		}
-		.onChange(of: wifiMode) { _, newMode in
+		.backport.onChange(of: wifiMode) { _, newMode in
 			if newMode != node?.networkConfig?.wifiMode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: ethEnabled) { _, newEthEnabled in
+		.backport.onChange(of: ethEnabled) { _, newEthEnabled in
 			if newEthEnabled != node?.networkConfig?.ethEnabled { hasChanges = true }
-		}.onChange(of: udpEnabled) {_, newUdpEnabled in
+		}.backport.onChange(of: udpEnabled) {_, newUdpEnabled in
 			if let netConfig = node?.networkConfig {
 				let newValue: UInt32
 				if newUdpEnabled {

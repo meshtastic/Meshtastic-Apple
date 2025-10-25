@@ -5,9 +5,10 @@
 //  Copyright(c) Garth Vander Houwen 7/5/22.
 //
 import SwiftUI
+import SwiftUIBackports
 import OSLog
 
-@available(iOS 17.0, *)
+@available(iOS 16.0, *)
 struct PositionLog: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -168,7 +169,7 @@ struct PositionLog: View {
 				)
 
 			} else {
-				ContentUnavailableView("No Positions", systemImage: "mappin.slash")
+				Backport.ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 			}
 		}
 		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")

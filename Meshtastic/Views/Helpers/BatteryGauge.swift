@@ -29,33 +29,26 @@ struct BatteryGauge: View {
 				// to avoid any VoiceOver confusion
 				PluggedInIndicator()
 			} else {
-				let gradient = Gradient(colors: [.red, .orange, .green])
-				Gauge(value: batteryLevel, in: minValue...maxValue) {
-					// Accessibility for battery gauge
-					if batteryLevel >= 0.0 && batteryLevel < 10 {
-						Label("Battery Level %", systemImage: "battery.0")
-					} else if batteryLevel >= 10.0 && batteryLevel < 25.00 {
-						Label("Battery Level %", systemImage: "battery.25")
-					} else if batteryLevel >= 25.0 && batteryLevel < 50.00 {
-						Label("Battery Level %", systemImage: "battery.50")
-					} else if batteryLevel >= 50.0 && batteryLevel < 75.00 {
-						Label("Battery Level %", systemImage: "battery.75")
-					} else if batteryLevel >= 75.0 && batteryLevel <= 99.00 {
-						Label("Battery Level %", systemImage: "battery.100")
-					} else {
-						Label("Battery Level %", systemImage: "battery.100.bolt")
+				if #available(iOS 16.0, *) {
+					let gradient = Gradient(colors: [.red, .orange, .green])
+					Gauge(value: batteryLevel, in: minValue...maxValue) {
+						batteryStatusLabel(for: batteryLevel)
+					} currentValueLabel: {
+						currentValueLabel(for: batteryLevel)
 					}
-				} currentValueLabel: {
-					if batteryLevel == 0.0 {
-						Text("< 1%")
-					} else {
-						Text(Int(batteryLevel), format: .percent)
-					}
+					.accessibilityLabel(NSLocalizedString("Battery Level", comment: "VoiceOver label for battery gauge"))
+					.accessibilityValue(String(format: NSLocalizedString("Battery Level %d", comment: "VoiceOver value for battery level"), Int(batteryLevel)))
+					.tint(gradient)
+					.gaugeStyle(.accessoryCircular)
+				} else {
+					batteryStatusLabel(for: batteryLevel)
+					currentValueLabel(for: batteryLevel)
+					.accessibilityLabel(NSLocalizedString("Battery Level", comment: "VoiceOver label for battery gauge"))
+					.accessibilityValue(String(format: NSLocalizedString("Battery Level %d", comment: "VoiceOver value for battery level"), Int(batteryLevel)))
+					.padding(.bottom, 4)
+					ProgressView(value: batteryLevel, total: maxValue)
+						.tint(.accentColor)
 				}
-				.accessibilityLabel(NSLocalizedString("Battery Level", comment: "VoiceOver label for battery gauge"))
-				.accessibilityValue(String(format: NSLocalizedString("Battery Level %d", comment: "VoiceOver value for battery level"), Int(batteryLevel)))
-				.tint(gradient)
-				.gaugeStyle(.accessoryCircular)
 			}
 			if mostRecent?.voltage ?? 0 > 0 {
 				Text(String(format: "%.2f", mostRecent?.voltage ?? 0) + " V")
@@ -64,6 +57,32 @@ struct BatteryGauge: View {
 					.fixedSize()
 			}
 		}
+	}
+}
+
+@ViewBuilder
+private func batteryStatusLabel(for level: Double) -> some View {
+	if level >= 0.0 && level < 10 {
+		Label("Battery Level %", systemImage: "battery.0")
+	} else if level >= 10.0 && level < 25.00 {
+		Label("Battery Level %", systemImage: "battery.25")
+	} else if level >= 25.0 && level < 50.00 {
+		Label("Battery Level %", systemImage: "battery.50")
+	} else if level >= 50.0 && level < 75.00 {
+		Label("Battery Level %", systemImage: "battery.75")
+	} else if level >= 75.0 && level <= 99.00 {
+		Label("Battery Level %", systemImage: "battery.100")
+	} else {
+		Label("Battery Level %", systemImage: "battery.100.bolt")
+	}
+}
+
+@ViewBuilder
+private func currentValueLabel(for level: Double) -> some View {
+	if level == 0.0 {
+		Text("< 1%")
+	} else {
+		Text(Int(level), format: .percent)
 	}
 }
 

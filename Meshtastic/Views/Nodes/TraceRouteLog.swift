@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftUIBackports
 import CoreData
 import OSLog
 import MapKit
@@ -212,19 +213,7 @@ struct TraceRouteLog: View {
 								.padding(.bottom, 125)
 						}
 					} else {
-						if #available(iOS 17.0, *) {
-							ContentUnavailableView("Select a Trace Route", systemImage: "signpost.right.and.left")
-						} else {
-							VStack(spacing: 12) {
-								Image(systemName: "signpost.right.and.left")
-									.font(.system(size: 40))
-									.foregroundColor(.secondary)
-								Text("Select a Trace Route")
-									.font(.headline)
-									.foregroundColor(.secondary)
-							}
-							.frame(maxWidth: .infinity, maxHeight: .infinity)
-						}
+						Backport.ContentUnavailableView("Select a Trace Route", systemImage: "signpost.right.and.left")
 					}
 				}
 				.edgesIgnoringSafeArea(.bottom)

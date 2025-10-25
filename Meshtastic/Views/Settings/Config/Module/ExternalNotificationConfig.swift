@@ -217,49 +217,49 @@ struct ExternalNotificationConfig: View {
 				}
 			}
 		}
-		.onChangeBackport(of: enabled) { _, newEnabled in
+		.backport.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.externalNotificationConfig?.enabled { hasChanges = true }
 		}
-		.onChangeBackport(of: alertBell) { _, newAlertBell in
+		.backport.onChange(of: alertBell) { _, newAlertBell in
 			if newAlertBell != node?.externalNotificationConfig?.alertBell { hasChanges = true }
 		}
-		.onChangeBackport(of: alertBellBuzzer) { _, newAlertBellBuzzer in
+		.backport.onChange(of: alertBellBuzzer) { _, newAlertBellBuzzer in
 			if newAlertBellBuzzer != node?.externalNotificationConfig?.alertBellBuzzer { hasChanges = true }
 		}
-		.onChangeBackport(of: alertBellVibra) { _, newAlertBellVibra in
+		.backport.onChange(of: alertBellVibra) { _, newAlertBellVibra in
 			if newAlertBellVibra != node?.externalNotificationConfig?.alertBellVibra { hasChanges = true }
 		}
-		.onChangeBackport(of: alertMessage) { _, newAlertMessage in
+		.backport.onChange(of: alertMessage) { _, newAlertMessage in
 			if newAlertMessage != node?.externalNotificationConfig?.alertMessage { hasChanges = true }
 		}
-		.onChangeBackport(of: alertMessageBuzzer) { _, newAlertMessageBuzzer in
+		.backport.onChange(of: alertMessageBuzzer) { _, newAlertMessageBuzzer in
 			if newAlertMessageBuzzer != node?.externalNotificationConfig?.alertMessageBuzzer { hasChanges = true }
 		}
-		.onChangeBackport(of: alertMessageVibra) { _, newAlertMessageVibra in
+		.backport.onChange(of: alertMessageVibra) { _, newAlertMessageVibra in
 			if newAlertMessageVibra != node?.externalNotificationConfig?.alertMessageVibra { hasChanges = true }
 		}
-		.onChangeBackport(of: active) { _, newActive in
+		.backport.onChange(of: active) { _, newActive in
 			if newActive != node?.externalNotificationConfig?.active { hasChanges = true }
 		}
-		.onChangeBackport(of: output) { _, newOutput in
+		.backport.onChange(of: output) { _, newOutput in
 			if newOutput != node?.externalNotificationConfig?.output ?? -1 { hasChanges = true }
 		}
-		.onChangeBackport(of: output) { _, newOutputBuzzer in
+		.backport.onChange(of: output) { _, newOutputBuzzer in
 			if newOutputBuzzer != node?.externalNotificationConfig?.outputBuzzer ?? -1 { hasChanges = true }
 		}
-		.onChangeBackport(of: output) { _, newOutputVibra in
+		.backport.onChange(of: output) { _, newOutputVibra in
 			if newOutputVibra != node?.externalNotificationConfig?.outputVibra ?? -1 { hasChanges = true }
 		}
-		.onChangeBackport(of: outputMilliseconds) { _, newOutputMs in
+		.backport.onChange(of: outputMilliseconds) { _, newOutputMs in
 			if newOutputMs != node?.externalNotificationConfig?.outputMilliseconds ?? -1 { hasChanges = true }
 		}
-		.onChangeBackport(of: usePWM) { _, newPWM in
+		.backport.onChange(of: usePWM) { _, newPWM in
 			if newPWM != node?.externalNotificationConfig?.usePWM { hasChanges = true }
 		}
-		.onChangeBackport(of: nagTimeout.intValue) { _, newNagTimeout in
+		.backport.onChange(of: nagTimeout.intValue) { _, newNagTimeout in
 			if newNagTimeout != node?.externalNotificationConfig?.nagTimeout ?? -1 { hasChanges = true }
 		}
-		.onChangeBackport(of: useI2SAsBuzzer) { _, newUseI2SAsBuzzer in
+		.backport.onChange(of: useI2SAsBuzzer) { _, newUseI2SAsBuzzer in
 			if newUseI2SAsBuzzer != node?.externalNotificationConfig?.useI2SAsBuzzer { hasChanges = true }
 		}
 	}

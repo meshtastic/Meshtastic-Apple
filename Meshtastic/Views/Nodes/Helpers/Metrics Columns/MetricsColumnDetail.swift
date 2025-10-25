@@ -7,13 +7,14 @@
 
 import SwiftUI
 import NavigationBackport
+import SwiftUIBackports
 
 @available(iOS 17, *)
 struct MetricsColumnDetail: View {
 	@ObservedObject var columnList: MetricsColumnList
 	@ObservedObject var seriesList: MetricsSeriesList
 
-	@State private var currentDetent = PresentationDetent.medium
+	@State private var currentDetent = Backport.PresentationDetent.medium
 
 	@Environment(\.dismiss) private var dismiss
 	
@@ -94,10 +95,10 @@ struct MetricsColumnDetail: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.medium, .large], selection: $currentDetent)
-		.presentationContentInteraction(.scrolls)
-		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.backport.presentationDetents([.medium, .large], selection: $currentDetent)
+		.backport.presentationContentInteraction(.scrolls)
+		.backport.presentationDragIndicator(.visible)
+		.backport.presentationBackgroundInteraction(.enabled(upThrough: Backport.PresentationDetent.medium))
 		.interactiveDismissDisabled(false)
 	}
 }

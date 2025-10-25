@@ -145,7 +145,7 @@ struct MQTTConfig: View {
 						Label("Root Topic", systemImage: "tree")
 						TextField("Root Topic", text: $root)
 							.foregroundColor(.gray)
-							.onChange(of: root) {
+							.backport.onChange(of: root) { _, _ in
 								var totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 30 {
@@ -183,7 +183,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: address) {
+							.backport.onChange(of: address) { _, _ in
 								var totalBytes = address.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 62 {
@@ -202,7 +202,7 @@ struct MQTTConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: username) {
+								.backport.onChange(of: username) { _, _ in
 									var totalBytes = username.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 62 {
@@ -220,7 +220,7 @@ struct MQTTConfig: View {
 								.foregroundColor(.gray)
 								.autocapitalization(.none)
 								.disableAutocorrection(true)
-								.onChange(of: password) {
+								.backport.onChange(of: password) { _, _ in
 									var totalBytes = password.utf8.count
 									// Only mess with the value if it is too big
 									while totalBytes > 30 {
@@ -245,7 +245,7 @@ struct MQTTConfig: View {
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
 					.font(.callout)
 			}
-			.scrollDismissesKeyboard(.immediately)
+			.backport.scrollDismissesKeyboard(.immediately)
 			.disabled(!accessoryManager.isConnected || node?.mqttConfig == nil)
 			.safeAreaInset(edge: .bottom, alignment: .center) {
 				HStack(spacing: 0) {
@@ -279,17 +279,17 @@ struct MQTTConfig: View {
 						}
 					}
 				}
-			}.onChange(of: enabled) { _, newEnabled in
+			}.backport.onChange(of: enabled) { _, newEnabled in
 				if newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
+			.backport.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
 				if newProxyToClientEnabled {
 					jsonEnabled = false
 					tlsEnabled = false
 				}
 				if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 			}
-			.onChange(of: address) { _, newAddress in
+			.backport.onChange(of: address) { _, newAddress in
 				if address.lowercased() == "mqtt.meshtastic.org" {
 					username = "meshdev"
 					password = "large4cats"
@@ -303,35 +303,35 @@ struct MQTTConfig: View {
 				}
 				if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 			}
-			.onChange(of: username) { _, newUsername in
+			.backport.onChange(of: username) { _, newUsername in
 				if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
 			}
-			.onChange(of: password) { _, newPassword in
+			.backport.onChange(of: password) { _, newPassword in
 				if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
 			}
-			.onChange(of: root) { _, newRoot in
+			.backport.onChange(of: root) { _, newRoot in
 				if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
 			}
-			.onChange(of: selectedTopic) { _, newSelectedTopic in
+			.backport.onChange(of: selectedTopic) { _, newSelectedTopic in
 				root = newSelectedTopic
 			}
-			.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
+			.backport.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
 				if newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
 			}
-			.onChange(of: jsonEnabled) { _, newJsonEnabled in
+			.backport.onChange(of: jsonEnabled) { _, newJsonEnabled in
 				if newJsonEnabled {
 					proxyToClientEnabled = false
 				}
 				if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 			}
-			.onChange(of: tlsEnabled) { _, newTlsEnabled in
+			.backport.onChange(of: tlsEnabled) { _, newTlsEnabled in
 				if defaultServer {
 					tlsEnabled = false
 				} else {
 					if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
 				}
 			}
-			.onChange(of: mqttConnected) { _, newMqttConnected in
+			.backport.onChange(of: mqttConnected) { _, newMqttConnected in
 				if newMqttConnected == false {
 					if accessoryManager.mqttProxyConnected {
 						accessoryManager.mqttManager.disconnect()
@@ -342,10 +342,10 @@ struct MQTTConfig: View {
 					}
 				}
 			}
-			.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
+			.backport.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
 				if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
 			}
-			.onChange(of: mapPublishIntervalSecs.intValue) { _, newMapPublishIntervalSecs in
+			.backport.onChange(of: mapPublishIntervalSecs.intValue) { _, newMapPublishIntervalSecs in
 				if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 			}
 		}

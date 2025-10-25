@@ -167,28 +167,28 @@ struct SerialConfig: View {
 					}
 				}
 			}
-			.onChange(of: enabled) { oldEnabled, newEnabled in
+			.backport.onChange(of: enabled) { oldEnabled, newEnabled in
 				if oldEnabled != newEnabled && newEnabled != node?.serialConfig?.enabled ?? false { hasChanges = true }
 			}
-			.onChange(of: echo) { oldEcho, newEcho in
+			.backport.onChange(of: echo) { oldEcho, newEcho in
 				if oldEcho != newEcho && newEcho != node?.serialConfig?.echo ?? false { hasChanges = true }
 			}
-			.onChange(of: rxd) { oldRxd, newRxd in
+			.backport.onChange(of: rxd) { oldRxd, newRxd in
 				if oldRxd != newRxd && newRxd != node?.serialConfig?.rxd ?? -1 { hasChanges = true }
 			}
-			.onChange(of: txd) { oldTxd, newTxd in
+			.backport.onChange(of: txd) { oldTxd, newTxd in
 				if oldTxd != newTxd && newTxd != node?.serialConfig?.txd ?? -1 { hasChanges = true }
 			}
-			.onChange(of: baudRate) { oldBaud, newBaud in
+			.backport.onChange(of: baudRate) { oldBaud, newBaud in
 				if oldBaud != newBaud && newBaud != node?.serialConfig?.baudRate ?? -1 { hasChanges = true }
 			}
-			.onChange(of: timeout) { oldTimeout, newTimeout in
+			.backport.onChange(of: timeout) { oldTimeout, newTimeout in
 				if oldTimeout != newTimeout && newTimeout != node?.serialConfig?.timeout ?? -1 { hasChanges = true }
 			}
-			.onChange(of: overrideConsoleSerialPort) { oldOverrideConsoleSerialPort, newOverrideConsoleSerialPort in
+			.backport.onChange(of: overrideConsoleSerialPort) { oldOverrideConsoleSerialPort, newOverrideConsoleSerialPort in
 				if oldOverrideConsoleSerialPort != newOverrideConsoleSerialPort && newOverrideConsoleSerialPort != node?.serialConfig?.overrideConsoleSerialPort ?? false { hasChanges = true }
 			}
-			.onChange(of: mode) { oldMode, newMode in
+			.backport.onChange(of: mode) { oldMode, newMode in
 				if oldMode != newMode && newMode != node?.serialConfig?.mode ?? -1 { hasChanges = true }
 			}
 		}

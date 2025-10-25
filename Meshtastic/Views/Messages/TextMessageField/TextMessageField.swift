@@ -53,7 +53,7 @@ struct TextMessageField: View {
 							.background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground)))
 					)
 					.clipShape(RoundedRectangle(cornerRadius: 20))
-					.onChangeBackport(of: typingMessage) { _, value in
+					.backport.onChange(of: typingMessage) { _, value in
 						totalBytes = value.utf8.count
 						while totalBytes > Self.maxbytes {
 							typingMessage = String(typingMessage.dropLast())

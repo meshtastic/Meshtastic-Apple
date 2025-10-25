@@ -183,7 +183,7 @@ struct LoRaConfig: View {
 				}
 			}
 		}
-		.scrollDismissesKeyboard(.immediately)
+		.backport.scrollDismissesKeyboard(.immediately)
 		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
@@ -257,46 +257,46 @@ struct LoRaConfig: View {
 				}
 			}
 		}
-		.onChange(of: region) { _, newRegion in
+		.backport.onChange(of: region) { _, newRegion in
 			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: usePreset) { _, newPreset in
+		.backport.onChange(of: usePreset) { _, newPreset in
 			if newPreset != node?.loRaConfig?.usePreset { hasChanges = true }
 		}
-		.onChange(of: modemPreset) { _, newModemPreset in
+		.backport.onChange(of: modemPreset) { _, newModemPreset in
 			if newModemPreset != node?.loRaConfig?.modemPreset ?? -1 { hasChanges = true }
 		}
-		.onChange(of: hopLimit) { _, newHopLimit in
+		.backport.onChange(of: hopLimit) { _, newHopLimit in
 			if newHopLimit != node?.loRaConfig?.hopLimit ?? -1 { hasChanges = true }
 		}
-		.onChange(of: channelNum) { _, newChannelNum in
+		.backport.onChange(of: channelNum) { _, newChannelNum in
 			if newChannelNum != node?.loRaConfig?.channelNum ?? -1 { hasChanges = true }
 		}
-		.onChange(of: bandwidth) { _, newBandwidth in
+		.backport.onChange(of: bandwidth) { _, newBandwidth in
 			if newBandwidth != node?.loRaConfig?.bandwidth ?? -1 { hasChanges = true }
 		}
-		.onChange(of: codingRate) { _, newCodingRate in
+		.backport.onChange(of: codingRate) { _, newCodingRate in
 			if newCodingRate != node?.loRaConfig?.codingRate ?? -1 { hasChanges = true }
 		}
-		.onChange(of: spreadFactor) { _, newSpreadFactor in
+		.backport.onChange(of: spreadFactor) { _, newSpreadFactor in
 			if newSpreadFactor != node?.loRaConfig?.spreadFactor ?? -1 { hasChanges = true }
 		}
-		.onChange(of: rxBoostedGain) { _, newRxBoostedGain in
+		.backport.onChange(of: rxBoostedGain) { _, newRxBoostedGain in
 			if newRxBoostedGain != node?.loRaConfig?.sx126xRxBoostedGain { hasChanges = true }
 		}
-		.onChange(of: overrideFrequency) { _, newOverrideFrequency in
+		.backport.onChange(of: overrideFrequency) { _, newOverrideFrequency in
 			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
-		.onChange(of: txPower) { _, newTxPower in
+		.backport.onChange(of: txPower) { _, newTxPower in
 			if newTxPower != node?.loRaConfig?.txPower ?? -1 { hasChanges = true }
 		}
-		.onChange(of: txEnabled) { _, newTxEnabled in
+		.backport.onChange(of: txEnabled) { _, newTxEnabled in
 			if newTxEnabled != node?.loRaConfig?.txEnabled { hasChanges = true }
 		}
-		.onChange(of: ignoreMqtt) { _, newIgnoreMqtt in
+		.backport.onChange(of: ignoreMqtt) { _, newIgnoreMqtt in
 			if newIgnoreMqtt != node?.loRaConfig?.ignoreMqtt { hasChanges = true }
 		}
-		.onChange(of: okToMqtt) { _, newOkToMqtt in
+		.backport.onChange(of: okToMqtt) { _, newOkToMqtt in
 			if newOkToMqtt != node?.loRaConfig?.okToMqtt { hasChanges = true }
 		}
 	}

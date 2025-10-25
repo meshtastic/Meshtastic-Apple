@@ -10,6 +10,7 @@ import SwiftUI
 struct SecureInput: View {
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	private var textStyle: Font.TextStyle { idiom == .phone ? .caption : .callout }
 	@Binding private var text: String
 	@Binding private var isValid: Bool
 	private var title: String
@@ -35,22 +36,26 @@ struct SecureInput: View {
 			Group {
 				if isSecure.wrappedValue {
 					SecureField(title, text: $text)
-						.font(idiom == .phone ? .caption : .callout)
+						.font(.system(textStyle, design: .monospaced))
 						.allowsTightening(true)
-						.monospaced()
 						.keyboardType(.alphabet)
 						.foregroundStyle(.tertiary)
 						.disableAutocorrection(true)
 				} else {
 					TextField(title, text: $text, axis: .vertical)
-						.font(idiom == .phone ? .caption : .callout)
+						.font(.system(textStyle, design: .monospaced))
 						.allowsTightening(true)
-						.monospaced()
 						.keyboardType(.alphabet)
 						.foregroundStyle(.tertiary)
 						.disableAutocorrection(true)
 						.textSelection(.enabled)
-						.lineLimit(...3)
+						.backport.apply { field in
+							if #available(iOS 16.0, *) {
+								return AnyView(field.lineLimit(...3))
+							} else {
+								return AnyView(field.lineLimit(3))
+							}
+						}
 						.background(
 							RoundedRectangle(cornerRadius: 10.0)
 								.stroke(isValid ? Color.clear : Color.red, lineWidth: 2.0)

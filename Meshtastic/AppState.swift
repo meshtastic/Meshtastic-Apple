@@ -1,5 +1,7 @@
 import Combine
 import SwiftUI
+import UserNotifications
+import UIKit
 
 class AppState: ObservableObject {
 
@@ -20,8 +22,12 @@ class AppState: ObservableObject {
 		// Keep app icon badge count in sync with messages read status
 		$unreadChannelMessages.combineLatest($unreadDirectMessages)
 			.sink(receiveValue: { badgeCounts in
-				UNUserNotificationCenter.current()
-					.setBadgeCount(badgeCounts.0 + badgeCounts.1)
+				let total = badgeCounts.0 + badgeCounts.1
+				if #available(iOS 16, *) {
+					UNUserNotificationCenter.current().setBadgeCount(total)
+				} else {
+					UIApplication.shared.applicationIconBadgeNumber = total
+				}
 			})
 			.store(in: &cancellables)
 	}

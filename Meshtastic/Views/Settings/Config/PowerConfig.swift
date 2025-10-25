@@ -158,30 +158,30 @@ struct PowerConfig: View {
 				}
 			}
 		}
-		.onChange(of: isPowerSaving) { oldIsPowerSaving, newIsPowerSaving in
+		.backport.onChange(of: isPowerSaving) { oldIsPowerSaving, newIsPowerSaving in
 			if oldIsPowerSaving != newIsPowerSaving && newIsPowerSaving != node?.powerConfig?.isPowerSaving { hasChanges = true }
 		}
-		.onChange(of: shutdownOnPowerLoss) { _, newShutdownOnPowerLoss in
+		.backport.onChange(of: shutdownOnPowerLoss) { _, newShutdownOnPowerLoss in
 			if newShutdownOnPowerLoss {
 				hasChanges = true
 			}
 		}
-		.onChange(of: shutdownAfterSecs.intValue) { oldShutdownAfterSecs, newShutdownAfterSecs in
+		.backport.onChange(of: shutdownAfterSecs.intValue) { oldShutdownAfterSecs, newShutdownAfterSecs in
 			if oldShutdownAfterSecs != newShutdownAfterSecs && newShutdownAfterSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: adcOverride) {
+		.backport.onChange(of: adcOverride) { _, _ in
 			hasChanges = true
 		}
-		.onChange(of: adcMultiplier) { _, newAdcMultiplier in
+		.backport.onChange(of: adcMultiplier) { _, newAdcMultiplier in
 			if  newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? -1 { hasChanges = true }
 		}
-		.onChange(of: waitBluetoothSecs) { oldWaitBluetoothSecs, newWaitBluetoothSecs in
+		.backport.onChange(of: waitBluetoothSecs) { oldWaitBluetoothSecs, newWaitBluetoothSecs in
 			if oldWaitBluetoothSecs != newWaitBluetoothSecs && newWaitBluetoothSecs != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: lsSecs) { _, newLsSecs in
+		.backport.onChange(of: lsSecs) { _, newLsSecs in
 			if newLsSecs != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: minWakeSecs) { _, newMinWakeSecs in
+		.backport.onChange(of: minWakeSecs) { _, newMinWakeSecs in
 			if newMinWakeSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
 		}
 	}
@@ -213,7 +213,7 @@ private struct FloatField: View {
 		TextField(title.localized, value: $typingNumber, format: .number)
 			.foregroundColor(.gray)
 			.multilineTextAlignment(.trailing)
-			.onChange(of: typingNumber) {
+			.backport.onChange(of: typingNumber) { _, _ in
 				if isValid(typingNumber) {
 					number = typingNumber
 				} else {

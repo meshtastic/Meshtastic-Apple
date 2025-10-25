@@ -46,6 +46,7 @@ public func clearStaleNodes(nodeExpireDays: Int, context: NSManagedObjectContext
 	return false
 }
 
+@available(iOS 16, *)
 public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()

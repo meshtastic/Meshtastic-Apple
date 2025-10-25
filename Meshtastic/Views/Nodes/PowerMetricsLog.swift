@@ -181,7 +181,7 @@ struct PowerMetricsLog: View {
 							}
 						}
 					}
-					.onChange(of: selection) { _, newSelection in
+					.backport.onChange(of: selection) { _, newSelection in
 						guard let metrics = powerMetrics.first(where: { $0.id == newSelection }) else {
 							return
 						}
@@ -219,7 +219,7 @@ struct PowerMetricsLog: View {
 						.width(min: 180)
 
 					}
-					.onChange(of: selection) { _, newSelection in
+					.backport.onChange(of: selection) { _, newSelection in
 						guard let metrics = powerMetrics.first(where: { $0.id == newSelection }) else {
 							return
 						}
@@ -263,7 +263,7 @@ struct PowerMetricsLog: View {
 					.padding(.bottom)
 					.padding(.trailing)
 				}
-				.onChange(of: selection) { _, newSelection in
+				.backport.onChange(of: selection) { _, newSelection in
 					guard let metrics = powerMetrics.first(where: { $0.id == newSelection }) else {
 						return
 					}

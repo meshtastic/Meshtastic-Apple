@@ -105,12 +105,12 @@ struct NodeMapContent: MapContent {
 											PositionPopover(position: selection)
 												.padding()
 												.opacity(0.8)
-												.presentationCompactAdaptation(.popover)
+												.backport.presentationCompactAdaptation(.popover)
 										}
 
 								} else {
 									Image(systemName: "flipphone")
-										.backportModify { view in
+										.backport.apply { view in
 											if #available(iOS 17, *) {
 												return view.symbolEffect(.pulse.byLayer)
 											}
@@ -127,7 +127,7 @@ struct NodeMapContent: MapContent {
 											PositionPopover(position: selection)
 												.padding()
 												.opacity(0.8)
-												.presentationCompactAdaptation(.popover)
+												.backport.presentationCompactAdaptation(.popover)
 										}
 								}
 							}

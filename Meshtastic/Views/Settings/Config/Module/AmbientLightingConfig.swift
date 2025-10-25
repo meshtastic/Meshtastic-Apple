@@ -114,13 +114,13 @@ struct AmbientLightingConfig: View {
 				}
 			}
 		}
-		.onChangeBackport(of: ledState) { _, newLedState in
+		.backport.onChange(of: ledState) { _, newLedState in
 			if newLedState != node?.ambientLightingConfig?.ledState { hasChanges = true }
 		}
-		.onChangeBackport(of: current) { _, newCurrent in
+		.backport.onChange(of: current) { _, newCurrent in
 			if newCurrent != node?.ambientLightingConfig?.current ?? 10 { hasChanges = true }
 		}
-		.onChangeBackport(of: color) { oldColor, newColor in
+		.backport.onChange(of: color) { oldColor, newColor in
 			if oldColor != newColor { hasChanges = true }
 		}
 	}

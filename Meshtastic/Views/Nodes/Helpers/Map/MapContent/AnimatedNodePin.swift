@@ -31,7 +31,7 @@ struct AnimatedNodePin: View, Equatable {
 			if hasDetectionSensorMetrics {
 				Image(systemName: "sensor.fill")
 					.symbolRenderingMode(.palette)
-					.backportModify { view in
+					.backport.apply { view in
 						if #available(iOS 17, *) {
 							return view.symbolEffect(.variableColor)
 						}

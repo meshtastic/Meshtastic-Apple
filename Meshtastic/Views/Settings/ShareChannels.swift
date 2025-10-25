@@ -33,6 +33,7 @@ struct QrCodeImage {
 	}
 }
 
+@available(iOS 17.0, *)
 struct ShareChannels: View {
 
 	@Environment(\.managedObjectContext) var context
@@ -56,11 +57,9 @@ struct ShareChannels: View {
 	var body: some View {
 
 		VStack {
-			if #available(iOS 17, *) {
-				TipView(ShareChannelsTip(), arrowEdge: .bottom)
-					.tipBackground(Color(.secondarySystemBackground))
-					.listRowSeparator(.hidden)
-			}
+			TipView(ShareChannelsTip(), arrowEdge: .bottom)
+				.tipBackground(Color(.secondarySystemBackground))
+				.listRowSeparator(.hidden)
 		}
 		.padding(.horizontal)
 		GeometryReader { bounds in

@@ -32,7 +32,7 @@ struct Messages: View {
 				legacyBody
 			}
 		}
-		.onChange(of: router.navigationState) {
+		.backport.onChange(of: router.navigationState) { _, _ in
 			setupNavigationState()
 		}
 	}
@@ -127,9 +127,7 @@ struct Messages: View {
 					.padding()
 			}
 		}
-		.alignmentGuide(.listRowSeparatorLeading) {
-			$0[.leading]
-		}
+		.backport.leadingListRowSeparatorAligned()
 		NBNavigationLink(value: MessagesNavigationState.directMessages()) {
 			Spacer()
 			Label {
@@ -145,9 +143,7 @@ struct Messages: View {
 					.padding()
 			}
 		}
-		.alignmentGuide(.listRowSeparatorLeading) {
-			$0[.leading]
-		}
+		.backport.leadingListRowSeparatorAligned()
 		Spacer()
 		if #available(iOS 17, *) {
 			TipView(MessagesTip(), arrowEdge: .top)

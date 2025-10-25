@@ -29,19 +29,32 @@ struct LoRaSignalStrengthMeter: View {
 			}
 		} else {
 			VStack {
-				Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
-				} currentValueLabel: {
-					Image(systemName: "dot.radiowaves.left.and.right")
-						.font(.callout)
-						.frame(width: 30)
-					Text("Signal \(signalStrength.description)")
-						.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-						.foregroundColor(.gray)
-						.fixedSize()
+				if #available(iOS 16.0, *) {
+					Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
+					} currentValueLabel: {
+						Image(systemName: "dot.radiowaves.left.and.right")
+							.font(.callout)
+							.frame(width: 30)
+						Text("Signal \(signalStrength.description)")
+							.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+							.foregroundColor(.gray)
+							.fixedSize()
+					}
+					.gaugeStyle(.accessoryLinear)
+					.tint(gradient)
+					.font(.caption)
+				} else {
+					ProgressView(value: Double(signalStrength.rawValue), total: 3)
+						.progressViewStyle(LinearProgressViewStyle())
+						.accentColor(.green)
+					HStack(spacing: 6) {
+						Image(systemName: "dot.radiowaves.left.and.right")
+							.font(.callout)
+						Text("Signal \(signalStrength.description)")
+							.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+							.foregroundColor(.gray)
+					}
 				}
-				.gaugeStyle(.accessoryLinear)
-				.tint(gradient)
-				.font(.caption)
 			}
 		}
 	}

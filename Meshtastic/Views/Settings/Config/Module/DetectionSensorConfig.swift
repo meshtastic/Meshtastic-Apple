@@ -90,7 +90,7 @@ struct DetectionSensorConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: name) {
+							.backport.onChange(of: name) { _, _ in
 								var totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 20 {
@@ -152,7 +152,7 @@ struct DetectionSensorConfig: View {
 				}
 			}
 		}
-		.scrollDismissesKeyboard(.interactively)
+		.backport.scrollDismissesKeyboard(.interactively)
 		.disabled(!accessoryManager.isConnected || node?.detectionSensorConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
@@ -220,31 +220,31 @@ struct DetectionSensorConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) { _, newEnabled in
+		.backport.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.detectionSensorConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: sendBell) { _, newSendBell in
+		.backport.onChange(of: sendBell) { _, newSendBell in
 			if newSendBell != node?.detectionSensorConfig?.sendBell { hasChanges = true }
 		}
-		.onChange(of: triggerType) { _, newTriggerType in
+		.backport.onChange(of: triggerType) { _, newTriggerType in
 			if newTriggerType != node?.detectionSensorConfig?.triggerType ?? 0 { hasChanges = true }
 		}
-		.onChange(of: usePullup) { _, newUsePullup in
+		.backport.onChange(of: usePullup) { _, newUsePullup in
 			if newUsePullup != node?.detectionSensorConfig?.usePullup { hasChanges = true }
 		}
-		.onChange(of: name) { _, newName in
+		.backport.onChange(of: name) { _, newName in
 			if newName != node?.detectionSensorConfig?.name ?? "" { hasChanges = true }
 		}
-		.onChange(of: monitorPin) { _, newMonitorPin in
+		.backport.onChange(of: monitorPin) { _, newMonitorPin in
 			if newMonitorPin != node?.detectionSensorConfig?.monitorPin ?? 0 { hasChanges = true }
 		}
-		.onChange(of: minimumBroadcastSecs.intValue) { _, newMinimumBroadcastSecs in
+		.backport.onChange(of: minimumBroadcastSecs.intValue) { _, newMinimumBroadcastSecs in
 			if newMinimumBroadcastSecs != node?.detectionSensorConfig?.minimumBroadcastSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: stateBroadcastSecs.intValue) { _, newStateBroadcastSecs in
+		.backport.onChange(of: stateBroadcastSecs.intValue) { _, newStateBroadcastSecs in
 			if newStateBroadcastSecs != node?.detectionSensorConfig?.stateBroadcastSecs ?? 0 { hasChanges = true }
 		}
-		.onChange(of: detectionNotificationsEnabled) { _, newDetectionNotificationsEnabled in
+		.backport.onChange(of: detectionNotificationsEnabled) { _, newDetectionNotificationsEnabled in
 			UserDefaults.enableDetectionNotifications = newDetectionNotificationsEnabled
 		}
 	}

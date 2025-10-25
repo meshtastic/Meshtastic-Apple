@@ -6,14 +6,15 @@
 //
 
 import SwiftUI
+import SwiftUIBackports
 import NavigationBackport
 import MapKit
 import OSLog
 
-@available(iOS 17, *)
+@available(iOS 16, *)
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
-	@State private var currentDetent = PresentationDetent.medium
+	@State private var currentDetent = Backport.PresentationDetent.medium
 	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var enableMapRouteLines = false
 	@AppStorage("enableMapConvexHull") private var convexHull = false
@@ -43,7 +44,7 @@ struct MapSettingsForm: View {
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
-					.onChange(of: mapLayer) { _, newMapLayer in
+					.backport.onChange(of: mapLayer) { _, newMapLayer in
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
@@ -58,7 +59,7 @@ struct MapSettingsForm: View {
 								}
 								.pickerStyle(DefaultPickerStyle())
 							}
-							.onChange(of: meshMapDistance) { _, newMeshMapDistance in
+							.backport.onChange(of: meshMapDistance) { _, newMeshMapDistance in
 								UserDefaults.meshMapDistance = newMeshMapDistance
 							}
 						}
@@ -193,7 +194,7 @@ struct MapSettingsForm: View {
 								}
 							}
 						} else {
-							ContentUnavailableView("No map data files uploaded", systemImage: "exclamationmark.triangle")
+							Backport.ContentUnavailableView("No map data files uploaded", systemImage: "exclamationmark.triangle")
 						}
 					} else if !hasUserData {
 						// Upload prompt when no data available
@@ -222,10 +223,10 @@ struct MapSettingsForm: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.large], selection: $currentDetent)
-		.presentationContentInteraction(.scrolls)
-		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.backport.presentationDetents([.large], selection: $currentDetent)
+		.backport.presentationContentInteraction(.scrolls)
+		.backport.presentationDragIndicator(.visible)
+		.backport.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.onAppear {
 			// Initialize map data manager
 			mapDataManager.initialize()

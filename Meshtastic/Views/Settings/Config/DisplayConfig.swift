@@ -190,34 +190,34 @@ struct DisplayConfig: View {
 				}
 			}
 		}
-		.onChange(of: screenOnSeconds) { oldScreenSecs, newScreenSecs in
+		backport.onChange(of: screenOnSeconds) { oldScreenSecs, newScreenSecs in
 			if oldScreenSecs != newScreenSecs && newScreenSecs != node?.displayConfig?.screenOnSeconds ?? -1 { hasChanges = true }
 		}
-		.onChange(of: screenCarouselInterval) { oldCarouselSecs, newCarouselSecs in
+		backport.onChange(of: screenCarouselInterval) { oldCarouselSecs, newCarouselSecs in
 			if oldCarouselSecs != newCarouselSecs && newCarouselSecs != node?.displayConfig?.screenCarouselInterval ?? -1 { hasChanges = true }
 		}
-		.onChange(of: compassNorthTop) { oldCompassNorthTop, newCompassNorthTop in
+		backport.onChange(of: compassNorthTop) { oldCompassNorthTop, newCompassNorthTop in
 			if oldCompassNorthTop != newCompassNorthTop && newCompassNorthTop != node?.displayConfig?.compassNorthTop { hasChanges = true }
 		}
-		.onChange(of: wakeOnTapOrMotion) { oldWakeOnTapOrMotion, newWakeOnTapOrMotion in
+		backport.onChange(of: wakeOnTapOrMotion) { oldWakeOnTapOrMotion, newWakeOnTapOrMotion in
 			if oldWakeOnTapOrMotion != newWakeOnTapOrMotion && newWakeOnTapOrMotion != node?.displayConfig?.wakeOnTapOrMotion { hasChanges = true }
 		}
-		.onChange(of: flipScreen) { oldFlipScreen, newFlipScreen in
+		backport.onChange(of: flipScreen) { oldFlipScreen, newFlipScreen in
 			if oldFlipScreen != newFlipScreen && newFlipScreen != node?.displayConfig?.flipScreen { hasChanges = true }
 		}
-		.onChange(of: oledType) { oldOledType, newOledType in
+		backport.onChange(of: oledType) { oldOledType, newOledType in
 			if oldOledType != newOledType && newOledType != node?.displayConfig?.oledType ?? -1 { hasChanges = true }
 		}
-		.onChange(of: displayMode) { oldDisplayMode, newDisplayMode in
+		backport.onChange(of: displayMode) { oldDisplayMode, newDisplayMode in
 			if oldDisplayMode != newDisplayMode && newDisplayMode != node?.displayConfig?.displayMode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: units) { oldUnits, newUnits in
+		backport.onChange(of: units) { oldUnits, newUnits in
 			if oldUnits != newUnits && newUnits != node?.displayConfig?.units ?? -1 { hasChanges = true }
 		}
-		.onChange(of: use12HourClock) { oldUse12HourClock, newUse12HourClock in
+		backport.onChange(of: use12HourClock) { oldUse12HourClock, newUse12HourClock in
 			if oldUse12HourClock != newUse12HourClock && newUse12HourClock != node?.displayConfig?.use12HClock { hasChanges = true }
 		}
-		.onChange(of: headingBold) { oldHeadingBold, newHeadingBold in
+		backport.onChange(of: headingBold) { oldHeadingBold, newHeadingBold in
 			if oldHeadingBold != newHeadingBold && newHeadingBold != node?.displayConfig?.headingBold { hasChanges = true }
 		}
 	}

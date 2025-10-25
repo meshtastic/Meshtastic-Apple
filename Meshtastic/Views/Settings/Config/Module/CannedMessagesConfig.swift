@@ -70,7 +70,7 @@ struct CannedMessagesConfig: View {
 					.foregroundColor(.gray)
 					.autocapitalization(.none)
 					.disableAutocorrection(true)
-					.onChange(of: messages) {
+					.backport.onChange(of: messages) { _, _ in
 						var totalBytes = messages.utf8.count
 						// Only mess with the value if it is too big
 						while totalBytes > 198 {
@@ -176,7 +176,7 @@ struct CannedMessagesConfig: View {
 			}
 			.disabled(configPreset > 0)
 		}
-		.scrollDismissesKeyboard(.immediately)
+		.backport.scrollDismissesKeyboard(.immediately)
 		.disabled(!accessoryManager.isConnected || node?.cannedMessageConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
@@ -279,7 +279,7 @@ struct CannedMessagesConfig: View {
 				}
 			}
 		}
-		.onChange(of: configPreset) { _, newPreset in
+		.backport.onChange(of: configPreset) { _, newPreset in
 			
 			if newPreset == 1 {
 				
@@ -308,34 +308,34 @@ struct CannedMessagesConfig: View {
 			
 			hasChanges = true
 		}
-		.onChange(of: enabled) { _, newEnabled in
+		.backport.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.cannedMessageConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: sendBell) { _, newSendBell in
+		.backport.onChange(of: sendBell) { _, newSendBell in
 			if newSendBell != node?.cannedMessageConfig?.sendBell { hasChanges = true }
 		}
-		.onChange(of: rotary1Enabled) { _, newRotary1Enabled in
+		.backport.onChange(of: rotary1Enabled) { _, newRotary1Enabled in
 			if newRotary1Enabled != node?.cannedMessageConfig?.rotary1Enabled {	hasChanges = true }
 		}
-		.onChange(of: updown1Enabled) { _, newUpdown1Enabled in
+		.backport.onChange(of: updown1Enabled) { _, newUpdown1Enabled in
 			if newUpdown1Enabled != node?.cannedMessageConfig?.updown1Enabled {	hasChanges = true }
 		}
-		.onChange(of: inputbrokerPinA) { _, newPinA in
+		.backport.onChange(of: inputbrokerPinA) { _, newPinA in
 			if newPinA != node?.cannedMessageConfig?.inputbrokerPinA ?? -1 { hasChanges = true }
 		}
-		.onChange(of: inputbrokerPinB) { _, newPinB in
+		.backport.onChange(of: inputbrokerPinB) { _, newPinB in
 			if newPinB != node?.cannedMessageConfig?.inputbrokerPinB ?? -1 { hasChanges = true }
 		}
-		.onChange(of: inputbrokerPinPress) { _, newPinPress in
+		.backport.onChange(of: inputbrokerPinPress) { _, newPinPress in
 			if newPinPress != node?.cannedMessageConfig?.inputbrokerPinPress ?? -1 { hasChanges = true }
 		}
-		.onChange(of: inputbrokerEventCw) { _, newKeyA in
+		.backport.onChange(of: inputbrokerEventCw) { _, newKeyA in
 			if newKeyA != node?.cannedMessageConfig?.inputbrokerEventCw ?? -1 { hasChanges = true }
 		}
-		.onChange(of: inputbrokerEventCcw) { _, newKeyB in
+		.backport.onChange(of: inputbrokerEventCcw) { _, newKeyB in
 			if newKeyB != node?.cannedMessageConfig?.inputbrokerEventCcw ?? -1 { hasChanges = true }
 		}
-		.onChange(of: inputbrokerEventPress) { _, newKeyPress in
+		.backport.onChange(of: inputbrokerEventPress) { _, newKeyPress in
 			if newKeyPress != node?.cannedMessageConfig?.inputbrokerEventPress ?? -1 { hasChanges = true }
 		}
 	}

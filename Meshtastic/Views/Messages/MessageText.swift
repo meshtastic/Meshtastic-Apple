@@ -88,7 +88,7 @@ struct MessageText: View {
 									.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
 									.foregroundStyle(Color.orange)
 									.symbolRenderingMode(.multicolor)
-									.backportModify { view in
+									.backport.apply { view in
 										if #available(iOS 17, *) {
 											return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 										}
@@ -154,8 +154,8 @@ struct MessageText: View {
 						addChannels: addChannels,
 						accessoryManager: accessoryManager
 					)
-					.presentationDetents([.large])
-					.presentationDragIndicator(.visible)
+					.backport.presentationDetents([.large])
+					.backport.presentationDragIndicator(.visible)
 				}
 				.confirmationDialog(
 					"Are you sure you want to delete this message?",

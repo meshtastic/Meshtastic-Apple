@@ -65,7 +65,7 @@ struct UserList: View {
 			.padding(.bottom, 5)
 			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a contact")
 			.autocorrectionDisabled(true)
-			.scrollDismissesKeyboard(.immediately)
+			.backport.scrollDismissesKeyboard(.immediately)
 		}
 	}
 }
@@ -100,7 +100,7 @@ fileprivate struct FilteredUserList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
-		List(users, selection: $userSelection) { user in
+		List(users, selection: $userSelection) { (user: UserEntity) in
 			let mostRecent = user.messageList.last
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
@@ -171,9 +171,7 @@ fileprivate struct FilteredUserList: View {
 					}
 				}
 				.frame(height: 62)
-				.alignmentGuide(.listRowSeparatorLeading) {
-					$0[.leading]
-				}
+				.backport.leadingListRowSeparatorAligned()
 				.contextMenu {
 					Button {
 						if node != nil && !(user.userNode?.favorite ?? false) {

@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import SwiftUIBackports
 import Charts
 import OSLog
 
-@available(iOS 17.0, *)
+@available(iOS 16.0, *)
 struct PaxCounterLog: View {
 
 	@Environment(\.managedObjectContext) var context
@@ -197,7 +198,7 @@ struct PaxCounterLog: View {
 					.padding(.trailing)
 				}
 			} else {
-				ContentUnavailableView("No PAX Counter Logs", systemImage: "slash.circle")
+				Backport.ContentUnavailableView("No PAX Counter Logs", systemImage: "slash.circle")
 			}
 		}
 		.navigationTitle("PAX Counter Log")

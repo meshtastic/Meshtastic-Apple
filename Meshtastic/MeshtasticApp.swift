@@ -129,8 +129,8 @@ struct MeshtasticAppleApp: App {
 					channelSetLink: channelSettings ?? "Empty Channel URL",
 					addChannels: addChannels,
 					accessoryManager: accessoryManager				)
-				.presentationDetents([.large])
-				.presentationDragIndicator(.visible)
+				.backport.presentationDetents([.large])
+				.backport.presentationDragIndicator(.visible)
 			}
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 				Logger.mesh.debug("URL received \(userActivity, privacy: .public)")

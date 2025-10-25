@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import SwiftUI
 import NavigationBackport
+import SwiftBackports
 
 enum LogCategories: Int, CaseIterable, Identifiable {
 
@@ -101,7 +102,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 struct AppLogFilter: View {
 
 	@Environment(\.dismiss) private var dismiss
-	@State private var currentDetent = PresentationDetent.medium
+	@State private var currentDetent = Backport.PresentationDetent.medium
 	/// Filters
 	var filterTitle = "App Log Filters"
 	@Binding var categories: Set<Int>
@@ -164,9 +165,9 @@ struct AppLogFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.large], selection: $currentDetent)
-		.presentationContentInteraction(.scrolls)
-		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+		.backport.presentationDetents([.large], selection: $currentDetent)
+		.backport.presentationContentInteraction(.scrolls)
+		.backport.presentationDragIndicator(.visible)
+		.backport.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 	}
 }

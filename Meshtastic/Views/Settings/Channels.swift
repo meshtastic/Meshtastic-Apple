@@ -157,8 +157,8 @@ struct Channels: View {
 					.padding()
 				#endif
 				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
-					.presentationDetents([.large])
-					.presentationDragIndicator(.visible)
+					.backport.presentationDetents([.large])
+					.backport.presentationDragIndicator(.visible)
 				.onFirstAppear {
 					supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
 				}
@@ -292,8 +292,8 @@ struct Channels: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
-				.presentationDetents([.large])
-				.presentationDragIndicator(.visible)
+				.backport.presentationDetents([.large])
+				.backport.presentationDragIndicator(.visible)
 		}
 		.safeAreaInset(edge: .bottom, alignment: .leading) {
 			HStack {

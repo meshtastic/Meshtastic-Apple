@@ -80,7 +80,9 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 50,
 				tableBody: { _, iaq in
 					if let iaq {
-						IndoorAirQuality(iaq: Int(iaq), displayMode: .dot)
+						if #available(iOS 16, *) {
+							IndoorAirQuality(iaq: Int(iaq), displayMode: .dot)
+						}
 					} else {
 						Text(verbatim: Constants.nilValueIndicator)
 					}

@@ -297,6 +297,7 @@
 		E58E90242EA8A7CB00468668 /* SwiftUIBackports.swift in Sources */ = {isa = PBXBuildFile; fileRef = E58E90232EA8A7BC00468668 /* SwiftUIBackports.swift */; };
 		E58E90262EA8A82C00468668 /* TipKitBackports.swift in Sources */ = {isa = PBXBuildFile; fileRef = E58E90252EA8A82A00468668 /* TipKitBackports.swift */; };
 		E58E903A2EA9E18E00468668 /* NavigationBackport in Frameworks */ = {isa = PBXBuildFile; productRef = E58E90392EA9E18E00468668 /* NavigationBackport */; };
+		E58E903D2EA9F6BE00468668 /* SwiftUIBackports in Frameworks */ = {isa = PBXBuildFile; productRef = E58E903C2EA9F6BE00468668 /* SwiftUIBackports */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -686,6 +687,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E58E903D2EA9F6BE00468668 /* SwiftUIBackports in Frameworks */,
 				102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */,
 				25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
 				E58E903A2EA9E18E00468668 /* NavigationBackport in Frameworks */,
@@ -1460,6 +1462,7 @@
 				10D109F12E2047D600536CE6 /* DatadogSessionReplay */,
 				10D109F32E2047D600536CE6 /* DatadogTrace */,
 				E58E90392EA9E18E00468668 /* NavigationBackport */,
+				E58E903C2EA9F6BE00468668 /* SwiftUIBackports */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
@@ -1532,6 +1535,7 @@
 				259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
 				E58E90382EA9E0CB00468668 /* XCRemoteSwiftPackageReference "NavigationBackport" */,
+				E58E903B2EA9F6B200468668 /* XCRemoteSwiftPackageReference "SwiftUIBackports" */,
 			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
@@ -2306,6 +2310,14 @@
 				minimumVersion = 0.11.5;
 			};
 		};
+		E58E903B2EA9F6B200468668 /* XCRemoteSwiftPackageReference "SwiftUIBackports" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/shaps80/SwiftUIBackports";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -2356,6 +2368,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E58E90382EA9E0CB00468668 /* XCRemoteSwiftPackageReference "NavigationBackport" */;
 			productName = NavigationBackport;
+		};
+		E58E903C2EA9F6BE00468668 /* SwiftUIBackports */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E58E903B2EA9F6B200468668 /* XCRemoteSwiftPackageReference "SwiftUIBackports" */;
+			productName = SwiftUIBackports;
 		};
 /* End XCSwiftPackageProductDependency section */
 

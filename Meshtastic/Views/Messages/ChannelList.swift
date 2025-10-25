@@ -115,9 +115,7 @@ struct ChannelList: View {
 					ForEach(channels) { (channel: ChannelEntity) in
 						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 							makeChannelRow(myInfo: myInfo, channel: channel)
-								.alignmentGuide(.listRowSeparatorLeading) {
-									$0[.leading]
-								}
+								.backport.leadingListRowSeparatorAligned()
 								.frame(height: 62)
 								.contextMenu {
 									if channel.allPrivateMessages.count > 0 {
@@ -174,8 +172,8 @@ struct ChannelList: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
-				.presentationDetents([.large])
-				.presentationDragIndicator(.visible)
+				.backport.presentationDetents([.large])
+				.backport.presentationDragIndicator(.visible)
 		}
 		.safeAreaInset(edge: .bottom, alignment: .leading) {
 			HStack {

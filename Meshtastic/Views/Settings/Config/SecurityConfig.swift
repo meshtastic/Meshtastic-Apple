@@ -15,6 +15,7 @@ import CryptoKit
 struct SecurityConfig: View {
 	
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	private var monospacedTextStyle: Font.TextStyle { idiom == .phone ? .caption : .callout }
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
@@ -56,9 +57,8 @@ struct SecurityConfig: View {
 				VStack(alignment: .leading) {
 					Label("Public Key", systemImage: "key")
 					Text(publicKey)
-						.font(idiom == .phone ? .caption : .callout)
+						.font(.system(monospacedTextStyle, design: .monospaced))
 						.allowsTightening(true)
-						.monospaced()
 						.keyboardType(.alphabet)
 						.foregroundStyle(.tertiary)
 						.disableAutocorrection(true)
@@ -280,24 +280,24 @@ struct SecurityConfig: View {
 				}
 			}
 		}
-		.scrollDismissesKeyboard(.immediately)
+		.backport.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Security Config")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
-		.onChange(of: node) { _, _ in
+		.backport.onChange(of: node) { _, _ in
 			setSecurityValues()
 		}
-		.onChange(of: isManaged) { _, newIsManaged in
+		.backport.onChange(of: isManaged) { _, newIsManaged in
 			if newIsManaged != node?.securityConfig?.isManaged { hasChanges = true }
 		}
-		.onChange(of: serialEnabled) { _, newSerialEnabled in
+		.backport.onChange(of: serialEnabled) { _, newSerialEnabled in
 			if newSerialEnabled != node?.securityConfig?.serialEnabled { hasChanges = true }
 		}
-		.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
+		.backport.onChange(of: debugLogApiEnabled) { _, newDebugLogApiEnabled in
 			if newDebugLogApiEnabled != node?.securityConfig?.debugLogApiEnabled { hasChanges = true }
 		}
-		.onChange(of: privateKey) { _, key in
+		.backport.onChange(of: privateKey) { _, key in
 			let tempKey = Data(base64Encoded: privateKey) ?? Data()
 			if tempKey.count == 32 {
 				hasValidPrivateKey = true
@@ -310,7 +310,7 @@ struct SecurityConfig: View {
 			}
 			if key != node?.securityConfig?.privateKey?.base64EncodedString() ?? "" && hasValidPrivateKey { hasChanges = true }
 		}
-		.onChange(of: adminKey) { _, key in
+		.backport.onChange(of: adminKey) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
 			if key.isEmpty {
 				hasValidAdminKey = true
@@ -321,7 +321,7 @@ struct SecurityConfig: View {
 			}
 			if key != node?.securityConfig?.adminKey?.base64EncodedString() ?? "" && hasValidAdminKey { hasChanges = true }
 		}
-		.onChange(of: adminKey2) { _, key in
+		.backport.onChange(of: adminKey2) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
 			if key.isEmpty {
 				hasValidAdminKey2 = true
@@ -332,7 +332,7 @@ struct SecurityConfig: View {
 			}
 			if key != node?.securityConfig?.adminKey2?.base64EncodedString() ?? "" && hasValidAdminKey2 { hasChanges = true }
 		}
-		.onChange(of: adminKey3) { _, key in
+		.backport.onChange(of: adminKey3) { _, key in
 			let tempKey = Data(base64Encoded: key) ?? Data()
 			if key.isEmpty {
 				hasValidAdminKey3 = true

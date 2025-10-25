@@ -1,35 +1,8 @@
+import UIKit
 import SwiftUI
 import CoreLocation
-#if canImport(UIKit)
-import UIKit
-#endif
+import SwiftUIBackports
 
-// Backport shims for running on iOS 15.4.1.
-// These definitions intentionally no-op on platforms that lack the
-// corresponding SwiftUI APIs while keeping the call-sites unchanged.
-
-@available(iOS, introduced: 13, obsoleted: 16)
-public struct PresentationDetent: Hashable {
-    public static let large = PresentationDetent()
-    public static let medium = PresentationDetent()
-    public static func fraction(_ fraction: CGFloat) -> PresentationDetent { PresentationDetent() }
-    public init() {}
-}
-
-@available(iOS, introduced: 13, obsoleted: 16)
-public enum PresentationContentInteraction {
-    case automatic
-    case scrolls
-    case resizes
-}
-
-@available(iOS, introduced: 13, obsoleted: 16)
-public struct PresentationBackgroundInteraction: Hashable {
-    public static let automatic = PresentationBackgroundInteraction()
-    public static func enabled(upThrough detent: PresentationDetent) -> PresentationBackgroundInteraction { PresentationBackgroundInteraction() }
-    public static let disabled = PresentationBackgroundInteraction()
-    public init() {}
-}
 
 @available(iOS, introduced: 13, obsoleted: 16)
 public enum PresentationCompactAdaptation {
@@ -38,24 +11,140 @@ public enum PresentationCompactAdaptation {
     case fullScreenCover
 }
 
-@available(iOS, introduced: 13, obsoleted: 16)
-public extension View {
-    func presentationDetents(_ detents: [PresentationDetent]) -> some View { self }
-    func presentationDetents(_ detents: Set<PresentationDetent>) -> some View { self }
-    func presentationDetents(_ detents: [PresentationDetent], selection: Binding<PresentationDetent?>) -> some View { self }
-    func presentationDetents(_ detents: [PresentationDetent], selection: Binding<PresentationDetent>) -> some View { self }
-    func presentationDetents(_ detents: Set<PresentationDetent>, selection: Binding<PresentationDetent?>) -> some View { self }
-    func presentationDetents(_ detents: Set<PresentationDetent>, selection: Binding<PresentationDetent>) -> some View { self }
-    func presentationContentInteraction(_ interaction: PresentationContentInteraction) -> some View { self }
-    func presentationDragIndicator(_ visibility: Visibility) -> some View { self }
-    func presentationBackgroundInteraction(_ interaction: PresentationBackgroundInteraction) -> some View { self }
-    func presentationCompactAdaptation(_ adaptation: PresentationCompactAdaptation) -> some View { self }
+public extension Backport where Wrapped: View {
+    @ViewBuilder
+    func onChange<Value: Equatable>(of value: Value, initial: Bool = false, _ action: @escaping (_ oldValue: Value, _ newValue: Value) -> Void) -> some View {
+        self.wrapped.modifier(OnChangeLegacyModifier(value: value, initial: initial, action: action))
+    }
+
+    @ViewBuilder
+	func leadingListRowSeparatorAligned() -> some View {
+		if #available(iOS 16, *) {
+			self.wrapped.alignmentGuide(.listRowSeparatorLeading) { dimensions in
+				dimensions[.leading]
+			}
+		} else {
+			self.wrapped
+		}
+	}
+
+    func apply<Modified: View>(_ transform: (Wrapped) -> Modified?) -> some View {
+        if let modified = transform(self.wrapped) {
+            return AnyView(modified)
+        } else {
+            return AnyView(self.wrapped)
+        }
+    }
+
+    func defaultScrollAnchor(_ anchor: UnitPoint) -> some View { 
+        if #available(iOS 17, *) {
+            return AnyView(self.wrapped.defaultScrollAnchor(anchor))
+        } else {
+            return AnyView(self.wrapped)
+        }
+    }
+
+    func presentationCompactAdaptation(_ adaptation: PresentationCompactAdaptation) -> some View {
+        if #available(iOS 16.4, *) {
+            switch adaptation {
+            case .automatic:
+                return AnyView(self.wrapped.presentationCompactAdaptation(.automatic))
+            case .popover:
+                return AnyView(self.wrapped.presentationCompactAdaptation(.popover))
+            case .fullScreenCover:
+                return AnyView(self.wrapped.presentationCompactAdaptation(.fullScreenCover))
+            }
+        } else {
+            return AnyView(self.wrapped)
+        }
+    }
+
 }
 
-@available(iOS, introduced: 13, obsoleted: 17)
-public extension View {
-    func onChangeBackport<Value: Equatable>(of value: Value, initial: Bool = false, _ action: @escaping (_ oldValue: Value, _ newValue: Value) -> Void) -> some View {
-        modifier(OnChangeLegacyModifier(value: value, initial: initial, action: action))
+public extension Backport where Wrapped == Any {
+    @available(iOS, introduced: 13, obsoleted: 17)
+    struct ContentUnavailableView: View {
+        private enum ImageSource {
+            case system(String)
+            case custom(AnyView)
+        }
+
+        private let title: Text
+        private let description: Text?
+        private let imageSource: ImageSource?
+
+        public init(_ titleKey: LocalizedStringKey, systemImage: String, description: Text? = nil) {
+            self.title = Text(titleKey)
+            self.description = description
+            self.imageSource = .system(systemImage)
+        }
+
+        public init<S>(_ title: S, systemImage: String, description: Text? = nil) where S: StringProtocol {
+            self.title = Text(title)
+            self.description = description
+            self.imageSource = .system(systemImage)
+        }
+
+        public init(_ title: Text, systemImage: String, description: Text? = nil) {
+            self.title = title
+            self.description = description
+            self.imageSource = .system(systemImage)
+        }
+
+        public init(_ titleKey: LocalizedStringKey, image: Image, description: Text? = nil) {
+            self.title = Text(titleKey)
+            self.description = description
+            self.imageSource = .custom(AnyView(image))
+        }
+
+        public init<S>(_ title: S, image: Image, description: Text? = nil) where S: StringProtocol {
+            self.title = Text(title)
+            self.description = description
+            self.imageSource = .custom(AnyView(image))
+        }
+
+        public init(_ title: Text, image: Image, description: Text? = nil) {
+            self.title = title
+            self.description = description
+            self.imageSource = .custom(AnyView(image))
+        }
+
+        public var body: some View {
+            VStack(spacing: 12) {
+                if let imageSource {
+                    imageView(for: imageSource)
+                }
+
+                title
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.primary)
+
+                if let description {
+                    description
+                        .font(.subheadline)
+                        .foregroundColor(Color.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .accessibilityElement(children: .combine)
+        }
+
+        @ViewBuilder
+        private func imageView(for source: ImageSource) -> some View {
+            switch source {
+            case .system(let name):
+                Image(systemName: name)
+                    .font(.system(size: 52, weight: .regular))
+                    .foregroundColor(Color.secondary)
+            case .custom(let view):
+                view
+                    .frame(maxWidth: 80, maxHeight: 80)
+            }
+        }
     }
 }
 
@@ -92,6 +181,24 @@ private struct OnChangeLegacyModifier<Value: Equatable>: ViewModifier {
 }
 
 @available(iOS, introduced: 13, obsoleted: 16)
+public extension Backport<Any>.PresentationDetent {
+    static func fraction(_ fraction: CGFloat) -> Backport<Any>.PresentationDetent {
+        if fraction > 0.5 {
+            return .large
+        } else {
+            return .medium
+        }
+    }
+}
+
+@available(iOS, introduced: 13, obsoleted: 16)
+public extension Backport<Any>.ToolbarItemPlacement {
+    static var navigationBarTrailing: Backport<Any>.ToolbarItemPlacement {
+        return .automatic
+    }
+}
+
+@available(iOS, introduced: 13, obsoleted: 16)
 public extension TextField where Label == Text {
     init(_ titleKey: LocalizedStringKey, text: Binding<String>, axis: Axis) {
         self.init(titleKey, text: text)
@@ -99,18 +206,6 @@ public extension TextField where Label == Text {
 
     init<S>(_ title: S, text: Binding<String>, axis: Axis) where S : StringProtocol {
         self.init(title, text: text)
-    }
-}
-
-public extension View {
-    /// Conditionally applies a modifier produced by the closure when it returns a non-nil result.
-    /// - Parameter transform: Closure that returns the modified view or `nil` to leave the original content untouched.
-    func backportModify<Modified: View>(_ transform: (Self) -> Modified?) -> some View {
-        if let modified = transform(self) {
-            return AnyView(modified)
-        } else {
-            return AnyView(self)
-        }
     }
 }
 

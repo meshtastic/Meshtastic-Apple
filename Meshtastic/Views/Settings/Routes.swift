@@ -173,7 +173,7 @@ struct Routes: View {
 								axis: .vertical
 							)
 							.foregroundColor(Color.gray)
-							.onChange(of: name) {
+							.backport.onChange(of: name) { _, _ in
 								var totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 100 {
@@ -195,8 +195,14 @@ struct Routes: View {
 								text: $notes,
 								axis: .vertical
 							)
-							.lineLimit(3...5)
 							.foregroundColor(Color.gray)
+							.backport.apply { view in
+								if #available(iOS 16, *) {
+									return AnyView(view.lineLimit(3...5))
+								} else {
+									return AnyView(view.lineLimit(5))
+								}
+							}
 						}
 						.onAppear {
 							name = selectedRoute?.name ?? "Unknown".localized
@@ -234,57 +240,59 @@ struct Routes: View {
 							.controlSize(.large)
 							.disabled(!hasChanges)
 						}
-						.onChange(of: name) {
+						.backport.onChange(of: name) { _, _ in
 							hasChanges = true
 						}
-						.onChange(of: notes) {
+						.backport.onChange(of: notes) { _, _ in
 							hasChanges = true
 						}
-						.onChange(of: enabled) {
+						.backport.onChange(of: enabled) { _, _ in
 							hasChanges = true
 						}
-						.onChange(of: color) {
+						.backport.onChange(of: color) { _, _ in
 							hasChanges = true
 						}
-						Map {
-							Annotation(String(localized: "Start"), coordinate: lineCoords.first ?? LocationsHandler.DefaultLocation) {
-								ZStack {
-									Circle()
-										.fill(Color(.green))
-										.strokeBorder(.white, lineWidth: 3)
-										.frame(width: 15, height: 15)
+						if #available(iOS 17, *) {
+							Map {
+								Annotation(String(localized: "Start"), coordinate: lineCoords.first ?? LocationsHandler.DefaultLocation) {
+									ZStack {
+										Circle()
+											.fill(Color(.green))
+											.strokeBorder(.white, lineWidth: 3)
+											.frame(width: 15, height: 15)
+									}
 								}
-							}
-							.annotationTitles(.automatic)
-							Annotation(String(localized: "Finish ", comment: "Space at the end has been added to not interfere with translations for 'Finish' in RouteRecorder"), coordinate: lineCoords.last ?? LocationsHandler.DefaultLocation) {
-								ZStack {
-									Circle()
-										.fill(Color(.black))
-										.strokeBorder(.white, lineWidth: 3)
-										.frame(width: 15, height: 15)
+								.annotationTitles(.automatic)
+								Annotation(String(localized: "Finish ", comment: "Space at the end has been added to not interfere with translations for 'Finish' in RouteRecorder"), coordinate: lineCoords.last ?? LocationsHandler.DefaultLocation) {
+									ZStack {
+										Circle()
+											.fill(Color(.black))
+											.strokeBorder(.white, lineWidth: 3)
+											.frame(width: 15, height: 15)
+									}
 								}
+								.annotationTitles(.automatic)
+								let solid = StrokeStyle(
+									lineWidth: 3,
+									lineCap: .round, lineJoin: .round
+								)
+								MapPolyline(coordinates: lineCoords)
+									.stroke(Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0))), style: solid)
 							}
-							.annotationTitles(.automatic)
-							let solid = StrokeStyle(
-								lineWidth: 3,
-								lineCap: .round, lineJoin: .round
-							)
-							MapPolyline(coordinates: lineCoords)
-								.stroke(Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0))), style: solid)
-						}
-						.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-						.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
-							Button {
-								exportString = routeToCsvFile(locations: selectedRoute!.locations!.array as? [LocationEntity] ?? [])
-								isExporting = true
-							} label: {
-								Label("Export", systemImage: "square.and.arrow.down")
+							.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+							.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
+								Button {
+									exportString = routeToCsvFile(locations: selectedRoute!.locations!.array as? [LocationEntity] ?? [])
+									isExporting = true
+								} label: {
+									Label("Export", systemImage: "square.and.arrow.down")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
+								.padding(.bottom)
+								.padding(.leading)
 							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.large)
-							.padding(.bottom)
-							.padding(.leading)
 						}
 					}
 				}

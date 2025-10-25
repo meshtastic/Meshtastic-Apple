@@ -1,8 +1,9 @@
 import SwiftUI
+import SwiftUIBackports
 import UniformTypeIdentifiers
 import OSLog
 
-@available(iOS 17.0, *)
+@available(iOS 16.0, *)
 struct MapDataFiles: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -59,7 +60,7 @@ struct MapDataFiles: View {
 				let uploadedFiles = mapDataManager.getUploadedFiles()
 
 				if uploadedFiles.isEmpty {
-					ContentUnavailableView("No files uploaded", systemImage: "doc.text")
+					Backport.ContentUnavailableView("No files uploaded", systemImage: "doc.text")
 				} else {
 					ScrollView {
 						LazyVStack {
@@ -214,7 +215,7 @@ struct MapDataFileRow: View {
 	}
 }
 
-@available(iOS 17.0, *)
+@available(iOS 16.0, *)
 #Preview {
 	NavigationView {
 		MapDataFiles()

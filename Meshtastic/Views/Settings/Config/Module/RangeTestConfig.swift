@@ -108,13 +108,13 @@ struct RangeTestConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) { _, newEnabled in
+		.backport.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.rangeTestConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: save) { _, newSave in
+		.backport.onChange(of: save) { _, newSave in
 			if newSave != node?.rangeTestConfig?.save { hasChanges = true }
 		}
-		.onChange(of: sender.intValue) { _, newSender in
+		.backport.onChange(of: sender.intValue) { _, newSender in
 			if newSender != node?.rangeTestConfig?.sender ?? -1 { hasChanges = true }
 		}
 		

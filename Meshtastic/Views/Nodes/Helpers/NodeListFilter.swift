@@ -203,9 +203,9 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.large])
-		.presentationContentInteraction(.scrolls)
-		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .large))
+		.backport.presentationDetents([.large])
+		.backport.presentationContentInteraction(.scrolls)
+		.backport.presentationDragIndicator(.visible)
+		.backport.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }

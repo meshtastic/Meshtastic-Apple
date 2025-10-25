@@ -1,5 +1,5 @@
 {
-  "originHash" : "dcb5f75dd7984879976cfd5ff58a567754de116696cd69555a6c236a838a8197",
+  "originHash" : "ad5ebfddaf984b6e678dd7482b217a06282ddf846fc12f33a25bfa932f7601bf",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -71,6 +71,24 @@
       "state" : {
         "revision" : "d72aed98f8253ec1aa9ea1141e28150f408cf17f",
         "version" : "1.29.0"
+      }
+    },
+    {
+      "identity" : "swiftbackports",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/shaps80/SwiftBackports",
+      "state" : {
+        "revision" : "ddca6a237c1ba2291d5a3cc47ec8480ce6e9f805",
+        "version" : "1.0.3"
+      }
+    },
+    {
+      "identity" : "swiftuibackports",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/shaps80/SwiftUIBackports",
+      "state" : {
+        "revision" : "f5f23b016eeda6642a0fe1020241af19c9c05556",
+        "version" : "2.8.1"
       }
     }
   ],

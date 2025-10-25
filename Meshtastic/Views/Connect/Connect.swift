@@ -89,7 +89,7 @@ struct Connect: View {
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
 													.symbolRenderingMode(.multicolor)
-													.backportModify { view in
+													.backport.apply { view in
 														if #available(iOS 17, *) {
 															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														}
@@ -121,7 +121,7 @@ struct Connect: View {
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
 													.symbolRenderingMode(.multicolor)
-													.backportModify { view in
+													.backport.apply { view in
 														if #available(iOS 17, *) {
 															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														}
@@ -135,7 +135,7 @@ struct Connect: View {
 											HStack {
 												Image(systemName: "square.stack.3d.down.forward")
 													.symbolRenderingMode(.multicolor)
-													.backportModify { view in
+													.backport.apply { view in
 														if #available(iOS 17, *) {
 															return view.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 														}
@@ -349,7 +349,7 @@ if #available(iOS 16.2, *) {
 						.textCase(nil)
 					}
 				}
-				.backportModify { list in
+				.backport.apply { list in
 					if #available(iOS 16, *) {
 						return list.scrollContentBackground(.hidden)
 					}
@@ -405,7 +405,7 @@ if #available(iOS 16.2, *) {
 		//		.onChange(of: accessoryManager) {
 		//			invalidFirmwareVersion = self.bleManager.invalidVersion
 		//		}
-		.onChange(of: self.accessoryManager.state) { _, state in
+		.backport.onChange(of: self.accessoryManager.state) { _, state in
 			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
 				
@@ -540,7 +540,7 @@ struct ManualConnectionMenu: View {
 				.keyboardType(.URL)
 				.autocapitalization(.none)
 				.disableAutocorrection(true)
-				.onChangeBackport(of: connectionString) { _, newValue in
+				.backport.onChange(of: connectionString) { _, newValue in
 					// Filter to only allow valid characters for hostname/IP:port
 					let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-:")
 					let filtered = String(newValue.unicodeScalars.filter { allowedCharacters.contains($0) })

@@ -99,12 +99,12 @@ struct ChannelMessageList: View {
 						.id("bottomAnchor")
 				}
 			}
-			.defaultScrollAnchor(.bottom)
+			.backport.defaultScrollAnchor(.bottom)
 			.defaultScrollAnchorTopAlignment()
 			.defaultScrollAnchorBottomSizeChanges()
-			.scrollDismissesKeyboard(.immediately)
-			.onChange(of: messageFieldFocused) {
-				if messageFieldFocused {
+			.backport.scrollDismissesKeyboard(.immediately)
+			.backport.onChange(of: messageFieldFocused) { _, isFocused in
+				if isFocused {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 					}

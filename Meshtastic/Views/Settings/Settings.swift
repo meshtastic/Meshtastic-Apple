@@ -96,14 +96,16 @@ struct Settings: View {
 				}
 			}
 
-			NBNavigationLink(value: SettingsNavigationState.shareQRCode) {
-				Label {
-					Text("Share QR Code")
-				} icon: {
-					Image(systemName: "qrcode")
+			if #available(iOS 17.0, *) {
+				NBNavigationLink(value: SettingsNavigationState.shareQRCode) {
+					Label {
+						Text("Share QR Code")
+					} icon: {
+						Image(systemName: "qrcode")
+					}
 				}
+				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 			}
-			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 		}
 	}
 
@@ -426,8 +428,13 @@ struct Settings: View {
 										}
 									}
 								}
-								.pickerStyle(.navigationLink)
-								.onChangeBackport(of: selectedNode) { _, newValue in
+								.backport.apply { view in
+									if #available(iOS 16.0, *) {
+										return view.pickerStyle(.navigationLink)
+									}
+									return nil
+								}
+								.backport.onChange(of: selectedNode) { _, newValue in
 									if selectedNode > 0,
 									   let destinationNode = nodes.first(where: { $0.num == newValue }),
 									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
@@ -487,7 +494,9 @@ struct Settings: View {
 				case .channels:
 					Channels(node: node)
 				case .shareQRCode:
-					ShareChannels(node: node)
+					if #available(iOS 17.0, *) {
+						ShareChannels(node: node)
+					}
 				case .user:
 					UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .bluetooth:
@@ -529,11 +538,6 @@ struct Settings: View {
 				case .debugLogs:
 					if #available(iOS 16.0, *) {
 						AppLog()
-					} else {
-						Text("Debug logs require iOS 16 or newer.")
-							.font(.callout)
-							.foregroundStyle(.secondary)
-							.padding()
 					}
 				case .appFiles:
 					AppData()
@@ -541,13 +545,13 @@ struct Settings: View {
 					Firmware(node: node)
 				}
 			}
-			.onChangeBackport(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
+			.backport.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
 				// If the preferred node changes, then select the newly perferred node
 				// This should only happen during connect
 				preferredNodeNum = newConnectedNode
 				setSelectedNode(to: newConnectedNode)
 			}
-			.onChangeBackport(of: accessoryManager.isConnected) { _, isConnectedNow in
+			.backport.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
 				// If we are on this screen, haven't iniatialized the selection yet,
 				// And we transition, to connected, then initialize the selection
 				if isConnectedNow, self.selectedNode == 0 {

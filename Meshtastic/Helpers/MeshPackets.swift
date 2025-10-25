@@ -9,7 +9,6 @@ import Foundation
 import CoreData
 import MeshtasticProtobufs
 import SwiftUI
-import RegexBuilder
 import OSLog
 #if canImport(ActivityKit)
 import ActivityKit
@@ -852,21 +851,21 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					// Update our live activity if there is one running, not available on mac
 #if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
-
+				if #available(iOS 16.2, *) {
 					let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
 					let date = Date.now...fifteenMinutesLater
 					let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32($0) },
-																					  channelUtilization: telemetry.channelUtilization,
-																					  airtime: telemetry.airUtilTx,
-																					  sentPackets: UInt32(telemetry.numPacketsTx),
-																					  receivedPackets: UInt32(telemetry.numPacketsRx),
-																					  badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
-																					  dupeReceivedPackets: UInt32(telemetry.numRxDupe),
-																					  packetsSentRelay: UInt32(telemetry.numTxRelay),
-																					  packetsCanceledRelay: UInt32(telemetry.numTxRelayCanceled),
-																					  nodesOnline: UInt32(telemetry.numOnlineNodes),
-																					  totalNodes: UInt32(telemetry.numTotalNodes),
-																					  timerRange: date)
+																		channelUtilization: telemetry.channelUtilization,
+																		airtime: telemetry.airUtilTx,
+																		sentPackets: UInt32(telemetry.numPacketsTx),
+																		receivedPackets: UInt32(telemetry.numPacketsRx),
+																		badReceivedPackets: UInt32(telemetry.numPacketsRxBad),
+																		dupeReceivedPackets: UInt32(telemetry.numRxDupe),
+																		packetsSentRelay: UInt32(telemetry.numTxRelay),
+																		packetsCanceledRelay: UInt32(telemetry.numTxRelayCanceled),
+																		nodesOnline: UInt32(telemetry.numOnlineNodes),
+																		totalNodes: UInt32(telemetry.numTotalNodes),
+																		timerRange: date)
 
 					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)
 					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
@@ -879,6 +878,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							Logger.services.debug("Updated live activity.")
 						}
 					}
+				}
 #endif
 #endif
 				}
@@ -903,16 +903,14 @@ func textMessageAppPacket(
 	appState: AppState?
 ) {
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
-	let rangeRef = Reference(Int.self)
-	let rangeTestRegex = Regex {
-		"seq "
-		TryCapture(as: rangeRef) {
-			OneOrMore(.digit)
-		} transform: { match in
-			Int(match)
-		}
+	let rangeTest: Bool
+	if let text = messageText, text.hasPrefix("seq ") {
+		let digits = text.dropFirst(4)
+		let numericPrefix = digits.prefix { $0.isNumber }
+		rangeTest = !numericPrefix.isEmpty && numericPrefix.count == digits.count
+	} else {
+		rangeTest = false
 	}
-	let rangeTest = messageText?.contains(rangeTestRegex) ?? false && messageText?.starts(with: "seq ") ?? false
 
 	if !wantRangeTestPackets && rangeTest {
 		return

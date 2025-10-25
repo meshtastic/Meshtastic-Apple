@@ -45,10 +45,10 @@ struct BluetoothConfig: View {
 						Label("Fixed Pin", systemImage: "wallet.pass")
 						TextField("Fixed Pin", text: $fixedPin)
 							.foregroundColor(.gray)
-							.onChange(of: fixedPin) {
+							.backport.onChange(of: fixedPin) { _, _ in
 								// Don't let the first character be 0 because it will get stripped when saving a UInt32
 								if fixedPin.first == "0" {
-									fixedPin = fixedPin.replacing("0", with: "")
+									fixedPin = fixedPin.replacingOccurrences(of:"0", with: "")
 								}
 								// Require that pin is no more than 6 numbers and no less than 6 numbers
 								if fixedPin.utf8.count == pinLength {
@@ -130,13 +130,13 @@ struct BluetoothConfig: View {
 				}
 			}
 		}
-		.onChange(of: enabled) { oldEnabled, newEnabled in
+		.backport.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node?.bluetoothConfig?.enabled { hasChanges = true }
 		}
-		.onChange(of: mode) { oldNode, newNode in
+		.backport.onChange(of: mode) { oldNode, newNode in
 			if oldNode != newNode && newNode != node?.bluetoothConfig?.mode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: fixedPin) { oldFixedPin, newFixedPin in
+		.backport.onChange(of: fixedPin) { oldFixedPin, newFixedPin in
 			if oldFixedPin != newFixedPin && newFixedPin != String(node?.bluetoothConfig?.fixedPin ?? -1) { hasChanges = true }
 		}
 	}

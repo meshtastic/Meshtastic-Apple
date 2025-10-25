@@ -171,7 +171,7 @@ struct DeviceOnboarding: View {
 					.scaleEffect(0.85)
 					.padding(.leading, 52)
 					.tint(.accentColor)
-					.onChange(of: provideLocation) {
+					.backport.onChange(of: provideLocation) { _, _ in
 						UserDefaults.provideLocationInterval = 30
 						UserDefaults.enableSmartPosition = true
 					}
@@ -321,7 +321,7 @@ struct DeviceOnboarding: View {
 					}
 				}
 		}
-		.toolbar(.hidden)
+		.navigationBarHidden(true)
 	}
 	
 	@ViewBuilder

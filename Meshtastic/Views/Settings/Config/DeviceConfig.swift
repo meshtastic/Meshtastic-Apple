@@ -42,7 +42,7 @@ struct DeviceConfig: View {
 							Text(dr.name).tag(dr.rawValue as Int)
 						}
 					}
-					.onChange(of: deviceRole) { _, newRole in
+					.backport.onChange(of: deviceRole) { _, newRole in
 						if hasChanges && [DeviceRoles.router.rawValue, DeviceRoles.routerLate.rawValue].contains(newRole) {
 							showRouterWarning = true
 						}
@@ -110,7 +110,7 @@ struct DeviceConfig: View {
 						Label("Time Zone", systemImage: "clock.badge.exclamationmark")
 						TextField("Time Zone", text: $tzdef, axis: .vertical)
 							.foregroundColor(.gray)
-							.onChange(of: tzdef) {
+							.backport.onChange(of: tzdef) { _, _ in
 								var totalBytes = tzdef.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 63 {
@@ -286,31 +286,31 @@ struct DeviceConfig: View {
 				}
 			}
 		}
-		.onChange(of: deviceRole) { oldRole, newRole in
+		.backport.onChange(of: deviceRole) { oldRole, newRole in
 			if oldRole != newRole && newRole != node?.deviceConfig?.role ?? -1 { hasChanges = true }
 		}
-		.onChange(of: buttonGPIO) { oldButtonGPIO, newButtonGPIO in
+		.backport.onChange(of: buttonGPIO) { oldButtonGPIO, newButtonGPIO in
 			if oldButtonGPIO != newButtonGPIO && newButtonGPIO != node?.deviceConfig?.buttonGpio ?? -1 { hasChanges = true }
 		}
-		.onChange(of: buzzerGPIO) { oldBuzzerGPIO, newBuzzerGPIO in
+		.backport.onChange(of: buzzerGPIO) { oldBuzzerGPIO, newBuzzerGPIO in
 			if oldBuzzerGPIO != newBuzzerGPIO && newBuzzerGPIO != node?.deviceConfig?.buzzerGpio ?? -1 { hasChanges = true }
 		}
-		.onChange(of: rebroadcastMode) { oldRebroadcastMode, newRebroadcastMode in
+		.backport.onChange(of: rebroadcastMode) { oldRebroadcastMode, newRebroadcastMode in
 			if oldRebroadcastMode != newRebroadcastMode && newRebroadcastMode != node?.deviceConfig?.rebroadcastMode ?? -1 { hasChanges = true }
 		}
-		.onChange(of: nodeInfoBroadcastSecs.intValue) { oldNodeInfoBroadcastSecs, newNodeInfoBroadcastSecs in
+		.backport.onChange(of: nodeInfoBroadcastSecs.intValue) { oldNodeInfoBroadcastSecs, newNodeInfoBroadcastSecs in
 			if oldNodeInfoBroadcastSecs != newNodeInfoBroadcastSecs && newNodeInfoBroadcastSecs != node?.deviceConfig?.nodeInfoBroadcastSecs ?? -1 { hasChanges = true }
 		}
-		.onChange(of: doubleTapAsButtonPress) { oldDoubleTapAsButtonPress, newDoubleTapAsButtonPress in
+		.backport.onChange(of: doubleTapAsButtonPress) { oldDoubleTapAsButtonPress, newDoubleTapAsButtonPress in
 			if oldDoubleTapAsButtonPress != newDoubleTapAsButtonPress && newDoubleTapAsButtonPress != node?.deviceConfig?.doubleTapAsButtonPress ?? false { hasChanges = true }
 		}
-		.onChange(of: tripleClickAsAdHocPing) { oldTripleClickAsAdHocPing, newTripleClickAsAdHocPing in
+		.backport.onChange(of: tripleClickAsAdHocPing) { oldTripleClickAsAdHocPing, newTripleClickAsAdHocPing in
 			if oldTripleClickAsAdHocPing != newTripleClickAsAdHocPing && newTripleClickAsAdHocPing != node?.deviceConfig?.tripleClickAsAdHocPing ?? false { hasChanges = true }
 		}
-		.onChange(of: tzdef) { oldTzdef, newTzdef in
+		.backport.onChange(of: tzdef) { oldTzdef, newTzdef in
 			if oldTzdef != newTzdef && newTzdef != node?.deviceConfig?.tzdef { hasChanges = true }
 		}
-		.onChange(of: ledHeartbeatEnabled) { oldLedHeartbeatEnabled, newLedHeartbeatEnabled in
+		.backport.onChange(of: ledHeartbeatEnabled) { oldLedHeartbeatEnabled, newLedHeartbeatEnabled in
 			if oldLedHeartbeatEnabled != newLedHeartbeatEnabled && newLedHeartbeatEnabled != node?.deviceConfig?.ledHeartbeatEnabled ?? false { hasChanges = true }
 		}
 	}

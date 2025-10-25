@@ -159,8 +159,8 @@ struct LogDetail: View {
 			.padding(.bottom)
 #endif
 		}
-		.monospaced()
-		.presentationDetents([.fraction(0.75), .fraction(0.85), .fraction(1.0)])
-		.presentationDragIndicator(.visible)
+		.font(.system(.body, design: .monospaced))
+		.backport.presentationDetents([.fraction(0.75), .fraction(0.85), .fraction(1.0)])
+		.backport.presentationDragIndicator(.visible)
 	}
 }

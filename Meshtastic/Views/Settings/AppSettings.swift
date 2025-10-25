@@ -63,7 +63,7 @@ struct AppSettings: View {
 					}
 					.sheet(isPresented: $isPresentingAppIconSheet) {
 						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
-							.presentationDetents([.medium])
+							.backport.presentationDetents([.medium])
 					}
 				}
 				Section(header: Text("environment")) {
@@ -93,12 +93,12 @@ struct AppSettings: View {
 						}
 #endif
 					}
-					.onChange(of: usageDataAndCrashReporting) { oldUsageDataAndCrashReporting, newUsageDataAndCrashReporting in
+					.backport.onChange(of: usageDataAndCrashReporting) { _, newUsageDataAndCrashReporting in
 						if !newUsageDataAndCrashReporting {
 							Datadog.set(trackingConsent: .notGranted)
 						}
 					}
-					.onChange(of: purgeStaleNodes) { _, newValue in
+					.backport.onChange(of: purgeStaleNodes) { _, newValue in
 						purgeStaleNodeDays = purgeStaleNodeDays > 0 ? purgeStaleNodeDays : 7
 						purgeStaleNodeDays = newValue ? purgeStaleNodeDays : 0
 						Logger.services.info("ℹ️ Purge Stale Nodes changed to \(purgeStaleNodeDays)")

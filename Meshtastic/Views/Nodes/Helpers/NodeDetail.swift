@@ -266,8 +266,10 @@ struct NodeDetail: View {
 								} else {
 									VStack {
 										if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
-											IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
-												.padding(.vertical)
+											if #available(iOS 16, *) {
+												IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
+													.padding(.vertical)
+											}
 										}
 										LazyVGrid(columns: gridItemLayout) {
 											if let temperature = node.latestEnvironmentMetrics?.temperature?.shortFormattedTemperature() {
@@ -375,7 +377,7 @@ struct NodeDetail: View {
 							}
 							.disabled(!node.hasPositions)
 						}
-						if #available(iOS 17, *) {
+						if #available(iOS 16, *) {
 							NavigationLink {
 								PositionLog(node: node)
 							} label: {
@@ -438,7 +440,7 @@ struct NodeDetail: View {
 							}
 							.disabled(!node.hasDetectionSensorMetrics)
 						}
-						if #available(iOS 17, *) {
+						if #available(iOS 16, *) {
 							if node.hasPax {
 								NavigationLink {
 									PaxCounterLog(node: node)

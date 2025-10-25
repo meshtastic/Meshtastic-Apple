@@ -11,6 +11,7 @@ import MeshtasticProtobufs
 import OSLog
 import NavigationBackport
 import SwiftUI
+import SwiftUIBackports
 
 @available(iOS 17, *)
 struct WaypointForm: View {
@@ -31,8 +32,8 @@ struct WaypointForm: View {
 	@State private var expire: Date = Date.now.addingTimeInterval(60 * 480) // 1 minute * 480 = 8 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
-	@State private var detents: Set<PresentationDetent> = [.medium, .fraction(0.85)]
-	@State private var selectedDetent: PresentationDetent = .medium
+	@State private var detents: Set<Backport.PresentationDetent> = [.medium, .fraction(0.85)]
+	@State private var selectedDetent: Backport.PresentationDetent = .medium
 	@State private var waypointFailedAlert: Bool = false
 
 	var body: some View {
@@ -82,7 +83,7 @@ struct WaypointForm: View {
 								axis: .vertical
 							)
 							.foregroundColor(Color.gray)
-							.onChange(of: name) {
+							.backport.onChange(of: name) { _, _ in
 								var totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 30 {
@@ -101,7 +102,7 @@ struct WaypointForm: View {
 								axis: .vertical
 							)
 							.foregroundColor(Color.gray)
-							.onChange(of: description) {
+							.backport.onChange(of: description) { _, _ in
 								var totalBytes = description.utf8.count
 								// Only mess with the value if it is too big
 								while totalBytes > 100 {
@@ -116,7 +117,7 @@ struct WaypointForm: View {
 							EmojiOnlyTextField(text: $icon, placeholder: "Select an emoji")
 								.font(.title)
 								.focused($iconIsFocused)
-								.onChange(of: icon) { _, value in
+								.backport.onChange(of: icon) { _, value in
 
 									// If you have anything other than emojis in your string make it empty
 									if !value.onlyEmojis() {
@@ -149,7 +150,7 @@ struct WaypointForm: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
-				.scrollDismissesKeyboard(.immediately)
+				.backport.scrollDismissesKeyboard(.immediately)
 				HStack {
 					Button {
 						guard let deviceNum = accessoryManager.activeDeviceNum else {
@@ -460,8 +461,8 @@ struct WaypointForm: View {
 				longitude = waypoint.coordinate.longitude
 			}
 		}
-		.presentationDetents(detents, selection: $selectedDetent)
-		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
-		.presentationDragIndicator(.visible)
+		.backport.presentationDetents(detents, selection: $selectedDetent)
+		.backport.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
+		.backport.presentationDragIndicator(.visible)
 	}
 }

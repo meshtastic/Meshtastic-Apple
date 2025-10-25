@@ -30,7 +30,7 @@ struct MQTTIcon: View {
 				Text("Topic: \(topic)".localized)
 					.padding(20)
 			}
-			.presentationCompactAdaptation(.popover)
+			.backport.presentationCompactAdaptation(.popover)
 		})
 	}
 }
