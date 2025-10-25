@@ -28,6 +28,7 @@ struct Connect: View {
 	@State var liveActivityStarted = false
 	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
+	@State var shareContactNode: NodeInfoEntity?
 	
 	var body: some View {
 		NavigationStack {
@@ -189,6 +190,13 @@ struct Connect: View {
 											
 										} label: {
 											Label("Power Off", systemImage: "power")
+										}
+										if node != nil {
+											Button(action: {
+												shareContactNode = node
+											}) {
+												Label("Share Contact QR", systemImage: "qrcode")
+											}
 										}
 									}
 								}
@@ -366,6 +374,9 @@ struct Connect: View {
 				}
 			)
 			
+		}
+		.sheet(item: $shareContactNode) { selectedNode in
+			ShareContactQRDialog(node: selectedNode.toProto())
 		}
 		// TODO: REMOVING VERSION STUFF?
 		//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
