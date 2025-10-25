@@ -23,10 +23,11 @@ struct UserList: View {
 	@StateObject private var filters: NodeFilterParameters = NodeFilterParameters()
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
+	var onUserSelected: (UserEntity) -> Void
 	
 	var body: some View {
 		VStack {
-			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
+			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection, onUserSelected: onUserSelected)
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", filters: filters)
 			}
@@ -77,11 +78,12 @@ fileprivate struct FilteredUserList: View {
 	@FetchRequest private var users: FetchedResults<UserEntity>
 	@Binding var userSelection: UserEntity?
 	@Binding var node: NodeInfoEntity?
+	var onUserSelected: (UserEntity) -> Void
 
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	@State private var userToDeleteMessages: UserEntity?
 
-	init(withFilters: NodeFilterParameters, node: Binding<NodeInfoEntity?>, userSelection: Binding<UserEntity?>) {
+	init(withFilters: NodeFilterParameters, node: Binding<NodeInfoEntity?>, userSelection: Binding<UserEntity?>, onUserSelected: @escaping (UserEntity) -> Void) {
 		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
 		request.sortDescriptors = [
 			NSSortDescriptor(key: "lastMessage", ascending: false),
@@ -94,82 +96,95 @@ fileprivate struct FilteredUserList: View {
 		self._users = FetchRequest(fetchRequest: request)
 		self._node = node
 		self._userSelection = userSelection
+		self.onUserSelected = onUserSelected
 	}
 	
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
-		List(users, selection: $userSelection) { (user: UserEntity) in
+		List(users) { (user: UserEntity) in
 			let mostRecent = user.messageList.last
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 			if user.num != accessoryManager.activeDeviceNum ?? 0 {
-				NBNavigationLink(value: user) {
-					ZStack {
-						Image(systemName: "circle.fill")
-							.opacity(user.unreadMessages > 0 ? 1 : 0)
-							.font(.system(size: 10))
-							.foregroundColor(.accentColor)
-							.brightness(0.2)
-					}
-					
-					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
-					
-					VStack(alignment: .leading) {
-						HStack {
-							if user.pkiEncrypted {
-								if !user.keyMatch {
-									/// Public Key on the User and the Public Key on the Last Message don't match
-									Image(systemName: "key.slash")
-										.foregroundColor(.red)
-								} else {
-									Image(systemName: "lock.fill")
-										.foregroundColor(.green)
-								}
-							} else {
-								Image(systemName: "lock.open.fill")
-									.foregroundColor(.yellow)
-							}
-							Text(user.longName ?? "Unknown".localized)
-								.font(.headline)
-								.allowsTightening(true)
-							Spacer()
-							if user.userNode?.favorite ?? false {
-								Image(systemName: "star.fill")
-									.foregroundColor(.yellow)
-							}
-							if user.messageList.count > 0 {
-								if lastMessageDay == currentDay {
-									Text(lastMessageTime, style: .time )
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								} else if lastMessageDay == (currentDay - 1) {
-									Text("Yesterday")
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-									Text(lastMessageTime.formattedDate(format: dateFormatString))
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								} else if lastMessageDay < (currentDay - 1800) {
-									Text(lastMessageTime.formattedDate(format: dateFormatString))
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								}
-							}
+				let isSelected = userSelection?.objectID == user.objectID
+				Button {
+					userSelection = user
+					onUserSelected(user)
+				} label: {
+					HStack {
+						ZStack {
+							Image(systemName: "circle.fill")
+								.opacity(user.unreadMessages > 0 ? 1 : 0)
+								.font(.system(size: 10))
+								.foregroundColor(.accentColor)
+								.brightness(0.2)
 						}
 						
-						if user.messageList.count > 0 {
-							HStack(alignment: .top) {
-								Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-									.font(.footnote)
-									.foregroundColor(.secondary)
+						CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
+						
+						VStack(alignment: .leading) {
+							HStack {
+								if user.pkiEncrypted {
+									if !user.keyMatch {
+										Image(systemName: "key.slash")
+											.foregroundColor(.red)
+									} else {
+										Image(systemName: "lock.fill")
+											.foregroundColor(.green)
+									}
+								} else {
+									Image(systemName: "lock.open.fill")
+										.foregroundColor(.yellow)
+								}
+								Text(user.longName ?? "Unknown".localized)
+									.font(.headline)
+									.allowsTightening(true)
+								Spacer()
+								if user.userNode?.favorite ?? false {
+									Image(systemName: "star.fill")
+										.foregroundColor(.yellow)
+								}
+								if user.messageList.count > 0 {
+									if lastMessageDay == currentDay {
+										Text(lastMessageTime, style: .time )
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay == (currentDay - 1) {
+										Text("Yesterday")
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+										Text(lastMessageTime.formattedDate(format: dateFormatString))
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay < (currentDay - 1800) {
+										Text(lastMessageTime.formattedDate(format: dateFormatString))
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									}
+								}
+							}
+							
+							if user.messageList.count > 0 {
+								HStack(alignment: .top) {
+									Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+										.font(.footnote)
+										.foregroundColor(.secondary)
+								}
 							}
 						}
+						Spacer()
+						Image(systemName: "chevron.right")
+							.font(.footnote)
+							.foregroundColor(.secondary)
+							.opacity(0.6)
 					}
 				}
+				.buttonStyle(.plain)
+				.listRowBackground(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
 				.frame(height: 62)
 				.backport.leadingListRowSeparatorAligned()
 				.contextMenu {

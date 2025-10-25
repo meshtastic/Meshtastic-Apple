@@ -31491,6 +31491,7 @@
       }
     },
     "Select a conversation type" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {

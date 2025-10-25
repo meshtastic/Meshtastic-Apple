@@ -16,6 +16,7 @@ struct ChannelList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Binding var node: NodeInfoEntity?
 	@Binding var channelSelection: ChannelEntity?
+	var onChannelSelected: (ChannelEntity) -> Void
 	@State private var channelToDeleteMessages: ChannelEntity?
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 	@State private var isPresentingTraceRouteSentAlert = false
@@ -30,79 +31,75 @@ struct ChannelList: View {
 		) private var channels: FetchedResults<ChannelEntity>
 
 	@ViewBuilder
-	private func makeChannelRow(
-		myInfo: MyInfoEntity,
+	private func channelRowContent(
 		channel: ChannelEntity
 	) -> some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
-		NBNavigationLink(value: channel) {
-			let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
-			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
-			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+		let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
+		let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
+		let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+		let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 
-			ZStack {
-				Image(systemName: "circle.fill")
-					.opacity(channel.unreadMessages > 0 ? 1 : 0)
-					.font(.system(size: 10))
-					.foregroundColor(.accentColor)
-					.brightness(0.2)
-			}
-			CircleText(text: String(channel.index), color: .accentColor)
+		ZStack {
+			Image(systemName: "circle.fill")
+				.opacity(channel.unreadMessages > 0 ? 1 : 0)
+				.font(.system(size: 10))
+				.foregroundColor(.accentColor)
 				.brightness(0.2)
+		}
+		CircleText(text: String(channel.index), color: .accentColor)
+			.brightness(0.2)
 
-			VStack(alignment: .leading) {
-				HStack {
-					ChannelLock(channel: channel)
-					if channel.name?.isEmpty ?? false {
-						if channel.role == 1 {
-							Text(String("PrimaryChannel").camelCaseToWords())
-								.font(.headline)
-						} else {
-							Text(String("Channel \(channel.index)").camelCaseToWords())
-								.font(.headline)
-						}
+		VStack(alignment: .leading) {
+			HStack {
+				ChannelLock(channel: channel)
+				if channel.name?.isEmpty ?? false {
+					if channel.role == 1 {
+						Text(String("PrimaryChannel").camelCaseToWords())
+							.font(.headline)
 					} else {
-						Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+						Text(String("Channel \(channel.index)").camelCaseToWords())
 							.font(.headline)
 					}
-
-					Spacer()
-
-					if channel.allPrivateMessages.count > 0 {
-
-						if lastMessageDay == currentDay {
-							Text(lastMessageTime, style: .time )
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						} else if  lastMessageDay == (currentDay - 1) {
-							Text("Yesterday")
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-							Text(lastMessageTime.formattedDate(format: dateFormatString))
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						} else if lastMessageDay < (currentDay - 1800) {
-							Text(lastMessageTime.formattedDate(format: dateFormatString))
-								.font(.footnote)
-								.foregroundColor(.secondary)
-						}
-					}
-					if channel.mute {
-						Image(systemName: "bell.slash")
-					}
+				} else {
+					Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+						.font(.headline)
 				}
 
+				Spacer()
+
 				if channel.allPrivateMessages.count > 0 {
-					HStack(alignment: .top) {
-						Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-							// .font(.system(size: 16))
+
+					if lastMessageDay == currentDay {
+						Text(lastMessageTime, style: .time )
+							.font(.footnote)
+							.foregroundColor(.secondary)
+					} else if  lastMessageDay == (currentDay - 1) {
+						Text("Yesterday")
+							.font(.footnote)
+							.foregroundColor(.secondary)
+					} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+						Text(lastMessageTime.formattedDate(format: dateFormatString))
+							.font(.footnote)
+							.foregroundColor(.secondary)
+					} else if lastMessageDay < (currentDay - 1800) {
+						Text(lastMessageTime.formattedDate(format: dateFormatString))
 							.font(.footnote)
 							.foregroundColor(.secondary)
 					}
+				}
+				if channel.mute {
+					Image(systemName: "bell.slash")
+				}
+			}
+
+			if channel.allPrivateMessages.count > 0 {
+				HStack(alignment: .top) {
+					Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+						.font(.footnote)
+						.foregroundColor(.secondary)
 				}
 			}
 		}
@@ -111,10 +108,25 @@ struct ChannelList: View {
 		VStack {
 			// Display Contacts for the rest of the non admin channels
 			if let node, let myInfo = node.myInfo {
-				List(selection: $channelSelection) {
+				List {
 					ForEach(channels) { (channel: ChannelEntity) in
 						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
-							makeChannelRow(myInfo: myInfo, channel: channel)
+								let isSelected = channelSelection?.objectID == channel.objectID
+								Button {
+									channelSelection = channel
+									onChannelSelected(channel)
+								} label: {
+									HStack {
+										channelRowContent(channel: channel)
+										Spacer()
+										Image(systemName: "chevron.right")
+											.font(.footnote)
+											.foregroundColor(.secondary)
+											.opacity(0.6)
+									}
+								}
+								.buttonStyle(.plain)
+								.listRowBackground(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
 								.backport.leadingListRowSeparatorAligned()
 								.frame(height: 62)
 								.contextMenu {
