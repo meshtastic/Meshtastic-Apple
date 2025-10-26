@@ -42,6 +42,7 @@
 		2344A2B12D68DFF800170A77 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C49D8F2C471AEA0024FBD1 /* Constants.swift */; };
 		2346A7192E2FB9A300CB9239 /* SerialConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A7182E2FB9A300CB9239 /* SerialConnection.swift */; };
 		2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */; };
+		2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */; };
 		2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */; };
 		2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE142D0A24930086C749 /* MetricsSeriesList.swift */; };
 		2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */; };
@@ -357,6 +358,7 @@
 		2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		2346A7182E2FB9A300CB9239 /* SerialConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConnection.swift; sourceTree = "<group>"; };
 		2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialTransport.swift; sourceTree = "<group>"; };
+		2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualConnectionList.swift; sourceTree = "<group>"; };
 		2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartSeries.swift; sourceTree = "<group>"; };
 		2373AE142D0A24930086C749 /* MetricsSeriesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsSeriesList.swift; sourceTree = "<group>"; };
 		2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultSeries.swift; sourceTree = "<group>"; };
@@ -832,6 +834,7 @@
 				23D316922E5618D2002FA4FB /* AsyncGate.swift */,
 				23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */,
 				23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */,
+				2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1841,6 +1844,7 @@
 				BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */,
+				2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */,
 				2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */,
 				D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */,
 				237AEB8F2E1FE457003B7CE3 /* Transport.swift in Sources */,

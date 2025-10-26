@@ -302,9 +302,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.error("updateDevice<T> with nil deviceId")
 			return
 		}
-
-		// Update the active device
-		if let activeConnection {
+		
+		// Update the active device if the UUID's match
+		if let activeConnection, activeConnection.device.id == deviceId {
 			var device = activeConnection.device
 			if device[keyPath: key] != value {
 				// Update the @Published stuff for the UI

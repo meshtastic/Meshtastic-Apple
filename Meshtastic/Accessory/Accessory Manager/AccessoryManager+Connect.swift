@@ -175,8 +175,12 @@ extension AccessoryManager {
 				self.updateState(.subscribed)
 				
 				// If we successfully connected to a manual connection, then save it to the list
-				if device.isManualConnection {
-					self.saveManualConnection(device: device)
+				// Remember, Device is a value type (struct) so don't use use `device` here, thats
+				// The value at the instantiation of the connect process.  We want the currently
+				// updated device object in `activeConnection` with its additonal metadata from
+				// NodeInfo packets.
+				if let activeDevice = self.activeConnection?.device, activeDevice.isManualConnection {
+					ManualConnectionList.shared.insert(device: activeDevice)
 				}
 			}
 			
@@ -223,15 +227,6 @@ extension AccessoryManager {
 		
 		// All done, one way or another, clean up
 		self.connectionStepper = nil
-	}
-	
-	fileprivate func saveManualConnection(device: Device) {
-		var manualConnections = UserDefaults.manualConnections
-		
-		if manualConnections.first(where: {$0.id == device.id}) == nil {
-			manualConnections.append(device)
-			UserDefaults.manualConnections = manualConnections
-		}
 	}
 }
 

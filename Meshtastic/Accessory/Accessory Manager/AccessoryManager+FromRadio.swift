@@ -113,6 +113,15 @@ extension AccessoryManager {
 					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
 					updateDevice(deviceId: activeDevice.id, key: \.longName, value: user.longName ?? "Unknown".localized)
 					updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: user.hwModel)
+					
+					if activeDevice.isManualConnection {
+						// We just received a NodeInfo for the currently connected node and this is a
+						// manual connection.  Update the metadata for the device entry in UserDefaults
+						// with this information for better display later
+						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName)
+						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.longName, value: user.longName)
+						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: user.hwModel)
+					}
 				}
 			}
 		}

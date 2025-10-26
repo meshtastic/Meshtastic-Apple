@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct Device: Identifiable, Hashable, Codable {
+struct Device: Identifiable, Hashable, Codable, CustomStringConvertible {
+	
 	let id: UUID
 	var name: String
 	var transportType: TransportType
@@ -56,4 +57,16 @@ struct Device: Identifiable, Hashable, Codable {
 		}
 	}
 
+	var description: String {
+		switch (shortName, longName) {
+		case (let shortName?, let longName?): // Both shortName and longName are non-nil
+			return "\(longName) (\(shortName))"
+		case (let shortName?, nil): // shortName is non-nil, longName is nil
+			return "\(shortName)"
+		case (nil, let longName?): // shortName is nil, longName is non-nil
+			return "\(longName)"
+		default: // Both are nil
+			return "Device(id: \(id))"
+		}
+	}
 }

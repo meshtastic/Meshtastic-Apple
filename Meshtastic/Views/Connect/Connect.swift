@@ -26,6 +26,7 @@ struct Connect: View {
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
+	@ObservedObject var manualConnections = ManualConnectionList.shared
 	
 	var body: some View {
 		NavigationStack {
@@ -272,15 +273,23 @@ struct Connect: View {
 									DeviceConnectRow(device: device)
 								}
 							}
-							if UserDefaults.manualConnections.count > 0 {
+							if manualConnections.connectionsList.count > 0 {
 								Section(header: Text("Manual Connections").font(.title)) {
-									ForEach(UserDefaults.manualConnections) { device in
+									ForEach(manualConnections.connectionsList) { device in
 										DeviceConnectRow(device: device)
+#if targetEnvironment(macCatalyst)
+											.contextMenu {
+												Button {
+													manualConnections.remove(device: device)
+												} label: {
+													Label("Delete", systemImage: "trash")
+												}
+											}
+#endif
 									}.onDelete { offsets in
-										var list = UserDefaults.manualConnections
-										list.remove(atOffsets: offsets)
-										UserDefaults.manualConnections = list
+										manualConnections.remove(atOffsets: offsets)
 									}
+
 								}
 							}
 						}
@@ -526,7 +535,7 @@ struct DeviceConnectRow: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var presentingSwitchPreferredPeripheral = false
-	var device: Device
+	let device: Device
 	
 	var body: some View {
 		HStack {
@@ -555,11 +564,31 @@ struct DeviceConnectRow: View {
 					Text(device.name).font(.callout)
 				}
 				// Show transport type
-				TransportIcon(transportType: device.transportType)
+#if !targetEnvironment(macCatalyst)
+				HStack(alignment: .center){
+					TransportIcon(transportType: device.transportType)
+					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
+						VStack (alignment: .leading) {
+							Text("Last seen device:")
+							Text("\(String(describing: device))")
+						}
+					}
+				}.padding(.top, 3.0)
+#else
+				//Different alignment for Mac
+				HStack(alignment: .firstTextBaseline){
+					TransportIcon(transportType: device.transportType)
+					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
+						Text("Last seen device: \(String(describing: device))")
+					}
+				}
+#endif
 			}
 			Spacer()
 			VStack {
-				device.getSignalStrength().map { SignalStrengthIndicator(signalStrength: $0) }
+				device.getSignalStrength().map {
+					SignalStrengthIndicator(signalStrength: $0)
+				}
 			}
 		}.padding([.bottom, .top])
 			.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
@@ -578,3 +607,4 @@ struct DeviceConnectRow: View {
 			}
 	}
 }
+
