@@ -11,6 +11,7 @@ struct MessageContextMenuItems: View {
 	let isCurrentUser: Bool
 	@Binding var isShowingDeleteConfirmation: Bool
 	let onReply: () -> Void
+	@State var relayDisplay: String? = nil
 
 	var body: some View {
 		VStack {
@@ -18,6 +19,14 @@ struct MessageContextMenuItems: View {
 				Label("Encrypted", systemImage: "lock")
 			}
 			Text("Channel") + Text(": \(message.channel)")
+		}
+		.onAppear {
+			DispatchQueue.global(qos: .userInitiated).async {
+				let result = message.relayDisplay()
+				DispatchQueue.main.async {
+					relayDisplay = result
+				}
+			}
 		}
 
 		Menu("Tapback") {
@@ -59,12 +68,26 @@ struct MessageContextMenuItems: View {
 		}
 
 		Menu("Message Details") {
+			// Precompute values to avoid executing non-View code inside the ViewBuilder
+			let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
+			let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
+			let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
+
+			// Compute a relay display string if relayNode is present
+			
+
 			VStack {
-				let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
-				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))").foregroundColor(.gray)
+				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))")
+					.foregroundColor(.gray)
 			}
 
-			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) &&  message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
+			if let relayDisplay {
+				Text(relayDisplay)
+					.foregroundColor(relayDisplay.contains("Node") ? .gray : .primary)
+					.font(relayDisplay.contains("Node") ? .caption : .body)
+			}
+
+			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) && message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
 					Text("RSSI \(String(format: "%.2f", message.rssi)) dBm")
@@ -74,29 +97,29 @@ struct MessageContextMenuItems: View {
 					Text("Hops Away \(message.fromUser?.userNode?.hopsAway ?? 0)")
 				}
 			}
+			if message.relays != 0 {
+				Text("Relayed by \(message.relays) \(message.relays == 1 ? "node" : "nodes")")
+			}
 			if isCurrentUser && message.receivedACK {
 				VStack {
-					Text("Received Ack") + Text(": \(message.receivedACK ? "✔️" : "")")
-					Text("Recipient Ack") + Text(": \(message.realACK ? "✔️" : "")")
+					Text("Received Ack: \(message.receivedACK ? "✔️" : "")")
+					Text("Recipient Ack: \(message.realACK ? "✔️" : "")")
 				}
 			} else if isCurrentUser && message.ackError == 0 {
-				// Empty Error
 				Text("Waiting")
 			} else if isCurrentUser && message.ackError > 0 {
 				let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 				Text("\(ackErrorVal?.display ?? "Empty Ack Error")")
 					.fixedSize(horizontal: false, vertical: true)
 			}
+
 			if isCurrentUser {
-				VStack {
-					let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
-					let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
-					if ackDate >= sixMonthsAgo! {
-						Text("Ack Time: \(ackDate.formattedDate(format: MessageText.timeFormatString))")
-							.foregroundColor(.gray)
-					}
+				if let sixMonthsAgo, ackDate >= sixMonthsAgo {
+					Text("Ack Time: \(ackDate.formattedDate(format: MessageText.timeFormatString))")
+						.foregroundColor(.gray)
 				}
 			}
+
 			if message.ackSNR != 0 {
 				VStack {
 					Text("Ack SNR: \(String(format: "%.2f", message.ackSNR)) dB")
