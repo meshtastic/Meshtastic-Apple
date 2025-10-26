@@ -82,9 +82,10 @@ struct MessageContextMenuItems: View {
 			}
 
 			if let relayDisplay {
-				Text(relayDisplay)
-					.foregroundColor(relayDisplay.contains("Node") ? .gray : .primary)
-					.font(relayDisplay.contains("Node") ? .caption : .body)
+				let prefix = message.realACK ? "Ack Relay: " : "Relay: "
+				Text(prefix + relayDisplay)
+					.foregroundColor(relayDisplay.contains("Node ") ? .gray : .primary)
+					.font(relayDisplay.contains("Node ") ? .caption : .body)
 			}
 
 			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) && message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
@@ -97,7 +98,7 @@ struct MessageContextMenuItems: View {
 					Text("Hops Away \(message.fromUser?.userNode?.hopsAway ?? 0)")
 				}
 			}
-			if message.relays != 0 {
+			if message.relays != 0 && message.realACK == false {
 				Text("Relayed by \(message.relays) \(message.relays == 1 ? "node" : "nodes")")
 			}
 			if isCurrentUser && message.receivedACK {

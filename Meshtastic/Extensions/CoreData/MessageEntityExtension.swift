@@ -53,7 +53,7 @@ extension MessageEntity {
 			   
 			   // If exactly one match is found, return its name
 			   if users.count == 1, let name = users.first?.longName, !name.isEmpty {
-				   return "Relay: \(name)"
+				   return "\(name)"
 			   }
 			   
 			   // If no exact match, find the node with the smallest hopsAway
@@ -63,14 +63,14 @@ extension MessageEntity {
 				   }
 				   return lhsHops < rhsHops
 			   }), let name = closestNode.longName, !name.isEmpty {
-				   return "Relay: \(name)"
+				   return "\(name)"
 			   }
 			   
 			   // Fallback to hex node number if no matches
-			   return String(format: "Relay: Node 0x%02X", UInt32(self.relayNode & 0xFF))
+			   return String(format: "Node 0x%02X", UInt32(self.relayNode & 0xFF))
 
 		   } catch {
-			   return String(format: "Relay: Node 0x%02X", UInt32(self.relayNode & 0xFF))
+			   return String(format: "Node 0x%02X", UInt32(self.relayNode & 0xFF))
 		   }
 	   }
 }
