@@ -47,7 +47,7 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
 		ForEach(positions, id: \.id) { position in
-			/// Apply favorits filter and don't show ignored nodes
+			/// Apply favorites filter and don't show ignored nodes
 			if (!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true) {
 				let coordinateForNodePin: CLLocationCoordinate2D = if position.isPreciseLocation {
 					// Precise location: place node pin at actual location.
