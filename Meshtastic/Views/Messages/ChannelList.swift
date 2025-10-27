@@ -37,14 +37,16 @@ struct ChannelList: View {
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
 		NavigationLink(value: channel) {
-			let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
+			let mostRecent = channel.mostRecentPrivateMessage
+			let hasMessages = mostRecent != nil
+			let hasUnreadMessages = hasMessages && (channel.unreadMessages > 0)
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 
 			ZStack {
 				Image(systemName: "circle.fill")
-					.opacity(channel.unreadMessages > 0 ? 1 : 0)
+					.opacity(hasUnreadMessages ? 1 : 0)
 					.font(.system(size: 10))
 					.foregroundColor(.accentColor)
 					.brightness(0.2)
@@ -70,7 +72,7 @@ struct ChannelList: View {
 
 					Spacer()
 
-					if channel.allPrivateMessages.count > 0 {
+					if hasMessages {
 
 						if lastMessageDay == currentDay {
 							Text(lastMessageTime, style: .time )
@@ -95,7 +97,7 @@ struct ChannelList: View {
 					}
 				}
 
-				if channel.allPrivateMessages.count > 0 {
+				if hasMessages {
 					HStack(alignment: .top) {
 						Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 							// .font(.system(size: 16))
@@ -112,6 +114,7 @@ struct ChannelList: View {
 			if let node, let myInfo = node.myInfo {
 				List(selection: $channelSelection) {
 					ForEach(channels) { (channel: ChannelEntity) in
+						let hasMessages = channel.mostRecentPrivateMessage != nil
 						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 							makeChannelRow(myInfo: myInfo, channel: channel)
 								.alignmentGuide(.listRowSeparatorLeading) {
@@ -119,7 +122,7 @@ struct ChannelList: View {
 								}
 								.frame(height: 62)
 								.contextMenu {
-									if channel.allPrivateMessages.count > 0 {
+									if hasMessages {
 										Button(role: .destructive) {
 											isPresentingDeleteChannelMessagesConfirm = true
 											channelToDeleteMessages = channel

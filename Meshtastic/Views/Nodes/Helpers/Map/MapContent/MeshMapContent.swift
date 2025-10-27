@@ -47,26 +47,46 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
 		ForEach(positions, id: \.id) { position in
+			/// Apply favorites filter and don't show ignored nodes
 			if (!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true) {
-				
-				let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-				let positionName = position.nodePosition?.user?.longName ?? "?"
-				// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
-				let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
-				
-				Annotation(positionName, coordinate: position.coordinate) {
-					LazyVStack {
-						AnimatedNodePin(
-							nodeColor: nodeColor,
-							shortName: position.nodePosition?.user?.shortName,
-							hasDetectionSensorMetrics: position.nodePosition?.hasDetectionSensorMetrics ?? false,
-							isOnline: position.nodePosition?.isOnline ?? false,
-							calculatedDelay: calculatedDelay
-						)
+				let coordinateForNodePin: CLLocationCoordinate2D = if position.isPreciseLocation {
+					// Precise location: place node pin at actual location.
+					position.coordinate
+				} else {
+					// Imprecise location: fuzz slightly so overlapping nodes are visible and clickable at highest zoom levels.
+					position.fuzzedCoordinate
+				}
+				if 12...15 ~= position.precisionBits || position.precisionBits == 32 {
+					
+					let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+					let positionName = position.nodePosition?.user?.longName ?? "?"
+					/// Reduced Precision Map Circle
+					if 12...15 ~= position.precisionBits {
+						let pp = PositionPrecision(rawValue: Int(position.precisionBits))
+						let radius: CLLocationDistance = pp?.precisionMeters ?? 0
+						if radius > 0.0 {
+							MapCircle(center: position.coordinate, radius: radius)
+								.foregroundStyle(Color(nodeColor).opacity(0.25))
+								.stroke(.white, lineWidth: 1)
+						}
 					}
-					.highPriorityGesture(TapGesture().onEnded { _ in
-						selectedPosition = (selectedPosition == position ? nil : position)
-					})
+					// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
+					let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
+					
+					Annotation(positionName, coordinate: coordinateForNodePin) {
+						LazyVStack {
+							AnimatedNodePin(
+								nodeColor: nodeColor,
+								shortName: position.nodePosition?.user?.shortName,
+								hasDetectionSensorMetrics: position.nodePosition?.hasDetectionSensorMetrics ?? false,
+								isOnline: position.nodePosition?.isOnline ?? false,
+								calculatedDelay: calculatedDelay
+							)
+						}
+						.highPriorityGesture(TapGesture().onEnded { _ in
+							selectedPosition = (selectedPosition == position ? nil : position)
+						})
+					}
 				}
 			}
 		}

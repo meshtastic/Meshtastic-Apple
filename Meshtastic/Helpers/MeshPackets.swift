@@ -264,7 +264,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPass
 	}
 }
 
-func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
+func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext, deferSave: Bool = false) -> NodeInfoEntity? {
 
 	let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
 	Logger.mesh.info("📟 \(logString, privacy: .public)")
@@ -375,8 +375,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					newNode.myInfo = fetchedMyInfo[0]
 				}
 				do {
-					try context.save()
-					Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
+					if !deferSave {
+						try context.save()
+						Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
+					}
 					return newNode
 				} catch {
 					context.rollback()
@@ -500,8 +502,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					fetchedNode[0].myInfo = fetchedMyInfo[0]
 				}
 				do {
-					try context.save()
-					Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+					if !deferSave {
+						try context.save()
+						Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+					}
 					return fetchedNode[0]
 				} catch {
 					context.rollback()
@@ -1040,7 +1044,10 @@ func textMessageAppPacket(
 				if newMessage.fromUser != nil && newMessage.toUser != nil {
 					// Set Unread Message Indicators
 					if packet.to == connectedNode {
-						appState?.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+						let unreadCount = newMessage.toUser?.unreadMessages(context: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+						Task { @MainActor in
+							appState?.unreadDirectMessages = unreadCount
+						}
 					}
 					if !(newMessage.fromUser?.mute ?? false) && newMessage.isEmoji == false {
 						// Create an iOS Notification for the received DM message
@@ -1068,7 +1075,7 @@ func textMessageAppPacket(
 					do {
 						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 						if !fetchedMyInfo.isEmpty {
-							appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+							appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages(context: context)
 							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)

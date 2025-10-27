@@ -10,14 +10,35 @@ import CoreData
 import MeshtasticProtobufs
 
 extension UserEntity {
+	var messagePredicate: NSPredicate {
+		return NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10", self, self)
+	}
+
+	var messageFetchRequest: NSFetchRequest<MessageEntity> {
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
+		fetchRequest.predicate = messagePredicate
+		return fetchRequest
+	}
 
 	var messageList: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10", self, self)
+		let fetchRequest = messageFetchRequest
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+	}
+
+	var mostRecentMessage: MessageEntity? {
+		// Most contacts will have no DMs history, so we can return early.
+		guard self.lastMessage != nil else { return nil; }
+
+		// Most recent DM for this user (descending, limit 1)
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = messageFetchRequest
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+		fetchRequest.fetchLimit = 1
+
+		return (try? context.fetch(fetchRequest))?.first
 	}
 
 	var sensorMessageList: [MessageEntity] {
@@ -29,10 +50,21 @@ extension UserEntity {
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
-	var unreadMessages: Int {
-		let unreadMessages = messageList.filter { ($0 as AnyObject).read == false && ($0 as AnyObject).isEmoji == false }
-		return unreadMessages.count
+	func unreadMessages(context: NSManagedObjectContext, skipLastMessageCheck: Bool = false) -> Int {
+		// Most contacts will have no DMs history, so we can return early.
+		// (For our own node, set skipLastMessageCheck=true, because we don't update lastMessage on our own connected node.)
+		guard self.lastMessage != nil || skipLastMessageCheck else { return 0; }
+
+		let fetchRequest = messageFetchRequest
+		fetchRequest.sortDescriptors = [] // sort is irrelevant.
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
+
+		return (try? context.count(for: fetchRequest)) ?? 0
 	}
+
+	// Backwards-compatible property (uses viewContext)
+	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.container.viewContext) }
+
 	/// SVG Images for Vendors who are signed project backers
 	var hardwareImage: String? {
 		guard let hwModel else { return nil }
@@ -130,6 +162,7 @@ public func createUser(num: Int64, context: NSManagedObjectContext) throws -> Us
 		newUser.longName = "Meshtastic \(last4)"
 		newUser.shortName = last4
 		newUser.hwModel = "UNSET"
+		newUser.unmessagable = false
 	}
 
 	return newUser
