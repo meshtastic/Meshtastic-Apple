@@ -465,13 +465,17 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					mutablePositions.add(position)
 					fetchedNode[0].id = Int64(packet.from)
 					fetchedNode[0].num = Int64(packet.from)
-					if positionMessage.time > 0 {
+
+					// Update the node's lastHeard.
+					// Some misconfigured nodes will broadcast position packets that claim GPS timestamps in the future. When updating lastHeard, don't use any future timestamps: fallback to using rxTime or Date() instead.
+					if positionMessage.time > 0 && (Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time))) <= Date()) {
 						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					} else if packet.rxTime > 0 {
 						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 					} else {
 						fetchedNode[0].lastHeard = Date()
 					}
+
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].rssi = packet.rxRssi
 					fetchedNode[0].viaMqtt = packet.viaMqtt
