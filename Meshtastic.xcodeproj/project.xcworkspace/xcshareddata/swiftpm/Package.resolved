@@ -1,5 +1,5 @@
 {
-  "originHash" : "f556f40b132ca2a8fd7bd8974bf67171f4dd618b09514f38658dab7ecc8564dd",
+  "originHash" : "2569905853aec088d5bac6b540eac77f78963f88b406e8dd95a88c40623cc8b4",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/DataDog/dd-sdk-ios.git",
       "state" : {
-        "revision" : "a193cab2786b704ebc98c290a7cc8a3165f636bb",
-        "version" : "3.1.0"
+        "revision" : "d0a42d8067665cb6ee86af51251ccc071f62bd54",
+        "version" : "2.29.0"
       }
     },
     {
