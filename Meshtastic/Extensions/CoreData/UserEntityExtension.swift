@@ -56,7 +56,7 @@ extension UserEntity {
 		guard self.lastMessage != nil || skipLastMessageCheck else { return 0; }
 
 		let fetchRequest = messageFetchRequest
-		fetchRequest.sortDescriptors = [] // sort is irrelvant.
+		fetchRequest.sortDescriptors = [] // sort is irrelevant.
 		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
 
 		return (try? context.count(for: fetchRequest)) ?? 0
