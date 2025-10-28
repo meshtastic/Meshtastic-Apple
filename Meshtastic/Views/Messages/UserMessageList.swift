@@ -12,7 +12,6 @@ import MeshtasticProtobufs // Added to ensure RoutingError is accessible if need
 
 struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
-	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.managedObjectContext) var context
@@ -58,7 +57,7 @@ struct UserMessageList: View {
 	}
 
 	private func routerIsShowingThisUser() -> Bool {
-		guard router.navigationState.selectedTab == .messages else { return false }
+		guard appState.router.navigationState.selectedTab == .messages else { return false }
 		return scenePhase == .active
 	}
 

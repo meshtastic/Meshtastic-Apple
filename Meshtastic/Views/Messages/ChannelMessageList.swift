@@ -12,7 +12,6 @@ import SwiftUI
 
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
-	@EnvironmentObject var router: Router
 	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -61,7 +60,7 @@ struct ChannelMessageList: View {
 	}
 
 	private func routerIsShowingThisChannel() -> Bool {
-		guard router.navigationState.selectedTab == .messages else { return false }
+		guard appState.router.navigationState.selectedTab == .messages else { return false }
 		return scenePhase == .active
 	}
 

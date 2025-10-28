@@ -12,7 +12,7 @@ struct PositionPopover: View {
 	
 	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var router: Router
+	@EnvironmentObject var appState: AppState
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.openURL) var openURL
@@ -29,7 +29,7 @@ struct PositionPopover: View {
 					ZStack {
 						Button {
 							if let nodeNum = position.nodePosition?.num {
-								router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
+								appState.router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
 								dismiss()
 							}
 						} label: {
