@@ -38,9 +38,8 @@ extension ChannelEntity {
 	}
 
 	func unreadMessages(context: NSManagedObjectContext) -> Int {
-		let context = PersistenceController.shared.container.viewContext
 		let fetchRequest = messageFetchRequest
-		fetchRequest.sortDescriptors = [] // sort is irrelvant.
+		fetchRequest.sortDescriptors = [] // sort is irrelevant.
 		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
 
 		return (try? context.count(for: fetchRequest)) ?? 0

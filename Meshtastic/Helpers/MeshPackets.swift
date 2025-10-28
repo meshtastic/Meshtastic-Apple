@@ -624,6 +624,7 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 			fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
 			fetchedMessage[0].receivedACK = true
 			fetchedMessage[0].realACK = true
+			fetchedMessage[0].relayNode = Int64(packet.relayNode)
 			fetchedMessage[0].ackSNR = packet.rxSnr
 			if fetchedMessage[0].fromUser != nil {
 				fetchedMessage[0].fromUser?.objectWillChange.send()
@@ -699,9 +700,11 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 						fetchedMessage[0].realACK = true
 					}
 				}
+				fetchedMessage[0].relayNode = Int64(packet.relayNode)
 				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
 				if routingMessage.errorReason == Routing.Error.none {
 					fetchedMessage[0].receivedACK = true
+					fetchedMessage[0].relays += 1
 				}
 				
 				fetchedMessage[0].ackSNR = packet.rxSnr
@@ -944,6 +947,9 @@ func textMessageAppPacket(
 			} else {
 				newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
 			}
+			if packet.relayNode != 0 {
+				newMessage.relayNode = Int64(packet.relayNode)
+			}
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
 			newMessage.rssi = packet.rxRssi
@@ -983,6 +989,7 @@ func textMessageAppPacket(
 						newMessage.pkiEncrypted = true
 						newMessage.publicKey = packet.publicKey
 					}
+					
 					/// Check for key mismatch
 					if let nodeKey = newMessage.fromUser?.publicKey {
 						if newMessage.toUser != nil && packet.pkiEncrypted && !packet.publicKey.isEmpty {
