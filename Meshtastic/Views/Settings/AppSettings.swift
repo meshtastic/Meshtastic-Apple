@@ -57,7 +57,7 @@ struct AppSettings: View {
 						.tint(.accentColor)
 					}
 #if targetEnvironment(macCatalyst)
-					
+					// App Icon Picker is disabled on macOS Catalyst
 #else
 					Button {
 						isPresentingAppIconSheet.toggle()
