@@ -43,7 +43,6 @@ struct MeshtasticAppleApp: App {
 		}
 #endif
 
-#if false
 		Datadog.initialize(
 			with: Datadog.Configuration(
 				clientToken: clientToken,
@@ -80,7 +79,6 @@ struct MeshtasticAppleApp: App {
 				)
 			)
 		}
-#endif
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 
