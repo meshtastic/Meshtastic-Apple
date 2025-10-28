@@ -141,7 +141,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	let transports: [any Transport]
 
 	// Config
-	public var wantRangeTestPackets = true
+	public var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
 	var shouldAutomaticallyConnectToPreferredPeripheral = true
 	

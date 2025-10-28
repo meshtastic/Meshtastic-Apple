@@ -110,6 +110,8 @@ struct RangeTestConfig: View {
 		}
 		.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.rangeTestConfig?.enabled { hasChanges = true }
+
+			// Note: even if this is the connected node, we don't have to update AccessoryManager.wantRangeTestPackets here, because the node will reboot after we save config changes, and we'll pick up the new value after we reconnect.
 		}
 		.onChange(of: save) { _, newSave in
 			if newSave != node?.rangeTestConfig?.save { hasChanges = true }
