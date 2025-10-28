@@ -67,7 +67,12 @@ extension AccessoryManager {
 					}
 					self.activeConnection = (device: device, connection: connection)
 					
-					if UserDefaults.preferredPeripheralId.count < 1 {
+					// if we don't have a peripheralId, set it now at the beginning of the
+					// connect process (because I think it is used in other parts of the app
+					// during the connect process?
+					// Otherwise,  UserDefault.preferredPeripheralId is set in the Connect
+					// view, as part of the "Connect to new radio?" confirmation dialog logic.
+					if UserDefaults.preferredPeripheralId.isEmpty {
 						UserDefaults.preferredPeripheralId = device.id.uuidString
 					}
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
@@ -168,6 +173,15 @@ extension AccessoryManager {
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 				self.updateState(.subscribed)
+				
+				// If we successfully connected to a manual connection, then save it to the list
+				// Remember, Device is a value type (struct) so don't use use `device` here, thats
+				// The value at the instantiation of the connect process.  We want the currently
+				// updated device object in `activeConnection` with its additonal metadata from
+				// NodeInfo packets.
+				if let activeDevice = self.activeConnection?.device, activeDevice.isManualConnection {
+					ManualConnectionList.shared.insert(device: activeDevice)
+				}
 			}
 			
 			// Step 8: Update UI and status to connected

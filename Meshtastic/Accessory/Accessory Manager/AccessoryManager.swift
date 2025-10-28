@@ -302,9 +302,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.error("updateDevice<T> with nil deviceId")
 			return
 		}
-
-		// Update the active device
-		if let activeConnection {
+		
+		// Update the active device if the UUID's match
+		if let activeConnection, activeConnection.device.id == deviceId {
 			var device = activeConnection.device
 			if device[keyPath: key] != value {
 				// Update the @Published stuff for the UI
@@ -714,7 +714,8 @@ extension AccessoryManager {
 			await self.heartbeatTimer?.cancel(withReason: "Duplicate setup, cancelling previous timer")
 			self.heartbeatTimer = nil
 		}
-		self.heartbeatTimer = ResettableTimer(isRepeating: true, debugName: "Send Heartbeat") {
+		
+		self.heartbeatTimer = ResettableTimer(isRepeating: true, debugName: Bundle.main.isDebug ? "Send Heartbeat" : nil) {
 			Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
 			try? await self.sendHeartbeat()
 		}
@@ -722,7 +723,7 @@ extension AccessoryManager {
 		// We can send heartbeats for older versions just fine, but only 2.7.4 and up will respond with
 		// a definite queueStatus packet.
 		if self.checkIsVersionSupported(forVersion: "2.7.4") {
-			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false, debugName: "Heartbeat Timeout") { @MainActor in
+			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false, debugName: Bundle.main.isDebug ? "Heartbeat Timeout" : nil) { @MainActor in
 				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
 				// If we're in the middle of a connection cancel it.
 				await self.connectionStepper?.cancel()
