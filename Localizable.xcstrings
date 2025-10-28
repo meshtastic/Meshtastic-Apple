@@ -28480,6 +28480,7 @@
       }
     },
     "Received Ack" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28543,7 +28544,11 @@
         }
       }
     },
+    "Received Ack: %@" : {
+
+    },
     "Recipient Ack" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28606,6 +28611,9 @@
           }
         }
       }
+    },
+    "Recipient Ack: %@" : {
+
     },
     "Recording route" : {
       "localizations" : {
@@ -28785,6 +28793,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已達到頻道占用循環週期發射上限"
+          }
+        }
+      }
+    },
+    "Relayed by %d %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Relayed by %1$d %2$@"
           }
         }
       }
