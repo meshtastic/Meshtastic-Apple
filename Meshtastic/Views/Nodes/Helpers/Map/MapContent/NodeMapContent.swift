@@ -36,9 +36,6 @@ struct NodeMapContent: MapContent {
 	@MapContentBuilder
 	var nodeMap: some MapContent {
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
-		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
-			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-		})
 
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
@@ -137,6 +134,9 @@ struct NodeMapContent: MapContent {
 
 		/// Route Lines
 		if showRouteLines {
+			let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
+				return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+			})
 			let gradient = LinearGradient(
 				colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
 				startPoint: .leading, endPoint: .trailing
@@ -149,12 +149,12 @@ struct NodeMapContent: MapContent {
 				.stroke(gradient, style: dashed)
 		}
 
-		let loraNodes = positionArray.filter { $0.nodePosition?.viaMqtt ?? true == false }
-		let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
-			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-		})
 		/// Convex Hull
 		if showConvexHull {
+			let loraNodes = positionArray.filter { $0.nodePosition?.viaMqtt ?? true == false }
+			let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
+				return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+			})
 			if loraCoords.count > 0 {
 				let hull = loraCoords.getConvexHull()
 				MapPolygon(coordinates: hull)
