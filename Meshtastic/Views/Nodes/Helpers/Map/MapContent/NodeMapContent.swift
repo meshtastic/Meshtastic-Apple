@@ -41,10 +41,10 @@ struct NodeMapContent: MapContent {
 		let nodeColor = UIColor(hex: UInt32(node.num))
 		let nodeColorSwift = Color(nodeColor)
 
+		let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
+
 		/// Node Annotations
 		ForEach(positionArray, id: \.id) { position in
-
-			let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
 			let headingDegrees = Angle.degrees(Double(position.heading))
 			/// Reduced Precision Map Circle
 			if position.latest && 12...15 ~= position.precisionBits {
@@ -106,7 +106,6 @@ struct NodeMapContent: MapContent {
 			/// Node History
 			if showNodeHistory {
 				if position.latest == false && node.favorite {
-					let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
 					let headingDegrees = Angle.degrees(Double(position.heading))
 					Annotation("", coordinate: position.coordinate) {
 						if pf.contains(.Heading) {
