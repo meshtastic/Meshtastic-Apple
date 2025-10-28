@@ -134,6 +134,9 @@ extension UserEntity {
 			return "NANOG1"
 		case "NANOG2ULTRA":
 			return "NANOG2ULTRA"
+		/// Muzi Works
+		case "MUZIR1NEO":
+			return "MUZIR1NEO"
 		case "STATIONG2":
 			return "STATIONG2"
 		/// DIY Devices
