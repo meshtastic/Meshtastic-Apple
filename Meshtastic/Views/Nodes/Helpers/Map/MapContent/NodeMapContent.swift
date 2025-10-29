@@ -29,6 +29,10 @@ struct NodeMapContent: MapContent {
 		let nodeColorSwift = Color(nodeColor)
 		let nodeBorderColor: Color = nodeColorSwift.isLight() ? .black : .white
 
+		// Prerender node history point views as UIImages for speedup when there are thousands of history points
+		let prerenderedHistoryPointCircleImage = showNodeHistory ? prerenderHistoryPointCircle(fill: nodeColorSwift, stroke: nodeBorderColor) : UIImage()
+		let prerenderedHistoryPointArrowImage = showNodeHistory ? prerenderHistoryPointArrow(fill: nodeColorSwift, stroke: nodeBorderColor) : UIImage()
+
 		let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
 
 		/// Node Annotations
@@ -93,24 +97,22 @@ struct NodeMapContent: MapContent {
 			}
 			/// Node History
 			if showNodeHistory {
+				// Having showNodeHistory enabled can be quite slow if there are thousands of history points.
 				if position.latest == false && node.favorite {
 					let headingDegrees = Angle.degrees(Double(position.heading))
 					Annotation("", coordinate: position.coordinate) {
 						if pf.contains(.Heading) {
-							Image(systemName: "location.north.circle")
-								.resizable()
-								.scaledToFit()
-								.foregroundStyle(nodeBorderColor)
-								.background(nodeColorSwift)
-								.clipShape(Circle())
+							Image(uiImage: prerenderedHistoryPointArrowImage)
+								.renderingMode(.original)
+								.interpolation(.none)
 								.rotationEffect(headingDegrees)
 								.frame(width: 16, height: 16)
 								.allowsHitTesting(false)
 								.accessibilityHidden(true)
 						} else {
-							Circle()
-								.fill(nodeColorSwift)
-								.strokeBorder(nodeBorderColor, lineWidth: 2)
+							Image(uiImage: prerenderedHistoryPointCircleImage)
+								.renderingMode(.original)
+								.interpolation(.none)
 								.frame(width: 12, height: 12)
 								.allowsHitTesting(false)
 								.accessibilityHidden(true)
@@ -159,5 +161,29 @@ struct NodeMapContent: MapContent {
 		if node.positions?.count ?? 0 > 0 {
 			nodeMap
 		}
+	}
+
+	private func prerenderHistoryPointCircle(fill: Color, stroke: Color) -> UIImage {
+		// Render to UIImage once so we don't have to do a ton of vector operations and layers when there are thousands of history points.
+		let content = Circle()
+			.fill(fill)
+			.strokeBorder(stroke, lineWidth: 2)
+			.frame(width: 12, height: 12)
+		let renderer = ImageRenderer(content: content)
+		renderer.scale = UIScreen.main.scale
+		return renderer.uiImage!
+	}
+
+	private func prerenderHistoryPointArrow(fill: Color, stroke: Color) -> UIImage {
+		// Render to UIImage once so we don't have to do a ton of vector operations and layers when there are thousands of history points.
+		let content = Image(systemName: "location.north.circle")
+			.resizable()
+			.scaledToFit()
+			.foregroundStyle(stroke)
+			.background(fill)
+			.clipShape(Circle())
+		let renderer = ImageRenderer(content: content)
+		renderer.scale = UIScreen.main.scale
+		return renderer.uiImage!
 	}
 }
