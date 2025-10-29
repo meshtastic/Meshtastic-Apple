@@ -163,8 +163,9 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 			// host & port
 			if parts[1].isValidTCPPort {
 				identifier = "\(parts[0]):\(parts[1])"
+			} else {
+				return nil
 			}
-			fallthrough
 			
 		default:
 			return nil
