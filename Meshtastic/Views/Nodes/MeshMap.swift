@@ -75,7 +75,8 @@ struct MeshMap: View {
 					}
 					.controlSize(.regular)
 					.offset(y: 100)
-					.onMapCameraChange(frequency: MapCameraUpdateFrequency.continuous, { context in
+					.onMapCameraChange(frequency: MapCameraUpdateFrequency.onEnd, { context in
+						// distance is only used for long-press waypoint creation, so we don't need continuous updates which touch @State and force rerenders as we pan and (for distance in particular) zoom around the map. onEnd is more than enough.
 						distance = context.camera.distance
 					})
 					.onTapGesture(count: 1, perform: { position in
