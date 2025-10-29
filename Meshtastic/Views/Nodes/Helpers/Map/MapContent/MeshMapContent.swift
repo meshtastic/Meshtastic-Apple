@@ -60,16 +60,7 @@ struct MeshMapContent: MapContent {
 					
 					let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 					let positionName = position.nodePosition?.user?.longName ?? "?"
-					/// Reduced Precision Map Circle
-					if 12...15 ~= position.precisionBits {
-						let pp = PositionPrecision(rawValue: Int(position.precisionBits))
-						let radius: CLLocationDistance = pp?.precisionMeters ?? 0
-						if radius > 0.0 {
-							MapCircle(center: position.coordinate, radius: radius)
-								.foregroundStyle(Color(nodeColor).opacity(0.25))
-								.stroke(.white, lineWidth: 1)
-						}
-					}
+
 					// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
 					let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
 					
@@ -92,6 +83,28 @@ struct MeshMapContent: MapContent {
 		}
 	}
 	
+	@MapContentBuilder
+	var reducedPrecisionMapCircles: some MapContent {
+		ForEach(positions, id: \.id) { position in
+			/// Apply favorites filter and don't show ignored nodes
+			if (!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true) {
+				if 12...15 ~= position.precisionBits || position.precisionBits == 32 {
+					let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+					/// Reduced Precision Map Circle
+					if 12...15 ~= position.precisionBits {
+						let pp = PositionPrecision(rawValue: Int(position.precisionBits))
+						let radius: CLLocationDistance = pp?.precisionMeters ?? 0
+						if radius > 0.0 {
+							MapCircle(center: position.coordinate, radius: radius)
+								.foregroundStyle(Color(nodeColor).opacity(0.25))
+								.stroke(.white, lineWidth: 1)
+						}
+					}
+				}
+			}
+		}
+	}
+
 	@MapContentBuilder
 	var routeAnnotations: some MapContent {
 		ForEach(routes) { route in
@@ -167,6 +180,7 @@ struct MeshMapContent: MapContent {
 		}
 		
 		positionAnnotations
+		reducedPrecisionMapCircles
 		routeAnnotations
 		waypointAnnotations
 	}
