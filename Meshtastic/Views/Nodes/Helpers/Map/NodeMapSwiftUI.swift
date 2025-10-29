@@ -141,6 +141,7 @@ struct NodeMapSwiftUI: View {
 				.mapControlVisibility(.visible)
 		}
 		.controlSize(.regular)
+		.transaction { $0.animation = nil }
 	}
 
 	private var lookAroundView: some View {
