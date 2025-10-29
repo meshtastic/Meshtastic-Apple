@@ -11,27 +11,14 @@ import CoreData
 struct NodeMapContent: MapContent {
 
 	@ObservedObject var node: NodeInfoEntity
-	@State var showUserLocation: Bool = false
-	@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
-	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
-	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
-	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
-	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
 
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
-	@State var position = MapCameraPosition.automatic
-	@State var scene: MKLookAroundScene?
-	@State var isLookingAround = false
-	@State var isShowingAltitude = false
-	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
-	@State var isMeshMap = false
 
 	@MapContentBuilder
 	var nodeMap: some MapContent {
