@@ -9,6 +9,26 @@ import SwiftUI
 import CoreLocation
 import MapKit
 
+struct NodeMapContentSignature: Equatable {
+	// Used to decide if NodeMapContent needs to be reevaluated.
+	// Only include fields that are used within NodeMapContent (or approximations like positionCount and lastPositionTime).
+	let nodeNum: Int64
+	let positionCount: Int
+	let lastPositionTime: Date?
+	let showNodeHistory: Bool
+	let showRouteLines: Bool
+	let showConvexHull: Bool
+	let favorite: Bool
+}
+
+private struct NodeMapContentEquatableWrapper<Content: View>: View, Equatable {
+	// Prevent slow, needless recomputation of NodeMapContent if the NodeMapContentSignature hasn't changed.
+	let signature: NodeMapContentSignature
+	@ViewBuilder let content: () -> Content
+	static func == (lhs: NodeMapContentEquatableWrapper<Content>, rhs: NodeMapContentEquatableWrapper<Content>) -> Bool { lhs.signature == rhs.signature }
+	var body: some View { content() }
+}
+
 struct NodeMapSwiftUI: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -17,6 +37,9 @@ struct NodeMapSwiftUI: View {
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
+	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
+	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
@@ -91,9 +114,17 @@ struct NodeMapSwiftUI: View {
 			}
 	}
 
+	private var mapContentSignature: NodeMapContentSignature {
+		let positionCount = node.positions?.count ?? 0
+		let lastPositionTime = (node.positions?.lastObject as? PositionEntity)?.time
+		return NodeMapContentSignature(nodeNum: node.num, positionCount: positionCount, lastPositionTime: lastPositionTime, showNodeHistory: showNodeHistory, showRouteLines: showRouteLines, showConvexHull: showConvexHull, favorite: node.favorite)
+	}
+
 	private var baseMap: some View {
-		Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
-			NodeMapContent(node: node)
+		NodeMapContentEquatableWrapper(signature: mapContentSignature) {
+			Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
+				NodeMapContent(node: node)
+			}
 		}
 		.mapScope(mapScope)
 		.mapStyle(mapStyle)
