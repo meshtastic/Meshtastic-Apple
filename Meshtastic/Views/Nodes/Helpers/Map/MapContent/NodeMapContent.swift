@@ -124,11 +124,11 @@ struct NodeMapContent: MapContent {
 			}
 		}
 
+		// Shared coordinate list for Route Lines and Convex Hull
+		let allCoords: [CLLocationCoordinate2D] = (showRouteLines || showConvexHull) ? positionArray.compactMap(\.nodeCoordinate) : []
+
 		/// Route Lines
 		if showRouteLines {
-			let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
-				return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-			})
 			let gradient = LinearGradient(
 				colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
 				startPoint: .leading, endPoint: .trailing
@@ -137,18 +137,14 @@ struct NodeMapContent: MapContent {
 				lineWidth: 3,
 				lineCap: .round, lineJoin: .round, dash: [10, 10]
 			)
-			MapPolyline(coordinates: lineCoords)
+			MapPolyline(coordinates: allCoords)
 				.stroke(gradient, style: dashed)
 		}
 
 		/// Convex Hull
 		if showConvexHull {
-			let loraNodes = positionArray.filter { $0.nodePosition?.viaMqtt ?? true == false }
-			let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
-				return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-			})
-			if loraCoords.count > 0 {
-				let hull = loraCoords.getConvexHull()
+			if allCoords.count > 0 {
+				let hull = allCoords.getConvexHull()
 				MapPolygon(coordinates: hull)
 					.stroke(.blue, lineWidth: 3)
 					.foregroundStyle(.indigo.opacity(0.4))
