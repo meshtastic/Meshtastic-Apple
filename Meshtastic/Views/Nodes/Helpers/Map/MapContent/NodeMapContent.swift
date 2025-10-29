@@ -27,6 +27,7 @@ struct NodeMapContent: MapContent {
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
 		let nodeColorSwift = Color(nodeColor)
+		let nodeBorderColor: Color = nodeColorSwift.isLight() ? .black : .white
 
 		let pf = PositionFlags(rawValue: Int(node.metadata?.positionFlags ?? 771))
 
@@ -52,7 +53,7 @@ struct NodeMapContent: MapContent {
 								if pf.contains(.Heading) {
 									Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
 										.padding(5)
-										.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
+										.foregroundStyle(nodeBorderColor)
 										.background(Color(nodeColor.darker()))
 										.clipShape(Circle())
 										.rotationEffect(headingDegrees)
@@ -70,7 +71,7 @@ struct NodeMapContent: MapContent {
 									Image(systemName: "flipphone")
 										.symbolEffect(.pulse.byLayer)
 										.padding(5)
-										.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
+										.foregroundStyle(nodeBorderColor)
 										.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 										.clipShape(Circle())
 										.onTapGesture {
@@ -99,17 +100,20 @@ struct NodeMapContent: MapContent {
 							Image(systemName: "location.north.circle")
 								.resizable()
 								.scaledToFit()
-								.foregroundStyle(nodeColorSwift.isLight() ? .black : .white)
+								.foregroundStyle(nodeBorderColor)
 								.background(nodeColorSwift)
 								.clipShape(Circle())
 								.rotationEffect(headingDegrees)
 								.frame(width: 16, height: 16)
-
+								.allowsHitTesting(false)
+								.accessibilityHidden(true)
 						} else {
 							Circle()
 								.fill(nodeColorSwift)
-								.strokeBorder(nodeColorSwift.isLight() ? .black : .white, lineWidth: 2)
+								.strokeBorder(nodeBorderColor, lineWidth: 2)
 								.frame(width: 12, height: 12)
+								.allowsHitTesting(false)
+								.accessibilityHidden(true)
 						}
 					}
 					.annotationTitles(.hidden)
