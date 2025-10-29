@@ -178,6 +178,7 @@ struct NodeMapContent: MapContent {
 			.foregroundStyle(stroke)
 			.background(fill)
 			.clipShape(Circle())
+			.frame(width: 16, height: 16)
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
 		return renderer.uiImage!
