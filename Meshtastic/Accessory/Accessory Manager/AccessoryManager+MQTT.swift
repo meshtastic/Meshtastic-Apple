@@ -34,12 +34,10 @@ extension AccessoryManager {
 				// Set initial unread message badge states
 				appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages(context: context) ?? 0
 				appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages(context: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
-			}
-			if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
-				wantRangeTestPackets = true
-			}
-			if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].storeForwardConfig?.enabled == true {
-				wantStoreAndForwardPackets = true
+
+				// Set wantRangeTestPackets and wantStoreAndForwardPackets
+				wantRangeTestPackets = fetchedNodeInfo[0].rangeTestConfig?.enabled ?? false
+				wantStoreAndForwardPackets = fetchedNodeInfo[0].storeForwardConfig?.enabled ?? false
 			}
 		} catch {
 			Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription, privacy: .public)")
