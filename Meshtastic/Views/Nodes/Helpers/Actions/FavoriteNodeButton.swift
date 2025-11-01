@@ -12,12 +12,16 @@ struct FavoriteNodeButton: View {
 
 	var body: some View {
 		let connectedRoleIsClientBase = accessoryManager.connectedDeviceRole == DeviceRoles.clientBase
-		// FIXME: if (connectedRoleIsClientBase == true), we want to show a confirmation dialog when the user clicks "Add to favorites" (but not when they click "Remove from favorites") before doing the Task below.
-		// if (connectedRoleIsClientBase == false), or they are clicking "Remove from favorites" regardless, then don't show the confirmation dialog and just do the Task immediately.
 		Button {
+			// Special case for CLIENT_BASE: show confirmation when attempting to favorite a node
+			if connectedRoleIsClientBase && !node.favorite {
+				isShowingClientBaseConfirmation = true
+				return
+			}
+			// Normal case: perform action immediately
 			guard let connectedNodeNum = accessoryManager.activeDeviceNum else { return }
 			Task {
-				await assignFavorite(node: node, setToFavorite: !node.favorite, connectedNodeNum: connectedNodeNum)
+				await assignFavorite(node: node, setToFavorite: !node.favorite, connectedNodeNum: Int64(connectedNodeNum))
 			}
 		} label: {
 			Label {
@@ -27,6 +31,21 @@ struct FavoriteNodeButton: View {
 					.symbolRenderingMode(.multicolor)
 			}
 		}
+		.confirmationDialog(
+			"Are you sure?",
+			isPresented: $isShowingClientBaseConfirmation,
+			titleVisibility: .visible
+		) {
+			Button("Yes, I control this node") {
+				guard let connectedNodeNum = accessoryManager.activeDeviceNum else { return }
+				Task {
+					await assignFavorite(node: node, setToFavorite: true, connectedNodeNum: Int64(connectedNodeNum))
+				}
+			}
+			Button("Cancel", role: .cancel) { }
+		} message: {
+			Text("Client Base should only favorite other nodes you control. Improper use will hurt your local mesh.")
+		}
 	}
 
 	private func assignFavorite (node: NodeInfoEntity, setToFavorite: Bool, connectedNodeNum: Int64) async {
@@ -34,12 +53,12 @@ struct FavoriteNodeButton: View {
 			if setToFavorite {
 				try await accessoryManager.setFavoriteNode(
 					node: node,
-					connectedNodeNum: connectedNodeNum
+					connectedNodeNum: Int64(connectedNodeNum)
 				)
 			} else {
 				try await accessoryManager.removeFavoriteNode(
 					node: node,
-					connectedNodeNum: connectedNodeNum
+					connectedNodeNum: Int64(connectedNodeNum)
 				)
 			}
 
