@@ -181,6 +181,12 @@
             "value" : "ボード用のPIN_GPS_ENを（再）定義してください。"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(Re)definir PIN_GPS_EN para a sua placa."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -338,6 +344,12 @@
             "value" : "%1$@ - %2$@ 送信 %3$@ 受信"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ Ida  %3$@ Volta"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -378,6 +390,12 @@
             "value" : "%@ - 応答なし"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Sem resposta"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -416,6 +434,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ - 送信されませんでした"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Não enviada"
           }
         },
         "sr" : {
@@ -581,6 +605,12 @@
             "value" : "%@ 離れた場所"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -621,6 +651,12 @@
             "value" : "%1$@ は最大 %2$@ バイトまで設定できます。"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ pode medir até até %@ bytes."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -655,6 +691,12 @@
             "value" : "%@ チャンネル？"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Canais?"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -677,6 +719,12 @@
     },
     "%@ config data was requested via PKC admin but no response has been returned from the remote node." : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dados de configuração %@ foram solicitados através do administrador PKC mas não foi devolvida nenhuma resposta do nó remoto."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -694,6 +742,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dB"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ dB"
@@ -815,6 +869,12 @@
             "value" : "%@%%"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %%"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -844,6 +904,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@°F"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@°F"
@@ -883,6 +949,12 @@
             "value" : "%@mA"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@mA"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -911,6 +983,12 @@
             "value" : "%@V"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@V"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -934,6 +1012,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%d"
@@ -1009,6 +1093,24 @@
             "value" : "%dホップ"
           }
         },
+        "pt-PT" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d Salto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d Saltos"
+                }
+              }
+            }
+          }
+        },
         "sr" : {
           "variations" : {
             "plural" : {
@@ -1073,6 +1175,12 @@
             "value" : "%d%%"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d%%"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1095,6 +1203,12 @@
     },
     "%f%%" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%f%%"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1112,6 +1226,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lf"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lf"
@@ -1151,6 +1271,12 @@
             "value" : "%lld"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1177,6 +1303,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld %2$@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld %@"
           }
         },
         "sr" : {
@@ -1271,6 +1403,12 @@
             "value" : "%lldホップ以下"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a %lld ou menos saltos"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1355,6 +1493,12 @@
             "value" : "%lld%%"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1393,6 +1537,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%llddb送信電力"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potência de Transmissão %llddb"
           }
         },
         "sr" : {
@@ -1435,6 +1585,12 @@
             "value" : "%llddBm送信電力"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potência de Transmissão %llddBm"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1466,6 +1622,12 @@
             "value" : "< 1%"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 1%"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1488,7 +1650,15 @@
     },
     "⚠️ The configured value: (%@ seconds) is not one of the optimized options." : {
       "comment" : "A text warning that the configured update interval is not one of the optimized options.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️ O valor configurado (%@ segundos) não é uma das opções otimizadas."
+          }
+        }
+      }
     },
     "🦕 End of life Version 🦖 ☄️" : {
       "localizations" : {
@@ -1502,6 +1672,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "🦕 サポート終了バージョン 🦖 ☄️"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🦕 Versão fim de vida 🦖 ☄️"
           }
         },
         "sr" : {
@@ -1554,6 +1730,12 @@
             "value" : "1バイト"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 byte"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1586,6 +1768,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1ホップ先"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a 1 salto de distância"
           }
         },
         "sr" : {
@@ -1622,6 +1810,12 @@
             "value" : "2.4GHz"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2,4 GHz"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1645,6 +1839,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "7"
@@ -1678,6 +1878,12 @@
             "value" : "12時間表示"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relógio de 12 horas"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1695,6 +1901,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "25"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "25"
@@ -1734,6 +1946,12 @@
             "value" : "50"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1763,6 +1981,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "75"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "75"
@@ -1802,6 +2026,12 @@
             "value" : "100"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1831,6 +2061,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "128 bit"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "128 bit"
@@ -1881,6 +2117,12 @@
             "value" : "256 bit"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "256 bit"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1903,6 +2145,12 @@
     },
     "A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um indice de canal de 0 indica o canal primário a partir do qual os pacotes de difusão são enviados. Os dados de localização são emitidos a partir do primeiro canal onde esteja ativa com o firmware 2.7 ou superior."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1917,6 +2165,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "緑色の鍵は、チャンネルが128ビットまたは256ビットのAESキーで安全に暗号化されていることを意味します。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um cadeado verde significa que o canal está criptografado de forma segura com uma chave AES de 128 ou 256 bits."
           }
         },
         "sr" : {
@@ -1965,6 +2219,12 @@
             "value" : "In a Meshtastic LoRa Mesh there are up to 8 channels. The first one is the Primary channel where most activity happens and is required. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. It talks on its primary and your secondary channel. A channel with the name 'admin' controls nodes remotely. Other channels are for private groups, each with its own key."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um código QR Meshtastic contém os valores de configuração de LoRa e canais necessários para os rádios comunicarem. Pode partilhar uma configuração de canais completa usando a opção Substituir Canais. Se escolher Adicionar Canais, os seus canais partilhados serão adicionados aos canais do rádio que os vai receber."
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1993,6 +2253,12 @@
     },
     "A red open lock means the channel is not securely encrypted and is used for precise location data, it uses either no key at all or a 1 byte known key." : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um cadeado aberto vermelho significa que o canal não está criptografado de forma segura e é usado para dados de localização precisa, não usa nenhuma chave ou usa uma chave conhecida de um bit."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2003,6 +2269,12 @@
     },
     "A red open lock with a warning means the channel is not securely encrypted and is used for precise location data which is being uplinked to the internet via MQTT, it uses either no key at all or a 1 byte known key." : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um cadeado aberto vermelho com um aviso significa que o canal não está criptografado de forma segura e é usado para dados de localização precisa, os quais estão a ser carregados para a internet via MQTT, não usa nenhuma chave ou usa uma chave conhecida de um bit."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2025,6 +2297,12 @@
             "value" : "Trace Route が送信されましたが、応答が受信されませんでした。"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foi enviado um Trace Route mas não foi recebida nenhuma resposta."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2042,6 +2320,12 @@
     "A yellow open lock lock means the channel is not securely encrypted but it not used for precise location data, it uses either no key at all or a 1 byte known key." : {
       "extractionState" : "stale",
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um cadeado aberto amarelo significa que o canal não está criptografado de forma segura, mas não é usado para dados de localização precisa, não usa nenhuma chave ou usa uma chave conhecida de um bit."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2052,7 +2336,15 @@
     },
     "A yellow open lock means the channel is not securely encrypted but it is not used for precise location data, it uses either no key at all or a 1 byte known key." : {
       "comment" : "A description of a yellow open lock in the Channels Help view.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um cadeado aberto amarelo significa que o canal não está criptografado de forma segura, mas não é usado para dados de localização precisa, não usa nenhuma chave ou usa uma chave conhecida de um bit."
+          }
+        }
+      }
     },
     "About" : {
       "localizations" : {
@@ -2072,6 +2364,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "概要"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca"
           }
         },
         "sr" : {
@@ -2106,6 +2404,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtasticについて"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de Meshtastic"
           }
         },
         "sr" : {
@@ -2324,6 +2628,12 @@
             "value" : "アクション"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ações"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2358,6 +2668,12 @@
             "value" : "アクティブ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2390,6 +2706,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アクティビティ"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atividade"
           }
         },
         "sr" : {
@@ -2478,6 +2800,12 @@
             "value" : "チャンネルを追加"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar Canal"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2506,6 +2834,12 @@
             "value" : "チャンネルを追加"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar Canais"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2526,6 +2860,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "連絡先を追加"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar Contacto"
           }
         },
         "sr" : {
@@ -2554,6 +2894,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtasticノード%@を連絡先に追加"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar Nó Meshtastic %@ como contacto"
           }
         },
         "sr" : {
@@ -2590,6 +2936,12 @@
             "value" : "お気に入りに追加"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar aos favoritos"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2616,6 +2968,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "追加のヘルプ"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajuda adicional"
           }
         },
         "sr" : {
@@ -2652,6 +3010,12 @@
             "value" : "住所"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endereço"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2680,6 +3044,12 @@
             "value" : "管理者キー"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaves Admin"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2700,6 +3070,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administração"
           }
         },
         "sr" : {
@@ -2730,6 +3106,12 @@
             "value" : "管理機能が有効"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administração Ativa"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2756,6 +3138,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上級"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avançado"
           }
         },
         "sr" : {
@@ -2790,6 +3178,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高度なデバイスGPS"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo de GPS Avançado"
           }
         },
         "sr" : {
@@ -2827,6 +3221,12 @@
             "value" : "高度なGPIOオプション"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de GPIO Avançadas"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2859,6 +3259,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高度な位置フラグ"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de Posição Avançadas"
           }
         },
         "sr" : {
@@ -2899,6 +3305,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "後"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Após"
           }
         },
         "se" : {
@@ -2971,6 +3383,24 @@
             }
           }
         },
+        "pt-PT" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Após %lld Dia"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Após %lld Dias"
+                }
+              }
+            }
+          }
+        },
         "sr" : {
           "variations" : {
             "plural" : {
@@ -3035,6 +3465,12 @@
             "value" : "Po zapisaniu wartości konfiguracji węzeł zostanie zrestartowany."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depois de guardar os valores de configuração, o nó irá reiniciar."
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3079,6 +3515,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "午後"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarde"
           }
         },
         "sr" : {
@@ -3133,6 +3575,12 @@
             "value" : "Czas nadawania"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Airtime"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3173,6 +3621,12 @@
             "value" : "アラート"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerta"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3199,6 +3653,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ベル受信時にGPIOブザーでアラート"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertar o buzzer GPIO ao receber uma campainha"
           }
         },
         "sr" : {
@@ -3235,6 +3695,12 @@
             "value" : "メッセージ受信時にGPIOブザーでアラート"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertar o buzzer GPIO ao receber uma mensagem"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3261,6 +3727,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ベル受信時にGPIO振動モーターでアラート"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertar o motor de vibração GPIO ao receber uma campainha"
           }
         },
         "sr" : {
@@ -3297,6 +3769,12 @@
             "value" : "メッセージ受信時にGPIO振動モーターでアラート"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertar o motor de vibração GPIO ao receber uma mensagem"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3323,6 +3801,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ベル受信時にアラート"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertar ao receber uma campainha"
           }
         },
         "sr" : {
@@ -3359,6 +3843,12 @@
             "value" : "メッセージ受信時にアラート"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertar ao receber uma mensagem"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3391,6 +3881,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全て"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tudo"
           }
         },
         "sr" : {
@@ -3427,6 +3923,12 @@
             "value" : "位置要求を許可"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir Pedidos de Posição"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3453,6 +3955,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高度"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alt"
           }
         },
         "sr" : {
@@ -3489,6 +3997,12 @@
             "value" : "高度"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altitude"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3523,6 +4037,12 @@
             "value" : "高度 %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altitude %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3551,6 +4071,12 @@
             "value" : "高度ジオイド分離"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separação Geoidal"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3577,6 +4103,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高度は平均海面レベル"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altitude é Nível Médio do Mar"
           }
         },
         "sr" : {
@@ -3631,6 +4163,12 @@
             "value" : "Zawsze włączone"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sempre ligado"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3677,6 +4215,12 @@
             "value" : "常に北を指す"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sempre apontar norte"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3721,6 +4265,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "環境照明"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iluminação ambiente"
           }
         },
         "se" : {
@@ -3781,6 +4331,12 @@
             "value" : "環境照明設定"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Definições de Iluminação Ambiente"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3839,6 +4395,12 @@
             "value" : "Ambient Lighting module config received: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recebidas definições de módulo  de Iluminação Ambiente: %@"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3885,6 +4447,12 @@
             "value" : "手頃な価格の低電力無線機で動作する、オープンソース、オフグリッド、分散型メッシュネットワーク。"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma rede em malha de  código aberto, descentralizada e sem dependência de infraestruturas móveis, assente em rádios acessíveis e de baixa potência."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3907,7 +4475,15 @@
     },
     "Anonymous Usage and Crash data" : {
       "comment" : "A description of how the app collects and uses data about its usage and crashes. It emphasizes that this data is anonymous and non-personally identifiable.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dados anónimos de uso e falhas"
+          }
+        }
+      }
     },
     "Any missed messages will be delivered again." : {
       "localizations" : {
@@ -3921,6 +4497,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "見逃したメッセージは再配信されます。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quaisquer mensagens perdidas serão entregues novamente."
           }
         },
         "sr" : {
@@ -3979,6 +4561,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Klient (domyślnie) - Klient połączony z aplikacją."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo de mensagens independente ou ligado a uma aplicação."
           }
         },
         "se" : {
@@ -4201,6 +4789,12 @@
             "value" : "正確な位置"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Localização Aproximada"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4327,6 +4921,12 @@
             "value" : "Jesteś pewny?"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tem a certeza?"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4367,6 +4967,12 @@
             "value" : "オーストラリア / ニュージーランド"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Austrália / Nova Zelândia"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4383,6 +4989,12 @@
     },
     "Automatically Connect" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ligar automaticamente"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4501,6 +5113,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dostępne radia"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rádios Disponíveis"
           }
         },
         "se" : {
@@ -4731,6 +5349,12 @@
             "value" : "帯域幅"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Largura de banda"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4833,6 +5457,12 @@
             "value" : "気圧"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pressão Barométrica"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4883,6 +5513,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Battery"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bateria"
           }
         },
         "se" : {
@@ -4950,6 +5586,12 @@
             "value" : "Poziom naładowania baterii"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nível de Bateria"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5013,6 +5655,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Poziom naładowania baterii %"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nivel de Bateria %"
           }
         },
         "se" : {
@@ -5080,6 +5728,12 @@
             "value" : "Poziom naładowania baterii %d"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nível de Bateria %d"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5118,6 +5772,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ボーレート"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baud"
           }
         },
         "sr" : {
@@ -5160,6 +5820,12 @@
             "value" : "サイクリング"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciclismo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5189,6 +5855,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "BLE"
@@ -5252,6 +5924,12 @@
             "value" : "Pin BLE musi mieć długość 6 cyfr."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PIN de BLE deve ter 6 dígitos."
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5311,6 +5989,12 @@
           }
         },
         "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bluetooth"
@@ -5380,6 +6064,12 @@
             "value" : "Konfiguracja Bluetooth"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Definições de Bluetooth"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5444,6 +6134,12 @@
             "value" : "Otrzymano konfigurację Bluetooth: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Definições de Bluetooth recebidas: %@"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5474,6 +6170,12 @@
       "comment" : "A heading displayed on a view that guides users to configure Bluetooth connectivity for the app.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conetividade Bluetooth"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38933,6 +39635,12 @@
     },
     "unknown" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "desconhecido"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -38941,13 +39649,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "不明"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "непознато"
           }
         },
@@ -38961,57 +39669,63 @@
     },
     "Unknown" : {
       "localizations" : {
-        "fr" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Desconhecido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Inconnu"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "לא ידוע"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Sconosciuto"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "不明"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Nieznany"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Okänd"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Непознато"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "未知"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "未知"
           }
         }
@@ -39185,27 +39899,33 @@
     },
     "Unsupported" : {
       "localizations" : {
-        "it" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Não suportado"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Non supportato"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "サポート対象外"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Није подржано"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "不支援"
           }
         }
@@ -39311,27 +40031,33 @@
     },
     "Update Interval" : {
       "localizations" : {
-        "it" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Intervalo de Atualização"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Intervallo di aggiornamento"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "更新間隔"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Интервал ажурирања"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "更新間隔"
           }
         }
@@ -39341,61 +40067,67 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Firmware aktualisieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualize o seu Firmware"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Mettre à jour votre Firmware"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "עדכן קושחה"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Aggiornare il firmware"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ファームウェアを更新"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Zaktualizuj firmware"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Uppdatera din firmware"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ажурирај твој фирмвер"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "更新你的固件"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "更新韌體"
           }
         }
@@ -39403,27 +40135,33 @@
     },
     "Updated Node Stats Data." : {
       "localizations" : {
-        "it" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Estatísticas de Nós Atualizadas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Dati aggiornati sulle statistiche dei nodi."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ノード統計データを更新しました。"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ажурирани подаци о статистици чвора."
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "已更新的節點統計資料"
           }
         }
@@ -39433,31 +40171,37 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Aktualisiert: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizado: %@"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Aggiornato: %@"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "更新日時: %@"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ажуриран: %@"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "已更新： %@"
           }
         }
@@ -39465,33 +40209,39 @@
     },
     "Uplink Enabled" : {
       "localizations" : {
-        "it" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Uplink Ativo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Uplink abilitato"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "アップリンク有効"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Укључен узлазни канал"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "启用上传"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "啟用上行（Uplink）"
           }
         }
@@ -39501,37 +40251,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Hochladen fehlgeschlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erro de Carregamento"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Errore Caricamento"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "アップロードエラー"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Greška Otpremanja"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "上传错误"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "上傳錯誤"
           }
         }
@@ -39841,19 +40597,25 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Standort verwenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar a minha localização"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "自分の位置を使用"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Користи моју локацију"
           }
         }
@@ -39863,37 +40625,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Voreinstellung verwenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar Predefinição"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Utilizzare la preimpostazione"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "プリセットを使用"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Користи предефинисано подешавање"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用预设"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用預設組態"
           }
         }
@@ -39901,33 +40669,39 @@
     },
     "Use PWM Buzzer" : {
       "localizations" : {
-        "it" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Usar Buzzer PWM"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Utilizzare il cicalino PWM"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "PWMブザーを使用"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Користи PWM звучник"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用 PWM 蜂鸣器"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用 PWM 蜂鳴器"
           }
         }
@@ -40003,61 +40777,67 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Benutzer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilizador"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Utilisateur"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "משתמש"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Utente"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ユーザー"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Użytkownik"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Användare"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Корисник"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "用户"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用者"
           }
         }
@@ -40067,37 +40847,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Benutzerkonfiguration"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Definições de Utiizador"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Configurazione utente"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ユーザー設定"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Корисничка подешавања"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "用户配置"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用者設定"
           }
         }
@@ -40107,37 +40893,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Benutzerdaten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalhes do Utilizador"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Dettagli utente"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ユーザー詳細"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Кориснички детаљи"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "用户信息"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用者詳情"
           }
         }
@@ -40145,33 +40937,39 @@
     },
     "User Id" : {
       "localizations" : {
-        "it" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "ID de utilizador"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Id utente"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ユーザーID"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ИД корисника"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "用户 ID"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用者 ID"
           }
         }
@@ -40182,37 +40980,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Daten verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregado por utilizador"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Caricato dall'Utente"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ユーザーがアップロード"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Otpremio Korisnik"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "用户上传"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用者上傳"
           }
         }
@@ -40222,61 +41026,67 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Benutzername"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome de utilizador"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Nom d'utilisateur"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "שם משתמש"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Nome utente"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "ユーザー名"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Nazwa użytkownika"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Användarnamn"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Корисничко име"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "用户名称"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用者名稱"
           }
         }
@@ -40312,33 +41122,39 @@
     },
     "Utilizes the network connection on your phone to connect to MQTT." : {
       "localizations" : {
-        "it" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Utiliza a ligação de rede do seu telefone para ligar a MQTT."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Utilizza la connessione di rete del telefono per connettersi a MQTT."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "スマートフォンのネットワーク接続を利用してMQTTに接続します。"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Користи мрежну везу на вашем телефону за повезивање са MQTT."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "利用手机上的网络连接到 MQTT。"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "透過手機的網路連線來連接至 MQTT 伺服器。"
           }
         }
@@ -40348,31 +41164,37 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Fahrzeugsteuerkurs"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orientação do veículo"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Direzione del veicolo"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "車両方位"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Правац возила"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "載具朝向"
           }
         }
@@ -40382,31 +41204,37 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Fahrzeuggeschwindigkeit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velocidade do veículo"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Velocità del veicolo"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "車両速度"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Брзина возила"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "載具速度"
           }
         }
@@ -40498,6 +41326,12 @@
             "value" : "Version: %1$@ (%2$@) "
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version: %1$@ (%2$@)"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40562,31 +41396,37 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Via Lora"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Via LoRa"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Via Lora"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "LoRa経由"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Преко LoRA"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "經由 LoRa"
           }
         }
@@ -40596,37 +41436,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Via Mqtt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Via MQTT"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Via Mqtt"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "MQTT経由"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Преко MQTT-а"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "通过 MQTT"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "經由 Mqtt"
           }
         }
@@ -40636,61 +41482,67 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Voltage"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltagem"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Tension"
           }
         },
         "he" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "וולטז'"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Tensione"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "電圧"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Napięcie"
           }
         },
         "se" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Spänning"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Напон"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "电压"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "電壓"
           }
         }
@@ -40698,6 +41550,12 @@
     },
     "Volts %@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volts %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40848,37 +41706,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Gehen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caminhada"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Camminare"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "歩行"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Шетња"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "步行"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "走路"
           }
         }
@@ -41049,37 +41913,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Wetterverhältnisse"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condições Meteorológicas"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Condizioni meteo"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "気象条件"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Временски услови"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "天气状况"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "天氣狀況"
           }
         }
@@ -41087,6 +41957,12 @@
     },
     "Web Flasher" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Web Flasher"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41179,13 +42055,19 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Willkommen bei"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bem-vindo a"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Добродошли у"
           }
         }
@@ -41195,37 +42077,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Was bedeutet das Schloß?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O que significa o cadeado?"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Che cosa significa il lucchetto?"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "鍵マークの意味は？"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Шта значи закључавање?"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "锁意味着什么？"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "鎖頭圖示代表什麼意思？"
           }
         }
@@ -41235,37 +42123,43 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Was ist Meshtastic?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O que é Meshtastic?"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Che cos'è Meshtastic?"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Meshtasticとは？"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Шта је Мештастик?"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "什么是 Meshtastic?"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "什麼是 Meshtastic？"
           }
         }
@@ -41415,6 +42309,12 @@
     },
     "WiFi" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41451,31 +42351,37 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "WiFi Optionen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de WiFi"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Opzioni WiFi"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "WiFiオプション"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Опције вајфаја"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "WiFi 選項"
           }
         }
@@ -41535,27 +42441,33 @@
     },
     "Wind" : {
       "localizations" : {
-        "it" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vento"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vento"
+          }
+        },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "風"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Јебиветар"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "風"
           }
         }
@@ -41565,31 +42477,37 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Windrichtung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direção do Vento"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Direzione del vento"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "風向"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Правац ветра"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "風向"
           }
         }
@@ -41599,31 +42517,37 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Windgeschwindigkeit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velocidade do Vento"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Velocità del vento"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "風速"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Брзина ветра"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "風速"
           }
         }
@@ -41858,31 +42782,37 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Gestern"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ontem"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ieri"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "昨日"
           }
         },
         "sr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Јуче"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "昨天"
           }
         }
