@@ -267,7 +267,7 @@ actor SequentialSteps {
 	var isRunning: Bool = false
 	var externalError: Error?
 	
-	init(maxRetries: Int = 1, retryDelay: Duration = .seconds(3), @StepsBuilder _ builder: () -> [Step]) {
+	init(maxRetries: Int = 1, retryDelay: Duration = .seconds(5), @StepsBuilder _ builder: () -> [Step]) {
 		self.maxRetries	= maxRetries
 		self.retryDelay = retryDelay
 		self.steps = builder()
@@ -352,7 +352,8 @@ actor SequentialSteps {
 			return
 		}
 		isRunning = false
-		throw AccessoryError.tooManyRetries
+		return
+		//throw AccessoryError.tooManyRetries
 	}
 	
 	func cancel() {
