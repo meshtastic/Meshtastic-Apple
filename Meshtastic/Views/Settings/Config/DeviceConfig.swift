@@ -339,7 +339,7 @@ struct DeviceConfig: View {
 		if [DeviceRoles.router.rawValue, DeviceRoles.routerLate.rawValue].contains(newRole) {
 			return "The Router roles are only for high vantage locations like mountaintops and towers with few nearby nodes, not for use in urban areas. Improper use will hurt your local mesh."
 		} else if newRole == DeviceRoles.clientBase.rawValue {
-			return "Client Base should only favorite other nodes you control. Improper use will hurt your local mesh. Be sure to remove from favorites any nodes you do not control."
+			return "Switching to Client Base will clear this node's favorites. Client Base should only favorite other nodes you control. Improper use will hurt your local mesh."
 		} else {
 			return ""
 		}
