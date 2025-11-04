@@ -460,7 +460,8 @@ struct NodeDetail: View {
 									}
 								}
 								ExchangePositionsButton(
-									node: node
+									node: node,
+									connectedNode: connectedNode
 								)
 								TraceRouteButton(
 									node: node
