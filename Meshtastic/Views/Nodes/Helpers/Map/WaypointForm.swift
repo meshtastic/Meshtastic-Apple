@@ -129,6 +129,7 @@ struct WaypointForm: View {
 								if icon.count > 1 {
 									icon = String(icon.suffix(1))
 								}
+								iconIsFocused = false
 							}
 
 
@@ -508,8 +509,6 @@ struct WaypointForm: View {
 	}
 	
 	private func fetchNodeInfo() async {
-		   let context = PersistenceController.shared.container.viewContext
-		   
 		   // --- Fetch createdBy node ---
 		   if waypoint.createdBy != 0 {
 			   let createdByFetch: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
