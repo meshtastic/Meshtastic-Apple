@@ -51,8 +51,12 @@ extension AccessoryManager {
 	func onMqttConnected() {
 		mqttProxyConnected = true
 		mqttError = ""
-		Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected now subscribing to \(self.mqttManager.topic, privacy: .public).")
-		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
+		if mqttManager.shouldSubscribe {
+			Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected now subscribing to \(self.mqttManager.topic, privacy: .public).")
+			mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
+		} else {
+			Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected not subscribing since downlink is not on")
+		}
 	}
 
 	func onMqttDisconnected() {
@@ -83,3 +87,4 @@ extension AccessoryManager {
 		Logger.services.info("📲 [MQTT Client Proxy] onMqttError: \(message, privacy: .public)")
 	}
 }
+

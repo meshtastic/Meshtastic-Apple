@@ -192,6 +192,7 @@ struct Channels: View {
 							do {
 								try context.save()
 								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
+								accessoryManager.mqttManager.connectFromConfigSettings(node: node!)
 							} catch {
 								context.rollback()
 								let nsError = error as NSError
