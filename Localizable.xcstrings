@@ -5114,6 +5114,12 @@
             "value" : "指定した間隔に基づいて、カルーセルのように画面の次のページに自動的に切り替わります。"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muda automaticamente para a página seguinte como um carrossel, com base no intervalo indicado."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5152,6 +5158,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "利用可能なモデムプリセット、デフォルトは Long Fast です。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Predefinições de modem disponíveis, por omissão é Long Fast."
           }
         },
         "sr" : {
@@ -5282,6 +5294,12 @@
             "value" : "Wstecz"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltar"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5316,6 +5334,12 @@
             "value" : "バックアップ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cópia de segurança"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5330,6 +5354,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "プライベートキーをiCloudキーチェーンにバックアップします。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar cópia de segurança da sua chave privada no seu porta-chaves do iCloud."
           }
         },
         "sr" : {
@@ -5398,6 +5428,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Złe żądanie"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pedido Inválido"
           }
         },
         "se" : {
@@ -6283,6 +6319,12 @@
     },
     "Bold Heading" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título em Negrito"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6293,6 +6335,12 @@
     },
     "Bold the heading text on the screen." : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apresentar em negrito o texto de título no ecrã."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6302,7 +6350,14 @@
       }
     },
     "Broadcast Device Metrics" : {
-
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difundir Métricas do Dispositivo"
+          }
+        }
+      }
     },
     "Broadcast Interval" : {
       "localizations" : {
@@ -6316,6 +6371,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ブロードキャスト間隔"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalo de Difusão"
           }
         },
         "sr" : {
@@ -6374,6 +6435,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tracker - Do użytku z urządzeniami przeznaczonymi jako śledzenie GPS. Pakiety pozycyjne wysyłane z tego urządzenia będą miały wyższy priorytet, z nadawaniem pozycji co dwie minuty. Inteligentna transmisja pozycji będzie domyślnie wyłączona."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difundir pacotes de posição GPS como prioridade."
           }
         },
         "se" : {
@@ -6440,6 +6507,12 @@
             "value" : "Broadcasts location as message to default channel regularly for to assist with device recovery."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difunde localização como mensagem para o canal predefinido regularmente para apoiar na recuperação de dispositivo."
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6504,6 +6577,12 @@
             "value" : "Broadcasts telemetry packets as priority."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difunde pacotes de telemetria como prioridade."
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6544,6 +6623,12 @@
             "value" : "ボタンGPIO"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botão GPIO"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6576,6 +6661,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成品無線機を購入"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprar Rádios Completos"
           }
         },
         "sr" : {
@@ -6612,6 +6703,12 @@
             "value" : "ブザーGPIO"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buzzer GPIO"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6638,6 +6735,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "この機能を有効にすることで、お客様のデバイスのリアルタイム地理位置が暗号化されずにMQTTプロトコル経由で送信されることを承知し、明示的に同意することを認めます。この位置データは、ライブマップ報告、デバイス追跡、関連テレメトリー機能などの目的で使用される場合があります。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ao ativar esta funcionalidade, declara ter tomado conhecimento e consentir expressamente a transmissão da localização geográfica em tempo real do seu dispositivo através do protocolo MQTT sem encriptação. Estes dados de localização podem ser usados para finalidades como apresentação em mapas dinâmicos, seguimento de dispositivos e funcionalidades de telemetria relacionadas."
           }
         },
         "sr" : {
@@ -6767,6 +6870,12 @@
             "value" : "コールサイン"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indicativo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6805,6 +6914,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "コールサインは空にできません"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Indicativo não pode ficar vazio"
           }
         },
         "sr" : {
@@ -7269,6 +7384,12 @@
             "value" : "Ch1 現在"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch1 Corrente"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7295,6 +7416,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ch1 電圧"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch1 Voltagem"
           }
         },
         "sr" : {
@@ -7325,6 +7452,12 @@
             "value" : "Ch2 現在"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch2 Corrente"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7351,6 +7484,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ch2 電圧"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch2 Voltagem"
           }
         },
         "sr" : {
@@ -7381,6 +7520,12 @@
             "value" : "Ch3 現在"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch3 Corrente"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7407,6 +7552,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ch3 電圧"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ch3 Voltagem"
           }
         },
         "sr" : {
@@ -8359,6 +8510,12 @@
             "value" : "チャート"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gráfico"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8391,6 +8548,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "充電中"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHG"
           }
         },
         "sr" : {
@@ -8443,6 +8606,12 @@
     },
     "Chirpy" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirpy"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8883,6 +9052,12 @@
             "value" : "時計回りロータリーイベント"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento rotativo no sentido dos ponteiros do relógio"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8987,6 +9162,12 @@
             "value" : "符号化率"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taxa de Código"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9061,6 +9242,12 @@
             "value" : "Bleibe mit deinen Freunden und deiner Community in Verbindung, auch abseits vom Mobilfunknetz."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comunique fora da rede com os seus amigos e com a comunidade sem serviço de rede móvel."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9081,6 +9268,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通信中"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A comunicar"
           }
         },
         "sr" : {
@@ -9109,6 +9302,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "コミュニティサポート"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suporte da Comunidade"
           }
         },
         "sr" : {
@@ -9835,6 +10034,12 @@
             "value" : "MQTT経由での暗号化されていないノードデータの共有に同意"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consentimento de Partilha de Dados Não Encriptados de Nós via MQTT"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9983,6 +10188,12 @@
             "value" : "Control タイプ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo de Controlo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10015,6 +10226,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "デバイス上の点滅LEDを制御します。ほとんどのデバイスでは最大4つのLEDのうち1つを制御し、充電器とGPS LEDは制御できません。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controla os LEDS que piscam no dispositivo. Na maior parte dos dispositivos, controla um de um máximo de 4 LEDS, os LEDS de GPS e do carregamento não são controláveis."
           }
         },
         "sr" : {
@@ -10055,6 +10272,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "凸包"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invólucro Convexo"
           }
         },
         "sr" : {
@@ -10327,6 +10550,12 @@
             "value" : "反時計回りの回転イベント"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento rotativo no sentido contrário ao dos ponteiros do relógio"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10361,6 +10590,12 @@
             "value" : "ウェイポイントを作成"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criar Ponto de Referência"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10381,6 +10616,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erstelle deine eigenen Netzwerke"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crie as Suas Próprias Redes"
           }
         },
         "sr" : {
@@ -10411,6 +10652,12 @@
             "value" : "作成日時: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criado: %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10433,6 +10680,12 @@
             "value" : "Kritische Hinweise"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertas Críticos"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10453,6 +10706,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corrente"
           }
         },
         "sr" : {
@@ -10487,6 +10746,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在のファームウェアバージョン: %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versão de Firmware Atual: %@"
           }
         },
         "sr" : {
@@ -10529,6 +10794,12 @@
             "value" : "現在のファームウェアバージョン: %@、最新のファームウェアバージョン: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versão de Firmware Atual: %@, Última Versão de Firmware %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10569,6 +10840,12 @@
             "value" : "現在: %lld"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atual: %lld"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10595,6 +10872,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在、ESP32デバイスの更新の推奨方法は、デスクトップコンピューターのChromeベースのブラウザーでWebフラッシャーを使用することです。モバイルデバイスやBLE経由では動作しません。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presentemente, a forma recomendada de atualizar dispositivos ESP32 consiste em usar o web flasher num computador de secretária a partir de um navegador baseado em Chrome. Não funciona em dispositivos móveis ou por BLE."
           }
         },
         "sr" : {
@@ -10671,6 +10954,12 @@
             "value" : "デバッグ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depurar"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10711,6 +11000,12 @@
             "value" : "デバッグログ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registos de Depuração"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10737,6 +11032,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "デバッグログ%@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registos de Depuração%@"
           }
         },
         "sr" : {
@@ -10791,6 +11092,12 @@
             "value" : "Domyślny"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Predefinido"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10829,6 +11136,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "デフォルト128x64スクリーンレイアウト"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disposição de ecrã 128x64 por omissão"
           }
         },
         "sr" : {
@@ -10889,6 +11202,12 @@
             "value" : "Usuń"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10929,6 +11248,12 @@
             "value" : "全ての設定、キー、BLEボンドを削除しますか？"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar toda a configuração, chaves e vinculações BLE?"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10949,6 +11274,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全ての設定を削除しますか？"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar toda a configuração?"
           }
         },
         "sr" : {
@@ -10991,6 +11322,12 @@
             "value" : "Usunąć wszystkie metryki urządzenia?"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todas as métricas de dispositivo?"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11029,6 +11366,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全ての環境メトリクスを削除しますか？"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todas as métricas de ambiente?"
           }
         },
         "sr" : {
@@ -11099,6 +11442,12 @@
             "value" : "全ての位置データを削除しますか？"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todas as posições?"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11127,6 +11476,12 @@
             "value" : "メッセージを削除"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar Mensagem"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11153,6 +11508,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メッセージを削除"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar Mensagens"
           }
         },
         "sr" : {
@@ -11189,6 +11550,12 @@
             "value" : "ノードを削除"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar Nó"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11223,6 +11590,12 @@
             "value" : "ノードを削除しますか？"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar Nó?"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11249,6 +11622,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電力メトリクスを削除しますか？"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar métricas de Energia?"
           }
         },
         "sr" : {
@@ -11285,6 +11664,12 @@
             "value" : "説明"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descrição"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11313,6 +11698,12 @@
             "value" : "説明は100バイト未満である必要があります"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A descrição deve ter menos de 100 bytes"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11335,6 +11726,12 @@
     },
     "Details..." : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalhes…"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11355,6 +11752,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "検出"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deteção"
           }
         },
         "sr" : {
@@ -11383,6 +11786,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "検出イベント"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento de deteção"
           }
         },
         "sr" : {
@@ -11438,6 +11847,12 @@
             "value" : "Detection Sensor"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor de Deteção"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11490,6 +11905,12 @@
             "value" : "検出センサー設定"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração do Sensor de Deteção"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11530,6 +11951,12 @@
             "value" : "検出センサーログ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registo do Sensor de Deteção"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11556,6 +11983,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "検出センサーメッセージはテキストメッセージとして受信されます。通知を有効にすると、受信した各検出メッセージの通知と対応する未読メッセージバッジが表示されます。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As mensagens de sensor de deteção são recebidas como mensagens de texto. Se ativar as notificações, irá receber uma notificação por cada mensagem de deteção recebida e o correspondente emblema de mensagem não lida."
           }
         },
         "sr" : {
@@ -11610,6 +12043,12 @@
             "value" : "Detection Sensor module config received: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de módulo de Sensor de Deteção recebida: %@"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11648,6 +12087,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開発者"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Programadores"
           }
         },
         "sr" : {
@@ -11706,6 +12151,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Urządzenie"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo"
           }
         },
         "se" : {
@@ -11772,6 +12223,12 @@
             "value" : "Konfiguracja urządzenia"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Dispositivo"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11836,6 +12293,12 @@
             "value" : "Otrzymano konfigurację urządzenia: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de dispositivo recebida: %@"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11880,6 +12343,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "デバイス設定"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Dispositivo"
           }
         },
         "se" : {
@@ -11928,6 +12397,12 @@
             "value" : "デバイス GPS"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS do dispositivo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11960,6 +12435,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "デバイスはメッシュ管理者によって管理されており、ユーザーはデバイス設定にアクセスできません。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O dispositivo é gerido por um administrador de malha, o utilizador não pode aceder a nenhuma das definições do dispositivo."
           }
         },
         "sr" : {
@@ -12020,6 +12501,12 @@
             "value" : "Otrzymano metadane urządzenia od: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadados de dispositivo recebidos de: %@"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12060,6 +12547,12 @@
             "value" : "デバイスメトリクス"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métricas de Dispositivo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12092,6 +12585,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "デバイスメトリクスログ"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registo de Métricas de Dispositivo"
           }
         },
         "sr" : {
@@ -12134,6 +12633,12 @@
             "value" : "デバイスモデル: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelo do Dispositivo: %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12155,7 +12660,14 @@
       }
     },
     "Device Options" : {
-
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções do Dispositivo"
+          }
+        }
+      }
     },
     "Device Role" : {
       "localizations" : {
@@ -12169,6 +12681,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "デバイス役割"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Função do DIspositivo"
           }
         },
         "sr" : {
@@ -12203,6 +12721,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "デバイス画面"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ecrã do Dispositivo"
           }
         },
         "sr" : {
@@ -12261,6 +12785,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wyciszenie klienta - To samo, co klient, z wyjątkiem pakietów, które nie przeskakują przez ten węzeł, nie przyczynia się do routingu pakietów dla siatki."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo que não reencaminha pacotes de outros dispositivos."
           }
         },
         "se" : {
@@ -12327,6 +12857,12 @@
             "value" : " Used for nodes that \"only speak when spoken to\" Turns all of the routine broadcasts but allows for ad-hoc communication. Still rebroadcasts, but with local only rebroadcast mode (known meshes only). Can be used for private operation or to dramatically reduce airtime / power consumption."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo que apenas difunde conforme necessário para fins de discrição ou poupança de energia."
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12367,6 +12903,12 @@
             "value" : "精度希釈（DOP）、デフォルトでPDOPを使用"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diluição de precisão (DOP). O PDOP é usado por predefinição."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12399,6 +12941,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ダイレクト"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direto"
           }
         },
         "sr" : {
@@ -12441,6 +12989,12 @@
             "value" : "ダイレクトメッセージヘルプ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajuda de Mensagem Direta"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12467,6 +13021,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ダイレクトメッセージキー"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chave de Mensagem Direta"
           }
         },
         "sr" : {
@@ -12515,6 +13075,12 @@
             "value" : "Bezpośrednie Wiadomości"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensagens Diretas"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12555,6 +13121,12 @@
             "value" : "ダイレクトメッセージは暗号化のために新しい公開鍵インフラストラクチャを使用しています。ファームウェアバージョン2.5以上が必要です。"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As mensagens diretas estão a usar a nova infraestrutura de chave pública para criptografia. Requer firmware da versão 2.5 ou superior."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12587,6 +13159,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ダイレクトメッセージはチャンネルの共有キーを使用しています。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As mensagens diretas estão a usar a chave partilhada do canal."
           }
         },
         "sr" : {
@@ -12645,6 +13223,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wyłączony"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativado"
           }
         },
         "se" : {
@@ -12711,6 +13295,12 @@
             "value" : "Rozłącz"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desligar"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12745,6 +13335,12 @@
             "value" : "ノードを切断"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desligar Nó"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12759,6 +13355,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在接続中のノードを切断します"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desligar o nó atualmente conectado"
           }
         },
         "sr" : {
@@ -12805,6 +13407,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zamknij"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar"
           }
         },
         "se" : {
@@ -12871,6 +13479,12 @@
             "value" : "Wyświetlacz (Ekran Urządzenia)"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ecrã"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12927,6 +13541,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Konfiguracja Wyświetlacza"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Ecrã"
           }
         },
         "se" : {
@@ -12993,6 +13613,12 @@
             "value" : "Otrzymano konfigurację wyświetlacza: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de ecrã recebida: %@"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13033,6 +13659,12 @@
             "value" : "華氏表示"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar Fahrenheit"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13067,6 +13699,12 @@
             "value" : "表示モード"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo do Ecrã"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13095,6 +13733,12 @@
             "value" : "Darstellung der Entfernung zwischen deinem Handy und anderen Meshtastic-Knoten mit Positionsangabe."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apresenta a distancia entre o seu telefone e outros nós Meshtastic com posições."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13115,6 +13759,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表示単位"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unidades no Ecrã"
           }
         },
         "sr" : {
@@ -13157,6 +13807,12 @@
             "value" : "距離"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distância"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13185,6 +13841,12 @@
             "value" : "Distanzfilter"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtros de Distância"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13199,6 +13861,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Distanzmessungen"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medições de Distância"
           }
         },
         "sr" : {
@@ -13229,6 +13897,12 @@
             "value" : "ドキュメント"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documentação"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13257,6 +13931,12 @@
             "value" : "完了"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feito"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13283,6 +13963,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ダブルタップをボタンとして使用"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplo Toque como Botão"
           }
         },
         "sr" : {
@@ -13417,6 +14103,12 @@
             "value" : "ドラッグ&ドロップファームウェア更新"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastar e Largar Atualização de Firmware"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13451,6 +14143,12 @@
             "value" : "ドラッグ&ドロップファームウェア更新ドキュメント"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastar e Largar Documentação de Atualização de Firmware"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13483,6 +14181,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ドラッグ＆ドロップはNRFデバイスのファームウェア更新に推奨される方法です。お使いのiPhoneまたはiPadがUSB-Cの場合、通常のUSB-C充電ケーブルで動作します。Lightningデバイスの場合は、Apple Lightning to USBカメラアダプターが必要です。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastar e Largar é a forma recomendada de atualizar o firmware para dispositivos NRF. Se o seu iPhone ou iPad for USB-C, irá funcionar com o seu cabo USB-C normal de carregamento. No caso de dispositivos com Lightning, precisará do adaptador de câmara Lightning para USB da Apple."
           }
         },
         "sr" : {
@@ -13557,6 +14261,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "マップにピンを配置"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Largar Pino no Mapa"
           }
         },
         "sr" : {
@@ -13707,6 +14417,12 @@
             "value" : "Osiemnaście Godzin"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dezoito Horas"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13781,6 +14497,12 @@
             "value" : "絵文字"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13813,6 +14535,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "空"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vazio"
           }
         },
         "sr" : {
@@ -13874,6 +14602,12 @@
             "value" : "Standortfreigabe aktivieren"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativar Partilha de Localização"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13894,6 +14628,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通知を有効にする"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativar Notificações"
           }
         },
         "sr" : {
@@ -13980,6 +14720,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Włączony"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativo"
           }
         },
         "se" : {
@@ -14282,6 +15028,12 @@
             "value" : "Zaszyfrowany"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encriptado"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14357,6 +15109,12 @@
             "value" : "暗号化有効"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criptografia Ativada"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14395,6 +15153,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "DFUモードに入る"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrar no Modo DFU"
           }
         },
         "sr" : {
@@ -14807,6 +15571,12 @@
             "value" : "欧州連合 433MHz"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "União Europeia 433MHz"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14833,6 +15603,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "欧州連合 868MHz"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "União Europeia 868MHz"
           }
         },
         "sr" : {
@@ -15467,6 +16243,12 @@
             "value" : "普通"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Razoável"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15659,6 +16441,12 @@
             "value" : "15分"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quinze Minutos"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15709,6 +16497,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Piętnaście Sekund"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quinze Segundos"
           }
         },
         "se" : {
@@ -15961,6 +16755,12 @@
             "value" : "ファームウェア"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmware"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16185,6 +16985,12 @@
             "value" : "Pięć Godzin"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cinco Horas"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16229,6 +17035,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "5分"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cinco Minutos"
           }
         },
         "sr" : {
@@ -16281,6 +17093,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pięć Sekund"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cinco Segundos"
           }
         },
         "se" : {
@@ -16639,6 +17457,12 @@
             "value" : "すべての人に"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para todos"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16671,6 +17495,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自分に"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para mim"
           }
         },
         "sr" : {
@@ -16723,6 +17553,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Czterdzieści Osiem Godzin"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quarenta e Oito Horas"
           }
         },
         "se" : {
@@ -16789,6 +17625,12 @@
             "value" : "Czterdzieści Pięć Sekund"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quarenta e Cinco Segundos"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16851,6 +17693,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cztery Godziny"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quatro Horas"
           }
         },
         "se" : {
@@ -16917,6 +17765,12 @@
             "value" : "Cztery Sekundy"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quatro Segundos"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16961,6 +17815,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "周波数"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequência"
           }
         },
         "sr" : {
@@ -17047,6 +17907,12 @@
             "value" : "フレンドリー名"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome amigável"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17125,6 +17991,12 @@
             "value" : "完全サポート"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suporte Total"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17191,6 +18063,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Generuj Kod QR"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerar Código QR"
           }
         },
         "se" : {
@@ -17265,6 +18143,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ノード位置取得"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obter Posição do Nó"
           }
         },
         "sr" : {
@@ -17821,6 +18705,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ハードウェア"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hardware"
           }
         },
         "sr" : {
@@ -18409,6 +19299,12 @@
             "value" : "時間"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18441,6 +19337,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "時間あたりデューティサイクル"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duty Cycle Horário"
           }
         },
         "sr" : {
@@ -18773,6 +19675,12 @@
             "value" : "湿度"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hum"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18805,6 +19713,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "湿度"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Humidade"
           }
         },
         "sr" : {
@@ -19081,6 +19995,12 @@
             "value" : "アイコン"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ícone"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19103,6 +20023,12 @@
     },
     "Icons" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ícones"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19295,6 +20221,12 @@
             "value" : "MQTTを無視"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorar MQTT"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19329,6 +20261,12 @@
             "value" : "ノードを無視"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorar Nó"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19361,6 +20299,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無視"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorado"
           }
         },
         "sr" : {
@@ -19973,6 +20917,12 @@
             "value" : "キー"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chave"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19999,6 +20949,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "キーバックアップ"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia de Segurança da Chave"
           }
         },
         "sr" : {
@@ -20055,6 +21011,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "キーサイズ"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho da Chave"
           }
         },
         "sr" : {
@@ -20159,6 +21121,12 @@
             "value" : "緯度"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latitude"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20187,6 +21155,12 @@
             "value" : "緯度（度単位、例: 37.7749）"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latitude em graus (p. ex.: 37,7749)"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20201,6 +21175,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "緯度は-90度から90度の間である必要があります"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Latitude deve ser entre -90 e 90 graus"
           }
         },
         "sr" : {
@@ -20387,6 +21367,12 @@
             "value" : "Level"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nível"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20425,6 +21411,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ライセンスオペレーター"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operador Licenciado"
           }
         },
         "sr" : {
@@ -20985,6 +21977,12 @@
             "value" : "経度"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longitude"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21013,6 +22011,12 @@
             "value" : "経度（度単位、例: -122.4194）"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longitude em graus (p. ex.: -122.4194)"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21027,6 +22031,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "経度は-180度から180度の間である必要があります"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Longitude deve ser entre -180 e 180 graus"
           }
         },
         "sr" : {
@@ -21070,6 +22080,12 @@
           }
         },
         "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LoRa"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "LoRa"
@@ -21139,6 +22155,12 @@
             "value" : "Konfiguracja LoRa"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração LoRa"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21167,6 +22189,12 @@
     },
     "LoRa Config Changes:" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alterações de Configuração LoRa"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21211,6 +22239,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otrzymano konfigurację LoRa: %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração LoRa recebida: %@"
           }
         },
         "se" : {
@@ -21313,6 +22347,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Niedriger Akkustand"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bateria Baixa"
           }
         },
         "sr" : {
@@ -21577,6 +22617,12 @@
     },
     "Manual" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21621,6 +22667,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Konfiguracja ręczna"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração Manual"
           }
         },
         "se" : {
@@ -21879,6 +22931,12 @@
             "value" : "Osiągnięto limit retransmisji"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retransmissão máxima alcançada"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22091,6 +23149,12 @@
             "value" : "Mapa Sieci"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapa da Malha"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22135,6 +23199,12 @@
     },
     "Meshtastic" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22244,6 +23314,12 @@
             "value" : "メッセージ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensagem"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22276,6 +23352,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メッセージ内容が200バイトを超えています。"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O conteúdo da mensagem excede os 200 bytes."
           }
         },
         "sr" : {
@@ -22328,6 +23410,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Szczegóły wiadomości"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalhes da Mensagem"
           }
         },
         "se" : {
@@ -22394,6 +23482,12 @@
             "value" : "Wiadomość odebrana z aplikacji do wysyłania wiadomości tekstowych."
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensagem recebida da aplicação de mensagens de texto."
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22429,6 +23523,12 @@
             "value" : "メッセージサイズ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho da Mensagem"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22449,6 +23549,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メッセージ Status Options"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de Estado de Mensagem"
           }
         },
         "sr" : {
@@ -22495,6 +23601,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wiadomości"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensagens"
           }
         },
         "se" : {
@@ -22621,6 +23733,12 @@
             "value" : "正午"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meio-dia"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22655,6 +23773,12 @@
             "value" : "最小距離"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distância Mínima"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22687,6 +23811,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最小間隔"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalo Mínimo"
           }
         },
         "sr" : {
@@ -22837,6 +23967,12 @@
             "value" : "モデル"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22929,6 +24065,12 @@
             "value" : "Konfiguracja modułu"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Módulos"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22973,6 +24115,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "朝"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manhã"
           }
         },
         "sr" : {
@@ -23062,6 +24210,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT"
@@ -23311,6 +24465,12 @@
             "value" : "Multiplier"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiplicador"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23343,6 +24503,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "単一の絵文字である必要があります"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deve ser um unico emoji"
           }
         },
         "sr" : {
@@ -23473,6 +24639,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "名前"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome"
           }
         },
         "sr" : {
@@ -23629,6 +24801,12 @@
             "value" : "Sieć"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rede"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23691,6 +24869,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Konfiguracja sieci"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Rede"
           }
         },
         "se" : {
@@ -23757,6 +24941,12 @@
             "value" : "Odebrano konfigurację sieci: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Rede recebida: %@"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23797,6 +24987,12 @@
             "value" : "ネットワーク状態 オレンジ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estado de Rede Laranja"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23829,6 +25025,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ネットワーク状態 レッド"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estado de Rede Vermelho"
           }
         },
         "sr" : {
@@ -23865,6 +25067,12 @@
             "value" : "新しいノード"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novo Nó"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23893,6 +25101,12 @@
             "value" : "新しいノードが発見されました"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foi descoberto um novo nó"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23915,6 +25129,12 @@
             "value" : "Neue Knoten"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novos Nós"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23935,6 +25155,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ニュージーランド 865MHz"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova Zelândia 865MHz"
           }
         },
         "sr" : {
@@ -23969,6 +25195,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新しいファームウェアが利用可能です"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Está disponível um firmware mais recente"
           }
         },
         "sr" : {
@@ -24127,6 +25359,12 @@
             "value" : "Brak kanału"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum Canal"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24173,6 +25411,12 @@
             "value" : "接続されたノードがありません"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum Nó Ligado"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24206,6 +25450,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "データなし"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem Dados"
           }
         },
         "sr" : {
@@ -24266,6 +25516,12 @@
             "value" : "Brak podłączonych urządzeń"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum dispositivo ligado"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24306,6 +25562,12 @@
             "value" : "デバイスメトリクスがありません"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem Métricas de Dispositivo"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24334,6 +25596,12 @@
             "value" : "環境メトリクスがありません"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem Métricas de Ambiente"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24360,6 +25628,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keine Dateien hochgeladen"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum ficheiro carregado"
           }
         },
         "sr" : {
@@ -24406,6 +25680,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Brak interfejsu"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma Interface"
           }
         },
         "se" : {
@@ -24643,6 +25923,12 @@
             "value" : "Brak odpowiedzi"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem Resposta"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24751,6 +26037,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ノード"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nó"
           }
         },
         "sr" : {
@@ -25131,6 +26423,12 @@
             "value" : "Brak"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25223,6 +26521,12 @@
             "value" : "Nieautoryzowany"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não Autorizado"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25275,6 +26579,12 @@
             "value" : "存在しません"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não Presente"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25319,6 +26629,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メモ"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas"
           }
         },
         "sr" : {
@@ -25403,6 +26719,12 @@
             "value" : "ホップ数"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de saltos"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25471,6 +26793,12 @@
             "value" : "衛星数"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de satélites"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25487,6 +26815,12 @@
     },
     "Ok" : {
       "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ok"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25510,6 +26844,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
@@ -25739,6 +27079,12 @@
             "value" : "Jedna Godzina"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma Hora"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25803,6 +27149,12 @@
             "value" : "Jedna Minuta"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um Minuto"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25865,6 +27217,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jedna Sekunda"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um Segundo"
           }
         },
         "se" : {
@@ -26023,6 +27381,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "2色ディスプレイ用に最適化"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otimizado para ecrãs de 2 cores"
           }
         },
         "sr" : {
@@ -26203,6 +27567,12 @@
             "value" : "Opcje"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26337,6 +27707,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "その他のデータソース"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outras origens de dados"
           }
         },
         "sr" : {
@@ -26653,6 +28029,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hasło"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Palavra-passe"
           }
         },
         "se" : {
@@ -27039,6 +28421,12 @@
             "value" : "フィリピン 433MHz"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filipinas 433MHz"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27067,6 +28455,12 @@
             "value" : "フィリピン 868MHz"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filipinas 868MHz"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27093,6 +28487,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フィリピン 915MHz"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filipinas 915MHz"
           }
         },
         "sr" : {
@@ -27147,6 +28547,12 @@
             "value" : "GPS telefonu"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPS do Telefone"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27179,6 +28585,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Standorteinstellungen"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Localização do Telefone"
           }
         },
         "sr" : {
@@ -27527,6 +28939,12 @@
             "value" : "Pozycja"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posição"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27583,6 +29001,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Konfiguracja pozycji"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Posição"
           }
         },
         "se" : {
@@ -27647,6 +29071,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Odebrano konfigurację pozycji: %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Posição recebida: %@"
           }
         },
         "se" : {
@@ -27767,6 +29197,12 @@
             "value" : "位置ログ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registo de Posição"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27795,6 +29231,12 @@
             "value" : "位置ログ %lld ポイント"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registo de Posição %lld Pontos"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27821,6 +29263,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位置パケット"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pacote de Posição"
           }
         },
         "sr" : {
@@ -27857,6 +29305,12 @@
             "value" : "位置送信済み"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posição Enviada"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27883,6 +29337,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位置情報有効"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posições Ativadas"
           }
         },
         "sr" : {
@@ -27971,6 +29431,12 @@
             "value" : "Power"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energia"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28029,6 +29495,12 @@
             "value" : "Power Config"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Energia"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28069,6 +29541,12 @@
             "value" : "電源設定を受信しました: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Energia recebida: %@"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28103,6 +29581,12 @@
             "value" : "電源メトリクス"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métricas de Energia"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28131,6 +29615,12 @@
             "value" : "電力メトリクスログ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registo de Métricas de Energia"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28157,6 +29647,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電源オフ"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desligar"
           }
         },
         "sr" : {
@@ -28232,6 +29728,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Power Saving"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poupança de Energia"
           }
         },
         "se" : {
@@ -28345,6 +29847,12 @@
             "value" : "精密位置"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Localização Exata"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28441,6 +29949,12 @@
             "value" : "気圧"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pressão"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28491,6 +30005,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Podstawowy"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primário"
           }
         },
         "se" : {
@@ -29447,6 +30967,12 @@
             "value" : "Uruchom ponownie"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reiniciar"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29509,6 +31035,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uruchomić ponownie węzeł?"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reiniciar nó?"
           }
         },
         "se" : {
@@ -29909,6 +31441,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地域"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Região"
           }
         },
         "sr" : {
@@ -31093,6 +32631,12 @@
             "value" : "役割"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Função"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31127,6 +32671,12 @@
             "value" : "役割: %@"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Função: %@"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31159,6 +32709,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "役割"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funções"
           }
         },
         "sr" : {
@@ -31597,6 +33153,12 @@
             "value" : "RSSI %@ dBm"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RSSI %@ dBm"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31625,6 +33187,12 @@
             "value" : "RSSI %ddB"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RSSI %ddB"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31648,6 +33216,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RSSI %llddB"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "RSSI %llddB"
@@ -31827,6 +33401,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Satelita"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satélite"
           }
         },
         "se" : {
@@ -32051,6 +33631,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zapisz"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
           }
         },
         "se" : {
@@ -32481,6 +34067,12 @@
             "value" : "セキュリティ"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segurança"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32519,6 +34111,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "セキュリティ設定"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração de Segurança"
           }
         },
         "sr" : {
@@ -32866,6 +34464,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar"
           }
         },
         "sr" : {
@@ -35243,6 +36847,12 @@
             "value" : "シャットダウン"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encerrar"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35277,6 +36887,12 @@
             "value" : "ノードをシャットダウンしますか？"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encerrar Nó?"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35309,6 +36925,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ノードをシャットダウンしますか？"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encerrar Nó?"
           }
         },
         "sr" : {
@@ -35357,6 +36979,12 @@
             "value" : "Shutdown on Power Loss"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encerrar aquando de perda de energia?"
+          }
+        },
         "se" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35395,6 +37023,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "信号 %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinal %@"
           }
         },
         "sr" : {
@@ -35649,6 +37283,12 @@
             "value" : "SNR"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SNR"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35677,6 +37317,12 @@
             "value" : "SNR %@ dB"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SNR %@ dB"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35700,6 +37346,12 @@
           }
         },
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SNR %@dB"
+          }
+        },
+        "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "SNR %@dB"
@@ -37029,6 +38681,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "温度"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temperatura"
           }
         },
         "sr" : {
@@ -38737,6 +40395,12 @@
             "value" : "タイムゾーン"
           }
         },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuso Horário"
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39035,6 +40699,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "合計"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total"
           }
         },
         "sr" : {
