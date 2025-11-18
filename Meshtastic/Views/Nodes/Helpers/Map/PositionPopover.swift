@@ -19,6 +19,9 @@ struct PositionPopover: View {
 	var position: PositionEntity
 	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
+	
+	@State private var detentSelection: PresentationDetent = .fraction(0.65)
+	@State private var navigateToCompass = false
 
 	var body: some View {
 		// Node Color from node.num
@@ -42,6 +45,19 @@ struct PositionPopover: View {
 				Divider()
 				HStack(alignment: .center) {
 					VStack(alignment: .leading) {
+						Button {
+							detentSelection = .large
+							DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+								navigateToCompass = true
+							}
+						} label: {
+							HStack {
+								Image(systemName: "safari")
+								Text("Open Compass")
+							}
+						}
+						.padding(.bottom, 5)
+						
 						/// Time
 						Label {
 							if idiom != .phone {
@@ -131,6 +147,7 @@ struct PositionPopover: View {
 							}
 							.padding(.bottom, 5)
 						}
+						
 						/// Heading
 						let degrees = Angle.degrees(Double(position.heading))
 						Label {
@@ -234,10 +251,16 @@ struct PositionPopover: View {
 #endif
 				}
 			}
+			.presentationDetents([.fraction(0.65), .large], selection: $detentSelection)
+			.presentationContentInteraction(.scrolls)
+			.presentationDragIndicator(.visible)
+			.presentationBackgroundInteraction(.enabled(upThrough: .large))
+			.navigationDestination(isPresented: $navigateToCompass) {
+				CompassView(
+					waypointLocation: position.coordinate,
+					waypointName: position.nodePosition?.user?.longName ?? "Unknown node"
+				)
+			}
 		}
-		.presentationDetents([.fraction(0.65), .large])
-		.presentationContentInteraction(.scrolls)
-		.presentationDragIndicator(.visible)
-		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }

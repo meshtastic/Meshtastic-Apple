@@ -480,7 +480,7 @@ struct NodeDetail: View {
 										Label {
 											Text("Open Compass")
 										} icon: {
-											Image(systemName: "location.north.fill")
+											Image(systemName: "safari")
 										}
 									}
 								#endif
