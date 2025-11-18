@@ -333,7 +333,7 @@ extension AccessoryManager {
 								var contact = SharedContact()
 								contact.manuallyVerified = false
 								contact.nodeNum = UInt32(truncatingIfNeeded: user.num)
-								user.userNode?.favorite = true
+								user.userNode?.favorite = user.userNode?.deviceConfig?.role ?? 0 != DeviceRoles.clientBase.rawValue
 								contact.user = user.toProto()
 								do {
 									let contactString = try contact.serializedData().base64EncodedString()
