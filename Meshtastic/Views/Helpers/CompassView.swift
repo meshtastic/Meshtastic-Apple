@@ -15,6 +15,8 @@ struct CompassView: View {
 	let waypointLocation: CLLocationCoordinate2D?
 	
 	let waypointName: String?
+	
+	let color: Color
 
 	@ObservedObject private var locationsHandler = LocationsHandler.shared
 
@@ -83,7 +85,7 @@ struct CompassView: View {
 					Text(waypointName ?? "Waypoint")
 						.font(.title2)
 						.bold()
-						.foregroundColor(.orange)
+						.foregroundColor(color ?? Color.orange)
 					
 					if let wp = waypointLocation {
 						HStack{
@@ -130,7 +132,8 @@ struct CompassView: View {
 					if let bearing = bearingToWaypoint() {
 						WaypointMarkerView(
 							bearing: bearing,
-							compassDegrees: locationsHandler.heading
+							compassDegrees: locationsHandler.heading,
+							color: color
 						)
 						// Move waypoint marker outside compass
 						.onChange(of: locationsHandler.heading) { _, _ in
@@ -162,11 +165,12 @@ struct CompassView: View {
 struct WaypointMarkerView: View {
 	let bearing: Double
 	let compassDegrees: Double
+	let color: Color
 
 	var body: some View {
 			Circle()
 				.frame(width: 20, height: 20)
-				.foregroundColor(.orange)
+				.foregroundColor(color)
 				.offset(y: -170)
 				.rotationEffect(Angle(degrees: bearing))
 	}
@@ -287,7 +291,8 @@ struct CompassView_Previews: PreviewProvider {
 	static var previews: some View {
 		CompassView(
 			waypointLocation: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090),
-			waypointName: "Apple Park"
+			waypointName: "Apple Park",
+			color: Color.orange
 		)
 	}
 }

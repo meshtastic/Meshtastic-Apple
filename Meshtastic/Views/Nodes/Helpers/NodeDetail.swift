@@ -571,7 +571,7 @@ struct NodeDetail: View {
 					}
 				}
 				.sheet(isPresented: $showingCompassSheet) {
-					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointName: node.user?.longName ?? nil)
+					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointName: node.user?.longName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
 						}
 				.onAppear {
 					scrollView.scrollTo("topOfList", anchor: .top)

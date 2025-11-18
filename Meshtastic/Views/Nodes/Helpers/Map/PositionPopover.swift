@@ -258,7 +258,14 @@ struct PositionPopover: View {
 			.navigationDestination(isPresented: $navigateToCompass) {
 				CompassView(
 					waypointLocation: position.coordinate,
-					waypointName: position.nodePosition?.user?.longName ?? "Unknown node"
+					waypointName: position.nodePosition?.user?.longName ?? "Unknown node",
+					color: {
+							if let hex = position.nodePosition?.user?.num, hex != 0 {
+								return Color(UIColor(hex: UInt32(hex)))
+							} else {
+								return .orange
+							}
+						}()
 				)
 			}
 		}
