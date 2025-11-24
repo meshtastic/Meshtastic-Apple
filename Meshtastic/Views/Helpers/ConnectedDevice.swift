@@ -1,21 +1,31 @@
 /*
-Abstract:
-A view draws the indicator used in the upper right corner for views using BLE
-*/
+ Abstract:
+ A view draws the indicator used in the upper right corner for views using BLE
+ */
 
 import SwiftUI
 
 struct ConnectedDevice: View {
-    var deviceConnected: Bool
-    var name: String
-    var mqttProxyConnected: Bool = false
-    var mqttUplinkEnabled: Bool = false
-    var mqttDownlinkEnabled: Bool = false
-        var mqttTopic: String = ""
-    var phoneOnly: Bool = false
-	var showActivityLights: Bool
 
-	init(deviceConnected: Bool, name: String, mqttProxyConnected: Bool = false, mqttUplinkEnabled: Bool = false, mqttDownlinkEnabled: Bool = false, mqttTopic: String = "", phoneOnly: Bool = false, showActivityLights: Bool = true) {
+	let deviceConnected: Bool
+	let name: String
+	let mqttProxyConnected: Bool
+	let mqttUplinkEnabled: Bool
+	let mqttDownlinkEnabled: Bool
+	let mqttTopic: String
+	let phoneOnly: Bool
+	let showActivityLights: Bool
+
+	init(
+		deviceConnected: Bool,
+		name: String,
+		mqttProxyConnected: Bool = false,
+		mqttUplinkEnabled: Bool = false,
+		mqttDownlinkEnabled: Bool = false,
+		mqttTopic: String = "",
+		phoneOnly: Bool = false,
+		showActivityLights: Bool = true
+	) {
 		self.deviceConnected = deviceConnected
 		self.name = name
 		self.mqttProxyConnected = mqttProxyConnected
@@ -26,12 +36,12 @@ struct ConnectedDevice: View {
 		self.showActivityLights = showActivityLights
 	}
 
-    var body: some View {
+	var body: some View {
 		HStack {
 			if showActivityLights {
 				RXTXIndicatorWidget()
 			}
-            if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
+			if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
 				if deviceConnected {
 					// Create an HStack for connected state with proper accessibility
 					HStack {
@@ -63,10 +73,10 @@ struct ConnectedDevice: View {
 					.accessibilityElement(children: .ignore)
 					.accessibilityLabel("No Bluetooth device connected".localized)
 				}
-            }
+			}
 		}
 		.if(.os26) { $0.padding(.leading, 5.0) }
-    }
+	}
 }
 
 #Preview("Multiple variants") {
