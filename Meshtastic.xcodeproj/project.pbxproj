@@ -2265,7 +2265,7 @@
 			requirement = {
 				kind = versionRange;
 				maximumVersion = 4.0.0;
-				minimumVersion = 3.1.0;
+				minimumVersion = 3.3.0;
 			};
 		};
 		259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
