@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
 import MeshtasticProtobufs
+import CoreData
 import OSLog
 import SwiftUI
 
@@ -21,6 +22,19 @@ struct RangeTestConfig: View {
 	@State var enabled = false
 	@State var save = false
 	@State private var sender: UpdateInterval = UpdateInterval(from: 0)
+	private var isPrimaryChannelPublic: Bool {
+		guard let channels = node?.myInfo?.channels?.array as? [ChannelEntity] else {
+			return false
+		}
+		// Treat the primary channel on this node as "public" when it is effectively unencrypted
+		// or using a minimal 1-byte key (hexDescription shorter than 3 characters).
+		guard let primary = channels.first(where: { $0.index == 0 && $0.role > 0 }) else {
+			return false
+		}
+		let hexLen = primary.psk?.hexDescription.count ?? 0
+		return hexLen < 3
+	}
+
 	
 	var body: some View {
 		Form {
@@ -51,14 +65,15 @@ struct RangeTestConfig: View {
 				
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.rangeTestConfig == nil)
+		.disabled(!accessoryManager.isConnected || node?.rangeTestConfig == nil || isPrimaryChannelPublic)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
 					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 					if connectedNode != nil {
 						var rtc = ModuleConfig.RangeTestConfig()
-						rtc.enabled = enabled
+						let effectiveEnabled = isPrimaryChannelPublic ? false : enabled
+						rtc.enabled = effectiveEnabled
 						rtc.save = save
 						rtc.sender = UInt32(sender.intValue)
 						Task {
