@@ -168,7 +168,7 @@ struct SecurityConfig: View {
 			}
 			Section(header: Text("Admin Keys")) {
 				Label("Primary Admin Key", systemImage: "key.viewfinder")
-				SecureInput("Primary Admin Key", text: $adminKey, isValid: $hasValidAdminKey)
+				SecureInput("Primary Admin Key".localized, text: $adminKey, isValid: $hasValidAdminKey)
 					.background(
 						RoundedRectangle(cornerRadius: 10.0)
 							.stroke(hasValidAdminKey ? Color.clear : Color.red, lineWidth: 2.0)
@@ -177,7 +177,7 @@ struct SecurityConfig: View {
 					.foregroundStyle(.secondary)
 					.font(idiom == .phone ? .caption : .callout)
 				Label("Secondary Admin Key", systemImage: "key.viewfinder")
-				SecureInput("Secondary Admin Key", text: $adminKey2, isValid: $hasValidAdminKey2)
+				SecureInput("Secondary Admin Key".localized, text: $adminKey2, isValid: $hasValidAdminKey2)
 					.background(
 						RoundedRectangle(cornerRadius: 10.0)
 							.stroke(hasValidAdminKey2 ? Color.clear : Color.red, lineWidth: 2.0)
@@ -186,7 +186,7 @@ struct SecurityConfig: View {
 					.foregroundStyle(.secondary)
 					.font(idiom == .phone ? .caption : .callout)
 				Label("Tertiary Admin Key", systemImage: "key.viewfinder")
-				SecureInput("Tertiary Admin Key", text: $adminKey3, isValid: $hasValidAdminKey3)
+				SecureInput("Tertiary Admin Key".localized, text: $adminKey3, isValid: $hasValidAdminKey3)
 					.background(
 						RoundedRectangle(cornerRadius: 10.0)
 							.stroke(hasValidAdminKey3 ? Color.clear : Color.red, lineWidth: 2.0)

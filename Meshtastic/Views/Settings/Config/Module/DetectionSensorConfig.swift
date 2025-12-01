@@ -14,9 +14,9 @@ enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 	var description: String {
 		switch self {
 		case .sensor:
-			return "Sensor"
+			return "Sensor".localized
 		case .client:
-			return "Client"
+			return "Client".localized
 		}
 	}
 	var localized: String { self.rawValue.localized }

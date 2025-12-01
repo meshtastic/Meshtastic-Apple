@@ -25,7 +25,7 @@ struct UserList: View {
 		VStack {
 			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
 			.sheet(isPresented: $editingFilters) {
-				NodeListFilter(filterTitle: "Contact Filters", filters: filters)
+				NodeListFilter(filterTitle: "Contact Filters".localized, filters: filters)
 			}
 			.sheet(isPresented: $showingHelp) {
 				DirectMessagesHelp()

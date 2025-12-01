@@ -82,7 +82,7 @@ struct PositionConfig: View {
 			VStack(alignment: .leading) {
 				UpdateIntervalPicker(
 					config: .broadcastMedium,
-					pickerLabel: "Broadcast Interval",
+					pickerLabel: "Broadcast Interval".localized,
 					selectedInterval: $positionBroadcastSeconds
 				)
 				Text("The maximum interval that can elapse without a node broadcasting a position")
