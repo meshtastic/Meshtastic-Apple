@@ -1499,6 +1499,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 			if fetchedNode[0].telemetryConfig == nil {
 				let newTelemetryConfig = TelemetryConfigEntity(context: context)
 				newTelemetryConfig.deviceUpdateInterval = Int32(truncatingIfNeeded: config.deviceUpdateInterval)
+				newTelemetryConfig.deviceTelemetryEnabled = config.deviceTelemetryEnabled
 				newTelemetryConfig.environmentUpdateInterval = Int32(truncatingIfNeeded: config.environmentUpdateInterval)
 				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
@@ -1509,6 +1510,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
 			} else {
 				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(truncatingIfNeeded: config.deviceUpdateInterval)
+				fetchedNode[0].telemetryConfig?.deviceTelemetryEnabled = config.deviceTelemetryEnabled
 				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(truncatingIfNeeded: config.environmentUpdateInterval)
 				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
