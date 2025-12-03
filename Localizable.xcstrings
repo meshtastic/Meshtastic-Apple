@@ -73,7 +73,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@"
           }
         },
@@ -107,7 +107,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@%%"
           }
         },
@@ -141,7 +141,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : ": %@"
           }
         },
@@ -181,7 +181,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : ": %d"
           }
         },
@@ -261,7 +261,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@"
           }
         },
@@ -307,7 +307,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$@ - %2$@"
           }
         },
@@ -353,7 +353,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$@ - %2$@ - %3$@"
           }
         },
@@ -491,7 +491,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%@ - Не відправлено"
           }
         },
@@ -537,7 +537,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$@ (%2$@)"
           }
         },
@@ -583,7 +583,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$@ %2$@"
           }
         },
@@ -629,7 +629,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$@ %2$lld"
           }
         },
@@ -789,8 +789,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Дані конфігурації %@ було запитано через адміністратора PKC, але віддалений вузол не повернув відповідь."
+            "state" : "translated",
+            "value" : "Дані конфігурації %@ було запитано через адміністрування PKC, але віддалений вузол не повернув відповідь."
           }
         }
       }
@@ -863,7 +863,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$@, %2$@"
           }
         },
@@ -909,7 +909,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$@: %2$lld / %3$lld"
           }
         },
@@ -1323,7 +1323,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%lf"
           }
         },
@@ -1363,7 +1363,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%lld"
           }
         },
@@ -1397,7 +1397,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "%1$lld %2$@"
           }
         }
@@ -1739,7 +1739,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "< 1%"
           }
         },
@@ -1762,7 +1762,7 @@
       "localizations" : {
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "⚠️ Налаштоване значення: (%@ секунд) не є одним з оптимізованих варіантів."
           }
         }
@@ -1790,7 +1790,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "🦕 Версія, що знята з підтримки 🦖 ☄️"
           }
         },
@@ -1812,7 +1812,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "0"
           }
         }
@@ -1828,7 +1828,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "1"
           }
         }
@@ -1856,7 +1856,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "1 байт"
           }
         },
@@ -1936,7 +1936,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "2.4 ГГц"
           }
         },
@@ -1970,7 +1970,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "7"
           }
         },
@@ -2004,7 +2004,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "12 годинний формат"
           }
         }
@@ -2032,7 +2032,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "25"
           }
         },
@@ -2072,7 +2072,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "50"
           }
         },
@@ -2112,7 +2112,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "75"
           }
         },
@@ -2152,7 +2152,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "100"
           }
         },
@@ -2192,7 +2192,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "128 біт"
           }
         },
@@ -2220,7 +2220,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "180"
           }
         }
@@ -2248,7 +2248,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "256 біт"
           }
         },
@@ -2276,7 +2276,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Індекс каналу 0 вказує на основний канал, з якого надсилаються широкомовні пакети. Дані місцезнаходження транслюються з першого каналу, де це ввімкнено з мікропрограмою 2.7 і вище."
           }
         }
@@ -2298,7 +2298,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Зелений замок означає, що канал надійно зашифровано з використанням AES-ключа на 128 або 256 біт."
           }
         }
@@ -2496,7 +2496,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Про застосунок"
           }
         },
@@ -2576,7 +2576,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Точність %@"
           }
         },
@@ -2610,7 +2610,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Ack SNR: %@ дБ"
           }
         },
@@ -2708,7 +2708,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Підтверджено"
           }
         },
@@ -2748,7 +2748,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Підтверджено іншим вузлом"
           }
         },
@@ -2788,7 +2788,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Дії"
           }
         },
@@ -2828,7 +2828,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Активний"
           }
         },
@@ -2932,7 +2932,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Перевизначення ADC"
           }
         },
@@ -2978,7 +2978,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Додати канал"
           }
         },
@@ -3148,7 +3148,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Додаткова допомога"
           }
         },
@@ -3188,7 +3188,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Адреса"
           }
         },
@@ -3439,8 +3439,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Розширені Прапорці Позиції"
+            "state" : "translated",
+            "value" : "Розширені налаштування позиції"
           }
         },
         "zh-Hans" : {
@@ -3821,7 +3821,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Активація GPIO зумера при отриманні сигналу дзвінка"
           }
         },
@@ -3861,8 +3861,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Сповіщати зумером GPIO при отриманні повідомлення"
+            "state" : "translated",
+            "value" : "Активація GPIO зумера при отриманні повідомлення"
           }
         },
         "zh-Hant-TW" : {
@@ -3895,8 +3895,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Попередження GPIO вібраційного мотора при отриманні дзвінка"
+            "state" : "translated",
+            "value" : "Активація GPIO вібраційного мотора при отриманні дзвінка"
           }
         },
         "zh-Hans" : {
@@ -3935,8 +3935,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Алерт GPIO вібродвигуна при отриманні повідомлення"
+            "state" : "translated",
+            "value" : "Актівація GPIO вібромотора при отриманні повідомлення"
           }
         },
         "zh-Hant-TW" : {
@@ -4163,7 +4163,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Висота"
           }
         },
@@ -4203,7 +4203,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Висота %@"
           }
         },
@@ -4271,8 +4271,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Висота за середнім рівнем моря"
+            "state" : "translated",
+            "value" : "Висота над рівнем моря"
           }
         },
         "zh-Hant-TW" : {
@@ -4980,7 +4980,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Приблизне місцезнаходження"
+            "value" : "Приблизна позиція"
           }
         },
         "zh-Hant-TW" : {
@@ -5859,7 +5859,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Рівень заряду батареї"
           }
         },
@@ -5930,7 +5930,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Рівень заряду батареї %"
           }
         },
@@ -6001,7 +6001,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Рівень заряду %d"
           }
         },
@@ -6478,8 +6478,8 @@
       "localizations" : {
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Транслювати Метрики Пристрою"
+            "state" : "translated",
+            "value" : "Транслювати метрики пристрою"
           }
         }
       }
@@ -6756,8 +6756,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Кнопка GPIO"
+            "state" : "translated",
+            "value" : "GPIO кнопки"
           }
         },
         "zh-Hans" : {
@@ -6836,8 +6836,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Buzzer GPIO"
+            "state" : "translated",
+            "value" : "GPIO зумера"
           }
         },
         "zh-Hans" : {
@@ -6969,7 +6969,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Використано байтів"
           }
         }
@@ -7427,8 +7427,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Інтервал Каруселі"
+            "state" : "translated",
+            "value" : "Авто прокрутка"
           }
         },
         "zh-Hant-TW" : {
@@ -8243,8 +8243,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Деталі Каналу"
+            "state" : "translated",
+            "value" : "Налаштування каналу"
           }
         },
         "zh-Hans" : {
@@ -9678,7 +9678,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Налаштувати доступ до локальної мережі"
           }
         }
@@ -11310,8 +11310,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Макет екрану за замовчуванням 128x64"
+            "state" : "translated",
+            "value" : "За замовчуванням 128x64"
           }
         },
         "zh-Hans" : {
@@ -11586,8 +11586,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Видалити всі дані pax?"
+            "state" : "translated",
+            "value" : "Видалити всі дані PAX?"
           }
         },
         "zh-Hant-TW" : {
@@ -11906,6 +11906,17 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Деталі..."
+          }
+        }
+      }
+    },
+    "Detect Automatically" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Авто визначення"
           }
         }
       }
@@ -13663,8 +13674,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Екран"
+            "state" : "translated",
+            "value" : "Дисплей"
           }
         },
         "zh-Hans" : {
@@ -13939,8 +13950,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Одиниці відображення"
+            "state" : "translated",
+            "value" : "Система мір"
           }
         },
         "zh-Hans" : {
@@ -14143,7 +14154,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Подвійний дотик як кнопка"
           }
         },
@@ -15402,8 +15413,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Шифрування увімкнено"
+            "state" : "translated",
+            "value" : "Шифрування"
           }
         },
         "zh-Hans" : {
@@ -15671,7 +15682,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Налаштування сенсорів середовища"
+            "value" : "Параметри сенсорів середовища"
           }
         }
       }
@@ -16542,7 +16553,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Скинути до заводських налаштувань"
           }
         },
@@ -17067,8 +17078,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Файли Доступні"
+            "state" : "translated",
+            "value" : "Доступні файли"
           }
         }
       }
@@ -20303,7 +20314,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Як часто метрики пристрою надсилаються через Mesh. За замовчуванням 30 хвилин."
           }
         },
@@ -20343,7 +20354,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Як часто метрики середовища відправляються через mesh. За замовчуванням 30 хвилин."
           }
         },
@@ -20383,8 +20394,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Як часто метричні дані потужності надсилаються по Mesh. За замовчуванням це 30 хвилин."
+            "state" : "translated",
+            "value" : "Як часто метрики живлення надсилаються по Mesh. За замовчуванням це 30 хвилин."
           }
         },
         "zh-Hans" : {
@@ -20527,7 +20538,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Як часто ми можемо надсилати повідомлення до Mesh, коли виявлено людей."
           }
         },
@@ -21065,7 +21076,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Якщо ввімкнено, 'вихідний' Пін буде піднято до активного високого рівня, вимкнено означає активний низький рівень."
           }
         },
@@ -21375,6 +21386,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "忽略來自其他 Mesh 的訊息（例如開放的或無法解密的），只會在該節點的本地主要／次要頻道上重新轉發訊息。"
+          }
+        }
+      }
+    },
+    "Imperial" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Імперська"
           }
         }
       }
@@ -21926,8 +21948,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "JSON увімкнено"
+            "state" : "translated",
+            "value" : "JSON"
           }
         },
         "zh-Hans" : {
@@ -21966,8 +21988,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Режим JSON - це обмежений, незашифрований вихід MQTT для локальної інтеграції з домашнім асистентом"
+            "state" : "translated",
+            "value" : "Режим JSON - це обмежений, незашифрований вихід MQTT для локальної інтеграції з Home Assistant"
           }
         },
         "zh-Hans" : {
@@ -22062,8 +22084,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Кнопка"
+            "state" : "translated",
+            "value" : "Ключ"
           }
         },
         "zh-Hans" : {
@@ -22737,7 +22759,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Доступ до локальної мережі"
           }
         }
@@ -23054,7 +23076,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Повна назва"
+            "value" : "Повне ім’я"
           }
         },
         "zh-Hans" : {
@@ -23653,8 +23675,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Картка M5 Stack KB / Клавіатура RAK"
+            "state" : "translated",
+            "value" : "M5 Stack Card KB / RAK Keypad"
           }
         },
         "zh-Hans" : {
@@ -23832,7 +23854,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Керування користувацькими накладеннями карт"
           }
         },
@@ -23867,7 +23889,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Керування даними карти"
           }
         }
@@ -24209,8 +24231,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Звіт карти"
+            "state" : "translated",
+            "value" : "Передача позиції"
           }
         },
         "zh-Hans" : {
@@ -24909,7 +24931,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Розмір повідомлення"
           }
         }
@@ -25097,8 +25119,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Метричні"
+            "state" : "translated",
+            "value" : "Метрична"
           }
         },
         "zh-Hant-TW" : {
@@ -25499,8 +25521,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Налаштування модуля"
+            "state" : "translated",
+            "value" : "Конфигурація модулів"
           }
         },
         "zh-Hans" : {
@@ -26534,6 +26556,17 @@
         }
       }
     },
+    "Never" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ніколи"
+          }
+        }
+      }
+    },
     "New Node" : {
       "localizations" : {
         "it" : {
@@ -26953,7 +26986,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Немає даних"
           }
         },
@@ -27218,7 +27251,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Не завантажено файли картографічних даних"
           }
         }
@@ -28430,6 +28463,17 @@
         }
       }
     },
+    "off" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "вимкнено"
+          }
+        }
+      }
+    },
     "Ok" : {
       "localizations" : {
         "sr" : {
@@ -29200,8 +29244,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Необов’язковий GPIO"
+            "state" : "translated",
+            "value" : "Опціональні GPIO"
           }
         },
         "zh-Hant-TW" : {
@@ -29492,8 +29536,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Вихідний контакт зумера GPIO "
+            "state" : "translated",
+            "value" : "GPIO зумера "
           }
         },
         "zh-Hant-TW" : {
@@ -29928,7 +29972,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Лічильник PAX"
           }
         },
@@ -29980,8 +30024,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "PAX Counter Конфігурація"
+            "state" : "translated",
+            "value" : "Конфігурація лічильника PAX"
           }
         },
         "zh-Hans" : {
@@ -30026,8 +30070,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Отримана конфігурація PAX Counter: %@"
+            "state" : "translated",
+            "value" : "Отримана конфігурація лічильника PAX: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -30066,8 +30110,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Журнал PAX Counter"
+            "state" : "translated",
+            "value" : "Журнал лічильника PAX"
           }
         },
         "zh-Hant-TW" : {
@@ -30124,8 +30168,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Повідомлення PAX Counter отримано від: %@"
+            "state" : "translated",
+            "value" : "Повідомлення лічильника PAX отримано від: %@"
           }
         },
         "zh-Hans" : {
@@ -30158,7 +30202,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "paxcounter.log"
           }
         },
@@ -31046,8 +31090,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Прапори Позиції"
+            "state" : "translated",
+            "value" : "Налаштування позиції"
           }
         },
         "zh-Hant-TW" : {
@@ -31222,8 +31266,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Увімкнені позиції"
+            "state" : "translated",
+            "value" : "Передача позиції"
           }
         },
         "zh-Hans" : {
@@ -31687,8 +31731,8 @@
       "localizations" : {
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Параметри Датчика Потужності"
+            "state" : "translated",
+            "value" : "Параметри живлення"
           }
         }
       }
@@ -31761,8 +31805,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Точне розташування"
+            "state" : "translated",
+            "value" : "Точна позиція"
           }
         },
         "zh-Hant-TW" : {
@@ -32820,8 +32864,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Тест діапазону"
+            "state" : "translated",
+            "value" : "Тест дальності"
           }
         },
         "zh-Hans" : {
@@ -32890,8 +32934,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Конфігурація Тестування Дальності"
+            "state" : "translated",
+            "value" : "Конфігурація тесту дальності"
           }
         },
         "zh-Hans" : {
@@ -33208,8 +33252,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Отримувати дані (rxd) GPIO-контакт"
+            "state" : "translated",
+            "value" : "RX GPIO"
           }
         },
         "zh-Hant-TW" : {
@@ -35094,7 +35138,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rotary 1"
+            "value" : "Енкодер 1"
           }
         },
         "zh-Hans" : {
@@ -36331,8 +36375,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Увімкнено екран протягом"
+            "state" : "translated",
+            "value" : "Гасити екран через"
           }
         },
         "zh-Hant-TW" : {
@@ -37275,8 +37319,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Надіслати позицію на основному каналі, коли кнопка користувача потрійно натиснута."
+            "state" : "translated",
+            "value" : "Надіслати позицію на основному каналі при потрійному натисканні користувацької кнопки."
           }
         },
         "zh-Hans" : {
@@ -37613,8 +37657,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Інтервал відправника"
+            "state" : "translated",
+            "value" : "Інтервал відправлення"
           }
         },
         "zh-Hans" : {
@@ -38287,8 +38331,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Послідовний"
+            "state" : "translated",
+            "value" : "Послідовний порт"
           }
         },
         "zh-Hans" : {
@@ -38357,8 +38401,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Налаштування послідовного порту"
+            "state" : "translated",
+            "value" : "Конфігурація послідовного порту"
           }
         },
         "zh-Hans" : {
@@ -38799,8 +38843,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Встановіть GPIO піни для RXD і TXD."
+            "state" : "translated",
+            "value" : "Встановіть GPIO піни для RX і TX."
           }
         },
         "zh-Hant-TW" : {
@@ -39371,8 +39415,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Коротка назва"
+            "state" : "translated",
+            "value" : "Коротке ім’я"
           }
         },
         "zh-Hans" : {
@@ -43926,8 +43970,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Час очікування з минув"
+            "state" : "translated",
+            "value" : "Таймаут"
           }
         },
         "zh-Hans" : {
@@ -44024,8 +44068,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Час і Перезаписи"
+            "state" : "translated",
+            "value" : "Налаштування дисплею"
           }
         }
       }
@@ -44648,8 +44692,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Виведення даних (txd) GPIO pin"
+            "state" : "translated",
+            "value" : "TX GPIO"
           }
         },
         "zh-Hant-TW" : {
@@ -45458,8 +45502,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Одиниці, що відображаються на екрані пристрою"
+            "state" : "translated",
+            "value" : "Одиниці виміру, що відображаються на екрані пристрою"
           }
         },
         "zh-Hant-TW" : {
@@ -45844,7 +45888,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Вгору"
           }
         },
@@ -45884,7 +45928,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Вгору Вниз 1"
           }
         },
@@ -46235,8 +46279,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Завантажити Дані Карти"
+            "state" : "translated",
+            "value" : "Завантажити дані карти"
           }
         },
         "zh-Hans" : {
@@ -46282,7 +46326,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Завантажте дані карти, щоб увімкнути накладання"
           }
         },
@@ -46316,7 +46360,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Завантажити накладки карт"
           }
         }
@@ -46474,7 +46518,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Використовуйте PWM вихід (наприклад, RAK Buzzer) для мелодій замість виходу ввімк./вимк. Це ігноруватиме вихід, тривалість виходу та активні налаштування і використовуватиме опцію GPIO конфігурації пристрою для бузера."
           }
         },
@@ -46976,7 +47020,7 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Завантажено користувачем"
           }
         },
@@ -48299,7 +48343,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Коли ввімкнено, модуль PAX Counter підраховує кількість людей, які проходять поблизу, використовуючи WiFi та Bluetooth. Щоб PAX Counter працював, як WiFI, так і Bluetooth мають бути вимкнені."
+            "value" : "Коли ввімкнено, модуль лічильника PAX підраховує кількість людей, які проходять поблизу, використовуючи WiFi та Bluetooth. Щоб лічильник PAX працював, як WiFI, так і Bluetooth мають бути вимкнені."
           }
         },
         "zh-Hans" : {
@@ -48338,8 +48382,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Під час використання в режимі GPIO залишайте вихід увімкненим на такий тривалий час"
+            "state" : "translated",
+            "value" : "Під час використання в режимі GPIO залишайте вихід увімкненим на такий час"
           }
         },
         "zh-Hans" : {
@@ -49072,8 +49116,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ваше поточне місцезнаходження буде встановлено як фіксовану позицію та транслюватиметься через mesh з інтервалом позиції."
+            "state" : "translated",
+            "value" : "Ваше поточне місцезнаходження буде встановлено як фіксовану позицію та транслюватиметься через mesh з обраним інтервалом."
           }
         },
         "zh-Hans" : {
@@ -49304,8 +49348,8 @@
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ваша область має %lld%% робочий цикл. MQTT не рекомендується при обмеженні робочого циклу, оскільки додатковий трафік швидко перевантажить ваш LoRa Mesh."
+            "state" : "translated",
+            "value" : "Ваш регіон має %lld%% робочий цикл. MQTT не рекомендується при обмеженні робочого циклу, оскільки додатковий трафік швидко перевантажить ваш LoRa Mesh."
           }
         },
         "zh-Hans" : {
