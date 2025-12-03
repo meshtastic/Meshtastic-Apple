@@ -34,7 +34,7 @@ struct RangeTestConfig: View {
 				.listRowSeparator(.visible)
 				UpdateIntervalPicker(
 					config: .rangeTestSender,
-					pickerLabel: "Sender Interval",
+					pickerLabel: "Sender Interval".localized,
 					selectedInterval: $sender
 				)
 				.listRowSeparator(.hidden)

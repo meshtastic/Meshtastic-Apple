@@ -183,9 +183,9 @@ enum Units: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .metric:
-			return "Metric"
+			return "Metric".localized
 		case .imperial:
-			return "Imperial"
+			return "Imperial".localized
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.DisplayUnits {

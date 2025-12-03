@@ -34,7 +34,7 @@ struct PaxCounterConfig: View {
 				if enabled {
 					UpdateIntervalPicker(
 						config: .paxCounter,
-						pickerLabel: "Update Interval",
+						pickerLabel: "Update Interval".localized,
 						selectedInterval: $paxcounterUpdateInterval
 					)
 					.listRowSeparator(.hidden)
