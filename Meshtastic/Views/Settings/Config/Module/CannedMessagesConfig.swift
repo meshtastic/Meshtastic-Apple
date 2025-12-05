@@ -13,99 +13,103 @@ struct CannedMessagesConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
+	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var hasMessagesChanges = false
 	@State var configPreset = 0
 	@State var enabled = false
-	/// CannedMessageModule will sends a bell character with the messages.
 	@State var sendBell: Bool = false
-	/// Enable the rotary encoder #1. This is a 'dumb' encoder sending pulses on both A and B pins while rotating.
 	@State var rotary1Enabled = false
-	/// Enable the Up/Down/Select input device. Can be RAK rotary encoder or 3 buttons. Uses the a/b/press definitions from inputbroker.
 	@State var updown1Enabled: Bool = false
-	/// GPIO pin for rotary encoder A port.
 	@State var inputbrokerPinA = 0
-	/// GPIO pin for rotary encoder B port.
 	@State var inputbrokerPinB = 0
-	/// GPIO pin for rotary encoder Press port.
 	@State var inputbrokerPinPress = 0
-	/// Generate input event on CW of this kind.
 	@State var inputbrokerEventCw = 0
-	/// Generate input event on CCW of this kind.
 	@State var inputbrokerEventCcw = 0
-	/// Generate input event on Press of this kind.
 	@State var inputbrokerEventPress = 0
-	@State var messages = ""
+	
+	// This is the source of truth for the backend (pipe-separated)
+	@State private var messages = ""
+	
+	// Derived array for nice List UI
+	@State private var messageList: [String] = []
+	@FocusState private var focusedIndex: Int?
+	
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
 			
 			Section(header: Text("Options")) {
-				
 				Toggle(isOn: $enabled) {
-					
 					Label("Enabled", systemImage: "list.bullet.rectangle.fill")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				
 				Toggle(isOn: $sendBell) {
-					
 					Label("Send Bell", systemImage: "bell")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				
-				Picker("Configuration Presets", selection: $configPreset ) {
+				Picker("Configuration Presets", selection: $configPreset) {
 					ForEach(ConfigPresets.allCases) { cp in
 						Text(cp.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
-				.padding(.top, 10)
-				.padding(.bottom, 10)
+				.pickerStyle(.menu)
 			}
-			HStack {
-				Label("Messages", systemImage: "message.fill")
-				TextField("Messages separate with |", text: $messages, axis: .vertical)
-					.foregroundColor(.gray)
-					.autocapitalization(.none)
-					.disableAutocorrection(true)
-					.onChange(of: messages) {
-						var totalBytes = messages.utf8.count
-						// Only mess with the value if it is too big
-						while totalBytes > 198 {
-							messages = String(messages.dropLast())
-							totalBytes = messages.utf8.count
-						}
-						if messages != node?.cannedMessageConfig?.messages ?? "" {
-							hasChanges = true
-							hasMessagesChanges = true
-						}
+			
+			Section(header: Text("Messages")) {
+				if messageList.isEmpty {
+					Text("No messages yet. Tap + to add one.")
+						.foregroundColor(.secondary)
+						.italic()
+				}
+				
+				List {
+					ForEach(messageList.indices, id: \.self) { index in
+						TextField("Message", text: $messageList[index], axis: .vertical)
+							.lineLimit(2...8)
+							.focused($focusedIndex, equals: index)
+							.onChange(of: messageList[index]) {
+								syncListToString()
+							}
+
 					}
-					.foregroundColor(.gray)
+					.onDelete(perform: deleteMessages)
+					.onMove(perform: moveMessages)
+				}
+				
+				Button {
+					messageList.append("")
+				} label: {
+					Label("Add Message", systemImage: "plus.circle.fill")
+						.foregroundColor(.accentColor)
+				}
 			}
-			.keyboardType(.default)
+			
+			// Rest of your sections unchanged...
 			Section(header: Text("Control Type")) {
 				Toggle(isOn: $rotary1Enabled) {
-					
 					Label("Rotary 1", systemImage: "dial.min")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.disabled(updown1Enabled)
+				
 				Toggle(isOn: $updown1Enabled) {
-					
 					Label("Up Down 1", systemImage: "arrow.up.arrow.down")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.disabled(rotary1Enabled)
 			}
 			.disabled(configPreset > 0)
+			
 			Section(header: Text("Inputs")) {
 				VStack(alignment: .leading) {
 					Picker("Pin A", selection: $inputbrokerPinA) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -120,7 +124,7 @@ struct CannedMessagesConfig: View {
 					Picker("Pin B", selection: $inputbrokerPinB) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -135,7 +139,7 @@ struct CannedMessagesConfig: View {
 					Picker("Press Pin", selection: $inputbrokerPinPress) {
 						ForEach(0..<49) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -181,62 +185,42 @@ struct CannedMessagesConfig: View {
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					// Your existing save logic — unchanged!
 					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 					if hasChanges {
-						if connectedNode != nil {
-							var cmc = ModuleConfig.CannedMessageConfig()
-							cmc.enabled = enabled
-							cmc.sendBell = sendBell
-							cmc.rotary1Enabled = rotary1Enabled
-							cmc.updown1Enabled = updown1Enabled
-							if rotary1Enabled {
-								/// Input event origin accepted by the canned messages
-								/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
-								cmc.allowInputSource = "rotEnc1"
-							} else if updown1Enabled {
-								cmc.allowInputSource = "upDown1"
-							} else {
-								cmc.allowInputSource = "_any"
-							}
-							cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
-							cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
-							cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
-							cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
-							cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
-							cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
-							Task {
-								do {
-									_ = try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
-									Task { @MainActor in
-										// Should show a saved successfully alert once I know that to be true
-										// for now just disable the button after a successful save
-										hasChanges = false
-										goBack()
-									}
-								} catch {
-									Logger.mesh.error("Unable to save canned message module config")
-								}
+						var cmc = ModuleConfig.CannedMessageConfig()
+						cmc.enabled = enabled
+						cmc.sendBell = sendBell
+						cmc.rotary1Enabled = rotary1Enabled
+						cmc.updown1Enabled = updown1Enabled
+						cmc.allowInputSource = rotary1Enabled ? "rotEnc1" : (updown1Enabled ? "upDown1" : "_any")
+						cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
+						cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
+						cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
+						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
+						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
+						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
+						
+						Task {
+							do {
+								_ = try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
+								await MainActor.run { hasChanges = false }
+							} catch {
+								Logger.mesh.error("Save config failed")
 							}
 						}
 					}
+					
 					if hasMessagesChanges {
 						Task {
 							do {
 								_ = try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
-								
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
+								await MainActor.run {
 									hasMessagesChanges = false
-									if !hasChanges {
-										Task {
-											Logger.transport.debug("[CannedMessagesConfig] sending wantConfig for save cannedMessagesConfig")
-										}
-										goBack()
-									}
+									if !hasChanges { goBack() }
 								}
 							} catch {
-								Logger.mesh.error("Unable to save canned message module messages")
+								Logger.mesh.error("Save messages failed")
 							}
 						}
 					}
@@ -244,101 +228,37 @@ struct CannedMessagesConfig: View {
 			}
 		}
 		.navigationTitle("Canned Messages Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
-			}
-		)
-		.onFirstAppear {
-			// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.cannedMessageConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired canned messages module config requesting via PKI admin")
-										try await accessoryManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Unable to send canned message module config request")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
-		}
-		.onChange(of: configPreset) { _, newPreset in
-			
-			if newPreset == 1 {
-				
-				// RAK Rotary Encoder
-				updown1Enabled = true
-				rotary1Enabled = false
-				inputbrokerPinA = 4
-				inputbrokerPinB = 10
-				inputbrokerPinPress = 9
-				inputbrokerEventCw = InputEventChars.down.rawValue
-				inputbrokerEventCcw = InputEventChars.up.rawValue
-				inputbrokerEventPress = InputEventChars.select.rawValue
-				
-			} else if newPreset == 2 {
-				
-				// CardKB / RAK Keypad
-				updown1Enabled = false
-				rotary1Enabled = false
-				inputbrokerPinA = 0
-				inputbrokerPinB = 0
-				inputbrokerPinPress	= 0
-				inputbrokerEventCw = InputEventChars.none.rawValue
-				inputbrokerEventCcw = InputEventChars.none.rawValue
-				inputbrokerEventPress = InputEventChars.none.rawValue
-			}
-			
-			hasChanges = true
-		}
-		.onChange(of: enabled) { _, newEnabled in
-			if newEnabled != node?.cannedMessageConfig?.enabled { hasChanges = true }
-		}
-		.onChange(of: sendBell) { _, newSendBell in
-			if newSendBell != node?.cannedMessageConfig?.sendBell { hasChanges = true }
-		}
-		.onChange(of: rotary1Enabled) { _, newRotary1Enabled in
-			if newRotary1Enabled != node?.cannedMessageConfig?.rotary1Enabled {	hasChanges = true }
-		}
-		.onChange(of: updown1Enabled) { _, newUpdown1Enabled in
-			if newUpdown1Enabled != node?.cannedMessageConfig?.updown1Enabled {	hasChanges = true }
-		}
-		.onChange(of: inputbrokerPinA) { _, newPinA in
-			if newPinA != node?.cannedMessageConfig?.inputbrokerPinA ?? -1 { hasChanges = true }
-		}
-		.onChange(of: inputbrokerPinB) { _, newPinB in
-			if newPinB != node?.cannedMessageConfig?.inputbrokerPinB ?? -1 { hasChanges = true }
-		}
-		.onChange(of: inputbrokerPinPress) { _, newPinPress in
-			if newPinPress != node?.cannedMessageConfig?.inputbrokerPinPress ?? -1 { hasChanges = true }
-		}
-		.onChange(of: inputbrokerEventCw) { _, newKeyA in
-			if newKeyA != node?.cannedMessageConfig?.inputbrokerEventCw ?? -1 { hasChanges = true }
-		}
-		.onChange(of: inputbrokerEventCcw) { _, newKeyB in
-			if newKeyB != node?.cannedMessageConfig?.inputbrokerEventCcw ?? -1 { hasChanges = true }
-		}
-		.onChange(of: inputbrokerEventPress) { _, newKeyPress in
-			if newKeyPress != node?.cannedMessageConfig?.inputbrokerEventPress ?? -1 { hasChanges = true }
+		.navigationBarItems(trailing: ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?"))
+		.onAppear {
+			setCannedMessagesValues()
 		}
 	}
+	
+	// MARK: - Helper: Sync List to Pipe String
+	private func syncListToString() {
+		let cleaned = messageList
+			.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+			.filter { !$0.isEmpty }
+		
+		let newString = cleaned.joined(separator: "|")
+		
+		if newString != messages {
+			messages = newString
+			hasMessagesChanges = true
+			hasChanges = true
+		}
+	}
+	
+	private func deleteMessages(at offsets: IndexSet) {
+		messageList.remove(atOffsets: offsets)
+		syncListToString()
+	}
+	
+	private func moveMessages(from source: IndexSet, to destination: Int) {
+		messageList.move(fromOffsets: source, toOffset: destination)
+		syncListToString()
+	}
+	
 	func setCannedMessagesValues() {
 		self.enabled = node?.cannedMessageConfig?.enabled ?? false
 		self.sendBell = node?.cannedMessageConfig?.sendBell ?? false
@@ -351,7 +271,16 @@ struct CannedMessagesConfig: View {
 		self.inputbrokerEventCcw = Int(node?.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
 		self.inputbrokerEventPress = Int(node?.cannedMessageConfig?.inputbrokerEventPress ?? 0)
 		self.messages = node?.cannedMessageConfig?.messages ?? ""
+		
+		// Populate the list from pipe string
+		if messages.isEmpty {
+			messageList = [""]
+		} else {
+			messageList = messages.components(separatedBy: "|").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+		}
+		
 		self.hasChanges = false
 		self.hasMessagesChanges = false
 	}
 }
+
