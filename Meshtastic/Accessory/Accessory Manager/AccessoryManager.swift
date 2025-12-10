@@ -493,6 +493,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			handleMyInfo(myNodeInfo)
 
 		case .packet(let packet):
+			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
+			if let connectedNodeNum = self.activeDeviceNum {
+				updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum, context: context)
+			} else {
+				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
+			}
+
+			// Dispatch based on packet contents.
 			if case let .decoded(data) = packet.payloadVariant {
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
