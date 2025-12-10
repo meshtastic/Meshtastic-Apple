@@ -85,7 +85,7 @@ struct CompassView: View {
 					Text(waypointName ?? "Waypoint")
 						.font(.title2)
 						.bold()
-						.foregroundColor(color ?? Color.orange)
+						.foregroundColor(color)
 					
 					if let wp = waypointLocation {
 						HStack{
