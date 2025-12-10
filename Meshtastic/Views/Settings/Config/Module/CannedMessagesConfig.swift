@@ -185,7 +185,6 @@ struct CannedMessagesConfig: View {
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					// Your existing save logic — unchanged!
 					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 					if hasChanges {
 						var cmc = ModuleConfig.CannedMessageConfig()
