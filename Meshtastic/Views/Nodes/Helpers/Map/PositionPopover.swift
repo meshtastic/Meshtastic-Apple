@@ -259,13 +259,7 @@ struct PositionPopover: View {
 				CompassView(
 					waypointLocation: position.coordinate,
 					waypointName: position.nodePosition?.user?.longName ?? "Unknown node",
-					color: {
-							if let hex = position.nodePosition?.user?.num, hex != 0 {
-								return Color(UIColor(hex: UInt32(hex)))
-							} else {
-								return .orange
-							}
-						}()
+					color: (position.nodePosition?.user?.num != nil && position.nodePosition?.user?.num != 0) ? Color(UIColor(hex: UInt32(position.nodePosition!.user!.num))) : .orange
 				)
 			}
 		}
