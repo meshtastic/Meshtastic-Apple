@@ -175,9 +175,6 @@ struct WaypointMarkerView: View {
 				.rotationEffect(Angle(degrees: bearing))
 	}
 
-	private func textAngle() -> Angle {
-		Angle(degrees: -compassDegrees - bearing)
-	}
 }
 
 
