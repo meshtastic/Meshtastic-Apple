@@ -205,7 +205,7 @@ struct CannedMessagesConfig: View {
 								_ = try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
 								await MainActor.run { hasChanges = false }
 							} catch {
-								Logger.mesh.error("Save config failed")
+								Logger.mesh.error("Unable to save canned message module config: \(error)")
 							}
 						}
 					}
