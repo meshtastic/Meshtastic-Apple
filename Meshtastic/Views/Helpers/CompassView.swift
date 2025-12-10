@@ -102,7 +102,7 @@ struct CompassView: View {
 									.fontWeight(.semibold)
 							}
 						}
-						HStack{
+						HStack {
 							Image(systemName: "location.north")
 							if let bearing = bearingToWaypoint() {
 								Text("Bearing: \(String(format: "%.0f°", bearing))")
