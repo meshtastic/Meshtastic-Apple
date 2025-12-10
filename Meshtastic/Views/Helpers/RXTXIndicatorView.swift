@@ -12,7 +12,7 @@ import OSLog
 struct RXTXIndicatorWidget: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPopoverOpen = false
-	
+
 	let fontSize: CGFloat = 7.0
 	var body: some View {
 		Button( action: {
@@ -38,7 +38,7 @@ struct RXTXIndicatorWidget: View {
 			#else
 				self.isPopoverOpen.toggle()
 			#endif
-			
+
 		}) {
 			VStack(spacing: 3.0) {
 				HStack(spacing: 2.0) {
@@ -102,9 +102,9 @@ struct LEDIndicator: View {
 	@Environment(\.colorScheme) var colorScheme
 	@Binding var flash: Int
 	let color: Color
-	
+
 	@State private var brightness: Double = 0.0
-	
+
 	var body: some View {
 		Circle()
 			.foregroundColor(color.opacity(brightness))
