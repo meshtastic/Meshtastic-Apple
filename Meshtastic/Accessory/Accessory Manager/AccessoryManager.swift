@@ -706,6 +706,13 @@ extension AccessoryManager {
 		return activeConnection?.device.firmwareVersion
 	}
 
+	var connectedDeviceRole: DeviceRoles? {
+		guard let connectedNodeNum = activeDeviceNum else { return nil }
+		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context) else { return nil }
+		guard let connectedNodeUser = connectedNode.user else { return nil }
+		return DeviceRoles(rawValue: Int(connectedNodeUser.role))
+	}
+
 	func checkIsVersionSupported(forVersion: String) -> Bool {
 		let myVersion = connectedVersion ?? "0.0.0"
 		let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||
