@@ -140,7 +140,7 @@ public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext
 	}
 }
 
-public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
+public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool, includeAppLevelData: Bool = false) {
 
 	let persistenceController = PersistenceController.shared.container
 	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
@@ -150,13 +150,17 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 		var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		let entityName = entity.name ?? "UNK"
 
-		if includeRoutes {
-			deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-		} else if !includeRoutes {
-			if !(entityName.contains("RouteEntity") || entityName.contains("LocationEntity")) {
-				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-			}
+		if !includeRoutes, ["RouteEntity", "LocationEntity"].contains(entityName) {
+			continue
 		}
+		
+		if !includeAppLevelData, ["DeviceHardwareEntity","DeviceHardwareImageEntity", "DeviceHardwareTagEntity"].contains(entityName) {
+			// These are non-node-specific "app level" data, keep them even when switching nodes
+			continue
+		}
+		
+		// Execute the delete for this entry
+		deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		do {
 			try context.executeAndMergeChanges(using: deleteRequest)
 		} catch {
@@ -299,11 +303,11 @@ func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, context: 
 						newUser.publicKey = newUserMessage.publicKey
 					}
 
-					Task {
-						Api().loadDeviceHardwareData { (hw) in
-							let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
-							newUser.hwDisplayName = dh?.displayName
-						}
+					let fetchRequest = DeviceHardwareEntity.fetchRequest()
+					fetchRequest.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
+					let fetchedHardware = try context.fetch(fetchRequest)
+					if let hardwareEntity = fetchedHardware.first {
+						newUser.hwDisplayName = hardwareEntity.displayName
 					}
 					newNode.user = newUser
 
@@ -412,10 +416,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, context: 
 						fetchedNode[0].user?.pkiEncrypted = true
 						fetchedNode[0].user?.publicKey = nodeInfoMessage.user.publicKey
 					}
-					Task {
-						Api().loadDeviceHardwareData { (hw) in
-							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
-							fetchedNode[0].user?.hwDisplayName = dh?.displayName
+					
+					if let user = fetchedNode.first?.user {
+						let fetchRequest = DeviceHardwareEntity.fetchRequest()
+						fetchRequest.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+						let fetchedHardware = try context.fetch(fetchRequest)
+						if let hardwareEntity = fetchedHardware.first {
+							user.hwDisplayName = hardwareEntity.displayName
 						}
 					}
 				}

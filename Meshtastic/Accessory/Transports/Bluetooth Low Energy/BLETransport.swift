@@ -353,6 +353,9 @@ class BLETransport: Transport {
 					if let shortName = fetchedMyInfo[0].user?.shortName {
 						device.shortName = shortName
 					}
+					if let version = fetchedMyInfo[0].user?.userNode?.metadata?.firmwareVersion {
+						device.firmwareVersion = version
+					}
 				}
 			} catch {
 				// No-op

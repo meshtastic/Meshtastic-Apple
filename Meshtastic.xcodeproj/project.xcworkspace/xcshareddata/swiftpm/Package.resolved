@@ -1,5 +1,5 @@
 {
-  "originHash" : "2569905853aec088d5bac6b540eac77f78963f88b406e8dd95a88c40623cc8b4",
+  "originHash" : "943f1047f8d99b0600f1c91f14d7bf4808ab1caf172ae4d7f3ebea325c27437f",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -15,8 +15,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/DataDog/dd-sdk-ios.git",
       "state" : {
-        "revision" : "d0a42d8067665cb6ee86af51251ccc071f62bd54",
-        "version" : "2.29.0"
+        "revision" : "8d67e973ff4a958cb536263cb816646ee904c508",
+        "version" : "3.3.0"
+      }
+    },
+    {
+      "identity" : "ios-dfu-library",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NordicSemiconductor/IOS-DFU-Library",
+      "state" : {
+        "revision" : "4773d7eed944684dfdd177a4a91af8a89ebbaac8",
+        "version" : "4.16.0"
       }
     },
     {
@@ -62,6 +71,24 @@
       "state" : {
         "revision" : "102a647b573f60f73afdce5613a51d71349fe507",
         "version" : "1.30.0"
+      }
+    },
+    {
+      "identity" : "swiftdraw",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swhitty/SwiftDraw",
+      "state" : {
+        "revision" : "17d55c17540f3eb10685058e803d7ae73d9bf9d3",
+        "version" : "0.25.3"
+      }
+    },
+    {
+      "identity" : "zipfoundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/weichsel/ZIPFoundation",
+      "state" : {
+        "revision" : "02b6abe5f6eef7e3cbd5f247c5cc24e246efcfe0",
+        "version" : "0.9.19"
       }
     }
   ],

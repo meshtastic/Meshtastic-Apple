@@ -63,4 +63,49 @@ extension URL {
 	var creationDate: Date? {
 		return attributes?[.creationDate] as? Date
 	}
+	
+	/// Checks if the URL points to a valid file without downloading the body.
+	 /// - Parameter timeout: How long to wait before failing (default: 5 seconds).
+	 /// - Returns: True if the server returns a 200 OK status.
+	 func isValidDownload(timeout: TimeInterval = 5.0) async -> Bool {
+		 var request = URLRequest(url: self)
+		 request.httpMethod = "HEAD"
+		 request.timeoutInterval = timeout
+		 
+		 do {
+			 let (_, response) = try await URLSession.shared.data(for: request)
+			 
+			 guard let httpResponse = response as? HTTPURLResponse else {
+				 return false
+			 }
+			 
+			 // Accept 200 (OK).
+			 // Depending on your needs, you might also accept 200...299
+			 return httpResponse.statusCode == 200
+		 } catch {
+			 return false
+		 }
+	 }
+	 
+	 /// Checks if the URL points to a valid file (Closure based for older iOS).
+	 func isValidDownload(timeout: TimeInterval = 5.0, completion: @escaping (Bool) -> Void) {
+		 var request = URLRequest(url: self)
+		 request.httpMethod = "HEAD"
+		 request.timeoutInterval = timeout
+		 
+		 let task = URLSession.shared.dataTask(with: request) { _, response, error in
+			 if let _ = error {
+				 completion(false)
+				 return
+			 }
+			 
+			 if let httpResponse = response as? HTTPURLResponse,
+				httpResponse.statusCode == 200 {
+				 completion(true)
+			 } else {
+				 completion(false)
+			 }
+		 }
+		 task.resume()
+	 }
 }

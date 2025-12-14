@@ -9,6 +9,7 @@ import SwiftUI
 import OSLog
 import TipKit
 import MeshtasticProtobufs
+import CoreData
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
@@ -311,6 +312,77 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
+			NavigationLink {
+				CoreDataBrowser()
+			} label: {
+				Label("Database Browser", systemImage: "server.rack")
+			}
+			Button {
+				Task.detached {
+					await MainActor.run {
+						let persistenceController = PersistenceController.shared.container
+						for i in 0...persistenceController.managedObjectModel.entities.count-1 {
+							
+							let entity = persistenceController.managedObjectModel.entities[i]
+							let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
+							var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+							let entityName = entity.name ?? "UNK"
+							
+							if !["DeviceHardwareEntity","DeviceHardwareImageEntity", "DeviceHardwareTagEntity"].contains(entityName) {
+								// These are non-node-specific "app level" data, keep them even when switching nodes
+								continue
+							}
+							
+							// Execute the delete for this entry
+							deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+							do {
+								try context.executeAndMergeChanges(using: deleteRequest)
+							} catch {
+								Logger.data.error("\(error.localizedDescription, privacy: .public)")
+							}
+						}
+					}
+					Logger.data.debug("CoreData Delete complete, waiting 3 seconds")
+					try? await Thread.sleep(forTimeInterval: 5.0)
+					Logger.data.debug("Refreshing from API")
+					try? await MeshtasticAPI.shared.refreshDevicesAPIData()
+				}
+			} label: {
+				Text("Test Devices API Refresh")
+			}
+			Button {
+				Task.detached {
+					await MainActor.run {
+						let persistenceController = PersistenceController.shared.container
+						for i in 0...persistenceController.managedObjectModel.entities.count-1 {
+							
+							let entity = persistenceController.managedObjectModel.entities[i]
+							let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
+							var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+							let entityName = entity.name ?? "UNK"
+							
+							if !["FirmwareReleaseEntity"].contains(entityName) {
+								// These are non-node-specific "app level" data, keep them even when switching nodes
+								continue
+							}
+							
+							// Execute the delete for this entry
+							deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+							do {
+								try context.executeAndMergeChanges(using: deleteRequest)
+							} catch {
+								Logger.data.error("\(error.localizedDescription, privacy: .public)")
+							}
+						}
+					}
+					Logger.data.debug("CoreData Delete complete, waiting 3 seconds")
+					try? await Thread.sleep(forTimeInterval: 5.0)
+					Logger.data.debug("Refreshing Firmware from API")
+					try? await MeshtasticAPI.shared.refreshFirmwareAPIData()
+				}
+			} label: {
+				Text("Test Firmware API Refresh")
+			}
 		}
 	}
 
@@ -520,7 +592,11 @@ struct Settings: View {
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:
-					Firmware(node: node)
+					if let firmwareView = Firmware(node: node) {
+						firmwareView
+					} else {
+						Text("Please connect to a device to see firmware updates.")
+					}
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

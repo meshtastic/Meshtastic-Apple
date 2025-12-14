@@ -13,7 +13,8 @@ struct NodeInfoItem: View {
 
 	@ObservedObject var node: NodeInfoEntity
 	@State private var currentDevice: DeviceHardware?
-
+	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
+	
 	var body: some View {
 		if let user = node.user {
 		ViewThatFits(in: .horizontal) {
@@ -35,37 +36,29 @@ struct NodeInfoItem: View {
 						Spacer()
 					}
 					VStack(alignment: .center) {
-						HStack {
-							if user.hardwareImage != "UNSET" {
-								Image(user.hardwareImage ?? "UNSET")
-									.resizable()
-									.aspectRatio(contentMode: .fit)
-									.frame(maxHeight: 150)
-									.cornerRadius(5)
-							} else {
-								Image(systemName: "person.crop.circle.badge.questionmark")
-									.resizable()
-									.aspectRatio(contentMode: .fit)
-									.frame(width: 75, height: 75)
-									.cornerRadius(5)
-							}
-						}
+//						HStack {
+							DeviceHardwareImage(hwId: user.hwModelId)
+								.frame(width: 100, height: 100)
+								.cornerRadius(5)
+//							if let image = try? meshtasticAPI.imageForNode(hwModelId: user.hwModelId) {
+//								image
+//									.resizable()
+//									.aspectRatio(contentMode: .fit)
+//									.frame(maxHeight: 150)
+//									.cornerRadius(5)
+//							} else {
+//								Image(systemName: "person.crop.circle.badge.questionmark")
+//									.resizable()
+//									.aspectRatio(contentMode: .fit)
+//									.frame(width: 75, height: 75)
+//									.cornerRadius(5)
+//							}
+//						}
 						.accessibilityElement(children: .combine)
 					}
 					Spacer()
 				}
 				.accessibilityElement(children: .combine)
-				.onAppear {
-					Api().loadDeviceHardwareData { (hw) in
-						for device in hw {
-							let currentHardware = node.user?.hwModel ?? "UNSET"
-							let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "").uppercased()
-							if deviceString == currentHardware {
-								currentDevice = device
-							}
-						}
-					}
-				}
 			}
 			.listRowSeparator(.hidden)
 			HStack {

@@ -127,6 +127,8 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 			myInfoEntity.deviceId = myInfo.deviceID
+			myInfoEntity.pioEnv = myInfo.pioEnv
+			
 			do {
 				try context.save()
 				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
@@ -141,6 +143,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			fetchedMyInfo[0].peripheralId = peripheralId
 			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 			fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
+			fetchedMyInfo[0].pioEnv = myInfo.pioEnv
 
 			do {
 				try context.save()
@@ -314,12 +317,14 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.shortName = nodeInfo.user.shortName
 				newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 				newUser.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
-				Task {
-					Api().loadDeviceHardwareData { (hw) in
-						let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
-						newUser.hwDisplayName = dh?.displayName
-					}
+				
+				let fetchRequest = DeviceHardwareEntity.fetchRequest()
+				fetchRequest.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
+				let fetchedHardware = try context.fetch(fetchRequest)
+				if let hardwareEntity = fetchedHardware.first {
+					newUser.hwDisplayName = hardwareEntity.displayName
 				}
+				
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
 				if !nodeInfo.user.publicKey.isEmpty {
@@ -429,22 +434,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 						fetchedNode[0].user?.unmessagable = false
 					}
 				}
-				Task {
-					Api().loadDeviceHardwareData { (hw: [DeviceHardware]) in
-						guard !hw.isEmpty,
-							  let firstNode = fetchedNode.first,
-							  let user = firstNode.user else {
-							Logger.data.error("Error: Required DeviceHardware data is missing or array is empty.")
-							return
-						}
-
-						let dh = hw.first(where: { $0.hwModel == user.hwModelId })
-
-						if let deviceHardware = dh {
-							firstNode.user?.hwDisplayName = deviceHardware.displayName
-						} else {
-							Logger.data.error("No matching hardware model found for ID: \(user.hwModelId, privacy: .public)")
-						}
+				
+				if let user = fetchedNode.first?.user {
+					let fetchRequest = DeviceHardwareEntity.fetchRequest()
+					fetchRequest.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+					let fetchedHardware = try context.fetch(fetchRequest)
+					if let hardwareEntity = fetchedHardware.first {
+						user.hwDisplayName = hardwareEntity.displayName
 					}
 				}
 			} else {
