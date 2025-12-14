@@ -27,6 +27,7 @@ struct NodeDetail: View {
 	var connectedNode: NodeInfoEntity?
 	@ObservedObject	var node: NodeInfoEntity
 	@State private var environmentSectionHeight: CGFloat = 0
+	@State var showingCompassSheet = false
 	
 	var body: some View {
 		NavigationStack {
@@ -472,6 +473,17 @@ struct NodeDetail: View {
 									)
 								}
 								if node.hasPositions {
+								#if !targetEnvironment(macCatalyst)
+									Button {
+										showingCompassSheet = true
+									} label: {
+										Label {
+											Text("Open Compass")
+										} icon: {
+											Image(systemName: "safari")
+										}
+									}
+								#endif
 									NavigateToButton(node: node)
 								}
 								IgnoreNodeButton(
@@ -558,6 +570,9 @@ struct NodeDetail: View {
 						}
 					}
 				}
+				.sheet(isPresented: $showingCompassSheet) {
+					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointName: node.user?.longName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+						}
 				.onAppear {
 					scrollView.scrollTo("topOfList", anchor: .top)
 				}
