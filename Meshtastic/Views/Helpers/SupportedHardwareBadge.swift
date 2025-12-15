@@ -34,9 +34,7 @@ struct SupportedHardwareBadge: View {
 	}
 	
 	var body: some View {
-		switch hardware.count {
-		case 1:
-			let device = hardware[0]
+		if let device = hardware.first {
 			VStack {
 				Image(systemName: device.activelySupported ? "checkmark.seal.fill" : "x.circle")
 					.font(.largeTitle)
@@ -45,26 +43,23 @@ struct SupportedHardwareBadge: View {
 					.foregroundStyle(.gray)
 					.font(.caption2)
 			}
-			
-		default:
-			if meshtasticAPI.isLoadingDeviceList {
-				// Still loading the database from the API
-				VStack {
-					ProgressView()
-					Text("Loading")
-						.foregroundStyle(.gray)
-						.font(.caption2)
-				}
-			} else {
-				// Can't find this hardware in the database
-				VStack {
-					Image(systemName: "questionmark.circle.fill")
-						.font(.largeTitle)
-						.foregroundStyle(.gray)
-					Text("Unknown")
-						.foregroundStyle(.gray)
-						.font(.caption2)
-				}
+		} else if meshtasticAPI.isLoadingDeviceList {
+			// Still loading the database from the API
+			VStack {
+				ProgressView()
+				Text("Loading")
+					.foregroundStyle(.gray)
+					.font(.caption2)
+			}
+		} else {
+			// Can't find this hardware in the database
+			VStack {
+				Image(systemName: "questionmark.circle.fill")
+					.font(.largeTitle)
+					.foregroundStyle(.gray)
+				Text("Unknown")
+					.foregroundStyle(.gray)
+					.font(.caption2)
 			}
 		}
 	}

@@ -12,7 +12,6 @@ import MapKit
 struct NodeInfoItem: View {
 
 	@ObservedObject var node: NodeInfoEntity
-	@State private var currentDevice: DeviceHardware?
 	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
 	
 	var body: some View {
@@ -20,17 +19,10 @@ struct NodeInfoItem: View {
 		ViewThatFits(in: .horizontal) {
 			HStack {
 				Spacer()
-					if user.hwModel != "UNSET" {
+						if let hwModelId = node.user?.hwModelId {
 						VStack(alignment: .center) {
 							Spacer()
-							Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "seal.fill")
-								.resizable()
-								.aspectRatio(contentMode: .fill)
-								.frame(width: 75, height: 75)
-								.foregroundStyle(currentDevice?.activelySupported ?? false ? .green : .red)
-							Text( currentDevice?.activelySupported ?? false ? "Full Support" : "Community Support")
-								.foregroundStyle(.gray)
-								.font(.callout)
+							SupportedHardwareBadge(hwModelId: hwModelId)
 						}
 						.accessibilityElement(children: .combine)
 						Spacer()

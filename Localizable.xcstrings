@@ -8119,6 +8119,7 @@
       }
     },
     "Community Support" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -16011,6 +16012,7 @@
       }
     },
     "Full Support" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
