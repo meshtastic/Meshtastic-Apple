@@ -78,50 +78,60 @@ class DFUViewModel: NSObject, ObservableObject {
 extension DFUViewModel: DFUServiceDelegate {
 	
     func dfuStateDidChange(to state: DFUState) {
-        // Map Nordic's internal state to our UI string
-        switch state {
-		case .starting:
-			UIApplication.shared.isIdleTimerDisabled = true
-			self.rotatingMessage = "This can take a while. Please be patient."
-			self.state = .starting
-        case .completed:
-			UIApplication.shared.isIdleTimerDisabled = false
-            self.state = .success
-            self.statusMessage = "Update Complete"
-			self.rotatingMessage = "Firmware Update Successful!"
-            self.progress = 1.0
-        case .disconnecting:
-			UIApplication.shared.isIdleTimerDisabled = false
-            self.statusMessage = "Disconnecting..."
-        case .aborted:
-			UIApplication.shared.isIdleTimerDisabled = false
-            self.state = .error("Aborted")
-            self.statusMessage = "Update Aborted"
-        default:
-            self.statusMessage = state.description
-        }
-		Logger.services.info("NRF DFU State changed: \(state.description)")
+		DispatchQueue.main.async {
+			// Map Nordic's internal state to our UI string
+			switch state {
+			case .starting:
+				UIApplication.shared.isIdleTimerDisabled = true
+				self.rotatingMessage = "This can take a while. Please be patient."
+				self.state = .starting
+			case .completed:
+				UIApplication.shared.isIdleTimerDisabled = false
+				self.state = .success
+				self.statusMessage = "Update Complete"
+				self.rotatingMessage = "Firmware Update Successful!"
+				self.progress = 1.0
+			case .disconnecting:
+				UIApplication.shared.isIdleTimerDisabled = false
+				self.statusMessage = "Disconnecting..."
+			case .aborted:
+				UIApplication.shared.isIdleTimerDisabled = false
+				self.state = .error("Aborted")
+				self.statusMessage = "Update Aborted"
+			case .uploading:
+				self.state = .uploading
+				self.statusMessage = "Uploading..."
+			default:
+				self.statusMessage = state.description
+			}
+			Logger.services.info("NRF DFU State changed: \(state.description)")
+		}
     }
     
     func dfuError(_ error: DFUError, didOccurWithMessage message: String) {
-        self.state = .error(message)
-        self.statusMessage = "Error: \(message)"
+		DispatchQueue.main.async {
+			self.state = .error(message)
+			self.statusMessage = "Error: \(message)"
+		}
     }
 }
 
 // MARK: - DFU Progress Delegate (Progress Bar)
 extension DFUViewModel: DFUProgressDelegate {
     func dfuProgressDidChange(for part: Int, outOf totalParts: Int, to progress: Int, currentSpeedBytesPerSecond: Double, avgSpeedBytesPerSecond: Double) {
-        // Convert 0-100 Int to 0.0-1.0 Double for SwiftUI ProgressView
-        self.progress = Double(progress) / 100.0
-		
-		if lastRotatingMessageUpdate.timeIntervalSinceNow < -10 {
-			// Last message was 10 seconds ago. This insures messages don't rotate too fast
-			lastRotatingMessageUpdate = Date()
-			self.rotatingMessageIndex = (self.rotatingMessageIndex + 1) % self.rotatingMessages.count
-			self.rotatingMessage = self.rotatingMessages[self.rotatingMessageIndex]
+		DispatchQueue.main.async {
+			// Convert 0-100 Int to 0.0-1.0 Double for SwiftUI ProgressView
+			self.progress = Double(progress) / 100.0
+			
+			if self.lastRotatingMessageUpdate.timeIntervalSinceNow < -10 {
+				// Last message was 10 seconds ago. This insures messages don't rotate too fast
+				self.lastRotatingMessageUpdate = Date()
+				self.rotatingMessageIndex = (self.rotatingMessageIndex + 1) % self.rotatingMessages.count
+				self.rotatingMessage = self.rotatingMessages[self.rotatingMessageIndex]
+			}
+			Logger.services.info("NRF DFU Progress: \(progress)%")
 		}
-    }
+	}
 }
 
 // MARK: - Logger Delegate (Optional)
