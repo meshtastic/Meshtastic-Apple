@@ -10,6 +10,65 @@ import OSLog
 import SwiftUI
 import CoreData
 
+// These structs are public becase tehy are used elsewhere in the app to represent
+// fields in the Core Data database.
+enum ReleaseType: String {
+	case stable = "Stable"
+	case alpha = "Alpha"
+	case unlisted = "Unlisted"
+}
+
+enum Architecture: String, Codable, Identifiable {
+	case esp32 = "esp32"
+	case esp32C3 = "esp32-c3"
+	case esp32S3 = "esp32-s3"
+	case nrf52840 = "nrf52840"
+	case rp2040 = "rp2040"
+	case esp32C6 = "esp32-c6"
+
+	var id: String { rawValue }
+}
+
+// These structs are private because they are only used for decoding API responses.
+// The rest of the app should be using Core Data entities.
+private struct DeviceHardware: Codable {
+	let hwModel: Int
+	let hwModelSlug: String
+	let platformioTarget: String
+	let architecture: Architecture
+	let activelySupported: Bool
+	let displayName: String
+	let supportLevel: Int?
+	let tags: [String]?
+	let images: [String]?
+	let requiresDfu: Bool?
+	let hasInkHud: Bool?
+	let partitionScheme: String?
+	let hasMui: Bool?
+}
+
+/// Firmware Release Lists
+private struct FirmwareReleases: Codable {
+	let releases: Releases
+	let pullRequests: [FirmwareRelease]
+}
+private struct Releases: Codable {
+	let stable, alpha: [FirmwareRelease]
+}
+private struct FirmwareRelease: Codable {
+	let id, title: String
+	let pageURL: String
+	let zipURL: String
+	let releaseNotes: String
+
+	enum CodingKeys: String, CodingKey {
+		case id, title
+		case pageURL = "page_url"
+		case zipURL = "zip_url"
+		case releaseNotes = "release_notes"
+	}
+}
+
 extension MeshtasticAPI {
 	enum MeshtasticAPIError: Error, LocalizedError {
 		case timedOut(TimeInterval)
@@ -217,7 +276,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 	}
 	
-	private func processFirmware(release: FirmwareRelease, releaseType: FirmwareRelease.ReleaseType) async {
+	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType) async {
 		let context = container.newBackgroundContext()
 
 		await context.perform {
@@ -377,11 +436,11 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// Helper to build compound predicate for firmware deletion (selects orphans)
 	static func firmwareCompoundPredicate(stableVersions: Set<String>, alphaVersions: Set<String>) -> NSPredicate {
 		let stablePredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-			NSPredicate(format: "releaseType == %@", FirmwareRelease.ReleaseType.stable.rawValue),
+			NSPredicate(format: "releaseType == %@", ReleaseType.stable.rawValue),
 			NSPredicate(format: "NOT (versionId IN %@)", stableVersions)
 		])
 		let alphaPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-			NSPredicate(format: "releaseType == %@", FirmwareRelease.ReleaseType.alpha.rawValue),
+			NSPredicate(format: "releaseType == %@", ReleaseType.alpha.rawValue),
 			NSPredicate(format: "NOT (versionId IN %@)", alphaVersions)
 		])
 		return NSCompoundPredicate(orPredicateWithSubpredicates: [stablePredicate, alphaPredicate])

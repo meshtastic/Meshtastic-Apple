@@ -118,7 +118,7 @@ class FirmwareViewModel: ObservableObject {
 		}
 	}
 
-	func mostRecentFirmwareVersion(forReleaseType releaseType: FirmwareRelease.ReleaseType) -> String? {
+	func mostRecentFirmwareVersion(forReleaseType releaseType: ReleaseType) -> String? {
 		let context = PersistenceController.shared.container.newBackgroundContext()
 		var versionId: String?
 		
@@ -142,7 +142,7 @@ class FirmwareViewModel: ObservableObject {
 		return firmwareFiles.filter({ $0.versionId == versionId })
 	}
 	
-	func mostRecentFirmware(forReleaseType releaseType: FirmwareRelease.ReleaseType) -> [FirmwareFile] {
+	func mostRecentFirmware(forReleaseType releaseType: ReleaseType) -> [FirmwareFile] {
 		if let versionId = mostRecentFirmwareVersion(forReleaseType: releaseType) {
 			return firmwareFiles.filter { $0.releaseType == releaseType && $0.versionId == versionId }
 		} else {
@@ -167,7 +167,7 @@ class FirmwareViewModel: ObservableObject {
 		return !downloadedFirmware(includeInProgressDownloads: false).isEmpty
 	}
 	
-	func delete(_ filesToDelete:[FirmwareFile]) {
+	func delete(_ filesToDelete: [FirmwareFile]) {
 		// 1. Create a bucket for files that were actually deleted
 		var deletedFiles = Set<FirmwareFile>()
 

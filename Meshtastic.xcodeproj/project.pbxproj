@@ -20,7 +20,6 @@
 		23148E302EE1CCE500F0DB2C /* MeshtasticAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23148E2F2EE1CCE500F0DB2C /* MeshtasticAPI.swift */; };
 		2315D19D2EECB3DA00E0FAE7 /* UTI+UF2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2315D19C2EECB3D400E0FAE7 /* UTI+UF2.swift */; };
 		2315D1A02EECB44800E0FAE7 /* UF2MassStorageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2315D19F2EECB44800E0FAE7 /* UF2MassStorageView.swift */; };
-		2315D1A22EECD2CB00E0FAE7 /* APIStructs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2315D1A12EECD2BE00E0FAE7 /* APIStructs.swift */; };
 		2315D1A52EED94E800E0FAE7 /* FirmwareFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2315D1A42EED94E800E0FAE7 /* FirmwareFile.swift */; };
 		2315D1A82EEF2ED400E0FAE7 /* SwiftDraw in Frameworks */ = {isa = PBXBuildFile; productRef = 2315D1A72EEF2ED400E0FAE7 /* SwiftDraw */; };
 		231A53782E69ADB900216B99 /* NodeFilterParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231A53772E69ADB900216B99 /* NodeFilterParameters.swift */; };
@@ -361,7 +360,6 @@
 		23148E2F2EE1CCE500F0DB2C /* MeshtasticAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAPI.swift; sourceTree = "<group>"; };
 		2315D19C2EECB3D400E0FAE7 /* UTI+UF2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTI+UF2.swift"; sourceTree = "<group>"; };
 		2315D19F2EECB44800E0FAE7 /* UF2MassStorageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UF2MassStorageView.swift; sourceTree = "<group>"; };
-		2315D1A12EECD2BE00E0FAE7 /* APIStructs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIStructs.swift; sourceTree = "<group>"; };
 		2315D1A42EED94E800E0FAE7 /* FirmwareFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareFile.swift; sourceTree = "<group>"; };
 		231A53772E69ADB900216B99 /* NodeFilterParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeFilterParameters.swift; sourceTree = "<group>"; };
 		231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnList.swift; sourceTree = "<group>"; };
@@ -820,7 +818,6 @@
 		23148E2E2EE1CCB100F0DB2C /* API */ = {
 			isa = PBXGroup;
 			children = (
-				2315D1A12EECD2BE00E0FAE7 /* APIStructs.swift */,
 				23DC51382EE76DA20023838A /* Helpers */,
 				23148E2F2EE1CCE500F0DB2C /* MeshtasticAPI.swift */,
 			);
@@ -2092,7 +2089,6 @@
 				B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */,
 				232ED4C32E2C5E89009DA392 /* TCPTransport.swift in Sources */,
 				BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */,
-				2315D1A22EECD2CB00E0FAE7 /* APIStructs.swift in Sources */,
 				D93068D72B8146690066FBC8 /* MessageText.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */,
 			);

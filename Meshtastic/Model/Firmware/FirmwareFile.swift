@@ -70,7 +70,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	let remoteUrl: URL?
 	let versionId: String
 	let platformioTarget: String
-	let releaseType: FirmwareRelease.ReleaseType
+	let releaseType: ReleaseType
 	@Published var status: DownloadStatus
 	let firmwareType: FirmwareType
 	let architecure: Architecture
@@ -103,17 +103,17 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		
 		// Thread safe operation to get the versionf`rom the given FirmwareReleaseEntity
 		var version: String?
-		var releaseType: FirmwareRelease.ReleaseType?
+		var releaseType: ReleaseType?
 		var releaseNotes: String?
 		if let context = firmware.managedObjectContext {
 			context.performAndWait {
 				version = firmware.versionId
-				releaseType = firmware.releaseType.flatMap { FirmwareRelease.ReleaseType(rawValue: $0) }
+				releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) }
 				releaseNotes = firmware.releaseNotes
 			}
 		} else {
 			version = firmware.versionId
-			releaseType = firmware.releaseType.flatMap { FirmwareRelease.ReleaseType(rawValue: $0) }
+			releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) }
 			releaseNotes = firmware.releaseNotes
 		}
 		
@@ -235,14 +235,14 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		self.architecure = architecture
 		
 		// Determine release type
-		var releaseType: FirmwareRelease.ReleaseType = .unlisted
+		var releaseType: ReleaseType = .unlisted
 		var releaseNotes: String?
 		context.performAndWait {
 			let firmwareFetchRequest = FirmwareReleaseEntity.fetchRequest()
 			firmwareFetchRequest.predicate = NSPredicate(format: "versionId == %@", version)
 			firmwareFetchRequest.fetchLimit = 1
 			if let firmware = try? context.fetch(firmwareFetchRequest).first {
-				releaseType = firmware.releaseType.flatMap { FirmwareRelease.ReleaseType(rawValue: $0) } ?? .unlisted
+				releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) } ?? .unlisted
 				releaseNotes = firmware.releaseNotes
 			}
 		}
