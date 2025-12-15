@@ -7,16 +7,24 @@
 
 import SwiftUI
 
-struct SupportedHardwareBadge<T>: View where T: BinaryInteger, T: CVarArg {
-	let hwModelId: T
+struct SupportedHardwareBadge: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@FetchRequest var hardware: FetchedResults<DeviceHardwareEntity>
 	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
 	
-	init(hwModelId: T) {
-		self.hwModelId = hwModelId
+	init<T>(hwModelId: T) where T: BinaryInteger, T: CVarArg {
 		let predicate = NSPredicate(format: "hwModel == %d", hwModelId)
+		_hardware = FetchRequest(
+			entity: DeviceHardwareEntity.entity(),
+			sortDescriptors: [NSSortDescriptor(key: "hwModelSlug", ascending: true)],
+			predicate: predicate,
+			animation: .default
+		)
+	}
+	
+	init(platformioTarget: String) {
+		let predicate = NSPredicate(format: "platformioTarget == %@", platformioTarget)
 		_hardware = FetchRequest(
 			entity: DeviceHardwareEntity.entity(),
 			sortDescriptors: [NSSortDescriptor(key: "hwModelSlug", ascending: true)],
@@ -50,7 +58,7 @@ struct SupportedHardwareBadge<T>: View where T: BinaryInteger, T: CVarArg {
 			} else {
 				// Can't find this hardware in the database
 				VStack {
-					Image(systemName:"questionmark.circle.fill")
+					Image(systemName: "questionmark.circle.fill")
 						.font(.largeTitle)
 						.foregroundStyle(.gray)
 					Text("Unknown")

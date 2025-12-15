@@ -9,18 +9,18 @@ import SwiftUI
 import CoreData
 import SwiftDraw
 
-struct DeviceHardwareImage<T>: View where T: BinaryInteger, T: CVarArg {
-	@Environment(\.managedObjectContext) var context
-	@FetchRequest var hardware: FetchedResults<DeviceHardwareEntity>
-	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
+// 1. THE LOADER (Public API)
+// Responsibilities: Construct the FetchRequest only.
+// It creates no heavy objects and runs no logic in init.
+struct DeviceHardwareImage: View {
 	
-	// This closure lets the caller define modifiers on the Image
-	@State private var gridSize: CGSize = .zero
+	// We hold the fetch request here
+	@FetchRequest var hardwareResults: FetchedResults<DeviceHardwareEntity>
 	
-	init(hwId: T) {
-		
+	// Init for Integer ID
+	init<T>(hwId: T) where T: BinaryInteger, T: CVarArg {
 		let predicate = NSPredicate(format: "hwModel == %d", hwId)
-		_hardware = FetchRequest(
+		_hardwareResults = FetchRequest(
 			entity: DeviceHardwareEntity.entity(),
 			sortDescriptors: [NSSortDescriptor(key: "hwModelSlug", ascending: true)],
 			predicate: predicate,
@@ -28,147 +28,160 @@ struct DeviceHardwareImage<T>: View where T: BinaryInteger, T: CVarArg {
 		)
 	}
 	
-	var potentialImages: [DeviceHardwareImageEntity] {
-		var returnImages = [DeviceHardwareImageEntity]()
-		var seenFileNames = Set<String>()
-		for item in hardware {
-			if let imageList = item.images  as? Set<DeviceHardwareImageEntity> {
-				for image in imageList {
-					if image.svgData != nil {
-						let name = image.fileName ?? ""
-						if !seenFileNames.contains(name) {
-							seenFileNames.insert(name)
-							returnImages.append(image)
-						}
-					}
-					if returnImages.count >= 4 {
-						break
-					}
-				}
-			}
-		}
-		
-		// Sort to keep the order somewhat deterministic
-		return returnImages.sorted(by: {$0.fileName ?? "" < $1.fileName ?? ""})
+	// Init for String Target
+	init(platformioTarget: String) {
+		let predicate = NSPredicate(format: "platformioTarget == %@", platformioTarget)
+		_hardwareResults = FetchRequest(
+			entity: DeviceHardwareEntity.entity(),
+			sortDescriptors: [NSSortDescriptor(key: "hwModelSlug", ascending: true)],
+			predicate: predicate,
+			animation: .default
+		)
 	}
 	
 	var body: some View {
-		// 1. Define the footprint.
-		// We use Color.clear so it takes up space but is invisible.
-		Color.clear
-			.aspectRatio(1, contentMode: .fit) // Enforce square aspect ratio (or change as needed)
-		// 2. Measure the size of this footprint using the new modifier
-			.onGeometryChange(for: CGSize.self) { proxy in
-				proxy.size
-			} action: { newValue in
-				gridSize = newValue
+		// Pass the raw fetched results to the logic layer
+		DeviceHardwareImageProcessor(hardware: hardwareResults)
+	}
+}
+
+// 2. THE PROCESSOR (Internal)
+// Responsibilities: Convert Core Data Entities into a flat array of images.
+// This uses .task to step out of the Layout Loop.
+private struct DeviceHardwareImageProcessor: View {
+	let hardware: FetchedResults<DeviceHardwareEntity>
+	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
+	
+	// We buffer the processed images in State.
+	// This prevents the Layout pass from triggering Core Data faults.
+	@State private var sortedImages: [DeviceHardwareImageEntity] = []
+	
+	var body: some View {
+		DeviceHardwareImageLayout(
+			images: sortedImages,
+			isLoading: meshtasticAPI.isLoadingDeviceList
+		)
+		.task(id: hardware.count) {
+			// Re-calculate only when the hardware list actually changes,
+			// NOT when the scrollview bounces or layout shifts.
+			self.sortedImages = processImages()
+		}
+	}
+	
+	// The heavy logic moved out of the computed property
+	private func processImages() -> [DeviceHardwareImageEntity] {
+		var returnImages = [DeviceHardwareImageEntity]()
+		var seenFileNames = Set<String>()
+		
+		// This traversal happens in the background task now
+		for item in hardware {
+			guard let imageList = item.images as? Set<DeviceHardwareImageEntity> else { continue }
+			
+			for image in imageList {
+				if image.svgData != nil {
+					let name = image.fileName ?? ""
+					if !seenFileNames.contains(name) {
+						seenFileNames.insert(name)
+						returnImages.append(image)
+					}
+				}
+				if returnImages.count >= 4 { break }
 			}
-		// 3. Draw the actual content on top using the measured size
+			if returnImages.count >= 4 { break }
+		}
+		
+		return returnImages.sorted(by: { $0.fileName ?? "" < $1.fileName ?? "" })
+	}
+}
+
+// 3. THE LAYOUT (Pure UI)
+// Responsibilities: Draw boxes. No Core Data knowledge.
+private struct DeviceHardwareImageLayout: View {
+	let images: [DeviceHardwareImageEntity]
+	let isLoading: Bool
+	
+	var body: some View {
+		Color.clear
+			.aspectRatio(1, contentMode: .fit)
 			.overlay {
-				let images = self.potentialImages
-				if images.count > 0, gridSize != .zero {
-					content(size: gridSize, images: self.potentialImages)
-				} else if meshtasticAPI.isLoadingDeviceList {
-					ProgressView()
+				if images.isEmpty {
+					if isLoading {
+						ProgressView()
+					} else {
+						Image("UNSET")
+							.resizable()
+							.scaledToFit()
+					}
 				} else {
-					EmptyView()
+					grid(images: images)
 				}
 			}
+			.clipped() // Essential for ScrollView stability
 	}
 	
 	@ViewBuilder
-	private func content(size: CGSize, images: [DeviceHardwareImageEntity]) -> some View {
+	private func grid(images: [DeviceHardwareImageEntity]) -> some View {
 		let spacing: CGFloat = 10.0
+		
 		switch images.count {
-		case 0:
-			Image("UNSET")
-				.resizable()
-				.aspectRatio(contentMode: .fit)
-				.frame(width: size.width, height: size.height)
-			
 		case 1:
-			if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-				SVGView(svg: svg)
-					.resizable()
-					.aspectRatio(contentMode: .fit)
-					.frame(width: size.width, height: size.height)
-			}
+			SingleImageView(entity: images[0])
+			
 		case 2:
 			HStack(spacing: spacing) {
-				ForEach(0..<2, id: \.self) { i in
-					if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-						SVGView(svg: svg)
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(width: (size.width - 2) / 2,
-								   height: size.height)
-					}
-				}
+				SingleImageView(entity: images[0])
+				SingleImageView(entity: images[1])
 			}
 			
 		case 3:
-			HStack(spacing: spacing) {
-				// Big image on the Left
-				if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-					SVGView(svg: svg)
-						.resizable()
-						.aspectRatio(contentMode: .fit)
-						.frame(width: (size.width * 0.6) - 1,
-							   height: size.height)
-				}
-				
-				// Two stacked on the Right
-				VStack(spacing: spacing) {
-					if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-						SVGView(svg: svg)
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(maxWidth: .infinity, maxHeight: .infinity) // Flex fill
-					}
-					if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-						SVGView(svg: svg)
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(maxWidth: .infinity, maxHeight: .infinity) // Flex fill
+			GeometryReader { proxy in
+				HStack(spacing: spacing) {
+					SingleImageView(entity: images[0])
+						.frame(width: floor(proxy.size.width * 0.6))
+					
+					VStack(spacing: spacing) {
+						SingleImageView(entity: images[1])
+						SingleImageView(entity: images[2])
 					}
 				}
-				.frame(width: (size.width * 0.4) - 1,
-					   height: size.height)
 			}
 			
-		default: // 4 items
-			let halfWidth = (size.width - 2) / 2
-			let halfHeight = (size.height - 2) / 2
-			
+		default: // 4 or more
 			VStack(spacing: spacing) {
 				HStack(spacing: spacing) {
-					if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-						SVGView(svg: svg)
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(width: halfWidth, height: halfHeight)
-					}
-					if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-						SVGView(svg: svg)
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(width: halfWidth, height: halfHeight)
-					}
+					SingleImageView(entity: images[0])
+					SingleImageView(entity: images[1])
 				}
 				HStack(spacing: spacing) {
-					if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-						SVGView(svg: svg)
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(width: halfWidth, height: halfHeight)
-					}
-					if let svgData = images[0].svgData, let svg = SVG(data: svgData) {
-						SVGView(svg: svg)
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.frame(width: halfWidth, height: halfHeight)
-					}
+					SingleImageView(entity: images[2])
+					SingleImageView(entity: images[3])
 				}
+			}
+		}
+	}
+}
+
+// 4. THE LEAF VIEW
+// Responsibilities: safely load SVG data
+private struct SingleImageView: View {
+	let entity: DeviceHardwareImageEntity
+	@State private var svg: SVG?
+	
+	var body: some View {
+		Group {
+			if let svg = svg {
+				SVGView(svg: svg)
+					.resizable()
+					.aspectRatio(contentMode: .fit)
+					.frame(maxWidth: .infinity, maxHeight: .infinity)
+			} else {
+				Color.clear
+			}
+		}
+		.task {
+			// Parse SVG once, prevents lag during scroll/layout
+			if self.svg == nil, let data = entity.svgData {
+				self.svg = SVG(data: data)
 			}
 		}
 	}

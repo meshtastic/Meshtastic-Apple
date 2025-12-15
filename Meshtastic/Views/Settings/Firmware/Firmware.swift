@@ -8,55 +8,159 @@
 import SwiftUI
 import StoreKit
 import OSLog
+import SwiftDraw
 
+// 1. THE WRAPPER
+// This handles the fetching safely. It does not run logic in init.
 struct Firmware: View {
-	
-	private enum FirmwareTab {
-		case stable
-		case alpha
-		case downloaded
-	}
-	
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var accessoryManager: AccessoryManager
 	let node: NodeInfoEntity
-	let hardware: DeviceHardwareEntity
-	@State var minimumVersion = "2.6.11"
-	@State var version = ""
-	@State private var currentDevice: DeviceHardware?
 	
-	@State private var firmwareSelection = FirmwareTab.stable
-	
-	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
-	
-	@StateObject var firmwareList: FirmwareViewModel
+	// Use SwiftUI's native FetchRequest mechanism
+	@FetchRequest var hardwareResults: FetchedResults<DeviceHardwareEntity>
 	
 	init?(node: NodeInfoEntity?) {
-		guard let node else { return nil }
+		guard let node = node, let pioEnv = node.myInfo?.pioEnv else { return nil }
 		self.node = node
 		
-		let fetchRequest = DeviceHardwareEntity.fetchRequest()
-		guard let pioEnv = node.myInfo?.pioEnv else { return nil }
-		fetchRequest.predicate = NSPredicate(format: "platformioTarget == %@", pioEnv)
-		fetchRequest.fetchLimit = 1
-		
-		// Can't use the @Environment because we don't have self yet.
-		let context = PersistenceController.shared.container.viewContext
-		guard let result = try? context.fetch(fetchRequest).first else {
-			return nil
-		}
-		hardware = result
-		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: result))
+		let predicate = NSPredicate(format: "platformioTarget == %@", pioEnv)
+		_hardwareResults = FetchRequest(
+			entity: DeviceHardwareEntity.entity(),
+			sortDescriptors: [],
+			predicate: predicate,
+			animation: .default
+		)
 	}
 	
-	var myVersion: String? {
-		return node.metadata?.firmwareVersion
+	var body: some View {
+		if let hardware = hardwareResults.first {
+			FirmwareContentView(node: node, hardware: hardware)
+		} else {
+			// Fallback content
+			List {
+				Text("Hardware not found for \(node.myInfo?.pioEnv ?? "unknown")")
+			}
+		}
 	}
+}
+
+// 2. THE CONTENT
+// Decoupled from fetching logic.
+private struct FirmwareContentView: View {
+	
+	private enum FirmwareTab {
+		case stable, alpha, downloaded
+	}
+	
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
+	
+	let node: NodeInfoEntity
+	let hardware: DeviceHardwareEntity
+	
+	// We can safely init the StateObject here because 'hardware' is passed in
+	@StateObject var firmwareList: FirmwareViewModel
+	@State private var firmwareSelection = FirmwareTab.stable
+	
+	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
+		self.node = node
+		self.hardware = hardware
+		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware))
+	}
+	
+	var body: some View {
+		List {
+			// SECTION 1: HERO
+			Section {
+				HStack {
+					SupportedHardwareBadge(hwModelId: hardware.hwModel)
+					Text("Device Model: \(hardware.displayName ?? "Unknown")")
+						.font(.largeTitle)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				
+				VStack {
+					FirmwareHeroImage(hardware: hardware)
+						.frame(height: 300) // Give List a hint of the height
+						.frame(maxWidth: .infinity)
+				}
+				
+				VStack(alignment: .leading) {
+					Text("Platform IO").font(.caption).foregroundColor(.secondary)
+					Text("\(node.myInfo?.pioEnv ?? "Unknown")")
+				}
+				VStack(alignment: .leading) {
+					Text("Architecture").font(.caption).foregroundColor(.secondary)
+					Text("\(hardware.architecture ?? "Unknown")")
+				}
+				VStack(alignment: .leading) {
+					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
+					Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
+				}
+			}
+			.listRowSeparator(.hidden)
+
+			// SECTION 2: RELEASES
+			Section(header: releasesHeader, footer: lastUpdatedFooter) {
+				Picker("Firmware Version", selection: $firmwareSelection) {
+					Text("Stable").tag(FirmwareTab.stable)
+					Text("Alpha").tag(FirmwareTab.alpha)
+					Text("Downloaded").tag(FirmwareTab.downloaded)
+				}.pickerStyle(.segmented)
+				
+				// Extracted switch logic to keep body clean
+				firmwareRows
+			}
+		}
+		.navigationTitle("Firmware Updates")
+		.navigationBarTitleDisplayMode(.inline)
+	}
+	
+	// MARK: - Subviews
 	
 	@ViewBuilder
-	var firmwareLastUpdatedFooter: some View {
-		HStack(alignment: .firstTextBaseline, spacing: 0.0) {
-			if self.meshtasticAPI.isLoadingFirmwareList {
+	var firmwareRows: some View {
+		switch firmwareSelection {
+		case .stable:
+			let stables = firmwareList.mostRecentFirmware(forReleaseType: .stable)
+			ForEach(stables, id: \.localUrl) { release in
+				FirmwareRow(firmwareFile: release)
+			}
+			if let last = stables.last, let notes = last.releaseNotes {
+				NavigationLink("Release Notes") {
+					ScrollView { Text(notes).padding() }
+						.navigationTitle("\(last.versionId)")
+				}
+			}
+		case .alpha:
+			let alphas = firmwareList.mostRecentFirmware(forReleaseType: .alpha)
+			ForEach(alphas, id: \.localUrl) { release in
+				FirmwareRow(firmwareFile: release)
+			}
+			if let last = alphas.last, let notes = last.releaseNotes {
+				NavigationLink("Release Notes") {
+					ScrollView { Text(notes).padding() }
+						.navigationTitle("\(last.versionId)")
+				}
+			}
+		case .downloaded:
+			let downloads = firmwareList.downloadedFirmware(includeInProgressDownloads: true)
+			if downloads.isEmpty {
+				Text("No firmware has been downloaded for this device.")
+			} else {
+				ForEach(downloads, id: \.localUrl) { file in
+					FirmwareRow(firmwareFile: file)
+				}
+				.onDelete { offsets in
+					let files = offsets.map { downloads[$0] }
+					firmwareList.delete(files)
+				}
+			}
+		}
+	}
+	
+	var lastUpdatedFooter: some View {
+		HStack(alignment: .firstTextBaseline, spacing: 0) {
+			if meshtasticAPI.isLoadingFirmwareList {
 				Text("Updating now...")
 			} else {
 				if UserDefaults.lastFirmwareAPIUpdate == .distantPast {
@@ -68,111 +172,60 @@ struct Firmware: View {
 		}
 	}
 
-	@ViewBuilder
-	var fimwareReleasesHeader: some View {
+	var releasesHeader: some View {
 		HStack {
 			Text("Firmware Releases")
 			Spacer()
 			if meshtasticAPI.isLoadingFirmwareList {
 				ProgressView()
 			} else {
-				Button {
+				Button("Check For Updates") {
 					Task.detached {
 						try? await meshtasticAPI.refreshFirmwareAPIData()
 					}
-				} label: {
-					Text("Check For Updates")
 				}
 			}
 		}
 	}
-	
-	@StateObject private var dfuViewModel = DFUViewModel()
+}
+
+// 3. THE ISOLATED HERO IMAGE
+// This stops an infinite rendering loop. It loads the SVG data once into State,
+// preventing the List layout pass from triggering Core Data faults repeatedly.
+struct FirmwareHeroImage: View {
+	let hardware: DeviceHardwareEntity
+	@State private var svg: SVG?
 	
 	var body: some View {
-		List {
-			// Hero image of the node
-			Section {
-				HStack {
-					SupportedHardwareBadge(hwModelId: hardware.hwModel)
-					Text("Device Model: \(hardware.displayName ?? "Unknown")")
-						.font(.largeTitle)
-						.fixedSize(horizontal: false, vertical: true)
-				}
-				VStack(alignment: .center) {
-					DeviceHardwareImage(hwId: node.user?.hwModelId ?? 0)
-						.frame(width: 300, height: 300)
-						.cornerRadius(5)
-				}.frame(maxWidth: .infinity) // Make sure the center is honored by filling the width
-				VStack(alignment: .leading) {
-					Text("Platform IO").font(.caption).foregroundColor(.secondary)
-					Text("\(node.myInfo?.pioEnv, default: "Unknown")")
-				}
-				VStack(alignment: .leading) {
-					Text("Architecture").font(.caption).foregroundColor(.secondary)
-					Text("\(self.hardware.architecture, default: "Unknown")")
-				}
-				VStack(alignment: .leading) {
-					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
-					Text("\(self.myVersion, default: "Unknown")")
-				}
-			}.listRowSeparator(.hidden)     // Hides lines between rows
-
-			Section(header: self.fimwareReleasesHeader, footer: self.firmwareLastUpdatedFooter) {
-				Picker("Firmware Version", selection: $firmwareSelection) {
-					Text("Stable").tag(FirmwareTab.stable)
-					Text("Alpha").tag(FirmwareTab.alpha)
-					Text("Downloaded").tag(FirmwareTab.downloaded)
-				}.pickerStyle(.segmented)
-				
-				switch firmwareSelection {
-				case .stable:
-					let stables = firmwareList.mostRecentFirmware(forReleaseType: .stable)
-					ForEach(stables, id: \.localUrl) { release in
-						FirmwareRow(firmwareFile: release)
-					}
-					if let lastStable = stables.last, let notes = lastStable.releaseNotes {
-						NavigationLink {
-							ScrollView {
-								Text(notes)
-									.padding()
-							}.navigationTitle("\(lastStable.versionId, default: "ReleaseNotes")")
-						} label: {
-							Text("Release Notes")
-						}
-					}
-				case .alpha:
-					let alphas = firmwareList.mostRecentFirmware(forReleaseType: .alpha)
-					ForEach(alphas, id: \.localUrl) { release in
-						FirmwareRow(firmwareFile: release)
-					}
-					if let lastAlpha = alphas.last, let notes = lastAlpha.releaseNotes {
-						NavigationLink {
-							ScrollView {
-								Text(notes)
-									.padding()
-							}.navigationTitle("\(lastAlpha.versionId, default: "ReleaseNotes")")
-						} label: {
-							Text("Release Notes")
-						}
-					}
-				case .downloaded:
-					let downloadedFirmware = firmwareList.downloadedFirmware(includeInProgressDownloads: true)
-					if downloadedFirmware.count > 0 {
-						ForEach(downloadedFirmware, id: \.localUrl) { firmwareFile in
-							FirmwareRow(firmwareFile: firmwareFile)
-						}.onDelete { offsets in
-							let filesToDelete = offsets.map { downloadedFirmware[$0] }
-							firmwareList.delete(filesToDelete)
-						}
-					} else {
-						Text("No firmware has been downloaded for this device.")
-					}
-				}
+		Group {
+			if let svg = svg {
+				SVGView(svg: svg)
+					.resizable()
+					.scaledToFit()
+					.frame(width: 300, height: 300)
+					.cornerRadius(5)
+			} else {
+				// Placeholder prevents List jumpiness while loading
+				Color.clear
+					.frame(width: 300, height: 300)
 			}
-			.navigationTitle("Firmware Updates")
-			.navigationBarTitleDisplayMode(.inline)
 		}
+		.task {
+			// Perform the Core Data relationship traversal off the main layout pass
+			if svg == nil {
+				self.svg = getSVG()
+			}
+		}
+	}
+	
+	private func getSVG() -> SVG? {
+		let images = hardware.images as? Set<DeviceHardwareImageEntity> ?? []
+		if let image = images.first,
+		   let data = image.svgData,
+		   let svg = SVG(data: data) {
+			return svg
+		}
+		return nil
 	}
 }
 

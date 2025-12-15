@@ -106,13 +106,15 @@ class FirmwareViewModel: ObservableObject {
 			Logger.services.error("Error loading firmware files: \(error)")
 		}
 		
-		// Keep the list sorted by version, with deterministic ordering of the firmware type
-		self.firmwareFiles = newFirmwareList.values.sorted {
-			if ($0.versionMajor, $0.versionMinor, $0.versionPatch) == ($1.versionMajor, $1.versionMinor, $1.versionPatch) {
-				// If versions are equal, sort by firmwareType (assuming it's String or Comparable)
-				return String(describing: $0.firmwareType) < String(describing: $1.firmwareType)
+		Task { @MainActor in
+			// Keep the list sorted by version, with deterministic ordering of the firmware type
+			self.firmwareFiles = newFirmwareList.values.sorted {
+				if ($0.versionMajor, $0.versionMinor, $0.versionPatch) == ($1.versionMajor, $1.versionMinor, $1.versionPatch) {
+					// If versions are equal, sort by firmwareType (assuming it's String or Comparable)
+					return String(describing: $0.firmwareType) < String(describing: $1.firmwareType)
+				}
+				return ($0.versionMajor, $0.versionMinor, $0.versionPatch) > ($1.versionMajor, $1.versionMinor, $1.versionPatch)
 			}
-			return ($0.versionMajor, $0.versionMinor, $0.versionPatch) > ($1.versionMajor, $1.versionMinor, $1.versionPatch)
 		}
 	}
 
