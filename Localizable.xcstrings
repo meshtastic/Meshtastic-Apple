@@ -5136,6 +5136,12 @@
         }
       }
     },
+    "Bearing: %@" : {
+
+    },
+    "Bearing: N/A" : {
+
+    },
     "Biking" : {
       "localizations" : {
         "de" : {
@@ -8085,6 +8091,9 @@
           }
         }
       }
+    },
+    "Compass" : {
+
     },
     "Config" : {
       "localizations" : {
@@ -11995,6 +12004,9 @@
           }
         }
       }
+    },
+    "Distance: %@" : {
+
     },
     "Documentation" : {
       "localizations" : {
@@ -24767,6 +24779,9 @@
           }
         }
       }
+    },
+    "Open Compass" : {
+
     },
     "Open Settings" : {
       "localizations" : {
