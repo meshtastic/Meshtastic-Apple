@@ -164,27 +164,39 @@ class BLETransport: Transport {
 		}
 	}
 
+	private let peripheralsQueue = DispatchQueue(label: "com.meshtastic.peripheralAccess", qos: .default)
+
 	func didDiscover(peripheral: CBPeripheral, rssi: NSNumber) {
+
 		guard !restoreInProgress else { return }
-		
-		let id = peripheral.identifier
-		let isNew = discoveredPeripherals[id] == nil
-		if isNew {
-			discoveredPeripherals[id] = (peripheral, Date())
-		}
-		let device = Device(id: id,
-							name: peripheral.name ?? "Unknown",
-							transportType: .ble,
-							identifier: id.uuidString,
-							rssi: rssi.intValue)
-		if isNew {
-			Logger.transport.debug("🛜 [BLE] Did Discover new device: \(peripheral.name ?? "Unknown", privacy: .public) (\(peripheral.identifier, privacy: .public))")
-			discoveredDeviceContinuation?.yield(.deviceFound(device))
-		} else {
-			let rssiVal = rssi.intValue
-			let deviceId = id
-			discoveredPeripherals[id]?.lastSeen = Date()
-			discoveredDeviceContinuation?.yield(.deviceReportedRssi(deviceId, rssiVal))
+
+		// Use the queue to ensure thread-safe access to the dictionary
+		peripheralsQueue.async {
+			let id = peripheral.identifier
+			let isNew = self.discoveredPeripherals[id] == nil
+			
+			// Update the dictionary
+			if isNew {
+				self.discoveredPeripherals[id] = (peripheral, Date())
+			} else {
+				self.discoveredPeripherals[id]?.lastSeen = Date()
+			}
+			
+			let device = Device(id: id,
+								name: peripheral.name ?? "Unknown",
+								transportType: .ble,
+								identifier: id.uuidString,
+								rssi: rssi.intValue)
+			
+			// Safely yield results
+			if isNew {
+				Logger.transport.debug("🛜 [BLE] Did Discover new device: \(peripheral.name ?? "Unknown", privacy: .public) (\(peripheral.identifier, privacy: .public))")
+				self.discoveredDeviceContinuation?.yield(.deviceFound(device))
+			} else {
+				let rssiVal = rssi.intValue
+				let deviceId = id
+				self.discoveredDeviceContinuation?.yield(.deviceReportedRssi(deviceId, rssiVal))
+			}
 		}
 	}
 
@@ -403,7 +415,11 @@ class BLETransport: Transport {
 		
 	}
 	
-	func manuallyConnect(withConnectionString: String) async throws {
+	func device(forManualConnection: String) -> Device? {
+		return nil
+	}
+	
+	func manuallyConnect(toDevice: Device) async throws {
 		Logger.transport.error("🛜 [BLE] This transport does not support manual connections")
 	}
 

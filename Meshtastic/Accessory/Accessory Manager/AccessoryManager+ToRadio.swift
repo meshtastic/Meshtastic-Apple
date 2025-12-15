@@ -165,6 +165,7 @@ extension AccessoryManager {
 					nodeMeshPacket.decoded = dataNodeMessage
 
 					// Update local database with the new node info
+					// FUTURE: after https://github.com/meshtastic/firmware/pull/8495 is merged, `favorite: true` becomes `favorite: (connectedDeviceRole != DeviceRoles.clientBase)`
 					upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: true, context: context)
 				}
 			} catch {
@@ -333,7 +334,7 @@ extension AccessoryManager {
 								var contact = SharedContact()
 								contact.manuallyVerified = false
 								contact.nodeNum = UInt32(truncatingIfNeeded: user.num)
-								user.userNode?.favorite = true
+								user.userNode?.favorite = user.userNode?.deviceConfig?.role ?? 0 != DeviceRoles.clientBase.rawValue
 								contact.user = user.toProto()
 								do {
 									let contactString = try contact.serializedData().base64EncodedString()
@@ -350,7 +351,7 @@ extension AccessoryManager {
 					if toUserNum > 0 {
 						meshPacket.to = UInt32(toUserNum)
 						let hopsAway = newMessage.toUser?.userNode?.hopsAway ?? 0
-						if hopsAway > Int32(truncatingIfNeeded: newMessage.toUser?.userNode?.loRaConfig?.hopLimit ?? 0) {
+						if hopsAway > Int32(truncatingIfNeeded: newMessage.fromUser?.userNode?.loRaConfig?.hopLimit ?? 0) {
 							meshPacket.hopLimit = UInt32(truncatingIfNeeded: hopsAway)
 						}
 					} else {
@@ -509,32 +510,32 @@ extension AccessoryManager {
 				let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
 				try await send(toRadio, debugDescription: logString)
 			}
-
-			// Save the LoRa Config and the device will reboot
-			var adminPacket = AdminMessage()
-			adminPacket.setConfig.lora = channelSet.loraConfig
-			adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
-			var meshPacket: MeshPacket = MeshPacket()
-			meshPacket.to = UInt32(deviceNum)
-			meshPacket.from	= UInt32(deviceNum)
-			meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-			meshPacket.priority =  MeshPacket.Priority.reliable
-			meshPacket.wantAck = true
-			meshPacket.channel = 0
-			var dataMessage = DataMessage()
-			guard let adminData: Data = try? adminPacket.serializedData() else {
-				throw AccessoryError.ioFailed("sendReboot: Unable to serialize Admin packet")
+			if !addChannels {
+				// Save the LoRa Config and the device will reboot
+				var adminPacket = AdminMessage()
+				adminPacket.setConfig.lora = channelSet.loraConfig
+				adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
+				var meshPacket: MeshPacket = MeshPacket()
+				meshPacket.to = UInt32(deviceNum)
+				meshPacket.from	= UInt32(deviceNum)
+				meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+				meshPacket.priority =  MeshPacket.Priority.reliable
+				meshPacket.wantAck = true
+				meshPacket.channel = 0
+				var dataMessage = DataMessage()
+				guard let adminData: Data = try? adminPacket.serializedData() else {
+					throw AccessoryError.ioFailed("sendReboot: Unable to serialize Admin packet")
+				}
+				dataMessage.payload = adminData
+				dataMessage.portnum = PortNum.adminApp
+				meshPacket.decoded = dataMessage
+				var toRadio: ToRadio!
+				toRadio = ToRadio()
+				toRadio.packet = meshPacket
+				
+				let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
+				try await send(toRadio, debugDescription: logString)
 			}
-			dataMessage.payload = adminData
-			dataMessage.portnum = PortNum.adminApp
-			meshPacket.decoded = dataMessage
-			var toRadio: ToRadio!
-			toRadio = ToRadio()
-			toRadio.packet = meshPacket
-
-			let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
-			try await send(toRadio, debugDescription: logString)
-
 			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet")
 			try await sendWantConfig()
 		}

@@ -217,13 +217,13 @@ struct Channels: View {
 						}
 						Task {
 							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
-
 							Task { @MainActor in
 								selectedChannel = nil
 								channelName = ""
 								channelRole	= 2
 								hasChanges = false
 							}
+							accessoryManager.mqttManager.connectFromConfigSettings(node: node!)
 						}
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
