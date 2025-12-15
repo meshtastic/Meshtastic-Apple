@@ -289,7 +289,7 @@ private struct FirmwareRow: View {
 						case .uf2:
 							self.showInstallationSheet = .uf2
 						case .bin:
-							self.unsupporedInstallationMessage = true
+							self.showInstallationSheet = .bin
 						case .otaZip:
 							self.showInstallationSheet = .otaZip
 						}
