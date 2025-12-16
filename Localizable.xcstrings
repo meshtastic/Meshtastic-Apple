@@ -3854,7 +3854,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ambient Lighting module config received: %@"
+            "value" : "收到环境照明模块配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -5459,7 +5459,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bluetooth config received: %@"
+            "value" : "收到蓝牙配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -6127,7 +6127,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Canned Message module config received: %@"
+            "value" : "收到预设消息模块配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -6313,7 +6313,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Canned Messages Messages Received For: %@"
+            "value" : "收到预设消息: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -10412,7 +10412,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detection Sensor module config received: %@"
+            "value" : "收到检测传感器模块配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -10638,7 +10638,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Device config received: %@"
+            "value" : "收到设备配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -10822,7 +10822,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Device Metadata admin message received from: %@"
+            "value" : "已收到来自设备元数据管理员的消息, 来自: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -11795,7 +11795,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Display config received: %@"
+            "value" : "收到显示屏配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -11829,7 +11829,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "展示华氏度"
+            "value" : "显示华氏度"
           }
         },
         "zh-Hant-TW" : {
@@ -12081,7 +12081,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "双击作为按钮"
+            "value" : "双击代替按钮"
           }
         },
         "zh-Hant-TW" : {
@@ -12417,7 +12417,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "回声"
+            "value" : "回显"
           }
         },
         "zh-Hant-TW" : {
@@ -13399,7 +13399,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "擦除所有 App 数据？"
+            "value" : "删除所有 App 数据？"
           }
         },
         "zh-Hant-TW" : {
@@ -13439,7 +13439,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "擦除所有设备和 App 数据？"
+            "value" : "删除所有设备和 App 数据？"
           }
         },
         "zh-Hant-TW" : {
@@ -14083,7 +14083,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "External Notification module config received: %@"
+            "value" : "收到外部通知模块配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -14700,7 +14700,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finish"
+            "value" : "完成"
           }
         },
         "zh-Hant-TW" : {
@@ -14791,7 +14791,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "固件升级文档"
+            "value" : "固件升级文件"
           }
         },
         "zh-Hant-TW" : {
@@ -16433,7 +16433,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GPS Receive GPIO"
+            "value" : "GPS 接收 GPIO"
           }
         },
         "zh-Hant-TW" : {
@@ -16467,7 +16467,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GPS Transmit GPIO"
+            "value" : "GPS 发送 GPIO"
           }
         },
         "zh-Hant-TW" : {
@@ -17989,7 +17989,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "如果难以访问设备的重置按钮，请在此进入 DFU 模式。"
+            "value" : "如果难以触及设备的重置按钮，请在此进入 DFU 模式。"
           }
         },
         "zh-Hant-TW" : {
@@ -18023,7 +18023,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "如果设置了，您发送的任何数据包都会回传到设备。"
+            "value" : "如果设置，您发送的任何数据包都会回传到设备。"
           }
         },
         "zh-Hant-TW" : {
@@ -18611,7 +18611,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倒置顶栏，用于双色显示"
+            "value" : "倒置顶栏，用于双色显示屏"
           }
         },
         "zh-Hant-TW" : {
@@ -20015,7 +20015,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "LoRa config received: %@"
+            "value" : "收到 LoRa 配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -21193,7 +21193,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Message received from the text message app."
+            "value" : "收到来自短信应用的消息。"
           }
         },
         "zh-Hant-TW" : {
@@ -22196,7 +22196,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MyInfo received: %@"
+            "value" : "收到我的消息: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -22556,7 +22556,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Network config received: %@"
+            "value" : "收到网络配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -25742,7 +25742,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PAX Counter message received for: %@"
+            "value" : "收到 PAX 计数信息: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -27464,7 +27464,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Process"
+            "value" : "处理"
           }
         },
         "zh-Hant-TW" : {
@@ -29228,7 +29228,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Requested Canned Messages Module Messages for node: %@"
+            "value" : "请求的节点预设消息模块消息: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -30356,7 +30356,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Routing received for RequestID: %@ Ack Status: %@"
+            "value" : "收到请求ID为 %@ 的路由, Ack 状态: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -30504,7 +30504,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "RTTTL Ringtone config received: %@"
+            "value" : "收到 RTTTL 铃声配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -32306,7 +32306,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a Channel for: %@ Channel Index %d"
+            "value" : "已发送频道: %@ 频道索引 %d"
           }
         },
         "zh-Hant-TW" : {
@@ -32370,7 +32370,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a LoRa.Config for: %@"
+            "value" : "发送 LoRa.Config 给: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -32435,7 +32435,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a Position Packet from the Apple device GPS to node: %@"
+            "value" : "从苹果设备 GPS 发送定位数据包给节点: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -32499,7 +32499,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a Trace Route Request to node: %@"
+            "value" : "发送跟踪路由请求到节点: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -32563,7 +32563,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a Waypoint Packet from: %@"
+            "value" : "发送来自的航点数据包: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -32627,7 +32627,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent message %@ from %@ to %@"
+            "value" : "发送消息 %@ 来自 %@ 给 %@"
           }
         },
         "zh-Hant-TW" : {
@@ -32949,7 +32949,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Serial module config received: %@"
+            "value" : "收到串口模块配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -35131,7 +35131,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Store & Forward module config received: %@"
+            "value" : "收到存储和转发模块配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -35750,7 +35750,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Telemetry module config received: %@"
+            "value" : "收到遥测模块配置: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -38000,7 +38000,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trace Route request returned: %@"
+            "value" : "跟踪路由请求回复: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -41027,7 +41027,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Waypoint Packet received from node: %@"
+            "value" : "收到航点数据包, 来自节点: %@"
           }
         },
         "zh-Hant-TW" : {
@@ -41220,7 +41220,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "锁意味着什么？"
+            "value" : "锁头图标含义"
           }
         },
         "zh-Hant-TW" : {
@@ -41260,7 +41260,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "什么是 Meshtastic?"
+            "value" : "Meshtastic 是什么?"
           }
         },
         "zh-Hant-TW" : {
