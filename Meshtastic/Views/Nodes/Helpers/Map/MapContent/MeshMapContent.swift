@@ -121,6 +121,7 @@ struct MeshMapContent: MapContent {
 						}
 					}
 				}
+				.annotationTitles(.automatic) 
 			}
 		}
 	}

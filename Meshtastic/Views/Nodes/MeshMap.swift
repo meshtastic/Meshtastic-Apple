@@ -120,11 +120,16 @@ struct MeshMap: View {
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
 						.padding()
+						.presentationDetents([.large]) // full screen
+						.presentationDragIndicator(.visible) 
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
 						.padding()
+						.presentationDetents([.large])
+						.presentationDragIndicator(.visible)
 				}
+
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 						.presentationDetents([.large])
