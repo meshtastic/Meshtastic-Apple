@@ -181,7 +181,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.psk = channel.settings.psk
 				if channel.settings.hasModuleSettings {
 					newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
-					newChannel.mute = channel.settings.moduleSettings.isClientMuted
+					newChannel.mute = channel.settings.moduleSettings.isMuted
 				}
 				guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
 					return

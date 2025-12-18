@@ -1814,7 +1814,7 @@ extension AccessoryManager {
 
 	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) async throws {
 		var adminPacket = AdminMessage()
-		adminPacket.nodedbReset = 5
+		adminPacket.nodedbReset = true
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}
