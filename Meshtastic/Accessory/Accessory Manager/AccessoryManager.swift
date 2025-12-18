@@ -77,7 +77,7 @@ enum AccessoryManagerState: Equatable {
 	case idle
 	case discovering
 	case connecting
-	case retrying(attempt: Int)
+	case retrying(attempt: Int, maxAttempts: Int)
 	case retrievingDatabase(nodeCount: Int)
 	case communicating
 	case subscribed
@@ -312,6 +312,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				device[keyPath: key] = value
 				self.activeConnection = (device: device, connection: activeConnection.connection)
+				
+			}
+			// Make sure activeDeviceNum is up to date.
+			if key == \.num, self.activeDeviceNum != device.num {
 				self.activeDeviceNum = device.num
 			}
 		}

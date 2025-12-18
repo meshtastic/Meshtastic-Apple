@@ -57,7 +57,7 @@ extension FirmwareFile {
 		var description: String { return rawValue }
 		
 		case uf2 = ".uf2"
-		case bin = ".bin"
+		case bin = "-update.bin"
 		case otaZip = "-ota.zip"
 	}
 	

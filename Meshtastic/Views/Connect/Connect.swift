@@ -221,8 +221,8 @@ struct Connect: View {
 										Text("Retreiving nodes . .")
 											.font(.callout)
 											.foregroundColor(.orange)
-									case .retrying(let attempt):
-										Text("Connection Attempt \(attempt) of 10")
+									case .retrying(let attempt, let maxAttempts):
+										Text("Connection Attempt \(attempt) of \(maxAttempts)")
 											.font(.callout)
 											.foregroundColor(.orange)
 									default:

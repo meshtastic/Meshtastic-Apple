@@ -22,6 +22,8 @@
 		2315D1A02EECB44800E0FAE7 /* UF2MassStorageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2315D19F2EECB44800E0FAE7 /* UF2MassStorageView.swift */; };
 		2315D1A52EED94E800E0FAE7 /* FirmwareFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2315D1A42EED94E800E0FAE7 /* FirmwareFile.swift */; };
 		2315D1A82EEF2ED400E0FAE7 /* SwiftDraw in Frameworks */ = {isa = PBXBuildFile; productRef = 2315D1A72EEF2ED400E0FAE7 /* SwiftDraw */; };
+		23196A6E2EF1BA9100B1504B /* Esp32WifiOTAViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23196A6D2EF1BA9100B1504B /* Esp32WifiOTAViewModel.swift */; };
+		23196C702EF42D3D00B1504B /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23196C6F2EF42D3D00B1504B /* CircularProgressView.swift */; };
 		231A53782E69ADB900216B99 /* NodeFilterParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231A53772E69ADB900216B99 /* NodeFilterParameters.swift */; };
 		231B3F212D087A4C0069A07D /* MetricTableColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F202D087A4C0069A07D /* MetricTableColumn.swift */; };
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
@@ -362,6 +364,8 @@
 		2315D19C2EECB3D400E0FAE7 /* UTI+UF2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTI+UF2.swift"; sourceTree = "<group>"; };
 		2315D19F2EECB44800E0FAE7 /* UF2MassStorageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UF2MassStorageView.swift; sourceTree = "<group>"; };
 		2315D1A42EED94E800E0FAE7 /* FirmwareFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareFile.swift; sourceTree = "<group>"; };
+		23196A6D2EF1BA9100B1504B /* Esp32WifiOTAViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Esp32WifiOTAViewModel.swift; sourceTree = "<group>"; };
+		23196C6F2EF42D3D00B1504B /* CircularProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		231A53772E69ADB900216B99 /* NodeFilterParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeFilterParameters.swift; sourceTree = "<group>"; };
 		231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnList.swift; sourceTree = "<group>"; };
 		231B3F202D087A4C0069A07D /* MetricTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTableColumn.swift; sourceTree = "<group>"; };
@@ -843,6 +847,14 @@
 			path = Firmware;
 			sourceTree = "<group>";
 		};
+		23196C712EF42D4300B1504B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				23196C6F2EF42D3D00B1504B /* CircularProgressView.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		231B3F1E2D0879BC0069A07D /* Metrics Visualization */ = {
 			isa = PBXGroup;
 			children = (
@@ -917,6 +929,7 @@
 				2315D19E2EECB42D00E0FAE7 /* U2F Mass Storage */,
 				23C2BE322EEC3F7800F6A997 /* ESP32 DFU */,
 				23C2BE2F2EEB821400F6A997 /* NRF DFU */,
+				23196C712EF42D4300B1504B /* Helpers */,
 			);
 			path = Firmware;
 			sourceTree = "<group>";
@@ -933,6 +946,7 @@
 		23C2BE322EEC3F7800F6A997 /* ESP32 DFU */ = {
 			isa = PBXGroup;
 			children = (
+				23196A6D2EF1BA9100B1504B /* Esp32WifiOTAViewModel.swift */,
 				23C2BE332EEC3F9600F6A997 /* ESP32DFUSheet.swift */,
 			);
 			path = "ESP32 DFU";
@@ -1886,6 +1900,7 @@
 				23C2BE272EE9F4BD00F6A997 /* DeviceHardwareEntity.swift in Sources */,
 				D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */,
 				DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */,
+				23196A6E2EF1BA9100B1504B /* Esp32WifiOTAViewModel.swift in Sources */,
 				DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */,
 				DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
@@ -2060,6 +2075,7 @@
 				25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
 				DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */,
+				23196C702EF42D3D00B1504B /* CircularProgressView.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */,
 				2344A2AB2D66974300170A77 /* ManagedAttributePropertyWrapper.swift in Sources */,
@@ -2318,7 +2334,18 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -2353,7 +2380,18 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";

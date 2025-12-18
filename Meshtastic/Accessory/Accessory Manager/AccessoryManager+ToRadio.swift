@@ -1437,9 +1437,9 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity) async throws {
+	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, rebootOtaSeconds: Int32 = 5) async throws {
 		var adminPacket = AdminMessage()
-		adminPacket.rebootOtaSeconds = 5
+		adminPacket.rebootOtaSeconds = rebootOtaSeconds
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}
