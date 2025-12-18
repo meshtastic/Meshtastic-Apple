@@ -55,7 +55,7 @@ extension ChannelEntity {
 		channel.settings.psk = self.psk ?? Data()
 		channel.role = Channel.Role(rawValue: Int(self.role)) ?? Channel.Role.secondary
 		channel.settings.moduleSettings.positionPrecision = UInt32(self.positionPrecision)
-		channel.settings.moduleSettings.isClientMuted = self.mute
+		channel.settings.moduleSettings.isMuted = self.mute
 		return channel
 	}
 }

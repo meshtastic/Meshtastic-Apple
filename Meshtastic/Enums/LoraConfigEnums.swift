@@ -313,6 +313,7 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	case longFast = 0
 	case longSlow = 1
 	case longModerate = 7
+	case longTurbo = 9
 	case medSlow = 3
 	case medFast = 4
 	case shortSlow = 5
@@ -328,6 +329,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "Long Range - Slow".localized
 		case .longModerate:
 			return "Long Range - Moderate".localized
+		case .longTurbo:
+			return "Long Range - Turbo".localized
 		case .medSlow:
 			return "Medium Range - Slow".localized
 		case .medFast:
@@ -348,6 +351,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "LongSlow"
 		case .longModerate:
 			return "LongModerate"
+		case .longTurbo:
+			return "LongTurbo"
 		case .medSlow:
 			return "MediumSlow"
 		case .medFast:
@@ -366,6 +371,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return -17.5
 		case .longSlow:
 			return -7.5
+		case .longTurbo:
+			return -12.5
 		case .longModerate:
 			return -17.5
 		case .medSlow:
@@ -388,6 +395,8 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.ModemPreset.longSlow
 		case .longModerate:
 			return Config.LoRaConfig.ModemPreset.longModerate
+		case .longTurbo:
+			return Config.LoRaConfig.ModemPreset.longTurbo
 		case .medSlow:
 			return Config.LoRaConfig.ModemPreset.mediumSlow
 		case .medFast:
