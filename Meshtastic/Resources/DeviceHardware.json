@@ -1051,7 +1051,7 @@
 	"hwModelSlug": "MUZI_R1_NEO",
 	"platformioTarget": "r1-neo",
 	"architecture": "nrf52840",
-	"activelySupported": true,
+	"activelySupported": false,
 	"supportLevel": 1,
 	"displayName": "muzi R1 Neo",
 	"tags": [
@@ -1183,4 +1183,3 @@
 	]
   }
 ]
-
