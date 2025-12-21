@@ -79,7 +79,10 @@ extension UserDefaults {
 		case showDeviceOnboarding
 		case usageDataAndCrashReporting
 		case autoconnectOnDiscovery
+		case manualConnections
 		case testIntEnum
+		case lastDeviceAPIUpdate
+		case lastFirmwareAPIUpdate
 	}
 
 	func reset() {
@@ -178,6 +181,41 @@ extension UserDefaults {
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum
+	
+	static var manualConnections: [Device] {
+		get {
+			// Retrieve data from UserDefaults
+			guard let data = UserDefaults.standard.data(forKey: Keys.manualConnections.rawValue) else {
+				return []
+			}
+			
+			// Decode the Data back to [Device]
+			do {
+				let decoder = JSONDecoder()
+				let devices = try decoder.decode([Device].self, from: data)
+				return devices
+			} catch {
+				return []
+			}
+		}
+		set {
+			do {
+				// Encode the [Device] to Data
+				let encoder = JSONEncoder()
+				let data = try encoder.encode(newValue)
+				
+				// Store the Data in UserDefaults
+				UserDefaults.standard.set(data, forKey: Keys.manualConnections.rawValue)
+			} catch {
+				print("Failed to encode manualConnections: \(error)")
+			}
+		}
+	}
+	@UserDefault(.lastDeviceAPIUpdate, defaultValue: .distantPast)
+	static var lastDeviceAPIUpdate: Date
+	
+	@UserDefault(.lastFirmwareAPIUpdate, defaultValue: .distantPast)
+	static var lastFirmwareAPIUpdate: Date
 }
 
 enum TestIntEnum: Int, Decodable {

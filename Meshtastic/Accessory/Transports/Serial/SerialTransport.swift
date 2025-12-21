@@ -31,7 +31,7 @@ class SerialTransport: Transport {
 				while !Task.isCancelled {
 					let ports = self.getSerialPorts()
 					for port in ports {
-						let id = port.toUUIDFormatHash() ?? UUID()
+						let id = port.toUUIDFormatHash()
 						if !portsAlreadyNotified.contains(port) {
 							Logger.transport.info("🔱 [Serial] Port \(port, privacy: .public) found.")
 							let newDevice = Device(id: id,
@@ -45,9 +45,8 @@ class SerialTransport: Transport {
 					for knownPort in portsAlreadyNotified where !ports.contains(knownPort) {
 						// Previosuly seen port is no longer available
 						Logger.transport.info("🔱 [Serial] Port \(knownPort, privacy: .public) is no longer connected.")
-						if let uuid = knownPort.toUUIDFormatHash() {
-							cont.yield(.deviceLost(uuid))
-						}
+						let uuid = knownPort.toUUIDFormatHash()
+						cont.yield(.deviceLost(uuid))
 						portsAlreadyNotified.removeAll(where: {$0 == knownPort})
 					}
 					try? await Task.sleep(for: .seconds(5))
@@ -118,7 +117,11 @@ class SerialTransport: Transport {
 		return SerialConnection(path: device.identifier)
 	}
 	
-	func manuallyConnect(withConnectionString: String) async throws {
+	func device(forManualConnection: String) -> Device? {
+		return nil
+	}
+	
+	func manuallyConnect(toDevice: Device) async throws {
 		Logger.transport.error("🔱 [USB] This transport does not support manual connections")
 	}
 }

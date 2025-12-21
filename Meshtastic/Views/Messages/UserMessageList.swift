@@ -11,9 +11,9 @@ import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 
 struct UserMessageList: View {
-	
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.managedObjectContext) var context
 	@FocusState var messageFieldFocused: Bool
 	@ObservedObject var user: UserEntity
@@ -21,17 +21,21 @@ struct UserMessageList: View {
 	@State private var messageToHighlight: Int64 = 0
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
-	
-	private var allPrivateMessages: [MessageEntity] {
-		// Cast user.messageList to an array for easier indexing and ForEach.
-		return user.messageList.compactMap { $0 as MessageEntity }
+	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
+
+	init(user: UserEntity) {
+		self.user = user
+
+		// Configure fetch request here
+		let request: NSFetchRequest<MessageEntity> = user.messageFetchRequest
+		_allPrivateMessages = FetchRequest(fetchRequest: request)
 	}
-	
+
 	func handleInteractionComplete() {
 		markMessagesAsRead()
 		redrawTapbacksTrigger = UUID()
 	}
-	
+
 	func markMessagesAsRead() {
 		do {
 			for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
@@ -39,25 +43,46 @@ struct UserMessageList: View {
 			}
 			try context.save()
 			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
-			appState.unreadDirectMessages = user.unreadMessages
+
+			if let connectedPeripheralNum = accessoryManager.activeDeviceNum,
+			   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
+			   let connectedUser = connectedNode.user {
+				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+			}
+
 			context.refresh(user, mergeChanges: true)
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
+	private func routerIsShowingThisUser() -> Bool {
+		guard appState.router.navigationState.selectedTab == .messages else { return false }
+		return scenePhase == .active
+	}
+
 	var body: some View {
+		// Cast user.messageList to an array for easier indexing and ForEach.
+		let messages: [MessageEntity] = Array(allPrivateMessages)
+
+		// Precompute previous message
+		let previousByID: [Int64: MessageEntity?] = {
+			var dict = [Int64: MessageEntity?]()
+			var prev: MessageEntity?
+			for m in messages { dict[m.messageId] = prev; prev = m }
+			return dict
+		}()
+
 		VStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
-						ForEach(allPrivateMessages.indices, id: \.self) { index in
-							let message = allPrivateMessages[index]
-							let previousMessage = index > 0 ? allPrivateMessages[index - 1] : nil
+						ForEach(messages, id: \.messageId) { message in
+							let previousMessage: MessageEntity? = previousByID[message.messageId] ?? nil
 							
 							UserMessageRow(
 								message: message,
-								allMessages: allPrivateMessages,
+								allMessages: messages,
 								previousMessage: previousMessage,
 								preferredPeripheralNum: preferredPeripheralNum,
 								user: user,
@@ -80,7 +105,7 @@ struct UserMessageList: View {
 									}
 								}
 							}
-							.id(redrawTapbacksTrigger)
+
 						}
 						// Invisible spacer to detect reaching bottom
 						Color.clear

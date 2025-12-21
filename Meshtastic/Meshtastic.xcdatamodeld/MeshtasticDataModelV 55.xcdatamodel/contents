@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24299" systemVersion="25A354" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24299" systemVersion="25B78" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AmbientLightingConfigEntity" representedClassName="AmbientLightingConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="blue" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="current" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -73,6 +73,26 @@
         <attribute name="tzdef" optional="YES" attributeType="String"/>
         <relationship name="deviceConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="deviceConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
+    <entity name="DeviceHardwareEntity" representedClassName="DeviceHardwareEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="activelySupported" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="architecture" optional="YES" attributeType="String"/>
+        <attribute name="displayName" optional="YES" attributeType="String"/>
+        <attribute name="hwModel" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="hwModelSlug" optional="YES" attributeType="String"/>
+        <attribute name="platformioTarget" optional="YES" attributeType="String"/>
+        <relationship name="images" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DeviceHardwareImageEntity" inverseName="device" inverseEntity="DeviceHardwareImageEntity"/>
+        <relationship name="tags" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DeviceHardwareTagEntity" inverseName="devices" inverseEntity="DeviceHardwareTagEntity"/>
+    </entity>
+    <entity name="DeviceHardwareImageEntity" representedClassName="DeviceHardwareImageEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="eTag" optional="YES" attributeType="String"/>
+        <attribute name="fileName" optional="YES" attributeType="String"/>
+        <attribute name="svgData" optional="YES" attributeType="Binary"/>
+        <relationship name="device" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DeviceHardwareEntity" inverseName="images" inverseEntity="DeviceHardwareEntity"/>
+    </entity>
+    <entity name="DeviceHardwareTagEntity" representedClassName="DeviceHardwareTagEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="tag" attributeType="String"/>
+        <relationship name="devices" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DeviceHardwareEntity" inverseName="tags" inverseEntity="DeviceHardwareEntity"/>
+    </entity>
     <entity name="DeviceMetadataEntity" representedClassName="DeviceMetadataEntity" syncable="YES" codeGenerationType="class">
         <attribute name="canShutdown" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="deviceStateVersion" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -117,6 +137,16 @@
         <attribute name="useI2SAsBuzzer" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="usePWM" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <relationship name="externalNotificationConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="externalNotificationConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
+    <entity name="FirmwareReleaseEntity" representedClassName="FirmwareReleaseEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="pageUrl" optional="YES" attributeType="String"/>
+        <attribute name="releaseNotes" optional="YES" attributeType="String"/>
+        <attribute name="releaseType" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="versionId" attributeType="String"/>
+        <attribute name="versionMajor" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="versionMinor" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="versionPatch" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
     <entity name="LocationEntity" representedClassName="LocationEntity" syncable="YES" codeGenerationType="class">
         <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -164,6 +194,8 @@
         <attribute name="read" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="realACK" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="receivedACK" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="relayNode" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="relays" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="replyID" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="rssi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -197,6 +229,7 @@
         <attribute name="minAppVersion" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="myNodeNum" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="peripheralId" optional="YES" attributeType="String"/>
+        <attribute name="pioEnv" optional="YES" attributeType="String"/>
         <attribute name="rebootCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="registered" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="channels" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="ChannelEntity" inverseName="myInfoChannel" inverseEntity="ChannelEntity"/>

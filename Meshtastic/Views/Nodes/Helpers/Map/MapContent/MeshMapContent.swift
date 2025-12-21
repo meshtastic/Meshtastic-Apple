@@ -15,6 +15,12 @@ struct IdentifiableOverlay: Identifiable {
 	var id: ObjectIdentifier { ObjectIdentifier(overlay as AnyObject) }
 }
 
+struct ReducedPrecisionMapCircleKey: Hashable {
+    let latitudeI: Int32
+    let longitudeI: Int32
+    let precisionBits: Int32
+}
+
 struct MeshMapContent: MapContent {
 	
 	/// Parameters
@@ -43,35 +49,85 @@ struct MeshMapContent: MapContent {
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
 				  predicate: NSPredicate(format: "enabled == true", ""), animation: .none)
 	private var routes: FetchedResults<RouteEntity>
-	
+
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
 		ForEach(positions, id: \.id) { position in
+			/// Apply favorites filter and don't show ignored nodes
 			if (!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true) {
-				
-				let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-				let positionName = position.nodePosition?.user?.longName ?? "?"
-				// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
-				let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
-				
-				Annotation(positionName, coordinate: position.coordinate) {
-					LazyVStack {
-						AnimatedNodePin(
-							nodeColor: nodeColor,
-							shortName: position.nodePosition?.user?.shortName,
-							hasDetectionSensorMetrics: position.nodePosition?.hasDetectionSensorMetrics ?? false,
-							isOnline: position.nodePosition?.isOnline ?? false,
-							calculatedDelay: calculatedDelay
-						)
+				let coordinateForNodePin: CLLocationCoordinate2D = if position.isPreciseLocation {
+					// Precise location: place node pin at actual location.
+					position.coordinate
+				} else {
+					// Imprecise location: fuzz slightly so overlapping nodes are visible and clickable at highest zoom levels.
+					position.fuzzedCoordinate
+				}
+				if 12...15 ~= position.precisionBits || position.precisionBits == 32 {
+					
+					let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+					let positionName = position.nodePosition?.user?.longName ?? "?"
+
+					// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
+					let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
+					
+					Annotation(positionName, coordinate: coordinateForNodePin) {
+						LazyVStack {
+							AnimatedNodePin(
+								nodeColor: nodeColor,
+								shortName: position.nodePosition?.user?.shortName,
+								hasDetectionSensorMetrics: position.nodePosition?.hasDetectionSensorMetrics ?? false,
+								isOnline: position.nodePosition?.isOnline ?? false,
+								calculatedDelay: calculatedDelay
+							)
+						}
+						.highPriorityGesture(TapGesture().onEnded { _ in
+							selectedPosition = (selectedPosition == position ? nil : position)
+						})
 					}
-					.highPriorityGesture(TapGesture().onEnded { _ in
-						selectedPosition = (selectedPosition == position ? nil : position)
-					})
 				}
 			}
 		}
 	}
-	
+
+	private var reducedPrecisionCircleItems: [(nodeNum: Int64, circleKey: ReducedPrecisionMapCircleKey)] {
+		// Precompute *unique* reduced-precision circles so we don't have to redraw tons of identical (center, radius) circles in dense map areas. (Since they're all transparent, this causes severe FPS drop when zoomed into areas where there are a ton of overlapping circles.)
+		var lowestNumForKey: [ReducedPrecisionMapCircleKey: Int64] = [:]
+		// Populate a dict where the key is (lat, lon, bits) and the value is the *lowest* node.num seen for that key.
+		// That lowest node.num value is used to create a stable color for the MapCircle and stable id for ForEach.
+		for position in positions {
+			// Same filter criteria as positionAnnotations:
+			if (!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true) {
+				if 12...15 ~= position.precisionBits {
+					let nodeNum = position.nodePosition?.num ?? 0
+					let key = ReducedPrecisionMapCircleKey(latitudeI: position.latitudeI, longitudeI: position.longitudeI, precisionBits: position.precisionBits)
+					if let existing = lowestNumForKey[key] {
+						if nodeNum < existing { lowestNumForKey[key] = nodeNum }
+					} else {
+						lowestNumForKey[key] = nodeNum
+					}
+				}
+			}
+		}
+		// Sort by nodeNum just to keep draw order stable.
+        return lowestNumForKey.map { ($0.value, $0.key) }.sorted { $0.nodeNum < $1.nodeNum }
+	}
+
+    @MapContentBuilder
+    var reducedPrecisionMapCircles: some MapContent {
+        ForEach(reducedPrecisionCircleItems, id: \.nodeNum) { item in
+            let circleKey = item.circleKey
+            let nodeNum = item.nodeNum
+            let radius = PositionPrecision(rawValue: Int(circleKey.precisionBits))?.precisionMeters ?? 0
+            if radius > 0.0 {
+                let center = CLLocationCoordinate2D(latitude: Double(circleKey.latitudeI) / 1e7, longitude: Double(circleKey.longitudeI) / 1e7)
+				let nodeColor = UIColor(hex: UInt32(nodeNum))
+                MapCircle(center: center, radius: radius)
+                    .foregroundStyle(Color(nodeColor).opacity(0.25))
+                    .stroke(.white, lineWidth: 1)
+            }
+        }
+    }
+
 	@MapContentBuilder
 	var routeAnnotations: some MapContent {
 		ForEach(routes) { route in
@@ -147,6 +203,7 @@ struct MeshMapContent: MapContent {
 		}
 		
 		positionAnnotations
+		reducedPrecisionMapCircles
 		routeAnnotations
 		waypointAnnotations
 	}

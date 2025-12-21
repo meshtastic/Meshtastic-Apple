@@ -29,6 +29,10 @@ actor TCPConnection: Connection {
 		self.nwHost = NWEndpoint.Host(host)
 		self.nwPort = NWEndpoint.Port(integerLiteral: UInt16(port))
 	}
+	
+	var host: NWEndpoint.Host {
+		return nwHost
+	}
 
 	private func waitForMagicBytes() async throws -> Bool {
 		let startOfFrame: [UInt8] = [0x94, 0xc3]

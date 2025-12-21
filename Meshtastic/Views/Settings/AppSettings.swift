@@ -56,6 +56,9 @@ struct AppSettings: View {
 						}
 						.tint(.accentColor)
 					}
+#if targetEnvironment(macCatalyst)
+					// App Icon Picker is disabled on macOS Catalyst
+#else
 					Button {
 						isPresentingAppIconSheet.toggle()
 					} label: {
@@ -65,6 +68,7 @@ struct AppSettings: View {
 						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
 							.presentationDetents([.medium])
 					}
+#endif
 				}
 				Section(header: Text("environment")) {
 					VStack(alignment: .leading) {
@@ -155,9 +159,12 @@ struct AppSettings: View {
 									Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 								}
 							}
-							clearCoreDataDatabase(context: context, includeRoutes: true)
-							clearNotifications()
-							context.refreshAllObjects()
+							Task { @MainActor in
+								clearCoreDataDatabase(context: context, includeRoutes: true, includeAppLevelData: true)
+								clearNotifications()
+								try? await MeshtasticAPI.shared.refreshDevicesAPIData()
+								context.refreshAllObjects()
+							}
 						}
 					}
 					Button {

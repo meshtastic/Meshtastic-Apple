@@ -14,7 +14,7 @@ private let maxRetries = 1
 private let retryDelay: Duration = .seconds(2)
 
 extension AccessoryManager {
-	func connect(to device: Device, withConnection: Connection? = nil, wantConfig: Bool = true, wantDatabase: Bool = true, versionCheck: Bool = true) async throws {
+	func connect(to device: Device, withConnection: Connection? = nil, wantConfig: Bool = true, wantDatabase: Bool = true, versionCheck: Bool = true, retries: Int? = nil) async throws {
 		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck))")
 		// Prevent new connection if one is active
 		if activeConnection != nil {
@@ -32,14 +32,14 @@ extension AccessoryManager {
 		expectedNodeDBSize = nil
 		
 		// Prepare to connect
-		self.connectionStepper = SequentialSteps(maxRetries: maxRetries, retryDelay: retryDelay) {
+		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
 				Logger.transport.info("🔗👟 [Connect] Starting connection to \(device.id, privacy: .public)")
 				if retryAttempt > 0 {
 					try await self.closeConnection() // clean-up before retries.
-					self.updateState(.retrying(attempt: retryAttempt + 1))
+					self.updateState(.retrying(attempt: retryAttempt + 1, maxAttempts: retries ?? maxRetries))
 					self.allowDisconnect = true
 				} else {
 					self.updateState(.connecting)
@@ -66,10 +66,6 @@ extension AccessoryManager {
 						Logger.transport.info("[Accessory] Event stream closed")
 					}
 					self.activeConnection = (device: device, connection: connection)
-					
-					if UserDefaults.preferredPeripheralId.count < 1 {
-						UserDefaults.preferredPeripheralId = device.id.uuidString
-					}
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
 					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
 				}
@@ -114,6 +110,10 @@ extension AccessoryManager {
 				Logger.transport.info("🔗👟 [Connect] Step 5: Send wantConfig (database)")
 				self.updateState(.retrievingDatabase(nodeCount: 0))
 				self.allowDisconnect = true
+				
+				Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
+				UserDefaults.preferredPeripheralId = device.id.uuidString
+				
 				try await self.sendWantDatabase()
 			}
 			
@@ -168,6 +168,15 @@ extension AccessoryManager {
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 				self.updateState(.subscribed)
+				
+				// If we successfully connected to a manual connection, then save it to the list
+				// Remember, Device is a value type (struct) so don't use use `device` here, thats
+				// The value at the instantiation of the connect process.  We want the currently
+				// updated device object in `activeConnection` with its additonal metadata from
+				// NodeInfo packets.
+				if let activeDevice = self.activeConnection?.device, activeDevice.isManualConnection {
+					ManualConnectionList.shared.insert(device: activeDevice)
+				}
 			}
 			
 			// Step 8: Update UI and status to connected
@@ -258,7 +267,7 @@ actor SequentialSteps {
 	var isRunning: Bool = false
 	var externalError: Error?
 	
-	init(maxRetries: Int = 1, retryDelay: Duration = .seconds(3), @StepsBuilder _ builder: () -> [Step]) {
+	init(maxRetries: Int = 3, retryDelay: Duration = .seconds(3), @StepsBuilder _ builder: () -> [Step]) {
 		self.maxRetries	= maxRetries
 		self.retryDelay = retryDelay
 		self.steps = builder()
@@ -343,6 +352,7 @@ actor SequentialSteps {
 			return
 		}
 		isRunning = false
+		return
 		throw AccessoryError.tooManyRetries
 	}
 	
