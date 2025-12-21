@@ -148,7 +148,7 @@ extension UserEntity {
 			return "THINKNODEM2"
 		case "THINKNODEM3":
 			return "THINKNODEM3"
-		case "THINKNODEM3":
+		case "THINKNODEM4":
 			return "THINKNODEM4"
 		/// DIY Devices
 		case "RPIPICO":

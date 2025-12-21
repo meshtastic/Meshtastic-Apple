@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 @propertyWrapper
 struct UserDefault<T: Decodable> {
@@ -205,7 +206,7 @@ extension UserDefaults {
 				// Store the Data in UserDefaults
 				UserDefaults.standard.set(data, forKey: Keys.manualConnections.rawValue)
 			} catch {
-				print("Failed to encode manualConnections: \(error)")
+				Logger.transport.error("💥 Failed to encode manualConnections: \(error, privacy: .public)")
 			}
 		}
 	}
