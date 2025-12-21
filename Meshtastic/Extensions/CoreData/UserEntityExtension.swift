@@ -76,6 +76,8 @@ extension UserEntity {
 			return "HELTECMESHNODET114"
 		case "HELTECV3":
 			return "HELTECV3"
+		case "HELTECV4":
+			return "HELTECV4"
 		case "HELTECMESHPOCKET":
 			return "HELTECMESHPOCKET"
 		case "HELTECVISIONMASTERE213":
@@ -139,6 +141,15 @@ extension UserEntity {
 			return "MUZIR1NEO"
 		case "STATIONG2":
 			return "STATIONG2"
+		/// Elecrow
+		case "THINKNODEM1":
+			return "THINKNODEM1"
+		case "THINKNODEM2":
+			return "THINKNODEM2"
+		case "THINKNODEM3":
+			return "THINKNODEM3"
+		case "THINKNODEM3":
+			return "THINKNODEM4"
 		/// DIY Devices
 		case "RPIPICO":
 			return "RPIPICO"
