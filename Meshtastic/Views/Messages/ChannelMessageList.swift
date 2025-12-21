@@ -12,7 +12,7 @@ import SwiftUI
 
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
-	@EnvironmentObject var router: Router
+	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FocusState var messageFieldFocused: Bool
@@ -58,14 +58,29 @@ struct ChannelMessageList: View {
 			Logger.data.error("Failed to read messages: \(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
+	private func routerIsShowingThisChannel() -> Bool {
+		guard appState.router.navigationState.selectedTab == .messages else { return false }
+		return scenePhase == .active
+	}
+
 	var body: some View {
+		// Cast allPrivateMessages to an array for easier indexing and ForEach.
+		let messages: [MessageEntity] = Array(allPrivateMessages)
+
+		// Precompute previous message
+		let previousByID: [Int64: MessageEntity?] = {
+			var dict = [Int64: MessageEntity?]()
+			var prev: MessageEntity?
+			for m in messages { dict[m.messageId] = prev; prev = m }
+			return dict
+		}()
+
 		ScrollViewReader { scrollView in
 			ScrollView {
 				LazyVStack {
-					ForEach(allPrivateMessages.indices, id: \.self) { index in
-						  let message = allPrivateMessages[index]
-						  let previousMessage = index > 0 ? allPrivateMessages[index - 1] : nil
+					ForEach(messages, id: \.messageId) { message in
+						  let previousMessage: MessageEntity? = previousByID[message.messageId] ?? nil
 						  
 						  ChannelMessageRow(
 							  message: message,
@@ -92,7 +107,7 @@ struct ChannelMessageList: View {
 								  }
 							  }
 						  }
-						  .id(redrawTapbacksTrigger)
+
 					}
 					Color.clear
 						.frame(height: 1)
