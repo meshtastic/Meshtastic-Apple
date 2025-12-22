@@ -235,7 +235,7 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     self = .unknownApp
   }
 
-  public init?(rawValue: Int) {
+  public init(rawValue: Int) {
     switch rawValue {
     case 0: self = .unknownApp
     case 1: self = .textMessageApp

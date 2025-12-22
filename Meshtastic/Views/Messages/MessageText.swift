@@ -19,7 +19,7 @@ struct MessageText: View {
 	static let timeFormatString = (localeTimeFormat ?? "j:mm:ss:a")
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	
+
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
@@ -27,64 +27,18 @@ struct MessageText: View {
 	// State for handling channel URL sheet
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
-	
+
 	var body: some View {
-		
+
 		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
-			
-			let markdownText = LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
-			return Text(markdownText)
-				.tint(Self.linkBlue)
-				.padding(.vertical, 10)
-				.padding(.horizontal, 8)
-				.foregroundColor(.white)
-				.background(isCurrentUser ? .accentColor : Color(.gray))
-				.cornerRadius(15)
-				.overlay {
-					/// Show the lock if the message is pki encrypted and has a real ack if sent by the current user, or is pki encrypted for incoming messages
-					if message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted {
-						VStack(alignment: .trailing) {
-							Spacer()
-							HStack {
-								Spacer()
-								Image(systemName: "lock.circle.fill")
-									.symbolRenderingMode(.palette)
-									.foregroundStyle(.white, .green)
-									.font(.system(size: 20))
-									.offset(x: 8, y: 8)
-							}
-						}
-					}
-					let isStoreAndForward = message.portNum == Int32(PortNum.storeForwardApp.rawValue)
-					let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-					if isStoreAndForward {
-						VStack(alignment: .trailing) {
-							Spacer()
-							HStack {
-								Spacer()
-								Image(systemName: "envelope.circle.fill")
-									.symbolRenderingMode(.palette)
-									.foregroundStyle(.white, .gray)
-									.font(.system(size: 20))
-									.offset(x: 8, y: 8)
-							}
-						}
-					}
-					if tapBackDestination.overlaySensorMessage {
-						VStack {
-							isDetectionSensorMessage ? Image(systemName: "sensor.fill")
-								.padding()
-								.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-								.foregroundStyle(Color.orange)
-								.symbolRenderingMode(.multicolor)
-								.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
-								.offset(x: 20, y: -20)
-							: nil
-						}
-					} else {
-						EmptyView()
-					}
-				}
+			MessageBubble(
+				message: LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE")),
+				linkColor: Self.linkBlue,
+				isCurrentUser: isCurrentUser,
+				isProtected: message.pkiEncrypted && message.realACK || !isCurrentUser && message.pkiEncrypted,
+				portNum: PortNum(rawValue: Int(message.portNum)),
+				overlaySensorMessage: tapBackDestination.overlaySensorMessage
+			)
 				.contextMenu {
 					MessageContextMenuItems(
 						message: message,
@@ -157,5 +111,81 @@ private extension MessageDestination {
 		case .user: return false
 		case .channel: return true
 		}
+	}
+}
+
+private struct MessageBubble: View {
+
+	let message: LocalizedStringKey
+	let linkColor: Color
+	let isCurrentUser: Bool
+	let isProtected: Bool
+	let portNum: PortNum
+	let overlaySensorMessage: Bool
+
+	var body: some View {
+		return Text(message)
+			.tint(linkColor)
+			.padding(.vertical, 10)
+			.padding(.horizontal, 8)
+			.foregroundColor(isCurrentUser ? .white : Color(.label))
+			.background(isCurrentUser ? .accentColor : Color(.secondarySystemBackground))
+			.cornerRadius(15)
+			.overlay {
+				/// Show the lock if the message is pki encrypted and has a real ack if sent by the current user, or is pki encrypted for incoming messages
+				if isProtected {
+					VStack(alignment: .trailing) {
+						Spacer()
+						HStack {
+							Spacer()
+							Image(systemName: "lock.circle.fill")
+								.symbolRenderingMode(.palette)
+								.foregroundStyle(.white, .green)
+								.font(.system(size: 20))
+								.offset(x: 8, y: 8)
+						}
+					}
+				}
+
+				if portNum == .storeForwardApp {
+					VStack(alignment: .trailing) {
+						Spacer()
+						HStack {
+							Spacer()
+							Image(systemName: "envelope.circle.fill")
+								.symbolRenderingMode(.palette)
+								.foregroundStyle(.white, .gray)
+								.font(.system(size: 20))
+								.offset(x: 8, y: 8)
+						}
+					}
+				}
+				if overlaySensorMessage {
+					VStack {
+						portNum == .detectionSensorApp ? Image(systemName: "sensor.fill")
+							.padding()
+							.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+							.foregroundStyle(Color.orange)
+							.symbolRenderingMode(.multicolor)
+							.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+							.offset(x: 20, y: -20)
+						: nil
+					}
+				} else {
+					EmptyView()
+				}
+			}
+	}
+}
+
+#Preview {
+	let text: LocalizedStringKey = "Lorem ipsum dolor sit amet, *consectetur* adipiscing elit. [Test link](https://example.com)"
+	VStack(spacing: 16) {
+		MessageBubble(message: text, linkColor: .blue, isCurrentUser: true, isProtected: true, portNum: .UNRECOGNIZED(0), overlaySensorMessage: false)
+		MessageBubble(message: text, linkColor: .blue, isCurrentUser: false, isProtected: false, portNum: .UNRECOGNIZED(0), overlaySensorMessage: false)
+		MessageBubble(message: text, linkColor: .blue, isCurrentUser: true, isProtected: true, portNum: .storeForwardApp, overlaySensorMessage: true)
+		MessageBubble(message: text, linkColor: .blue, isCurrentUser: false, isProtected: true, portNum: .storeForwardApp, overlaySensorMessage: false)
+		MessageBubble(message: text, linkColor: .blue, isCurrentUser: true, isProtected: true, portNum: .detectionSensorApp, overlaySensorMessage: true)
+		MessageBubble(message: text, linkColor: .blue, isCurrentUser: false, isProtected: false, portNum: .detectionSensorApp, overlaySensorMessage: true)
 	}
 }
