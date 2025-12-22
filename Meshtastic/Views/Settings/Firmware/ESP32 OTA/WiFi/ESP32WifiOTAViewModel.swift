@@ -6,25 +6,13 @@ import OSLog
 import os // Required for OSAllocatedUnfairLock
 
 @MainActor
-class Esp32WifiOTAViewModel: ObservableObject {
-	enum OTAState: String, CustomStringConvertible {
-		var description: String { self.rawValue }
-		
-		case idle = "Idle"
-		case preparing = "Preparing"
-		case handshaking = "Sending Handshake"
-		case waitingForConnection = "Waiting for Connection"
-		case uploading = "Uploading"
-		case success = "Success"
-		case error = "Error"
-	}
+class ESP32WifiOTAViewModel: ObservableObject {
 	
 	// MARK: - Published State
 	@Published var statusMessage: String = "Idle"
 	@Published var progress: Double = 0.0
-	@Published var isUpdating: Bool = false
-	@Published var errorMessage: String? = nil
-	@Published var otaState: OTAState = .idle
+	@Published var errorMessage: String?
+	@Published var otaState: LocalOTAStatusCode = .idle
 	
 	// MARK: - Constants
 	private let espPort: NWEndpoint.Port = 3232
@@ -36,20 +24,19 @@ class Esp32WifiOTAViewModel: ObservableObject {
 	
 	// MARK: - Public Interface
 	
-	func startUpdate(host: NWEndpoint.Host, firmwareUrl: URL, password: String? = nil) async {
-		guard !isUpdating else { return }
+	func startUpdate(host: String, firmwareUrl: URL, password: String? = nil) async {
+		guard self.otaState == .idle else { return }
 		
-		self.isUpdating = true
 		self.progress = 0.0
 		self.errorMessage = nil
-		self.statusMessage = "Preparing..."
-		self.otaState = .preparing
+		self.statusMessage = "Connecting..."
+		self.otaState = .waitingForConnection
 		
 		var listener: NWListener?
 		
 		defer {
 			listener?.cancel()
-			self.isUpdating = false
+			self.otaState = .idle
 		}
 		
 		do {
@@ -65,7 +52,7 @@ class Esp32WifiOTAViewModel: ObservableObject {
 			Logger.services.info("[ESP OTA] Listening on port \(localPort)")
 			
 			self.statusMessage = "Waiting for device.  This can take a while..."
-			self.otaState = .handshaking
+			
 			Logger.services.info("[ESP OTA] Starting Handshake loop...")
 			
 			try await performHandshake(host: host,
@@ -73,11 +60,11 @@ class Esp32WifiOTAViewModel: ObservableObject {
 									   data: firmwareData,
 									   password: password)
 			
-			self.otaState = .waitingForConnection
+			self.otaState = .connected
 			for try await _ in transferStream { break }
 			
 			self.statusMessage = "Success!"
-			self.otaState = .success
+			self.otaState = .completed
 			Logger.services.info("[ESP OTA] Update Complete")
 			
 		} catch {
@@ -99,11 +86,12 @@ class Esp32WifiOTAViewModel: ObservableObject {
 		func getPayload() -> Data { return currentPayload }
 	}
 	
-	private func performHandshake(host: NWEndpoint.Host, localPort: UInt16, data: Data, password: String?) async throws {
+	private func performHandshake(host: String, localPort: UInt16, data: Data, password: String?) async throws {
 		let initialPayload = try generateInvitationPayload(localPort: localPort, data: data, password: password, authNonce: nil)
 		let state = HandshakeState(initialPayload: initialPayload)
 		
-		let connection = NWConnection(host: host, port: espPort, using: .udp)
+		let nwHost = NWEndpoint.Host(host)
+		let connection = NWConnection(host: nwHost, port: espPort, using: .udp)
 		defer { connection.cancel() }
 		
 		connection.start(queue: .global())
@@ -111,10 +99,11 @@ class Esp32WifiOTAViewModel: ObservableObject {
 		
 		Logger.services.info("[ESP OTA] UDP Connection Ready. Starting broadcast/listen loop.")
 		
+		var okReceived = false
 		try await withThrowingTaskGroup(of: Void.self) { group in
 			// Task A: Broadcaster
 			group.addTask {
-				while !Task.isCancelled {
+				while !Task.isCancelled, !okReceived {
 					let payload = await state.getPayload()
 					connection.send(content: payload, completion: .contentProcessed { _ in })
 					Logger.services.debug("[ESP OTA] Sent invitation packet")
@@ -129,9 +118,11 @@ class Esp32WifiOTAViewModel: ObservableObject {
 					
 					if response == "OK" {
 						Logger.services.info("[ESP OTA] Handshake OK received!")
+						okReceived = true
 						return
 					}
 					
+					// THIS IS UNTESTED
 					if response.hasPrefix("AUTH") {
 						Logger.services.info("[ESP OTA] Auth challenge received: \(response)")
 						let components = response.components(separatedBy: " ")
@@ -142,6 +133,14 @@ class Esp32WifiOTAViewModel: ObservableObject {
 																				password: password,
 																				authNonce: nonce)
 							await state.updatePayload(newPayload)
+						}
+					}
+					
+					if response == "ERASE" {
+						Logger.services.info("[ESP OTA] Device is erasing the flash partition.")
+						Task { @MainActor in
+							self.otaState = .preparing
+							self.statusMessage = "Preparing flash partition..."
 						}
 					}
 				}
@@ -176,6 +175,7 @@ class Esp32WifiOTAViewModel: ObservableObject {
 	
 	nonisolated private func generateInvitationPayload(localPort: UInt16, data: Data, password: String?, authNonce: String?) throws -> Data {
 		let fileMD5 = Insecure.MD5.hash(data: data).map { String(format: "%02hhx", $0) }.joined()
+		Logger.services.info("Firmware MD5 is \(fileMD5)")
 		let fileSize = data.count
 		var message = "0 \(localPort) \(fileSize) \(fileMD5)"
 		
@@ -266,7 +266,7 @@ class Esp32WifiOTAViewModel: ObservableObject {
 			switch state {
 			case .ready:
 				Task { @MainActor in
-					self.otaState = .uploading
+					self.otaState = .transferring
 					do {
 						try await self.performChunkedTransfer(connection: connection, data: data)
 						await MainActor.run {

@@ -66,6 +66,7 @@ extension AccessoryManager {
 						Logger.transport.info("[Accessory] Event stream closed")
 					}
 					self.activeConnection = (device: device, connection: connection)
+					self.activeDeviceNum = device.num
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
 					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
 				}
@@ -213,6 +214,9 @@ extension AccessoryManager {
 		do {
 			try await connectionStepper?.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
+		} catch AccessoryError.tooManyRetries {
+			try await self.closeConnection()
+			updateState(.discovering)
 		} catch {
 			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error)")
 			try await self.closeConnection()
@@ -352,7 +356,7 @@ actor SequentialSteps {
 			return
 		}
 		isRunning = false
-		return
+		//return
 		throw AccessoryError.tooManyRetries
 	}
 	

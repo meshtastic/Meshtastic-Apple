@@ -329,7 +329,7 @@ private struct FirmwareRow: View {
 			case .uf2:
 				UF2MassStorageView(fileURL: firmwareFile.localUrl)
 			case .bin:
-				ESP32DFUSheet(binFileURL: firmwareFile.localUrl)
+				ESP32OTAIntroSheet(binFileURL: firmwareFile.localUrl)
 			}
 		}
 	}
