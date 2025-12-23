@@ -29,9 +29,9 @@ struct SaveChannelQRCode: View {
 	@State private var okToMQTT: Bool = false
 	var body: some View {
 		VStack {
-			Text("\(addChannels ? "Add" : "Replace all") Channels?")
+			Text("\(addChannels ? "Add".localized : "Replace all".localized) Channels?")
 				.font(.title)
-			Text("These settings will \(addChannels ? "add channels without changing any LoRa config values." : "replace all channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot automatically.")")
+			Text("These settings will \(addChannels ? "add channels without changing any LoRa config values.".localized : "replace all channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot automatically.".localized)")
 				.fixedSize(horizontal: false, vertical: true)
 				.foregroundColor(.gray)
 				.font(.title3)

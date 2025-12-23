@@ -69,7 +69,7 @@ struct UserConfig: View {
 						Label("Call Sign must not be empty", systemImage: "exclamationmark.square")
 							.foregroundColor(.red)
 					}
-					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
+					Text("\(String(isLicensed ? "Call Sign".localized : "Long Name".localized)) can be up to \(isLicensed ? "8" : "36") bytes long.")
 						.foregroundColor(.gray)
 						.font(.callout)
 					

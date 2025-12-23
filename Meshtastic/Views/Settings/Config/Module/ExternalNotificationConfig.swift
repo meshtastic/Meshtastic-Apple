@@ -99,7 +99,7 @@ struct ExternalNotificationConfig: View {
 					.listRowSeparator(.visible)
 				UpdateIntervalPicker(
 					config: .nagTimeout,
-					pickerLabel: "Nag Timeout",
+					pickerLabel: "Nag Timeout".localized,
 					selectedInterval: $nagTimeout
 				)
 				.listRowSeparator(.hidden)

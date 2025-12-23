@@ -11,7 +11,7 @@ import SwiftUI
 struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
 	@State var editMode = EditMode.active
-	var filterTitle = "Node Filters"
+	var filterTitle = "Node Filters".localized
 //	@Binding var viaLora: Bool
 //	@Binding var viaMqtt: Bool
 //	@Binding var isOnline: Bool

@@ -23,7 +23,7 @@ struct NodeAlertsButton: View {
 			}
 		} label: {
 			Label {
-				Text(user.mute ? "Show alerts" : "Hide alerts")
+				Text(user.mute ? "Show Alerts" : "Hide Alerts")
 			} icon: {
 				Image(systemName: user.mute ? "bell.slash" : "bell")
 					.symbolRenderingMode(.hierarchical)

@@ -14,9 +14,9 @@ enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 	var description: String {
 		switch self {
 		case .sensor:
-			return "Sensor"
+			return "Sensor".localized
 		case .client:
-			return "Client"
+			return "Client".localized
 		}
 	}
 	var localized: String { self.rawValue.localized }
@@ -132,7 +132,7 @@ struct DetectionSensorConfig: View {
 				Section(header: Text("Update Interval")) {
 					UpdateIntervalPicker(
 						config: .detectionSensorMinimum,
-						pickerLabel: "Minimum time between detection broadcasts",
+						pickerLabel: "Minimum time between detection broadcasts".localized,
 						selectedInterval: $minimumBroadcastSecs
 					)
 					.listRowSeparator(.hidden)
@@ -142,7 +142,7 @@ struct DetectionSensorConfig: View {
 						.listRowSeparator(.visible)
 					UpdateIntervalPicker(
 						config: .detectionSensorState,
-						pickerLabel: "State Broadcast Interval",
+						pickerLabel: "State Broadcast Interval".localized,
 						selectedInterval: $stateBroadcastSecs
 					)
 					.listRowSeparator(.hidden)

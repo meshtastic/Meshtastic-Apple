@@ -108,7 +108,7 @@ struct TelemetryConfig: View {
 				if powerMeasurementEnabled {
 					UpdateIntervalPicker(
 						config: .broadcastShort,
-						pickerLabel: "Power Metrics",
+						pickerLabel: "Power Metrics".localized,
 						selectedInterval: $powerUpdateInterval
 					)
 					.listRowSeparator(.hidden)

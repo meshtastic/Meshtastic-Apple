@@ -70,7 +70,7 @@ struct AppSettings: View {
 					}
 #endif
 				}
-				Section(header: Text("environment")) {
+				Section(header: Text("Environment")) {
 					VStack(alignment: .leading) {
 						Toggle(isOn: $environmentEnableWeatherKit) {
 							Label("Weather Conditions", systemImage: "cloud.sun")

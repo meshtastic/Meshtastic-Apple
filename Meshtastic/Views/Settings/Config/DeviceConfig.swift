@@ -82,7 +82,7 @@ struct DeviceConfig: View {
 				}
 				UpdateIntervalPicker(
 					config: .broadcastLong,
-					pickerLabel: "Node Info Broadcast Interval",
+					pickerLabel: "Node Info Broadcast Interval".localized,
 					selectedInterval: $nodeInfoBroadcastSecs
 				)
 			}
