@@ -9,6 +9,7 @@ import Foundation
 import CoreBluetooth
 import OSLog
 import UIKit
+import CryptoKit
 
 private let meshtasticOTAServiceId = CBUUID(string: "4FAFC201-1FB5-459E-8FCC-C5C9C331914B")
 private let statusCharacteristicId = CBUUID(string: "62EC0272-3EC5-11EB-B378-0242AC130003") // ESP32 pTxCharacteristic ESP send (notifying)
@@ -54,8 +55,21 @@ final class ESP32BLEOTAViewModel2: ObservableObject {
 				
 				// Start transfer
 				let data = try Data(contentsOf: binURL)
-				let sizeMsg = "OTA_SIZE:\(data.count)"
-				try await ble.writeValue(Data(sizeMsg.utf8), for: otaChar, type: .withoutResponse, on: peripheral)
+				
+				// Get hash of the file
+				let sha256Digest = SHA256.hash(data: data)
+				let fileHash = sha256Digest.map { String(format: "%02hhx", $0) }.joined()
+				Logger.services.info("Firmware SHA-256 is \(fileHash)")
+				
+				let fileSize = data.count
+				
+				// Using the espota.py derrived start message, same as the WiFi/TCP code.
+				// Start of OTA Message: (cmd) (port) (size) (hash)
+				// Normally cmd is FLASH = 0, SPIFFS = 100, AUTH = 200, but only FLASH Implemented.
+				// Port is not used for BLE, ignored by OTA Loader
+				let message = "0 0 \(fileSize) \(fileHash)"
+				
+				try await ble.writeValue(Data(message.utf8), for: otaChar, type: .withoutResponse, on: peripheral)
 
 				var buffer = data
 
