@@ -56,6 +56,9 @@ struct AppSettings: View {
 						}
 						.tint(.accentColor)
 					}
+#if targetEnvironment(macCatalyst)
+					// App Icon Picker is disabled on macOS Catalyst
+#else
 					Button {
 						isPresentingAppIconSheet.toggle()
 					} label: {
@@ -65,6 +68,7 @@ struct AppSettings: View {
 						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
 							.presentationDetents([.medium])
 					}
+#endif
 				}
 				Section(header: Text("Environment")) {
 					VStack(alignment: .leading) {

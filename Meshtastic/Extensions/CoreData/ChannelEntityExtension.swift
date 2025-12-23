@@ -9,21 +9,44 @@ import CoreData
 import MeshtasticProtobufs
 
 extension ChannelEntity {
+	var messagePredicate: NSPredicate {
+		return NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", self.index)
+	}
+
+	var messageFetchRequest: NSFetchRequest<MessageEntity> {
+		let fetchRequest = MessageEntity.fetchRequest()
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
+		fetchRequest.predicate = messagePredicate
+		return fetchRequest
+	}
 
 	var allPrivateMessages: [MessageEntity] {
 		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", self.index)
+		let fetchRequest = messageFetchRequest
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
 
-	var unreadMessages: Int {
+	var mostRecentPrivateMessage: MessageEntity? {
+		// Most recent channel message (descending, limit 1)
+		let context = PersistenceController.shared.container.viewContext
+		let fetchRequest = messageFetchRequest
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+		fetchRequest.fetchLimit = 1
 
-		let unreadMessages = allPrivateMessages.filter { ($0 as AnyObject).read == false }
-		return unreadMessages.count
+		return (try? context.fetch(fetchRequest))?.first
 	}
+
+	func unreadMessages(context: NSManagedObjectContext) -> Int {
+		let fetchRequest = messageFetchRequest
+		fetchRequest.sortDescriptors = [] // sort is irrelevant.
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
+
+		return (try? context.count(for: fetchRequest)) ?? 0
+	}
+
+	// Backwards-compatible property (uses viewContext)
+	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.container.viewContext) }
 
 	var protoBuf: Channel {
 		var channel = Channel()
@@ -32,7 +55,7 @@ extension ChannelEntity {
 		channel.settings.psk = self.psk ?? Data()
 		channel.role = Channel.Role(rawValue: Int(self.role)) ?? Channel.Role.secondary
 		channel.settings.moduleSettings.positionPrecision = UInt32(self.positionPrecision)
-		channel.settings.moduleSettings.isClientMuted = self.mute
+		channel.settings.moduleSettings.isMuted = self.mute
 		return channel
 	}
 }

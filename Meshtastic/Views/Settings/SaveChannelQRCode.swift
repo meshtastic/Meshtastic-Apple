@@ -9,11 +9,17 @@ import CoreData
 import OSLog
 import MeshtasticProtobufs
 
+struct SaveChannelLinkData: Identifiable {
+	let id = UUID()
+	let data: String
+	let add: Bool
+}
+
 struct SaveChannelQRCode: View {
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.managedObjectContext) var context
 	let channelSetLink: String
-	var addChannels: Bool = false
+	@State var addChannels: Bool = false
 	var accessoryManager: AccessoryManager
 
 	@State private var showError: Bool = false
@@ -23,15 +29,15 @@ struct SaveChannelQRCode: View {
 	@State private var okToMQTT: Bool = false
 	var body: some View {
 		VStack {
-			Text("\(addChannels ? "Add" : "Replace all") Channels?")
+			Text("\(addChannels ? "Add".localized : "Replace all".localized) Channels?")
 				.font(.title)
-			Text("These settings will \(addChannels ? "add".localized : "replace all".localized) channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot")
+			Text("These settings will \(addChannels ? "add channels without changing any LoRa config values.".localized : "replace all channels. The current LoRa Config will be replaced, if there are substantial changes to the LoRa config the device will reboot automatically.".localized)")
 				.fixedSize(horizontal: false, vertical: true)
 				.foregroundColor(.gray)
 				.font(.title3)
 				.padding()
 
-			if !loraChanges.isEmpty {
+			if !loraChanges.isEmpty && !addChannels {
 				VStack(alignment: .leading) {
 					Text("LoRa Config Changes:")
 						.font(.headline)
