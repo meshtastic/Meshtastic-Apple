@@ -2,14 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : ""
-          }
-        }
-      }
+      "shouldTranslate" : false
     },
     "\t%@" : {
       "localizations" : {
@@ -31,12 +24,6 @@
             "value" : "\t%@"
           }
         },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\t%@"
-          }
-        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -49,7 +36,8 @@
             "value" : "\t%@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     " %@" : {
       "localizations" : {
@@ -89,7 +77,8 @@
             "value" : "%@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     " %@%%" : {
       "localizations" : {
@@ -117,7 +106,8 @@
             "value" : " %@%%"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     ": %@" : {
       "localizations" : {
@@ -157,7 +147,8 @@
             "value" : ": %@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     ": %d" : {
       "localizations" : {
@@ -197,7 +188,8 @@
             "value" : ": %d"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
@@ -277,7 +269,8 @@
             "value" : "%@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@" : {
       "localizations" : {
@@ -323,7 +316,8 @@
             "value" : "%1$@ - %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@ - %@" : {
       "localizations" : {
@@ -369,7 +363,8 @@
             "value" : "%1$@ - %2$@ - %3$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ - %@ Towards  %@ Back" : {
       "localizations" : {
@@ -553,7 +548,8 @@
             "value" : "%1$@ (%2$@)"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ %@" : {
       "localizations" : {
@@ -599,7 +595,8 @@
             "value" : "%1$@ %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ %lld" : {
       "localizations" : {
@@ -645,7 +642,8 @@
             "value" : "%1$@ %2$lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ away" : {
       "localizations" : {
@@ -879,7 +877,8 @@
             "value" : "%1$@, %2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@: %lld / %lld" : {
       "localizations" : {
@@ -925,7 +924,8 @@
             "value" : "%1$@: %2$lld / %3$lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@%%" : {
       "localizations" : {
@@ -1708,14 +1708,7 @@
       }
     },
     "• %@" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• %@"
-          }
-        }
-      }
+      "shouldTranslate" : false
     },
     "< 1%" : {
       "localizations" : {
@@ -1816,7 +1809,8 @@
             "value" : "0"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "1" : {
       "localizations" : {
@@ -1832,7 +1826,8 @@
             "value" : "1"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "1 byte" : {
       "localizations" : {
@@ -2224,7 +2219,8 @@
             "value" : "180"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "256 bit" : {
       "localizations" : {
@@ -41648,14 +41644,7 @@
       }
     },
     "TCP" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "TCP"
-          }
-        }
-      }
+      "shouldTranslate" : false
     },
     "Telemetry" : {
       "localizations" : {
@@ -48836,12 +48825,6 @@
             "value" : "X: %1$@, Y: %2$d"
           }
         },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "X: %1$@, Y: %2$d"
-          }
-        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -48854,7 +48837,8 @@
             "value" : "X: %1$@, Y: %2$d"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "X: %@, Y: %f" : {
       "localizations" : {
@@ -48900,7 +48884,8 @@
             "value" : "X: %1$@, Y: %2$f"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "X: %@, Y: %lld" : {
       "localizations" : {
@@ -48946,7 +48931,8 @@
             "value" : "X: %1$@, Y: %2$lld"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "y" : {
       "localizations" : {
