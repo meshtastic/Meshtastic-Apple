@@ -16,7 +16,7 @@
 		10D109F22E2047D600536CE6 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F12E2047D600536CE6 /* DatadogSessionReplay */; };
 		10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F32E2047D600536CE6 /* DatadogTrace */; };
 		230A98402EF86A44004D87F1 /* AsyncCentral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230A983F2EF86A44004D87F1 /* AsyncCentral.swift */; };
-		230A98422EF86AA9004D87F1 /* ESP32BLEOTAViewModel2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel2.swift */; };
+		230A98422EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift */; };
 		230BC3972E31071E0046BF2A /* AccessoryManager+Discovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */; };
 		231251382E3BC96400E6ED07 /* BLEAuthorizationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */; };
 		23148E302EE1CCE500F0DB2C /* MeshtasticAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23148E2F2EE1CCE500F0DB2C /* MeshtasticAPI.swift */; };
@@ -64,7 +64,6 @@
 		237B46962DC8F1C100B22D99 /* RateLimitedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */; };
 		23825FF52EF6CF0B00C25543 /* NWHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23825FF42EF6CF0B00C25543 /* NWHost.swift */; };
 		23825FF92EF6D9AA00C25543 /* ESP32WifiOTASheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23825FF82EF6D9AA00C25543 /* ESP32WifiOTASheet.swift */; };
-		23825FFD2EF6E70B00C25543 /* ESP32BLEOTAViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23825FFC2EF6E70B00C25543 /* ESP32BLEOTAViewModel.swift */; };
 		23825FFF2EF6E79C00C25543 /* ESP32BLEOTASheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23825FFE2EF6E79C00C25543 /* ESP32BLEOTASheet.swift */; };
 		2388EC382EDF88E900F6F982 /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = 2388EC372EDF88E900F6F982 /* NordicDFU */; };
 		2388EC3A2EDF8A1400F6F982 /* DFUModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2388EC392EDF8A1400F6F982 /* DFUModel.swift */; };
@@ -366,7 +365,7 @@
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
 		108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityToNodeInfo.swift; sourceTree = "<group>"; };
 		230A983F2EF86A44004D87F1 /* AsyncCentral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncCentral.swift; sourceTree = "<group>"; };
-		230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESP32BLEOTAViewModel2.swift; sourceTree = "<group>"; };
+		230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESP32BLEOTAViewModel.swift; sourceTree = "<group>"; };
 		230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Discovery.swift"; sourceTree = "<group>"; };
 		231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEAuthorizationHelper.swift; sourceTree = "<group>"; };
 		23148E2F2EE1CCE500F0DB2C /* MeshtasticAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAPI.swift; sourceTree = "<group>"; };
@@ -413,7 +412,6 @@
 		237B46952DC8F1C100B22D99 /* RateLimitedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimitedButton.swift; sourceTree = "<group>"; };
 		23825FF42EF6CF0B00C25543 /* NWHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NWHost.swift; sourceTree = "<group>"; };
 		23825FF82EF6D9AA00C25543 /* ESP32WifiOTASheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESP32WifiOTASheet.swift; sourceTree = "<group>"; };
-		23825FFC2EF6E70B00C25543 /* ESP32BLEOTAViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESP32BLEOTAViewModel.swift; sourceTree = "<group>"; };
 		23825FFE2EF6E79C00C25543 /* ESP32BLEOTASheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESP32BLEOTASheet.swift; sourceTree = "<group>"; };
 		2388EC392EDF8A1400F6F982 /* DFUModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFUModel.swift; sourceTree = "<group>"; };
 		23A1AFB62E42BD2500E46C96 /* RXTXIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RXTXIndicatorView.swift; sourceTree = "<group>"; };
@@ -940,10 +938,9 @@
 		23825FFB2EF6E6FB00C25543 /* BLE */ = {
 			isa = PBXGroup;
 			children = (
-				23825FFC2EF6E70B00C25543 /* ESP32BLEOTAViewModel.swift */,
 				23825FFE2EF6E79C00C25543 /* ESP32BLEOTASheet.swift */,
 				230A983F2EF86A44004D87F1 /* AsyncCentral.swift */,
-				230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel2.swift */,
+				230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift */,
 			);
 			path = BLE;
 			sourceTree = "<group>";
@@ -1891,7 +1888,6 @@
 				259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */,
 				BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */,
 				DD1BEF522E08E9B80090CE24 /* ChannelLock.swift in Sources */,
-				23825FFD2EF6E70B00C25543 /* ESP32BLEOTAViewModel.swift in Sources */,
 				259792262C2F114500AD1659 /* PositionEntityExtension.swift in Sources */,
 				259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */,
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
@@ -1907,7 +1903,7 @@
 				DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
 				DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */,
-				230A98422EF86AA9004D87F1 /* ESP32BLEOTAViewModel2.swift in Sources */,
+				230A98422EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift in Sources */,
 				23C2BE2A2EEAF96A00F6A997 /* FirmwareViewModel.swift in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */,

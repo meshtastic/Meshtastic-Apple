@@ -194,12 +194,24 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		// 3. Send Command
 		try await connection.sendAsync(data: command.data(using: .utf8)!)
 		
-		// 4. Wait for initial "OK\n"
-		let response = try await readLine(from: connection)
-		if response.trimmingCharacters(in: .whitespacesAndNewlines) != "OK" {
-			throw OTAError.unexpectedResponse(response)
+		// 4. Wait for initial "OK\n", handling "ERASING"
+		var handshakeComplete = false
+		while !handshakeComplete {
+			let response = try await readLine(from: connection)
+			let trimmed = response.trimmingCharacters(in: .whitespacesAndNewlines)
+			
+			if trimmed == "OK" {
+				handshakeComplete = true
+			} else if trimmed == "ERASING" {
+				await updateUI {
+					self.statusMessage = "Erasing partition..."
+				}
+				Logger.services.info("[ESP OTA] Device is erasing flash...")
+			} else {
+				throw OTAError.unexpectedResponse(response)
+			}
 		}
-		
+	
 		// 5. Stream Firmware Data
 		await updateUI {
 			self.otaState = .transferring

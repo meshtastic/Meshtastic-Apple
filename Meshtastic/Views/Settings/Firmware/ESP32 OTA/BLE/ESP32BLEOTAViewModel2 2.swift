@@ -72,15 +72,34 @@ final class ESP32BLEOTAViewModel2: ObservableObject {
 				// --- 4. Handshake ---
 				self.statusMessage = "Negotiating..."
 				
-				// Send command with response to ensure delivery before waiting for logic response
+				// Send command
 				try await ble.writeValue(Data(command.utf8), for: otaChar, type: .withResponse, on: peripheral)
 				
-				// Wait for "OK" response from ESP32
-				guard let handshakeData = await iterator.next(),
-					  let handshakeStr = String(data: handshakeData, encoding: .utf8),
-					  handshakeStr.trimmingCharacters(in: .whitespacesAndNewlines) == "OK" else {
-					throw OTAError.unexpectedResponse("Handshake failed")
+				// Wait for "OK" response from ESP32, handling "ERASING" intermediate state
+				var handshakeComplete = false
+				
+				while !handshakeComplete {
+					guard let handshakeData = await iterator.next(),
+						  let handshakeStr = String(data: handshakeData, encoding: .utf8) else {
+						throw OTAError.unexpectedResponse("Connection lost during handshake")
+					}
+					
+					let trimmed = handshakeStr.trimmingCharacters(in: .whitespacesAndNewlines)
+					
+					if trimmed == "OK" {
+						handshakeComplete = true
+					} else if trimmed == "ERASING" {
+						// Update UI to let user know the device is busy erasing partition
+						self.statusMessage = "Erasing partition..."
+						Logger.services.info("Device is erasing flash...")
+						// Continue loop to wait for OK
+					} else {
+						// Any other response is an error
+						throw OTAError.unexpectedResponse(trimmed)
+					}
 				}
+				
+				Logger.services.info("Handshake OK. Starting Stream.")
 				
 				Logger.services.info("Handshake OK. Starting Stream.")
 				
