@@ -1534,12 +1534,65 @@ public struct Nau7802Config: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "SENSOR_UNSET"),
+    1: .same(proto: "BME280"),
+    2: .same(proto: "BME680"),
+    3: .same(proto: "MCP9808"),
+    4: .same(proto: "INA260"),
+    5: .same(proto: "INA219"),
+    6: .same(proto: "BMP280"),
+    7: .same(proto: "SHTC3"),
+    8: .same(proto: "LPS22"),
+    9: .same(proto: "QMC6310"),
+    10: .same(proto: "QMI8658"),
+    11: .same(proto: "QMC5883L"),
+    12: .same(proto: "SHT31"),
+    13: .same(proto: "PMSA003I"),
+    14: .same(proto: "INA3221"),
+    15: .same(proto: "BMP085"),
+    16: .same(proto: "RCWL9620"),
+    17: .same(proto: "SHT4X"),
+    18: .same(proto: "VEML7700"),
+    19: .same(proto: "MLX90632"),
+    20: .same(proto: "OPT3001"),
+    21: .same(proto: "LTR390UV"),
+    22: .same(proto: "TSL25911FN"),
+    23: .same(proto: "AHT10"),
+    24: .same(proto: "DFROBOT_LARK"),
+    25: .same(proto: "NAU7802"),
+    26: .same(proto: "BMP3XX"),
+    27: .same(proto: "ICM20948"),
+    28: .same(proto: "MAX17048"),
+    29: .same(proto: "CUSTOM_SENSOR"),
+    30: .same(proto: "MAX30102"),
+    31: .same(proto: "MLX90614"),
+    32: .same(proto: "SCD4X"),
+    33: .same(proto: "RADSENS"),
+    34: .same(proto: "INA226"),
+    35: .same(proto: "DFROBOT_RAIN"),
+    36: .same(proto: "DPS310"),
+    37: .same(proto: "RAK12035"),
+    38: .same(proto: "MAX17261"),
+    39: .same(proto: "PCT2075"),
+    40: .same(proto: "ADS1X15"),
+    41: .same(proto: "ADS1X15_ALT"),
+    42: .same(proto: "SFA30"),
+    43: .same(proto: "SEN5X"),
+    44: .same(proto: "TSL2561"),
+    45: .same(proto: "BH1750"),
+  ]
 }
 
 extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}battery_level\0\u{1}voltage\0\u{3}channel_utilization\0\u{3}air_util_tx\0\u{3}uptime_seconds\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "battery_level"),
+    2: .same(proto: "voltage"),
+    3: .standard(proto: "channel_utilization"),
+    4: .standard(proto: "air_util_tx"),
+    5: .standard(proto: "uptime_seconds"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1593,7 +1646,30 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EnvironmentMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}temperature\0\u{3}relative_humidity\0\u{3}barometric_pressure\0\u{3}gas_resistance\0\u{1}voltage\0\u{1}current\0\u{1}iaq\0\u{1}distance\0\u{1}lux\0\u{3}white_lux\0\u{3}ir_lux\0\u{3}uv_lux\0\u{3}wind_direction\0\u{3}wind_speed\0\u{1}weight\0\u{3}wind_gust\0\u{3}wind_lull\0\u{1}radiation\0\u{3}rainfall_1h\0\u{3}rainfall_24h\0\u{3}soil_moisture\0\u{3}soil_temperature\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "temperature"),
+    2: .standard(proto: "relative_humidity"),
+    3: .standard(proto: "barometric_pressure"),
+    4: .standard(proto: "gas_resistance"),
+    5: .same(proto: "voltage"),
+    6: .same(proto: "current"),
+    7: .same(proto: "iaq"),
+    8: .same(proto: "distance"),
+    9: .same(proto: "lux"),
+    10: .standard(proto: "white_lux"),
+    11: .standard(proto: "ir_lux"),
+    12: .standard(proto: "uv_lux"),
+    13: .standard(proto: "wind_direction"),
+    14: .standard(proto: "wind_speed"),
+    15: .same(proto: "weight"),
+    16: .standard(proto: "wind_gust"),
+    17: .standard(proto: "wind_lull"),
+    18: .same(proto: "radiation"),
+    19: .standard(proto: "rainfall_1h"),
+    20: .standard(proto: "rainfall_24h"),
+    21: .standard(proto: "soil_moisture"),
+    22: .standard(proto: "soil_temperature"),
+  ]
 
   fileprivate class _StorageClass {
     var _temperature: Float? = nil
@@ -1619,11 +1695,15 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     var _soilMoisture: UInt32? = nil
     var _soilTemperature: Float? = nil
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -1810,7 +1890,24 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 
 extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PowerMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}ch1_voltage\0\u{3}ch1_current\0\u{3}ch2_voltage\0\u{3}ch2_current\0\u{3}ch3_voltage\0\u{3}ch3_current\0\u{3}ch4_voltage\0\u{3}ch4_current\0\u{3}ch5_voltage\0\u{3}ch5_current\0\u{3}ch6_voltage\0\u{3}ch6_current\0\u{3}ch7_voltage\0\u{3}ch7_current\0\u{3}ch8_voltage\0\u{3}ch8_current\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "ch1_voltage"),
+    2: .standard(proto: "ch1_current"),
+    3: .standard(proto: "ch2_voltage"),
+    4: .standard(proto: "ch2_current"),
+    5: .standard(proto: "ch3_voltage"),
+    6: .standard(proto: "ch3_current"),
+    7: .standard(proto: "ch4_voltage"),
+    8: .standard(proto: "ch4_current"),
+    9: .standard(proto: "ch5_voltage"),
+    10: .standard(proto: "ch5_current"),
+    11: .standard(proto: "ch6_voltage"),
+    12: .standard(proto: "ch6_current"),
+    13: .standard(proto: "ch7_voltage"),
+    14: .standard(proto: "ch7_current"),
+    15: .standard(proto: "ch8_voltage"),
+    16: .standard(proto: "ch8_current"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1919,7 +2016,33 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AirQualityMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}pm10_standard\0\u{3}pm25_standard\0\u{3}pm100_standard\0\u{3}pm10_environmental\0\u{3}pm25_environmental\0\u{3}pm100_environmental\0\u{3}particles_03um\0\u{3}particles_05um\0\u{3}particles_10um\0\u{3}particles_25um\0\u{3}particles_50um\0\u{3}particles_100um\0\u{1}co2\0\u{3}co2_temperature\0\u{3}co2_humidity\0\u{3}form_formaldehyde\0\u{3}form_humidity\0\u{3}form_temperature\0\u{3}pm40_standard\0\u{3}particles_40um\0\u{3}pm_temperature\0\u{3}pm_humidity\0\u{3}pm_voc_idx\0\u{3}pm_nox_idx\0\u{3}particles_tps\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "pm10_standard"),
+    2: .standard(proto: "pm25_standard"),
+    3: .standard(proto: "pm100_standard"),
+    4: .standard(proto: "pm10_environmental"),
+    5: .standard(proto: "pm25_environmental"),
+    6: .standard(proto: "pm100_environmental"),
+    7: .standard(proto: "particles_03um"),
+    8: .standard(proto: "particles_05um"),
+    9: .standard(proto: "particles_10um"),
+    10: .standard(proto: "particles_25um"),
+    11: .standard(proto: "particles_50um"),
+    12: .standard(proto: "particles_100um"),
+    13: .same(proto: "co2"),
+    14: .standard(proto: "co2_temperature"),
+    15: .standard(proto: "co2_humidity"),
+    16: .standard(proto: "form_formaldehyde"),
+    17: .standard(proto: "form_humidity"),
+    18: .standard(proto: "form_temperature"),
+    19: .standard(proto: "pm40_standard"),
+    20: .standard(proto: "particles_40um"),
+    21: .standard(proto: "pm_temperature"),
+    22: .standard(proto: "pm_humidity"),
+    23: .standard(proto: "pm_voc_idx"),
+    24: .standard(proto: "pm_nox_idx"),
+    25: .standard(proto: "particles_tps"),
+  ]
 
   fileprivate class _StorageClass {
     var _pm10Standard: UInt32? = nil
@@ -1948,11 +2071,15 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _pmNoxIdx: Float? = nil
     var _particlesTps: Float? = nil
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -2157,7 +2284,22 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 
 extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalStats"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}uptime_seconds\0\u{3}channel_utilization\0\u{3}air_util_tx\0\u{3}num_packets_tx\0\u{3}num_packets_rx\0\u{3}num_packets_rx_bad\0\u{3}num_online_nodes\0\u{3}num_total_nodes\0\u{3}num_rx_dupe\0\u{3}num_tx_relay\0\u{3}num_tx_relay_canceled\0\u{3}heap_total_bytes\0\u{3}heap_free_bytes\0\u{3}num_tx_dropped\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "uptime_seconds"),
+    2: .standard(proto: "channel_utilization"),
+    3: .standard(proto: "air_util_tx"),
+    4: .standard(proto: "num_packets_tx"),
+    5: .standard(proto: "num_packets_rx"),
+    6: .standard(proto: "num_packets_rx_bad"),
+    7: .standard(proto: "num_online_nodes"),
+    8: .standard(proto: "num_total_nodes"),
+    9: .standard(proto: "num_rx_dupe"),
+    10: .standard(proto: "num_tx_relay"),
+    11: .standard(proto: "num_tx_relay_canceled"),
+    12: .standard(proto: "heap_total_bytes"),
+    13: .standard(proto: "heap_free_bytes"),
+    14: .standard(proto: "num_tx_dropped"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2252,7 +2394,11 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 
 extension HealthMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HealthMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}heart_bpm\0\u{1}spO2\0\u{1}temperature\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "heart_bpm"),
+    2: .same(proto: "spO2"),
+    3: .same(proto: "temperature"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2296,7 +2442,17 @@ extension HealthMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension HostMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HostMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}uptime_seconds\0\u{3}freemem_bytes\0\u{3}diskfree1_bytes\0\u{3}diskfree2_bytes\0\u{3}diskfree3_bytes\0\u{1}load1\0\u{1}load5\0\u{1}load15\0\u{3}user_string\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "uptime_seconds"),
+    2: .standard(proto: "freemem_bytes"),
+    3: .standard(proto: "diskfree1_bytes"),
+    4: .standard(proto: "diskfree2_bytes"),
+    5: .standard(proto: "diskfree3_bytes"),
+    6: .same(proto: "load1"),
+    7: .same(proto: "load5"),
+    8: .same(proto: "load15"),
+    9: .standard(proto: "user_string"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2370,17 +2526,30 @@ extension HostMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Telemetry"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}time\0\u{3}device_metrics\0\u{3}environment_metrics\0\u{3}air_quality_metrics\0\u{3}power_metrics\0\u{3}local_stats\0\u{3}health_metrics\0\u{3}host_metrics\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "time"),
+    2: .standard(proto: "device_metrics"),
+    3: .standard(proto: "environment_metrics"),
+    4: .standard(proto: "air_quality_metrics"),
+    5: .standard(proto: "power_metrics"),
+    6: .standard(proto: "local_stats"),
+    7: .standard(proto: "health_metrics"),
+    8: .standard(proto: "host_metrics"),
+  ]
 
   fileprivate class _StorageClass {
     var _time: UInt32 = 0
     var _variant: Telemetry.OneOf_Variant?
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -2565,7 +2734,10 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
 
 extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Nau7802Config"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}zeroOffset\0\u{1}calibrationFactor\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "zeroOffset"),
+    2: .same(proto: "calibrationFactor"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

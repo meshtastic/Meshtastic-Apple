@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import OSLog
 import CoreBluetooth
-
+import CryptoKit
 
 struct ESP32BLEOTASheet: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -48,7 +48,8 @@ struct ESP32BLEOTASheet: View {
 				Section {
 					HStack(alignment: .center) {
 						Spacer()
-						CircularProgressView(progress: ota.transferProgress / 100.0, isIndeterminate: (ota.otaStatus == .preparing), size: 225.0, subtitleText: ota.otaStatus.rawValue)
+						// Progress is 0.0 to 1.0
+						CircularProgressView(progress: ota.transferProgress, isIndeterminate: (ota.otaStatus == .preparing), size: 225.0, subtitleText: ota.otaStatus.rawValue)
 							.frame(minHeight: 250.0)
 						Spacer()
 					}.listRowBackground(Color.clear)
@@ -59,13 +60,14 @@ struct ESP32BLEOTASheet: View {
 							Text("\(ota.statusMessage)")
 								.frame(maxWidth: .infinity)
 								.multilineTextAlignment(.center)
+								.font(.headline)
 						}
 					}.listRowBackground(Color.clear)
 				}.listRowSeparator(.hidden)
 			}.navigationTitle("ESP32 BLE Updater")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
-				ToolbarItem(placement: .cancellationAction) { // Standard placement for "Done" or "Close"
+				ToolbarItem(placement: .cancellationAction) {
 					Button("Done") {
 						dismiss()
 					}.disabled(![.idle, .completed, .error].contains(ota.otaStatus))
@@ -87,11 +89,20 @@ struct ESP32BLEOTASheet: View {
 				Task {
 					do {
 						if let peripheral {
-							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, rebootOtaSeconds: 2)
+							let data = try Data(contentsOf: binFileURL)
+							let sha256Digest = Data(SHA256.hash(data: data))
+							
+							// Send the reboot command to the node via existing mesh protocol
+							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
+							
+							// Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
 							try await accessoryManager.disconnect()
 
+							// Wait briefly for device to reboot
+							try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+							
+							// Start the OTA process
 							ota.startOTA(binURL: binFileURL)
-							//ota.startOTA(peripheral: peripheral, binFileURL: binFileURL)
 						}
 					} catch {
 						Logger.mesh.error("Reboot Failed")
@@ -99,7 +110,7 @@ struct ESP32BLEOTASheet: View {
 				}
 			}
 		} label: {
-			Label("Reboot into Wifi OTA Update Mode", systemImage: "square.and.arrow.down")
+			Label("Reboot & Start Update", systemImage: "square.and.arrow.down")
 				.frame(maxWidth: .infinity)
 			
 		}.buttonStyle(.bordered)

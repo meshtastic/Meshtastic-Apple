@@ -3,7 +3,7 @@ import Network
 import CryptoKit
 import Combine
 import OSLog
-import os // Required for OSAllocatedUnfairLock
+import os
 
 @MainActor
 class ESP32WifiOTAViewModel: ObservableObject {
@@ -15,45 +15,46 @@ class ESP32WifiOTAViewModel: ObservableObject {
 	@Published var otaState: LocalOTAStatusCode = .idle
 	
 	// MARK: - Constants
-	private let espPort: NWEndpoint.Port = 3232
-	private let chunkSize = 1460
-	private let retryDelay: TimeInterval = 2.0
-	private let handshakeTotalTimeout: TimeInterval = 30.0
+	private let port: NWEndpoint.Port = 3232
+	private let chunkSize = 4096 // 4KB chunks for efficient TCP transfer
 	
-	private var transferContinuation: AsyncThrowingStream<Void, Error>.Continuation?
+	// How long to wait for the device to reboot and accept TCP connections (Manual Host)
+	// or broadcast UDP packets (Auto Discovery)
+	private let connectionTimeout: TimeInterval = 60.0
 	
 	// MARK: - Public Interface
 	
-	/// Starts the OTA update process with the given host, firmware URL, and optional password.
-	func startUpdate(host: String, firmwareUrl: URL, password: String? = nil) async {
+	func startUpdate(host: String? = nil, firmwareUrl: URL, password: String? = nil) async {
 		guard otaState == .idle else { return }
 		
 		progress = 0.0
 		errorMessage = nil
-		statusMessage = "Connecting..."
+		statusMessage = "Starting..."
 		otaState = .waitingForConnection
 		
 		do {
 			let firmwareData = try Data(contentsOf: firmwareUrl)
+			let targetEndpoint: NWEndpoint
 			
-			let transferStream = AsyncThrowingStream<Void, Error> { continuation in
-				self.transferContinuation = continuation
+			// 1. Discovery / Connection Phase
+			if let manualHost = host, !manualHost.isEmpty {
+				Logger.services.info("[ESP OTA] Using manual host: \(manualHost)")
+				targetEndpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(manualHost), port: port)
+				
+				// Wait for the device to reboot and become responsive on TCP
+				statusMessage = "Waiting for device..."
+				try await waitForManualHostReboot(endpoint: targetEndpoint)
+			} else {
+				statusMessage = "Scanning for device..."
+				Logger.services.info("[ESP OTA] Listening for UDP broadcast...")
+				targetEndpoint = try await discoverDevice()
 			}
 			
-			Logger.services.info("[ESP OTA] Starting local TCP Listener...")
-			let (listener, localPort) = try await setupListener(sending: firmwareData)
-			Logger.services.info("[ESP OTA] Listening on port \(localPort)")
+			// 2. Upload Phase
+			statusMessage = "Device ready. Negotiating..."
+			Logger.services.info("[ESP OTA] Device Ready at \(String(describing: targetEndpoint)). Starting Protocol.")
 			
-			// Ensure listener is cancelled on exit (success or failure)
-			defer { listener.cancel() }
-			
-			statusMessage = "Waiting for device. This can take a while..."
-			
-			Logger.services.info("[ESP OTA] Starting Handshake loop...")
-			try await performHandshake(host: host, localPort: localPort, data: firmwareData, password: password)
-			
-			otaState = .connected
-			for try await _ in transferStream { break }
+			try await connectAndUpload(endpoint: targetEndpoint, data: firmwareData)
 			
 			statusMessage = "Success!"
 			otaState = .completed
@@ -64,169 +65,189 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			errorMessage = error.localizedDescription
 			statusMessage = "Failed"
 			otaState = .error
-			transferContinuation?.finish(throwing: error)
-			transferContinuation = nil
 		}
 	}
 	
-	// MARK: - Handshake Logic
+	// MARK: - Manual Host Logic (TCP Polling)
 	
-	private actor HandshakeState {
-		var currentPayload: Data
-		var okReceived: Bool = false
+	/// Actively probes the target port until a connection is accepted or timeout occurs.
+	private func waitForManualHostReboot(endpoint: NWEndpoint) async throws {
+		let deadline = Date().addingTimeInterval(connectionTimeout)
 		
-		init(initialPayload: Data) {
-			self.currentPayload = initialPayload
+		Logger.services.info("[ESP OTA] Probing TCP \(String(describing: endpoint)) for availability...")
+		
+		while Date() < deadline {
+			if await probeTcpConnection(endpoint: endpoint) {
+				Logger.services.info("[ESP OTA] TCP Probe successful. Device is up.")
+				return
+			}
+			// Wait a bit before retrying
+			try await Task.sleep(for: .seconds(1))
 		}
 		
-		func updatePayload(_ data: Data) {
-			currentPayload = data
-		}
-		
-		func getPayload() -> Data {
-			currentPayload
-		}
-		
-		func markOkReceived() {
-			okReceived = true
-		}
-		
-		func isOkReceived() -> Bool {
-			okReceived
+		throw OTAError.timeout
+	}
+	
+	/// Helper to attempt a single connection. Returns true if successful, false if refused/unreachable.
+	private func probeTcpConnection(endpoint: NWEndpoint) async -> Bool {
+		let connection = NWConnection(to: endpoint, using: .tcp)
+		return await withCheckedContinuation { continuation in
+			var hasResumed = false
+			
+			connection.stateUpdateHandler = { state in
+				if hasResumed { return }
+				
+				switch state {
+				case .ready:
+					hasResumed = true
+					connection.cancel() // Close the probe connection immediately
+					continuation.resume(returning: true)
+				case .failed(_):
+					hasResumed = true
+					connection.cancel()
+					continuation.resume(returning: false)
+				case .waiting(_):
+					// .waiting usually implies the network interface is up but the host isn't responding (yet)
+					// We treat this as a fail for this specific probe attempt to trigger a retry loop
+					hasResumed = true
+					connection.cancel()
+					continuation.resume(returning: false)
+				default:
+					break
+				}
+			}
+			
+			connection.start(queue: .global())
 		}
 	}
 	
-	/// Performs the UDP handshake with the ESP32 device.
-	private func performHandshake(host: String, localPort: UInt16, data: Data, password: String?) async throws {
-		let initialPayload = try generateInvitationPayload(localPort: localPort, data: data, password: password, authNonce: nil)
-		let state = HandshakeState(initialPayload: initialPayload)
+	// MARK: - Auto Discovery Logic (UDP Listener)
+	
+	/// Listens for UDP broadcasts on port 3232 to find the ESP32.
+	private func discoverDevice() async throws -> NWEndpoint {
+		let parameters = NWParameters.udp
+		parameters.allowLocalEndpointReuse = true
 		
-		let nwHost = NWEndpoint.Host(host)
-		let connection = NWConnection(host: nwHost, port: espPort, using: .udp)
-		defer { connection.cancel() }
+		let listener = try NWListener(using: parameters, on: port)
 		
+		return try await withCheckedThrowingContinuation { continuation in
+			let hasResumed = OSAllocatedUnfairLock(initialState: false)
+			
+			// Handle incoming UDP packets
+			listener.newConnectionHandler = { newConnection in
+				newConnection.start(queue: .global())
+				newConnection.receiveMessage { data, context, isComplete, error in
+					if let data = data, let message = String(data: data, encoding: .utf8) {
+						// C++ sends: "MeshtasticOTA_<MAC>"
+						if message.hasPrefix("MeshtasticOTA") {
+							hasResumed.withLock { resumed in
+								if !resumed {
+									resumed = true
+									if let endpoint = newConnection.endpoint as? NWEndpoint {
+										continuation.resume(returning: endpoint)
+										listener.cancel()
+									} else {
+										continuation.resume(throwing: OTAError.discoveryFailed)
+										listener.cancel()
+									}
+								}
+							}
+						}
+					}
+					newConnection.cancel()
+				}
+			}
+			
+			listener.start(queue: .global())
+			
+			// Timeout logic
+			Task {
+				try await Task.sleep(for: .seconds(connectionTimeout))
+				hasResumed.withLock { resumed in
+					if !resumed {
+						resumed = true
+						listener.cancel()
+						continuation.resume(throwing: OTAError.timeout)
+					}
+				}
+			}
+		}
+	}
+	
+	// MARK: - TCP Protocol Logic
+	
+	private func connectAndUpload(endpoint: NWEndpoint, data: Data) async throws {
+		let connection = NWConnection(to: endpoint, using: .tcp)
+		
+		// 1. Establish TCP Connection
 		connection.start(queue: .global())
 		try await waitForConnectionReady(connection)
 		
-		Logger.services.info("[ESP OTA] UDP Connection Ready. Starting broadcast/listen loop.")
-		
-		try await withThrowingTaskGroup(of: Void.self) { group in
-			// Task A: Broadcaster
-			group.addTask {
-				var okReceived = await state.isOkReceived()
-				while !Task.isCancelled && !okReceived {
-					let payload = await state.getPayload()
-					try await connection.sendAsync(data: payload)
-					Logger.services.debug("[ESP OTA] Sent invitation packet")
-					try await Task.sleep(for: .seconds(self.retryDelay))
-					okReceived = await state.isOkReceived()
-				}
-			}
-			
-			// Task B: Listener (using async stream for messages)
-			group.addTask {
-				let messageStream = self.receiveMessageStream(from: connection)
-				for try await response in messageStream {
-					if Task.isCancelled { break }
-					
-					if response == "OK" {
-						Logger.services.info("[ESP OTA] Handshake OK received!")
-						await state.markOkReceived()
-						return
-					}
-					
-					if response.hasPrefix("AUTH") {
-						Logger.services.info("[ESP OTA] Auth challenge received: \(response)")
-						let components = response.components(separatedBy: " ")
-						if components.count > 1 {
-							let nonce = components[1]
-							let newPayload = try self.generateInvitationPayload(localPort: localPort, data: data, password: password, authNonce: nonce)
-							await state.updatePayload(newPayload)
-						}
-					}
-					
-					if response == "ERASE" {
-						Logger.services.info("[ESP OTA] Device is erasing the flash partition.")
-						await self.updateUI { // Safe MainActor update
-							self.otaState = .preparing
-							self.statusMessage = "Preparing flash partition..."
-						}
-					}
-				}
-			}
-			
-			// Task C: Timeout
-			group.addTask {
-				try await Task.sleep(for: .seconds(self.handshakeTotalTimeout))
-				throw OTAError.timeout
-			}
-			
-			try await group.next() // Wait for first completion (success or error)
-			group.cancelAll() // Cancel remaining tasks
-		}
-	}
-	
-	// MARK: - UDP Helpers
-	
-	/// Creates an async stream of incoming UDP messages.
-	nonisolated private func receiveMessageStream(from connection: NWConnection) -> AsyncThrowingStream<String, Error> {
-		AsyncThrowingStream<String, Error> { continuation in
-			func receiveNext() {
-				connection.receiveMessage { content, _, _, error in
-					if let error = error {
-						continuation.finish(throwing: error)
-						return
-					}
-					if let data = content, let str = String(data: data, encoding: .utf8) {
-						continuation.yield(str.trimmingCharacters(in: .whitespacesAndNewlines))
-					}
-					if !Task.isCancelled {
-						receiveNext() // Recurse to continue streaming
-					} else {
-						continuation.finish()
-					}
-				}
-			}
-			receiveNext()
-			
-			continuation.onTermination = { _ in
-				connection.cancel()
-			}
-		}
-	}
-	
-	nonisolated private func generateInvitationPayload(localPort: UInt16, data: Data, password: String?, authNonce: String?) throws -> Data {
+		// 2. Prepare Command: OTA <size> <hash>\n
+		// \n is critical for the C++ OtaProcessor to trigger parsing
 		let sha256Digest = SHA256.hash(data: data)
 		let fileHash = sha256Digest.map { String(format: "%02hhx", $0) }.joined()
+		let command = "OTA \(data.count) \(fileHash)\n"
 		
-		Logger.services.info("Firmware SHA-256 is \(fileHash)")
-		let fileSize = data.count
-		var message = "0 \(localPort) \(fileSize) \(fileHash)"
+		Logger.services.info("[ESP OTA] Sending Command: \(command)")
 		
-		if let nonce = authNonce, let pass = password {
-			let authInput = pass + nonce
-			if let authData = authInput.data(using: .utf8) {
-				let authSha256 = SHA256.hash(data: authData)
-				let authFirst16 = Data(authSha256.prefix(16))
-				let authHash = authFirst16.map { String(format: "%02hhx", $0) }.joined()
-				message += " " + authHash
-			}
+		// 3. Send Command
+		try await connection.sendAsync(data: command.data(using: .utf8)!)
+		
+		// 4. Wait for initial "OK\n"
+		let response = try await readLine(from: connection)
+		if response.trimmingCharacters(in: .whitespacesAndNewlines) != "OK" {
+			throw OTAError.unexpectedResponse(response)
 		}
 		
-		guard let payload = message.data(using: .utf8) else { throw OTAError.encodingFailed }
-		return payload
+		// 5. Stream Firmware Data
+		await updateUI {
+			self.otaState = .transferring
+			self.statusMessage = "Uploading firmware..."
+		}
+		
+		try await performChunkedTransfer(connection: connection, data: data)
+		
+		// 6. Wait for final "OK\n" (Validation/Flash Complete)
+		Logger.services.info("[ESP OTA] Upload done. Waiting for final verification...")
+		await updateUI {
+			self.statusMessage = "Verifying..."
+			self.progress = 1.0
+		}
+		
+		// We set a longer receive timeout here because Flash operations (hash check) can take a few seconds
+		let finalResponse = try await readLine(from: connection)
+		if finalResponse.trimmingCharacters(in: .whitespacesAndNewlines) != "OK" {
+			throw OTAError.unexpectedResponse(finalResponse)
+		}
+		
+		connection.cancel()
 	}
 	
-	/// Waits for the connection to become ready using a continuation with lock for safety.
+	// MARK: - Network Helpers
+	
+	/// Reads from connection until a newline character is found.
+	nonisolated private func readLine(from connection: NWConnection) async throws -> String {
+		return try await withCheckedThrowingContinuation { continuation in
+			connection.receive(minimumIncompleteLength: 1, maximumLength: 1024) { data, _, _, error in
+				if let error = error {
+					continuation.resume(throwing: error)
+					return
+				}
+				if let data = data, let string = String(data: data, encoding: .utf8) {
+					continuation.resume(returning: string)
+				} else {
+					continuation.resume(throwing: OTAError.encodingFailed)
+				}
+			}
+		}
+	}
+	
 	nonisolated private func waitForConnectionReady(_ connection: NWConnection) async throws {
-		try await withCheckedThrowingContinuation { continuation in
-			// Ensure we only resume the continuation once
+		try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
 			var didResume = false
-
 			connection.stateUpdateHandler = { state in
-				// Guard against multiple resumes due to multiple state updates
 				if didResume { return }
-
 				switch state {
 				case .ready:
 					didResume = true
@@ -237,89 +258,12 @@ class ESP32WifiOTAViewModel: ObservableObject {
 				case .cancelled:
 					didResume = true
 					continuation.resume(throwing: CancellationError())
-				default:
-					break
+				default: break
 				}
 			}
 		}
 	}
 	
-	// MARK: - Listener & Transfer Logic
-	
-	/// Sets up the TCP listener and returns it along with the assigned port.
-	private func setupListener(sending firmware: Data) async throws -> (NWListener, UInt16) {
-		let parameters = NWParameters(tls: nil)
-		parameters.includePeerToPeer = true
-		parameters.prohibitedInterfaceTypes = [.cellular]
-		
-		let listener = try NWListener(using: parameters, on: .init(integerLiteral: 0))
-		
-		return try await withCheckedThrowingContinuation<(NWListener, UInt16)> { continuation in
-			let stateLock = OSAllocatedUnfairLock<Bool>(initialState: false)
-			
-			// Set newConnectionHandler before starting (matches original to avoid timing issues)
-			listener.newConnectionHandler = { newConnection in
-				Logger.services.info("[ESP OTA] Accepted connection from \(String(describing: newConnection.endpoint))")
-				Task { @MainActor in
-					self.handleIncomingConnection(connection: newConnection, data: firmware)
-					newConnection.start(queue: .global())  // Start here as in original
-				}
-			}
-			
-			listener.stateUpdateHandler = { state in
-				stateLock.withLock { isHandled in
-					if isHandled { return }
-					isHandled = true
-					
-					switch state {
-					case .ready:
-						Logger.services.debug("[ESP OTA] Listener ready with port: \(String(describing: listener.port?.rawValue ?? 0))")
-						if let port = listener.port {
-							continuation.resume(returning: (listener, port.rawValue))
-						} else {
-							continuation.resume(throwing: OTAError.connectionFailed)
-						}
-					case .failed(let error):
-						Logger.services.error("[ESP OTA] Listener failed: \(error)")
-						continuation.resume(throwing: error)
-					default:
-						Logger.services.debug("[ESP OTA] Listener state: \(String(describing: state))")
-						break
-					}
-				}
-			}
-			listener.start(queue: .global())
-		}
-	}
-	
-	/// Handles an incoming TCP connection for firmware transfer.
-	private func handleIncomingConnection(connection: NWConnection, data: Data) {
-		connection.stateUpdateHandler = { state in
-			switch state {
-			case .ready:
-				Task { @MainActor in
-					self.otaState = .transferring
-					do {
-						try await self.performChunkedTransfer(connection: connection, data: data)
-						self.transferContinuation?.yield()
-						self.transferContinuation?.finish()
-					} catch {
-						self.transferContinuation?.finish(throwing: error)
-					}
-					self.transferContinuation = nil
-					connection.cancel()
-				}
-			case .failed(let error):
-				Task { @MainActor in
-					self.transferContinuation?.finish(throwing: error)
-					self.transferContinuation = nil
-				}
-			default: break
-			}
-		}
-	}
-	
-	/// Performs the chunked TCP transfer of firmware data.
 	nonisolated private func performChunkedTransfer(connection: NWConnection, data: Data) async throws {
 		var offset = 0
 		let totalSize = data.count
@@ -327,50 +271,44 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		while offset < totalSize && !Task.isCancelled {
 			let endIndex = min(offset + chunkSize, totalSize)
 			let chunk = data[offset..<endIndex]
+			
+			// We do NOT wait for ACK here.
+			// TCP handles flow control. C++ net_ota logic does not send ACKs for chunks.
 			try await connection.sendAsync(data: chunk)
 			
 			offset += chunk.count
 			let percent = Double(offset) / Double(totalSize)
 			
-			// Batch progress updates every 10 chunks to avoid excessive MainActor hops
+			// Update UI periodically
 			if offset % (chunkSize * 10) == 0 {
 				await updateUI {
 					self.progress = percent
-					self.statusMessage = "Please stay on this screen while update completes..."
 				}
 			}
 		}
-		
-		await updateUI {
-			self.progress = 1.0
-			self.statusMessage = "Done..."
-		}
-		
-		try await Task.sleep(for: .seconds(3))
 	}
 	
-	// MARK: - UI Update Helper
-	
-	/// Safely updates UI properties on MainActor.
 	private func updateUI(_ block: @MainActor @Sendable () -> Void) async {
 		await MainActor.run { block() }
 	}
 }
 
-// MARK: - Extensions
+
+// MARK: - Extensions & Errors
 
 enum OTAError: Error, LocalizedError {
 	case encodingFailed
 	case connectionFailed
 	case unexpectedResponse(String)
-	case authFailed
+	case discoveryFailed
 	case timeout
 	
 	var errorDescription: String? {
 		switch self {
-		case .timeout: return "ESP32 failed to respond in time."
+		case .timeout: return "Timeout waiting for device."
 		case .connectionFailed: return "Failed to establish connection."
-		case .unexpectedResponse(let r): return "Unexpected response: \(r)"
+		case .discoveryFailed: return "Could not discover ESP32."
+		case .unexpectedResponse(let r): return "Error from device: \(r)"
 		default: return "OTA Error"
 		}
 	}
@@ -389,4 +327,3 @@ extension NWConnection {
 		}
 	}
 }
-

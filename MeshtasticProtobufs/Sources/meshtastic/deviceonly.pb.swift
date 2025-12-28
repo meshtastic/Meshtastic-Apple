@@ -58,7 +58,7 @@ public struct PositionLite: Sendable {
   public init() {}
 }
 
-public struct UserLite: Sendable {
+public struct UserLite: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -469,7 +469,13 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PositionLite"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}time\0\u{3}location_source\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "latitude_i"),
+    2: .standard(proto: "longitude_i"),
+    3: .same(proto: "altitude"),
+    4: .same(proto: "time"),
+    5: .standard(proto: "location_source"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -519,7 +525,16 @@ extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UserLite"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}macaddr\0\u{3}long_name\0\u{3}short_name\0\u{3}hw_model\0\u{3}is_licensed\0\u{1}role\0\u{3}public_key\0\u{4}\u{2}is_unmessagable\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "macaddr"),
+    2: .standard(proto: "long_name"),
+    3: .standard(proto: "short_name"),
+    4: .standard(proto: "hw_model"),
+    5: .standard(proto: "is_licensed"),
+    6: .same(proto: "role"),
+    7: .standard(proto: "public_key"),
+    9: .standard(proto: "is_unmessagable"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -588,7 +603,21 @@ extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfoLite"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}next_hop\0\u{1}bitfield\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "num"),
+    2: .same(proto: "user"),
+    3: .same(proto: "position"),
+    4: .same(proto: "snr"),
+    5: .standard(proto: "last_heard"),
+    6: .standard(proto: "device_metrics"),
+    7: .same(proto: "channel"),
+    8: .standard(proto: "via_mqtt"),
+    9: .standard(proto: "hops_away"),
+    10: .standard(proto: "is_favorite"),
+    11: .standard(proto: "is_ignored"),
+    12: .standard(proto: "next_hop"),
+    13: .same(proto: "bitfield"),
+  ]
 
   fileprivate class _StorageClass {
     var _num: UInt32 = 0
@@ -605,11 +634,15 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     var _nextHop: UInt32 = 0
     var _bitfield: UInt32 = 0
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -742,7 +775,17 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceState"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{2}my_node\0\u{1}owner\0\u{4}\u{2}receive_queue\0\u{4}\u{2}rx_text_message\0\u{1}version\0\u{3}no_save\0\u{4}\u{2}did_gps_reset\0\u{3}rx_waypoint\0\u{3}node_remote_hardware_pins\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    2: .standard(proto: "my_node"),
+    3: .same(proto: "owner"),
+    5: .standard(proto: "receive_queue"),
+    8: .same(proto: "version"),
+    7: .standard(proto: "rx_text_message"),
+    9: .standard(proto: "no_save"),
+    11: .standard(proto: "did_gps_reset"),
+    12: .standard(proto: "rx_waypoint"),
+    13: .standard(proto: "node_remote_hardware_pins"),
+  ]
 
   fileprivate class _StorageClass {
     var _myNode: MyNodeInfo? = nil
@@ -755,11 +798,15 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _rxWaypoint: MeshPacket? = nil
     var _nodeRemoteHardwarePins: [NodeRemoteHardwarePin] = []
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -868,7 +915,10 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension NodeDatabase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeDatabase"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{1}nodes\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "version"),
+    2: .same(proto: "nodes"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -903,7 +953,10 @@ extension NodeDatabase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ChannelFile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}channels\0\u{1}version\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "channels"),
+    2: .same(proto: "version"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -938,7 +991,14 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension BackupPreferences: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BackupPreferences"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{1}timestamp\0\u{1}config\0\u{3}module_config\0\u{1}channels\0\u{1}owner\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "version"),
+    2: .same(proto: "timestamp"),
+    3: .same(proto: "config"),
+    4: .standard(proto: "module_config"),
+    5: .same(proto: "channels"),
+    6: .same(proto: "owner"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

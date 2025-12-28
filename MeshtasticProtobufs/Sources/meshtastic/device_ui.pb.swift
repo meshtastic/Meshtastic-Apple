@@ -659,20 +659,71 @@ public struct Map: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension CompassMode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DYNAMIC\0\u{1}FIXED_RING\0\u{1}FREEZE_HEADING\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DYNAMIC"),
+    1: .same(proto: "FIXED_RING"),
+    2: .same(proto: "FREEZE_HEADING"),
+  ]
 }
 
 extension Theme: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DARK\0\u{1}LIGHT\0\u{1}RED\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DARK"),
+    1: .same(proto: "LIGHT"),
+    2: .same(proto: "RED"),
+  ]
 }
 
 extension Language: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ENGLISH\0\u{1}FRENCH\0\u{1}GERMAN\0\u{1}ITALIAN\0\u{1}PORTUGUESE\0\u{1}SPANISH\0\u{1}SWEDISH\0\u{1}FINNISH\0\u{1}POLISH\0\u{1}TURKISH\0\u{1}SERBIAN\0\u{1}RUSSIAN\0\u{1}DUTCH\0\u{1}GREEK\0\u{1}NORWEGIAN\0\u{1}SLOVENIAN\0\u{1}UKRAINIAN\0\u{1}BULGARIAN\0\u{1}CZECH\0\u{1}DANISH\0\u{2}\u{b}SIMPLIFIED_CHINESE\0\u{1}TRADITIONAL_CHINESE\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "ENGLISH"),
+    1: .same(proto: "FRENCH"),
+    2: .same(proto: "GERMAN"),
+    3: .same(proto: "ITALIAN"),
+    4: .same(proto: "PORTUGUESE"),
+    5: .same(proto: "SPANISH"),
+    6: .same(proto: "SWEDISH"),
+    7: .same(proto: "FINNISH"),
+    8: .same(proto: "POLISH"),
+    9: .same(proto: "TURKISH"),
+    10: .same(proto: "SERBIAN"),
+    11: .same(proto: "RUSSIAN"),
+    12: .same(proto: "DUTCH"),
+    13: .same(proto: "GREEK"),
+    14: .same(proto: "NORWEGIAN"),
+    15: .same(proto: "SLOVENIAN"),
+    16: .same(proto: "UKRAINIAN"),
+    17: .same(proto: "BULGARIAN"),
+    18: .same(proto: "CZECH"),
+    19: .same(proto: "DANISH"),
+    30: .same(proto: "SIMPLIFIED_CHINESE"),
+    31: .same(proto: "TRADITIONAL_CHINESE"),
+  ]
 }
 
 extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceUIConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{3}screen_brightness\0\u{3}screen_timeout\0\u{3}screen_lock\0\u{3}settings_lock\0\u{3}pin_code\0\u{1}theme\0\u{3}alert_enabled\0\u{3}banner_enabled\0\u{3}ring_tone_id\0\u{1}language\0\u{3}node_filter\0\u{3}node_highlight\0\u{3}calibration_data\0\u{3}map_data\0\u{3}compass_mode\0\u{3}screen_rgb_color\0\u{3}is_clockface_analog\0\u{3}gps_format\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "version"),
+    2: .standard(proto: "screen_brightness"),
+    3: .standard(proto: "screen_timeout"),
+    4: .standard(proto: "screen_lock"),
+    5: .standard(proto: "settings_lock"),
+    6: .standard(proto: "pin_code"),
+    7: .same(proto: "theme"),
+    8: .standard(proto: "alert_enabled"),
+    9: .standard(proto: "banner_enabled"),
+    10: .standard(proto: "ring_tone_id"),
+    11: .same(proto: "language"),
+    12: .standard(proto: "node_filter"),
+    13: .standard(proto: "node_highlight"),
+    14: .standard(proto: "calibration_data"),
+    15: .standard(proto: "map_data"),
+    16: .standard(proto: "compass_mode"),
+    17: .standard(proto: "screen_rgb_color"),
+    18: .standard(proto: "is_clockface_analog"),
+    19: .standard(proto: "gps_format"),
+  ]
 
   fileprivate class _StorageClass {
     var _version: UInt32 = 0
@@ -695,11 +746,15 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     var _isClockfaceAnalog: Bool = false
     var _gpsFormat: DeviceUIConfig.GpsCoordinateFormat = .dec
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -867,12 +922,28 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 }
 
 extension DeviceUIConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEC\0\u{1}DMS\0\u{1}UTM\0\u{1}MGRS\0\u{1}OLC\0\u{1}OSGR\0\u{1}MLS\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DEC"),
+    1: .same(proto: "DMS"),
+    2: .same(proto: "UTM"),
+    3: .same(proto: "MGRS"),
+    4: .same(proto: "OLC"),
+    5: .same(proto: "OSGR"),
+    6: .same(proto: "MLS"),
+  ]
 }
 
 extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeFilter"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}unknown_switch\0\u{3}offline_switch\0\u{3}public_key_switch\0\u{3}hops_away\0\u{3}position_switch\0\u{3}node_name\0\u{1}channel\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "unknown_switch"),
+    2: .standard(proto: "offline_switch"),
+    3: .standard(proto: "public_key_switch"),
+    4: .standard(proto: "hops_away"),
+    5: .standard(proto: "position_switch"),
+    6: .standard(proto: "node_name"),
+    7: .same(proto: "channel"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -932,7 +1003,13 @@ extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 
 extension NodeHighlight: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeHighlight"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}chat_switch\0\u{3}position_switch\0\u{3}telemetry_switch\0\u{3}iaq_switch\0\u{3}node_name\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "chat_switch"),
+    2: .standard(proto: "position_switch"),
+    3: .standard(proto: "telemetry_switch"),
+    4: .standard(proto: "iaq_switch"),
+    5: .standard(proto: "node_name"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -982,7 +1059,11 @@ extension NodeHighlight: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension GeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GeoPoint"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}zoom\0\u{1}latitude\0\u{1}longitude\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "zoom"),
+    2: .same(proto: "latitude"),
+    3: .same(proto: "longitude"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1022,7 +1103,11 @@ extension GeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension Map: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Map"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}home\0\u{1}style\0\u{3}follow_gps\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "home"),
+    2: .same(proto: "style"),
+    3: .standard(proto: "follow_gps"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

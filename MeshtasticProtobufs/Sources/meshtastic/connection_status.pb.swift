@@ -215,7 +215,12 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceConnectionStatus"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}wifi\0\u{1}ethernet\0\u{1}bluetooth\0\u{1}serial\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "wifi"),
+    2: .same(proto: "ethernet"),
+    3: .same(proto: "bluetooth"),
+    4: .same(proto: "serial"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -264,7 +269,11 @@ extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 
 extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".WifiConnectionStatus"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}status\0\u{1}ssid\0\u{1}rssi\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+    2: .same(proto: "ssid"),
+    3: .same(proto: "rssi"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -308,7 +317,9 @@ extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 
 extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EthernetConnectionStatus"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}status\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -342,7 +353,12 @@ extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
 
 extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NetworkConnectionStatus"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}ip_address\0\u{3}is_connected\0\u{3}is_mqtt_connected\0\u{3}is_syslog_connected\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "ip_address"),
+    2: .standard(proto: "is_connected"),
+    3: .standard(proto: "is_mqtt_connected"),
+    4: .standard(proto: "is_syslog_connected"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -387,7 +403,11 @@ extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Message
 
 extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BluetoothConnectionStatus"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pin\0\u{1}rssi\0\u{3}is_connected\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "pin"),
+    2: .same(proto: "rssi"),
+    3: .standard(proto: "is_connected"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -427,7 +447,10 @@ extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messa
 
 extension SerialConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SerialConnectionStatus"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}baud\0\u{3}is_connected\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "baud"),
+    2: .standard(proto: "is_connected"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

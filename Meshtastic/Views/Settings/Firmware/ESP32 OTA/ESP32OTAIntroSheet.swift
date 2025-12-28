@@ -124,9 +124,9 @@ struct ESP32OTAIntroSheet: View {
 				}
 				
 			}.sheet(isPresented: $showWifiUpdater) {
-				ESP32WifiOTASheet(binFileURL: binFileURL)
+				ESP32WifiOTASheet(binFileURL: binFileURL).environmentObject(accessoryManager)
 			}.sheet(isPresented: $showBLEUpdater) {
-				ESP32BLEOTASheet(binFileURL: binFileURL)
+				ESP32BLEOTASheet(binFileURL: binFileURL).environmentObject(accessoryManager)
 			}
 			.navigationTitle("ESP32 Update")
 				.navigationBarTitleDisplayMode(.inline)

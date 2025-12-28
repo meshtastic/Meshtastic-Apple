@@ -5,14 +5,7 @@
 //  Created by jake on 12/22/25.
 //
 
-enum DeviceBLEOTAStatusCode: UInt8 {
-	case WAITING_FOR_SIZE = 0
-	case ERASING_FLASH = 1
-	case READY_FOR_CHUNK = 2
-	case CHUNK_ACK = 3
-	case OTA_COMPLETE = 4
-	case ERROR = 5
-}
+// Removed DeviceBLEOTAStatusCode as the device now communicates via Text (OK/ERR)
 
 enum LocalOTAStatusCode: String, CustomStringConvertible {
 	var description: String { return self.rawValue }

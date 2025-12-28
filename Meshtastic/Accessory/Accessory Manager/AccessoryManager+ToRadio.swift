@@ -1437,9 +1437,18 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, rebootOtaSeconds: Int32 = 5) async throws {
+	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, mode: OTAMode, otaHash: Data) async throws {
 		var adminPacket = AdminMessage()
-		adminPacket.rebootOtaSeconds = rebootOtaSeconds
+		var otaRequest = AdminMessage.OTAEvent()
+		
+		guard otaHash.count == 32 else {
+			throw AccessoryError.ioFailed("sendRebootOta: Unable to serialize admin packet")
+		}
+
+		otaRequest.otaHash = otaHash
+		otaRequest.rebootOtaMode = mode
+		adminPacket.otaRequest = otaRequest
+		
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}

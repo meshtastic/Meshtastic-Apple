@@ -136,7 +136,16 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}long_name\0\u{3}short_name\0\u{3}channel_url\0\u{1}config\0\u{3}module_config\0\u{3}fixed_position\0\u{1}ringtone\0\u{3}canned_messages\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "long_name"),
+    2: .standard(proto: "short_name"),
+    3: .standard(proto: "channel_url"),
+    4: .same(proto: "config"),
+    5: .standard(proto: "module_config"),
+    6: .standard(proto: "fixed_position"),
+    7: .same(proto: "ringtone"),
+    8: .standard(proto: "canned_messages"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

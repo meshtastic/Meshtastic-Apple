@@ -180,12 +180,29 @@ public struct InterdeviceMessage: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension MessageType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ACK\0\u{2}`\u{2}COLLECT_INTERVAL\0\u{1}BEEP_ON\0\u{1}BEEP_OFF\0\u{1}SHUTDOWN\0\u{1}POWER_ON\0\u{2}\u{c}SCD41_TEMP\0\u{1}SCD41_HUMIDITY\0\u{1}SCD41_CO2\0\u{1}AHT20_TEMP\0\u{1}AHT20_HUMIDITY\0\u{1}TVOC_INDEX\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "ACK"),
+    160: .same(proto: "COLLECT_INTERVAL"),
+    161: .same(proto: "BEEP_ON"),
+    162: .same(proto: "BEEP_OFF"),
+    163: .same(proto: "SHUTDOWN"),
+    164: .same(proto: "POWER_ON"),
+    176: .same(proto: "SCD41_TEMP"),
+    177: .same(proto: "SCD41_HUMIDITY"),
+    178: .same(proto: "SCD41_CO2"),
+    179: .same(proto: "AHT20_TEMP"),
+    180: .same(proto: "AHT20_HUMIDITY"),
+    181: .same(proto: "TVOC_INDEX"),
+  ]
 }
 
 extension SensorData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SensorData"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}float_value\0\u{3}uint32_value\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "type"),
+    2: .standard(proto: "float_value"),
+    3: .standard(proto: "uint32_value"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -247,7 +264,10 @@ extension SensorData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 
 extension InterdeviceMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".InterdeviceMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nmea\0\u{1}sensor\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "nmea"),
+    2: .same(proto: "sensor"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

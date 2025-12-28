@@ -299,7 +299,17 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}device\0\u{1}position\0\u{1}power\0\u{1}network\0\u{1}display\0\u{1}lora\0\u{1}bluetooth\0\u{1}version\0\u{1}security\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "device"),
+    2: .same(proto: "position"),
+    3: .same(proto: "power"),
+    4: .same(proto: "network"),
+    5: .same(proto: "display"),
+    6: .same(proto: "lora"),
+    7: .same(proto: "bluetooth"),
+    8: .same(proto: "version"),
+    9: .same(proto: "security"),
+  ]
 
   fileprivate class _StorageClass {
     var _device: Config.DeviceConfig? = nil
@@ -312,11 +322,15 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _version: UInt32 = 0
     var _security: Config.SecurityConfig? = nil
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -425,7 +439,22 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalModuleConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}version\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "mqtt"),
+    2: .same(proto: "serial"),
+    3: .standard(proto: "external_notification"),
+    4: .standard(proto: "store_forward"),
+    5: .standard(proto: "range_test"),
+    6: .same(proto: "telemetry"),
+    7: .standard(proto: "canned_message"),
+    9: .same(proto: "audio"),
+    10: .standard(proto: "remote_hardware"),
+    11: .standard(proto: "neighbor_info"),
+    12: .standard(proto: "ambient_lighting"),
+    13: .standard(proto: "detection_sensor"),
+    14: .same(proto: "paxcounter"),
+    8: .same(proto: "version"),
+  ]
 
   fileprivate class _StorageClass {
     var _mqtt: ModuleConfig.MQTTConfig? = nil
@@ -443,11 +472,15 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _paxcounter: ModuleConfig.PaxcounterConfig? = nil
     var _version: UInt32 = 0
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 

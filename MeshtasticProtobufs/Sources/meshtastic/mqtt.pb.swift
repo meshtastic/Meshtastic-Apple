@@ -132,7 +132,11 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ServiceEnvelope"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}packet\0\u{3}channel_id\0\u{3}gateway_id\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "packet"),
+    2: .standard(proto: "channel_id"),
+    3: .standard(proto: "gateway_id"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -176,7 +180,22 @@ extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 
 extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MapReport"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}long_name\0\u{3}short_name\0\u{1}role\0\u{3}hw_model\0\u{3}firmware_version\0\u{1}region\0\u{3}modem_preset\0\u{3}has_default_channel\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{3}position_precision\0\u{3}num_online_local_nodes\0\u{3}has_opted_report_location\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "long_name"),
+    2: .standard(proto: "short_name"),
+    3: .same(proto: "role"),
+    4: .standard(proto: "hw_model"),
+    5: .standard(proto: "firmware_version"),
+    6: .same(proto: "region"),
+    7: .standard(proto: "modem_preset"),
+    8: .standard(proto: "has_default_channel"),
+    9: .standard(proto: "latitude_i"),
+    10: .standard(proto: "longitude_i"),
+    11: .same(proto: "altitude"),
+    12: .standard(proto: "position_precision"),
+    13: .standard(proto: "num_online_local_nodes"),
+    14: .standard(proto: "has_opted_report_location"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

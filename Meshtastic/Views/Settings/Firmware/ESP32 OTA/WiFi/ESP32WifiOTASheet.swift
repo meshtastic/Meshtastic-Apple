@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import OSLog
+import CryptoKit
 
 struct ESP32WifiOTASheet: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -87,8 +88,13 @@ struct ESP32WifiOTASheet: View {
 				Task {
 					do {
 						if let host {
+							let data = try Data(contentsOf: binFileURL)
+							let digest = SHA256.hash(data: data)
+							let sha256Digest = Data(digest)
+							Logger.services.debug("Requesting reboot for OTA with hash: \(digest)")
 							let device = accessoryManager.activeConnection?.device
-							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, rebootOtaSeconds: 1)
+							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaWifi, otaHash: sha256Digest)
+							try await Task.sleep(for: .seconds(0.5))
 							try await accessoryManager.disconnect()
 							await ota.startUpdate(host: host, firmwareUrl: self.binFileURL)
 							if let device {

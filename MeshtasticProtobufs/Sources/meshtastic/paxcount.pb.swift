@@ -50,7 +50,11 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension Paxcount: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Paxcount"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}wifi\0\u{1}ble\0\u{1}uptime\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "wifi"),
+    2: .same(proto: "ble"),
+    3: .same(proto: "uptime"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

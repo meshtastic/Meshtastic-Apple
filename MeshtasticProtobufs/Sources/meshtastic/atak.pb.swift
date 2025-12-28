@@ -245,7 +245,7 @@ public enum MemberRole: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// Packets for the official ATAK Plugin
-public struct TAKPacket: Sendable {
+public struct TAKPacket: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -326,7 +326,7 @@ public struct TAKPacket: Sendable {
 
   ///
   /// The payload of the packet
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public enum OneOf_PayloadVariant: Equatable, @unchecked Sendable {
     ///
     /// TAK position report
     case pli(PLI)
@@ -487,16 +487,50 @@ public struct PLI: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension Team: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Unspecifed_Color\0\u{1}White\0\u{1}Yellow\0\u{1}Orange\0\u{1}Magenta\0\u{1}Red\0\u{1}Maroon\0\u{1}Purple\0\u{1}Dark_Blue\0\u{1}Blue\0\u{1}Cyan\0\u{1}Teal\0\u{1}Green\0\u{1}Dark_Green\0\u{1}Brown\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "Unspecifed_Color"),
+    1: .same(proto: "White"),
+    2: .same(proto: "Yellow"),
+    3: .same(proto: "Orange"),
+    4: .same(proto: "Magenta"),
+    5: .same(proto: "Red"),
+    6: .same(proto: "Maroon"),
+    7: .same(proto: "Purple"),
+    8: .same(proto: "Dark_Blue"),
+    9: .same(proto: "Blue"),
+    10: .same(proto: "Cyan"),
+    11: .same(proto: "Teal"),
+    12: .same(proto: "Green"),
+    13: .same(proto: "Dark_Green"),
+    14: .same(proto: "Brown"),
+  ]
 }
 
 extension MemberRole: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Unspecifed\0\u{1}TeamMember\0\u{1}TeamLead\0\u{1}HQ\0\u{1}Sniper\0\u{1}Medic\0\u{1}ForwardObserver\0\u{1}RTO\0\u{1}K9\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "Unspecifed"),
+    1: .same(proto: "TeamMember"),
+    2: .same(proto: "TeamLead"),
+    3: .same(proto: "HQ"),
+    4: .same(proto: "Sniper"),
+    5: .same(proto: "Medic"),
+    6: .same(proto: "ForwardObserver"),
+    7: .same(proto: "RTO"),
+    8: .same(proto: "K9"),
+  ]
 }
 
 extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TAKPacket"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}is_compressed\0\u{1}contact\0\u{1}group\0\u{1}status\0\u{1}pli\0\u{1}chat\0\u{1}detail\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "is_compressed"),
+    2: .same(proto: "contact"),
+    3: .same(proto: "group"),
+    4: .same(proto: "status"),
+    5: .same(proto: "pli"),
+    6: .same(proto: "chat"),
+    7: .same(proto: "detail"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -595,7 +629,11 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
 
 extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GeoChat"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}to\0\u{3}to_callsign\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "message"),
+    2: .same(proto: "to"),
+    3: .standard(proto: "to_callsign"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -639,7 +677,10 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 
 extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Group"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}role\0\u{1}team\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "role"),
+    2: .same(proto: "team"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -674,7 +715,9 @@ extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
 
 extension Status: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Status"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}battery\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "battery"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -704,7 +747,10 @@ extension Status: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
 
 extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Contact"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}callsign\0\u{3}device_callsign\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "callsign"),
+    2: .standard(proto: "device_callsign"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -739,7 +785,13 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 
 extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PLI"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "latitude_i"),
+    2: .standard(proto: "longitude_i"),
+    3: .same(proto: "altitude"),
+    4: .same(proto: "speed"),
+    5: .same(proto: "course"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

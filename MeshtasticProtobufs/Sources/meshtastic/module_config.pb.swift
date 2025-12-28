@@ -1296,12 +1296,30 @@ public struct RemoteHardwarePin: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}DIGITAL_READ\0\u{1}DIGITAL_WRITE\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNKNOWN"),
+    1: .same(proto: "DIGITAL_READ"),
+    2: .same(proto: "DIGITAL_WRITE"),
+  ]
 }
 
 extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "mqtt"),
+    2: .same(proto: "serial"),
+    3: .standard(proto: "external_notification"),
+    4: .standard(proto: "store_forward"),
+    5: .standard(proto: "range_test"),
+    6: .same(proto: "telemetry"),
+    7: .standard(proto: "canned_message"),
+    8: .same(proto: "audio"),
+    9: .standard(proto: "remote_hardware"),
+    10: .standard(proto: "neighbor_info"),
+    11: .standard(proto: "ambient_lighting"),
+    12: .standard(proto: "detection_sensor"),
+    13: .same(proto: "paxcounter"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1555,7 +1573,19 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MQTTConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}address\0\u{1}username\0\u{1}password\0\u{3}encryption_enabled\0\u{3}json_enabled\0\u{3}tls_enabled\0\u{1}root\0\u{3}proxy_to_client_enabled\0\u{3}map_reporting_enabled\0\u{3}map_report_settings\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "address"),
+    3: .same(proto: "username"),
+    4: .same(proto: "password"),
+    5: .standard(proto: "encryption_enabled"),
+    6: .standard(proto: "json_enabled"),
+    7: .standard(proto: "tls_enabled"),
+    8: .same(proto: "root"),
+    9: .standard(proto: "proxy_to_client_enabled"),
+    10: .standard(proto: "map_reporting_enabled"),
+    11: .standard(proto: "map_report_settings"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1639,7 +1669,11 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
 
 extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MapReportSettings"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}publish_interval_secs\0\u{3}position_precision\0\u{3}should_report_location\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "publish_interval_secs"),
+    2: .standard(proto: "position_precision"),
+    3: .standard(proto: "should_report_location"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1679,7 +1713,11 @@ extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._
 
 extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".RemoteHardwareConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}allow_undefined_pin_access\0\u{3}available_pins\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "allow_undefined_pin_access"),
+    3: .standard(proto: "available_pins"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1719,7 +1757,11 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
 
 extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".NeighborInfoConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}update_interval\0\u{3}transmit_over_lora\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "update_interval"),
+    3: .standard(proto: "transmit_over_lora"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1759,7 +1801,16 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
 
 extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".DetectionSensorConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}minimum_broadcast_secs\0\u{3}state_broadcast_secs\0\u{3}send_bell\0\u{1}name\0\u{3}monitor_pin\0\u{3}detection_trigger_type\0\u{3}use_pullup\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "minimum_broadcast_secs"),
+    3: .standard(proto: "state_broadcast_secs"),
+    4: .standard(proto: "send_bell"),
+    5: .same(proto: "name"),
+    6: .standard(proto: "monitor_pin"),
+    7: .standard(proto: "detection_trigger_type"),
+    8: .standard(proto: "use_pullup"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1823,12 +1874,27 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
 }
 
 extension ModuleConfig.DetectionSensorConfig.TriggerType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LOGIC_LOW\0\u{1}LOGIC_HIGH\0\u{1}FALLING_EDGE\0\u{1}RISING_EDGE\0\u{1}EITHER_EDGE_ACTIVE_LOW\0\u{1}EITHER_EDGE_ACTIVE_HIGH\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "LOGIC_LOW"),
+    1: .same(proto: "LOGIC_HIGH"),
+    2: .same(proto: "FALLING_EDGE"),
+    3: .same(proto: "RISING_EDGE"),
+    4: .same(proto: "EITHER_EDGE_ACTIVE_LOW"),
+    5: .same(proto: "EITHER_EDGE_ACTIVE_HIGH"),
+  ]
 }
 
 extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".AudioConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}codec2_enabled\0\u{3}ptt_pin\0\u{1}bitrate\0\u{3}i2s_ws\0\u{3}i2s_sd\0\u{3}i2s_din\0\u{3}i2s_sck\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "codec2_enabled"),
+    2: .standard(proto: "ptt_pin"),
+    3: .same(proto: "bitrate"),
+    4: .standard(proto: "i2s_ws"),
+    5: .standard(proto: "i2s_sd"),
+    6: .standard(proto: "i2s_din"),
+    7: .standard(proto: "i2s_sck"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1887,12 +1953,27 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
 }
 
 extension ModuleConfig.AudioConfig.Audio_Baud: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CODEC2_DEFAULT\0\u{1}CODEC2_3200\0\u{1}CODEC2_2400\0\u{1}CODEC2_1600\0\u{1}CODEC2_1400\0\u{1}CODEC2_1300\0\u{1}CODEC2_1200\0\u{1}CODEC2_700\0\u{1}CODEC2_700B\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "CODEC2_DEFAULT"),
+    1: .same(proto: "CODEC2_3200"),
+    2: .same(proto: "CODEC2_2400"),
+    3: .same(proto: "CODEC2_1600"),
+    4: .same(proto: "CODEC2_1400"),
+    5: .same(proto: "CODEC2_1300"),
+    6: .same(proto: "CODEC2_1200"),
+    7: .same(proto: "CODEC2_700"),
+    8: .same(proto: "CODEC2_700B"),
+  ]
 }
 
 extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".PaxcounterConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}paxcounter_update_interval\0\u{3}wifi_threshold\0\u{3}ble_threshold\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "paxcounter_update_interval"),
+    3: .standard(proto: "wifi_threshold"),
+    4: .standard(proto: "ble_threshold"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1937,7 +2018,16 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
 
 extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".SerialConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}echo\0\u{1}rxd\0\u{1}txd\0\u{1}baud\0\u{1}timeout\0\u{1}mode\0\u{3}override_console_serial_port\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "echo"),
+    3: .same(proto: "rxd"),
+    4: .same(proto: "txd"),
+    5: .same(proto: "baud"),
+    6: .same(proto: "timeout"),
+    7: .same(proto: "mode"),
+    8: .standard(proto: "override_console_serial_port"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2001,16 +2091,59 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
 }
 
 extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0BAUD_DEFAULT\0\u{1}BAUD_110\0\u{1}BAUD_300\0\u{1}BAUD_600\0\u{1}BAUD_1200\0\u{1}BAUD_2400\0\u{1}BAUD_4800\0\u{1}BAUD_9600\0\u{1}BAUD_19200\0\u{1}BAUD_38400\0\u{1}BAUD_57600\0\u{1}BAUD_115200\0\u{1}BAUD_230400\0\u{1}BAUD_460800\0\u{1}BAUD_576000\0\u{1}BAUD_921600\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "BAUD_DEFAULT"),
+    1: .same(proto: "BAUD_110"),
+    2: .same(proto: "BAUD_300"),
+    3: .same(proto: "BAUD_600"),
+    4: .same(proto: "BAUD_1200"),
+    5: .same(proto: "BAUD_2400"),
+    6: .same(proto: "BAUD_4800"),
+    7: .same(proto: "BAUD_9600"),
+    8: .same(proto: "BAUD_19200"),
+    9: .same(proto: "BAUD_38400"),
+    10: .same(proto: "BAUD_57600"),
+    11: .same(proto: "BAUD_115200"),
+    12: .same(proto: "BAUD_230400"),
+    13: .same(proto: "BAUD_460800"),
+    14: .same(proto: "BAUD_576000"),
+    15: .same(proto: "BAUD_921600"),
+  ]
 }
 
 extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEFAULT\0\u{1}SIMPLE\0\u{1}PROTO\0\u{1}TEXTMSG\0\u{1}NMEA\0\u{1}CALTOPO\0\u{1}WS85\0\u{1}VE_DIRECT\0\u{1}MS_CONFIG\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DEFAULT"),
+    1: .same(proto: "SIMPLE"),
+    2: .same(proto: "PROTO"),
+    3: .same(proto: "TEXTMSG"),
+    4: .same(proto: "NMEA"),
+    5: .same(proto: "CALTOPO"),
+    6: .same(proto: "WS85"),
+    7: .same(proto: "VE_DIRECT"),
+    8: .same(proto: "MS_CONFIG"),
+  ]
 }
 
 extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".ExternalNotificationConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}output_ms\0\u{1}output\0\u{1}active\0\u{3}alert_message\0\u{3}alert_bell\0\u{3}use_pwm\0\u{3}output_vibra\0\u{3}output_buzzer\0\u{3}alert_message_vibra\0\u{3}alert_message_buzzer\0\u{3}alert_bell_vibra\0\u{3}alert_bell_buzzer\0\u{3}nag_timeout\0\u{3}use_i2s_as_buzzer\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "output_ms"),
+    3: .same(proto: "output"),
+    8: .standard(proto: "output_vibra"),
+    9: .standard(proto: "output_buzzer"),
+    4: .same(proto: "active"),
+    5: .standard(proto: "alert_message"),
+    10: .standard(proto: "alert_message_vibra"),
+    11: .standard(proto: "alert_message_buzzer"),
+    6: .standard(proto: "alert_bell"),
+    12: .standard(proto: "alert_bell_vibra"),
+    13: .standard(proto: "alert_bell_buzzer"),
+    7: .standard(proto: "use_pwm"),
+    14: .standard(proto: "nag_timeout"),
+    15: .standard(proto: "use_i2s_as_buzzer"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2110,7 +2243,14 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
 
 extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".StoreForwardConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}heartbeat\0\u{1}records\0\u{3}history_return_max\0\u{3}history_return_window\0\u{3}is_server\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "heartbeat"),
+    3: .same(proto: "records"),
+    4: .standard(proto: "history_return_max"),
+    5: .standard(proto: "history_return_window"),
+    6: .standard(proto: "is_server"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2165,7 +2305,12 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
 
 extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".RangeTestConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}sender\0\u{1}save\0\u{3}clear_on_reboot\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "sender"),
+    3: .same(proto: "save"),
+    4: .standard(proto: "clear_on_reboot"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2210,7 +2355,22 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TelemetryConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}device_update_interval\0\u{3}environment_update_interval\0\u{3}environment_measurement_enabled\0\u{3}environment_screen_enabled\0\u{3}environment_display_fahrenheit\0\u{3}air_quality_enabled\0\u{3}air_quality_interval\0\u{3}power_measurement_enabled\0\u{3}power_update_interval\0\u{3}power_screen_enabled\0\u{3}health_measurement_enabled\0\u{3}health_update_interval\0\u{3}health_screen_enabled\0\u{3}device_telemetry_enabled\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "device_update_interval"),
+    2: .standard(proto: "environment_update_interval"),
+    3: .standard(proto: "environment_measurement_enabled"),
+    4: .standard(proto: "environment_screen_enabled"),
+    5: .standard(proto: "environment_display_fahrenheit"),
+    6: .standard(proto: "air_quality_enabled"),
+    7: .standard(proto: "air_quality_interval"),
+    8: .standard(proto: "power_measurement_enabled"),
+    9: .standard(proto: "power_update_interval"),
+    10: .standard(proto: "power_screen_enabled"),
+    11: .standard(proto: "health_measurement_enabled"),
+    12: .standard(proto: "health_update_interval"),
+    13: .standard(proto: "health_screen_enabled"),
+    14: .standard(proto: "device_telemetry_enabled"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2305,7 +2465,19 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".CannedMessageConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}rotary1_enabled\0\u{3}inputbroker_pin_a\0\u{3}inputbroker_pin_b\0\u{3}inputbroker_pin_press\0\u{3}inputbroker_event_cw\0\u{3}inputbroker_event_ccw\0\u{3}inputbroker_event_press\0\u{3}updown1_enabled\0\u{1}enabled\0\u{3}allow_input_source\0\u{3}send_bell\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "rotary1_enabled"),
+    2: .standard(proto: "inputbroker_pin_a"),
+    3: .standard(proto: "inputbroker_pin_b"),
+    4: .standard(proto: "inputbroker_pin_press"),
+    5: .standard(proto: "inputbroker_event_cw"),
+    6: .standard(proto: "inputbroker_event_ccw"),
+    7: .standard(proto: "inputbroker_event_press"),
+    8: .standard(proto: "updown1_enabled"),
+    9: .same(proto: "enabled"),
+    10: .standard(proto: "allow_input_source"),
+    11: .standard(proto: "send_bell"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2384,12 +2556,27 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
 }
 
 extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{2}\u{a}SELECT\0\u{2}\u{7}UP\0\u{1}DOWN\0\u{1}LEFT\0\u{1}RIGHT\0\u{2}\u{4}CANCEL\0\u{2}\u{3}BACK\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "NONE"),
+    10: .same(proto: "SELECT"),
+    17: .same(proto: "UP"),
+    18: .same(proto: "DOWN"),
+    19: .same(proto: "LEFT"),
+    20: .same(proto: "RIGHT"),
+    24: .same(proto: "CANCEL"),
+    27: .same(proto: "BACK"),
+  ]
 }
 
 extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".AmbientLightingConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}led_state\0\u{1}current\0\u{1}red\0\u{1}green\0\u{1}blue\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "led_state"),
+    2: .same(proto: "current"),
+    3: .same(proto: "red"),
+    4: .same(proto: "green"),
+    5: .same(proto: "blue"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2439,7 +2626,11 @@ extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtob
 
 extension RemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RemoteHardwarePin"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}gpio_pin\0\u{1}name\0\u{1}type\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "gpio_pin"),
+    2: .same(proto: "name"),
+    3: .same(proto: "type"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

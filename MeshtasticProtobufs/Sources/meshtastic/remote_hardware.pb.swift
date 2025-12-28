@@ -131,7 +131,11 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HardwareMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}gpio_mask\0\u{3}gpio_value\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "type"),
+    2: .standard(proto: "gpio_mask"),
+    3: .standard(proto: "gpio_value"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -170,5 +174,12 @@ extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 }
 
 extension HardwareMessage.TypeEnum: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}WRITE_GPIOS\0\u{1}WATCH_GPIOS\0\u{1}GPIOS_CHANGED\0\u{1}READ_GPIOS\0\u{1}READ_GPIOS_REPLY\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNSET"),
+    1: .same(proto: "WRITE_GPIOS"),
+    2: .same(proto: "WATCH_GPIOS"),
+    3: .same(proto: "GPIOS_CHANGED"),
+    4: .same(proto: "READ_GPIOS"),
+    5: .same(proto: "READ_GPIOS_REPLY"),
+  ]
 }

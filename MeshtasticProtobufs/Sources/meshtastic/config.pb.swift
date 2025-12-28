@@ -1873,7 +1873,7 @@ public struct Config: Sendable {
     public init() {}
   }
 
-  public struct SecurityConfig: Sendable {
+  public struct SecurityConfig: @unchecked Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1936,7 +1936,18 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Config"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}device\0\u{1}position\0\u{1}power\0\u{1}network\0\u{1}display\0\u{1}lora\0\u{1}bluetooth\0\u{1}security\0\u{1}sessionkey\0\u{3}device_ui\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "device"),
+    2: .same(proto: "position"),
+    3: .same(proto: "power"),
+    4: .same(proto: "network"),
+    5: .same(proto: "display"),
+    6: .same(proto: "lora"),
+    7: .same(proto: "bluetooth"),
+    8: .same(proto: "security"),
+    9: .same(proto: "sessionkey"),
+    10: .standard(proto: "device_ui"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2139,7 +2150,20 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
 
 extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".DeviceConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}role\0\u{3}serial_enabled\0\u{4}\u{2}button_gpio\0\u{3}buzzer_gpio\0\u{3}rebroadcast_mode\0\u{3}node_info_broadcast_secs\0\u{3}double_tap_as_button_press\0\u{3}is_managed\0\u{3}disable_triple_click\0\u{1}tzdef\0\u{3}led_heartbeat_disabled\0\u{3}buzzer_mode\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "role"),
+    2: .standard(proto: "serial_enabled"),
+    4: .standard(proto: "button_gpio"),
+    5: .standard(proto: "buzzer_gpio"),
+    6: .standard(proto: "rebroadcast_mode"),
+    7: .standard(proto: "node_info_broadcast_secs"),
+    8: .standard(proto: "double_tap_as_button_press"),
+    9: .standard(proto: "is_managed"),
+    10: .standard(proto: "disable_triple_click"),
+    11: .same(proto: "tzdef"),
+    12: .standard(proto: "led_heartbeat_disabled"),
+    13: .standard(proto: "buzzer_mode"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2223,20 +2247,61 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 }
 
 extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CLIENT\0\u{1}CLIENT_MUTE\0\u{1}ROUTER\0\u{1}ROUTER_CLIENT\0\u{1}REPEATER\0\u{1}TRACKER\0\u{1}SENSOR\0\u{1}TAK\0\u{1}CLIENT_HIDDEN\0\u{1}LOST_AND_FOUND\0\u{1}TAK_TRACKER\0\u{1}ROUTER_LATE\0\u{1}CLIENT_BASE\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "CLIENT"),
+    1: .same(proto: "CLIENT_MUTE"),
+    2: .same(proto: "ROUTER"),
+    3: .same(proto: "ROUTER_CLIENT"),
+    4: .same(proto: "REPEATER"),
+    5: .same(proto: "TRACKER"),
+    6: .same(proto: "SENSOR"),
+    7: .same(proto: "TAK"),
+    8: .same(proto: "CLIENT_HIDDEN"),
+    9: .same(proto: "LOST_AND_FOUND"),
+    10: .same(proto: "TAK_TRACKER"),
+    11: .same(proto: "ROUTER_LATE"),
+    12: .same(proto: "CLIENT_BASE"),
+  ]
 }
 
 extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ALL\0\u{1}ALL_SKIP_DECODING\0\u{1}LOCAL_ONLY\0\u{1}KNOWN_ONLY\0\u{1}NONE\0\u{1}CORE_PORTNUMS_ONLY\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "ALL"),
+    1: .same(proto: "ALL_SKIP_DECODING"),
+    2: .same(proto: "LOCAL_ONLY"),
+    3: .same(proto: "KNOWN_ONLY"),
+    4: .same(proto: "NONE"),
+    5: .same(proto: "CORE_PORTNUMS_ONLY"),
+  ]
 }
 
 extension Config.DeviceConfig.BuzzerMode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ALL_ENABLED\0\u{1}DISABLED\0\u{1}NOTIFICATIONS_ONLY\0\u{1}SYSTEM_ONLY\0\u{1}DIRECT_MSG_ONLY\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "ALL_ENABLED"),
+    1: .same(proto: "DISABLED"),
+    2: .same(proto: "NOTIFICATIONS_ONLY"),
+    3: .same(proto: "SYSTEM_ONLY"),
+    4: .same(proto: "DIRECT_MSG_ONLY"),
+  ]
 }
 
 extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".PositionConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}position_broadcast_secs\0\u{3}position_broadcast_smart_enabled\0\u{3}fixed_position\0\u{3}gps_enabled\0\u{3}gps_update_interval\0\u{3}gps_attempt_time\0\u{3}position_flags\0\u{3}rx_gpio\0\u{3}tx_gpio\0\u{3}broadcast_smart_minimum_distance\0\u{3}broadcast_smart_minimum_interval_secs\0\u{3}gps_en_gpio\0\u{3}gps_mode\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "position_broadcast_secs"),
+    2: .standard(proto: "position_broadcast_smart_enabled"),
+    3: .standard(proto: "fixed_position"),
+    4: .standard(proto: "gps_enabled"),
+    5: .standard(proto: "gps_update_interval"),
+    6: .standard(proto: "gps_attempt_time"),
+    7: .standard(proto: "position_flags"),
+    8: .standard(proto: "rx_gpio"),
+    9: .standard(proto: "tx_gpio"),
+    10: .standard(proto: "broadcast_smart_minimum_distance"),
+    11: .standard(proto: "broadcast_smart_minimum_interval_secs"),
+    12: .standard(proto: "gps_en_gpio"),
+    13: .standard(proto: "gps_mode"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2325,16 +2390,42 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 }
 
 extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}ALTITUDE\0\u{1}ALTITUDE_MSL\0\u{2}\u{2}GEOIDAL_SEPARATION\0\u{2}\u{4}DOP\0\u{2}\u{8}HVDOP\0\u{2}\u{10}SATINVIEW\0\u{2} SEQ_NO\0\u{2}@\u{1}TIMESTAMP\0\u{2}@\u{2}HEADING\0\u{2}@\u{4}SPEED\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNSET"),
+    1: .same(proto: "ALTITUDE"),
+    2: .same(proto: "ALTITUDE_MSL"),
+    4: .same(proto: "GEOIDAL_SEPARATION"),
+    8: .same(proto: "DOP"),
+    16: .same(proto: "HVDOP"),
+    32: .same(proto: "SATINVIEW"),
+    64: .same(proto: "SEQ_NO"),
+    128: .same(proto: "TIMESTAMP"),
+    256: .same(proto: "HEADING"),
+    512: .same(proto: "SPEED"),
+  ]
 }
 
 extension Config.PositionConfig.GpsMode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DISABLED\0\u{1}ENABLED\0\u{1}NOT_PRESENT\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DISABLED"),
+    1: .same(proto: "ENABLED"),
+    2: .same(proto: "NOT_PRESENT"),
+  ]
 }
 
 extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".PowerConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}is_power_saving\0\u{3}on_battery_shutdown_after_secs\0\u{3}adc_multiplier_override\0\u{3}wait_bluetooth_secs\0\u{4}\u{2}sds_secs\0\u{3}ls_secs\0\u{3}min_wake_secs\0\u{3}device_battery_ina_address\0\u{4}\u{17}powermon_enables\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "is_power_saving"),
+    2: .standard(proto: "on_battery_shutdown_after_secs"),
+    3: .standard(proto: "adc_multiplier_override"),
+    4: .standard(proto: "wait_bluetooth_secs"),
+    6: .standard(proto: "sds_secs"),
+    7: .standard(proto: "ls_secs"),
+    8: .standard(proto: "min_wake_secs"),
+    9: .standard(proto: "device_battery_ina_address"),
+    32: .standard(proto: "powermon_enables"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2404,7 +2495,18 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 
 extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".NetworkConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}wifi_enabled\0\u{4}\u{2}wifi_ssid\0\u{3}wifi_psk\0\u{3}ntp_server\0\u{3}eth_enabled\0\u{3}address_mode\0\u{3}ipv4_config\0\u{3}rsyslog_server\0\u{3}enabled_protocols\0\u{3}ipv6_enabled\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "wifi_enabled"),
+    3: .standard(proto: "wifi_ssid"),
+    4: .standard(proto: "wifi_psk"),
+    5: .standard(proto: "ntp_server"),
+    6: .standard(proto: "eth_enabled"),
+    7: .standard(proto: "address_mode"),
+    8: .standard(proto: "ipv4_config"),
+    9: .standard(proto: "rsyslog_server"),
+    10: .standard(proto: "enabled_protocols"),
+    11: .standard(proto: "ipv6_enabled"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2482,16 +2584,27 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 }
 
 extension Config.NetworkConfig.AddressMode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DHCP\0\u{1}STATIC\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DHCP"),
+    1: .same(proto: "STATIC"),
+  ]
 }
 
 extension Config.NetworkConfig.ProtocolFlags: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NO_BROADCAST\0\u{1}UDP_BROADCAST\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "NO_BROADCAST"),
+    1: .same(proto: "UDP_BROADCAST"),
+  ]
 }
 
 extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.NetworkConfig.protoMessageName + ".IpV4Config"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}ip\0\u{1}gateway\0\u{1}subnet\0\u{1}dns\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "ip"),
+    2: .same(proto: "gateway"),
+    3: .same(proto: "subnet"),
+    4: .same(proto: "dns"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2536,7 +2649,21 @@ extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf.
 
 extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".DisplayConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}screen_on_secs\0\u{3}gps_format\0\u{3}auto_screen_carousel_secs\0\u{3}compass_north_top\0\u{3}flip_screen\0\u{1}units\0\u{1}oled\0\u{1}displaymode\0\u{3}heading_bold\0\u{3}wake_on_tap_or_motion\0\u{3}compass_orientation\0\u{3}use_12h_clock\0\u{3}use_long_node_name\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "screen_on_secs"),
+    2: .standard(proto: "gps_format"),
+    3: .standard(proto: "auto_screen_carousel_secs"),
+    4: .standard(proto: "compass_north_top"),
+    5: .standard(proto: "flip_screen"),
+    6: .same(proto: "units"),
+    7: .same(proto: "oled"),
+    8: .same(proto: "displaymode"),
+    9: .standard(proto: "heading_bold"),
+    10: .standard(proto: "wake_on_tap_or_motion"),
+    11: .standard(proto: "compass_orientation"),
+    12: .standard(proto: "use_12h_clock"),
+    13: .standard(proto: "use_long_node_name"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2625,28 +2752,72 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 }
 
 extension Config.DisplayConfig.DeprecatedGpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNUSED\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNUSED"),
+  ]
 }
 
 extension Config.DisplayConfig.DisplayUnits: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0METRIC\0\u{1}IMPERIAL\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "METRIC"),
+    1: .same(proto: "IMPERIAL"),
+  ]
 }
 
 extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OLED_AUTO\0\u{1}OLED_SSD1306\0\u{1}OLED_SH1106\0\u{1}OLED_SH1107\0\u{1}OLED_SH1107_128_128\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "OLED_AUTO"),
+    1: .same(proto: "OLED_SSD1306"),
+    2: .same(proto: "OLED_SH1106"),
+    3: .same(proto: "OLED_SH1107"),
+    4: .same(proto: "OLED_SH1107_128_128"),
+  ]
 }
 
 extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEFAULT\0\u{1}TWOCOLOR\0\u{1}INVERTED\0\u{1}COLOR\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DEFAULT"),
+    1: .same(proto: "TWOCOLOR"),
+    2: .same(proto: "INVERTED"),
+    3: .same(proto: "COLOR"),
+  ]
 }
 
 extension Config.DisplayConfig.CompassOrientation: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEGREES_0\0\u{1}DEGREES_90\0\u{1}DEGREES_180\0\u{1}DEGREES_270\0\u{1}DEGREES_0_INVERTED\0\u{1}DEGREES_90_INVERTED\0\u{1}DEGREES_180_INVERTED\0\u{1}DEGREES_270_INVERTED\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DEGREES_0"),
+    1: .same(proto: "DEGREES_90"),
+    2: .same(proto: "DEGREES_180"),
+    3: .same(proto: "DEGREES_270"),
+    4: .same(proto: "DEGREES_0_INVERTED"),
+    5: .same(proto: "DEGREES_90_INVERTED"),
+    6: .same(proto: "DEGREES_180_INVERTED"),
+    7: .same(proto: "DEGREES_270_INVERTED"),
+  ]
 }
 
 extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".LoRaConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}use_preset\0\u{3}modem_preset\0\u{1}bandwidth\0\u{3}spread_factor\0\u{3}coding_rate\0\u{3}frequency_offset\0\u{1}region\0\u{3}hop_limit\0\u{3}tx_enabled\0\u{3}tx_power\0\u{3}channel_num\0\u{3}override_duty_cycle\0\u{3}sx126x_rx_boosted_gain\0\u{3}override_frequency\0\u{3}pa_fan_disabled\0\u{4}X\u{1}ignore_incoming\0\u{3}ignore_mqtt\0\u{3}config_ok_to_mqtt\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "use_preset"),
+    2: .standard(proto: "modem_preset"),
+    3: .same(proto: "bandwidth"),
+    4: .standard(proto: "spread_factor"),
+    5: .standard(proto: "coding_rate"),
+    6: .standard(proto: "frequency_offset"),
+    7: .same(proto: "region"),
+    8: .standard(proto: "hop_limit"),
+    9: .standard(proto: "tx_enabled"),
+    10: .standard(proto: "tx_power"),
+    11: .standard(proto: "channel_num"),
+    12: .standard(proto: "override_duty_cycle"),
+    13: .standard(proto: "sx126x_rx_boosted_gain"),
+    14: .standard(proto: "override_frequency"),
+    15: .standard(proto: "pa_fan_disabled"),
+    103: .standard(proto: "ignore_incoming"),
+    104: .standard(proto: "ignore_mqtt"),
+    105: .standard(proto: "config_ok_to_mqtt"),
+  ]
 
   fileprivate class _StorageClass {
     var _usePreset: Bool = false
@@ -2668,11 +2839,15 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _ignoreMqtt: Bool = false
     var _configOkToMqtt: Bool = false
 
+    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -2830,16 +3005,59 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 }
 
 extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}US\0\u{1}EU_433\0\u{1}EU_868\0\u{1}CN\0\u{1}JP\0\u{1}ANZ\0\u{1}KR\0\u{1}TW\0\u{1}RU\0\u{1}IN\0\u{1}NZ_865\0\u{1}TH\0\u{1}LORA_24\0\u{1}UA_433\0\u{1}UA_868\0\u{1}MY_433\0\u{1}MY_919\0\u{1}SG_923\0\u{1}PH_433\0\u{1}PH_868\0\u{1}PH_915\0\u{1}ANZ_433\0\u{1}KZ_433\0\u{1}KZ_863\0\u{1}NP_865\0\u{1}BR_902\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNSET"),
+    1: .same(proto: "US"),
+    2: .same(proto: "EU_433"),
+    3: .same(proto: "EU_868"),
+    4: .same(proto: "CN"),
+    5: .same(proto: "JP"),
+    6: .same(proto: "ANZ"),
+    7: .same(proto: "KR"),
+    8: .same(proto: "TW"),
+    9: .same(proto: "RU"),
+    10: .same(proto: "IN"),
+    11: .same(proto: "NZ_865"),
+    12: .same(proto: "TH"),
+    13: .same(proto: "LORA_24"),
+    14: .same(proto: "UA_433"),
+    15: .same(proto: "UA_868"),
+    16: .same(proto: "MY_433"),
+    17: .same(proto: "MY_919"),
+    18: .same(proto: "SG_923"),
+    19: .same(proto: "PH_433"),
+    20: .same(proto: "PH_868"),
+    21: .same(proto: "PH_915"),
+    22: .same(proto: "ANZ_433"),
+    23: .same(proto: "KZ_433"),
+    24: .same(proto: "KZ_863"),
+    25: .same(proto: "NP_865"),
+    26: .same(proto: "BR_902"),
+  ]
 }
 
 extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LONG_FAST\0\u{1}LONG_SLOW\0\u{1}VERY_LONG_SLOW\0\u{1}MEDIUM_SLOW\0\u{1}MEDIUM_FAST\0\u{1}SHORT_SLOW\0\u{1}SHORT_FAST\0\u{1}LONG_MODERATE\0\u{1}SHORT_TURBO\0\u{1}LONG_TURBO\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "LONG_FAST"),
+    1: .same(proto: "LONG_SLOW"),
+    2: .same(proto: "VERY_LONG_SLOW"),
+    3: .same(proto: "MEDIUM_SLOW"),
+    4: .same(proto: "MEDIUM_FAST"),
+    5: .same(proto: "SHORT_SLOW"),
+    6: .same(proto: "SHORT_FAST"),
+    7: .same(proto: "LONG_MODERATE"),
+    8: .same(proto: "SHORT_TURBO"),
+    9: .same(proto: "LONG_TURBO"),
+  ]
 }
 
 extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".BluetoothConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}mode\0\u{3}fixed_pin\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "mode"),
+    3: .standard(proto: "fixed_pin"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2878,12 +3096,24 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 }
 
 extension Config.BluetoothConfig.PairingMode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0RANDOM_PIN\0\u{1}FIXED_PIN\0\u{1}NO_PIN\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "RANDOM_PIN"),
+    1: .same(proto: "FIXED_PIN"),
+    2: .same(proto: "NO_PIN"),
+  ]
 }
 
 extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".SecurityConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}public_key\0\u{3}private_key\0\u{3}admin_key\0\u{3}is_managed\0\u{3}serial_enabled\0\u{3}debug_log_api_enabled\0\u{4}\u{2}admin_channel_enabled\0")
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "public_key"),
+    2: .standard(proto: "private_key"),
+    3: .standard(proto: "admin_key"),
+    4: .standard(proto: "is_managed"),
+    5: .standard(proto: "serial_enabled"),
+    6: .standard(proto: "debug_log_api_enabled"),
+    8: .standard(proto: "admin_channel_enabled"),
+  ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
