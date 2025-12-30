@@ -240,9 +240,9 @@ struct FirmwareTagView: View {
 		Text(text)
 			.foregroundStyle(color)
 			.padding(.horizontal, 4.0)
-			.padding(.vertical, 2.0)
-			.font(.footnote)
-			.background(RoundedRectangle(cornerRadius: 4.0).stroke(color, lineWidth: 1.5))
+			.padding(.vertical, 1.0)
+			.font(.caption2)
+			.background(RoundedRectangle(cornerRadius: 4.0).stroke(color, lineWidth: 1.2))
 
 	}
 }
@@ -267,6 +267,8 @@ private struct FirmwareRow: View {
 				}
 				
 				Text("\(firmwareFile.versionId)")
+					.font(.caption2)
+					.foregroundColor(.secondary)
 				
 				switch firmwareFile.releaseType {
 				case .stable:
@@ -296,6 +298,7 @@ private struct FirmwareRow: View {
 					} label: {
 						HStack(alignment: .firstTextBaseline, spacing: 2.0) {
 							Text("Install")
+								.font(UIDevice.current.userInterfaceIdiom == .phone ? .caption : .body)
 							self.installIcon
 						}
 					}
@@ -310,6 +313,7 @@ private struct FirmwareRow: View {
 						}
 					} label: {
 						Text("Download")
+							.font(UIDevice.current.userInterfaceIdiom == .phone ? .caption : .body)
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
