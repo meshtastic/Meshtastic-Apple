@@ -44,8 +44,8 @@ struct Connect: View {
 									VStack(alignment: .center) {
 										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
 											.padding(.trailing, 5)
-										if node?.latestDeviceMetrics != nil {
-											BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+										if let metrics = node?.latestDeviceMetrics {
+											BatteryCompact(batteryLevel: metrics.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 												.padding(.trailing, 5)
 										}
 									}
