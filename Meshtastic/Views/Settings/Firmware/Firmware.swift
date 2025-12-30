@@ -298,10 +298,10 @@ private struct FirmwareRow: View {
 							Text("Install")
 							self.installIcon
 						}
-					}.buttonStyle(.bordered)
+					}
+					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.regular)
-					.padding(2.0)
+					.controlSize(UIDevice.current.userInterfaceIdiom == .phone ? .small : .regular)
 					
 				case .notDownloaded:
 					Button {
@@ -310,10 +310,10 @@ private struct FirmwareRow: View {
 						}
 					} label: {
 						Text("Download")
-					}.buttonStyle(.bordered)
+					}
+					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(.regular)
-					.padding(2.0)
+					.controlSize(UIDevice.current.userInterfaceIdiom == .phone ? .small : .regular)
 				case .error:
 					Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
 				}
