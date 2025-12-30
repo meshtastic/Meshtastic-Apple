@@ -11,7 +11,7 @@ import OSLog
 import TipKit
 
 struct UserList: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var editingFilters = false
@@ -20,7 +20,7 @@ struct UserList: View {
 	@StateObject private var filters: NodeFilterParameters = NodeFilterParameters()
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
-	
+
 	var body: some View {
 		VStack {
 			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
@@ -92,13 +92,15 @@ fileprivate struct FilteredUserList: View {
 		self._node = node
 		self._userSelection = userSelection
 	}
-	
+
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
 		List(users, selection: $userSelection) { user in
-			let mostRecent = user.messageList.last
+			let mostRecent = user.mostRecentMessage
+			let hasMessages = mostRecent != nil
+			let hasUnreadMessages = user.unreadMessages > 0
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
@@ -106,14 +108,14 @@ fileprivate struct FilteredUserList: View {
 				NavigationLink(value: user) {
 					ZStack {
 						Image(systemName: "circle.fill")
-							.opacity(user.unreadMessages > 0 ? 1 : 0)
+							.opacity(hasUnreadMessages ? 1 : 0)
 							.font(.system(size: 10))
 							.foregroundColor(.accentColor)
 							.brightness(0.2)
 					}
-					
+
 					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
-					
+
 					VStack(alignment: .leading) {
 						HStack {
 							if user.pkiEncrypted {
@@ -137,7 +139,7 @@ fileprivate struct FilteredUserList: View {
 								Image(systemName: "star.fill")
 									.foregroundColor(.yellow)
 							}
-							if user.messageList.count > 0 {
+							if hasMessages {
 								if lastMessageDay == currentDay {
 									Text(lastMessageTime, style: .time )
 										.font(.footnote)
@@ -157,8 +159,8 @@ fileprivate struct FilteredUserList: View {
 								}
 							}
 						}
-						
-						if user.messageList.count > 0 {
+
+						if hasMessages {
 							HStack(alignment: .top) {
 								Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 									.font(.footnote)
@@ -207,7 +209,7 @@ fileprivate struct FilteredUserList: View {
 					} label: {
 						Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
 					}
-					if user.messageList.count > 0 {
+					if hasMessages {
 						Button(role: .destructive) {
 							isPresentingDeleteUserMessagesConfirm = true
 							userToDeleteMessages = user
@@ -316,7 +318,7 @@ fileprivate extension NodeFilterParameters {
 		predicates.append(isIgnoredPredicate)
 		let isConnectedNodePredicate = NSPredicate(format: "NOT (numString CONTAINS %@)", String(UserDefaults.preferredPeripheralNum))
 		predicates.append(isConnectedNodePredicate)
-		
+
 		// Combine all predicates
 		let finalPredicate = predicates.isEmpty ? NSPredicate(value: true) : NSCompoundPredicate(type: .and, subpredicates: predicates)
 		return finalPredicate

@@ -106,13 +106,25 @@ extension AccessoryManager {
 			return
 		}
 
+		// Check if we're in database retrieval mode to defer saves for performance
+		let isRetrievingDatabase = if case .retrievingDatabase = self.state { true } else { false }
+		
 		// TODO: nodeInfoPacket's channel: parameter is not used
-		if let nodeInfo = nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, context: context) {
+		if let nodeInfo = nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, context: context, deferSave: isRetrievingDatabase) {
 			if let activeDevice = activeConnection?.device, activeDevice.num == nodeInfo.num {
 				if let user = nodeInfo.user {
 					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
 					updateDevice(deviceId: activeDevice.id, key: \.longName, value: user.longName ?? "Unknown".localized)
 					updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: user.hwModel)
+					
+					if activeDevice.isManualConnection {
+						// We just received a NodeInfo for the currently connected node and this is a
+						// manual connection.  Update the metadata for the device entry in UserDefaults
+						// with this information for better display later
+						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName)
+						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.longName, value: user.longName)
+						ManualConnectionList.shared.updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: user.hwModel)
+					}
 				}
 			}
 		}

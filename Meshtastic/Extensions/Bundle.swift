@@ -23,4 +23,12 @@ extension Bundle {
 	public var isTestFlight: Bool {
 		return appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
 	}
+	
+	public var isDebug: Bool {
+		#if DEBUG
+		return true
+		#else
+		return false
+		#endif
+	}
 }

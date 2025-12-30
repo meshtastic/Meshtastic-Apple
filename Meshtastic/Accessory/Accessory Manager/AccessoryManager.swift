@@ -141,7 +141,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	let transports: [any Transport]
 
 	// Config
-	public var wantRangeTestPackets = true
+	public var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
 	var shouldAutomaticallyConnectToPreferredPeripheral = true
 	
@@ -302,9 +302,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.error("updateDevice<T> with nil deviceId")
 			return
 		}
-
-		// Update the active device
-		if let activeConnection {
+		
+		// Update the active device if the UUID's match
+		if let activeConnection, activeConnection.device.id == deviceId {
 			var device = activeConnection.device
 			if device[keyPath: key] != value {
 				// Update the @Published stuff for the UI
@@ -493,6 +493,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			handleMyInfo(myNodeInfo)
 
 		case .packet(let packet):
+			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
+			if let connectedNodeNum = self.activeDeviceNum {
+				updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum, context: context)
+			} else {
+				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
+			}
+
+			// Dispatch based on packet contents.
 			if case let .decoded(data) = packet.payloadVariant {
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
@@ -570,6 +578,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED UNHANDLED")
 				case .simulatorApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
+				case .storeForwardPlusplusApp:
+					Logger.mesh.info("🕸️ MESH PACKET received for SFPP App UNHANDLED UNHANDLED")
 				case .audioApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
 				case .tracerouteApp:
@@ -665,6 +675,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					self.firstDatabaseNodeInfoContinuation = nil
 				}
 				
+				// Perform a single batch save after database retrieval completes
+				// This significantly improves performance on reconnect
+				do {
+					try context.save()
+					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+				} catch {
+					context.rollback()
+					let nsError = error as NSError
+					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
+				}
+				
 			default:
 				Logger.transport.error("[Accessory] Unknown nonce completed: \(configCompleteID)")
 			}
@@ -687,6 +708,13 @@ extension AccessoryManager {
 		return activeConnection?.device.firmwareVersion
 	}
 
+	var connectedDeviceRole: DeviceRoles? {
+		guard let connectedNodeNum = activeDeviceNum else { return nil }
+		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context) else { return nil }
+		guard let connectedNodeUser = connectedNode.user else { return nil }
+		return DeviceRoles(rawValue: Int(connectedNodeUser.role))
+	}
+
 	func checkIsVersionSupported(forVersion: String) -> Bool {
 		let myVersion = connectedVersion ?? "0.0.0"
 		let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||
@@ -703,7 +731,8 @@ extension AccessoryManager {
 			await self.heartbeatTimer?.cancel(withReason: "Duplicate setup, cancelling previous timer")
 			self.heartbeatTimer = nil
 		}
-		self.heartbeatTimer = ResettableTimer(isRepeating: true, debugName: "Send Heartbeat") {
+		
+		self.heartbeatTimer = ResettableTimer(isRepeating: true, debugName: Bundle.main.isDebug ? "Send Heartbeat" : nil) {
 			Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
 			try? await self.sendHeartbeat()
 		}
@@ -711,7 +740,7 @@ extension AccessoryManager {
 		// We can send heartbeats for older versions just fine, but only 2.7.4 and up will respond with
 		// a definite queueStatus packet.
 		if self.checkIsVersionSupported(forVersion: "2.7.4") {
-			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false, debugName: "Heartbeat Timeout") { @MainActor in
+			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false, debugName: Bundle.main.isDebug ? "Heartbeat Timeout" : nil) { @MainActor in
 				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
 				// If we're in the middle of a connection cancel it.
 				await self.connectionStepper?.cancel()

@@ -26,6 +26,8 @@ import OSLog
 	@Published var recordingStarted: Date?
 	@Published var distanceTraveled = 0.0
 	@Published var elevationGain = 0.0
+	@Published var heading: Double = 0.0 // Current heading in degrees
+	@Published var headingUpdatesStarted: Bool = false // Track heading updates state
 
 	@Published
 	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
@@ -131,6 +133,10 @@ import OSLog
 		self.manager.desiredAccuracy = kCLLocationAccuracyBest
 		// Set the distance filter to only receive updates when the device has moved a certain distance.
 		self.manager.distanceFilter = kCLDistanceFilterNone // Receive all updates initially
+		if CLLocationManager.headingAvailable() {
+				self.manager.headingFilter = 1 // Update heading when it changes by 1 degree
+				self.manager.headingOrientation = .portrait // Adjust based on device orientation
+			}
 	}
 
 	func startLocationUpdates() {
@@ -178,6 +184,39 @@ import OSLog
 			// The Task completes implicitly here.
 		}
 	}
+	
+	// New method to start heading updates
+	func startHeadingUpdates() {
+		guard CLLocationManager.headingAvailable() else {
+			Logger.services.warning("📍 [App] Heading updates not available on this device.")
+			return
+		}
+		
+		guard manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse else {
+			Logger.services.warning("📍 [App] Cannot start heading updates: insufficient authorization status.")
+			return
+		}
+		
+		Logger.services.info("📍 [App] Starting heading updates")
+		manager.startUpdatingHeading()
+		headingUpdatesStarted = true
+	}
+
+	// New method to stop heading updates
+	func stopHeadingUpdates() {
+		Logger.services.info("🛑 [App] Stopping heading updates")
+		manager.stopUpdatingHeading()
+		headingUpdatesStarted = false
+	}
+
+	// Implement the CLLocationManagerDelegate method for heading updates
+	func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+		// Update heading on the main thread
+		Task { @MainActor in
+			self.heading = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
+		}
+	}
+	
 	/// Stops receiving live location updates.
 	func stopLocationUpdates() {
 		Logger.services.info("🛑 [App] Stopping location updates")

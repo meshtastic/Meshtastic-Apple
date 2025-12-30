@@ -1,22 +1,31 @@
 /*
-Abstract:
-A view draws the indicator used in the upper right corner for views using BLE
-*/
+ Abstract:
+ A view draws the indicator used in the upper right corner for views using BLE
+ */
 
 import SwiftUI
 
 struct ConnectedDevice: View {
-	@EnvironmentObject var accessoryManager: AccessoryManager
-    var deviceConnected: Bool
-    var name: String
-    var mqttProxyConnected: Bool = false
-    var mqttUplinkEnabled: Bool = false
-    var mqttDownlinkEnabled: Bool = false
-        var mqttTopic: String = ""
-    var phoneOnly: Bool = false
-	var showActivityLights: Bool
-	
-	init(deviceConnected: Bool, name: String, mqttProxyConnected: Bool = false, mqttUplinkEnabled: Bool = false, mqttDownlinkEnabled: Bool = false, mqttTopic: String = "", phoneOnly: Bool = false, showActivityLights: Bool = true) {
+
+	let deviceConnected: Bool
+	let name: String
+	let mqttProxyConnected: Bool
+	let mqttUplinkEnabled: Bool
+	let mqttDownlinkEnabled: Bool
+	let mqttTopic: String
+	let phoneOnly: Bool
+	let showActivityLights: Bool
+
+	init(
+		deviceConnected: Bool,
+		name: String,
+		mqttProxyConnected: Bool = false,
+		mqttUplinkEnabled: Bool = false,
+		mqttDownlinkEnabled: Bool = false,
+		mqttTopic: String = "",
+		phoneOnly: Bool = false,
+		showActivityLights: Bool = true
+	) {
 		self.deviceConnected = deviceConnected
 		self.name = name
 		self.mqttProxyConnected = mqttProxyConnected
@@ -27,12 +36,12 @@ struct ConnectedDevice: View {
 		self.showActivityLights = showActivityLights
 	}
 
-    var body: some View {
+	var body: some View {
 		HStack {
 			if showActivityLights {
 				RXTXIndicatorWidget()
 			}
-            if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
+			if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
 				if deviceConnected {
 					// Create an HStack for connected state with proper accessibility
 					HStack {
@@ -64,24 +73,37 @@ struct ConnectedDevice: View {
 					.accessibilityElement(children: .ignore)
 					.accessibilityLabel("No Bluetooth device connected".localized)
 				}
-            }
+			}
 		}
 		.if(.os26) { $0.padding(.leading, 5.0) }
-    }
+	}
 }
 
-struct ConnectedDevice_Previews: PreviewProvider {
-    static var previews: some View {
-            VStack(alignment: .trailing) {
-                ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true)
-                ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: false, mqttUplinkEnabled: true, mqttDownlinkEnabled: true)
-                ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true, mqttUplinkEnabled: true, mqttDownlinkEnabled: true, mqttTopic: "msh/US/2/e/#")
-                ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: false, mqttUplinkEnabled: true, mqttDownlinkEnabled: false)
-                ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true, mqttUplinkEnabled: true, mqttDownlinkEnabled: false)
-                ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: false, mqttUplinkEnabled: false, mqttDownlinkEnabled: true)
-                ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true, mqttUplinkEnabled: false, mqttDownlinkEnabled: true)
-                ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true)
-                ConnectedDevice(deviceConnected: false, name: "MEMO", mqttProxyConnected: false)
-            }.previewLayout(.fixed(width: 150, height: 275))
-        }
+#Preview("Multiple variants") {
+	VStack(alignment: .trailing) {
+		ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true)
+		ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: false, mqttUplinkEnabled: true, mqttDownlinkEnabled: true)
+		ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true, mqttUplinkEnabled: true, mqttDownlinkEnabled: true, mqttTopic: "msh/US/2/e/#")
+		ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: false, mqttUplinkEnabled: true, mqttDownlinkEnabled: false)
+		ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true, mqttUplinkEnabled: true, mqttDownlinkEnabled: false)
+		ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: false, mqttUplinkEnabled: false, mqttDownlinkEnabled: true)
+		ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true, mqttUplinkEnabled: false, mqttDownlinkEnabled: true)
+		ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: true)
+		ConnectedDevice(deviceConnected: false, name: "MEMO", mqttProxyConnected: false)
+	}
+	.environmentObject(AccessoryManager.shared)
+}
+
+#Preview("Navigation header item") {
+	NavigationView {
+		Text("Connect screen")
+			.navigationTitle("Connect")
+			.navigationBarItems(
+				leading: MeshtasticLogo(),
+				trailing: ZStack {
+					ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: false)
+						.environmentObject(AccessoryManager.shared)
+				}
+			)
+	}
 }

@@ -13,12 +13,14 @@ import MeshtasticProtobufs
 import OSLog
 
 struct ShareContactQRDialog: View {
+	let manuallyVerified = false
     let node: NodeInfo
     @Environment(\.dismiss) private var dismiss
     var qrString: String {
 		var contact = SharedContact()
 		contact.nodeNum = node.num
 		contact.user = node.user
+		contact.manuallyVerified = manuallyVerified
         do {
             let contactString = try contact.serializedData().base64EncodedString()
 			return ("https://meshtastic.org/v/#" + contactString.base64ToBase64url())

@@ -29,8 +29,9 @@ struct DeviceConfig: View {
 	@State var ledHeartbeatEnabled = true
 	@State var tripleClickAsAdHocPing = true
 	@State var tzdef = ""
-	@State private var showRouterWarning = false
-	
+	@State private var showSpecialRoleWarning = false
+	@State private var showSpecialRoleWarningForRole: Int = 0
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
@@ -43,13 +44,14 @@ struct DeviceConfig: View {
 						}
 					}
 					.onChange(of: deviceRole) { _, newRole in
-						if hasChanges && [DeviceRoles.router.rawValue, DeviceRoles.routerLate.rawValue].contains(newRole) {
-							showRouterWarning = true
+						if hasChanges && [DeviceRoles.router.rawValue, DeviceRoles.routerLate.rawValue, DeviceRoles.clientBase.rawValue].contains(newRole) {
+							showSpecialRoleWarningForRole = newRole
+							showSpecialRoleWarning = true
 						}
 					}
 					.confirmationDialog(
 						"Are you sure?",
-						isPresented: $showRouterWarning,
+						isPresented: $showSpecialRoleWarning,
 						titleVisibility: .visible
 					) {
 						
@@ -60,7 +62,7 @@ struct DeviceConfig: View {
 							setDeviceValues()
 						}
 					} message: {
-						Text("The Router roles are only for high vantage locations like mountaintops and towers with few nearby nodes, not for use in urban areas. Improper use will hurt your local mesh.")
+						Text(specialRoleWarningMessage(newRole: showSpecialRoleWarningForRole))
 					}
 					Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
 						.foregroundColor(.gray)
@@ -331,5 +333,15 @@ struct DeviceConfig: View {
 		self.ledHeartbeatEnabled = node?.deviceConfig?.ledHeartbeatEnabled ?? true
 		self.tzdef = node?.deviceConfig?.tzdef ?? ""
 		hasChanges = false
+	}
+
+	private func specialRoleWarningMessage(newRole: Int) -> String {
+		if [DeviceRoles.router.rawValue, DeviceRoles.routerLate.rawValue].contains(newRole) {
+			return "The Router roles are only for high vantage locations like mountaintops and towers with few nearby nodes, not for use in urban areas. Improper use will hurt your local mesh."
+		} else if newRole == DeviceRoles.clientBase.rawValue {
+			return "Switching to Client Base will clear this node's favorites. Client Base should only favorite other nodes you control. Improper use will hurt your local mesh."
+		} else {
+			return ""
+		}
 	}
 }

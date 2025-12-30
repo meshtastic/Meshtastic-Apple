@@ -27,6 +27,7 @@ struct NodeDetail: View {
 	var connectedNode: NodeInfoEntity?
 	@ObservedObject	var node: NodeInfoEntity
 	@State private var environmentSectionHeight: CGFloat = 0
+	@State var showingCompassSheet = false
 	
 	var body: some View {
 		NavigationStack {
@@ -40,7 +41,7 @@ struct NodeDetail: View {
 						context: context
 					)
 					Section("Hardware") {
-		
+						
 						NodeInfoItem(node: node)
 						//	.id("topOfList")
 					}
@@ -260,18 +261,18 @@ struct NodeDetail: View {
 											// Update the state with the new height
 											self.environmentSectionHeight = newHeight
 										}
-								} else {
+								} else if let metrics = node.latestEnvironmentMetrics { // 👈 REFACTORED: Unwraps metrics safely
 									VStack {
-										if node.latestEnvironmentMetrics?.iaq ?? -1 > 0 {
-											IndoorAirQuality(iaq: Int(node.latestEnvironmentMetrics?.iaq ?? 0), displayMode: .gradient)
+										if metrics.iaq ?? -1 > 0 { // Use unwrapped 'metrics'
+											IndoorAirQuality(iaq: Int(metrics.iaq ?? 0), displayMode: .gradient)
 												.padding(.vertical)
 										}
 										LazyVGrid(columns: gridItemLayout) {
-											if let temperature = node.latestEnvironmentMetrics?.temperature?.shortFormattedTemperature() {
+											if let temperature = metrics.temperature?.shortFormattedTemperature() {
 												WeatherConditionsCompactWidget(temperature: String(temperature), symbolName: "cloud.sun", description: "TEMP")
 											}
-											if let humidity = node.latestEnvironmentMetrics?.relativeHumidity {
-												if let temperature = node.latestEnvironmentMetrics?.temperature {
+											if let humidity = metrics.relativeHumidity {
+												if let temperature = metrics.temperature {
 													let dewPoint = calculateDewPoint(temp: temperature, relativeHumidity: humidity)
 														.formatted(.number.precision(.fractionLength(0))) + "°"
 													HumidityCompactWidget(humidity: Int(humidity), dewPoint: dewPoint)
@@ -279,17 +280,17 @@ struct NodeDetail: View {
 													HumidityCompactWidget(humidity: Int(humidity), dewPoint: nil)
 												}
 											}
-											if let pressure = node.latestEnvironmentMetrics?.barometricPressure {
+											if let pressure = metrics.barometricPressure {
 												PressureCompactWidget(pressure: pressure.formatted(.number.precision(.fractionLength(2))), unit: "hPA", low: pressure <= 1009.144)
 											}
-											if let windSpeed = node.latestEnvironmentMetrics?.windSpeed {
+											if let windSpeed = metrics.windSpeed {
 												let windSpeedMeasurement = Measurement(value: Double(windSpeed), unit: UnitSpeed.metersPerSecond)
-												let windGust = node.latestEnvironmentMetrics?.windGust.map { Measurement(value: Double($0), unit: UnitSpeed.metersPerSecond) }
-												let direction = cardinalValue(from: Double(node.latestEnvironmentMetrics?.windDirection ?? 0))
+												let windGust = metrics.windGust.map { Measurement(value: Double($0), unit: UnitSpeed.metersPerSecond) }
+												let direction = cardinalValue(from: Double(metrics.windDirection ?? 0)) // Use unwrapped 'metrics'
 												WindCompactWidget(speed: windSpeedMeasurement.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
-																  gust: node.latestEnvironmentMetrics?.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
+																  gust: metrics.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
 											}
-											if let rainfall1h = node.latestEnvironmentMetrics?.rainfall1H {
+											if let rainfall1h = metrics.rainfall1H {
 												let locale = NSLocale.current as NSLocale
 												let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
 												let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
@@ -299,7 +300,7 @@ struct NodeDetail: View {
 												let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
 												RainfallCompactWidget(timespan: .rainfall1H, rainfall: formattedRain, unit: unitLabel)
 											}
-											if let rainfall24h = node.latestEnvironmentMetrics?.rainfall24H {
+											if let rainfall24h = metrics.rainfall24H {
 												let locale = NSLocale.current as NSLocale
 												let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
 												let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
@@ -309,26 +310,26 @@ struct NodeDetail: View {
 												let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
 												RainfallCompactWidget(timespan: .rainfall24H, rainfall: formattedRain, unit: unitLabel)
 											}
-											if let radiation = node.latestEnvironmentMetrics?.radiation {
+											if let radiation = metrics.radiation {
 												RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
 											}
-											if let weight = node.latestEnvironmentMetrics?.weight {
+											if let weight = metrics.weight {
 												WeightCompactWidget(weight: weight.formatted(.number.precision(.fractionLength(1))), unit: "kg")
 											}
-											if let distance = node.latestEnvironmentMetrics?.distance {
+											if let distance = metrics.distance {
 												DistanceCompactWidget(distance: distance.formatted(.number.precision(.fractionLength(0))), unit: "mm")
 											}
-											if let soilTemperature = node.latestEnvironmentMetrics?.soilTemperature {
+											if let soilTemperature = metrics.soilTemperature {
 												let locale = NSLocale.current as NSLocale
 												let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
 												let unit = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? "°F" : "°C"
 												SoilTemperatureCompactWidget(temperature: soilTemperature.localeTemperature().formatted(.number.precision(.fractionLength(0))), unit: unit)
 											}
-											if let soilMoisture = node.latestEnvironmentMetrics?.soilMoisture {
+											if let soilMoisture = metrics.soilMoisture {
 												SoilMoistureCompactWidget(moisture: soilMoisture.formatted(.number.precision(.fractionLength(0))), unit: "%")
 											}
 										}
-										.padding(node.latestEnvironmentMetrics?.iaq ?? -1 > 0 ? .bottom : .vertical)
+										.padding(metrics.iaq ?? -1 > 0 ? .bottom : .vertical)
 									}
 								}
 							}
@@ -460,7 +461,8 @@ struct NodeDetail: View {
 									}
 								}
 								ExchangePositionsButton(
-									node: node
+									node: node,
+									connectedNode: connectedNode
 								)
 								TraceRouteButton(
 									node: node
@@ -472,6 +474,17 @@ struct NodeDetail: View {
 									)
 								}
 								if node.hasPositions {
+								#if !targetEnvironment(macCatalyst)
+									Button {
+										showingCompassSheet = true
+									} label: {
+										Label {
+											Text("Open Compass")
+										} icon: {
+											Image(systemName: "safari")
+										}
+									}
+								#endif
 									NavigateToButton(node: node)
 								}
 								IgnoreNodeButton(
@@ -558,6 +571,9 @@ struct NodeDetail: View {
 						}
 					}
 				}
+				.sheet(isPresented: $showingCompassSheet) {
+					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointName: node.user?.longName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+						}
 				.onAppear {
 					scrollView.scrollTo("topOfList", anchor: .top)
 				}

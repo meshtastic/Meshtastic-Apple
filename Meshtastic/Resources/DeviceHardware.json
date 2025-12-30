@@ -909,6 +909,22 @@
 	]
   },
   {
+	"hwModel": 93,
+	"hwModelSlug": "MUZI_BASE",
+	"platformioTarget": "muzi-base",
+	"architecture": "nrf52840",
+	"activelySupported": false,
+	"supportLevel": 1,
+	"displayName": "muzi base",
+	"tags": [
+	  "muzi"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "muzi_base.svg"
+	]
+  },
+  {
 	"hwModel": 94,
 	"hwModelSlug": "HELTEC_MESH_POCKET",
 	"platformioTarget": "heltec-mesh-pocket-10000",
@@ -923,7 +939,28 @@
 	  "heltec_mesh_pocket.svg"
 	],
 	"requiresDfu": true,
-	"hasInkHud": true
+	"hasInkHud": true,
+	"key": "HELTEC_MESH_POCKET",
+	"variant": "10000mAh"
+  },
+  {
+	"hwModel": 94,
+	"hwModelSlug": "HELTEC_MESH_POCKET",
+	"platformioTarget": "heltec-mesh-pocket-5000",
+	"architecture": "nrf52840",
+	"activelySupported": true,
+	"supportLevel": 1,
+	"displayName": "Heltec MeshPocket",
+	"tags": [
+	  "Heltec"
+	],
+	"images": [
+	  "heltec_mesh_pocket.svg"
+	],
+	"requiresDfu": true,
+	"hasInkHud": true,
+	"key": "HELTEC_MESH_POCKET",
+	"variant": "5000mAh"
   },
   {
 	"hwModel": 95,
@@ -1181,6 +1218,70 @@
 	"images": [
 	  "rak_3312.svg"
 	]
+  },
+  {
+	"hwModel": 115,
+	"hwModelSlug": "THINKNODE_M3",
+	"platformioTarget": "thinknode_m3",
+	"architecture": "nrf52840",
+	"activelySupported": true,
+	"supportLevel": 1,
+	"displayName": "ThinkNode M3",
+	"tags": [
+	  "Elecrow"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "thinknode_m3.svg"
+	]
+  },
+  {
+	"hwModel": 116,
+	"hwModelSlug": "WISMESH_TAP_V2",
+	"platformioTarget": "rak_wismesh_tap_v2",
+	"architecture": "esp32-s3",
+	"activelySupported": false,
+	"supportLevel": 1,
+	"displayName": "RAK WisMesh Tap V2",
+	"tags": [
+	  "RAK"
+	],
+	"hasMui": true,
+	"partitionScheme": "8MB",
+	"images": [
+	  "rak-wismesh-tap-v2.svg"
+	]
+  },
+  {
+	"hwModel": 119,
+	"hwModelSlug": "THINKNODE_M4",
+	"platformioTarget": "thinknode_m4",
+	"architecture": "nrf52840",
+	"activelySupported": false,
+	"supportLevel": 1,
+	"displayName": "ThinkNode M4",
+	"tags": [
+	  "Elecrow"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "thinknode_m4.svg"
+	]
+  },
+  {
+	"hwModel": 120,
+	"hwModelSlug": "THINKNODE_M6",
+	"platformioTarget": "thinknode_m6",
+	"architecture": "nrf52840",
+	"activelySupported": false,
+	"supportLevel": 1,
+	"displayName": "ThinkNode M6",
+	"tags": [
+	  "Elecrow"
+	],
+	"requiresDfu": true,
+	"images": [
+	  "thinknode_m6.svg"
+	]
   }
 ]
-

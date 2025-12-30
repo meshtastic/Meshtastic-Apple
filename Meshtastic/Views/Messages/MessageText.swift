@@ -25,9 +25,7 @@ struct MessageText: View {
 	let isCurrentUser: Bool
 	let onReply: () -> Void
 	// State for handling channel URL sheet
-	@State private var saveChannels = false
-	@State private var channelSettings: String?
-	@State private var addChannels = false
+	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
 	
 	var body: some View {
@@ -97,7 +95,8 @@ struct MessageText: View {
 					)
 				}
 				.environment(\.openURL, OpenURLAction { url in
-					channelSettings = nil
+					saveChannelLink = nil
+					var addChannels = false
 					if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
 						// Handle contact URL
 						ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
@@ -109,35 +108,25 @@ struct MessageText: View {
 							Logger.services.error("No valid components found in channel URL: \(url.absoluteString, privacy: .public)")
 							return .discarded
 						}
-						self.addChannels = Bool(url.query?.contains("add=true") ?? false)
+						addChannels = Bool(url.query?.contains("add=true") ?? false)
 						guard let lastComponent = components.last else {
 							Logger.services.error("Channel URL missing fragment component: \(url.absoluteString, privacy: .public)")
-							self.channelSettings = nil
+							self.saveChannelLink = nil
 							return .discarded
 						}
-						self.channelSettings = lastComponent.components(separatedBy: "?").first ?? ""
-						Logger.services.debug("Add Channel: \(self.addChannels, privacy: .public)")
-						self.saveChannels = true
+						let cs = lastComponent.components(separatedBy: "?").first ?? ""
+						self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
+						Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
 						Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
 						return .handled // Prevent default browser opening
 					}
 					return .systemAction // Open other URLs in browser
 				})
 			// Display sheet for channel settings
-				.sheet(isPresented: Binding(
-					get: {
-						saveChannels && !(channelSettings == nil)
-					},
-					set: { newValue in
-						saveChannels = newValue
-						if !newValue {
-							channelSettings = nil
-						}
-					}
-				)) {
+				.sheet(item: $saveChannelLink) { link in
 					SaveChannelQRCode(
-						channelSetLink: channelSettings ?? "Empty Channel URL",
-						addChannels: addChannels,
+						channelSetLink: link.data,
+						addChannels: link.add,
 						accessoryManager: accessoryManager
 					)
 					.presentationDetents([.large])

@@ -263,6 +263,7 @@ struct MQTTConfig: View {
 							mqtt.jsonEnabled = self.jsonEnabled
 							mqtt.tlsEnabled = self.tlsEnabled
 							mqtt.mapReportingEnabled = self.mapReportingEnabled
+							mqtt.mapReportSettings.shouldReportLocation = UserDefaults.mapReportingOptIn
 							mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
 							mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs.intValue)
 							Task {

@@ -165,6 +165,60 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 	}
 }
 
+func updateAnyPacketFrom (packet: MeshPacket, activeDeviceNum: Int64, context: NSManagedObjectContext) {
+	// Update NodeInfoEntity for any packet received. This mirrors the firmware's NodeDB::updateFrom, which sniffs ALL received packets and updates the radio's nodeDB with packet.from's:
+	// - last_heard (from rxTime)
+	// - snr
+	// - via_mqtt
+	// - hops_away
+
+	// However, unlike the firmware, this function will NOT create a new NodeInfoEntity if we don't have it already. We'll leave that to the existing code paths.
+
+	// We do NOT update fetchedNode[0].channel, because we may hear a node over multiple channels, and only some packet types should update what we consider the node's channel to be. (Example: primary private channel, secondary public channel. A text message on the secondary public channel should NOT change fetchedNode[0].channel.)
+
+	guard packet.from > 0 else { return }
+	guard packet.from != activeDeviceNum else { return } // Ignore if packet is from our own node
+
+	let fetchNodeInfoAppRequest = NodeInfoEntity.fetchRequest()
+	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+
+	do {
+		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest)
+		if fetchedNode.count >= 1 {
+			fetchedNode[0].id = Int64(packet.from)
+			fetchedNode[0].num = Int64(packet.from)
+
+			if packet.rxTime > 0 {
+				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard from rxTime=\(packet.rxTime)")
+			} else {
+				fetchedNode[0].lastHeard = Date()
+				Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
+			}
+
+			fetchedNode[0].snr = packet.rxSnr
+			fetchedNode[0].rssi = packet.rxRssi
+			fetchedNode[0].viaMqtt = packet.viaMqtt
+
+			if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
+				Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) hopsAway=\(fetchedNode[0].hopsAway)")
+			}
+
+			do {
+				try context.save()
+				Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(fetchedNode[0].num.toHex(), privacy: .public) snr=\(fetchedNode[0].snr), rssi=\(fetchedNode[0].rssi) from packet \(packet.id.toHex(), privacy: .public)")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				Logger.data.error("💥 [updateAnyPacketFrom] Error Saving node \(fetchedNode[0].num.toHex(), privacy: .public) from packet \(packet.id.toHex(), privacy: .public)  \(nsError, privacy: .public)")
+			}
+		}
+	} catch {
+		Logger.data.error("💥 [updateAnyPacketFrom] fetch data error")
+	}
+}
+
 func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, packet.from.toHex())
@@ -316,16 +370,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, context: 
 
 		} else {
 			// Update an existing node
-			fetchedNode[0].id = Int64(packet.from)
-			fetchedNode[0].num = Int64(packet.from)
-			if packet.rxTime > 0 {
-				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-			} else {
-				fetchedNode[0].lastHeard = Date()
-			}
-			fetchedNode[0].snr = packet.rxSnr
-			fetchedNode[0].rssi = packet.rxRssi
-			fetchedNode[0].viaMqtt = packet.viaMqtt
 			if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 				fetchedNode[0].channel = Int32(packet.channel)
 			}
@@ -463,18 +507,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						mutablePositions.removeAllObjects()
 					}
 					mutablePositions.add(position)
-					fetchedNode[0].id = Int64(packet.from)
-					fetchedNode[0].num = Int64(packet.from)
-					if positionMessage.time > 0 {
-						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
-					} else if packet.rxTime > 0 {
-						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-					} else {
-						fetchedNode[0].lastHeard = Date()
-					}
-					fetchedNode[0].snr = packet.rxSnr
-					fetchedNode[0].rssi = packet.rxRssi
-					fetchedNode[0].viaMqtt = packet.viaMqtt
+
 					fetchedNode[0].channel = Int32(packet.channel)
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 
@@ -1499,6 +1532,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 			if fetchedNode[0].telemetryConfig == nil {
 				let newTelemetryConfig = TelemetryConfigEntity(context: context)
 				newTelemetryConfig.deviceUpdateInterval = Int32(truncatingIfNeeded: config.deviceUpdateInterval)
+				newTelemetryConfig.deviceTelemetryEnabled = config.deviceTelemetryEnabled
 				newTelemetryConfig.environmentUpdateInterval = Int32(truncatingIfNeeded: config.environmentUpdateInterval)
 				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
@@ -1509,6 +1543,7 @@ func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nod
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
 			} else {
 				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(truncatingIfNeeded: config.deviceUpdateInterval)
+				fetchedNode[0].telemetryConfig?.deviceTelemetryEnabled = config.deviceTelemetryEnabled
 				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(truncatingIfNeeded: config.environmentUpdateInterval)
 				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled

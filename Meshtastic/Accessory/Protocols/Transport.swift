@@ -9,7 +9,7 @@ import Foundation
 import CommonCrypto
 import SwiftUI
 
-enum TransportType: String, CaseIterable {
+enum TransportType: String, CaseIterable, Codable {
 	case ble = "BLE"
 	case tcp = "TCP"
 	case serial = "Serial"
@@ -53,14 +53,15 @@ protocol Transport {
 	var requiresPeriodicHeartbeat: Bool { get }
 	var supportsManualConnection: Bool { get }
 	
-	func manuallyConnect(withConnectionString: String) async throws
+	func device(forManualConnection: String) -> Device?
+	func manuallyConnect(toDevice: Device) async throws
 }
 
 // Used to make stable-ish ID's for accessories that don't have a UUID
 extension String {
-	func toUUIDFormatHash() -> UUID? {
+	func toUUIDFormatHash() -> UUID {
 		// Convert string to data
-		guard let data = self.data(using: .utf8) else { return nil }
+		let data = self.data(using: .utf8) ?? Data()
 
 		// Create buffer for SHA-256 hash (32 bytes)
 		var digest = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))

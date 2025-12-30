@@ -25,6 +25,7 @@ class MqttClientProxyManager {
 	var mqttClientProxy: CocoaMQTT?
 	var topic = "msh"
 	var debugLog = false
+	var shouldSubscribe = true
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		let originalAddress = node.mqttConfig?.address ?? "mqtt.meshtastic.org"
 		let defaultServerAddress = "mqtt.meshtastic.org"
@@ -43,6 +44,20 @@ class MqttClientProxyManager {
 		let port = defaultServerPort
 		let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 		let prefix = root!
+        // Safely iterate channels and determine if any has downlink enabled
+        var hasAnyDownlinkEnabled = false
+        if let anyChannels = node.myInfo?.channels as? NSOrderedSet {
+            let channelEntities: [ChannelEntity] = anyChannels.array.compactMap { $0 as? ChannelEntity }
+            for channel in channelEntities {
+                if channel.downlinkEnabled == true {
+                    hasAnyDownlinkEnabled = true
+                    break
+                }
+            }
+        }
+		
+		shouldSubscribe = hasAnyDownlinkEnabled
+		
 		topic = prefix + "/2/e" + "/#"
 		// Require opt in to map report terms to connect
 		if node.mqttConfig?.mapReportingEnabled ?? false && UserDefaults.mapReportingOptIn || !(node.mqttConfig?.mapReportingEnabled ?? false) {
@@ -169,3 +184,4 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		Logger.mqtt.debug("📲 [MQTT Client Proxy] pong")
 	}
 }
+

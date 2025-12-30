@@ -31,7 +31,7 @@ enum ConnectionEvent {
 	case disconnected(shouldReconnect: Bool)
 }
 
-enum ConnectionState: Equatable {
+enum ConnectionState: Equatable, Codable {
 	case disconnected
 	case connecting
 	case connected
