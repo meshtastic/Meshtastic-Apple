@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "solar_node.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
