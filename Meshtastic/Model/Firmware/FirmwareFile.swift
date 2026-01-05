@@ -174,7 +174,11 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			coreName = String(coreName.dropLast(".uf2".count))
 			self.firmwareType = .uf2
 		} else if fileName.hasSuffix(".bin") {
-			coreName = String(coreName.dropLast(".bin".count))
+			if fileName.hasSuffix("-update.bin") {
+				coreName = String(coreName.dropLast("-update.bin".count))
+			} else if fileName.hasSuffix(".bin") {
+				coreName = String(coreName.dropLast("-.bin".count))
+			}
 			self.firmwareType = .bin
 		} else {
 			// File does not match supported extensions

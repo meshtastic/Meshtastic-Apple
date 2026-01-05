@@ -41,8 +41,12 @@ class FirmwareViewModel: ObservableObject {
 	init(forHardware: DeviceHardwareEntity) {
 		self.hardware = forHardware
 		Task {
-			try? await MeshtasticAPI.shared.refreshFirmwareAPIData()
-			refresh()
+			do {
+				try await MeshtasticAPI.shared.refreshFirmwareAPIData()
+				refresh()
+			} catch {
+				Logger.services.error("Error refreshing firmware data: \(error)")
+			}
 		}
 	}
 	

@@ -59,7 +59,7 @@ private struct FirmwareRelease: Codable {
 	let id, title: String
 	let pageURL: String
 	let zipURL: String
-	let releaseNotes: String
+	let releaseNotes: String?
 
 	enum CodingKeys: String, CodingKey {
 		case id, title

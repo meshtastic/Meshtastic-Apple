@@ -47,7 +47,8 @@ class BLETransport: Transport {
 	}
 
 	nonisolated func discoverDevices() -> AsyncStream<DiscoveryEvent> {
-		AsyncStream { cont in
+		discoveredPeripherals.removeAll()
+		return AsyncStream { cont in
 			Task {
 				self.discoveredDeviceContinuation = cont
 				

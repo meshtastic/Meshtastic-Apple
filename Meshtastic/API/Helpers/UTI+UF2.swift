@@ -11,9 +11,10 @@ import SwiftUI
 extension UTType {
 	// Define a custom type for your firmware
 	// Identifier: Use your bundle ID prefix (e.g., com.yourcompany.firmware)
-	static let UF2Firmware = UTType(exportedAs: "com.meshtastic.uf2-firmware")
+	static let UF2Firmware = UTType("com.meshtastic.uf2-firmware")!
+	static let ZIPFirmware = UTType(importedAs: "com.pkware.zip-firmware")
+	static let BINFirmware = UTType(importedAs: "com.meshtastic.bin-firmware")
 }
-
 
 struct FirmwareDocument: FileDocument {
 	// 1. Tell the system this document supports your custom UTType

@@ -9,6 +9,7 @@ import SwiftUI
 import StoreKit
 import OSLog
 import SwiftDraw
+import UniformTypeIdentifiers
 
 // 1. THE WRAPPER
 // This handles the fetching safely. It does not run logic in init.
@@ -60,6 +61,11 @@ private struct FirmwareContentView: View {
 	// We can safely init the StateObject here because 'hardware' is passed in
 	@StateObject var firmwareList: FirmwareViewModel
 	@State private var firmwareSelection = FirmwareTab.stable
+	
+	// For Catalyst file picker
+	@State var showFirmwareFilePicker = false
+	@State var showInstallationSheet: FirmwareFile.FirmwareType?
+	@State var locallyChosenFirmwareFile: URL? = nil
 	
 	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
 		self.node = node
@@ -171,8 +177,86 @@ private struct FirmwareContentView: View {
 			}
 		}
 	}
+	
+	var allowedTypes: [UTType] {
+		switch hardware.architecture.flatMap( {Architecture(rawValue: $0) }) {
+		case .esp32, .esp32C3, .esp32S3, .esp32C6:
+			return [.BINFirmware]
+		case .nrf52840:
+			return [.ZIPFirmware, .UF2Firmware]
+		case .rp2040:
+			return [.UF2Firmware]
+		default:
+			return []
+		}
+	}
 
 	var releasesHeader: some View {
+		#if targetEnvironment(macCatalyst)
+		HStack {
+			Text("Firmware Releases")
+			Spacer()
+			Button("Open Local File...") {
+				self.showFirmwareFilePicker = true
+			}.buttonStyle(.bordered)
+			.controlSize(.small)
+			.fileImporter(
+				isPresented: $showFirmwareFilePicker,
+				allowedContentTypes: self.allowedTypes,
+				allowsMultipleSelection: false
+			) { result in
+				do {
+					guard let selectedFile: URL = try result.get().first else { return }
+					self.locallyChosenFirmwareFile = selectedFile
+
+					switch hardware.architecture.flatMap( {Architecture(rawValue: $0) }) {
+					case .esp32, .esp32C3, .esp32S3, .esp32C6:
+						if selectedFile.pathExtension.lowercased() == "bin" {
+							self.showInstallationSheet = .bin
+						}
+					case .nrf52840:
+						switch selectedFile.pathExtension.lowercased() {
+						case "uf2":
+							self.showInstallationSheet = .uf2
+						case "zip":
+							self.showInstallationSheet = .bin
+						default:
+							break
+						}
+					case .rp2040:
+						if selectedFile.pathExtension.lowercased() == "uf2" {
+							self.showInstallationSheet = .uf2
+						}
+					default:
+						break
+					}
+				} catch {
+					Logger.services.error("Failed to load firmware file: \(error.localizedDescription)")
+				}
+			}.sheet(item: $showInstallationSheet) { type in
+				if let locallyChosenFirmwareFile = self.locallyChosenFirmwareFile {
+					switch type {
+					case .otaZip:
+						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
+					case .uf2:
+						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
+					case .bin:
+						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
+					}
+				}
+			}
+			if meshtasticAPI.isLoadingFirmwareList {
+				ProgressView()
+			} else {
+				Button("Check For Updates") {
+					Task.detached {
+						try? await meshtasticAPI.refreshFirmwareAPIData()
+					}
+				}.buttonStyle(.bordered)
+				.controlSize(.small)
+			}
+		}
+		#else
 		HStack {
 			Text("Firmware Releases")
 			Spacer()
@@ -186,6 +270,7 @@ private struct FirmwareContentView: View {
 				}
 			}
 		}
+		#endif
 	}
 }
 

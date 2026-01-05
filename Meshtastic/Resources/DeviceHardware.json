@@ -349,6 +349,23 @@
     "partitionScheme": "16MB"
   },
   {
+    "hwModel": 33,
+    "hwModelSlug": "T_ECHO_PLUS",
+    "platformioTarget": "t-echo-plus",
+    "architecture": "nrf52840",
+    "supportLevel": 1,
+    "activelySupported": false,
+    "displayName": "LILYGO T-Echo Plus",
+    "tags": [
+      "LilyGo"
+    ],
+    "images": [
+      "t-echo_plus.svg"
+    ],
+    "requiresDfu": true,
+    "hasInkHud": true
+  },
+  {
     "hwModel": 39,
     "hwModelSlug": "DIY_V1",
     "platformioTarget": "meshtastic-diy-v1",
@@ -1250,6 +1267,22 @@
     "partitionScheme": "8MB",
     "images": [
       "rak-wismesh-tap-v2.svg"
+    ]
+  },
+  {
+    "hwModel": 117,
+    "hwModelSlug": "RAK3401",
+    "platformioTarget": "rak3401-1watt",
+    "architecture": "nrf52840",
+    "activelySupported": true,
+    "supportLevel": 1,
+    "displayName": "RAK3401 1W",
+    "tags": [
+      "RAK"
+    ],
+    "requiresDfu": true,
+    "images": [
+      "rak3401.svg"
     ]
   },
   {

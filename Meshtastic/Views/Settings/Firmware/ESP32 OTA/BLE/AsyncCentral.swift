@@ -25,7 +25,8 @@ final class AsyncCentral: NSObject {
 	private var notifyContinuation: CheckedContinuation<Void, Error>?
 	private var writeContinuation: CheckedContinuation<Void, Error>?
 	private var notificationStreams: [CBUUID: AsyncStream<Data>.Continuation] = [:]
-
+	private var desiredUUID: UUID?
+	
 	override init() {
 		super.init()
 		central = CBCentralManager(delegate: self, queue: nil)
@@ -67,9 +68,17 @@ extension AsyncCentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-		if let error = error { serviceContinuation?.resume(throwing: error) }
-		else { serviceContinuation?.resume(returning: peripheral.services ?? []) }
-		serviceContinuation = nil
+		if let error = error {
+			serviceContinuation?.resume(throwing: error)
+		} else if let desiredUUID {
+			if peripheral.identifier == desiredUUID {
+				serviceContinuation?.resume(returning: peripheral.services ?? [])
+				serviceContinuation = nil
+			}
+		} else {
+			serviceContinuation?.resume(returning: peripheral.services ?? [])
+			serviceContinuation = nil
+		}
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
@@ -100,8 +109,9 @@ extension AsyncCentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 }
 
 extension AsyncCentral {
-	func scan(for service: CBUUID, timeout: TimeInterval = 10) async throws -> CBPeripheral {
-		try await withThrowingTaskGroup(of: CBPeripheral.self) { group in
+	func scan(for service: CBUUID, desiredUUID: UUID? = nil, timeout: TimeInterval = 10) async throws -> CBPeripheral {
+		self.desiredUUID = desiredUUID
+		return try await withThrowingTaskGroup(of: CBPeripheral.self) { group in
 			group.addTask {
 				try await withCheckedThrowingContinuation { cont in
 					self.scanContinuation = cont
@@ -112,6 +122,7 @@ extension AsyncCentral {
 				try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
 				throw BLEError.scanTimeout
 			}
+			self.central.stopScan()
 			let result = try await group.next()! // first to finish
 			group.cancelAll()
 			return result
@@ -123,6 +134,10 @@ extension AsyncCentral {
 			self.connectContinuation = cont
 			central.connect(peripheral, options: nil)
 		}
+	}
+	
+	func disconnect(_ peripheral: CBPeripheral) {
+		central.cancelPeripheralConnection(peripheral)
 	}
 
 	func discoverServices(_ uuids: [CBUUID], on peripheral: CBPeripheral) async throws -> [CBService] {

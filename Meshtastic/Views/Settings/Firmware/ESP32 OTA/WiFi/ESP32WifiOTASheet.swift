@@ -15,10 +15,15 @@ struct ESP32WifiOTASheet: View {
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.managedObjectContext) var context
 	@StateObject var ota = ESP32WifiOTAViewModel()
-
+	
 	// The stuff were updating, and the place we're updating it to
 	let binFileURL: URL
 	@State var host: String?
+	
+	init(binFileURL: URL, host: String? = nil) {
+		self.binFileURL = binFileURL
+		self._host = State(initialValue: host)
+	}
 	
 	var body: some View {
 		NavigationStack {
@@ -57,13 +62,20 @@ struct ESP32WifiOTASheet: View {
 							
 						case .error:
 							Text("Error: \(ota.errorMessage, default: "Unknown")")
+								.frame(maxWidth: .infinity)
+								.multilineTextAlignment(.center)
+								.font(.headline)
 							
 						default:
 							Text("\(ota.statusMessage, default: "")")
+								.frame(maxWidth: .infinity)
+								.multilineTextAlignment(.center)
+								.font(.headline)
 						}
 					}.listRowBackground(Color.clear)
 				}.listRowSeparator(.hidden)
-			}.navigationTitle("ESP32 WiFi Updater")
+			}.listSectionSpacing(.compact)
+			.navigationTitle("ESP32 WiFi Updater")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) { // Standard placement for "Done" or "Close"

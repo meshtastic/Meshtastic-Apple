@@ -23,6 +23,7 @@ struct ESP32OTAIntroSheet: View {
 	
 	
 	@State var showWifiUpdater = false
+	@State var debugHost: String = ""
 	@State var showBLEUpdater = false
 	
 	var body: some View {
@@ -122,9 +123,28 @@ struct ESP32OTAIntroSheet: View {
 				default:
 					EmptyView()
 				}
+				#if DEBUG
+				Section("Debug BLE") {
+					Button("Manually Start BLE OTA") {
+						self.showBLEUpdater = true
+					}
+				}
+				Section("Debug Wifi") {
+					TextField("Device IP", text: $debugHost)
+					Button("Manually Start WIFI OTA") {
+						self.showWifiUpdater = true
+					}
+				}
+				#endif
 				
 			}.sheet(isPresented: $showWifiUpdater) {
-				ESP32WifiOTASheet(binFileURL: binFileURL)
+				var theHost: String? = nil
+				#if DEBUG
+				if !debugHost.isEmpty {
+					theHost = debugHost
+				}
+				#endif
+				return ESP32WifiOTASheet(binFileURL: binFileURL, host: theHost)
 					.environmentObject(accessoryManager)
 			}.sheet(isPresented: $showBLEUpdater) {
 				ESP32BLEOTASheet(binFileURL: binFileURL)
@@ -154,6 +174,8 @@ struct ESP32OTAIntroSheet: View {
 				return .wifi
 			} else if connection is BLEConnection {
 				return .ble
+			} else if connection is SerialConnection {
+				return .wifi //DEBUG
 			}
 			
 		}

@@ -38,8 +38,12 @@ struct ESP32BLEOTASheet: View {
 					}
 					VStack(alignment: .leading) {
 						Text("BLE Device").font(.caption).foregroundColor(.secondary)
-						Text("\(peripheral?.name, default: "Unknown")").font(.caption)
-						Text("\(peripheral?.identifier, default: "Unknown")").font(.caption)
+						if let peripheral {
+							Text("\(peripheral.name, default: "Unknown")").font(.caption)
+							Text("\(peripheral.identifier, default: "Unknown")").font(.caption)
+						} else {
+							Text("No device connected. Will use first discovered device.").font(.caption)
+						}
 					}
 				} footer: {
 					Text("Please be sure this is correct before proceeding.")
@@ -64,7 +68,8 @@ struct ESP32BLEOTASheet: View {
 						}
 					}.listRowBackground(Color.clear)
 				}.listRowSeparator(.hidden)
-			}.navigationTitle("ESP32 BLE Updater")
+			}.listSectionSpacing(.compact)
+			.navigationTitle("ESP32 BLE Updater")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
@@ -88,22 +93,31 @@ struct ESP32BLEOTASheet: View {
 			if let connectedNode, let user = connectedNode.user {
 				Task {
 					do {
-						if let peripheral {
-							let data = try Data(contentsOf: binFileURL)
-							let sha256Digest = Data(SHA256.hash(data: data))
-							
-							// Send the reboot command to the node via existing mesh protocol
-							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
-							
-							// Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
-							try await accessoryManager.disconnect()
+						let data = try Data(contentsOf: binFileURL)
+						let sha256Digest = Data(SHA256.hash(data: data))
+						
+						// Send the reboot command to the node via existing mesh protocol
+						try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
+						
+						// Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
+						try await accessoryManager.disconnect()
 
-							// Wait briefly for device to reboot
-							try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
-							
-							// Start the OTA process
-							ota.startOTA(binURL: binFileURL)
-						}
+						// disable discovery
+						accessoryManager.suspendDiscovery = true
+						accessoryManager.stopDiscovery()
+						
+						// Wait briefly for device to reboot
+						try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+						
+						// Set auto-reconnect
+						accessoryManager.shouldAutomaticallyConnectToPreferredPeripheral = true
+						
+						// Start the OTA process
+						await ota.startOTA(binURL: binFileURL, desiredPeripheral: peripheral?.identifier)
+						
+						// restart discovery
+						accessoryManager.suspendDiscovery = false
+						accessoryManager.startDiscovery()
 					} catch {
 						Logger.mesh.error("Reboot Failed")
 					}
