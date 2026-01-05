@@ -355,13 +355,6 @@ struct Settings: View {
 						Image(systemName: "gearshape")
 					}
 				}
-				NavigationLink(value: SettingsNavigationState.tools) {
-					Label {
-						Text("Tools")
-					} icon: {
-						Image(systemName: "hammer")
-					}
-				}
 				NavigationLink(value: SettingsNavigationState.routes) {
 					Label {
 						Text("Routes")
@@ -528,8 +521,6 @@ struct Settings: View {
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
-				case .tools:
-					Tools()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
