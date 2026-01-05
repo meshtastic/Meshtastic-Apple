@@ -2114,12 +2114,6 @@
             "value" : "О Мештастику"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关于"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7610,12 +7604,6 @@
             "value" : "Очисти логове"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "清除Log记录"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8334,13 +8322,7 @@
             "state" : "translated",
             "value" : "Повежи се"
           }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "连接"
-          }
-        },
+        }
       }
     },
     "Connect to a Node" : {
@@ -10352,12 +10334,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Логови сензора откривања"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "检测传感器记录"
           }
         },
         "zh-Hant-TW" : {
@@ -14649,12 +14625,6 @@
             "value" : "Пронађи контакт"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "搜索联系人"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14687,12 +14657,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пронађи чвор"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "搜索节点"
           }
         },
         "zh-Hant-TW" : {
@@ -14980,12 +14944,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Прво откривање"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "首次通信"
           }
         },
         "zh-Hant-TW" : {
@@ -15980,12 +15938,6 @@
             "value" : "Апсолутна подршка"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "官方支持"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16934,12 +16886,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сакриј упозорења"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "通知静音"
           }
         },
         "zh-Hant-TW" : {
@@ -20450,13 +20396,7 @@
             "state" : "translated",
             "value" : "Ручно"
           }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "更多"
-          }
-        },
+        }
       }
     },
     "Manual Configuration" : {
@@ -20983,7 +20923,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "地图"
+            "value" : "Mesh 地图"
           }
         },
         "zh-Hant-TW" : {
@@ -23844,12 +23784,6 @@
             "value" : "Број чвора"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用户编号"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26663,12 +26597,6 @@
             "value" : "Логови позиција"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置记录"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27031,12 +26959,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Логови метрике снаге"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "电源指标记录"
           }
         },
         "zh-Hant-TW" : {
@@ -30019,12 +29941,6 @@
             "value" : "Улога"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "节点类型"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30261,12 +30177,6 @@
             "value" : "Снимач руте"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路线记录"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30441,12 +30351,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Руте"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路线"
           }
         },
         "zh-Hant-TW" : {
@@ -31663,12 +31567,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Изабери тип разговора"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请选择对话类型"
           }
         },
         "zh-Hant-TW" : {
@@ -38110,12 +38008,6 @@
             "value" : "Лог праћења руте комуникације"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "追踪路由（Trace Route）记录"
-          }
-        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39926,12 +39818,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Време рада"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "上线时长"
           }
         },
         "zh-Hant-TW" : {
