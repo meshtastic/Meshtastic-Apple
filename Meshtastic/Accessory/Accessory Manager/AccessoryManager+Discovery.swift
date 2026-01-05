@@ -33,7 +33,7 @@ extension AccessoryManager {
 			Logger.transport.debug("🔎 [Discovery] Existing discovery task is active.")
 			return
 		}
-		if suspendDiscovery { return }
+		if otaInProgress { return }
 		updateState(.discovering)
 
 		discoveryTask = Task { @MainActor in

@@ -19,6 +19,7 @@ struct ESP32WifiOTASheet: View {
 	// The stuff were updating, and the place we're updating it to
 	let binFileURL: URL
 	@State var host: String?
+	@State var alreadyRebooted: Bool = false
 	
 	init(binFileURL: URL, host: String? = nil) {
 		self.binFileURL = binFileURL
@@ -66,6 +67,10 @@ struct ESP32WifiOTASheet: View {
 								.multilineTextAlignment(.center)
 								.font(.headline)
 							
+							Button("Retry") {
+								ota.retry()
+							}
+							
 						default:
 							Text("\(ota.statusMessage, default: "")")
 								.frame(maxWidth: .infinity)
@@ -93,6 +98,31 @@ struct ESP32WifiOTASheet: View {
 	}
 	
 	@ViewBuilder
+	func retryButton() -> some View {
+		VStack(spacing: 12) {
+			Text("Error: \(ota.statusMessage)")
+				.multilineTextAlignment(.center)
+				.foregroundStyle(.red)
+				.font(.headline)
+			
+			Button {
+				var transaction = Transaction(animation: .none)
+				transaction.disablesAnimations = true
+				
+				withTransaction(transaction) {
+					ota.retry()
+				}
+			} label: {
+				Label("Retry", systemImage: "arrow.clockwise")
+					.frame(maxWidth: .infinity)
+			}
+			.buttonStyle(.borderedProminent)
+			.tint(.red)
+			.controlSize(.large)
+		}
+	}
+	
+	@ViewBuilder
 	func beginWifiProcessButton() -> some View {
 		Button {
 			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
@@ -100,14 +130,18 @@ struct ESP32WifiOTASheet: View {
 				Task {
 					do {
 						if let host {
-							let data = try Data(contentsOf: binFileURL)
-							let digest = SHA256.hash(data: data)
-							let sha256Digest = Data(digest)
-							Logger.services.debug("Requesting reboot for OTA with hash: \(digest)")
 							let device = accessoryManager.activeConnection?.device
-							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaWifi, otaHash: sha256Digest)
-							try await Task.sleep(for: .seconds(0.5))
-							try await accessoryManager.disconnect()
+							if !alreadyRebooted {
+								let data = try Data(contentsOf: binFileURL)
+								let digest = SHA256.hash(data: data)
+								let sha256Digest = Data(digest)
+								Logger.services.debug("Requesting reboot for OTA with hash: \(digest)")
+
+								try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaWifi, otaHash: sha256Digest)
+								try await Task.sleep(for: .seconds(0.5))
+								try await accessoryManager.disconnect()
+								alreadyRebooted = true
+							}
 							await ota.startUpdate(host: host, firmwareUrl: self.binFileURL)
 							if let device {
 								try await Task.sleep(for: .seconds(3))
