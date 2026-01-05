@@ -194,7 +194,7 @@ struct MeshtasticAppleApp: App {
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
 			
-			accessoryManager.isInBackground = (newScenePhase != .active)
+			accessoryManager.isInBackground = (newScenePhase == .background)
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
