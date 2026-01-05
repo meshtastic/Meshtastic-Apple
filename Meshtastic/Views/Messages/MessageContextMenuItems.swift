@@ -10,6 +10,7 @@ struct MessageContextMenuItems: View {
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
 	@Binding var isShowingDeleteConfirmation: Bool
+	@Binding var isShowingTapbackInput: Bool
 	let onReply: () -> Void
 	@State var relayDisplay: String? = nil
 
@@ -29,30 +30,8 @@ struct MessageContextMenuItems: View {
 			}
 		}
 
-		Menu("Tapback") {
-			ForEach(Tapbacks.allCases) { tb in
-				Button {
-					Task {
-						do {
-							try await accessoryManager.sendMessage(
-								message: tb.emojiString,
-								toUserNum: tapBackDestination.userNum,
-								channel: tapBackDestination.channelNum,
-								isEmoji: true,
-								replyID: message.messageId
-							)
-							Task { @MainActor in
-								self.context.refresh(tapBackDestination.managedObject, mergeChanges: true)
-							}
-						} catch {
-							Logger.services.warning("Failed to send tapback.")
-						}
-					}
-				} label: {
-					Text(tb.description)
-					Image(uiImage: tb.emojiString.image()!)
-				}
-			}
+		Button("Tapback") {
+			isShowingTapbackInput = true
 		}
 
 		Button(action: onReply) {

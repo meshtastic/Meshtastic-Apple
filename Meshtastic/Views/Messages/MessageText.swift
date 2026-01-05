@@ -27,13 +27,14 @@ struct MessageText: View {
 	// State for handling channel URL sheet
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
+	@State private var isShowingTapbackInput = false
+	@State private var tapbackText = ""
 	
 	var body: some View {
 		
 		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
-			
 			let markdownText = LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
-			return Text(markdownText)
+			Text(markdownText)
 				.tint(Self.linkBlue)
 				.padding(.vertical, 10)
 				.padding(.horizontal, 8)
@@ -91,6 +92,7 @@ struct MessageText: View {
 						tapBackDestination: tapBackDestination,
 						isCurrentUser: isCurrentUser,
 						isShowingDeleteConfirmation: $isShowingDeleteConfirmation,
+						isShowingTapbackInput: $isShowingTapbackInput,
 						onReply: onReply
 					)
 				}
@@ -131,6 +133,36 @@ struct MessageText: View {
 					)
 					.presentationDetents([.large])
 					.presentationDragIndicator(.visible)
+				}
+				.sheet(isPresented: $isShowingTapbackInput) {
+					TapbackInputView(
+						text: $tapbackText,
+						isPresented: $isShowingTapbackInput,
+						onEmojiSelected: { emoji in
+							Task {
+								do {
+									try await accessoryManager.sendMessage(
+										message: emoji,
+										toUserNum: tapBackDestination.userNum,
+										channel: tapBackDestination.channelNum,
+										isEmoji: true,
+										replyID: message.messageId
+									)
+									Task { @MainActor in
+										switch tapBackDestination {
+										case let .channel(channel):
+											context.refresh(channel, mergeChanges: true)
+										case let .user(user):
+											context.refresh(user, mergeChanges: true)
+										}
+									}
+								} catch {
+									Logger.services.warning("Failed to send tapback.")
+								}
+							}
+							isShowingTapbackInput = false
+						}
+					)
 				}
 				.confirmationDialog(
 					"Are you sure you want to delete this message?",
