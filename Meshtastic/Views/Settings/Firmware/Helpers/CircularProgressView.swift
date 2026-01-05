@@ -40,12 +40,17 @@ struct CircularProgressView: View {
 				)
 				// Logic: If indeterminate, spin. If not, fixed at -90 (12 o'clock)
 				.rotationEffect(.degrees(isIndeterminate ? rotation : -90))
-				// Only animate the progress filling up, not the mode switch
-				.animation(isIndeterminate ? nil : .spring(response: 0.6), value: progress)
+			
+				// MARK: - Animation Fix
+				// If indeterminate OR if progress is 0 (reset), we disable the animation (nil).
+				// Otherwise, we use the spring animation.
+				.animation(
+					(isIndeterminate || progress == 0) ? nil : .spring(response: 0.6),
+					value: progress
+				)
 				
 				// This tells SwiftUI: "If isIndeterminate changes, this is a NEW view."
-				// This forces the old spinning view to be destroyed (killing the animation)
-				// and a new static view to be created.
+				// This forces the old spinning view to be destroyed and a new static view to be created.
 				.id(isIndeterminate)
 			
 			// 3. Content
@@ -84,7 +89,7 @@ struct CircularProgressView: View {
 		}
 	}
 	
-	// Extracted views remain the same...
+	// Extracted views...
 	private var completedView: some View {
 		ZStack {
 			Circle()
@@ -105,7 +110,9 @@ struct CircularProgressView: View {
 					.font(.system(size: percentageFontSize, weight: .bold))
 					.foregroundColor(.primary)
 					.contentTransition(.numericText())
-					.animation(.default, value: progress)
+					// MARK: - Text Animation Fix
+					// Prevent the numbers from "rolling down" when resetting to 0
+					.animation(progress == 0 ? nil : .default, value: progress)
 			} else {
 				Image(systemName: "clock")
 					.font(.system(size: percentageFontSize * 0.8))
@@ -113,8 +120,6 @@ struct CircularProgressView: View {
 			}
 			
 			if showSubtitle {
-				// Modified to prefer the passed-in text unless it's empty,
-				// falling back to "Please wait" only if needed.
 				Text(isIndeterminate && subtitleText == "Loading..." ? "Please wait" : subtitleText)
 					.font(.callout)
 					.foregroundColor(.secondary)

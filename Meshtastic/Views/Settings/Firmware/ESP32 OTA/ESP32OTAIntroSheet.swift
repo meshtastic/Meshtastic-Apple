@@ -159,7 +159,7 @@ struct ESP32OTAIntroSheet: View {
 						}
 					}
 				}
-		}
+		}.textCase(nil)
 	}
 	
 	private enum SupportedOTAMode {

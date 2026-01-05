@@ -16,7 +16,7 @@ struct ESP32BLEOTASheet: View {
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.managedObjectContext) var context
 	@StateObject var ota = ESP32BLEOTAViewModel()
-
+	@State var rebootNeeded = true
 	// The stuff were updating, and the place we're updating it to
 	let binFileURL: URL
 	@State var peripheral: CBPeripheral?
@@ -60,6 +60,8 @@ struct ESP32BLEOTASheet: View {
 					VStack {
 						if ota.otaStatus == .idle {
 							beginBLEProcessButton()
+						} else if ota.otaStatus == .error {
+							retryButton()
 						} else {
 							Text("\(ota.statusMessage)")
 								.frame(maxWidth: .infinity)
@@ -83,7 +85,34 @@ struct ESP32BLEOTASheet: View {
 				self.peripheral = await connection.peripheral
 			}
 		}.interactiveDismissDisabled(true)
+			.textCase(nil)
 
+	}
+	
+	@ViewBuilder
+	func retryButton() -> some View {
+		VStack(spacing: 12) {
+			Text("Error: \(ota.statusMessage)")
+				.multilineTextAlignment(.center)
+				.foregroundStyle(.red)
+				.font(.headline)
+			
+			Button {
+				var transaction = Transaction(animation: .none)
+				transaction.disablesAnimations = true
+				
+				withTransaction(transaction) {
+					rebootNeeded = false
+					ota.retry()
+				}
+			} label: {
+				Label("Retry", systemImage: "arrow.clockwise")
+					.frame(maxWidth: .infinity)
+			}
+			.buttonStyle(.borderedProminent)
+			.tint(.red)
+			.controlSize(.large)
+		}
 	}
 	
 	@ViewBuilder
@@ -93,21 +122,23 @@ struct ESP32BLEOTASheet: View {
 			if let connectedNode, let user = connectedNode.user {
 				Task {
 					do {
-						let data = try Data(contentsOf: binFileURL)
-						let sha256Digest = Data(SHA256.hash(data: data))
-						
-						// Send the reboot command to the node via existing mesh protocol
-						try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
-						
-						// Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
-						try await accessoryManager.disconnect()
-
-						// disable discovery
-						accessoryManager.suspendDiscovery = true
-						accessoryManager.stopDiscovery()
-						
-						// Wait briefly for device to reboot
-						try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+						if rebootNeeded {
+							let data = try Data(contentsOf: binFileURL)
+							let sha256Digest = Data(SHA256.hash(data: data))
+							
+							// Send the reboot command to the node via existing mesh protocol
+							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
+							
+							// Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
+							try await accessoryManager.disconnect()
+							
+							// disable discovery
+							accessoryManager.otaInProgress = true
+							accessoryManager.stopDiscovery()
+							
+							// Wait briefly for device to reboot
+							try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+						}
 						
 						// Set auto-reconnect
 						accessoryManager.shouldAutomaticallyConnectToPreferredPeripheral = true
@@ -116,7 +147,7 @@ struct ESP32BLEOTASheet: View {
 						await ota.startOTA(binURL: binFileURL, desiredPeripheral: peripheral?.identifier)
 						
 						// restart discovery
-						accessoryManager.suspendDiscovery = false
+						accessoryManager.otaInProgress = false
 						accessoryManager.startDiscovery()
 					} catch {
 						Logger.mesh.error("Reboot Failed")

@@ -15,6 +15,20 @@ private let meshtasticOTAServiceId = CBUUID(string: "4FAFC201-1FB5-459E-8FCC-C5C
 private let statusCharacteristicId = CBUUID(string: "62EC0272-3EC5-11EB-B378-0242AC130003") // ESP32 Send (Notify) -> "OK", "ACK", "ERR..."
 private let otaCharacteristicId = CBUUID(string: "62EC0272-3EC5-11EB-B378-0242AC130005")    // ESP32 Receive (Write)
 
+enum BLEOTAFailure: Error, LocalizedError {
+	case timeout
+	case unexpectedResponse(String)
+	case disconnected
+	
+	var errorDescription: String? {
+		switch self {
+		case .timeout: return "The operation timed out."
+		case .unexpectedResponse(let s): return "Device sent unexpected response: \(s)"
+		case .disconnected: return "Device disconnected unexpectedly."
+		}
+	}
+}
+
 @MainActor
 final class ESP32BLEOTAViewModel: ObservableObject {
 	@Published var name = ""
@@ -23,6 +37,14 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 	@Published var statusMessage: String = ""
 	
 	private let ble = AsyncCentral()
+	
+	// MARK: - User Actions
+	
+	func retry() {
+		self.transferProgress = 0
+		self.statusMessage = ""
+		self.otaStatus = .idle
+	}
 	
 	func startOTA(binURL: URL, desiredPeripheral: UUID?) async {
 		// Prevent screen sleep during update
@@ -33,27 +55,44 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			self.statusMessage = "Connecting..."
 			self.otaStatus = .waitingForConnection
 			
+			// Scan has its own internal timeout logic in AsyncCentral
 			try await ble.waitUntilPoweredOn()
-			let peripheral = try await ble.scan(for: meshtasticOTAServiceId)
+			let peripheral = try await ble.scan(for: meshtasticOTAServiceId, timeout: 15.0)
+			
 			name = peripheral.name ?? "unknown"
-			try await ble.connect(peripheral)
+			
+			// Connect with timeout (10s)
+			try await withTimeout(seconds: 10) {
+				try await self.ble.connect(peripheral)
+			}
 			
 			otaStatus = .connected
 			self.statusMessage = "Discovering Services..."
 			
-			let services = try await ble.discoverServices([meshtasticOTAServiceId], on: peripheral)
+			// Discover Services with timeout (10s)
+			let services = try await withTimeout(seconds: 10) {
+				try await self.ble.discoverServices([meshtasticOTAServiceId], on: peripheral)
+			}
 			guard let service = services.first(where: { $0.uuid == meshtasticOTAServiceId }) else { throw BLEError.serviceMissing }
 			
-			let chars = try await ble.discoverCharacteristics([statusCharacteristicId, otaCharacteristicId],
-															  in: service,
-															  on: peripheral)
+			// Discover Characteristics with timeout (10s)
+			let chars = try await withTimeout(seconds: 10) {
+				try await self.ble.discoverCharacteristics([statusCharacteristicId, otaCharacteristicId],
+														   in: service,
+														   on: peripheral)
+			}
+			
 			guard
 				let statusChar = chars.first(where: { $0.uuid == statusCharacteristicId }),
 				let otaChar = chars.first(where: { $0.uuid == otaCharacteristicId })
 			else { throw BLEError.characteristicMissing }
 			
 			// --- 2. Setup Notification Stream ---
-			try await ble.setNotify(true, for: statusChar, on: peripheral)
+			// Timeout for setting notify (usually fast, but good to be safe)
+			try await withTimeout(seconds: 5) {
+				try await self.ble.setNotify(true, for: statusChar, on: peripheral)
+			}
+			
 			let stream = ble.notifications(for: statusChar)
 			var iterator = stream.makeAsyncIterator()
 			
@@ -77,10 +116,18 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			// Wait for "OK" response from ESP32, handling "ERASING" intermediate state
 			var handshakeComplete = false
 			
+			// Handshake loop
 			while !handshakeComplete {
-				guard let handshakeData = await iterator.next(),
-					  let handshakeStr = String(data: handshakeData, encoding: .utf8) else {
-					throw OTAError.unexpectedResponse("Connection lost during handshake")
+				// We allow a generous timeout (30s) here because "ERASING" flash can take time on the ESP32
+				// before it sends the next message.
+				guard let handshakeData = try await withTimeout(seconds: 30, operation: {
+					await iterator.next()
+				}) else {
+					throw BLEOTAFailure.disconnected
+				}
+				
+				guard let handshakeStr = String(data: handshakeData, encoding: .utf8) else {
+					throw BLEOTAFailure.unexpectedResponse("Encoding Error")
 				}
 				
 				let trimmed = handshakeStr.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -91,10 +138,10 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 					// Update UI to let user know the device is busy erasing partition
 					self.statusMessage = "Erasing partition..."
 					Logger.services.info("Device is erasing flash...")
-					// Continue loop to wait for OK
+					// We loop again, resetting the 30s timeout for the next message
 				} else {
 					// Any other response is an error
-					throw OTAError.unexpectedResponse(trimmed)
+					throw BLEOTAFailure.unexpectedResponse(trimmed)
 				}
 			}
 			
@@ -119,11 +166,16 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 				let nextOffset = offset + chunk.count
 				
 				// [FLOW CONTROL]
-				// Wait for ACK (or OK if last packet) before proceeding.
-				// This ensures the ESP32 has written the chunk to flash.
-				guard let respData = await iterator.next(),
-					  let respStr = String(data: respData, encoding: .utf8) else {
-					throw OTAError.unexpectedResponse("Connection lost waiting for ACK")
+				// Wait for ACK (or OK if last packet).
+				// We use a 5 second timeout per chunk. If the device stalls, we fail.
+				guard let respData = try await withTimeout(seconds: 5.0, operation: {
+					await iterator.next()
+				}) else {
+					throw BLEOTAFailure.disconnected
+				}
+				
+				guard let respStr = String(data: respData, encoding: .utf8) else {
+					throw BLEOTAFailure.unexpectedResponse("Encoding Error")
 				}
 				
 				let trimmed = respStr.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -149,27 +201,57 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 						break // Exit loop
 					} else {
 						// OK received before we finished sending? Error.
-						throw OTAError.unexpectedResponse("Premature OK received at offset \(nextOffset)")
+						throw BLEOTAFailure.unexpectedResponse("Premature OK received at offset \(nextOffset)")
 					}
 					
 				} else {
 					// Likely ERR or garbage
-					throw OTAError.unexpectedResponse(trimmed)
+					throw BLEOTAFailure.unexpectedResponse(trimmed)
 				}
 			}
 			
 			// Double check completion state
 			if self.otaStatus != .completed {
-				throw OTAError.unexpectedResponse("Stream ended without OK")
+				throw BLEOTAFailure.unexpectedResponse("Stream ended without OK")
 			}
 			ble.disconnect(peripheral)
 		} catch {
 			self.otaStatus = .error
-			self.statusMessage = "Error: \(error.localizedDescription)"
+			self.statusMessage = error.localizedDescription
 			Logger.services.error("OTA Failed: \(error.localizedDescription)")
 		}
 		
 		UIApplication.shared.isIdleTimerDisabled = false
 	}
+	
+	// MARK: - Helpers
+	
+	/// Executes an async operation with a strict timeout.
+	/// - Parameters:
+	///   - seconds: The timeout duration.
+	///   - operation: The async closure to execute.
+	/// - Returns: The result of the operation.
+	/// - Throws: `BLEOTAFailure.timeout` if time expires, or rethrows errors from the operation.
+	private func withTimeout<T>(seconds: TimeInterval, operation: @escaping @Sendable () async throws -> T) async throws -> T {
+		return try await withThrowingTaskGroup(of: T.self) { group in
+			// Task 1: The actual operation
+			group.addTask {
+				return try await operation()
+			}
+			
+			// Task 2: The timer
+			group.addTask {
+				try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+				throw BLEOTAFailure.timeout
+			}
+			
+			// Wait for the first one to complete
+			let result = try await group.next()!
+			
+			// Cancel the other task (e.g. if operation finishes, cancel timer)
+			group.cancelAll()
+			
+			return result
+		}
+	}
 }
-

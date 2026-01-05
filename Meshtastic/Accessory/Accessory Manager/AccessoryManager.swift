@@ -149,7 +149,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var connectionSteps: SequentialSteps?
 	
 	// Public due to file separation
-	var suspendDiscovery: Bool = false
+	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?

@@ -255,7 +255,7 @@ private struct FirmwareContentView: View {
 				}.buttonStyle(.bordered)
 				.controlSize(.small)
 			}
-		}
+		}.textCase(nil)
 		#else
 		HStack {
 			Text("Firmware Releases")
@@ -269,7 +269,7 @@ private struct FirmwareContentView: View {
 					}
 				}
 			}
-		}
+		}.textCase(nil)
 		#endif
 	}
 }
