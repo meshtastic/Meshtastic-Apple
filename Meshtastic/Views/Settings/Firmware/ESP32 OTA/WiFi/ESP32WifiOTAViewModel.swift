@@ -96,6 +96,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		
 		// 3. Send Command
 		try await connection.sendAsync(data: command.data(using: .utf8)!)
+		self.otaState = .preparing
 		
 		// 4. Handshake (Wait for "OK" or "ERASING")
 		var handshakeComplete = false
