@@ -62,14 +62,7 @@ struct ESP32WifiOTASheet: View {
 							beginWifiProcessButton()
 							
 						case .error:
-							Text("Error: \(ota.errorMessage, default: "Unknown")")
-								.frame(maxWidth: .infinity)
-								.multilineTextAlignment(.center)
-								.font(.headline)
-							
-							Button("Retry") {
-								ota.retry()
-							}
+							retryButton()
 							
 						default:
 							Text("\(ota.statusMessage, default: "")")
@@ -115,6 +108,7 @@ struct ESP32WifiOTASheet: View {
 			} label: {
 				Label("Retry", systemImage: "arrow.clockwise")
 					.frame(maxWidth: .infinity)
+					.foregroundStyle(.white)
 			}
 			.buttonStyle(.borderedProminent)
 			.tint(.red)

@@ -108,6 +108,7 @@ struct ESP32BLEOTASheet: View {
 			} label: {
 				Label("Retry", systemImage: "arrow.clockwise")
 					.frame(maxWidth: .infinity)
+					.foregroundStyle(.white) 
 			}
 			.buttonStyle(.borderedProminent)
 			.tint(.red)

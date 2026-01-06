@@ -63,6 +63,8 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			try await connectAndUpload(endpoint: targetEndpoint, data: firmwareData)
 			
 			// 3. Success
+			// Explicitly force progress to 1.0 to ensure Checkmark appears
+			progress = 1.0
 			statusMessage = "Success!"
 			otaState = .completed
 			Logger.services.info("[ESP OTA] Update Complete")
@@ -101,7 +103,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			let response: String
 			do {
 				// Timeout logic relies on the Reader unblocking immediately on cancel
-				response = try await withTimeout(seconds: 60.0) {
+				response = try await withTimeout(seconds: 30.0) {
 					try await reader.readLine()
 				}
 			} catch {
@@ -149,11 +151,17 @@ class ESP32WifiOTAViewModel: ObservableObject {
 					
 					offset += chunk.count
 					
+					// Update UI periodically to avoid flooding main thread
 					if offset % (self.chunkSize * 10) == 0 {
 						let percent = Double(offset) / Double(totalSize)
 						await self.updateUI { self.progress = percent }
 					}
 				}
+				
+				// MARK: - FIX: Force 100% on upload completion
+				// Because of the modulo operator above, the loop often ends at 99.xxx%.
+				// We force it to 1.0 here so the user sees "100%" while waiting for verification.
+				await self.updateUI { self.progress = 1.0 }
 				
 				isUploading.withLock { $0 = false }
 				Logger.services.info("[ESP OTA] Writer Task: All data sent.")
@@ -349,6 +357,18 @@ actor AsyncLineReader {
 		return try await withTaskCancellationHandler {
 			return try await withCheckedThrowingContinuation { continuation in
 				lock.withLock { $0 = continuation }
+				
+				// MARK: - FIX for Deadlock
+				// If `onCancel` ran before we set the lock (race condition), `Task.isCancelled`
+				// will be true here. We must abort immediately.
+				if Task.isCancelled {
+					lock.withLock { state in
+						guard let cont = state else { return }
+						state = nil
+						cont.resume(throwing: CancellationError())
+					}
+					return
+				}
 				
 				connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { data, _, _, error in
 					lock.withLock { state in
