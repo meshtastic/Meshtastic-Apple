@@ -138,16 +138,18 @@ struct ESP32OTAIntroSheet: View {
 				#endif
 				
 			}.sheet(isPresented: $showWifiUpdater) {
-				var theHost: String? = nil
-				#if DEBUG
-				if !debugHost.isEmpty {
-					theHost = debugHost
-				}
-				#endif
-				return ESP32WifiOTASheet(binFileURL: binFileURL, host: theHost)
+				let theHost: String? = {
+					#if DEBUG
+					if !debugHost.isEmpty {
+						return debugHost
+					}
+					#endif
+					return nil
+				}()
+				ESP32WifiOTASheet(binFileURL: binFileURL, host: theHost, onUpdateComplete: { dismiss() })
 					.environmentObject(accessoryManager)
 			}.sheet(isPresented: $showBLEUpdater) {
-				ESP32BLEOTASheet(binFileURL: binFileURL)
+				ESP32BLEOTASheet(binFileURL: binFileURL, onUpdateComplete: { dismiss() })
 					.environmentObject(accessoryManager)
 			}
 			.navigationTitle("ESP32 Update")
@@ -181,32 +183,5 @@ struct ESP32OTAIntroSheet: View {
 		}
 		return .none
 	}
-	//	func beginBLEProcessButton() -> some View {
-	//		Button {
-	//			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
-	//			if let connectedNode, let user = connectedNode.user {
-	//				Task {
-	//					do {
-	//						if let host {
-	//							let device = accessoryManager.activeConnection?.device
-	//							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, rebootOtaSeconds: 2)
-	//							try await accessoryManager.disconnect()
-	//							await ota.startUpdate(host: host, firmwareUrl: self.binFileURL)
-	//							if let device {
-	//								try await Task.sleep(for: .seconds(3))
-	//								try await accessoryManager.connect(to: device, retries: 5)
-	//							}
-	//						}
-	//					} catch {
-	//						Logger.mesh.error("Reboot Failed")
-	//					}
-	//				}
-	//			}
-	//		} label: {
-	//			Label("Reboot into BLE OTA Update Mode", systemImage: "square.and.arrow.down")
-	//				.frame(maxWidth: .infinity)
-	//		}.buttonStyle(.bordered)
-	//			.controlSize(.large)
-	//			.disabled(accessoryManager.activeDeviceNum == nil)
-	//	}
+
 }

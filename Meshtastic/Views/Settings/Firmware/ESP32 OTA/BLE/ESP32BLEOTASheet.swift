@@ -1,13 +1,12 @@
 //
-//  ESP3BLEOTASheet.swift
+//  ESP32BLEOTASheet.swift
 //  Meshtastic
 //
 //  Created by jake on 12/20/25.
 //
 
-import Foundation
 import SwiftUI
-import OSLog
+import os
 import CoreBluetooth
 import CryptoKit
 
@@ -16,21 +15,21 @@ struct ESP32BLEOTASheet: View {
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.managedObjectContext) var context
 	@StateObject var ota = ESP32BLEOTAViewModel()
-	@State var rebootNeeded = true
-	// The stuff were updating, and the place we're updating it to
+	
+	@State var rebootSuccessful = false
+	@State var inRetryWorkflow = false
+	
+	// The stuff we're updating, and the place we're updating it to
 	let binFileURL: URL
+
+	// To dismiss the intro sheet when complete.
+	var onUpdateComplete: (() -> Void)? = nil
+
 	@State var peripheral: CBPeripheral?
 	
 	var body: some View {
 		NavigationStack {
 			List {
-				Section {
-					VStack {
-						Text("Please do not leave this screen until this process is complete.")
-							.multilineTextAlignment(.center)
-					}.listRowBackground(Color.clear)
-				}
-				
 				Section {
 					VStack(alignment: .leading) {
 						Text("Firmware File").font(.caption).foregroundColor(.secondary)
@@ -39,12 +38,15 @@ struct ESP32BLEOTASheet: View {
 					VStack(alignment: .leading) {
 						Text("BLE Device").font(.caption).foregroundColor(.secondary)
 						if let peripheral {
-							Text("\(peripheral.name, default: "Unknown")").font(.caption)
-							Text("\(peripheral.identifier, default: "Unknown")").font(.caption)
+							Text("\(peripheral.name ?? "Unknown")").font(.caption)
+							Text("\(peripheral.identifier.uuidString)").font(.caption)
 						} else {
 							Text("No device connected. Will use first discovered device.").font(.caption)
 						}
 					}
+				} header: {
+					Text("Please do not leave this screen until this process is complete.")
+						.multilineTextAlignment(.center)
 				} footer: {
 					Text("Please be sure this is correct before proceeding.")
 				}
@@ -52,115 +54,162 @@ struct ESP32BLEOTASheet: View {
 				Section {
 					HStack(alignment: .center) {
 						Spacer()
-						// Progress is 0.0 to 1.0
-						CircularProgressView(progress: ota.transferProgress, isIndeterminate: (ota.otaStatus == .preparing), size: 225.0, subtitleText: ota.otaStatus.rawValue)
-							.frame(minHeight: 250.0)
+						
+						// MARK: - Progress View
+						CircularProgressView(
+							progress: ota.transferProgress,
+							isIndeterminate: (ota.otaStatus == .preparing),
+							isError: (ota.otaStatus == .error),
+							size: 225.0,
+							// If error, show nil (triangle only). Text is shown below.
+							subtitleText: (ota.otaStatus == .error) ? nil : ota.otaStatus.rawValue
+						)
+						.frame(minHeight: 250.0)
+						
 						Spacer()
-					}.listRowBackground(Color.clear)
-					VStack {
-						if ota.otaStatus == .idle {
-							beginBLEProcessButton()
-						} else if ota.otaStatus == .error {
-							retryButton()
-						} else {
-							Text("\(ota.statusMessage)")
+					}
+					.listRowBackground(Color.clear)
+					
+					VStack(spacing: 12) {
+						if ota.otaStatus != .idle {
+							Text(ota.statusMessage)
 								.frame(maxWidth: .infinity)
 								.multilineTextAlignment(.center)
 								.font(.headline)
+								.foregroundStyle(ota.otaStatus == .error ? .red : .primary)
 						}
-					}.listRowBackground(Color.clear)
-				}.listRowSeparator(.hidden)
-			}.listSectionSpacing(.compact)
+						
+						switch ota.otaStatus {
+						case .idle:
+							beginBLEProcessButton()
+							
+						case .error:
+							retryButton()
+							
+						default:
+							EmptyView()
+						}
+					}
+					.listRowBackground(Color.clear)
+				}
+				.listRowSeparator(.hidden)
+			}
+			.listSectionSpacing(.compact)
 			.navigationTitle("ESP32 BLE Updater")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
 					Button("Done") {
-						dismiss()
-					}.disabled(![.idle, .completed, .error].contains(ota.otaStatus))
+						if let onUpdateComplete, ota.otaStatus == .completed {
+							onUpdateComplete()
+						} else {
+							dismiss()
+						}
+					}
+					.disabled(![.idle, .completed, .error].contains(ota.otaStatus))
 				}
 			}
-		}.task {
+		}
+		.task {
+			// Attempt to grab peripheral from current BLE connection
 			if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
 				self.peripheral = await connection.peripheral
 			}
-		}.interactiveDismissDisabled(true)
-			.textCase(nil)
-
+		}
+		.interactiveDismissDisabled(true)
+		.textCase(nil)
 	}
+	
+	// MARK: - Component Views
 	
 	@ViewBuilder
 	func retryButton() -> some View {
-		VStack(spacing: 12) {
-			Text("Error: \(ota.statusMessage)")
-				.multilineTextAlignment(.center)
-				.foregroundStyle(.red)
-				.font(.headline)
+		Button {
+			self.inRetryWorkflow = true
+			var transaction = Transaction(animation: .none)
+			transaction.disablesAnimations = true
 			
-			Button {
-				var transaction = Transaction(animation: .none)
-				transaction.disablesAnimations = true
-				
-				withTransaction(transaction) {
-					rebootNeeded = false
-					ota.retry()
-				}
-			} label: {
-				Label("Retry", systemImage: "arrow.clockwise")
-					.frame(maxWidth: .infinity)
-					.foregroundStyle(.white) 
+			withTransaction(transaction) {
+				// Determine if we need to reboot again (usually no, unless connection was totally lost before reboot)
+				ota.retry()
 			}
-			.buttonStyle(.borderedProminent)
-			.tint(.red)
-			.controlSize(.large)
+		} label: {
+			Label("Retry", systemImage: "arrow.clockwise")
+				.frame(maxWidth: .infinity)
+				.foregroundStyle(.white)
 		}
+		.buttonStyle(.borderedProminent)
+		.tint(.red)
+		.controlSize(.large)
 	}
 	
 	@ViewBuilder
 	func beginBLEProcessButton() -> some View {
 		Button {
-			let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
-			if let connectedNode, let user = connectedNode.user {
-				Task {
-					do {
-						if rebootNeeded {
-							let data = try Data(contentsOf: binFileURL)
-							let sha256Digest = Data(SHA256.hash(data: data))
-							
-							// Send the reboot command to the node via existing mesh protocol
-							try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
-							
-							// Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
-							try await accessoryManager.disconnect()
-							
-							// disable discovery
-							accessoryManager.otaInProgress = true
-							accessoryManager.stopDiscovery()
-							
-							// Wait briefly for device to reboot
-							try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
-						}
-						
-						// Set auto-reconnect
-						accessoryManager.shouldAutomaticallyConnectToPreferredPeripheral = true
-						
-						// Start the OTA process
-						await ota.startOTA(binURL: binFileURL, desiredPeripheral: peripheral?.identifier)
-						
-						// restart discovery
-						accessoryManager.otaInProgress = false
-						accessoryManager.startDiscovery()
-					} catch {
-						Logger.mesh.error("Reboot Failed")
-					}
-				}
-			}
+			startBLEProcess()
 		} label: {
-			Label("Reboot & Start Update", systemImage: "square.and.arrow.down")
-				.frame(maxWidth: .infinity)
-			
-		}.buttonStyle(.bordered)
-			.controlSize(.large)
-			.disabled(accessoryManager.activeDeviceNum == nil)
+			if self.inRetryWorkflow {
+				Label("Retry Update", systemImage: "arrow.clockwise")
+					.frame(maxWidth: .infinity)
+			} else {
+				Label("Reboot & Start Update", systemImage: "square.and.arrow.down")
+					.frame(maxWidth: .infinity)
+			}
+		}
+		.buttonStyle(.bordered)
+		.controlSize(.large)
+		.disabled(accessoryManager.activeDeviceNum == nil)
+	}
+	
+	// MARK: - Logic
+	
+	private func startBLEProcess() {
+		// Safe unwrap of required data
+		guard let deviceNum = accessoryManager.activeDeviceNum,
+			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
+			  let user = connectedNode.user else {
+			return
+		}
+		
+		Task {
+			do {
+				if !rebootSuccessful {
+					// 1. Move file reading/hashing to a detached task to avoid blocking Main Thread
+					let sha256Digest = try await Task.detached(priority: .userInitiated) {
+						let data = try Data(contentsOf: binFileURL)
+						let digest = SHA256.hash(data: data)
+						return Data(digest)
+					}.value
+					
+					// 2. Send the reboot command via existing connection
+					try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
+					rebootSuccessful = true
+					
+					// 3. Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
+					try await accessoryManager.disconnect()
+					
+					// 4. Disable discovery to focus on the specific OTA device
+					accessoryManager.otaInProgress = true
+					accessoryManager.stopDiscovery()
+					
+					// 5. Wait briefly for device to reboot
+					try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+				}
+				
+				// 6. Set auto-reconnect preference
+				accessoryManager.shouldAutomaticallyConnectToPreferredPeripheral = true
+				
+				// 7. Start the OTA process
+				await ota.startOTA(binURL: binFileURL, desiredPeripheral: peripheral?.identifier)
+				
+				// 8. Cleanup / Restart discovery
+				accessoryManager.otaInProgress = false
+				accessoryManager.startDiscovery()
+				
+			} catch {
+				Logger.mesh.error("ESP32 BLE OTA Failed: \(error.localizedDescription)")
+				// Note: You might want to update `ota.otaStatus` to .error here if the View Model doesn't catch it
+			}
+		}
 	}
 }
