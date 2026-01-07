@@ -464,6 +464,10 @@ struct NodeDetail: View {
 									node: node,
 									connectedNode: connectedNode
 								)
+								ExchangeUserInfoButton(
+									node: node,
+									connectedNode: connectedNode
+								)
 								TraceRouteButton(
 									node: node
 								)
