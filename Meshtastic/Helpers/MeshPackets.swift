@@ -841,18 +841,34 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					if connectedNode == Int64(packet.from) {
 						let batteryLevel = telemetry.batteryLevel ?? 0
 						if UserDefaults.lowBatteryNotifications && batteryLevel > 0 && batteryLevel < 4 {
-							let manager = LocalNotificationManager()
-							manager.notifications = [
-								Notification(
-									id: ("notification.id.\(UUID().uuidString)"),
-									title: "Critically Low Battery!",
-									subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
-									content: "Time to charge your radio, there is \(telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator)% battery remaining.",
-									target: "nodes",
-									path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
-								)
-							]
-							manager.schedule()
+							let interval = TimeInterval(UserDefaults.lowBatteryNotificationInterval)
+							let now = Date()
+							let shouldNotify: Bool
+							if let lastNotification = fetchedNode[0].lastLowBatteryNotification {
+								shouldNotify = now.timeIntervalSince(lastNotification) >= interval
+							} else {
+								shouldNotify = true
+							}
+							if shouldNotify {
+								fetchedNode[0].lastLowBatteryNotification = now
+								do {
+									try context.save()
+								} catch {
+									Logger.data.error("💥 Error Saving Core Data NodeInfoEntity lastLowBatteryNotification: \(error, privacy: .public)")
+								}
+								let manager = LocalNotificationManager()
+								manager.notifications = [
+									Notification(
+										id: "lowBattery.\(fetchedNode[0].num)",
+										title: "Critically Low Battery!",
+										subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
+										content: "Time to charge your radio, there is \(telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator)% battery remaining.",
+										target: "nodes",
+										path: "meshtastic:///nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
+									)
+								]
+								manager.schedule()
+							}
 						}
 					}
 				} else if telemetry.metricsType == 4 {

@@ -104,6 +104,34 @@
 			<key>DefaultValue</key>
 			<true/>
 		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Low Battery Interval</string>
+			<key>Key</key>
+			<string>lowBatteryNotificationInterval</string>
+			<key>Values</key>
+			<array>
+				<integer>300</integer>
+				<integer>900</integer>
+				<integer>1800</integer>
+				<integer>3600</integer>
+				<integer>7200</integer>
+				<integer>14400</integer>
+			</array>
+			<key>Titles</key>
+			<array>
+				<string>5 Minutes</string>
+				<string>15 Minutes</string>
+				<string>30 Minutes</string>
+				<string>1 Hour</string>
+				<string>2 Hours</string>
+				<string>4 Hours</string>
+			</array>
+			<key>DefaultValue</key>
+			<integer>3600</integer>
+		</dict>
 	</array>
 </dict>
 </plist>

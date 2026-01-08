@@ -69,6 +69,7 @@ extension UserDefaults {
 		case enableSmartPosition
 		case newNodeNotifications
 		case lowBatteryNotifications
+		case lowBatteryNotificationInterval
 		case channelMessageNotifications
 		case modemPreset
 		case firmwareVersion
@@ -147,6 +148,9 @@ extension UserDefaults {
 
 	@UserDefault(.lowBatteryNotifications, defaultValue: true)
 	static var lowBatteryNotifications: Bool
+
+	@UserDefault(.lowBatteryNotificationInterval, defaultValue: 3600)
+	static var lowBatteryNotificationInterval: Int
 
 	@UserDefault(.modemPreset, defaultValue: 0)
 	static var modemPreset: Int
