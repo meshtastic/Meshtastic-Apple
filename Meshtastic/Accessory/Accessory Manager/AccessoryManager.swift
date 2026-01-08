@@ -135,7 +135,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var lastConnectionError: Error?
 	@Published var isConnected: Bool = false
 	@Published var isConnecting: Bool = false
-	@Published var isInBackground: Bool = false
 
 	var activeConnection: (device: Device, connection: any Connection)?
 
