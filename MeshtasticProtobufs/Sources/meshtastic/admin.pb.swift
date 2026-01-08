@@ -22,6 +22,55 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
+/// Firmware update mode for OTA updates
+public enum OTAMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  ///
+  /// Do not reboot into OTA mode
+  case noRebootOta // = 0
+
+  ///
+  /// Reboot into OTA mode for BLE firmware update
+  case otaBle // = 1
+
+  ///
+  /// Reboot into OTA mode for WiFi firmware update
+  case otaWifi // = 2
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .noRebootOta
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .noRebootOta
+    case 1: self = .otaBle
+    case 2: self = .otaWifi
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .noRebootOta: return 0
+    case .otaBle: return 1
+    case .otaWifi: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [OTAMode] = [
+    .noRebootOta,
+    .otaBle,
+    .otaWifi,
+  ]
+
+}
+
+///
 /// This message is handled by the Admin module and is responsible for all settings/channel read/write operations.
 /// This message is used to do settings operations to both remote AND local nodes.
 /// (Prior to 1.2 these operations were done via special ToRadio operations)
@@ -532,6 +581,9 @@ public struct AdminMessage: Sendable {
   ///
   /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
   /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
+  /// Deprecated in favor of reboot_ota_mode in 2.7.17
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var rebootOtaSeconds: Int32 {
     get {
       if case .rebootOtaSeconds(let v)? = payloadVariant {return v}
@@ -590,6 +642,16 @@ public struct AdminMessage: Sendable {
       return false
     }
     set {payloadVariant = .nodedbReset(newValue)}
+  }
+
+  ///
+  /// Tell the node to reset into the OTA Loader
+  public var otaRequest: AdminMessage.OTAEvent {
+    get {
+      if case .otaRequest(let v)? = payloadVariant {return v}
+      return AdminMessage.OTAEvent()
+    }
+    set {payloadVariant = .otaRequest(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -753,6 +815,9 @@ public struct AdminMessage: Sendable {
     ///
     /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
     /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
+    /// Deprecated in favor of reboot_ota_mode in 2.7.17
+    ///
+    /// NOTE: This field was marked as deprecated in the .proto file.
     case rebootOtaSeconds(Int32)
     ///
     /// This message is only supported for the simulator Portduino build.
@@ -771,6 +836,9 @@ public struct AdminMessage: Sendable {
     /// Tell the node to reset the nodedb.
     /// When true, favorites are preserved through reset.
     case nodedbReset(Bool)
+    ///
+    /// Tell the node to reset into the OTA Loader
+    case otaRequest(AdminMessage.OTAEvent)
 
   }
 
@@ -1059,6 +1127,28 @@ public struct AdminMessage: Sendable {
     public init() {}
   }
 
+  ///
+  /// User is requesting an over the air update.
+  /// Node will reboot into the OTA loader
+  public struct OTAEvent: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Tell the node to reboot into OTA mode for firmware update via BLE or WiFi (ESP32 only for now)
+    public var rebootOtaMode: OTAMode = .noRebootOta
+
+    ///
+    /// A 32 byte hash of the OTA firmware.
+    /// Used to verify the integrity of the firmware before applying an update.
+    public var otaHash: Data = Data()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -1239,9 +1329,13 @@ public struct KeyVerificationAdmin: Sendable {
 
 fileprivate let _protobuf_package = "meshtastic"
 
+extension OTAMode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NO_REBOOT_OTA\0\u{1}OTA_BLE\0\u{1}OTA_WIFI\0")
+}
+
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{4}\u{10}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{4}\u{10}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1772,6 +1866,19 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         }
       }()
       case 101: try { try decoder.decodeSingularBytesField(value: &self.sessionPasskey) }()
+      case 102: try {
+        var v: AdminMessage.OTAEvent?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .otaRequest(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .otaRequest(v)
+        }
+      }()
       default: break
       }
     }
@@ -1999,11 +2106,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .nodedbReset(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 100)
     }()
-    case nil: break
+    default: break
     }
     if !self.sessionPasskey.isEmpty {
       try visitor.visitSingularBytesField(value: self.sessionPasskey, fieldNumber: 101)
     }
+    try { if case .otaRequest(let v)? = self.payloadVariant {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 102)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2067,6 +2177,41 @@ extension AdminMessage.InputEvent: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.kbChar != rhs.kbChar {return false}
     if lhs.touchX != rhs.touchX {return false}
     if lhs.touchY != rhs.touchY {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = AdminMessage.protoMessageName + ".OTAEvent"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}reboot_ota_mode\0\u{3}ota_hash\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.rebootOtaMode) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.otaHash) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.rebootOtaMode != .noRebootOta {
+      try visitor.visitSingularEnumField(value: self.rebootOtaMode, fieldNumber: 1)
+    }
+    if !self.otaHash.isEmpty {
+      try visitor.visitSingularBytesField(value: self.otaHash, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: AdminMessage.OTAEvent, rhs: AdminMessage.OTAEvent) -> Bool {
+    if lhs.rebootOtaMode != rhs.rebootOtaMode {return false}
+    if lhs.otaHash != rhs.otaHash {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
