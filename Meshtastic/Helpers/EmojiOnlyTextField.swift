@@ -39,7 +39,7 @@ struct EmojiOnlyTextField: UIViewRepresentable {
 	@Binding var text: String
 	var placeholder: String = ""
 	var onBecomeFirstResponder: (() -> Void)?
-	var onKeyboardTypeChanged: ((Bool) -> Void)? // true if emoji, false otherwise
+	var onKeyboardTypeChanged: ((Bool) -> Void)? // true if NOT emoji (should dismiss), false if emoji
 	var onKeyboardDismissed: (() -> Void)? // Called when keyboard is dismissed
 
 	func makeUIView(context: Context) -> SwiftUIEmojiTextField {
