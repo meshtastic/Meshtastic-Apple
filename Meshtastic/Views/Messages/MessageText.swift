@@ -148,7 +148,7 @@ struct MessageText: View {
 										isEmoji: true,
 										replyID: message.messageId
 									)
-									Task { @MainActor in
+									await MainActor.run {
 										switch tapBackDestination {
 										case let .channel(channel):
 											context.refresh(channel, mergeChanges: true)
