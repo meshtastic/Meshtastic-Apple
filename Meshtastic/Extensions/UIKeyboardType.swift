@@ -7,5 +7,7 @@
 import UIKit
 
 extension UIKeyboardType {
-	static let emoji = UIKeyboardType(rawValue: 124)
+	static var emoji: UIKeyboardType {
+		return UIKeyboardType(rawValue: 124) ?? .default
+	}
 }
