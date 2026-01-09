@@ -9,40 +9,25 @@ struct TapbackInputView: View {
 	var body: some View {
 		NavigationView {
 			VStack(spacing: 0) {
-				EmojiOnlyTextField(
-					text: $text,
-					placeholder: "Tap to enter emoji",
-					onBecomeFirstResponder: {
-						// Text field will automatically become first responder
-					},
-					onKeyboardTypeChanged: { shouldDismiss in
-						// Dismiss if keyboard switched away from emoji
-						if shouldDismiss {
-							isPresented = false
+				TextField("Tap to enter emoji", text: $text)
+					.keyboardType(.emoji)
+					.frame(height: 50)
+					.padding(.horizontal)
+					.background(
+						RoundedRectangle(cornerRadius: 10)
+							.strokeBorder(.tertiary, lineWidth: 1)
+							.background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemBackground)))
+					)
+					.padding(.horizontal)
+					.padding(.top, 8)
+					.onChange(of: text) { oldValue, newValue in
+						// Extract first emoji character and send it
+						if !newValue.isEmpty, let firstEmoji = extractFirstEmoji(from: newValue) {
+							onEmojiSelected(firstEmoji)
+							// Clear the text box after getting the emoji
+							text = ""
 						}
-					},
-					onKeyboardDismissed: {
-						// Dismiss sheet when keyboard is dismissed
-						isPresented = false
 					}
-				)
-				.frame(height: 50)
-				.padding(.horizontal)
-				.background(
-					RoundedRectangle(cornerRadius: 10)
-						.strokeBorder(.tertiary, lineWidth: 1)
-						.background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemBackground)))
-				)
-				.padding(.horizontal)
-				.padding(.top, 8)
-				.onChange(of: text) { oldValue, newValue in
-					// Extract first emoji character and send it
-					if !newValue.isEmpty, let firstEmoji = extractFirstEmoji(from: newValue) {
-						onEmojiSelected(firstEmoji)
-						// Clear the text box after getting the emoji
-						text = ""
-					}
-				}
 			}
 			.navigationTitle("Tapback")
 			.navigationBarTitleDisplayMode(.inline)
