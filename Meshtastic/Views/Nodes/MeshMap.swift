@@ -120,16 +120,14 @@ struct MeshMap: View {
 				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
-						.padding()
+						.presentationDetents([.large])
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
-						.padding()
+						.presentationDetents([.large])
 				}
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
-						.presentationDetents([.large])
-
 				}
 				.onChange(of: router.navigationState) {
 					guard case .map = router.navigationState.selectedTab else { return }
