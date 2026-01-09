@@ -396,7 +396,7 @@ actor BLETransport: Transport {
 						}
 						self.restoreInProgress = false
 					} catch {
-						// We had a conneciton failure during restoration.
+						// We had a connection failure during restoration.
 						Logger.transport.error("🛜 [BLE] Error restoring peripheral in connecting state. \(error, privacy: .public)")
 						self.restoreInProgress = false
 					}
