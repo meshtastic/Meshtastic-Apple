@@ -216,6 +216,7 @@
 		DD9C70112E916EBD00106227 /* UpdateIntervalPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */; };
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
+		DDA3DFDA2F10B39600D8F103 /* UIKeyboardType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA3DFD92F10B39600D8F103 /* UIKeyboardType.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
 		DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA951592BC6624100CEA535 /* TelemetryWeather.swift */; };
 		DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */; };
@@ -565,6 +566,7 @@
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA28B1B2D32C89200EF726F /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
+		DDA3DFD92F10B39600D8F103 /* UIKeyboardType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKeyboardType.swift; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
 		DDA951592BC6624100CEA535 /* TelemetryWeather.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TelemetryWeather.swift; sourceTree = "<group>"; };
 		DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEnums.swift; sourceTree = "<group>"; };
@@ -1374,6 +1376,7 @@
 				DDDB444729F8A9C900EE2349 /* String.swift */,
 				DD77093E2AA1B146007A8BF0 /* UIColor.swift */,
 				DDDB444F29F8AC9C00EE2349 /* UIImage.swift */,
+				DDA3DFD92F10B39600D8F103 /* UIKeyboardType.swift */,
 				DDDB443F29F79AB000EE2349 /* UserDefaults.swift */,
 				DDB75A0E2A05920E006ED576 /* FileManager.swift */,
 				DDB75A102A059258006ED576 /* Url.swift */,
@@ -1804,6 +1807,7 @@
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */,
+				DDA3DFDA2F10B39600D8F103 /* UIKeyboardType.swift in Sources */,
 				DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
 				DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */,

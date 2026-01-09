@@ -2,6 +2,10 @@
 //  UIKeyboard.swift
 //  Meshtastic
 //
-//  Created by Garth Vander Houwen on 1/7/26.
+//  Copyright(c) Garth Vander Houwen 1/7/26.
 //
+import UIKit
 
+extension UIKeyboardType {
+	static let emoji = UIKeyboardType(rawValue: 124)
+}
