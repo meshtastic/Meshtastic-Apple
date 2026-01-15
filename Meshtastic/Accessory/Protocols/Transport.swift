@@ -42,10 +42,10 @@ enum DiscoveryEvent {
 
 protocol Transport {
 	var type: TransportType { get }
-	var status: TransportStatus { get }
+	var status: TransportStatus { get async }
 
 	// Discovers devices asynchronously. For ongoing scans (e.g., BLE), this can yield via AsyncStream.
-	func discoverDevices() -> AsyncStream<DiscoveryEvent>
+	func discoverDevices() async -> AsyncStream<DiscoveryEvent>
 
 	// Connects to a device and returns a Connection.
 	func connect(to device: Device) async throws -> any Connection
