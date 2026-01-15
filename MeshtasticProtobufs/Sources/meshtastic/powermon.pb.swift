@@ -319,29 +319,12 @@ extension PowerMon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 }
 
 extension PowerMon.State: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "None"),
-    1: .same(proto: "CPU_DeepSleep"),
-    2: .same(proto: "CPU_LightSleep"),
-    4: .same(proto: "Vext1_On"),
-    8: .same(proto: "Lora_RXOn"),
-    16: .same(proto: "Lora_TXOn"),
-    32: .same(proto: "Lora_RXActive"),
-    64: .same(proto: "BT_On"),
-    128: .same(proto: "LED_On"),
-    256: .same(proto: "Screen_On"),
-    512: .same(proto: "Screen_Drawing"),
-    1024: .same(proto: "Wifi_On"),
-    2048: .same(proto: "GPS_Active"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0None\0\u{1}CPU_DeepSleep\0\u{1}CPU_LightSleep\0\u{2}\u{2}Vext1_On\0\u{2}\u{4}Lora_RXOn\0\u{2}\u{8}Lora_TXOn\0\u{2}\u{10}Lora_RXActive\0\u{2} BT_On\0\u{2}@\u{1}LED_On\0\u{2}@\u{2}Screen_On\0\u{2}@\u{4}Screen_Drawing\0\u{2}@\u{8}Wifi_On\0\u{2}@\u{10}GPS_Active\0")
 }
 
 extension PowerStressMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PowerStressMessage"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "cmd"),
-    2: .standard(proto: "num_seconds"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cmd\0\u{3}num_seconds\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -375,26 +358,5 @@ extension PowerStressMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 }
 
 extension PowerStressMessage.Opcode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNSET"),
-    1: .same(proto: "PRINT_INFO"),
-    2: .same(proto: "FORCE_QUIET"),
-    3: .same(proto: "END_QUIET"),
-    16: .same(proto: "SCREEN_ON"),
-    17: .same(proto: "SCREEN_OFF"),
-    32: .same(proto: "CPU_IDLE"),
-    33: .same(proto: "CPU_DEEPSLEEP"),
-    34: .same(proto: "CPU_FULLON"),
-    48: .same(proto: "LED_ON"),
-    49: .same(proto: "LED_OFF"),
-    64: .same(proto: "LORA_OFF"),
-    65: .same(proto: "LORA_TX"),
-    66: .same(proto: "LORA_RX"),
-    80: .same(proto: "BT_OFF"),
-    81: .same(proto: "BT_ON"),
-    96: .same(proto: "WIFI_OFF"),
-    97: .same(proto: "WIFI_ON"),
-    112: .same(proto: "GPS_OFF"),
-    113: .same(proto: "GPS_ON"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}PRINT_INFO\0\u{1}FORCE_QUIET\0\u{1}END_QUIET\0\u{2}\u{d}SCREEN_ON\0\u{1}SCREEN_OFF\0\u{2}\u{f}CPU_IDLE\0\u{1}CPU_DEEPSLEEP\0\u{1}CPU_FULLON\0\u{2}\u{e}LED_ON\0\u{1}LED_OFF\0\u{2}\u{f}LORA_OFF\0\u{1}LORA_TX\0\u{1}LORA_RX\0\u{2}\u{e}BT_OFF\0\u{1}BT_ON\0\u{2}\u{f}WIFI_OFF\0\u{1}WIFI_ON\0\u{2}\u{f}GPS_OFF\0\u{1}GPS_ON\0")
 }

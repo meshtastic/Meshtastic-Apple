@@ -355,39 +355,5 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension PortNum: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN_APP"),
-    1: .same(proto: "TEXT_MESSAGE_APP"),
-    2: .same(proto: "REMOTE_HARDWARE_APP"),
-    3: .same(proto: "POSITION_APP"),
-    4: .same(proto: "NODEINFO_APP"),
-    5: .same(proto: "ROUTING_APP"),
-    6: .same(proto: "ADMIN_APP"),
-    7: .same(proto: "TEXT_MESSAGE_COMPRESSED_APP"),
-    8: .same(proto: "WAYPOINT_APP"),
-    9: .same(proto: "AUDIO_APP"),
-    10: .same(proto: "DETECTION_SENSOR_APP"),
-    11: .same(proto: "ALERT_APP"),
-    12: .same(proto: "KEY_VERIFICATION_APP"),
-    32: .same(proto: "REPLY_APP"),
-    33: .same(proto: "IP_TUNNEL_APP"),
-    34: .same(proto: "PAXCOUNTER_APP"),
-    35: .same(proto: "STORE_FORWARD_PLUSPLUS_APP"),
-    64: .same(proto: "SERIAL_APP"),
-    65: .same(proto: "STORE_FORWARD_APP"),
-    66: .same(proto: "RANGE_TEST_APP"),
-    67: .same(proto: "TELEMETRY_APP"),
-    68: .same(proto: "ZPS_APP"),
-    69: .same(proto: "SIMULATOR_APP"),
-    70: .same(proto: "TRACEROUTE_APP"),
-    71: .same(proto: "NEIGHBORINFO_APP"),
-    72: .same(proto: "ATAK_PLUGIN"),
-    73: .same(proto: "MAP_REPORT_APP"),
-    74: .same(proto: "POWERSTRESS_APP"),
-    76: .same(proto: "RETICULUM_TUNNEL_APP"),
-    77: .same(proto: "CAYENNE_APP"),
-    256: .same(proto: "PRIVATE_APP"),
-    257: .same(proto: "ATAK_FORWARDER"),
-    511: .same(proto: "MAX"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_APP\0\u{1}TEXT_MESSAGE_APP\0\u{1}REMOTE_HARDWARE_APP\0\u{1}POSITION_APP\0\u{1}NODEINFO_APP\0\u{1}ROUTING_APP\0\u{1}ADMIN_APP\0\u{1}TEXT_MESSAGE_COMPRESSED_APP\0\u{1}WAYPOINT_APP\0\u{1}AUDIO_APP\0\u{1}DETECTION_SENSOR_APP\0\u{1}ALERT_APP\0\u{1}KEY_VERIFICATION_APP\0\u{2}\u{14}REPLY_APP\0\u{1}IP_TUNNEL_APP\0\u{1}PAXCOUNTER_APP\0\u{1}STORE_FORWARD_PLUSPLUS_APP\0\u{2}\u{1d}SERIAL_APP\0\u{1}STORE_FORWARD_APP\0\u{1}RANGE_TEST_APP\0\u{1}TELEMETRY_APP\0\u{1}ZPS_APP\0\u{1}SIMULATOR_APP\0\u{1}TRACEROUTE_APP\0\u{1}NEIGHBORINFO_APP\0\u{1}ATAK_PLUGIN\0\u{1}MAP_REPORT_APP\0\u{1}POWERSTRESS_APP\0\u{2}\u{2}RETICULUM_TUNNEL_APP\0\u{1}CAYENNE_APP\0\u{2}s\u{2}PRIVATE_APP\0\u{1}ATAK_FORWARDER\0\u{2}~\u{3}MAX\0")
 }

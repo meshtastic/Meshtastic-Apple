@@ -74,7 +74,7 @@ public enum OTAMode: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// This message is handled by the Admin module and is responsible for all settings/channel read/write operations.
 /// This message is used to do settings operations to both remote AND local nodes.
 /// (Prior to 1.2 these operations were done via special ToRadio operations)
-public struct AdminMessage: @unchecked Sendable {
+public struct AdminMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -528,6 +528,16 @@ public struct AdminMessage: @unchecked Sendable {
   }
 
   ///
+  /// Set specified node-num to be muted
+  public var toggleMutedNode: UInt32 {
+    get {
+      if case .toggleMutedNode(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .toggleMutedNode(newValue)}
+  }
+
+  ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   public var beginEditSettings: Bool {
@@ -796,6 +806,9 @@ public struct AdminMessage: @unchecked Sendable {
     ///
     /// Set specified node-num to be un-ignored on the NodeDB on the device
     case removeIgnoredNode(UInt32)
+    ///
+    /// Set specified node-num to be muted
+    case toggleMutedNode(UInt32)
     ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
@@ -1130,7 +1143,7 @@ public struct AdminMessage: @unchecked Sendable {
   ///
   /// User is requesting an over the air update.
   /// Node will reboot into the OTA loader
-  public struct OTAEvent: @unchecked Sendable {
+  public struct OTAEvent: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1330,73 +1343,12 @@ public struct KeyVerificationAdmin: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension OTAMode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "NO_REBOOT_OTA"),
-    1: .same(proto: "OTA_BLE"),
-    2: .same(proto: "OTA_WIFI"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NO_REBOOT_OTA\0\u{1}OTA_BLE\0\u{1}OTA_WIFI\0")
 }
 
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    101: .standard(proto: "session_passkey"),
-    1: .standard(proto: "get_channel_request"),
-    2: .standard(proto: "get_channel_response"),
-    3: .standard(proto: "get_owner_request"),
-    4: .standard(proto: "get_owner_response"),
-    5: .standard(proto: "get_config_request"),
-    6: .standard(proto: "get_config_response"),
-    7: .standard(proto: "get_module_config_request"),
-    8: .standard(proto: "get_module_config_response"),
-    10: .standard(proto: "get_canned_message_module_messages_request"),
-    11: .standard(proto: "get_canned_message_module_messages_response"),
-    12: .standard(proto: "get_device_metadata_request"),
-    13: .standard(proto: "get_device_metadata_response"),
-    14: .standard(proto: "get_ringtone_request"),
-    15: .standard(proto: "get_ringtone_response"),
-    16: .standard(proto: "get_device_connection_status_request"),
-    17: .standard(proto: "get_device_connection_status_response"),
-    18: .standard(proto: "set_ham_mode"),
-    19: .standard(proto: "get_node_remote_hardware_pins_request"),
-    20: .standard(proto: "get_node_remote_hardware_pins_response"),
-    21: .standard(proto: "enter_dfu_mode_request"),
-    22: .standard(proto: "delete_file_request"),
-    23: .standard(proto: "set_scale"),
-    24: .standard(proto: "backup_preferences"),
-    25: .standard(proto: "restore_preferences"),
-    26: .standard(proto: "remove_backup_preferences"),
-    27: .standard(proto: "send_input_event"),
-    32: .standard(proto: "set_owner"),
-    33: .standard(proto: "set_channel"),
-    34: .standard(proto: "set_config"),
-    35: .standard(proto: "set_module_config"),
-    36: .standard(proto: "set_canned_message_module_messages"),
-    37: .standard(proto: "set_ringtone_message"),
-    38: .standard(proto: "remove_by_nodenum"),
-    39: .standard(proto: "set_favorite_node"),
-    40: .standard(proto: "remove_favorite_node"),
-    41: .standard(proto: "set_fixed_position"),
-    42: .standard(proto: "remove_fixed_position"),
-    43: .standard(proto: "set_time_only"),
-    44: .standard(proto: "get_ui_config_request"),
-    45: .standard(proto: "get_ui_config_response"),
-    46: .standard(proto: "store_ui_config"),
-    47: .standard(proto: "set_ignored_node"),
-    48: .standard(proto: "remove_ignored_node"),
-    64: .standard(proto: "begin_edit_settings"),
-    65: .standard(proto: "commit_edit_settings"),
-    66: .standard(proto: "add_contact"),
-    67: .standard(proto: "key_verification"),
-    94: .standard(proto: "factory_reset_device"),
-    95: .standard(proto: "reboot_ota_seconds"),
-    96: .standard(proto: "exit_simulator"),
-    97: .standard(proto: "reboot_seconds"),
-    98: .standard(proto: "shutdown_seconds"),
-    99: .standard(proto: "factory_reset_config"),
-    100: .standard(proto: "nodedb_reset"),
-    102: .standard(proto: "ota_request"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{4}\u{f}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1828,6 +1780,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .removeIgnoredNode(v)
         }
       }()
+      case 49: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .toggleMutedNode(v)
+        }
+      }()
       case 64: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -2123,6 +2083,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .removeIgnoredNode(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 48)
     }()
+    case .toggleMutedNode?: try {
+      guard case .toggleMutedNode(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 49)
+    }()
     case .beginEditSettings?: try {
       guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 64)
@@ -2187,53 +2151,20 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 }
 
 extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "DEVICE_CONFIG"),
-    1: .same(proto: "POSITION_CONFIG"),
-    2: .same(proto: "POWER_CONFIG"),
-    3: .same(proto: "NETWORK_CONFIG"),
-    4: .same(proto: "DISPLAY_CONFIG"),
-    5: .same(proto: "LORA_CONFIG"),
-    6: .same(proto: "BLUETOOTH_CONFIG"),
-    7: .same(proto: "SECURITY_CONFIG"),
-    8: .same(proto: "SESSIONKEY_CONFIG"),
-    9: .same(proto: "DEVICEUI_CONFIG"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEVICE_CONFIG\0\u{1}POSITION_CONFIG\0\u{1}POWER_CONFIG\0\u{1}NETWORK_CONFIG\0\u{1}DISPLAY_CONFIG\0\u{1}LORA_CONFIG\0\u{1}BLUETOOTH_CONFIG\0\u{1}SECURITY_CONFIG\0\u{1}SESSIONKEY_CONFIG\0\u{1}DEVICEUI_CONFIG\0")
 }
 
 extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "MQTT_CONFIG"),
-    1: .same(proto: "SERIAL_CONFIG"),
-    2: .same(proto: "EXTNOTIF_CONFIG"),
-    3: .same(proto: "STOREFORWARD_CONFIG"),
-    4: .same(proto: "RANGETEST_CONFIG"),
-    5: .same(proto: "TELEMETRY_CONFIG"),
-    6: .same(proto: "CANNEDMSG_CONFIG"),
-    7: .same(proto: "AUDIO_CONFIG"),
-    8: .same(proto: "REMOTEHARDWARE_CONFIG"),
-    9: .same(proto: "NEIGHBORINFO_CONFIG"),
-    10: .same(proto: "AMBIENTLIGHTING_CONFIG"),
-    11: .same(proto: "DETECTIONSENSOR_CONFIG"),
-    12: .same(proto: "PAXCOUNTER_CONFIG"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{1}EXTNOTIF_CONFIG\0\u{1}STOREFORWARD_CONFIG\0\u{1}RANGETEST_CONFIG\0\u{1}TELEMETRY_CONFIG\0\u{1}CANNEDMSG_CONFIG\0\u{1}AUDIO_CONFIG\0\u{1}REMOTEHARDWARE_CONFIG\0\u{1}NEIGHBORINFO_CONFIG\0\u{1}AMBIENTLIGHTING_CONFIG\0\u{1}DETECTIONSENSOR_CONFIG\0\u{1}PAXCOUNTER_CONFIG\0")
 }
 
 extension AdminMessage.BackupLocation: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "FLASH"),
-    1: .same(proto: "SD"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FLASH\0\u{1}SD\0")
 }
 
 extension AdminMessage.InputEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = AdminMessage.protoMessageName + ".InputEvent"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "event_code"),
-    2: .standard(proto: "kb_char"),
-    3: .standard(proto: "touch_x"),
-    4: .standard(proto: "touch_y"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}event_code\0\u{3}kb_char\0\u{3}touch_x\0\u{3}touch_y\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2278,10 +2209,7 @@ extension AdminMessage.InputEvent: SwiftProtobuf.Message, SwiftProtobuf._Message
 
 extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = AdminMessage.protoMessageName + ".OTAEvent"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "reboot_ota_mode"),
-    2: .standard(proto: "ota_hash"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}reboot_ota_mode\0\u{3}ota_hash\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2316,12 +2244,7 @@ extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 
 extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HamParameters"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "call_sign"),
-    2: .standard(proto: "tx_power"),
-    3: .same(proto: "frequency"),
-    4: .standard(proto: "short_name"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}call_sign\0\u{3}tx_power\0\u{1}frequency\0\u{3}short_name\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2366,9 +2289,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension NodeRemoteHardwarePinsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePinsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "node_remote_hardware_pins"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_remote_hardware_pins\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2398,12 +2319,7 @@ extension NodeRemoteHardwarePinsResponse: SwiftProtobuf.Message, SwiftProtobuf._
 
 extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SharedContact"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "node_num"),
-    2: .same(proto: "user"),
-    3: .standard(proto: "should_ignore"),
-    4: .standard(proto: "manually_verified"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_num\0\u{1}user\0\u{3}should_ignore\0\u{3}manually_verified\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2452,12 +2368,7 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension KeyVerificationAdmin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".KeyVerificationAdmin"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "message_type"),
-    2: .standard(proto: "remote_nodenum"),
-    3: .same(proto: "nonce"),
-    4: .standard(proto: "security_number"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}message_type\0\u{3}remote_nodenum\0\u{1}nonce\0\u{3}security_number\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2505,10 +2416,5 @@ extension KeyVerificationAdmin: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 }
 
 extension KeyVerificationAdmin.MessageType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "INITIATE_VERIFICATION"),
-    1: .same(proto: "PROVIDE_SECURITY_NUMBER"),
-    2: .same(proto: "DO_VERIFY"),
-    3: .same(proto: "DO_NOT_VERIFY"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0INITIATE_VERIFICATION\0\u{1}PROVIDE_SECURITY_NUMBER\0\u{1}DO_VERIFY\0\u{1}DO_NOT_VERIFY\0")
 }

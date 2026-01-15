@@ -23,7 +23,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// TODO: REPLACE
-public struct StoreAndForward: @unchecked Sendable {
+public struct StoreAndForward: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -80,7 +80,7 @@ public struct StoreAndForward: @unchecked Sendable {
 
   ///
   /// TODO: REPLACE
-  public enum OneOf_Variant: Equatable, @unchecked Sendable {
+  public enum OneOf_Variant: Equatable, Sendable {
     ///
     /// TODO: REPLACE
     case stats(StoreAndForward.Statistics)
@@ -341,13 +341,7 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".StoreAndForward"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "rr"),
-    2: .same(proto: "stats"),
-    3: .same(proto: "history"),
-    4: .same(proto: "heartbeat"),
-    5: .same(proto: "text"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}rr\0\u{1}stats\0\u{1}history\0\u{1}heartbeat\0\u{1}text\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -447,39 +441,12 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 }
 
 extension StoreAndForward.RequestResponse: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNSET"),
-    1: .same(proto: "ROUTER_ERROR"),
-    2: .same(proto: "ROUTER_HEARTBEAT"),
-    3: .same(proto: "ROUTER_PING"),
-    4: .same(proto: "ROUTER_PONG"),
-    5: .same(proto: "ROUTER_BUSY"),
-    6: .same(proto: "ROUTER_HISTORY"),
-    7: .same(proto: "ROUTER_STATS"),
-    8: .same(proto: "ROUTER_TEXT_DIRECT"),
-    9: .same(proto: "ROUTER_TEXT_BROADCAST"),
-    64: .same(proto: "CLIENT_ERROR"),
-    65: .same(proto: "CLIENT_HISTORY"),
-    66: .same(proto: "CLIENT_STATS"),
-    67: .same(proto: "CLIENT_PING"),
-    68: .same(proto: "CLIENT_PONG"),
-    106: .same(proto: "CLIENT_ABORT"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}ROUTER_ERROR\0\u{1}ROUTER_HEARTBEAT\0\u{1}ROUTER_PING\0\u{1}ROUTER_PONG\0\u{1}ROUTER_BUSY\0\u{1}ROUTER_HISTORY\0\u{1}ROUTER_STATS\0\u{1}ROUTER_TEXT_DIRECT\0\u{1}ROUTER_TEXT_BROADCAST\0\u{2}7CLIENT_ERROR\0\u{1}CLIENT_HISTORY\0\u{1}CLIENT_STATS\0\u{1}CLIENT_PING\0\u{1}CLIENT_PONG\0\u{2}&CLIENT_ABORT\0")
 }
 
 extension StoreAndForward.Statistics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = StoreAndForward.protoMessageName + ".Statistics"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "messages_total"),
-    2: .standard(proto: "messages_saved"),
-    3: .standard(proto: "messages_max"),
-    4: .standard(proto: "up_time"),
-    5: .same(proto: "requests"),
-    6: .standard(proto: "requests_history"),
-    7: .same(proto: "heartbeat"),
-    8: .standard(proto: "return_max"),
-    9: .standard(proto: "return_window"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}messages_total\0\u{3}messages_saved\0\u{3}messages_max\0\u{3}up_time\0\u{1}requests\0\u{3}requests_history\0\u{1}heartbeat\0\u{3}return_max\0\u{3}return_window\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -549,11 +516,7 @@ extension StoreAndForward.Statistics: SwiftProtobuf.Message, SwiftProtobuf._Mess
 
 extension StoreAndForward.History: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = StoreAndForward.protoMessageName + ".History"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "history_messages"),
-    2: .same(proto: "window"),
-    3: .standard(proto: "last_request"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}history_messages\0\u{1}window\0\u{3}last_request\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -593,10 +556,7 @@ extension StoreAndForward.History: SwiftProtobuf.Message, SwiftProtobuf._Message
 
 extension StoreAndForward.Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = StoreAndForward.protoMessageName + ".Heartbeat"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "period"),
-    2: .same(proto: "secondary"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}period\0\u{1}secondary\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

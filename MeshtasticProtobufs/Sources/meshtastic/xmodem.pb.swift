@@ -21,7 +21,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-public struct XModem: @unchecked Sendable {
+public struct XModem: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -103,12 +103,7 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension XModem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".XModem"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "control"),
-    2: .same(proto: "seq"),
-    3: .same(proto: "crc16"),
-    4: .same(proto: "buffer"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}control\0\u{1}seq\0\u{1}crc16\0\u{1}buffer\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -152,14 +147,5 @@ extension XModem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
 }
 
 extension XModem.Control: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "NUL"),
-    1: .same(proto: "SOH"),
-    2: .same(proto: "STX"),
-    4: .same(proto: "EOT"),
-    6: .same(proto: "ACK"),
-    21: .same(proto: "NAK"),
-    24: .same(proto: "CAN"),
-    26: .same(proto: "CTRLZ"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NUL\0\u{1}SOH\0\u{1}STX\0\u{2}\u{2}EOT\0\u{2}\u{2}ACK\0\u{2}\u{f}NAK\0\u{2}\u{3}CAN\0\u{2}\u{2}CTRLZ\0")
 }
