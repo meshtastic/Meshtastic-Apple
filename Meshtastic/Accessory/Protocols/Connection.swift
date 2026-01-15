@@ -14,7 +14,7 @@ protocol Connection: Actor {
 	var isConnected: Bool { get }
 	func send(_ data: ToRadio) async throws
 	func connect() async throws -> AsyncStream<ConnectionEvent>
-	func disconnect(withError: Error?, shouldReconnect: Bool) async throws
+	func disconnect(withError: Error?, shouldReconnect: Bool) throws
 	func drainPendingPackets() async throws
 	func startDrainPendingPackets() throws
 	

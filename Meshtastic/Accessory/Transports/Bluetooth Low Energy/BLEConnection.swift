@@ -69,7 +69,7 @@ actor BLEConnection: Connection {
 		self.delegate.setConnection(self)
 	}
 	
-	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) async throws {
+	func disconnect(withError error: Error? = nil, shouldReconnect: Bool) throws {
 		if peripheral.state == .connected {
 			if let characteristic = FROMRADIO_characteristic {
 				peripheral.setNotifyValue(false, for: characteristic)
@@ -82,7 +82,7 @@ actor BLEConnection: Connection {
 			}
 		}
 		
-		await transport?.connectionDidDisconnect(fromPeripheral: peripheral)
+		transport?.connectionDidDisconnect(fromPeripheral: peripheral)
 		
 		central.cancelPeripheralConnection(peripheral)
 		peripheral.delegate = nil
@@ -217,8 +217,8 @@ actor BLEConnection: Connection {
 		self.connectContinuation = nil
 	}
 	
-	private func notifyTransportOfDisconnect() async {
-		await transport?.connectionDidDisconnect(fromPeripheral: peripheral)
+	private func notifyTransportOfDisconnect() {
+		transport?.connectionDidDisconnect(fromPeripheral: peripheral)
 	}
 	
 	func startRSSITask() {
@@ -450,7 +450,7 @@ actor BLEConnection: Connection {
 		}
 		
 		// Inform the active connection that there was an error and it should disconnect
-		try await self.disconnect(withError: error, shouldReconnect: shouldReconnect)
+		try self.disconnect(withError: error, shouldReconnect: shouldReconnect)
 	}
 	
 	func appDidEnterBackground() {

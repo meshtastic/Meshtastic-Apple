@@ -352,6 +352,7 @@ actor SequentialSteps {
 			return
 		}
 		isRunning = false
+		return
 		throw AccessoryError.tooManyRetries
 	}
 	
