@@ -31,7 +31,10 @@ struct MessageContextMenuItems: View {
 		}
 
 		Button("Tapback") {
-			isShowingTapbackInput = true
+			// The context menu needs a moment to dismiss before the focus state can be changed.
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+				isShowingTapbackInput = true
+			}
 		}
 
 		Button(action: onReply) {
