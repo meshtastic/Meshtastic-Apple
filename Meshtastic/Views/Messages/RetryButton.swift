@@ -33,6 +33,7 @@ struct RetryButton: View {
 				let channel = message.channel
 				let isEmoji = message.isEmoji
 				let replyID = message.replyID
+				let positionExchange = message.positionExchange
 				context.delete(message)
 				do {
 					try context.save()
@@ -41,8 +42,16 @@ struct RetryButton: View {
 				}
 				Task {
 					do {
-						try await accessoryManager.sendMessage(message: payload, toUserNum: userNum, channel: channel,
-															   isEmoji: isEmoji, replyID: replyID)
+						if positionExchange != nil {
+							var wantResponse: Bool = true
+							if Int64(Constants.maximumNodeNum) == userNum {
+								wantResponse = false
+							}
+							try await accessoryManager.sendPosition(channel: channel, destNum: userNum, wantResponse: wantResponse,context: context)
+						} else {
+							try await accessoryManager.sendMessage(message: payload, toUserNum: userNum, channel: channel,
+																   isEmoji: isEmoji, replyID: replyID)
+						}
 						if case let .channel(channel) = destination {
 							// We must refresh the channel to trigger a view update since its relationship
 							// to messages is via a weak fetched property which is not updated by

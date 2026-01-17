@@ -14,7 +14,7 @@ struct TextMessageField: View {
 
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
-	@State private var sendPositionWithMessage = false
+	@State private var showingPositionConfirmation = false
 
 	var body: some View {
 		SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
@@ -75,7 +75,7 @@ struct TextMessageField: View {
 							Spacer()
 							AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
 							Spacer()
-							RequestPositionButton(action: requestPosition)
+							RequestPositionButton(action: {showingPositionConfirmation = true})
 							Spacer()
 							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
 						}
@@ -91,7 +91,8 @@ struct TextMessageField: View {
 							Spacer()
 							AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
 							Spacer()
-							RequestPositionButton(action: requestPosition)
+							RequestPositionButton(action: {showingPositionConfirmation = true})
+
 							Spacer()
 							TextMessageSize(maxbytes: Self.maxbytes, totalBytes: totalBytes)
 						}
@@ -101,13 +102,22 @@ struct TextMessageField: View {
 					}
 				}
 			}
+			.confirmationDialog("Send Position", isPresented: $showingPositionConfirmation) {
+				Button("Send Position Exchange") {requestPosition()}
+							   Button("Cancel", role: .cancel) { }
+						   }
 		}
 	}
 
 	private func requestPosition() {
-		let userLongName = accessoryManager.activeConnection?.device.longName ?? "Unknown"
-		sendPositionWithMessage = true
-		typingMessage = "📍 " + userLongName + " \(destination.positionShareMessage)."
+		Task{
+			try await accessoryManager.sendPosition(
+				channel: destination.channelNum,
+				destNum: destination.positionDestNum,
+				wantResponse: destination.wantPositionResponse,context: accessoryManager.context
+			)
+			Logger.mesh.info("Location Sent")
+		}
 	}
 
 	private func sendMessage() {
@@ -124,14 +134,6 @@ struct TextMessageField: View {
 				isFocused = false
 				replyMessageId = 0
 
-				if sendPositionWithMessage {
-					try await accessoryManager.sendPosition(
-						channel: destination.channelNum,
-						destNum: destination.positionDestNum,
-						wantResponse: destination.wantPositionResponse
-					)
-					Logger.mesh.info("Location Sent")
-				}
 			} catch {
 				Logger.mesh.info("Error sending message")
 			}

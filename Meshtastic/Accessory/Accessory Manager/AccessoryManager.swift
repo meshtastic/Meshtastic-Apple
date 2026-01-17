@@ -508,7 +508,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .remoteHardwareApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
-					upsertPositionPacket(packet: packet, context: context)
+					upsertPositionPacket(packet: packet, context: context, myNodeNum: self.activeDeviceNum ?? 0,appState: appState)
 				case .waypointApp:
 					waypointPacket(packet: packet, context: context)
 				case .nodeinfoApp:
