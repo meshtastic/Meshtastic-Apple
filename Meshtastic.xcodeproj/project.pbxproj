@@ -115,6 +115,7 @@
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
 		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
 		D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D82B81509C0066FBC8 /* TapbackResponses.swift */; };
+		D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D92B81509D0066FBC8 /* TapbackInputView.swift */; };
 		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
 		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
 		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
@@ -159,6 +160,7 @@
 		DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */; };
 		DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */; };
 		DD3D17E02C3FB67200561584 /* LocalWeatherConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3D17DF2C3FB67200561584 /* LocalWeatherConditions.swift */; };
+		DD4074692F1233F400BCC22F /* ExchangeUserInfoButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */; };
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
 		DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
 		DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
@@ -201,7 +203,6 @@
 		DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */; };
 		DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */; };
 		DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */; };
-		DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */; };
 		DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */; };
 		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
@@ -215,6 +216,7 @@
 		DD9C70112E916EBD00106227 /* UpdateIntervalPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */; };
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
+		DDA3DFDA2F10B39600D8F103 /* UIKeyboardType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA3DFD92F10B39600D8F103 /* UIKeyboardType.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
 		DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA951592BC6624100CEA535 /* TelemetryWeather.swift */; };
 		DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */; };
@@ -427,6 +429,7 @@
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
 		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
 		D93068D82B81509C0066FBC8 /* TapbackResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackResponses.swift; sourceTree = "<group>"; };
+		D93068D92B81509D0066FBC8 /* TapbackInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackInputView.swift; sourceTree = "<group>"; };
 		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
 		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
 		D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
@@ -490,6 +493,7 @@
 		DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCoreData.swift; sourceTree = "<group>"; };
 		DD3D17DC2C3D7B1400561584 /* MeshtasticDataModelV 39.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 39.xcdatamodel"; sourceTree = "<group>"; };
 		DD3D17DF2C3FB67200561584 /* LocalWeatherConditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalWeatherConditions.swift; sourceTree = "<group>"; };
+		DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeUserInfoButton.swift; sourceTree = "<group>"; };
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
 		DD415827285859C4009B0E59 /* TelemetryConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryConfig.swift; sourceTree = "<group>"; };
 		DD41582928585C32009B0E59 /* RangeTestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeTestConfig.swift; sourceTree = "<group>"; };
@@ -545,7 +549,6 @@
 		DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapContent.swift; sourceTree = "<group>"; };
 		DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelForm.swift; sourceTree = "<group>"; };
 		DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSettingsForm.swift; sourceTree = "<group>"; };
-		DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiOnlyTextField.swift; sourceTree = "<group>"; };
 		DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
 		DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntityExtension.swift; sourceTree = "<group>"; };
 		DD964FC52975DBFD007C176F /* QueryCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryCoreData.swift; sourceTree = "<group>"; };
@@ -563,6 +566,7 @@
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA28B1B2D32C89200EF726F /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
+		DDA3DFD92F10B39600D8F103 /* UIKeyboardType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKeyboardType.swift; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
 		DDA951592BC6624100CEA535 /* TelemetryWeather.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TelemetryWeather.swift; sourceTree = "<group>"; };
 		DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEnums.swift; sourceTree = "<group>"; };
@@ -844,6 +848,7 @@
 		251926882C3BAF2E00249DF5 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
+				DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */,
 				DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
 				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
 				251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
@@ -1250,6 +1255,7 @@
 				D93068D62B8146690066FBC8 /* MessageText.swift */,
 				D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */,
 				D93068D82B81509C0066FBC8 /* TapbackResponses.swift */,
+				D93068D92B81509D0066FBC8 /* TapbackInputView.swift */,
 			);
 			path = Messages;
 			sourceTree = "<group>";
@@ -1291,7 +1297,6 @@
 				DD1BEF492E0292220090CE24 /* KeychainHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
-				DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */,
 				DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */,
 				6D825E612C34786C008DBEE4 /* CommonRegex.swift */,
 				3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */,
@@ -1371,6 +1376,7 @@
 				DDDB444729F8A9C900EE2349 /* String.swift */,
 				DD77093E2AA1B146007A8BF0 /* UIColor.swift */,
 				DDDB444F29F8AC9C00EE2349 /* UIImage.swift */,
+				DDA3DFD92F10B39600D8F103 /* UIKeyboardType.swift */,
 				DDDB443F29F79AB000EE2349 /* UserDefaults.swift */,
 				DDB75A0E2A05920E006ED576 /* FileManager.swift */,
 				DDB75A102A059258006ED576 /* Url.swift */,
@@ -1668,7 +1674,6 @@
 				DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */,
 				D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */,
 				DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */,
-				DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */,
 				DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */,
@@ -1721,6 +1726,7 @@
 				DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */,
 				25C49D902C471AEA0024FBD1 /* Constants.swift in Sources */,
 				ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */,
+				DD4074692F1233F400BCC22F /* ExchangeUserInfoButton.swift in Sources */,
 				DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */,
 				DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */,
 				DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */,
@@ -1801,6 +1807,7 @@
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */,
+				DDA3DFDA2F10B39600D8F103 /* UIKeyboardType.swift in Sources */,
 				DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
 				DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */,
@@ -1809,6 +1816,7 @@
 				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
 				3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
+				D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */,
 				DDA9F5E82E77FAC100E70DEB /* AnimatedNodePin.swift in Sources */,
 				DDF82CBD2D5BC69200DC25EC /* NavigateToButton.swift in Sources */,
 				8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */,
@@ -2102,7 +2110,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.6;
+				MARKETING_VERSION = 2.7.7;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -2137,7 +2145,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.6;
+				MARKETING_VERSION = 2.7.7;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -2169,7 +2177,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.6;
+				MARKETING_VERSION = 2.7.7;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2202,7 +2210,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.6;
+				MARKETING_VERSION = 2.7.7;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

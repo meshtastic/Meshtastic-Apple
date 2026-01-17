@@ -29,7 +29,6 @@ struct WaypointForm: View {
 	@State private var expire: Date = Date.now.addingTimeInterval(60 * 480) // 1 minute * 480 = 8 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
-	@State private var detents: Set<PresentationDetent> = [.medium, .fraction(0.85)]
 	@State private var selectedDetent: PresentationDetent = .medium
 	@State private var waypointFailedAlert: Bool = false
 
@@ -111,26 +110,19 @@ struct WaypointForm: View {
 						HStack {
 							Text("Icon")
 							Spacer()
-							EmojiOnlyTextField(text: $icon, placeholder: "Select an emoji")
+							TextField("Select an emoji", text: $icon)
+								.keyboardType(.emoji)
 								.font(.title)
 								.focused($iconIsFocused)
 								.onChange(of: icon) { _, value in
-
-									// If you have anything other than emojis in your string make it empty
-									if !value.onlyEmojis() {
-										icon = ""
-									}
 									// If a second emoji is entered delete the first one
 									if value.count >= 1 {
-
 										if value.count > 1 {
 											let index = value.index(value.startIndex, offsetBy: 1)
 											icon = String(value[index])
 										}
-										iconIsFocused = false
 									}
 								}
-
 						}
 						Toggle(isOn: $expires) {
 							Label("Expires", systemImage: "clock.badge.xmark")
@@ -458,7 +450,6 @@ struct WaypointForm: View {
 				longitude = waypoint.coordinate.longitude
 			}
 		}
-		.presentationDetents(detents, selection: $selectedDetent)
 		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
 		.presentationDragIndicator(.visible)
 	}

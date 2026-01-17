@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 import OSLog
 
-class BLETransport: Transport {
+actor BLETransport: Transport {
 
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 	private let kCentralRestoreID = "com.meshtastic.central"
@@ -31,7 +31,7 @@ class BLETransport: Transport {
 	private var cleanupTask: Task<Void, Never>?
 	
 	// Transport properties
-	var supportsManualConnection: Bool = false
+	let supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
 			
 	init() {
@@ -46,19 +46,24 @@ class BLETransport: Transport {
 		self.delegate.setTransport(self)
 	}
 
-	nonisolated func discoverDevices() -> AsyncStream<DiscoveryEvent> {
+	private func setDiscoveredDeviceContinuation(_ cont: AsyncStream<DiscoveryEvent>.Continuation?) {
+		self.discoveredDeviceContinuation = cont
+	}
+
+	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			Task {
-				self.discoveredDeviceContinuation = cont
+				await self.setDiscoveredDeviceContinuation(cont)
 				
 				// This gate is opened when the CBCentralManager is in poweredOn state.
 				// Its probably open already, but just to be sure in case we get here too quickly.
 				try await self.setupCompleteGate.wait()
 				
-				if !restoreInProgress {
+				if await !self.restoreInProgress {
 					centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 					
-					for alreadyDiscoveredPeripheral in self.discoveredPeripherals.values.map({$0.peripheral}) {
+					let peripherals = await self.discoveredPeripherals.values.map({$0.peripheral})
+					for alreadyDiscoveredPeripheral in peripherals {
 						let device = Device(id: alreadyDiscoveredPeripheral.identifier,
 											name: alreadyDiscoveredPeripheral.name ?? "Unknown",
 											transportType: .ble,
@@ -66,11 +71,13 @@ class BLETransport: Transport {
 						cont.yield(.deviceFound(device))
 					}
 				}
-				setupCleanupTask()
+				await setupCleanupTask()
 			}
 			cont.onTermination = { _ in
 				Logger.transport.error("🛜 [BLE] Discovery event stream has been canecelled.")
-				self.stopScanning()
+				Task {
+					await self.stopScanning()
+				}
 			}
 		}
 	}
@@ -188,6 +195,12 @@ class BLETransport: Transport {
 		}
 	}
 
+	private func cancelConnectContinuation(for peripheral: CBPeripheral) {
+		self.connectContinuation?.resume(throwing: CancellationError())
+		self.connectContinuation = nil
+		self.connectionDidDisconnect(fromPeripheral: peripheral)
+	}
+
 	func connect(to device: Device) async throws -> any Connection {
 		guard let peripheral = discoveredPeripherals[UUID(uuidString: device.identifier)!] else {
 			throw AccessoryError.connectionFailed("Peripheral not found")
@@ -211,9 +224,9 @@ class BLETransport: Transport {
 			self.activeConnection = newConnection
 			return newConnection
 		} onCancel: {
-			self.connectContinuation?.resume(throwing: CancellationError())
-			self.connectContinuation = nil
-			self.connectionDidDisconnect(fromPeripheral: peripheral.peripheral)
+			Task {
+				await self.cancelConnectContinuation(for: peripheral.peripheral)
+			}
 		}
 		Logger.transport.debug("🛜 [BLE] Connect complete.")
 		return returnConnection
@@ -226,7 +239,7 @@ class BLETransport: Transport {
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
 					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
-					self.connectionDidDisconnect(fromPeripheral: peripheral)
+					await self.connectionDidDisconnect(fromPeripheral: peripheral)
 				}
 			}
 		}
@@ -264,7 +277,7 @@ class BLETransport: Transport {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Disconnecting the active connection.")
 			Task {
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
-				self.connectionDidDisconnect(fromPeripheral: peripheral)
+				await self.connectionDidDisconnect(fromPeripheral: peripheral)
 			}
 		} else {
 			Logger.transport.error("🚨 [BLETransport] unhandled error.  May be in an inconsistent state.")
@@ -372,15 +385,20 @@ class BLETransport: Transport {
 						}
 						
 						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  ✅ didConnect Received!")
-						Task { @MainActor in
-							// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
-							try? await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
-							restoreInProgress = false
+						let connectTask = Task { @MainActor in
+							try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
 						}
+						
+						do {
+							try await connectTask.value
+						} catch {
+							Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
+						}
+						self.restoreInProgress = false
 					} catch {
-						// We had a conneciton failure during restoration.
+						// We had a connection failure during restoration.
 						Logger.transport.error("🛜 [BLE] Error restoring peripheral in connecting state. \(error, privacy: .public)")
-						restoreInProgress = false
+						self.restoreInProgress = false
 					}
 				}
 
@@ -388,22 +406,28 @@ class BLETransport: Transport {
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 				self.activeConnection = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
-				Task { @MainActor in
+				let connectTask = Task { @MainActor in
 					// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
-					try? await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: false, wantDatabase: false, versionCheck: false)
-					restoreInProgress = false
+					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: false, wantDatabase: false, versionCheck: false)
 				}
+				do {
+					try await connectTask.value
+				} catch {
+					Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
+				}
+
+				self.restoreInProgress = false
 				Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
 			default:
 				// Since we're not going to attempt to reconnect in then allow normal device discovery
 				Logger.transport.error("🛜 [BLE] Unhandled state restoration for state: \(cbPeripheralStateDescription(peripheral.state), privacy: .public).")
-				restoreInProgress = false
+				self.restoreInProgress = false
 			}
 		}
 		
 	}
 	
-	func device(forManualConnection: String) -> Device? {
+	nonisolated func device(forManualConnection: String) -> Device? {
 		return nil
 	}
 	
@@ -438,33 +462,33 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 	}
 
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
-		transport?.handleCentralState(central.state, central: central)
+		Task { await transport?.handleCentralState(central.state, central: central) }
 	}
 
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-		transport?.didDiscover(peripheral: peripheral, rssi: RSSI)
+		Task { await transport?.didDiscover(peripheral: peripheral, rssi: RSSI) }
 	}
 
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-		transport?.handleDidConnect(peripheral: peripheral, central: central)
+		Task { await transport?.handleDidConnect(peripheral: peripheral, central: central) }
 	}
 
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-		transport?.handleDidFailToConnect(peripheral: peripheral, error: error)
+		Task { await transport?.handleDidFailToConnect(peripheral: peripheral, error: error) }
 	}
 
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
 		if let error = error as? NSError {
 			Logger.transport.error("🛜 [BLETransport] Error while disconnecting peripheral: \(peripheral.name ?? ""): \(error)")
-			transport?.handlePeripheralDisconnectError(peripheral: peripheral, error: error)
+			Task { await transport?.handlePeripheralDisconnectError(peripheral: peripheral, error: error) }
 		} else {
 			Logger.transport.error("🛜 [BLETransport] Did succesfully disconnect peripheral: \(peripheral.name ?? "")")
-			transport?.handlePeripheralDisconnect(peripheral: peripheral)
+			Task { await transport?.handlePeripheralDisconnect(peripheral: peripheral) }
 		}
 	}
 	
 	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
-		self.transport?.handleWillRestoreState(dict: dict, central: central)
+		Task { await self.transport?.handleWillRestoreState(dict: dict, central: central) }
 	}
 }
 

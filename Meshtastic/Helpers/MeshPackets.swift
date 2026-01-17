@@ -881,8 +881,8 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
 					if meshActivity != nil {
 						Task {
-							await meshActivity?.update(updatedContent, alertConfiguration: alertConfiguration)
-							// await meshActivity?.update(updatedContent)
+							// await meshActivity?.update(updatedContent, alertConfiguration: alertConfiguration)
+							await meshActivity?.update(updatedContent)
 							Logger.services.debug("Updated live activity.")
 						}
 					}

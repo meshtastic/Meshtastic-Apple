@@ -196,6 +196,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
+
+		_ = clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays), context: self.context)
 		
 		try await withTaskCancellationHandler {
 			var toRadio: ToRadio = ToRadio()
