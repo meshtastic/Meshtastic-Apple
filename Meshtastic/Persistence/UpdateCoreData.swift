@@ -666,7 +666,7 @@ private func createPositionMessageEntity(
 					}
 				}
 				
-				if !(newMessage.fromUser?.mute ?? false) {
+				if !(newMessage.fromUser?.mute ?? false) && UserDefaults.positionShareNotifications {
 					// Create an iOS Notification for the received DM position
 					let manager = LocalNotificationManager()
 					let notificationContent = "📍 Shared their location"
@@ -699,7 +699,7 @@ private func createPositionMessageEntity(
 							if channel.index == newMessage.channel {
 								context.refresh(channel, mergeChanges: true)
 							}
-							if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
+							if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && UserDefaults.positionShareNotifications {
 								// Create an iOS Notification for the received channel position
 								let manager = LocalNotificationManager()
 								let notificationContent = "📍 Shared their location"

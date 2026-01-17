@@ -67,6 +67,7 @@ extension UserDefaults {
 		case enableDetectionNotifications
 		case detectionSensorRole
 		case enableSmartPosition
+		case positionShareNotifications
 		case newNodeNotifications
 		case lowBatteryNotifications
 		case channelMessageNotifications
@@ -138,6 +139,9 @@ extension UserDefaults {
 
 	@UserDefault(.enableSmartPosition, defaultValue: false)
 	static var enableSmartPosition: Bool
+
+	@UserDefault(.positionShareNotifications, defaultValue: true)
+	static var positionShareNotifications: Bool
 
 	@UserDefault(.channelMessageNotifications, defaultValue: true)
 	static var channelMessageNotifications: Bool

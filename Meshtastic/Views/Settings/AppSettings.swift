@@ -20,6 +20,7 @@ struct AppSettings: View {
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
+	@AppStorage("positionShareNotifications") private var positionShareNotifications: Bool = true
 	
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
@@ -77,6 +78,15 @@ struct AppSettings: View {
 						}
 						.tint(.accentColor)
 					}
+				}
+				Section(header: Text("Notifications")) {
+					Toggle(isOn: $positionShareNotifications) {
+						Label("Shared Locations", systemImage: "location.fill")
+					}
+					.tint(.accentColor)
+					Text("Notifications for shared location messages from other users.")
+						.foregroundStyle(.secondary)
+						.font(.caption)
 				}
 				Section(header: Text("App Data")) {
 					Toggle(isOn: $purgeStaleNodes ) {
