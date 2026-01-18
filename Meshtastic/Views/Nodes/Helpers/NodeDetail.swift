@@ -424,6 +424,17 @@ struct NodeDetail: View {
 							}
 						}
 						.disabled(!node.hasDetectionSensorMetrics)
+						NavigationLink {
+							LocalStatsLog(node: node)
+						} label: {
+							Label {
+								Text("Local Stats Log")
+							} icon: {
+								Image(systemName: "chart.bar")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.disabled(node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4")).count ?? 0 == 0)
 						if node.hasPax {
 							NavigationLink {
 								PaxCounterLog(node: node)
@@ -464,6 +475,7 @@ struct NodeDetail: View {
 									node: node,
 									connectedNode: connectedNode
 								)
+								RequestLocalStatsButton(node: node)
 								ExchangeUserInfoButton(
 									node: node,
 									connectedNode: connectedNode

@@ -2140,4 +2140,40 @@ extension AccessoryManager {
 
 		return Int64(meshPacket.id)
 	}
+
+	func sendLocalStatsRequest(destNum: Int64, wantResponse: Bool) async throws {
+		guard let fromNodeNum = self.activeConnection?.device.num else {
+			Logger.services.error("Error while sending local stats request.  No active device.")
+			throw AccessoryError.ioFailed("No active device")
+		}
+
+		var telemetryPacket = Telemetry()
+		telemetryPacket.localStats = LocalStats()
+
+		var meshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(destNum)
+		meshPacket.from = UInt32(fromNodeNum)
+		meshPacket.wantAck = true
+		meshPacket.decoded.wantResponse = wantResponse
+
+		var dataMessage = DataMessage()
+		if let serializedData: Data = try? telemetryPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.telemetryApp
+			dataMessage.wantResponse = wantResponse
+			meshPacket.decoded = dataMessage
+		} else {
+			throw AccessoryError.ioFailed("sendLocalStatsRequest: Unable to serialize telemetry packet")
+		}
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let logString = String.localizedStringWithFormat("📊 Sent Local Stats Request from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
+		try await send(toRadio, debugDescription: logString)
+
+		Logger.mesh.info("📊 \(logString, privacy: .public)")
+	}
 }
