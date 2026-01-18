@@ -104,6 +104,8 @@
 		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
 		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
 		BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613862C69A0FB00485544 /* AppIntentErrors.swift */; };
+		BCCA0BAB2F1C5C25007648E5 /* LocalStatsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */; };
+		BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */; };
 		BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */; };
 		BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */; };
 		BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
@@ -416,6 +418,8 @@
 		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
 		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
 		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
+		BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStatsLog.swift; sourceTree = "<group>"; };
+		BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocalStatsButton.swift; sourceTree = "<group>"; };
 		BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactURLHandler.swift; sourceTree = "<group>"; };
 		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
 		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
@@ -844,6 +848,7 @@
 		251926882C3BAF2E00249DF5 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
+				BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */,
 				DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
 				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
 				251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
@@ -932,6 +937,7 @@
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
+				BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */,
 				DDDB26402AABEF7B003AFCB7 /* Helpers */,
 				DDDB263E2AABEE20003AFCB7 /* NodeList.swift */,
 				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
@@ -1654,6 +1660,7 @@
 				237AEB932E1FE4BA003B7CE3 /* Connection.swift in Sources */,
 				DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */,
 				237AEB952E1FE516003B7CE3 /* Device.swift in Sources */,
+				BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */,
 				2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */,
 				233E99B82D849C6500CC3A77 /* HumidityCompactWidget.swift in Sources */,
 				DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */,
@@ -1785,6 +1792,7 @@
 				ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */,
 				DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */,
 				231B3F212D087A4C0069A07D /* MetricTableColumn.swift in Sources */,
+				BCCA0BAB2F1C5C25007648E5 /* LocalStatsLog.swift in Sources */,
 				231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDDE5A1029AFE69700490C6C /* MeshActivityAttributes.swift in Sources */,

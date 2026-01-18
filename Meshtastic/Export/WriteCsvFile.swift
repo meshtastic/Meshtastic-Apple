@@ -65,6 +65,33 @@ func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String w
 			csvString += ", "
 			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
 		}
+	} else if metricsType == 4 {
+		// Create Local Stats Header
+		csvString = "Noise Floor, Uptime, Relayed, Canceled, Dupes, Packets Tx, Packets Rx, Bad Rx, Nodes Online, Total Nodes, \("Timestamp".localized)"
+		for dm in telemetry where dm.metricsType == 4 {
+			csvString += "\n"
+			csvString += dm.noiseFloor?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.uptimeSeconds?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.numTxRelay.formatted(.number.grouping(.never))
+			csvString += ", "
+			csvString += dm.numTxRelayCanceled.formatted(.number.grouping(.never))
+			csvString += ", "
+			csvString += dm.numRxDupe.formatted(.number.grouping(.never))
+			csvString += ", "
+			csvString += dm.numPacketsTx.formatted(.number.grouping(.never))
+			csvString += ", "
+			csvString += dm.numPacketsRx.formatted(.number.grouping(.never))
+			csvString += ", "
+			csvString += dm.numPacketsRxBad.formatted(.number.grouping(.never))
+			csvString += ", "
+			csvString += dm.numOnlineNodes.formatted(.number.grouping(.never))
+			csvString += ", "
+			csvString += dm.numTotalNodes.formatted(.number.grouping(.never))
+			csvString += ", "
+			csvString += dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
+		}
 	}
 	return csvString
 }
