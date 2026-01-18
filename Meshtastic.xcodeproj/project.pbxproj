@@ -66,6 +66,7 @@
 		251926852C3BA97800249DF5 /* FavoriteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */; };
 		251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */; };
 		2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */; };
+		DD4074692F1233F400BCC22F /* ExchangeUserInfoButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */; };
 		2519268C2C3BB52000249DF5 /* TraceRouteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */; };
 		251926902C3CB44900249DF5 /* ClientHistoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */; };
 		251926922C3CB52300249DF5 /* DeleteNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251926912C3CB52300249DF5 /* DeleteNodeButton.swift */; };
@@ -385,6 +386,7 @@
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
 		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
+		DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeUserInfoButton.swift; sourceTree = "<group>"; };
 		2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteButton.swift; sourceTree = "<group>"; };
 		2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientHistoryButton.swift; sourceTree = "<group>"; };
 		251926912C3CB52300249DF5 /* DeleteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteNodeButton.swift; sourceTree = "<group>"; };
@@ -852,6 +854,7 @@
 				DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
 				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
 				251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
+				DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */,
 				DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */,
 				251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */,
 				2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */,
@@ -1821,6 +1824,7 @@
 				DDF82CBD2D5BC69200DC25EC /* NavigateToButton.swift in Sources */,
 				8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */,
 				2519268A2C3BB1B200249DF5 /* ExchangePositionsButton.swift in Sources */,
+				DD4074692F1233F400BCC22F /* ExchangeUserInfoButton.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,
 				233E99BE2D849D3200CC3A77 /* RadiationCompactWidget.swift in Sources */,
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,

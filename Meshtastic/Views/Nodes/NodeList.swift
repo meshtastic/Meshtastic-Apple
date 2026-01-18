@@ -253,6 +253,19 @@ fileprivate struct FilteredNodeList: View {
 				} label: {
 					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 				}
+				Button {
+					Task {
+						if let fromUser = connectedNode.user, let toUser = node.user {
+							do {
+								_ = try await accessoryManager.exchangeUserInfo(fromUser: fromUser, toUser: toUser)
+							} catch {
+								Logger.mesh.warning("Failed to exchange user info")
+							}
+						}
+					}
+				} label: {
+					Label("Exchange User Info", systemImage: "person.2.badge.gearshape")
+				}
 				TraceRouteButton(
 					node: node
 				)

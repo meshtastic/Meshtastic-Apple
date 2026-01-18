@@ -13738,6 +13738,9 @@
         }
       }
     },
+    "Exchange User Info" : {
+
+    },
     "Exclamation" : {
       "localizations" : {
         "de" : {
@@ -14218,6 +14221,9 @@
         }
       }
     },
+    "Failed to exchange user info." : {
+
+    },
     "Failed to get a valid position to exchange" : {
       "localizations" : {
         "it" : {
@@ -14343,6 +14349,7 @@
       }
     },
     "Favorited and ignored nodes are always retained. Nodes without PKC keys are cleared from the app database on the schedule set by the user, nodes with PKC keys are cleared only if the interval is set to 7 days or longer. This feature only purges nodes from the app that are not stored in the device node database." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14363,6 +14370,9 @@
           }
         }
       }
+    },
+    "Favorited and ignored nodes are always retained. Other nodes are cleared from the app database on the schedule set by the user. (Nodes with PKC keys are always retained for at least 7 days.) This feature only purges nodes from the app that are not stored in the device node database." : {
+
     },
     "Favorites" : {
       "localizations" : {
@@ -31702,6 +31712,9 @@
         }
       }
     },
+    "Select an emoji" : {
+
+    },
     "Select Channel" : {
       "localizations" : {
         "it" : {
@@ -35631,6 +35644,9 @@
           }
         }
       }
+    },
+    "Tap to enter emoji" : {
+
     },
     "Tapback" : {
       "localizations" : {
@@ -40312,6 +40328,12 @@
         }
       }
     },
+    "User Info Exchange Failed" : {
+
+    },
+    "User Info Sent" : {
+
+    },
     "User Privacy" : {
 
     },
@@ -42402,6 +42424,9 @@
           }
         }
       }
+    },
+    "Your user info has been sent with a request for a response with their user info." : {
+
     }
   },
   "version" : "1.1"

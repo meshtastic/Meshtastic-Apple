@@ -80,6 +80,7 @@ extension UserDefaults {
 		case showDeviceOnboarding
 		case usageDataAndCrashReporting
 		case autoconnectOnDiscovery
+		case purgeStaleNodeDays
 		case manualConnections
 		case testIntEnum
 	}
@@ -177,6 +178,9 @@ extension UserDefaults {
 
 	@UserDefault(.autoconnectOnDiscovery, defaultValue: true)
 	static var autoconnectOnDiscovery: Bool
+
+	@UserDefault(.purgeStaleNodeDays, defaultValue: 0)
+	static var purgeStaleNodeDays: Double
 
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum

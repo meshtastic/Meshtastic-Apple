@@ -476,6 +476,10 @@ struct NodeDetail: View {
 									connectedNode: connectedNode
 								)
 								RequestLocalStatsButton(node: node)
+								ExchangeUserInfoButton(
+									node: node,
+									connectedNode: connectedNode
+								)
 								TraceRouteButton(
 									node: node
 								)

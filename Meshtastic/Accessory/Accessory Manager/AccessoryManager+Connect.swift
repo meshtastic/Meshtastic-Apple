@@ -48,7 +48,7 @@ extension AccessoryManager {
 			}
 			
 			// Step 1: Setup the connection
-			Step(timeout: .seconds(2)) { @MainActor _ in
+			Step(timeout: .seconds(5)) { @MainActor _ in
 				Logger.transport.info("🔗👟[Connect] Step 1: connection to \(device.id, privacy: .public)")
 				do {
 					let connection: Connection
@@ -352,7 +352,6 @@ actor SequentialSteps {
 			return
 		}
 		isRunning = false
-		return
 		throw AccessoryError.tooManyRetries
 	}
 	
