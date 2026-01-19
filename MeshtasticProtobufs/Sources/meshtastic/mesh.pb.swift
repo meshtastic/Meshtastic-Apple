@@ -166,8 +166,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case loraRelayV1 // = 32
 
   ///
-  /// TODO: REPLACE
-  case nrf52840Dk // = 33
+  /// T-Echo Plus device from LilyGo
+  case tEchoPlus // = 33
 
   ///
   /// TODO: REPLACE
@@ -536,6 +536,18 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case thinknodeM6 // = 120
 
   ///
+  /// Elecrow Meshstick 1262
+  case meshstick1262 // = 121
+
+  ///
+  /// LilyGo T-Beam 1W 
+  case tbeam1Watt // = 122
+
+  ///
+  /// LilyGo T5 S3 ePaper Pro (V1 and V2)
+  case t5S3EpaperPro // = 123
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -581,7 +593,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 30: self = .rp2040Lora
     case 31: self = .stationG2
     case 32: self = .loraRelayV1
-    case 33: self = .nrf52840Dk
+    case 33: self = .tEchoPlus
     case 34: self = .ppr
     case 35: self = .genieblocks
     case 36: self = .nrf52Unknown
@@ -669,6 +681,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 118: self = .rak6421
     case 119: self = .thinknodeM4
     case 120: self = .thinknodeM6
+    case 121: self = .meshstick1262
+    case 122: self = .tbeam1Watt
+    case 123: self = .t5S3EpaperPro
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -709,7 +724,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .rp2040Lora: return 30
     case .stationG2: return 31
     case .loraRelayV1: return 32
-    case .nrf52840Dk: return 33
+    case .tEchoPlus: return 33
     case .ppr: return 34
     case .genieblocks: return 35
     case .nrf52Unknown: return 36
@@ -797,6 +812,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .rak6421: return 118
     case .thinknodeM4: return 119
     case .thinknodeM6: return 120
+    case .meshstick1262: return 121
+    case .tbeam1Watt: return 122
+    case .t5S3EpaperPro: return 123
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -837,7 +855,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .rp2040Lora,
     .stationG2,
     .loraRelayV1,
-    .nrf52840Dk,
+    .tEchoPlus,
     .ppr,
     .genieblocks,
     .nrf52Unknown,
@@ -925,6 +943,9 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .rak6421,
     .thinknodeM4,
     .thinknodeM6,
+    .meshstick1262,
+    .tbeam1Watt,
+    .t5S3EpaperPro,
     .privateHw,
   ]
 
@@ -1921,6 +1942,11 @@ public struct Routing: Sendable {
     /// Airtime fairness rate limit exceeded for a packet
     /// This typically enforced per portnum and is used to prevent a single node from monopolizing airtime
     case rateLimitExceeded // = 38
+
+    ///
+    /// PKI encryption failed, due to no public key for the remote node
+    /// This is different from PKI_UNKNOWN_PUBKEY which indicates a failure upon receiving a packet
+    case pkiSendFailPublicKey // = 39
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -1946,6 +1972,7 @@ public struct Routing: Sendable {
       case 36: self = .adminBadSessionKey
       case 37: self = .adminPublicKeyUnauthorized
       case 38: self = .rateLimitExceeded
+      case 39: self = .pkiSendFailPublicKey
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -1969,6 +1996,7 @@ public struct Routing: Sendable {
       case .adminBadSessionKey: return 36
       case .adminPublicKeyUnauthorized: return 37
       case .rateLimitExceeded: return 38
+      case .pkiSendFailPublicKey: return 39
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -1992,6 +2020,7 @@ public struct Routing: Sendable {
       .adminBadSessionKey,
       .adminPublicKeyUnauthorized,
       .rateLimitExceeded,
+      .pkiSendFailPublicKey,
     ]
 
   }
@@ -2135,6 +2164,10 @@ public struct StoreForwardPlusPlus: Sendable {
   ///
   /// The receive time of the message in question
   public var encapsulatedRxtime: UInt32 = 0
+
+  ///
+  /// Used in a LINK_REQUEST to specify the message X spots back from head
+  public var chainCount: UInt32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2934,6 +2967,14 @@ public struct NodeInfo: @unchecked Sendable {
   public var isKeyManuallyVerified: Bool {
     get {return _storage._isKeyManuallyVerified}
     set {_uniqueStorage()._isKeyManuallyVerified = newValue}
+  }
+
+  ///
+  /// True if node has been muted
+  /// Persistes between NodeDB internal clean ups
+  public var isMuted: Bool {
+    get {return _storage._isMuted}
+    set {_uniqueStorage()._isMuted = newValue}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -3959,7 +4000,7 @@ public struct ChunkedPayloadResponse: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}SENSELORA_RP2040\0\u{1}SENSELORA_S3\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}NRF52840DK\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{2}G\u{2}PRIVATE_HW\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}SENSELORA_RP2040\0\u{1}SENSELORA_S3\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{2}D\u{2}PRIVATE_HW\0")
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {
@@ -4409,7 +4450,7 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 }
 
 extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{1}NO_ROUTE\0\u{1}GOT_NAK\0\u{1}TIMEOUT\0\u{1}NO_INTERFACE\0\u{1}MAX_RETRANSMIT\0\u{1}NO_CHANNEL\0\u{1}TOO_LARGE\0\u{1}NO_RESPONSE\0\u{1}DUTY_CYCLE_LIMIT\0\u{2}\u{17}BAD_REQUEST\0\u{1}NOT_AUTHORIZED\0\u{1}PKI_FAILED\0\u{1}PKI_UNKNOWN_PUBKEY\0\u{1}ADMIN_BAD_SESSION_KEY\0\u{1}ADMIN_PUBLIC_KEY_UNAUTHORIZED\0\u{1}RATE_LIMIT_EXCEEDED\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{1}NO_ROUTE\0\u{1}GOT_NAK\0\u{1}TIMEOUT\0\u{1}NO_INTERFACE\0\u{1}MAX_RETRANSMIT\0\u{1}NO_CHANNEL\0\u{1}TOO_LARGE\0\u{1}NO_RESPONSE\0\u{1}DUTY_CYCLE_LIMIT\0\u{2}\u{17}BAD_REQUEST\0\u{1}NOT_AUTHORIZED\0\u{1}PKI_FAILED\0\u{1}PKI_UNKNOWN_PUBKEY\0\u{1}ADMIN_BAD_SESSION_KEY\0\u{1}ADMIN_PUBLIC_KEY_UNAUTHORIZED\0\u{1}RATE_LIMIT_EXCEEDED\0\u{1}PKI_SEND_FAIL_PUBLIC_KEY\0")
 }
 
 extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -4528,7 +4569,7 @@ extension KeyVerification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 
 extension StoreForwardPlusPlus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".StoreForwardPlusPlus"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}sfpp_message_type\0\u{3}message_hash\0\u{3}commit_hash\0\u{3}root_hash\0\u{1}message\0\u{3}encapsulated_id\0\u{3}encapsulated_to\0\u{3}encapsulated_from\0\u{3}encapsulated_rxtime\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}sfpp_message_type\0\u{3}message_hash\0\u{3}commit_hash\0\u{3}root_hash\0\u{1}message\0\u{3}encapsulated_id\0\u{3}encapsulated_to\0\u{3}encapsulated_from\0\u{3}encapsulated_rxtime\0\u{3}chain_count\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4545,6 +4586,7 @@ extension StoreForwardPlusPlus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.encapsulatedTo) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.encapsulatedFrom) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.encapsulatedRxtime) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.chainCount) }()
       default: break
       }
     }
@@ -4578,6 +4620,9 @@ extension StoreForwardPlusPlus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.encapsulatedRxtime != 0 {
       try visitor.visitSingularUInt32Field(value: self.encapsulatedRxtime, fieldNumber: 9)
     }
+    if self.chainCount != 0 {
+      try visitor.visitSingularUInt32Field(value: self.chainCount, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -4591,6 +4636,7 @@ extension StoreForwardPlusPlus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.encapsulatedTo != rhs.encapsulatedTo {return false}
     if lhs.encapsulatedFrom != rhs.encapsulatedFrom {return false}
     if lhs.encapsulatedRxtime != rhs.encapsulatedRxtime {return false}
+    if lhs.chainCount != rhs.chainCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4981,7 +5027,7 @@ extension MeshPacket.TransportMechanism: SwiftProtobuf._ProtoNameProviding {
 
 extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfo"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0\u{3}is_muted\0")
 
   fileprivate class _StorageClass {
     var _num: UInt32 = 0
@@ -4996,6 +5042,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _isFavorite: Bool = false
     var _isIgnored: Bool = false
     var _isKeyManuallyVerified: Bool = false
+    var _isMuted: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -5018,6 +5065,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _isFavorite = source._isFavorite
       _isIgnored = source._isIgnored
       _isKeyManuallyVerified = source._isKeyManuallyVerified
+      _isMuted = source._isMuted
     }
   }
 
@@ -5048,6 +5096,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._isIgnored) }()
         case 12: try { try decoder.decodeSingularBoolField(value: &_storage._isKeyManuallyVerified) }()
+        case 13: try { try decoder.decodeSingularBoolField(value: &_storage._isMuted) }()
         default: break
         }
       }
@@ -5096,6 +5145,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._isKeyManuallyVerified != false {
         try visitor.visitSingularBoolField(value: _storage._isKeyManuallyVerified, fieldNumber: 12)
       }
+      if _storage._isMuted != false {
+        try visitor.visitSingularBoolField(value: _storage._isMuted, fieldNumber: 13)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -5117,6 +5169,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._isFavorite != rhs_storage._isFavorite {return false}
         if _storage._isIgnored != rhs_storage._isIgnored {return false}
         if _storage._isKeyManuallyVerified != rhs_storage._isKeyManuallyVerified {return false}
+        if _storage._isMuted != rhs_storage._isMuted {return false}
         return true
       }
       if !storagesAreEqual {return false}

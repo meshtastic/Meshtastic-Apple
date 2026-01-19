@@ -13743,6 +13743,9 @@
         }
       }
     },
+    "Exchange User Info" : {
+
+    },
     "Exclamation" : {
       "localizations" : {
         "de" : {
@@ -14222,6 +14225,9 @@
           }
         }
       }
+    },
+    "Failed to exchange user info." : {
+
     },
     "Failed to get a valid position to exchange" : {
       "localizations" : {
@@ -35633,6 +35639,9 @@
         }
       }
     },
+    "Tap to enter emoji" : {
+
+    },
     "Tapback" : {
       "localizations" : {
         "de" : {
@@ -40316,6 +40325,12 @@
         }
       }
     },
+    "User Info Exchange Failed" : {
+
+    },
+    "User Info Sent" : {
+
+    },
     "User Privacy" : {
 
     },
@@ -42406,6 +42421,9 @@
           }
         }
       }
+    },
+    "Your user info has been sent with a request for a response with their user info." : {
+
     }
   },
   "version" : "1.1"

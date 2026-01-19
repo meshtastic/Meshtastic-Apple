@@ -805,9 +805,15 @@ public struct ModuleConfig: Sendable {
       /// https://beta.ivc.no/wiki/index.php/Victron_VE_Direct_DIY_Cable
       case veDirect // = 7
 
-      ///Used to configure and view some parameters of MeshSolar.
-      ///https://heltec.org/project/meshsolar/
+      /// Used to configure and view some parameters of MeshSolar.
+      /// https://heltec.org/project/meshsolar/
       case msConfig // = 8
+
+      /// Logs mesh traffic to the serial pins, ideal for logging via openLog or similar.
+      case log // = 9
+
+      /// only text (channel & DM)
+      case logtext // = 10
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -825,6 +831,8 @@ public struct ModuleConfig: Sendable {
         case 6: self = .ws85
         case 7: self = .veDirect
         case 8: self = .msConfig
+        case 9: self = .log
+        case 10: self = .logtext
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -840,6 +848,8 @@ public struct ModuleConfig: Sendable {
         case .ws85: return 6
         case .veDirect: return 7
         case .msConfig: return 8
+        case .log: return 9
+        case .logtext: return 10
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -855,6 +865,8 @@ public struct ModuleConfig: Sendable {
         .ws85,
         .veDirect,
         .msConfig,
+        .log,
+        .logtext,
       ]
 
     }
@@ -1079,6 +1091,10 @@ public struct ModuleConfig: Sendable {
     /// Enable/Disable the device telemetry module to send metrics to the mesh
     /// Note: We will still send telemtry to the connected phone / client every minute over the API
     public var deviceTelemetryEnabled: Bool = false
+
+    ///
+    /// Enable/Disable the air quality telemetry measurement module on-device display
+    public var airQualityScreenEnabled: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2005,7 +2021,7 @@ extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProvidi
 }
 
 extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEFAULT\0\u{1}SIMPLE\0\u{1}PROTO\0\u{1}TEXTMSG\0\u{1}NMEA\0\u{1}CALTOPO\0\u{1}WS85\0\u{1}VE_DIRECT\0\u{1}MS_CONFIG\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEFAULT\0\u{1}SIMPLE\0\u{1}PROTO\0\u{1}TEXTMSG\0\u{1}NMEA\0\u{1}CALTOPO\0\u{1}WS85\0\u{1}VE_DIRECT\0\u{1}MS_CONFIG\0\u{1}LOG\0\u{1}LOGTEXT\0")
 }
 
 extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -2210,7 +2226,7 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TelemetryConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}device_update_interval\0\u{3}environment_update_interval\0\u{3}environment_measurement_enabled\0\u{3}environment_screen_enabled\0\u{3}environment_display_fahrenheit\0\u{3}air_quality_enabled\0\u{3}air_quality_interval\0\u{3}power_measurement_enabled\0\u{3}power_update_interval\0\u{3}power_screen_enabled\0\u{3}health_measurement_enabled\0\u{3}health_update_interval\0\u{3}health_screen_enabled\0\u{3}device_telemetry_enabled\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}device_update_interval\0\u{3}environment_update_interval\0\u{3}environment_measurement_enabled\0\u{3}environment_screen_enabled\0\u{3}environment_display_fahrenheit\0\u{3}air_quality_enabled\0\u{3}air_quality_interval\0\u{3}power_measurement_enabled\0\u{3}power_update_interval\0\u{3}power_screen_enabled\0\u{3}health_measurement_enabled\0\u{3}health_update_interval\0\u{3}health_screen_enabled\0\u{3}device_telemetry_enabled\0\u{3}air_quality_screen_enabled\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2232,6 +2248,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.healthUpdateInterval) }()
       case 13: try { try decoder.decodeSingularBoolField(value: &self.healthScreenEnabled) }()
       case 14: try { try decoder.decodeSingularBoolField(value: &self.deviceTelemetryEnabled) }()
+      case 15: try { try decoder.decodeSingularBoolField(value: &self.airQualityScreenEnabled) }()
       default: break
       }
     }
@@ -2280,6 +2297,9 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if self.deviceTelemetryEnabled != false {
       try visitor.visitSingularBoolField(value: self.deviceTelemetryEnabled, fieldNumber: 14)
     }
+    if self.airQualityScreenEnabled != false {
+      try visitor.visitSingularBoolField(value: self.airQualityScreenEnabled, fieldNumber: 15)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2298,6 +2318,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.healthUpdateInterval != rhs.healthUpdateInterval {return false}
     if lhs.healthScreenEnabled != rhs.healthScreenEnabled {return false}
     if lhs.deviceTelemetryEnabled != rhs.deviceTelemetryEnabled {return false}
+    if lhs.airQualityScreenEnabled != rhs.airQualityScreenEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
