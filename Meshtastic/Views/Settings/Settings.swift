@@ -327,6 +327,18 @@ struct Settings: View {
 		}
 	}
 
+	var takSection: some View {
+		Section(header: Text("TAK")) {
+			NavigationLink(value: SettingsNavigationState.tak) {
+				Label {
+					Text("TAK Server")
+				} icon: {
+					Image(systemName: "target")
+				}
+			}
+		}
+	}
+
 	var body: some View {
 		NavigationStack(
 			path: Binding<[SettingsNavigationState]>(
@@ -458,6 +470,7 @@ struct Settings: View {
 					developersSection
 #endif
 					firmwareSection
+					takSection
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
@@ -521,6 +534,8 @@ struct Settings: View {
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
+				case .tak:
+					TAKServerConfig()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
