@@ -171,17 +171,21 @@ struct ESP32OTAIntroSheet: View {
 	}
 	
 	private var OTAMode: SupportedOTAMode {
-		if let connection = accessoryManager.activeConnection?.connection {
-			if connection is TCPConnection {
-				return .wifi
-			} else if connection is BLEConnection {
-				return .ble
-			} else if connection is SerialConnection {
-				return .wifi //DEBUG
-			}
-			
+		guard let connection = accessoryManager.activeConnection?.connection else {
+			return .none
 		}
-		return .none
-	}
 
+		switch connection {
+		case is TCPConnection:
+			return .wifi
+		case is BLEConnection:
+			return .ble
+		#if targetEnvironment(macCatalyst)
+		case is SerialConnection:
+			return .wifi // DEBUG
+		#endif
+		default:
+			return .none
+		}
+	}
 }
