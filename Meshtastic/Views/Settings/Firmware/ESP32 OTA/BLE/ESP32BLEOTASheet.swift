@@ -185,6 +185,9 @@ struct ESP32BLEOTASheet: View {
 					try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaBle, otaHash: sha256Digest)
 					rebootSuccessful = true
 					
+					// Give some time for any final incomming notifications
+					try await Task.sleep(for: .seconds(1.0))
+
 					// 3. Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
 					try await accessoryManager.disconnect()
 					

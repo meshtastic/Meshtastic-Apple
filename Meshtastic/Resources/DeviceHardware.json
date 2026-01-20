@@ -354,7 +354,7 @@
     "platformioTarget": "t-echo-plus",
     "architecture": "nrf52840",
     "supportLevel": 1,
-    "activelySupported": false,
+    "activelySupported": true,
     "displayName": "LILYGO T-Echo Plus",
     "tags": [
       "LilyGo"
@@ -930,9 +930,9 @@
     "hwModelSlug": "MUZI_BASE",
     "platformioTarget": "muzi-base",
     "architecture": "nrf52840",
-    "activelySupported": false,
+    "activelySupported": true,
     "supportLevel": 1,
-    "displayName": "muzi base",
+    "displayName": "muzi BASE DUO/UNO",
     "tags": [
       "muzi"
     ],
@@ -1315,6 +1315,23 @@
     "requiresDfu": true,
     "images": [
       "thinknode_m6.svg"
+    ]
+  },
+  {
+    "hwModel": 122,
+    "hwModelSlug": "TBEAM_1_WATT",
+    "platformioTarget": "t-beam-1w",
+    "architecture": "esp32-s3",
+    "activelySupported": true,
+    "supportLevel": 1,
+    "displayName": "LilyGo T-Beam 1W",
+    "tags": [
+      "LilyGo"
+    ],
+    "hasMui": false,
+    "partitionScheme": "8MB",
+    "images": [
+      "tbeam-1w.svg"
     ]
   }
 ]
