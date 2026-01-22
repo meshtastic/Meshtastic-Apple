@@ -369,13 +369,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func didReceive(_ event: ConnectionEvent) {
+	func didReceive(_ event: ConnectionEvent) async {
 		packetsReceived += 1
 		
 		switch event {
 		case .data(let fromRadio):
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
-			self.processFromRadio(fromRadio)
+			await self.processFromRadio(fromRadio)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
 				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
@@ -483,7 +483,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	private func processFromRadio(_ decodedInfo: FromRadio) {
+	private func processFromRadio(_ decodedInfo: FromRadio) async {
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
 			handleMqttClientProxyMessage(mqttClientProxyMessage)
@@ -492,7 +492,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			handleClientNotification(clientNotification)
 
 		case .myInfo(let myNodeInfo):
-			handleMyInfo(myNodeInfo)
+			await handleMyInfo(myNodeInfo)
 
 		case .packet(let packet):
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
@@ -506,13 +506,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			if case let .decoded(data) = packet.payloadVariant {
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
-					handleTextMessageAppPacket(packet)
+					await handleTextMessageAppPacket(packet)
 				case .remoteHardwareApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
 					upsertPositionPacket(packet: packet, context: context)
 				case .waypointApp:
-					waypointPacket(packet: packet, context: context)
+					await MeshPackets.shared.waypointPacket(packet: packet)
 				case .nodeinfoApp:
 					guard let connectedNodeNum = self.activeDeviceNum else {
 						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for node info upsert.")
@@ -528,16 +528,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for routingPacket.")
 						return
 					}
-					routingPacket(packet: packet, connectedNodeNum: deviceNum, context: context)
+					await MeshPackets.shared.routingPacket(packet: packet, connectedNodeNum: deviceNum)
 				case .adminApp:
-					adminAppPacket(packet: packet, context: context)
+					await MeshPackets.shared.adminAppPacket(packet: packet)
 				case .replyApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Reply App handling as a text message")
 					guard let deviceNum = activeConnection?.device.num else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for replyApp.")
 						return
 					}
-					textMessageAppPacket(packet: packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: deviceNum, context: context, appState: appState)
+					await MeshPackets.shared.textMessageAppPacket(packet: packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: deviceNum, appState: appState)
 				case .ipTunnelApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
 				case .serialApp:
@@ -554,11 +554,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						return
 					}
 					if wantRangeTestPackets {
-						textMessageAppPacket(
+						await MeshPackets.shared.textMessageAppPacket(
 							packet: packet,
 							wantRangeTestPackets: true,
 							connectedNode: deviceNum,
-							context: context,
 							appState: appState
 						)
 					} else {
@@ -569,7 +568,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for telemetryApp.")
 						return
 					}
-					telemetryPacket(packet: packet, connectedNode: deviceNum, context: context)
+					await MeshPackets.shared.telemetryPacket(packet: packet, connectedNode: deviceNum)
 				case .textMessageCompressedApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
 				case .zpsApp:
@@ -591,7 +590,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 					}
 				case .paxcounterApp:
-					paxCounterPacket(packet: decodedInfo.packet, context: context)
+					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet)
 				case .mapReportApp:
 					Logger.mesh.info("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .UNRECOGNIZED:
@@ -614,19 +613,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 
 		case .nodeInfo(let nodeInfo):
-			handleNodeInfo(nodeInfo)
+			await handleNodeInfo(nodeInfo)
 
 		case .channel(let channel):
-			handleChannel(channel)
+			await handleChannel(channel)
 
 		case .config(let config):
-			handleConfig(config)
+			await handleConfig(config)
 
 		case .moduleConfig(let moduleConfig):
-			handleModuleConfig(moduleConfig)
+			await handleModuleConfig(moduleConfig)
 
 		case .metadata(let metadata):
-			handleDeviceMetadata(metadata)
+			await handleDeviceMetadata(metadata)
 
 		case .deviceuiConfig:
 #if DEBUG
