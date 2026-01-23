@@ -197,7 +197,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			return
 		}
 
-		_ = clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays), context: self.context)
+		_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
 		
 		try await withTaskCancellationHandler {
 			var toRadio: ToRadio = ToRadio()
@@ -497,7 +497,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .packet(let packet):
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = self.activeDeviceNum {
-				updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum, context: context)
+				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)
 			} else {
 				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
 			}
@@ -510,7 +510,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .remoteHardwareApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
-					upsertPositionPacket(packet: packet, context: context)
+					await MeshPackets.shared.upsertPositionPacket(packet: packet)
 				case .waypointApp:
 					await MeshPackets.shared.waypointPacket(packet: packet)
 				case .nodeinfoApp:
@@ -519,7 +519,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						return
 					}
 					if packet.from != connectedNodeNum {
-						upsertNodeInfoPacket(packet: packet, context: context)
+						await MeshPackets.shared.upsertNodeInfoPacket(packet: packet)
 					} else {
 						Logger.mesh.error("🕸️ Received a node info packet from ourselves over the mesh. Dropping.")
 					}

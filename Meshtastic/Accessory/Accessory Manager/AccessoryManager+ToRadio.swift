@@ -166,7 +166,7 @@ extension AccessoryManager {
 
 					// Update local database with the new node info
 					// FUTURE: after https://github.com/meshtastic/firmware/pull/8495 is merged, `favorite: true` becomes `favorite: (connectedDeviceRole != DeviceRoles.clientBase)`
-					upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: true, context: context)
+					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: true)
 				}
 			} catch {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
@@ -856,7 +856,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertAmbientLightingModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertAmbientLightingModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 
@@ -912,7 +912,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -995,7 +995,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Detection Sensor Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertDetectionSensorModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertDetectionSensorModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1049,7 +1049,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved External Notification Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1079,7 +1079,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved PAX Counter Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertPaxCounterModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertPaxCounterModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1109,7 +1109,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1140,7 +1140,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved MQTT Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1170,7 +1170,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertRangeTestModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertRangeTestModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1200,7 +1200,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Serial Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertSerialModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertSerialModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1379,7 +1379,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Store & Forward Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertStoreForwardModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertStoreForwardModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1615,7 +1615,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertPositionConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		try await MeshPackets.shared.upsertPositionConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1669,7 +1669,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertPowerConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertPowerConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1725,7 +1725,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertNetworkConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertNetworkConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1756,7 +1756,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertSecurityConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertSecurityConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1890,7 +1890,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
+		await MeshPackets.shared.upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey)
 
 		return Int64(meshPacket.id)
 	}
@@ -1920,7 +1920,7 @@ extension AccessoryManager {
 		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertTelemetryModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertTelemetryModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
 
 		return Int64(meshPacket.id)
 	}
@@ -1973,7 +1973,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Display Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertDisplayConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
+		await MeshPackets.shared.upsertDisplayConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey)
 
 		return Int64(meshPacket.id)
 	}
@@ -2052,7 +2052,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Device Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-			upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
+		await MeshPackets.shared.upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey)
 
 		return Int64(meshPacket.id)
 	}
@@ -2081,7 +2081,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey, context: context)
+		await MeshPackets.shared.upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey)
 
 		return Int64(meshPacket.id)
 	}

@@ -138,30 +138,31 @@ struct AppSettings: View {
 						Button("Erase all app data?", role: .destructive) {
 							Task {
 								try await accessoryManager.disconnect()
-							}
-							/// Delete any database backups too
-							if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-								url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
-								do {
-									try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite"))
-									/// Delete -shm file
+								
+								/// Delete any database backups too
+								if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+									url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
 									do {
-										try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-wal"))
+										try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite"))
+										/// Delete -shm file
 										do {
-											try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-shm"))
+											try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-wal"))
+											do {
+												try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-shm"))
+											} catch {
+												Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
+											}
 										} catch {
-											Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
+											Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
 										}
 									} catch {
-										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
+										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 									}
-								} catch {
-									Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 								}
+								await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: true)
+								clearNotifications()
+								context.refreshAllObjects()
 							}
-							clearCoreDataDatabase(context: context, includeRoutes: true)
-							clearNotifications()
-							context.refreshAllObjects()
 						}
 					}
 					Button {
