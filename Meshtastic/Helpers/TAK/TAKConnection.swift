@@ -228,7 +228,7 @@ actor TAKConnection {
 		}
 
 		do {
-			let cotMessage = try CoTMessage.parse(from: data)
+			let cotMessage = try CoTMessage.parseData(data)
 
 			// Handle TAK Protocol control messages
 			if cotMessage.type.hasPrefix("t-x-takp") {
@@ -268,7 +268,8 @@ actor TAKConnection {
 			Logger.tak.warning("Failed to parse CoT message: \(error.localizedDescription)")
 			// Log the raw XML for debugging
 			if let xmlString = String(data: data, encoding: .utf8) {
-				Logger.tak.debug("Failed Raw CoT XML: \(xmlString.prefix(500))")
+				let snippet = String(xmlString.prefix(500))
+				Logger.tak.debug("Failed Raw CoT XML: \(snippet)")
 			}
 		}
 	}
@@ -494,3 +495,4 @@ enum TAKConnectionError: LocalizedError {
 		}
 	}
 }
+
