@@ -1248,7 +1248,7 @@ extension MeshPackets {
 
 	func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSensorConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) async {
 		let context = self.backgroundContext
-		context.persistentStoreCoordinator?.performAndWait {
+		await context.perform {
 			self.upsertDetectionSensorModuleConfigPacket(config: config, nodeNum: nodeNum, sessionPasskey: sessionPasskey, context: context)
 		}
 	}
