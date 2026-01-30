@@ -516,7 +516,7 @@ extension AccessoryManager {
 
 				let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
 				try await send(toRadio, debugDescription: logString)
-				channelPacket(channel: chan, fromNum: self.activeDeviceNum ?? 0, context: context)
+				await MeshPackets.shared.channelPacket(channel: chan, fromNum: self.activeDeviceNum ?? 0)
 			}
 			if !addChannels {
 				// Save the LoRa Config and the device will reboot
