@@ -319,9 +319,26 @@ struct CoTMessage: Identifiable, Sendable {
 
 		// Chat elements (for b-t-f messages)
 		if let chat {
-			let messageId = UUID().uuidString
-			let senderUid = uid.hasPrefix("GeoChat.") ? String(uid.split(separator: ".")[1]) : uid
+			// Derive sender UID and messageId from GeoChat UID when possible, with safe fallbacks
+			let senderUid: String
+			let messageId: String
 
+			if uid.hasPrefix("GeoChat.") {
+				let components = uid.split(separator: ".")
+				if components.count >= 3 {
+					// Expected GeoChat format: GeoChat.<senderUid>.<messageId>
+					senderUid = String(components[1])
+					messageId = String(components[2])
+				} else {
+					// Malformed GeoChat UID; fall back safely
+					senderUid = uid
+					messageId = uid
+				}
+			} else {
+				// Non-GeoChat UID; use uid as both sender and stable message identifier
+				senderUid = uid
+				messageId = uid
+			}
 			cot += "<__chat parent='RootContactGroup' groupOwner='false' "
 			cot += "messageId='\(messageId)' "
 			cot += "chatroom='\(chat.chatroom.xmlEscaped)' id='\(chat.chatroom.xmlEscaped)' "
