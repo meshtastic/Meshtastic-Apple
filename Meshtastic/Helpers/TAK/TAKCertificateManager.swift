@@ -262,15 +262,52 @@ final class TAKCertificateManager {
 
 		// Store the raw P12 data and password for data package generation (only for custom certs)
 		if isCustom {
-			UserDefaults.standard.set(p12Data, forKey: customServerP12DataKey)
-			UserDefaults.standard.set(password, forKey: customServerP12PasswordKey)
-			Logger.tak.debug("Stored custom server P12 data for data package generation")
+			storeCustomServerP12InKeychain(p12Data: p12Data, password: password)
+			Logger.tak.debug("Stored custom server P12 data for data package generation in Keychain")
 		}
 
 		Logger.tak.info("Server identity imported successfully (custom: \(isCustom))")
 		return identity
 	}
 
+	/// Store custom server PKCS#12 data and its password in the Keychain
+	private func storeCustomServerP12InKeychain(p12Data: Data, password: String) {
+		let service = "com.meshtastic.tak"
+
+		// Helper to upsert a generic password item
+		func upsertKeychainItem(account: String, value: Data) -> OSStatus {
+			let deleteQuery: [String: Any] = [
+				kSecClass as String: kSecClassGenericPassword,
+				kSecAttrService as String: service,
+				kSecAttrAccount as String: account
+			]
+			SecItemDelete(deleteQuery as CFDictionary)
+
+			let addQuery: [String: Any] = [
+				kSecClass as String: kSecClassGenericPassword,
+				kSecAttrService as String: service,
+				kSecAttrAccount as String: account,
+				kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+				kSecValueData as String: value
+			]
+
+			return SecItemAdd(addQuery as CFDictionary, nil)
+		}
+
+		let dataStatus = upsertKeychainItem(account: customServerP12DataKey, value: p12Data)
+		if dataStatus != errSecSuccess {
+			Logger.tak.error("Failed to store custom server P12 data in Keychain: \(dataStatus)")
+		}
+
+		if let passwordData = password.data(using: .utf8) {
+			let passwordStatus = upsertKeychainItem(account: customServerP12PasswordKey, value: passwordData)
+			if passwordStatus != errSecSuccess {
+				Logger.tak.error("Failed to store custom server P12 password in Keychain: \(passwordStatus)")
+			}
+		} else {
+			Logger.tak.error("Failed to encode custom server P12 password as UTF-8 data")
+		}
+	}
 	/// Store server identity in Keychain
 	private func storeServerIdentity(_ identity: SecIdentity, isCustom: Bool = true) throws {
 		let tag = isCustom ? serverIdentityCustomTag : serverIdentityTag
