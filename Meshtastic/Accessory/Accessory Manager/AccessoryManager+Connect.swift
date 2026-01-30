@@ -61,7 +61,7 @@ extension AccessoryManager {
 					self.updateState(.communicating)
 					self.connectionEventTask = Task {
 						for await event in eventStream {
-							self.didReceive(event)
+							await self.didReceive(event)
 						}
 						Logger.transport.info("[Accessory] Event stream closed")
 					}

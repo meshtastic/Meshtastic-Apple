@@ -511,23 +511,23 @@ struct ManualConnectionMenu: View {
 			})
 		}.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
 			Button("Connect to new radio?", role: .destructive) {
-				   if let device = deviceForManualConnection {
-					   UserDefaults.preferredPeripheralId = device.id.uuidString
-					   UserDefaults.preferredPeripheralNum = 0
-					   if accessoryManager.allowDisconnect {
-						   Task { try await accessoryManager.disconnect() }
-					   }
-					   clearCoreDataDatabase(context: context, includeRoutes: false)
-					   clearNotifications()
-					   Task {
-						   try await selectedTransport?.transport.manuallyConnect(toDevice: device)
-					   }
-					   
-					   // Clean up just in case
-					   deviceForManualConnection = nil
-				   }
-			   }
-		   }
+				Task {
+					if let device = deviceForManualConnection {
+						UserDefaults.preferredPeripheralId = device.id.uuidString
+						UserDefaults.preferredPeripheralNum = 0
+						if accessoryManager.allowDisconnect {
+							try await accessoryManager.disconnect()
+						}
+						await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+						clearNotifications()
+						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
+						
+						// Clean up just in case
+						deviceForManualConnection = nil
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -593,15 +593,17 @@ struct DeviceConnectRow: View {
 		}.padding([.bottom, .top])
 			.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
 				Button("Connect to new radio?", role: .destructive) {
-					UserDefaults.preferredPeripheralId = device.id.uuidString
-					UserDefaults.preferredPeripheralNum = 0
-					if accessoryManager.allowDisconnect {
-						Task { try await accessoryManager.disconnect() }
-					}
-					clearCoreDataDatabase(context: context, includeRoutes: false)
-					clearNotifications()
 					Task {
+						UserDefaults.preferredPeripheralId = device.id.uuidString
+						UserDefaults.preferredPeripheralNum = 0
+						if accessoryManager.allowDisconnect {
+							try await accessoryManager.disconnect()
+						}
+						await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+						clearNotifications()
+						
 						try await accessoryManager.connect(to: device)
+						
 					}
 				}
 			}

@@ -131,10 +131,12 @@ struct PositionLog: View {
 						titleVisibility: .visible
 					) {
 						Button("Delete all positions?", role: .destructive) {
-							if clearPositions(destNum: node.num, context: context) {
-								Logger.services.info("Successfully Cleared Position Log")
-							} else {
-								Logger.services.error("Clear Position Log Failed")
+							Task {
+								if await MeshPackets.shared.clearPositions(destNum: node.num) {
+									Logger.services.info("Successfully Cleared Position Log")
+								} else {
+									Logger.services.error("Clear Position Log Failed")
+								}
 							}
 						}
 					}

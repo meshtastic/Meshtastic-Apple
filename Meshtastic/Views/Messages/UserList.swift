@@ -224,8 +224,10 @@ fileprivate struct FilteredUserList: View {
 					titleVisibility: .visible
 				) {
 					Button(role: .destructive) {
-						deleteUserMessages(user: userToDeleteMessages!, context: context)
-						context.refresh(node!.user!, mergeChanges: true)
+						Task {
+							await MeshPackets.shared.deleteUserMessages(user: userToDeleteMessages!)
+							context.refresh(node!.user!, mergeChanges: true)
+						}
 					} label: {
 						Text("Delete")
 					}
