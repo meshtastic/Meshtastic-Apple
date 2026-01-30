@@ -1901,9 +1901,6 @@
         }
       }
     },
-    "8089" : {
-
-    },
     "A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
       "localizations" : {
         "sr" : {

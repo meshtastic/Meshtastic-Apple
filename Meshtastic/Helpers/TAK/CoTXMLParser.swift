@@ -323,21 +323,13 @@ enum CoTParseError: LocalizedError {
 // MARK: - CoTMessage Parsing Extension
 
 extension CoTMessage {
-	/// Parse CoT XML data into a CoTMessage
-	static func parse(from data: Data) throws -> CoTMessage {
+	/// Parse CoT XML data into a CoTMessage (throwing version)
+	static func parseData(_ data: Data) throws -> CoTMessage {
 		guard !data.isEmpty else {
 			throw CoTParseError.emptyData
 		}
 
 		let parser = CoTXMLParser(data: data)
 		return try parser.parse()
-	}
-
-	/// Parse CoT XML string into a CoTMessage
-	static func parse(from xmlString: String) throws -> CoTMessage {
-		guard let data = xmlString.data(using: .utf8) else {
-			throw CoTParseError.emptyData
-		}
-		return try parse(from: data)
 	}
 }

@@ -167,7 +167,16 @@ final class TAKServerManager: ObservableObject {
 					queue
 				)
 			} else {
-				Logger.tak.warning("mTLS enabled but no CA certificates configured for client validation")
+				// No client CAs configured: keep mTLS enabled but reject all client certificates
+				Logger.tak.warning("mTLS enabled but no CA certificates configured for client validation; all client connections will be rejected")
+				sec_protocol_options_set_verify_block(
+					tlsOptions.securityProtocolOptions,
+					{ _, _, completion in
+						Logger.tak.error("Rejecting client connection because no client CA certificates are configured")
+						completion(false)
+					},
+					queue
+				)
 			}
 
 			// TCP options
