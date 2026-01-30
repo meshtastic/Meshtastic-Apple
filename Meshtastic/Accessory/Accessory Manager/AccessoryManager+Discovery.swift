@@ -52,8 +52,12 @@ extension AccessoryManager {
 							existing.rssi = newDevice.rssi
 							self.devices[index] = existing
 						} else {
-							// This is a new device, add it to our list
-							self.devices.append(newDevice)
+							// This is a new device, add it to our list if we are in the foreground
+							if !(self.isInBackground) {
+								self.devices.append(newDevice)
+							} else {
+								Logger.transport.debug("🔎 [Discovery] Found a new device but not in the foreground, not adding to our list: peripheral \(newDevice.name)")
+							}
 						}
 						
 						if self.shouldAutomaticallyConnectToPreferredPeripheral,

@@ -25,6 +25,10 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		if locationsHandler.backgroundActivity {
 			locationsHandler.backgroundActivity = true
 		}
+		// Initialize TAK Server if enabled
+		Task { @MainActor in
+			TAKServerManager.shared.initializeOnStartup()
+		}
 		return true
 	}
 	// Lets us show the notification in the app in the foreground

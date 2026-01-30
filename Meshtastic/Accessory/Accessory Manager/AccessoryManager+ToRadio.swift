@@ -441,8 +441,6 @@ extension AccessoryManager {
 			Logger.services.error("Error while sending saveChannelSet request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
-		var i: Int32 = 0
-		var myInfo: MyInfoEntity
 		// Before we get started delete the existing channels from the myNodeInfo
 		if !addChannels {
 			tryClearExistingChannels()
@@ -451,64 +449,74 @@ extension AccessoryManager {
 		let decodedString = base64UrlString.base64urlToBase64()
 		if let decodedData = Data(base64Encoded: decodedString) {
 			let channelSet: ChannelSet = try ChannelSet(serializedBytes: decodedData)
+
+			var myInfo: MyInfoEntity!
+			var i: Int32 = 0
+
+			if addChannels {
+				let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
+				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(deviceNum))
+
+				let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+				if fetchedMyInfo.count != 1 {
+					throw AccessoryError.appError("MyInfo not found")
+				}
+				
+				// We are trying to add a channel so lets get the last index
+				myInfo = fetchedMyInfo[0]
+				i = Int32(myInfo.channels?.count ?? -1)
+				
+				// Bail out if the index is negative or bigger than our max of 8
+				if i < 0 || i > 8 {
+					throw AccessoryError.appError("Index out of range \(i)")
+				}
+			}
+
 			for cs in channelSet.settings {
+
 				if addChannels {
-					// We are trying to add a channel so lets get the last index
-					let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(deviceNum))
-					do {
-						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-						if fetchedMyInfo.count == 1 {
-							i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
-							myInfo = fetchedMyInfo[0]
-							// Bail out if the index is negative or bigger than our max of 8
-							if i < 0 || i > 8 {
-								throw AccessoryError.appError("Index out of range \(i)")
-							}
-							// Bail out if there are no channels or if the same channel name already exists
-							guard let mutableChannels = myInfo.channels!.mutableCopy() as? NSMutableOrderedSet else {
-								throw AccessoryError.appError("No channels or channel")
-							}
-							if mutableChannels.first(where: {($0 as AnyObject).name == cs.name }) is ChannelEntity {
-								throw AccessoryError.appError("Channel already exists")
-							}
-						}
-					} catch {
-						Logger.data.error("Failed to find a node MyInfo to save these channels to: \(error.localizedDescription, privacy: .public)")
+					guard let mutableChannels = myInfo.channels?.mutableCopy() as? NSMutableOrderedSet else {
+						throw AccessoryError.appError("No channels or channel")
+					}
+					
+					// Bail out if there are no channels or if the same channel name already exists
+					if mutableChannels.first(where: { ($0 as AnyObject).name == cs.name }) is ChannelEntity {
+						throw AccessoryError.appError("Channel already exists")
 					}
 				}
 
 				var chan = Channel()
-				if i == 0 {
-					chan.role = Channel.Role.primary
-				} else {
-					chan.role = Channel.Role.secondary
-				}
+				chan.role = (i == 0) ? .primary : .secondary
 				chan.settings = cs
 				chan.index = i
 				i += 1
 
 				var adminPacket = AdminMessage()
 				adminPacket.setChannel = chan
-				var meshPacket: MeshPacket = MeshPacket()
+
+				var meshPacket = MeshPacket()
 				meshPacket.to = UInt32(deviceNum)
-				meshPacket.from	= UInt32(deviceNum)
+				meshPacket.from = UInt32(deviceNum)
 				meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-				meshPacket.priority =  MeshPacket.Priority.reliable
+				meshPacket.priority = MeshPacket.Priority.reliable
 				meshPacket.wantAck = true
 				meshPacket.channel = 0
-				guard let adminData: Data = try? adminPacket.serializedData() else {
+
+				guard let adminData = try? adminPacket.serializedData() else {
 					throw AccessoryError.ioFailed("saveChannelSet: Unable to serialize Admin packet")
 				}
+
 				var dataMessage = DataMessage()
 				dataMessage.payload = adminData
 				dataMessage.portnum = PortNum.adminApp
 				meshPacket.decoded = dataMessage
-				var toRadio: ToRadio!
-				toRadio = ToRadio()
+
+				var toRadio = ToRadio()
 				toRadio.packet = meshPacket
+
 				let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
 				try await send(toRadio, debugDescription: logString)
+				channelPacket(channel: chan, fromNum: self.activeDeviceNum ?? 0, context: context)
 			}
 			if !addChannels {
 				// Save the LoRa Config and the device will reboot

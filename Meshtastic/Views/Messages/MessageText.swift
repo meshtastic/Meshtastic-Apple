@@ -27,9 +27,8 @@ struct MessageText: View {
 	// State for handling channel URL sheet
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
-	
-	@FocusState private var isTapbackInputFocused: Bool
 	@State private var tapbackText = ""
+	@FocusState private var isTapbackInputFocused: Bool
 	
 	var body: some View {
 		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {

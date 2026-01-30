@@ -94,6 +94,8 @@ extension AccessoryManager {
 		}
 		tryClearExistingChannels()
 
+		// Initialize TAK bridge for TAK integration
+		initializeTAKBridge()
 	}
 
 	func handleNodeInfo(_ nodeInfo: NodeInfo) async {

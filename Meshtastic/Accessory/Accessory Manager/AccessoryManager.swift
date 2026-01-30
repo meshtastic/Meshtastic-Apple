@@ -135,6 +135,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var lastConnectionError: Error?
 	@Published var isConnected: Bool = false
 	@Published var isConnecting: Bool = false
+	@Published var isInBackground: Bool = false
 
 	var activeConnection: (device: Device, connection: any Connection)?
 
@@ -576,7 +577,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .privateApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
 				case .atakForwarder:
-					Logger.mesh.info("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED UNHANDLED")
+					handleATAKForwarderPacket(packet)
 				case .simulatorApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
 				case .storeForwardPlusplusApp:
@@ -598,7 +599,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .max:
 					Logger.services.info("MAX PORT NUM OF 511")
 				case .atakPlugin:
-					Logger.mesh.info("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					handleATAKPluginPacket(packet)
 				case .powerstressApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .reticulumTunnelApp:
