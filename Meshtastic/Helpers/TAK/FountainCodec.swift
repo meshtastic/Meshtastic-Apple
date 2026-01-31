@@ -57,11 +57,13 @@ struct FountainBlock {
 /// State for receiving a fountain-coded transfer
 class FountainReceiveState {
 	let transferId: UInt32
+	// swiftlint:disable:next identifier_name
 	let K: Int
 	let totalLength: Int
 	var blocks: [FountainBlock] = []
 	let createdAt: Date
 
+	// swiftlint:disable:next identifier_name
 	init(transferId: UInt32, K: Int, totalLength: Int) {
 		self.transferId = transferId
 		self.K = K
@@ -86,6 +88,7 @@ class FountainReceiveState {
 struct FountainDataHeader {
 	let transferId: UInt32  // 24-bit, stored in lower 24 bits
 	let seed: UInt16
+	// swiftlint:disable:next identifier_name
 	let K: UInt8
 	let totalLength: UInt16
 }
@@ -180,7 +183,7 @@ final class FountainCodec {
 			Logger.tak.warning("Fountain encode: empty data")
 			return []
 		}
-
+		// swiftlint:disable:next identifier_name
 		let K = max(1, Int(ceil(Double(data.count) / Double(FountainConstants.blockSize))))
 		let overhead = getAdaptiveOverhead(K)
 		let blocksToSend = max(1, Int(ceil(Double(K) * (1.0 + overhead))))
@@ -233,6 +236,7 @@ final class FountainCodec {
 	}
 
 	/// Split data into K blocks, padding the last block with zeros
+	// swiftlint:disable:next identifier_name
 	private func splitIntoBlocks(data: Data, K: Int) -> [Data] {
 		var blocks: [Data] = []
 		for i in 0..<K {
@@ -257,6 +261,7 @@ final class FountainCodec {
 	}
 
 	/// Build a fountain data block packet
+	// swiftlint:disable:next identifier_name
 	private func buildDataBlock(transferId: UInt32, seed: UInt16, K: UInt8, totalLength: UInt16, payload: Data) -> Data {
 		var packet = Data()
 
@@ -302,6 +307,7 @@ final class FountainCodec {
 
 		let transferId = (UInt32(data[3]) << 16) | (UInt32(data[4]) << 8) | UInt32(data[5])
 		let seed = (UInt16(data[6]) << 8) | UInt16(data[7])
+		// swiftlint:disable:next identifier_name
 		let K = data[8]
 		let totalLength = (UInt16(data[9]) << 8) | UInt16(data[10])
 
@@ -463,6 +469,7 @@ final class FountainCodec {
 	// MARK: - Helper Functions
 
 	/// Get adaptive overhead based on K
+	// swiftlint:disable:next identifier_name
 	private func getAdaptiveOverhead(_ K: Int) -> Double {
 		if K <= 10 { return 0.50 }      // 50% for very small
 		else if K <= 50 { return 0.25 } // 25% for small
@@ -478,6 +485,7 @@ final class FountainCodec {
 	/// Generate indices for encoding a block
 	/// CRITICAL: Must match Android's exact algorithm for interoperability
 	/// Android uses Java's java.util.Random (LCG) with specific block 0 handling
+	// swiftlint:disable:next identifier_name
 	private func generateBlockIndices(seed: UInt16, K: Int, blockIndex: Int) -> Set<Int> {
 		var rng = JavaRandom(seed: Int64(seed))
 
@@ -495,6 +503,7 @@ final class FountainCodec {
 
 	/// Regenerate source indices from seed (must match sender's algorithm)
 	/// CRITICAL: Must use same RNG flow as generateBlockIndices for Android interop
+	// swiftlint:disable:next identifier_name
 	private func regenerateIndices(seed: UInt16, K: Int, transferId: UInt32) -> Set<Int> {
 		var rng = JavaRandom(seed: Int64(seed))
 
@@ -511,6 +520,7 @@ final class FountainCodec {
 
 	/// Select source block indices using provided RNG
 	/// Matches Android's selectIndices algorithm exactly
+	// swiftlint:disable:next identifier_name
 	private func selectIndices(_ rng: inout JavaRandom, K: Int, degree: Int) -> Set<Int> {
 		var indices = Set<Int>()
 
@@ -525,6 +535,8 @@ final class FountainCodec {
 
 	/// Sample degree from Robust Soliton distribution using provided RNG
 	/// Matches Android's sampleDegree algorithm exactly
+	// swiftlint:disable:next identifier_name
+	// swiftlint:disable:next identifier_name
 	private func sampleRobustSolitonDegree(_ rng: inout JavaRandom, K: Int) -> Int {
 		let cdf = buildRobustSolitonCDF(K: K)
 		let u = rng.nextDouble()
@@ -538,6 +550,7 @@ final class FountainCodec {
 	}
 
 	/// Build CDF for Robust Soliton distribution
+	// swiftlint:disable:next identifier_name
 	private func buildRobustSolitonCDF(K: Int, c: Double = 0.1, delta: Double = 0.5) -> [Double] {
 		// Guard against K <= 0
 		guard K > 0 else {
@@ -552,6 +565,7 @@ final class FountainCodec {
 		}
 
 		// Robust Soliton addition (tau)
+		// swiftlint:disable:next identifier_name
 		let R = c * log(Double(K) / delta) * sqrt(Double(K))
 		var tau = [Double](repeating: 0, count: K + 1)
 		let threshold = Int(Double(K) / R)

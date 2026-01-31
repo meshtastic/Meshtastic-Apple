@@ -253,7 +253,7 @@ final class TAKCertificateManager {
 
 		guard let itemArray = items as? [[String: Any]],
 			  let firstItem = itemArray.first,
-			  let identity = firstItem[kSecImportItemIdentity as String] as! SecIdentity? else {
+			  let identity = firstItem[kSecImportItemIdentity as String] as! SecIdentity? else { // swiftlint:disable:this force_cast
 			throw TAKCertificateError.noIdentityFound
 		}
 
@@ -356,7 +356,7 @@ final class TAKCertificateManager {
 		var status = SecItemCopyMatching(customQuery as CFDictionary, &item)
 
 		if status == errSecSuccess {
-			return (item as! SecIdentity)
+			return (item as! SecIdentity) // swiftlint:disable:this force_cast
 		}
 
 		// Fall back to bundled certificate
@@ -375,7 +375,7 @@ final class TAKCertificateManager {
 			return nil
 		}
 
-		return (item as! SecIdentity)
+		return (item as! SecIdentity) // swiftlint:disable:this force_cast
 	}
 
 	/// Check if server certificate is configured
@@ -529,7 +529,7 @@ final class TAKCertificateManager {
 		// Handle both single item and array returns
 		if let certificates = items as? [SecCertificate] {
 			return certificates
-		} else if let certificate = items as! SecCertificate? {
+		} else if let certificate = items as! SecCertificate? { // swiftlint:disable:this force_cast
 			return [certificate]
 		}
 
