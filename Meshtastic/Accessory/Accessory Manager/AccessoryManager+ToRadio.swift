@@ -920,7 +920,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1003,7 +1003,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Detection Sensor Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertDetectionSensorModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertDetectionSensorModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1057,7 +1057,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved External Notification Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1087,7 +1087,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved PAX Counter Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertPaxCounterModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertPaxCounterModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1117,7 +1117,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1148,7 +1148,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved MQTT Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1178,7 +1178,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertRangeTestModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertRangeTestModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1208,7 +1208,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Serial Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertSerialModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertSerialModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1387,7 +1387,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Store & Forward Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertStoreForwardModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertStoreForwardModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -1928,7 +1928,7 @@ extension AccessoryManager {
 		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertTelemetryModuleConfigPacket(config: config, nodeNum: toUser.num, context: context)
+		await MeshPackets.shared.upsertTelemetryModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
