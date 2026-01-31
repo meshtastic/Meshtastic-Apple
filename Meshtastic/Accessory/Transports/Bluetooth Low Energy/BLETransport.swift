@@ -206,30 +206,35 @@ actor BLETransport: Transport {
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		
-		if await self.activeConnection?.peripheral.state == .disconnected {
-			Logger.transport.error("🛜 [BLE] Connect request while an active (but disconnected)")
-			throw AccessoryError.connectionFailed("Connect request while an active connection exists")
-		}
-		
-		let returnConnection = try await withTaskCancellationHandler {
-			let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
-				if self.connectContinuation != nil || self.activeConnection != nil {
-					cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
-					return
+		do {
+			if await self.activeConnection?.peripheral.state == .disconnected {
+				Logger.transport.error("🛜 [BLE] Connect request while an active (but disconnected)")
+				throw AccessoryError.connectionFailed("Connect request while an active connection exists")
+			}
+			
+			let returnConnection = try await withTaskCancellationHandler {
+				let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
+					if self.connectContinuation != nil || self.activeConnection != nil {
+						cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
+						return
+					}
+					self.connectContinuation = cont
+					self.connectingPeripheral = peripheral.peripheral
+					centralManager.connect(peripheral.peripheral)
 				}
-				self.connectContinuation = cont
-				self.connectingPeripheral = peripheral.peripheral
-				centralManager.connect(peripheral.peripheral)
+				self.activeConnection = newConnection
+				return newConnection
+			} onCancel: {
+				Task {
+					await self.cancelConnectContinuation(for: peripheral.peripheral)
+				}
 			}
-			self.activeConnection = newConnection
-			return newConnection
-		} onCancel: {
-			Task {
-				await self.cancelConnectContinuation(for: peripheral.peripheral)
-			}
+			Logger.transport.debug("🛜 [BLE] Connect complete.")
+			return returnConnection
+		} catch {
+			connectionDidDisconnect(fromPeripheral: peripheral.peripheral)
+			throw error
 		}
-		Logger.transport.debug("🛜 [BLE] Connect complete.")
-		return returnConnection
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {

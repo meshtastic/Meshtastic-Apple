@@ -180,10 +180,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		return transports.first(where: {$0.type == type })
 	}
 	
-	func connectToPreferredDevice() {
+	func connectToPreferredDevice(device: Device) {
 		if !self.isConnected && !self.isConnecting,
-		   let preferredDevice = self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
-			Task { try await self.connect(to: preferredDevice) }
+		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
+			Task {
+				try await self.connect(to: preferredDevice)
+			}
 		}
 	}
 
