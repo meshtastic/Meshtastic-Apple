@@ -63,7 +63,7 @@ extension AccessoryManager {
 						if self.shouldAutomaticallyConnectToPreferredPeripheral,
 						   UserDefaults.autoconnectOnDiscovery, UserDefaults.preferredPeripheralId == newDevice.id.uuidString {
 							Logger.transport.debug("🔎 [Discovery] Found preferred peripheral \(newDevice.name)")
-							self.connectToPreferredDevice()
+							self.connectToPreferredDevice(device: newDevice)
 						}
 						
 						// Update the list of discovered devices on the main thread for presentation
