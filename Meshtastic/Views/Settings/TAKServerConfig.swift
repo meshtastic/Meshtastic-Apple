@@ -275,7 +275,7 @@ struct TAKServerConfig: View {
 		} header: {
 			Text("Client Configuration")
 		} footer: {
-			Text("Generate a data package (.zip) to configure ITAK or other TAK clients to connect to this server.")
+			Text("Generate a data package (.zip) to configure TAK clients to connect to this server.")
 		}
 	}
 

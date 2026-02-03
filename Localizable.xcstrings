@@ -15982,7 +15982,7 @@
         }
       }
     },
-    "Generate a data package (.zip) to configure ITAK or other TAK clients to connect to this server." : {
+    "Generate a data package (.zip) to configure TAK clients to connect to this server." : {
 
     },
     "Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key." : {

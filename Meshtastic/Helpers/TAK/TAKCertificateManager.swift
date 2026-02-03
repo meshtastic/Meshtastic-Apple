@@ -116,7 +116,7 @@ final class TAKCertificateManager {
 		return SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess
 	}
 
-	/// Get the bundled CA certificate data for sharing to ITAK
+	/// Get the bundled CA certificate data for sharing to TAK
 	func getBundledCACertificateData() -> Data? {
 		let pemURL = Bundle.main.url(forResource: "ca", withExtension: "pem", subdirectory: "Certificates")
 			?? Bundle.main.url(forResource: "ca", withExtension: "pem")
@@ -133,7 +133,7 @@ final class TAKCertificateManager {
 			?? Bundle.main.url(forResource: "ca", withExtension: "pem")
 	}
 
-	/// Get the bundled server P12 data for sharing to ITAK (used as truststore)
+	/// Get the bundled server P12 data for sharing to TAK (used as truststore)
 	func getBundledServerP12Data() -> Data? {
 		let p12URL = Bundle.main.url(forResource: "server", withExtension: "p12", subdirectory: "Certificates")
 			?? Bundle.main.url(forResource: "server", withExtension: "p12")
@@ -149,7 +149,7 @@ final class TAKCertificateManager {
 		return bundledPassword
 	}
 
-	/// Get the bundled client P12 data for sharing to ITAK (for mutual TLS)
+	/// Get the bundled client P12 data for sharing to TAK (for mutual TLS)
 	func getBundledClientP12Data() -> Data? {
 		let p12URL = Bundle.main.url(forResource: "client", withExtension: "p12", subdirectory: "Certificates")
 			?? Bundle.main.url(forResource: "client", withExtension: "p12")

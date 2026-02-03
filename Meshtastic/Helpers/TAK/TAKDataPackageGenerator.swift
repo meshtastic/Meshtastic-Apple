@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-/// Generates TAK data packages (.zip) for configuring TAK clients like ITAK
+/// Generates TAK data packages (.zip) for configuring TAK clients
 /// to connect to the Meshtastic TAK server
 final class TAKDataPackageGenerator {
 
@@ -18,7 +18,7 @@ final class TAKDataPackageGenerator {
 
 	// MARK: - Data Package Generation
 
-	/// Generate a TAK data package for ITAK client configuration
+	/// Generate a TAK data package for TAK client configuration
 	/// - Parameters:
 	///   - serverHost: The server hostname/IP (default: 127.0.0.1 for localhost)
 	///   - port: The server port
