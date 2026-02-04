@@ -62,7 +62,7 @@ struct MeshMapContent: MapContent {
 					// Imprecise location: fuzz slightly so overlapping nodes are visible and clickable at highest zoom levels.
 					position.fuzzedCoordinate
 				}
-				if 12...15 ~= position.precisionBits || position.isPreciseLocation {
+				if position.precisionBits >= 12 || position.isPreciseLocation {
 					
 					let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 					let positionName = position.nodePosition?.user?.longName ?? "?"
