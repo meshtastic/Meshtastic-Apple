@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import UIKit
 
 /// Generates TAK data packages (.zip) for configuring TAK clients
 /// to connect to the Meshtastic TAK server
@@ -24,12 +25,14 @@ final class TAKDataPackageGenerator {
 	///   - port: The server port
 	///   - useTLS: Whether to use TLS (ssl) with mTLS or plain TCP
 	///   - description: Description shown in TAK client
+	///   - userCertName: Optional custom name for the user client certificate (without .p12 extension)
 	/// - Returns: URL to the generated zip file, or nil if generation failed
 	func generateDataPackage(
 		serverHost: String = "127.0.0.1",
 		port: Int,
 		useTLS: Bool = true,
-		description: String = "Meshtastic TAK Server"
+		description: String = "Meshtastic TAK Server",
+		userCertName: String? = nil
 	) -> URL? {
 		let fileManager = FileManager.default
 
@@ -48,13 +51,27 @@ final class TAKDataPackageGenerator {
 			let certsDir = tempDir.appendingPathComponent("certs")
 			try fileManager.createDirectory(at: certsDir, withIntermediateDirectories: true)
 
+			// Determine user client certificate filename
+			let userClientCertFileName: String
+			if let customName = userCertName {
+				userClientCertFileName = "\(customName).p12"
+			} else {
+				// Use device name as default (sanitize for filename safety)
+				let deviceName = UIDevice.current.name
+					.replacingOccurrences(of: " ", with: "_")
+					.replacingOccurrences(of: "'", with: "")
+					.replacingOccurrences(of: "\"", with: "")
+				userClientCertFileName = "\(deviceName).p12"
+			}
+
 			// Generate preference file in certs directory
 			let prefFileName = "meshtastic-server.pref"
 			let configPref = generateConfigPref(
 				serverHost: serverHost,
 				port: port,
 				useTLS: useTLS,
-				description: description
+				description: description,
+				userClientCertFileName: userClientCertFileName
 			)
 			let configPrefURL = certsDir.appendingPathComponent(prefFileName)
 			try configPref.write(to: configPrefURL, atomically: true, encoding: .utf8)
@@ -71,18 +88,23 @@ final class TAKDataPackageGenerator {
 					Logger.tak.warning("No server certificate data available")
 				}
 
-				// Client certificate for mTLS - uses custom if available
+				// User client certificate for mTLS - uses custom if available
 				if let clientP12Data = TAKCertificateManager.shared.getActiveClientP12Data() {
-					let clientURL = certsDir.appendingPathComponent("client.p12")
+					let clientURL = certsDir.appendingPathComponent(userClientCertFileName)
 					try clientP12Data.write(to: clientURL)
-					Logger.tak.debug("Created certs/client.p12 (custom: \(TAKCertificateManager.shared.hasCustomClientP12()))")
+					Logger.tak.debug("Created certs/\(userClientCertFileName) (custom: \(TAKCertificateManager.shared.hasCustomClientP12()))")
 				} else {
 					Logger.tak.warning("No client certificate data available")
 				}
 			}
 
 			// Generate manifest.xml at root level (not in subdirectory)
-			let manifest = generateManifest(description: description, useTLS: useTLS, prefFileName: prefFileName)
+			let manifest = generateManifest(
+				description: description,
+				useTLS: useTLS,
+				prefFileName: prefFileName,
+				userClientCertFileName: userClientCertFileName
+			)
 			let manifestURL = tempDir.appendingPathComponent("manifest.xml")
 			try manifest.write(to: manifestURL, atomically: true, encoding: .utf8)
 			Logger.tak.debug("Created manifest.xml")
@@ -124,7 +146,13 @@ final class TAKDataPackageGenerator {
 
 	// MARK: - Pref File Generation (matches working TAK data package format)
 
-	private func generateConfigPref(serverHost: String, port: Int, useTLS: Bool, description: String) -> String {
+	private func generateConfigPref(
+		serverHost: String,
+		port: Int,
+		useTLS: Bool,
+		description: String,
+		userClientCertFileName: String
+	) -> String {
 		let protocolType = useTLS ? "ssl" : "tcp"
 		// Use active certificate passwords (custom if available, otherwise bundled)
 		let serverPassword = TAKCertificateManager.shared.getActiveServerCertificatePassword()
@@ -145,7 +173,7 @@ final class TAKDataPackageGenerator {
 			    <entry key="displayServerConnectionWidget" class="class java.lang.Boolean">true</entry>
 			    <entry key="caLocation" class="class java.lang.String">cert/truststore.p12</entry>
 			    <entry key="caPassword" class="class java.lang.String">\(serverPassword)</entry>
-			    <entry key="certificateLocation" class="class java.lang.String">cert/client.p12</entry>
+			    <entry key="certificateLocation" class="class java.lang.String">cert/\(userClientCertFileName)</entry>
 			    <entry key="clientPassword" class="class java.lang.String">\(clientPassword)</entry>
 			  </preference>
 			</preferences>
@@ -171,11 +199,16 @@ final class TAKDataPackageGenerator {
 
 	// MARK: - Manifest Generation (matches working TAK data package format)
 
-	private func generateManifest(description: String, useTLS: Bool, prefFileName: String) -> String {
+	private func generateManifest(
+		description: String,
+		useTLS: Bool,
+		prefFileName: String,
+		userClientCertFileName: String
+	) -> String {
 		let uid = UUID().uuidString
 
 		if useTLS {
-			// TLS mode with mTLS - includes truststore and client certificate
+			// TLS mode with mTLS - includes truststore and user client certificate
 			return """
 			<MissionPackageManifest version="2">
 			  <Configuration>
@@ -186,7 +219,7 @@ final class TAKDataPackageGenerator {
 			  <Contents>
 			    <Content ignore="false" zipEntry="certs\\\(prefFileName)"/>
 			    <Content ignore="false" zipEntry="certs\\truststore.p12"/>
-			    <Content ignore="false" zipEntry="certs\\client.p12"/>
+			    <Content ignore="false" zipEntry="certs\\\(userClientCertFileName)"/>
 			  </Contents>
 			</MissionPackageManifest>
 			"""
