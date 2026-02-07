@@ -953,7 +953,7 @@ func textMessageAppPacket(
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
 			newMessage.rssi = packet.rxRssi
-			newMessage.isEmoji = packet.decoded.emoji == 1
+			newMessage.isEmoji = packet.decoded.emoji != 0
 			newMessage.channel = Int32(packet.channel)
 			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
 			if packet.decoded.portnum == PortNum.detectionSensorApp {
