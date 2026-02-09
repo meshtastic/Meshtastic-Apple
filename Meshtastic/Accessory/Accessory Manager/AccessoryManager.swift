@@ -144,8 +144,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Config
 	public var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
-	var shouldAutomaticallyConnectToPreferredPeripheral = true
-	
+	var shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+	var userRequestedConnectionCancellation = false
+
 	// Conncetion process
 	var connectionSteps: SequentialSteps?
 	
@@ -292,6 +293,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	// Should only be called by UI-facing callers.
 	func disconnect() async throws {
+		self.userRequestedConnectionCancellation = true
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
 
@@ -402,19 +404,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Task {
 				// Figure out if we'll reconnect
 				if case .errorWithoutReconnect = event {
-					shouldAutomaticallyConnectToPreferredPeripheral = false
+					shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				} else {
-					shouldAutomaticallyConnectToPreferredPeripheral = true
+					shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 				}
 				
-				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription, privacy: .public) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheral, privacy: .public))")
+				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription, privacy: .public) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheralAfterError, privacy: .public))")
 
 				lastConnectionError = error
 				
 				if let connectionStepper = self.connectionStepper {
 					// If we're in the midst of a connection process, tell the stepper that something happened
 					// This cancels retry connection attempts if we've been asked not to reconnect
-					await connectionStepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !shouldAutomaticallyConnectToPreferredPeripheral)
+					await connectionStepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !shouldAutomaticallyConnectToPreferredPeripheralAfterError)
 				} else {
 					// Normal processing.  Expose the error and disconnect
 					try? await self.closeConnection()
@@ -430,7 +432,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .disconnected:
 			Task {
 				// This is user-initatied, so don't reconnect
-				shouldAutomaticallyConnectToPreferredPeripheral = false
+				shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				try? await self.closeConnection()
 				updateState(.discovering)
 			}
