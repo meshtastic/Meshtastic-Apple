@@ -18,6 +18,9 @@ struct ChannelMessageRow: View {
 	@Binding var messageToHighlight: Int64
 	let scrollView: ScrollViewProxy
 	let onInteractionComplete: () -> Void
+	
+	@State private var retryStatus: (current: Int, max: Int, state: RetryState)?
+	@State private var isRetrying: Bool = false
 
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
@@ -135,14 +138,52 @@ struct ChannelMessageRow: View {
 					// ACK Status / Error
 					HStack {
 						let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+						
+						// Status line (retry queue takes precedence over ack error)
+						if isCurrentUser {
+							if let (current, max, state) = retryStatus, state != .completed && state != .cancelled {
+								if state == .waitingForAck {
+									Text("Waiting for acknowledgment")
+										.font(.caption2)
+										.foregroundColor(.orange)
+									AnimatedEllipsis()
+										.font(.caption2)
+										.foregroundColor(.orange)
+								} else if state == .sending {
+									Text("Sending")
+										.font(.caption2)
+										.foregroundColor(.orange)
+									AnimatedEllipsis()
+										.font(.caption2)
+										.foregroundColor(.orange)
+								} else if state == .pending {
+									Text("Attempting to send (\(current)/\(max))")
+										.font(.caption2)
+										.foregroundColor(.orange)
+									AnimatedEllipsis()
+										.font(.caption2)
+										.foregroundColor(.orange)
+								}
+							}
+						}
+						
 						if isCurrentUser && message.receivedACK {
 							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 								.foregroundStyle(ackErrorVal?.color ?? Color.red).font(.caption2)
 						} else if isCurrentUser && message.ackError == 0 {
-							Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
+							if !isRetrying {
+								Text("Waiting for acknowledgment")
+									.font(.caption2)
+									.foregroundColor(.orange)
+								AnimatedEllipsis()
+									.font(.caption2)
+									.foregroundColor(.orange)
+							}
 						} else if isCurrentUser && !isDetectionSensorMessage {
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-								.foregroundStyle(ackErrorVal?.color ?? Color.red).font(.caption2)
+							if !isRetrying {
+								Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
+									.foregroundStyle(ackErrorVal?.color ?? Color.red).font(.caption2)
+							}
 						}
 					}
 				}
@@ -155,5 +196,19 @@ struct ChannelMessageRow: View {
 			
 		}
 		.id(message.messageId) // ID for scrolling/highlighting
+		.task { await refreshRetryState() }
+		.onReceive(NotificationCenter.default.publisher(for: MessageRetryQueueManager.didUpdateNotification)) { _ in
+			Task { await refreshRetryState() }
+		}
+	}
+	
+	private func refreshRetryState() async {
+		let messageId = message.messageId
+		let status = await MessageRetryQueueManager.shared.getRetryStatus(for: messageId)
+		let retrying = await MessageRetryQueueManager.shared.canRetry(messageId)
+		await MainActor.run {
+			retryStatus = status
+			isRetrying = retrying
+		}
 	}
 }

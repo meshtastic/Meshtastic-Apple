@@ -311,6 +311,14 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
+
+			NavigationLink(value: SettingsNavigationState.retryQueue) {
+				Label {
+					Text("Retry Queue")
+				} icon: {
+					Image(systemName: "arrow.clockwise.circle")
+				}
+			}
 		}
 	}
 
@@ -521,6 +529,8 @@ struct Settings: View {
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
+				case .retryQueue:
+					RetryQueueView()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

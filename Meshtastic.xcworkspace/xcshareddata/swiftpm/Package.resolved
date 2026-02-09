@@ -1,13 +1,13 @@
 {
-  "originHash" : "25240dd07109fa832be10093f5d97529f872f18e8d9df6468e5e4212bc0b487e",
+  "originHash" : "dfbb49c0054837d8ee431d028632d3dcd136e6d827e039d8867b1343ec8ca69b",
   "pins" : [
     {
       "identity" : "cocoamqtt",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/emqx/CocoaMQTT",
       "state" : {
-        "revision" : "aff43422925cc30b9af319f4c4dce4f52859baf4",
-        "version" : "2.1.8"
+        "revision" : "22b98acc75bdca77917a1093bd3e1b45ef6e9718",
+        "version" : "2.1.9"
       }
     },
     {
@@ -15,8 +15,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/DataDog/dd-sdk-ios.git",
       "state" : {
-        "revision" : "8d67e973ff4a958cb536263cb816646ee904c508",
-        "version" : "3.3.0"
+        "revision" : "c4dc12da013508db4d3dc2993faa4b1b3eb56fc9",
+        "version" : "3.5.0"
+      }
+    },
+    {
+      "identity" : "kscrash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kstenerud/KSCrash.git",
+      "state" : {
+        "revision" : "72e742c81d4ba03fab137e2651a1de342cdd8b3a",
+        "version" : "2.5.0"
       }
     },
     {
@@ -29,21 +38,12 @@
       }
     },
     {
-      "identity" : "opentelemetry-swift-packages",
+      "identity" : "opentelemetry-swift-core",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/DataDog/opentelemetry-swift-packages.git",
+      "location" : "https://github.com/open-telemetry/opentelemetry-swift-core",
       "state" : {
-        "revision" : "4a7295600d4ebb9525a23c11586c5fdb74ae8b7e",
-        "version" : "1.13.1"
-      }
-    },
-    {
-      "identity" : "plcrashreporter",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/microsoft/plcrashreporter.git",
-      "state" : {
-        "revision" : "8c61e5e38e9f737dd68512ed1ea5ab081244ad65",
-        "version" : "1.12.0"
+        "revision" : "240c8d5e36c3c7b774ed961325369f0b1f2c965f",
+        "version" : "2.3.0"
       }
     },
     {
@@ -53,6 +53,15 @@
       "state" : {
         "revision" : "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
         "version" : "4.0.8"
+      }
+    },
+    {
+      "identity" : "swift-atomics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-atomics.git",
+      "state" : {
+        "revision" : "b601256eab081c0f92f059e12818ac1d4f178ff7",
+        "version" : "1.3.0"
       }
     },
     {

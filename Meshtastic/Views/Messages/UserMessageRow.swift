@@ -23,8 +23,26 @@ struct UserMessageRow: View {
 	let scrollView: ScrollViewProxy
 	let onInteractionComplete: () -> Void
 	
+	@State private var retryStatus: (current: Int, max: Int, state: RetryState)?
+	@State private var isRetrying: Bool = false
+	
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
+	}
+	
+	private var canShowRetryButton: Bool {
+		guard isCurrentUser else { return false }
+		
+		if message.receivedACK && !message.realACK {
+			return true
+		}
+		
+		if let (_, _, state) = retryStatus {
+			return state == .pending || state == .waitingForAck || state == .sending
+		}
+		
+		let re = RoutingError(rawValue: Int(message.ackError))
+		return re?.canRetry ?? false
 	}
 	
 	init(message: MessageEntity,
@@ -130,7 +148,7 @@ struct UserMessageRow: View {
 							self.messageFieldFocused = true
 						}
 						
-						if isCurrentUser && message.canRetry || (isCurrentUser && message.receivedACK && !message.realACK) {
+						if isCurrentUser && canShowRetryButton {
 							RetryButton(message: message, destination: .user(user))
 						}
 					}
@@ -138,9 +156,38 @@ struct UserMessageRow: View {
 					// Tapback Responses - Pass the closure to trigger the parent redraw
 					TapbackResponses(message: message, onRead: onInteractionComplete)
 					
-					// ACK Error
+					// ACK Error & Retry Status
 					HStack {
 						let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+						
+						// Status line (retry queue takes precedence over ack error)
+						if isCurrentUser {
+							if let (current, max, state) = retryStatus, state != .completed && state != .cancelled {
+								if state == .waitingForAck {
+									Text("Waiting for acknowledgment")
+										.font(.caption2)
+										.foregroundColor(.orange)
+									AnimatedEllipsis()
+										.font(.caption2)
+										.foregroundColor(.orange)
+								} else if state == .sending {
+									Text("Sending")
+										.font(.caption2)
+										.foregroundColor(.orange)
+									AnimatedEllipsis()
+										.font(.caption2)
+										.foregroundColor(.orange)
+								} else if state == .pending {
+									Text("Attempting to send (\(current)/\(max))")
+										.font(.caption2)
+										.foregroundColor(.orange)
+									AnimatedEllipsis()
+										.font(.caption2)
+										.foregroundColor(.orange)
+								}
+							}
+						}
+						
 						if isCurrentUser && message.receivedACK {
 							// Ack Received
 							if message.realACK {
@@ -150,13 +197,22 @@ struct UserMessageRow: View {
 							} else {
 								Text("Acknowledged by another node").font(.caption2).foregroundColor(.orange)
 							}
-						} else if isCurrentUser && message.ackError == 0 {
-							// Empty Error
-							Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
-						} else if isCurrentUser && message.ackError > 0 {
-							Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
-								.foregroundStyle(ackErrorVal?.color ?? Color.red)
-								.font(.caption2)
+						} else if isCurrentUser && message.ackError == 0 && !message.receivedACK {
+							// Empty Error and not received ACK
+							if !isRetrying {
+								Text("Waiting for acknowledgment")
+									.font(.caption2)
+									.foregroundColor(.yellow)
+								AnimatedEllipsis()
+									.font(.caption2)
+									.foregroundColor(.yellow)
+							}
+						} else if isCurrentUser && message.ackError > 0 && !message.receivedACK {
+							if !isRetrying {
+								Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
+									.foregroundStyle(ackErrorVal?.color ?? Color.red)
+									.font(.caption2)
+							}
 						}
 					}
 				}
@@ -169,5 +225,19 @@ struct UserMessageRow: View {
 			
 		}
 		.id(message.messageId)
+		.task { await refreshRetryState() }
+		.onReceive(NotificationCenter.default.publisher(for: MessageRetryQueueManager.didUpdateNotification)) { _ in
+			Task { await refreshRetryState() }
+		}
+	}
+	
+	private func refreshRetryState() async {
+		let messageId = message.messageId
+		let status = await MessageRetryQueueManager.shared.getRetryStatus(for: messageId)
+		let retrying = await MessageRetryQueueManager.shared.canRetry(messageId)
+		await MainActor.run {
+			retryStatus = status
+			isRetrying = retrying
+		}
 	}
 }

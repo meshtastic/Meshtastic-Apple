@@ -22,37 +22,38 @@ enum MapNavigationState: Hashable {
 
 // MARK: Settings
 
-enum SettingsNavigationState: String {
-	case about
-	case appSettings
-	case routes
-	case routeRecorder
-	case lora
-	case channels
-	case shareQRCode
-	case user
-	case bluetooth
-	case device
-	case display
-	case network
-	case position
-	case power
-	case ambientLighting
-	case cannedMessages
-	case detectionSensor
-	case externalNotification
-	case mqtt
-	case rangeTest
-	case paxCounter
-	case ringtone
-	case serial
-	case security
-	case storeAndForward
-	case telemetry
-	case debugLogs
-	case appFiles
-	case firmwareUpdates
-}
+	enum SettingsNavigationState: String {
+		case about
+		case appSettings
+		case routes
+		case routeRecorder
+		case lora
+		case channels
+		case shareQRCode
+		case user
+		case bluetooth
+		case device
+		case display
+		case network
+		case position
+		case power
+		case ambientLighting
+		case cannedMessages
+		case detectionSensor
+		case externalNotification
+		case mqtt
+		case rangeTest
+		case paxCounter
+		case ringtone
+		case serial
+		case security
+		case storeAndForward
+		case telemetry
+		case debugLogs
+		case appFiles
+		case firmwareUpdates
+		case retryQueue
+	}
 
 struct NavigationState: Hashable {
 	enum Tab: String, Hashable {

@@ -156,6 +156,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	// Flash subjects
 	@Published var packetsSent: Int = 0
+
+	// Sent packets for retry on NACK
+	var sentPackets: [UInt32: MeshPacket] = [:]
 	@Published var packetsReceived: Int = 0
 	
 	// Continuations
@@ -358,7 +361,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	func send(_ data: ToRadio, debugDescription: String? = nil) async throws {
 		packetsSent += 1
-		
+
+		// Store packet for potential retry on NACK
+		if data.packet.wantAck {
+			sentPackets[data.packet.id] = data.packet
+		}
+
 		guard let active = activeConnection,
 			  await active.connection.isConnected else {
 			throw AccessoryError.connectionFailed("Not connected to any device")

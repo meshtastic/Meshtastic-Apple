@@ -618,26 +618,38 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 	let fetchedAdminMessageRequest = MessageEntity.fetchRequest()
 	fetchedAdminMessageRequest.predicate = NSPredicate(format: "messageId == %lld", packet.decoded.requestID)
 	do {
-		let fetchedMessage = try context.fetch(fetchedAdminMessageRequest)
-		if fetchedMessage.count > 0 {
-			fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
-			fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
-			fetchedMessage[0].receivedACK = true
-			fetchedMessage[0].realACK = true
-			fetchedMessage[0].relayNode = Int64(packet.relayNode)
-			fetchedMessage[0].ackSNR = packet.rxSnr
-			if fetchedMessage[0].fromUser != nil {
-				fetchedMessage[0].fromUser?.objectWillChange.send()
+			let fetchedMessage = try context.fetch(fetchedAdminMessageRequest)
+			if fetchedMessage.count > 0 {
+				fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
+				fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
+				fetchedMessage[0].receivedACK = true
+				fetchedMessage[0].realACK = true
+				fetchedMessage[0].relayNode = Int64(packet.relayNode)
+				fetchedMessage[0].ackSNR = packet.rxSnr
+				if fetchedMessage[0].fromUser != nil {
+					fetchedMessage[0].fromUser?.objectWillChange.send()
+				}
+				do {
+					try context.save()
+				} catch {
+					Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription, privacy: .public)")
+				}
 			}
-			do {
-				try context.save()
-			} catch {
-				Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription, privacy: .public)")
+			// If this ACK is for a retried packet (new packet ID), also mark the original message ID as completed.
+			Task {
+				if let originalId = await MessageRetryQueueManager.shared.originalMessageId(forPacketId: UInt32(packet.decoded.requestID)) {
+					await MessageRetryQueueManager.shared.markCompleted(for: originalId)
+				}
 			}
+			
+			// Always try to remove from retry queue - works for both original and retry packet IDs
+			Task {
+				await MessageRetryQueueManager.shared.markCompleted(for: Int64(packet.decoded.requestID))
+				await MessageRetryQueueManager.shared.markCompletedByPacketId(UInt32(packet.decoded.requestID))
+			}
+		} catch {
+			Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription, privacy: .public)")
 		}
-	} catch {
-		Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription, privacy: .public)")
-	}
 }
 func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
@@ -694,28 +706,39 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 		do {
 			let fetchedMessage = try context.fetch(fetchMessageRequest)
 			if fetchedMessage.count > 0 {
-				if fetchedMessage[0].toUser != nil {
-					// Real ACK from DM Recipient
+				let message = fetchedMessage[0]
+				
+				if message.toUser != nil {
 					if packet.to != packet.from {
-						fetchedMessage[0].realACK = true
+						message.realACK = true
 					}
 				}
-				fetchedMessage[0].relayNode = Int64(packet.relayNode)
-				fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
+				message.relayNode = Int64(packet.relayNode)
+				message.ackError = Int32(routingMessage.errorReason.rawValue)
+				
 				if routingMessage.errorReason == Routing.Error.none {
-					fetchedMessage[0].receivedACK = true
-					fetchedMessage[0].relays += 1
+					// Successful ACK
+					message.receivedACK = true
+					message.relays += 1
+				} else if RoutingError(rawValue: routingMessage.errorReason.rawValue)?.canRetry ?? false {
+					// Failed but retryable - add to retry queue
+					Task {
+						let retryQueue = MessageRetryQueueManager.shared
+						
+						// Handle the NACK - this will find existing items and increment retry count
+						await retryQueue.handleNack(for: Int64(packet.decoded.requestID))
+					}
 				}
 				
-				fetchedMessage[0].ackSNR = packet.rxSnr
+				message.ackSNR = packet.rxSnr
 				if packet.rxTime > 0 {
-					fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+					message.ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
 				} else {
-					fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
+					message.ackTimestamp = Int32(Date().timeIntervalSince1970)
 				}
 
-				if fetchedMessage[0].toUser != nil {
-					fetchedMessage[0].toUser!.objectWillChange.send()
+				if message.toUser != nil {
+					message.toUser!.objectWillChange.send()
 				} else {
 					let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
 					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
@@ -730,9 +753,100 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					} catch { }
 				}
 
-			} else {
-				return
 			}
+			// If this ACK/NACK is for a retried packet (new packet ID), also update the original message entity.
+			Task { @MainActor in
+				if let originalId = await MessageRetryQueueManager.shared.originalMessageId(forPacketId: UInt32(packet.decoded.requestID)) {
+					let originalFetch = MessageEntity.fetchRequest()
+					originalFetch.predicate = NSPredicate(format: "messageId == %lld", originalId)
+					if let originalMessage = try? context.fetch(originalFetch).first {
+						originalMessage.ackError = Int32(routingMessage.errorReason.rawValue)
+						if routingMessage.errorReason == Routing.Error.none {
+							originalMessage.receivedACK = true
+							originalMessage.relays += 1
+						}
+						if packet.rxTime > 0 {
+							originalMessage.ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
+						} else {
+							originalMessage.ackTimestamp = Int32(Date().timeIntervalSince1970)
+						}
+						originalMessage.ackSNR = packet.rxSnr
+						try? context.save()
+					}
+				}
+			}
+			
+			// Also check for traceroute failures (uses TraceRouteEntity instead of MessageEntity)
+			if routingMessage.errorReason != Routing.Error.none {
+				let fetchTraceRouteRequest = TraceRouteEntity.fetchRequest()
+				fetchTraceRouteRequest.predicate = NSPredicate(format: "id == %lld", Int64(packet.decoded.requestID))
+				
+				do {
+					let fetchedTraceRoutes = try context.fetch(fetchTraceRouteRequest)
+					if fetchedTraceRoutes.count > 0 {
+						let traceRoute = fetchedTraceRoutes[0]
+						
+						if RoutingError(rawValue: routingMessage.errorReason.rawValue)?.canRetry ?? false {
+							// Failed but retryable - add traceroute to retry queue
+							Task {
+								let retryQueue = MessageRetryQueueManager.shared
+								
+								// Handle the NACK - this will find existing items and increment retry count
+								await retryQueue.handleNack(for: Int64(packet.decoded.requestID))
+							}
+						} else {
+							// Mark as not sent for non-retryable errors
+							traceRoute.sent = false
+						}
+					}
+				} catch {
+					Logger.mesh.error("Failed to fetch TraceRouteEntity for retry: \(error.localizedDescription, privacy: .public)")
+				}
+			} else {
+				// Check for other packet types that can retry
+				if RoutingError(rawValue: routingMessage.errorReason.rawValue)?.canRetry ?? false {
+					Task { @MainActor in
+						if let originalPacket = AccessoryManager.shared.sentPackets[UInt32(packet.decoded.requestID)] {
+							let messageType: MessageType
+							switch originalPacket.decoded.portnum {
+							case .positionApp: messageType = .position
+							case .waypointApp: messageType = .waypoint
+							case .adminApp: messageType = .admin
+							case .nodeinfoApp: messageType = .nodeInfo
+							default: messageType = .unknown
+							}
+							if let serializedData = try? originalPacket.serializedData() {
+								let item = RetryQueueItem(
+									originalMessageId: Int64(packet.decoded.requestID),
+									messageType: messageType,
+									serializedPacket: serializedData
+								)
+								Task {
+									await MessageRetryQueueManager.shared.addToRetryQueue(item)
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Always try to remove from retry queue - works for both original and retry packet IDs
+			if routingMessage.errorReason == Routing.Error.none {
+				Task {
+					if let originalId = await MessageRetryQueueManager.shared.originalMessageId(forPacketId: UInt32(packet.decoded.requestID)) {
+						await MessageRetryQueueManager.shared.markCompleted(for: originalId)
+					}
+					await MessageRetryQueueManager.shared.markCompleted(for: Int64(packet.decoded.requestID))
+					// Also check by packetId for retried messages (ACK comes with new packet ID)
+					await MessageRetryQueueManager.shared.markCompletedByPacketId(UInt32(packet.decoded.requestID))
+				}
+			}
+
+			// Remove the sent packet from cache
+			Task { @MainActor in
+				AccessoryManager.shared.sentPackets.removeValue(forKey: UInt32(packet.decoded.requestID))
+			}
+			
 			try context.save()
 			Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
 		} catch {

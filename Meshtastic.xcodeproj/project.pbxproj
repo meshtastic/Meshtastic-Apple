@@ -98,12 +98,15 @@
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
 		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
 		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
+		BC7A24082F20AF9100C08B77 /* MessageRetryQueueManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC7A24072F20AF9100C08B77 /* MessageRetryQueueManager.swift */; };
+		BC7A240A2F20BD3A00C08B77 /* RetryQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC7A24092F20BD3A00C08B77 /* RetryQueueView.swift */; };
 		BCA9A82C2EC802CF00166292 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA9A82B2EC802CF00166292 /* CompassView.swift */; };
 		BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */; };
 		BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613802C67290800485544 /* SendWaypointIntent.swift */; };
 		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
 		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
 		BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613862C69A0FB00485544 /* AppIntentErrors.swift */; };
+		BCCFE27E2F25ECE000984673 /* AnimatedEllipsis.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCFE27D2F25ECE000984673 /* AnimatedEllipsis.swift */; };
 		BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */; };
 		BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */; };
 		BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
@@ -412,12 +415,15 @@
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
 		BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddContactIntent.swift; sourceTree = "<group>"; };
 		BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelSettingsIntent.swift; sourceTree = "<group>"; };
+		BC7A24072F20AF9100C08B77 /* MessageRetryQueueManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRetryQueueManager.swift; sourceTree = "<group>"; };
+		BC7A24092F20BD3A00C08B77 /* RetryQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryQueueView.swift; sourceTree = "<group>"; };
 		BCA9A82B2EC802CF00166292 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
 		BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNodeIntent.swift; sourceTree = "<group>"; };
 		BCB613802C67290800485544 /* SendWaypointIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendWaypointIntent.swift; sourceTree = "<group>"; };
 		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
 		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
 		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
+		BCCFE27D2F25ECE000984673 /* AnimatedEllipsis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedEllipsis.swift; sourceTree = "<group>"; };
 		BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactURLHandler.swift; sourceTree = "<group>"; };
 		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
 		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
@@ -963,6 +969,7 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				BC7A24092F20BD3A00C08B77 /* RetryQueueView.swift */,
 				DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */,
 				DDD5BB0E2C285F92007E03CA /* Logs */,
 				DD93800C2BA74CE3008BEC06 /* Channels */,
@@ -1263,6 +1270,7 @@
 		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				BCCFE27D2F25ECE000984673 /* AnimatedEllipsis.swift */,
 				233E99B42D849C2D00CC3A77 /* Compact Widgets */,
 				DD6F65772C6EAB860053C113 /* Help */,
 				DD5E523D298F5A7D00D21B61 /* Weather */,
@@ -1290,6 +1298,7 @@
 		DDC2E1A526CEB32B0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				BC7A24072F20AF9100C08B77 /* MessageRetryQueueManager.swift */,
 				3D3417D12E2DC260006A988B /* MapDataManager.swift */,
 				3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */,
 				BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */,
@@ -1662,6 +1671,7 @@
 				237AEB952E1FE516003B7CE3 /* Device.swift in Sources */,
 				2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */,
 				233E99B82D849C6500CC3A77 /* HumidityCompactWidget.swift in Sources */,
+				BC7A24082F20AF9100C08B77 /* MessageRetryQueueManager.swift in Sources */,
 				DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */,
 				233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */,
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
@@ -1799,6 +1809,7 @@
 				D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */,
 				8D3F8A412D44C2A6009EAAA4 /* PowerMetricsLog.swift in Sources */,
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
+				BC7A240A2F20BD3A00C08B77 /* RetryQueueView.swift in Sources */,
 				DD6F65762C6EA5490053C113 /* AckErrors.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
@@ -1815,6 +1826,7 @@
 				DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
 				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
 				3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */,
+				BCCFE27E2F25ECE000984673 /* AnimatedEllipsis.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
 				D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */,
 				DDA9F5E82E77FAC100E70DEB /* AnimatedNodePin.swift in Sources */,

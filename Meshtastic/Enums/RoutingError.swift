@@ -39,11 +39,11 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		case .gotNak:
 			return "Received a negative acknowledgment".localized
 		case .timeout:
-			return "Timeout".localized
+			return "No acknowledgment heard".localized
 		case .noInterface:
 			return "No Interface".localized
 		case .maxRetransmit:
-			return "Max Retransmission Reached".localized
+			return "No acknowledgment heard".localized
 		case .noChannel:
 			return "No Channel".localized
 		case .tooLarge:

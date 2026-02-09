@@ -54,6 +54,9 @@ extension AccessoryManager {
 			Logger.services.error("Failed to serialize position packet data")
 			throw AccessoryError.ioFailed("sendPosition: Unable to serialize position packet data")
 		}
+		
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.wantAck = true
 
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
