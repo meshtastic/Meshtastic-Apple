@@ -208,6 +208,26 @@ public struct ModuleConfig: Sendable {
     set {payloadVariant = .paxcounter(newValue)}
   }
 
+  ///
+  /// TODO: REPLACE
+  public var statusmessage: ModuleConfig.StatusMessageConfig {
+    get {
+      if case .statusmessage(let v)? = payloadVariant {return v}
+      return ModuleConfig.StatusMessageConfig()
+    }
+    set {payloadVariant = .statusmessage(newValue)}
+  }
+
+  ///
+  /// Traffic management module config for mesh network optimization
+  public var trafficManagement: ModuleConfig.TrafficManagementConfig {
+    get {
+      if case .trafficManagement(let v)? = payloadVariant {return v}
+      return ModuleConfig.TrafficManagementConfig()
+    }
+    set {payloadVariant = .trafficManagement(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -252,6 +272,12 @@ public struct ModuleConfig: Sendable {
     ///
     /// TODO: REPLACE
     case paxcounter(ModuleConfig.PaxcounterConfig)
+    ///
+    /// TODO: REPLACE
+    case statusmessage(ModuleConfig.StatusMessageConfig)
+    ///
+    /// Traffic management module config for mesh network optimization
+    case trafficManagement(ModuleConfig.TrafficManagementConfig)
 
   }
 
@@ -644,6 +670,75 @@ public struct ModuleConfig: Sendable {
     ///
     /// BLE RSSI threshold. Defaults to -80
     public var bleThreshold: Int32 = 0
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  ///
+  /// Config for the Traffic Management module.
+  /// Provides packet inspection and traffic shaping to help reduce channel utilization
+  public struct TrafficManagementConfig: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Master enable for traffic management module
+    public var enabled: Bool = false
+
+    ///
+    /// Enable position deduplication to drop redundant position broadcasts
+    public var positionDedupEnabled: Bool = false
+
+    ///
+    /// Number of bits of precision for position deduplication (0-32)
+    public var positionPrecisionBits: UInt32 = 0
+
+    ///
+    /// Minimum interval in seconds between position updates from the same node
+    public var positionMinIntervalSecs: UInt32 = 0
+
+    ///
+    /// Enable direct response to NodeInfo requests from local cache
+    public var nodeinfoDirectResponse: Bool = false
+
+    ///
+    /// Minimum hop distance from requestor before responding to NodeInfo requests
+    public var nodeinfoDirectResponseMaxHops: UInt32 = 0
+
+    ///
+    /// Enable per-node rate limiting to throttle chatty nodes
+    public var rateLimitEnabled: Bool = false
+
+    ///
+    /// Time window in seconds for rate limiting calculations
+    public var rateLimitWindowSecs: UInt32 = 0
+
+    ///
+    /// Maximum packets allowed per node within the rate limit window
+    public var rateLimitMaxPackets: UInt32 = 0
+
+    ///
+    /// Enable dropping of unknown/undecryptable packets per rate_limit_window_secs
+    public var dropUnknownEnabled: Bool = false
+
+    ///
+    /// Number of unknown packets before dropping from a node
+    public var unknownPacketThreshold: UInt32 = 0
+
+    ///
+    /// Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected)
+    public var exhaustHopTelemetry: Bool = false
+
+    ///
+    /// Set hop_limit to 0 for relayed position broadcasts (own packets unaffected)
+    public var exhaustHopPosition: Bool = false
+
+    ///
+    /// Preserve hop_limit for router-to-router traffic
+    public var routerPreserveHops: Bool = false
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1280,6 +1375,22 @@ public struct ModuleConfig: Sendable {
     public init() {}
   }
 
+  ///
+  /// StatusMessage config - Allows setting a status message for a node to periodically rebroadcast
+  public struct StatusMessageConfig: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// The actual status string
+    public var nodeStatus: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -1317,7 +1428,7 @@ extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
 
 extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1494,6 +1605,32 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .paxcounter(v)
         }
       }()
+      case 14: try {
+        var v: ModuleConfig.StatusMessageConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .statusmessage(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .statusmessage(v)
+        }
+      }()
+      case 15: try {
+        var v: ModuleConfig.TrafficManagementConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .trafficManagement(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .trafficManagement(v)
+        }
+      }()
       default: break
       }
     }
@@ -1556,6 +1693,14 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .paxcounter?: try {
       guard case .paxcounter(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+    }()
+    case .statusmessage?: try {
+      guard case .statusmessage(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+    }()
+    case .trafficManagement?: try {
+      guard case .trafficManagement(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
     }()
     case nil: break
     }
@@ -1946,6 +2091,101 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
     if lhs.paxcounterUpdateInterval != rhs.paxcounterUpdateInterval {return false}
     if lhs.wifiThreshold != rhs.wifiThreshold {return false}
     if lhs.bleThreshold != rhs.bleThreshold {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleConfig.TrafficManagementConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TrafficManagementConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}position_dedup_enabled\0\u{3}position_precision_bits\0\u{3}position_min_interval_secs\0\u{3}nodeinfo_direct_response\0\u{3}nodeinfo_direct_response_max_hops\0\u{3}rate_limit_enabled\0\u{3}rate_limit_window_secs\0\u{3}rate_limit_max_packets\0\u{3}drop_unknown_enabled\0\u{3}unknown_packet_threshold\0\u{3}exhaust_hop_telemetry\0\u{3}exhaust_hop_position\0\u{3}router_preserve_hops\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.positionDedupEnabled) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.positionPrecisionBits) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.positionMinIntervalSecs) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.nodeinfoDirectResponse) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.nodeinfoDirectResponseMaxHops) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.rateLimitEnabled) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.rateLimitWindowSecs) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.rateLimitMaxPackets) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.dropUnknownEnabled) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.unknownPacketThreshold) }()
+      case 12: try { try decoder.decodeSingularBoolField(value: &self.exhaustHopTelemetry) }()
+      case 13: try { try decoder.decodeSingularBoolField(value: &self.exhaustHopPosition) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.routerPreserveHops) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.positionDedupEnabled != false {
+      try visitor.visitSingularBoolField(value: self.positionDedupEnabled, fieldNumber: 2)
+    }
+    if self.positionPrecisionBits != 0 {
+      try visitor.visitSingularUInt32Field(value: self.positionPrecisionBits, fieldNumber: 3)
+    }
+    if self.positionMinIntervalSecs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.positionMinIntervalSecs, fieldNumber: 4)
+    }
+    if self.nodeinfoDirectResponse != false {
+      try visitor.visitSingularBoolField(value: self.nodeinfoDirectResponse, fieldNumber: 5)
+    }
+    if self.nodeinfoDirectResponseMaxHops != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodeinfoDirectResponseMaxHops, fieldNumber: 6)
+    }
+    if self.rateLimitEnabled != false {
+      try visitor.visitSingularBoolField(value: self.rateLimitEnabled, fieldNumber: 7)
+    }
+    if self.rateLimitWindowSecs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rateLimitWindowSecs, fieldNumber: 8)
+    }
+    if self.rateLimitMaxPackets != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rateLimitMaxPackets, fieldNumber: 9)
+    }
+    if self.dropUnknownEnabled != false {
+      try visitor.visitSingularBoolField(value: self.dropUnknownEnabled, fieldNumber: 10)
+    }
+    if self.unknownPacketThreshold != 0 {
+      try visitor.visitSingularUInt32Field(value: self.unknownPacketThreshold, fieldNumber: 11)
+    }
+    if self.exhaustHopTelemetry != false {
+      try visitor.visitSingularBoolField(value: self.exhaustHopTelemetry, fieldNumber: 12)
+    }
+    if self.exhaustHopPosition != false {
+      try visitor.visitSingularBoolField(value: self.exhaustHopPosition, fieldNumber: 13)
+    }
+    if self.routerPreserveHops != false {
+      try visitor.visitSingularBoolField(value: self.routerPreserveHops, fieldNumber: 14)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ModuleConfig.TrafficManagementConfig, rhs: ModuleConfig.TrafficManagementConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.positionDedupEnabled != rhs.positionDedupEnabled {return false}
+    if lhs.positionPrecisionBits != rhs.positionPrecisionBits {return false}
+    if lhs.positionMinIntervalSecs != rhs.positionMinIntervalSecs {return false}
+    if lhs.nodeinfoDirectResponse != rhs.nodeinfoDirectResponse {return false}
+    if lhs.nodeinfoDirectResponseMaxHops != rhs.nodeinfoDirectResponseMaxHops {return false}
+    if lhs.rateLimitEnabled != rhs.rateLimitEnabled {return false}
+    if lhs.rateLimitWindowSecs != rhs.rateLimitWindowSecs {return false}
+    if lhs.rateLimitMaxPackets != rhs.rateLimitMaxPackets {return false}
+    if lhs.dropUnknownEnabled != rhs.dropUnknownEnabled {return false}
+    if lhs.unknownPacketThreshold != rhs.unknownPacketThreshold {return false}
+    if lhs.exhaustHopTelemetry != rhs.exhaustHopTelemetry {return false}
+    if lhs.exhaustHopPosition != rhs.exhaustHopPosition {return false}
+    if lhs.routerPreserveHops != rhs.routerPreserveHops {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2453,6 +2693,36 @@ extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtob
     if lhs.red != rhs.red {return false}
     if lhs.green != rhs.green {return false}
     if lhs.blue != rhs.blue {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleConfig.StatusMessageConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".StatusMessageConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_status\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.nodeStatus) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.nodeStatus.isEmpty {
+      try visitor.visitSingularStringField(value: self.nodeStatus, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ModuleConfig.StatusMessageConfig, rhs: ModuleConfig.StatusMessageConfig) -> Bool {
+    if lhs.nodeStatus != rhs.nodeStatus {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

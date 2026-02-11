@@ -1032,6 +1032,10 @@ public struct Config: Sendable {
     /// If true, node names will show in long format
     public var useLongNodeName: Bool = false
 
+    ///
+    /// If true, the device will display message bubbles on screen.
+    public var enableMessageBubbles: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -2536,7 +2540,7 @@ extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf.
 
 extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".DisplayConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}screen_on_secs\0\u{3}gps_format\0\u{3}auto_screen_carousel_secs\0\u{3}compass_north_top\0\u{3}flip_screen\0\u{1}units\0\u{1}oled\0\u{1}displaymode\0\u{3}heading_bold\0\u{3}wake_on_tap_or_motion\0\u{3}compass_orientation\0\u{3}use_12h_clock\0\u{3}use_long_node_name\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}screen_on_secs\0\u{3}gps_format\0\u{3}auto_screen_carousel_secs\0\u{3}compass_north_top\0\u{3}flip_screen\0\u{1}units\0\u{1}oled\0\u{1}displaymode\0\u{3}heading_bold\0\u{3}wake_on_tap_or_motion\0\u{3}compass_orientation\0\u{3}use_12h_clock\0\u{3}use_long_node_name\0\u{3}enable_message_bubbles\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2557,6 +2561,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 11: try { try decoder.decodeSingularEnumField(value: &self.compassOrientation) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self.use12HClock) }()
       case 13: try { try decoder.decodeSingularBoolField(value: &self.useLongNodeName) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.enableMessageBubbles) }()
       default: break
       }
     }
@@ -2602,6 +2607,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.useLongNodeName != false {
       try visitor.visitSingularBoolField(value: self.useLongNodeName, fieldNumber: 13)
     }
+    if self.enableMessageBubbles != false {
+      try visitor.visitSingularBoolField(value: self.enableMessageBubbles, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2619,6 +2627,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.compassOrientation != rhs.compassOrientation {return false}
     if lhs.use12HClock != rhs.use12HClock {return false}
     if lhs.useLongNodeName != rhs.useLongNodeName {return false}
+    if lhs.enableMessageBubbles != rhs.enableMessageBubbles {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
