@@ -114,7 +114,13 @@ final class TAKServerManager: ObservableObject {
 			let tlsOptions = NWProtocolTLS.Options()
 
 			// Set server identity (certificate + private key)
-			let secIdentity = sec_identity_create(identity)!
+			guard let secIdentity = sec_identity_create(identity) else {
+				let error = TAKServerError.tlsConfigurationFailed
+				Logger.tak.error("Failed to create sec_identity from server identity")
+				lastError = error.localizedDescription
+				enabled = false
+				throw error
+			}
 			sec_protocol_options_set_local_identity(
 				tlsOptions.securityProtocolOptions,
 				secIdentity

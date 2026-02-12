@@ -172,7 +172,7 @@ final class TAKCertificateManager {
 	func getActiveServerP12Data() -> Data? {
 		// Check for custom certificate first
 		if hasCustomServerCertificate(),
-		   let customData = UserDefaults.standard.data(forKey: customServerP12DataKey) {
+		   let customData = getCustomServerP12DataFromKeychain() {
 			Logger.tak.debug("Using custom server P12 for data package")
 			return customData
 		}
@@ -185,7 +185,7 @@ final class TAKCertificateManager {
 	/// Used for generating data packages
 	func getActiveClientP12Data() -> Data? {
 		// Check for custom certificate first
-		if let customData = UserDefaults.standard.data(forKey: customClientP12DataKey) {
+		if let customData = getCustomClientP12DataFromKeychain() {
 			Logger.tak.debug("Using custom client P12 for data package")
 			return customData
 		}
@@ -197,7 +197,7 @@ final class TAKCertificateManager {
 	/// Get the password for the active server certificate
 	func getActiveServerCertificatePassword() -> String {
 		if hasCustomServerCertificate(),
-		   let customPassword = UserDefaults.standard.string(forKey: customServerP12PasswordKey) {
+		   let customPassword = getCustomServerP12PasswordFromKeychain() {
 			return customPassword
 		}
 		return bundledPassword
@@ -205,7 +205,7 @@ final class TAKCertificateManager {
 
 	/// Get the password for the active client certificate
 	func getActiveClientCertificatePassword() -> String {
-		if let customPassword = UserDefaults.standard.string(forKey: customClientP12PasswordKey) {
+		if let customPassword = getCustomClientP12PasswordFromKeychain() {
 			return customPassword
 		}
 		return bundledPassword
@@ -213,22 +213,23 @@ final class TAKCertificateManager {
 
 	/// Import a custom client P12 certificate (for data package generation)
 	func importCustomClientP12(data: Data, password: String) {
-		UserDefaults.standard.set(data, forKey: customClientP12DataKey)
-		UserDefaults.standard.set(password, forKey: customClientP12PasswordKey)
+		storeCustomClientP12InKeychain(p12Data: data, password: password)
 		Logger.tak.info("Custom client P12 imported for data package")
 	}
 
 	/// Check if custom client P12 is available
 	func hasCustomClientP12() -> Bool {
-		return UserDefaults.standard.data(forKey: customClientP12DataKey) != nil
+		return getCustomClientP12DataFromKeychain() != nil
 	}
 
 	/// Clear custom certificate data (called when resetting to defaults)
 	private func clearCustomCertificateData() {
-		UserDefaults.standard.removeObject(forKey: customServerP12DataKey)
-		UserDefaults.standard.removeObject(forKey: customServerP12PasswordKey)
-		UserDefaults.standard.removeObject(forKey: customClientP12DataKey)
-		UserDefaults.standard.removeObject(forKey: customClientP12PasswordKey)
+		// Clear server P12 from Keychain
+		deleteCustomServerP12FromKeychain()
+
+		// Clear client P12 from Keychain
+		deleteCustomClientP12FromKeychain()
+
 		Logger.tak.debug("Cleared custom certificate data")
 	}
 
@@ -307,6 +308,167 @@ final class TAKCertificateManager {
 		} else {
 			Logger.tak.error("Failed to encode custom server P12 password as UTF-8 data")
 		}
+	}
+
+	/// Retrieve custom server P12 data from Keychain
+	private func getCustomServerP12DataFromKeychain() -> Data? {
+		let service = "com.meshtastic.tak"
+		let query: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: service,
+			kSecAttrAccount as String: customServerP12DataKey,
+			kSecReturnData as String: true
+		]
+
+		var item: CFTypeRef?
+		let status = SecItemCopyMatching(query as CFDictionary, &item)
+
+		guard status == errSecSuccess, let data = item as? Data else {
+			return nil
+		}
+
+		return data
+	}
+
+	/// Retrieve custom server P12 password from Keychain
+	private func getCustomServerP12PasswordFromKeychain() -> String? {
+		let service = "com.meshtastic.tak"
+		let query: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: service,
+			kSecAttrAccount as String: customServerP12PasswordKey,
+			kSecReturnData as String: true
+		]
+
+		var item: CFTypeRef?
+		let status = SecItemCopyMatching(query as CFDictionary, &item)
+
+		guard status == errSecSuccess,
+			  let data = item as? Data,
+			  let password = String(data: data, encoding: .utf8) else {
+			return nil
+		}
+
+		return password
+	}
+
+	/// Delete custom server P12 data from Keychain
+	private func deleteCustomServerP12FromKeychain() {
+		let service = "com.meshtastic.tak"
+
+		let dataQuery: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: service,
+			kSecAttrAccount as String: customServerP12DataKey
+		]
+		SecItemDelete(dataQuery as CFDictionary)
+
+		let passwordQuery: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: service,
+			kSecAttrAccount as String: customServerP12PasswordKey
+		]
+		SecItemDelete(passwordQuery as CFDictionary)
+	}
+
+	/// Store custom client PKCS#12 data and its password in the Keychain
+	private func storeCustomClientP12InKeychain(p12Data: Data, password: String) {
+		let service = "com.meshtastic.tak"
+
+		// Helper to upsert a generic password item
+		func upsertKeychainItem(account: String, value: Data) -> OSStatus {
+			let deleteQuery: [String: Any] = [
+				kSecClass as String: kSecClassGenericPassword,
+				kSecAttrService as String: service,
+				kSecAttrAccount as String: account
+			]
+			SecItemDelete(deleteQuery as CFDictionary)
+
+			let addQuery: [String: Any] = [
+				kSecClass as String: kSecClassGenericPassword,
+				kSecAttrService as String: service,
+				kSecAttrAccount as String: account,
+				kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+				kSecValueData as String: value
+			]
+
+			return SecItemAdd(addQuery as CFDictionary, nil)
+		}
+
+		let dataStatus = upsertKeychainItem(account: customClientP12DataKey, value: p12Data)
+		if dataStatus != errSecSuccess {
+			Logger.tak.error("Failed to store custom client P12 data in Keychain: \(dataStatus)")
+		}
+
+		if let passwordData = password.data(using: .utf8) {
+			let passwordStatus = upsertKeychainItem(account: customClientP12PasswordKey, value: passwordData)
+			if passwordStatus != errSecSuccess {
+				Logger.tak.error("Failed to store custom client P12 password in Keychain: \(passwordStatus)")
+			}
+		} else {
+			Logger.tak.error("Failed to encode custom client P12 password as UTF-8 data")
+		}
+	}
+
+	/// Retrieve custom client P12 data from Keychain
+	private func getCustomClientP12DataFromKeychain() -> Data? {
+		let service = "com.meshtastic.tak"
+		let query: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: service,
+			kSecAttrAccount as String: customClientP12DataKey,
+			kSecReturnData as String: true
+		]
+
+		var item: CFTypeRef?
+		let status = SecItemCopyMatching(query as CFDictionary, &item)
+
+		guard status == errSecSuccess, let data = item as? Data else {
+			return nil
+		}
+
+		return data
+	}
+
+	/// Retrieve custom client P12 password from Keychain
+	private func getCustomClientP12PasswordFromKeychain() -> String? {
+		let service = "com.meshtastic.tak"
+		let query: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: service,
+			kSecAttrAccount as String: customClientP12PasswordKey,
+			kSecReturnData as String: true
+		]
+
+		var item: CFTypeRef?
+		let status = SecItemCopyMatching(query as CFDictionary, &item)
+
+		guard status == errSecSuccess,
+			  let data = item as? Data,
+			  let password = String(data: data, encoding: .utf8) else {
+			return nil
+		}
+
+		return password
+	}
+
+	/// Delete custom client P12 data from Keychain
+	private func deleteCustomClientP12FromKeychain() {
+		let service = "com.meshtastic.tak"
+
+		let dataQuery: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: service,
+			kSecAttrAccount as String: customClientP12DataKey
+		]
+		SecItemDelete(dataQuery as CFDictionary)
+
+		let passwordQuery: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: service,
+			kSecAttrAccount as String: customClientP12PasswordKey
+		]
+		SecItemDelete(passwordQuery as CFDictionary)
 	}
 	/// Store server identity in Keychain
 	private func storeServerIdentity(_ identity: SecIdentity, isCustom: Bool = true) throws {
@@ -409,7 +571,7 @@ final class TAKCertificateManager {
 
 	/// Reset to bundled default certificate (deletes custom certificate)
 	func resetToDefaultServerCertificate() {
-		// Clear custom certificate data from UserDefaults
+		// Clear custom certificate data from Keychain
 		clearCustomCertificateData()
 
 		// Delete custom certificate
