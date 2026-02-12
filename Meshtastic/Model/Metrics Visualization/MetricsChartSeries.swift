@@ -72,8 +72,11 @@ class MetricsChartSeries: ObservableObject {
 		// This is a less elegant form of type erasure, but doesn't require a new Any-type
 		self.foregroundStyle = { range in foregroundStyle(range).map({ AnyShapeStyle($0) }) }
 		self.chartBodyClosure = { series, range, entity in
-			AnyChartContent(
-				chartBody(series, range, entity.time!, entity[keyPath: keyPath]))
+			guard let time = entity.time else {
+				return nil
+			}
+			return AnyChartContent(
+				chartBody(series, range, time, entity[keyPath: keyPath]))
 		}
 		self.valueClosure = { te in
 			if let conversion {

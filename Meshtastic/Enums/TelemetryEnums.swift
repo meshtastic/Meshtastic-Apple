@@ -81,8 +81,10 @@ enum Aqi: Int, CaseIterable, Identifiable {
 			aqi = .veryUnhealthy
 		case 301...500:
 			aqi = .hazardous
+		case ..<0:
+			aqi = .good
 		default:
-			fatalError("Invalid int value")
+			aqi = .hazardous
 		}
 		return aqi
 	}
@@ -170,8 +172,10 @@ enum Iaq: Int, CaseIterable, Identifiable {
 			iaq = .severelyPolluted
 		case 351...:
 			iaq = .extremelyPolluted
+		case ..<0:
+			iaq = .excellent
 		default:
-			fatalError("Invalid int value")
+			iaq = .extremelyPolluted
 		}
 		return iaq
 	}

@@ -362,7 +362,9 @@ extension AccessoryManager {
 			connectedHop.name = connectedNode.user?.longName ?? "???"
 			// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 			connectedHop.snr = Float(routingMessage.snrBack.last ?? -128) / 4
-			if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+			if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity,
+			   let mostRecentTime = mostRecent.time,
+			   mostRecentTime >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 				connectedHop.altitude = mostRecent.altitude
 				connectedHop.latitudeI = mostRecent.latitudeI
 				connectedHop.longitudeI = mostRecent.longitudeI
@@ -373,7 +375,7 @@ extension AccessoryManager {
 			traceRoute?.hopsTowards = Int32(routingMessage.route.count)
 			for (index, node) in routingMessage.route.enumerated() {
 				var hopNode = getNodeInfo(id: Int64(node), context: context)
-				if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
+				if hopNode == nil && node != 0 && node != UInt32.max {
 					hopNode = createNodeInfo(num: Int64(node), context: context)
 				}
 				let traceRouteHop = TraceRouteHopEntity(context: context)
@@ -385,7 +387,9 @@ extension AccessoryManager {
 					traceRouteHop.snr = -32
 				}
 				if let hn = hopNode, hn.hasPositions {
-					if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+					if let mostRecent = hn.positions?.lastObject as? PositionEntity,
+					   let mostRecentTime = mostRecent.time,
+					   mostRecentTime >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 						traceRouteHop.altitude = mostRecent.altitude
 						traceRouteHop.latitudeI = mostRecent.latitudeI
 						traceRouteHop.longitudeI = mostRecent.longitudeI
@@ -411,7 +415,9 @@ extension AccessoryManager {
 			// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 			destinationHop.snr = Float(routingMessage.snrTowards.last ?? -128) / 4
 			destinationHop.num = traceRoute?.node?.num ?? 0
-			if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+			if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity,
+			   let mostRecentTime = mostRecent.time,
+			   mostRecentTime >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 				destinationHop.altitude = mostRecent.altitude
 				destinationHop.latitudeI = mostRecent.latitudeI
 				destinationHop.longitudeI = mostRecent.longitudeI
@@ -429,7 +435,7 @@ extension AccessoryManager {
 				var routeBackString = "\(traceRoute?.node?.user?.longName ?? "Unknown".localized) \((traceRoute?.node?.num ?? 0).toHex()) --> "
 				for (index, node) in routingMessage.routeBack.enumerated() {
 					var hopNode = getNodeInfo(id: Int64(node), context: context)
-					if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
+					if hopNode == nil && node != 0 && node != UInt32.max {
 						hopNode = createNodeInfo(num: Int64(node), context: context)
 					}
 					let traceRouteHop = TraceRouteHopEntity(context: context)
@@ -442,7 +448,9 @@ extension AccessoryManager {
 						traceRouteHop.snr = -32
 					}
 					if let hn = hopNode, hn.hasPositions {
-						if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+						if let mostRecent = hn.positions?.lastObject as? PositionEntity,
+						   let mostRecentTime = mostRecent.time,
+						   mostRecentTime >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 							traceRouteHop.altitude = mostRecent.altitude
 							traceRouteHop.latitudeI = mostRecent.latitudeI
 							traceRouteHop.longitudeI = mostRecent.longitudeI

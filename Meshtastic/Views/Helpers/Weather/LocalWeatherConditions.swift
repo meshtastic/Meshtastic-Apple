@@ -64,8 +64,10 @@ struct LocalWeatherConditions: View {
 			}
 			.task {
 				do {
-					if location != nil {
-						let weather = try await WeatherService.shared.weather(for: location!)
+					guard let location else {
+						return
+					}
+					let weather = try await WeatherService.shared.weather(for: location)
 						let numFormatter = NumberFormatter()
 						let measurementFormatter = MeasurementFormatter()
 						numFormatter.maximumFractionDigits = 0
@@ -78,14 +80,17 @@ struct LocalWeatherConditions: View {
 						humidity = Int(weather.currentWeather.humidity * 100)
 						pressure = weather.currentWeather.pressure
 						windSpeed = measurementFormatter.string(from: weather.currentWeather.wind.speed)
-						windGust = measurementFormatter.string(from: weather.currentWeather.wind.gust ?? Measurement(value: 0.0, unit: weather.currentWeather.wind.gust!.unit))
+						if let gust = weather.currentWeather.wind.gust {
+							windGust = measurementFormatter.string(from: gust)
+						} else {
+							windGust = measurementFormatter.string(from: Measurement(value: 0.0, unit: weather.currentWeather.wind.speed.unit))
+						}
 						windDirection = weather.currentWeather.wind.direction
 						windCompassDirection = weather.currentWeather.wind.compassDirection.description
 						symbolName = weather.currentWeather.symbolName
 						let attribution = try await WeatherService.shared.attribution
 						attributionLink = attribution.legalPageURL
 						attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
-					}
 				} catch {
 					Logger.services.error("Could not gather weather information: \(error.localizedDescription, privacy: .public)")
 					condition = .clear

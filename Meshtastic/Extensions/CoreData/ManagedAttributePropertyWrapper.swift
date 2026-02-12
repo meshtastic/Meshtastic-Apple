@@ -54,7 +54,27 @@ public struct ManagedAttribute<Value: Numeric> {
 		set {
 			let wrapper = observed[keyPath: storageKeyPath]
 			if let newValue = newValue {
-				observed.setPrimitiveValue(NSNumber(value: Double("\(newValue)")!), forKey: wrapper.attributeName)
+				let number: NSNumber
+				if let v = newValue as? Float {
+					number = NSNumber(value: v)
+				} else if let v = newValue as? Double {
+					number = NSNumber(value: v)
+				} else if let v = newValue as? Int {
+					number = NSNumber(value: v)
+				} else if let v = newValue as? Int8 {
+					number = NSNumber(value: v)
+				} else if let v = newValue as? Int16 {
+					number = NSNumber(value: v)
+				} else if let v = newValue as? Int32 {
+					number = NSNumber(value: v)
+				} else if let v = newValue as? Int64 {
+					number = NSNumber(value: v)
+				} else if let v = newValue as? UInt32 {
+					number = NSNumber(value: v)
+				} else {
+					fatalError("Unsupported type: \(Value.self)")
+				}
+				observed.setPrimitiveValue(number, forKey: wrapper.attributeName)
 			} else {
 				observed.setPrimitiveValue(nil, forKey: wrapper.attributeName)
 			}
