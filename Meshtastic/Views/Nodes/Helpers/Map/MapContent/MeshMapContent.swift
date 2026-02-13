@@ -191,13 +191,9 @@ struct MeshMapContent: MapContent {
 	
 	@MapContentBuilder
 	var meshMap: some MapContent {
-		let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
+		let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false && (($0.nodePosition?.isOnline ?? true) || showOfflineNodes )}
 		let loraCoords = Array(loraNodes)
-			.filter { node in
-					let isOnline = node.nodePosition?.isOnline ?? true
-					return isOnline || showOfflineNodes
-			}
-			.compactMap({(position) -> CLLocationCoordinate2D in
+				.compactMap({(position) -> CLLocationCoordinate2D in
 			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 		})
 		/// Convex Hull
