@@ -23,7 +23,6 @@ actor TAKConnection {
 	private let startTag = "<event".data(using: .utf8)!
 	private let endTag = "</event>".data(using: .utf8)!
 	private let maxMessageSize = 8_388_608  // 8MB max per TAK Server spec
-	private let bufferTrimSize = 1_000_000  // 1MB trim threshold
 
 	// Protocol state
 	private var protocolNegotiated = false

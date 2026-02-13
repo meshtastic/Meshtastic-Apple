@@ -5,8 +5,8 @@
     <Parameter name="onReceiveDelete" value="true"/>
   </Configuration>
   <Contents>
-    <Content ignore="false" zipEntry="certs\taky-server.pref"/>
-    <Content ignore="false" zipEntry="certs\server.p12"/>
-    <Content ignore="false" zipEntry="certs\iphone.p12"/>
+    <Content ignore="false" zipEntry="taky-server.pref"/>
+    <Content ignore="false" zipEntry="server.p12"/>
+    <Content ignore="false" zipEntry="iphone.p12"/>
   </Contents>
 </MissionPackageManifest>

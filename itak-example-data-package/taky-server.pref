@@ -8,9 +8,9 @@
   </preference>
   <preference version="1" name="com.atakmap.app_preferences">
     <entry key="displayServerConnectionWidget" class="class java.lang.Boolean">true</entry>
-    <entry key="caLocation" class="class java.lang.String">cert/server.p12</entry>
-    <entry key="caPassword" class="class java.lang.String">atakatak</entry>
-    <entry key="clientPassword" class="class java.lang.String">atakatak</entry>
-    <entry key="certificateLocation" class="class java.lang.String">cert/iphone.p12</entry>
+    <entry key="caLocation" class="class java.lang.String">server.p12</entry>
+    <entry key="caPassword" class="class java.lang.String">YOURPASSWORD</entry>
+    <entry key="clientPassword" class="class java.lang.String">YOURPASSWORD</entry>
+    <entry key="certificateLocation" class="class java.lang.String">iphone.p12</entry>
   </preference>
 </preferences>

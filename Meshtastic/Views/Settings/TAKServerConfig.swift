@@ -38,7 +38,7 @@ struct TAKServerConfig: View {
 		.navigationTitle("TAK Server")
 		.fileImporter(
 			isPresented: $showingFileImporter,
-			allowedContentTypes: importType == .p12 ? [UTType(filenameExtension: "p12")!, .pkcs12] : [UTType(filenameExtension: "pem")!],
+			allowedContentTypes: importType == .p12 ? [UTType(filenameExtension: "p12") ?? .pkcs12, .pkcs12] : [UTType(filenameExtension: "pem") ?? .plainText],
 			allowsMultipleSelection: false
 		) { result in
 			switch importType {
