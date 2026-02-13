@@ -18,6 +18,7 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("enableMapShowFavorites") private var enableMapShowFavorites = false
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
+	@AppStorage("meshMapShowOfflineNodes") private var showOfflineNodes = true
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
@@ -30,6 +31,17 @@ struct MapSettingsForm: View {
 
 		NavigationStack {
 			Form {
+				Section(header: Text("Filter Nodes")) {
+					Toggle(isOn: $showOfflineNodes) {
+						Label {
+							Text("Show Offline Nodes")
+						} icon: {
+							Image(systemName: showOfflineNodes ? "wifi.slash" : "wifi")
+								.contentTransition(.symbolEffect(.replace))
+						}
+					}
+				}
+				
 				Section(header: Text("Map Options")) {
 					Picker(selection: $mapLayer, label: Text("")) {
 						ForEach(MapLayer.allCases, id: \.self) { layer in
