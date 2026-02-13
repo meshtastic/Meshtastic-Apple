@@ -40,6 +40,7 @@ struct MapSettingsForm: View {
 								.contentTransition(.symbolEffect(.replace))
 						}
 					}
+					.tint(.accentColor)
 				}
 				
 				Section(header: Text("Map Options")) {
