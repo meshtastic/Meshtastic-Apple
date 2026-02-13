@@ -14585,6 +14585,9 @@
         }
       }
     },
+    "Filter Nodes" : {
+
+    },
     "Filter the node list and mesh map based on proximity to your phone." : {
       "localizations" : {
         "de" : {
@@ -33952,6 +33955,9 @@
           }
         }
       }
+    },
+    "Show Offline Nodes" : {
+
     },
     "Show on device screen" : {
       "localizations" : {
