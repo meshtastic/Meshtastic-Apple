@@ -47,10 +47,6 @@ final class TAKDataPackageGenerator {
 			}
 			try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
 
-			// Create certs subdirectory (matches working data package structure)
-			let certsDir = tempDir.appendingPathComponent("certs")
-			try fileManager.createDirectory(at: certsDir, withIntermediateDirectories: true)
-
 			// Determine user client certificate filename
 			let userClientCertFileName: String
 			if let customName = userCertName {
@@ -64,7 +60,7 @@ final class TAKDataPackageGenerator {
 				userClientCertFileName = "\(deviceName).p12"
 			}
 
-			// Generate preference file in certs directory
+			// Generate preference file at package root (flat structure for TAK client compatibility)
 			let prefFileName = "meshtastic-server.pref"
 			let configPref = generateConfigPref(
 				serverHost: serverHost,
@@ -73,26 +69,26 @@ final class TAKDataPackageGenerator {
 				description: description,
 				userClientCertFileName: userClientCertFileName
 			)
-			let configPrefURL = certsDir.appendingPathComponent(prefFileName)
+			let configPrefURL = tempDir.appendingPathComponent(prefFileName)
 			try configPref.write(to: configPrefURL, atomically: true, encoding: .utf8)
-			Logger.tak.debug("Created certs/\(prefFileName)")
+			Logger.tak.debug("Created \(prefFileName)")
 
 			// Copy certificates (only needed for TLS/mTLS mode)
 			if useTLS {
 				// Truststore (server cert for verifying server) - uses custom if available
 				if let serverP12Data = TAKCertificateManager.shared.getActiveServerP12Data() {
-					let truststoreURL = certsDir.appendingPathComponent("truststore.p12")
+					let truststoreURL = tempDir.appendingPathComponent("truststore.p12")
 					try serverP12Data.write(to: truststoreURL)
-					Logger.tak.debug("Created certs/truststore.p12 (custom: \(TAKCertificateManager.shared.hasCustomServerCertificate()))")
+					Logger.tak.debug("Created truststore.p12 (custom: \(TAKCertificateManager.shared.hasCustomServerCertificate()))")
 				} else {
 					Logger.tak.warning("No server certificate data available")
 				}
 
 				// User client certificate for mTLS - uses custom if available
 				if let clientP12Data = TAKCertificateManager.shared.getActiveClientP12Data() {
-					let clientURL = certsDir.appendingPathComponent(userClientCertFileName)
+					let clientURL = tempDir.appendingPathComponent(userClientCertFileName)
 					try clientP12Data.write(to: clientURL)
-					Logger.tak.debug("Created certs/\(userClientCertFileName) (custom: \(TAKCertificateManager.shared.hasCustomClientP12()))")
+					Logger.tak.debug("Created \(userClientCertFileName) (custom: \(TAKCertificateManager.shared.hasCustomClientP12()))")
 				} else {
 					Logger.tak.warning("No client certificate data available")
 				}
@@ -217,9 +213,9 @@ final class TAKDataPackageGenerator {
 			    <Parameter name="onReceiveDelete" value="true"/>
 			  </Configuration>
 			  <Contents>
-			    <Content ignore="false" zipEntry="certs\\\(prefFileName)"/>
-			    <Content ignore="false" zipEntry="certs\\truststore.p12"/>
-			    <Content ignore="false" zipEntry="certs\\\(userClientCertFileName)"/>
+			    <Content ignore="false" zipEntry="\(prefFileName)"/>
+			    <Content ignore="false" zipEntry="truststore.p12"/>
+			    <Content ignore="false" zipEntry="\(userClientCertFileName)"/>
 			  </Contents>
 			</MissionPackageManifest>
 			"""
@@ -233,7 +229,7 @@ final class TAKDataPackageGenerator {
 			    <Parameter name="onReceiveDelete" value="true"/>
 			  </Configuration>
 			  <Contents>
-			    <Content ignore="false" zipEntry="certs\\\(prefFileName)"/>
+			    <Content ignore="false" zipEntry="\(prefFileName)"/>
 			  </Contents>
 			</MissionPackageManifest>
 			"""
