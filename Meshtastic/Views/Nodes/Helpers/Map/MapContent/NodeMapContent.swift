@@ -167,7 +167,7 @@ struct NodeMapContent: MapContent {
 			.frame(width: 12, height: 12)
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
-		return renderer.uiImage!
+		return renderer.uiImage ?? UIImage()
 	}
 
 	private func prerenderHistoryPointArrow(fill: Color, stroke: Color) -> UIImage {
@@ -181,6 +181,6 @@ struct NodeMapContent: MapContent {
 			.frame(width: 16, height: 16)
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
-		return renderer.uiImage!
+		return renderer.uiImage ?? UIImage()
 	}
 }

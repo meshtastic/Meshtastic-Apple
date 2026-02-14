@@ -795,15 +795,17 @@ extension AccessoryManager {
 		let logString = String.localizedStringWithFormat("🗑️ Sent a request to remove node \(node.num.toHex())")
 		try await send(toRadio, debugDescription: logString)
 
-			do {
-				context.delete(node.user!)
-				context.delete(node)
-				try context.save()
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				Logger.data.error("🚫 Error deleting node from core data: \(nsError, privacy: .public)")
-			}
+				do {
+					if let user = node.user {
+						context.delete(user)
+					}
+					context.delete(node)
+					try context.save()
+				} catch {
+					context.rollback()
+					let nsError = error as NSError
+					Logger.data.error("🚫 Error deleting node from core data: \(nsError, privacy: .public)")
+				}
 
 	}
 

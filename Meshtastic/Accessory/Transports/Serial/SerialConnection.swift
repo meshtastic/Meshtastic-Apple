@@ -156,13 +156,13 @@ actor SerialConnection: Connection {
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
 		fd = open(path, O_RDWR | O_NOCTTY | O_NONBLOCK)
 		if fd == -1 {
-			throw POSIXError(POSIXErrorCode(rawValue: errno)!)
+			throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
 		}
 
 		var term = termios()
 		if tcgetattr(fd, &term) == -1 {
 			close(fd)
-			throw POSIXError(POSIXErrorCode(rawValue: errno)!)
+			throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
 		}
 
 		cfmakeraw(&term)
@@ -177,12 +177,12 @@ actor SerialConnection: Connection {
 
 		if cfsetspeed(&term, 115200) == -1 {
 			close(fd)
-			throw POSIXError(POSIXErrorCode(rawValue: errno)!)
+			throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
 		}
 		
 		if tcsetattr(fd, TCSANOW, &term) == -1 {
 			close(fd)
-			throw POSIXError(POSIXErrorCode(rawValue: errno)!)
+			throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
 		}
 
 		self.fileHandle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)

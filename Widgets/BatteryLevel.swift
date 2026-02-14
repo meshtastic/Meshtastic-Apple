@@ -13,43 +13,50 @@ struct BatteryIcon: View {
 
 	var body: some View {
 
-		if batteryLevel == 100 {
+		if let level = batteryLevel {
+			if level == 100 {
 
-			Image(systemName: "battery.100.bolt")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 100 && batteryLevel! > 74 {
+				Image(systemName: "battery.100.bolt")
+					.font(font)
+					.foregroundColor(color)
+					.symbolRenderingMode(.hierarchical)
+			} else if level < 100 && level > 74 {
 
-			Image(systemName: "battery.75")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 75 && batteryLevel! > 49 {
+				Image(systemName: "battery.75")
+					.font(font)
+					.foregroundColor(color)
+					.symbolRenderingMode(.hierarchical)
+			} else if level < 75 && level > 49 {
 
-			Image(systemName: "battery.50")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 50 && batteryLevel! > 14 {
+				Image(systemName: "battery.50")
+					.font(font)
+					.foregroundColor(color)
+					.symbolRenderingMode(.hierarchical)
+			} else if level < 50 && level > 14 {
 
-			Image(systemName: "battery.25")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 15 && batteryLevel! > 0 {
+				Image(systemName: "battery.25")
+					.font(font)
+					.foregroundColor(color)
+					.symbolRenderingMode(.hierarchical)
+			} else if level < 15 && level > 0 {
 
-			Image(systemName: "battery.0")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! == 0 {
-			Image(systemName: "battery.0")
-				.font(font)
-				.foregroundColor(.red)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! > 100 {
-			Image(systemName: "powerplug")
+				Image(systemName: "battery.0")
+					.font(font)
+					.foregroundColor(color)
+					.symbolRenderingMode(.hierarchical)
+			} else if level == 0 {
+				Image(systemName: "battery.0")
+					.font(font)
+					.foregroundColor(.red)
+					.symbolRenderingMode(.hierarchical)
+			} else if level > 100 {
+				Image(systemName: "powerplug")
+					.font(font)
+					.foregroundColor(color)
+					.symbolRenderingMode(.hierarchical)
+			}
+		} else {
+			Image(systemName: "battery.slash")
 				.font(font)
 				.foregroundColor(color)
 				.symbolRenderingMode(.hierarchical)
