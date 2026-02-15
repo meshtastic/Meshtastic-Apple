@@ -35,6 +35,7 @@ enum ScreenUnits: Int, CaseIterable, Identifiable {
 
 enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 
+	case unset = 0
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
 	case oneMinute = 60
@@ -48,6 +49,8 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
+		case .unset:
+        	return "Default".localized
 		case .fifteenSeconds:
 			return "Fifteen Seconds".localized
 		case .thirtySeconds:

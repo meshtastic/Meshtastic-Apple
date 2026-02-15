@@ -14,8 +14,13 @@ struct UpdateIntervalPicker: View {
 	@Binding var selectedInterval: UpdateInterval
 	
 	private var fixedOptions: [UpdateInterval] {
-		config.allowedCases
-			.map { UpdateInterval(from: $0.rawValue) }
+		var options = config.allowedCases
+        	.map { UpdateInterval(from: $0.rawValue) }
+    	// Always include the current selection to prevent SwiftUI Picker tag mismatch errors
+    	if !options.contains(selectedInterval) {
+    		options.insert(selectedInterval, at: 0)
+    	}
+    	return options
 	}
 	
 	init(config: IntervalConfiguration, pickerLabel: String, selectedInterval: Binding<UpdateInterval>) {
