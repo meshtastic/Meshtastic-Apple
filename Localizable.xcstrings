@@ -41604,7 +41604,6 @@
       }
     },
     "TAK" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
