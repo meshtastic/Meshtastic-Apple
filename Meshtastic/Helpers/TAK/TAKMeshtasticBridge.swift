@@ -147,6 +147,8 @@ final class TAKMeshtasticBridge {
 			return
 		}
 
+		let channel = UInt32(TAKServerManager.shared.channel)
+
 		// Determine send method based on CoT type
 		let sendMethod = GenericCoTHandler.shared.classifySendMethod(for: cotMessage)
 
@@ -159,7 +161,7 @@ final class TAKMeshtasticBridge {
 			}
 
 			do {
-				try await accessoryManager.sendTAKPacket(takPacket)
+				try await accessoryManager.sendTAKPacket(takPacket, channel: channel)
 				Logger.tak.info("Sent TAKPacket to mesh: \(cotMessage.type)")
 			} catch {
 				Logger.tak.error("Failed to send TAKPacket to mesh: \(error.localizedDescription)")
@@ -169,7 +171,7 @@ final class TAKMeshtasticBridge {
 			// Use EXI compression on ATAK_FORWARDER port (257)
 			GenericCoTHandler.shared.accessoryManager = accessoryManager
 			do {
-				try await GenericCoTHandler.shared.sendGenericCoT(cotMessage)
+				try await GenericCoTHandler.shared.sendGenericCoT(cotMessage, channel: channel)
 				Logger.tak.info("Sent generic CoT to mesh via ATAK_FORWARDER: \(cotMessage.type)")
 			} catch {
 				Logger.tak.error("Failed to send generic CoT to mesh: \(error.localizedDescription)")
