@@ -137,6 +137,16 @@ final class TAKMeshtasticBridge {
 
 	/// Send a CoT message received from TAK to the Meshtastic mesh
 	func sendToMesh(_ cotMessage: CoTMessage) async {
+		guard let takServerManager else {
+			Logger.tak.warning("Cannot send to mesh: TAKServerManager not available")
+			return
+		}
+		
+		guard !takServerManager.userReadOnlyMode else {
+			Logger.tak.info("TAK Server in read-only mode: Ignoring message from TAK client")
+			return
+		}
+
 		guard let accessoryManager else {
 			Logger.tak.warning("Cannot send to mesh: AccessoryManager not available")
 			return
@@ -474,24 +484,78 @@ final class TAKMeshtasticBridge {
 
 	/// Send all known mesh node positions to TAK clients
 	/// Useful when a new TAK client connects
+	/// Only sends nodes with positions updated within the last hour
+	/// Excludes the node we're currently connected to
 	func broadcastAllNodesToTAK() async {
 		guard let takServerManager, takServerManager.isRunning else { return }
-		guard let context else { return }
-
+		
+		// Get context - try the bridge's context first, then fall back to PersistenceController
+		let context = self.context ?? PersistenceController.shared.container.viewContext
+		
+		let twoHoursAgo = Date().addingTimeInterval(-7200)
+		
+		// Get the connected node number to exclude it
+		let connectedNodeNum = AccessoryManager.shared.activeDeviceNum ?? 0
+		
+		Logger.tak.info("Starting broadcast of all mesh nodes to TAK (excluding node \(connectedNodeNum))")
+		
+		// Fetch all nodes - be more lenient, include any node that's been heard from
+		// We'll check positions when creating CoT messages
 		let fetchRequest: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-		// Only nodes with valid positions
-		fetchRequest.predicate = NSPredicate(format: "latestPosition != nil")
-
+		fetchRequest.predicate = NSPredicate(
+			format: "user != nil"
+		)
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "lastHeard", ascending: false)]
+		
 		do {
 			let nodes = try context.fetch(fetchRequest)
-
+			Logger.tak.info("Found \(nodes.count) total nodes with user info, connected node: \(connectedNodeNum)")
+			
+			var broadcastCount = 0
+			var skippedNoPosition = 0
+			var skippedConnected = 0
+			var skippedInvalidPosition = 0
+			var skippedTooOld = 0
+			
 			for node in nodes {
+				// Skip the connected node - it's our own device
+				// Use the same pattern as other parts of the codebase: node.num == accessoryManager.activeDeviceNum
+				if node.num == connectedNodeNum {
+					Logger.tak.info("Skipping connected node \(node.num)")
+					skippedConnected += 1
+					continue
+				}
+				
+				// Get position - use the extension's latestPosition computed property
+				guard let position = node.latestPosition,
+					  let latitude = position.latitude,
+					  let longitude = position.longitude else {
+					skippedNoPosition += 1
+					continue
+				}
+				
+				// Skip nodes with invalid positions (0,0)
+				guard latitude != 0 || longitude != 0 else {
+					skippedInvalidPosition += 1
+					continue
+				}
+				
+				// Check if node has been heard from recently (within last 2 hours)
+				if let lastHeard = node.lastHeard, lastHeard < twoHoursAgo {
+					skippedTooOld += 1
+					continue
+				}
+				
 				if let cotMessage = createCoTFromNode(node) {
 					await takServerManager.broadcast(cotMessage)
+					broadcastCount += 1
+					
+					// Small delay to avoid flooding the client
+					try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
 				}
 			}
 
-			Logger.tak.info("Broadcast \(nodes.count) mesh node positions to TAK clients")
+			Logger.tak.info("Broadcast complete: \(broadcastCount) nodes sent, \(skippedConnected) skipped (connected), \(skippedNoPosition) skipped (no position), \(skippedInvalidPosition) skipped (invalid position), \(skippedTooOld) skipped (too old)")
 		} catch {
 			Logger.tak.error("Failed to fetch nodes for TAK broadcast: \(error.localizedDescription)")
 		}
@@ -500,10 +564,12 @@ final class TAKMeshtasticBridge {
 	// MARK: - Helper Methods
 
 	private func lookupNodeInfo(nodeNum: UInt32) -> NodeInfoEntity? {
-		guard let context else { return nil }
+		// Use PersistenceController's viewContext directly to ensure we can find nodes
+		let context = PersistenceController.shared.container.viewContext
 
+		// Use the same format as MeshPackets - num is Int64
 		let fetchRequest: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-		fetchRequest.predicate = NSPredicate(format: "num == %d", Int64(nodeNum))
+		fetchRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 		fetchRequest.fetchLimit = 1
 
 		do {
@@ -511,6 +577,382 @@ final class TAKMeshtasticBridge {
 		} catch {
 			Logger.tak.warning("Failed to lookup node info for \(nodeNum): \(error.localizedDescription)")
 			return nil
+		}
+	}
+	
+	// MARK: - Mesh to CoT Broadcasting
+	
+	/// Broadcast a Meshtastic position packet to connected TAK clients
+	/// Called when a new position is received from the mesh
+	func broadcastMeshPositionToTAK(position: Position, from nodeNum: UInt32) async {
+		// Lazy initialization of bridge if needed
+		if TAKServerManager.shared.bridge == nil {
+			Logger.tak.info("Initializing bridge lazily for position broadcast")
+			let bridge = TAKMeshtasticBridge(
+				accessoryManager: AccessoryManager.shared,
+				takServerManager: TAKServerManager.shared
+			)
+			bridge.context = AccessoryManager.shared.context
+			TAKServerManager.shared.bridge = bridge
+		}
+		
+		let server = TAKServerManager.shared
+		guard server.meshToCotEnabled, server.isRunning else { return }
+		guard server.connectedClients.isEmpty == false else { return }
+		
+		guard let node = lookupNodeInfo(nodeNum: nodeNum) else { return }
+		
+		if let cotMessage = createCoTFromNode(node) {
+			await server.broadcast(cotMessage)
+			Logger.tak.info("Broadcast mesh position to TAK: \(node.user?.longName ?? "Unknown")")
+		}
+	}
+	
+	/// Broadcast a Meshtastic text message to connected TAK clients
+	/// Called when a text message is received from the mesh
+	func broadcastMeshTextMessageToTAK(text: String, from nodeNum: UInt32, channel: UInt32) async {
+		// Lazy initialization of bridge if needed
+		if TAKServerManager.shared.bridge == nil {
+			Logger.tak.info("Initializing bridge lazily for text message broadcast")
+			let bridge = TAKMeshtasticBridge(
+				accessoryManager: AccessoryManager.shared,
+				takServerManager: TAKServerManager.shared
+			)
+			bridge.context = AccessoryManager.shared.context
+			TAKServerManager.shared.bridge = bridge
+		}
+		
+		let server = TAKServerManager.shared
+		guard server.meshToCotEnabled, server.isRunning else { return }
+		guard server.connectedClients.isEmpty == false else { return }
+		
+		guard let node = lookupNodeInfo(nodeNum: nodeNum),
+			  let user = node.user else { return }
+		
+		let senderName = user.longName ?? user.shortName ?? "Unknown"
+		let uid = "MSG-\(nodeNum)-\(Int(Date().timeIntervalSince1970))"
+		
+		let cotMessage = CoTMessage(
+			uid: "GeoChat.MESHTASTIC-\(String(format: "%08X", nodeNum)).Channel\(channel).\(uid)",
+			type: "b-t-f",
+			time: Date(),
+			start: Date(),
+			stale: Date().addingTimeInterval(86400),
+			how: "h-g-i-g-o",
+			latitude: 0,
+			longitude: 0,
+			hae: 9999999.0,
+			ce: 9999999.0,
+			le: 9999999.0,
+			chat: CoTChat(
+				message: text,
+				senderCallsign: senderName,
+				chatroom: "All Chat Rooms"
+			),
+			remarks: text
+		)
+		
+		await server.broadcast(cotMessage)
+		Logger.tak.info("Broadcast mesh text message to TAK: \(senderName)")
+	}
+	
+	/// Broadcast a Meshtastic waypoint to connected TAK clients
+	/// Called when a waypoints is received from the mesh
+	func broadcastMeshWaypointToTAK(waypoint: Waypoint, from nodeNum: UInt32) async {
+		// Lazy initialization of bridge if needed - set on singleton
+		if TAKServerManager.shared.bridge == nil {
+			Logger.tak.info("Initializing bridge lazily on singleton")
+			let bridge = TAKMeshtasticBridge(
+				accessoryManager: AccessoryManager.shared,
+				takServerManager: TAKServerManager.shared
+			)
+			bridge.context = AccessoryManager.shared.context
+			TAKServerManager.shared.bridge = bridge
+		}
+		
+		let server = TAKServerManager.shared
+		Logger.tak.info("Waypoint broadcast check: meshToCot=\(server.meshToCotEnabled), isRunning=\(server.isRunning), clients=\(server.connectedClients.count)")
+		
+		guard server.meshToCotEnabled, server.isRunning else { 
+			Logger.tak.warning("Waypoint broadcast skipped: server not ready")
+			return 
+		}
+		guard let context, server.connectedClients.isEmpty == false else { 
+			Logger.tak.warning("Waypoint broadcast skipped: no clients")
+			return 
+		}
+		
+		let node = lookupNodeInfo(nodeNum: nodeNum)
+		Logger.tak.info("Node lookup for \(nodeNum) (0x\(String(format: "%08X", nodeNum))): \(node != nil ? "found" : "NOT FOUND")")
+		if let node = node {
+			Logger.tak.info("  Node user: \(node.user?.longName ?? "nil"), shortName: \(node.user?.shortName ?? "nil")")
+		}
+		let senderName = node?.user?.longName ?? node?.user?.shortName ?? "Unknown Node"
+		
+		let uid = "WAYPOINT-\(waypoint.id)"
+		let latitude = Double(waypoint.latitudeI) / 1e7
+		let longitude = Double(waypoint.longitudeI) / 1e7
+		
+		let name = waypoint.name.isEmpty ? "Dropped Pin" : waypoint.name
+		let description = waypoint.description_p.isEmpty ? "Meshtastic Waypoint" : waypoint.description_p
+		
+		Logger.tak.info("Broadcasting waypoint: \(name) at \(latitude), \(longitude), sender: \(senderName)")
+		
+		// Map Meshtastic emoji icon to appropriate TAK icon
+		let (cotType, iconPath, colorArgb) = getTakIconForWaypoint(waypoint: waypoint)
+		let userIconXML = "<usericon iconsetpath='\(iconPath)'/>"
+		let colorXML = "<color argb='\(colorArgb)'/>"
+		Logger.tak.info("Waypoint icon: emoji=0x\(String(format: "%08X", waypoint.icon)) -> \(iconPath)")
+		
+		// Handle expiry - if expire is 0, never expire. Otherwise use the expire time
+		let stale: Date
+		if waypoint.expire == 0 {
+			// Never expire - set to 1 year from now
+			stale = Date().addingTimeInterval(365 * 24 * 60 * 60)
+			Logger.tak.info("Waypoint set to never expire")
+		} else {
+			// expire is Unix timestamp when waypoint expires
+			let expireDate = Date(timeIntervalSince1970: TimeInterval(waypoint.expire))
+			if expireDate > Date() {
+				stale = expireDate
+			} else {
+				// Already expired, don't broadcast
+				Logger.tak.warning("Waypoint already expired, skipping broadcast")
+				return
+			}
+		}
+		
+		// Include the usericon and color in the detail
+		let rawDetail = "<precisionlocation geopointsrc='GPS' altsrc='GPS'></precisionlocation>\(userIconXML)\(colorXML)"
+		
+		let cotMessage = CoTMessage(
+			uid: uid,
+			type: cotType,
+			time: Date(),
+			start: Date(),
+			stale: stale,
+			how: "m-g",
+			latitude: latitude,
+			longitude: longitude,
+			hae: 0,
+			ce: 10.0,
+			le: 10.0,
+			contact: CoTContact(callsign: "\(name) - \(senderName)", endpoint: "0.0.0.0:4242:tcp"),
+			remarks: "\(description)\nFrom: \(senderName) [\(String(format: "%08X", nodeNum))]",
+			rawDetailXML: rawDetail
+		)
+		
+		await server.broadcast(cotMessage)
+		Logger.tak.info("Broadcast mesh waypoint to TAK: \(name) from \(senderName)")
+	}
+	
+	/// Map Meshtastic waypoint emoji to TAK icon using Google markers
+	/// Returns (cotType, iconPath, colorArgb)
+	/// Google markers are the only reliable icon type across all TAK clients (ATAK, iTAK, WinTAK)
+	private func getTakIconForWaypoint(waypoint: Waypoint) -> (String, String, String) {
+		let icon = waypoint.icon
+		
+		// Google marker base UUID
+		let googleBase = "f7f71666-8b28-4b57-9fbb-e38e61d33b79/Google"
+		
+		switch icon {
+		// 📍 📌 Pushpin - RED pushpin
+		case 0x1F4CD, 0x1F4CC, 1: // 📍 📌
+			return ("a-u-G", "\(googleBase)/red-pushpin.png", "-16776961")
+			
+		// === EMERGENCY ===
+		// 🔥 Fire - firedept
+		case 0x1F525, 10: // 🔥
+			return ("a-u-G", "\(googleBase)/firedept.png", "-16776961")
+		// 🚨 Siren - caution
+		case 0x1F6A8, 6: // 🚨
+			return ("a-u-G", "\(googleBase)/caution.png", "-256")
+		// 🏥 Hospital - hospital
+		case 0x1F3E5, 0x2695, 9: // 🏥 ➕
+			return ("a-u-G", "\(googleBase)/hospital.png", "-16776961")
+		// 🚑 Ambulance - ambulance
+		case 0x1F691: // 🚑
+			return ("a-u-G", "\(googleBase)/ambulance.png", "-16776961")
+		// ⚠️ Warning - caution
+		case 0x26A0: // ⚠️
+			return ("a-u-G", "\(googleBase)/caution.png", "-256")
+			
+		// === TRANSPORT ===
+		// 🚗 Car - car
+		case 0x1F697, 0x1F695, 2: // 🚗 🚕
+			return ("a-u-G", "\(googleBase)/car.png", "-256")
+		// 🚁 Helicopter - heliport
+		case 0x1F681, 11: // 🚁
+			return ("a-u-G", "\(googleBase)/heliport.png", "-16776961")
+		// ⛵ Boat - marina
+		case 0x1F6B5, 12: // ⛵
+			return ("a-u-G", "\(googleBase)/marina.png", "-16776961")
+		// 🚢 Ship - dock
+		case 0x1F6A2: // 🚢
+			return ("a-u-G", "\(googleBase)/dock.png", "-16776961")
+		// 🚀 Rocket - rocket
+		case 0x1F680: // 🚀
+			return ("a-u-G", "\(googleBase)/rocket.png", "-16776961")
+		// 🛸 UFO - unidentified (use pushpin)
+		case 0x1F6B5, 13: // 🛸
+			return ("a-u-G", "\(googleBase)/purple-p pushpin.png", "-65281")
+			
+		// === PEOPLE ===
+		// 🚶 Person - man
+		case 0x1F464, 0x1F465, 3: // 👤 👥
+			return ("a-u-G", "\(googleBase)/man.png", "-16711936")
+		// 🏃 Runner - runner
+		case 0x1F3C3: // 🏃
+			return ("a-u-G", "\(googleBase)/runner.png", "-16711936")
+			
+		// === STRUCTURES ===
+		// 🏠 House - home
+		case 0x1F3E0, 0x1F3E1, 4: // 🏠 🏡
+			return ("a-u-G", "\(googleBase)/home.png", "-16711936")
+		// ⛺ Tent - campground
+		case 0x26FA, 0x1F3D5, 5: // ⛺ 🏕
+			return ("a-u-G", "\(googleBase)/campground.png", "-256")
+		// 🏰 Castle - castle
+		case 0x1F3F0: // 🏰
+			return ("a-u-G", "\(googleBase)/castle.png", "-16776961")
+			
+		// === NATURE ===
+		// 🌲 Tree - park
+		case 0x1F332: // 🌲
+			return ("a-u-G", "\(googleBase)/park.png", "-16711936")
+		// 🌳 Tree - park
+		case 0x1F333: // 🌳
+			return ("a-u-G", "\(googleBase)/park.png", "-16711936")
+		// 🏔️ Mountain - mountain
+		case 0x1F3D4: // 🏔️
+			return ("a-u-G", "\(googleBase)/mountain.png", "-1")
+		// ⛰️ Mountain - mountain
+		case 0x26F0: // ⛰️
+			return ("a-u-G", "\(googleBase)/mountain.png", "-1")
+		// 💧 Water - water
+		case 0x1F4A7: // 💧
+			return ("a-u-G", "\(googleBase)/water.png", "-16776961")
+		// 🌊 Wave - water
+		case 0x1F30A: // 🌊
+			return ("a-u-G", "\(googleBase)/water.png", "-16776961")
+		// ☁️ Cloud - cloudy
+		case 0x2601, 0x2602: // ☁ ☂
+			return ("a-u-G", "\(googleBase)/cloudy.png", "-1")
+		// 🌙 Moon - moon
+		case 0x1F319: // 🌙
+			return ("a-u-G", "\(googleBase)/moon.png", "-16776961")
+		// ⚓ Anchor - anchor
+		case 0x2693: // ⚓
+			return ("a-u-G", "\(googleBase)/anchor.png", "-16776961")
+		// ⭐ Star - star
+		case 0x2B50, 0x1F31F: // ⭐ 🌟
+			return ("a-u-G", "\(googleBase)/star.png", "-256")
+			
+		// === FLAGS/MARKERS ===
+		// 🚩 Flag - flag
+		case 0x1F6A9: // 🚩
+			return ("a-u-G", "\(googleBase)/flag.png", "-16776961")
+		// 🏁 Checkered flag - finish
+		case 0x1F3C1, 7: // 🏁
+			return ("a-u-G", "\(googleBase)/finish.png", "-1")
+			
+		// === OBJECTS ===
+		// 💎 Gem - diamond
+		case 0x1F48E: // 💎
+			return ("a-u-G", "\(googleBase)/diamond.png", "-16776961")
+		// 🔔 Bell - bell
+		case 0x1F514: // 🔔
+			return ("a-u-G", "\(googleBase)/bell.png", "-256")
+		// 🗺 Map - map
+		case 0x1F5FA: // 🗺
+			return ("a-u-G", "\(googleBase)/map.png", "-1")
+		// 🎁 Gift - gift
+		case 0x1F381: // 🎁
+			return ("a-u-G", "\(googleBase)/gift.png", "-16776961")
+		// 💀 Skull - skull
+		case 0x1F480: // 💀
+			return ("a-u-G", "\(googleBase)/skull.png", "-1")
+		// ❄️ Snowflake - snow
+		case 0x2744: // ❄
+			return ("a-u-G", "\(googleBase)/snowflake.png", "-1")
+		// ☂️ Umbrella - umbrella
+		case 0x26F1: // ⛱
+			return ("a-u-G", "\(googleBase)/umbrella.png", "-16776961")
+		// 💡 Light - lightbulb
+		case 0x1F4A1: // 💡
+			return ("a-u-G", "\(googleBase)/lightbulb.png", "-256")
+		// 🔋 Battery - battery
+		case 0x1F50B: // 🔋
+			return ("a-u-G", "\(googleBase)/battery.png", "-16711936")
+		// 📻 Radio - radio
+		case 0x1F4FB: // 📻
+			return ("a-u-G", "\(googleBase)/radio.png", "-16711936")
+		// 📞 Phone - phone
+		case 0x1F4DE, 0x1F4F1: // 📞 📱
+			return ("a-u-G", "\(googleBase)/phone.png", "-16711936")
+		// 💥 Collision - warning
+		case 0x1F4A5: // 💥
+			return ("a-u-G", "\(googleBase)/warning.png", "-16776961")
+			
+		// === SYMBOLS ===
+		// ❤️ Heart - heart
+		case 0x2764, 0x1F493, 0x1F49A, 0x1F499: // ❤️ 💓 💚 💙
+			return ("a-u-G", "\(googleBase)/heart.png", "-16776961")
+		// ✅ Check - check
+		case 0x2705, 0x1F7E2: // ✅ 🟢
+			return ("a-u-G", "\(googleBase)/check.png", "-16711936")
+		// ❌ X - x
+		case 0x274C, 0x1F6AB: // ❌ 🚫
+			return ("a-u-G", "\(googleBase)/x.png", "-16776961")
+			
+		// === WEATHER ===
+		// 🌤️ Sun behind cloud - partlycloudy
+		case 0x1F324: // 🌤️
+			return ("a-u-G", "\(googleBase)/partlycloudy.png", "-256")
+		// 🌧️ Rain - rainy
+		case 0x1F327: // 🌧️
+			return ("a-u-G", "\(googleBase)/rainy.png", "-16776961")
+		// 🌨️ Snow - snow
+		case 0x1F328: // 🌨️
+			return ("a-u-G", "\(googleBase)/snow.png", "-1")
+		// 🌩️ Lightning - lightning
+		case 0x1F329: // 🌩
+			return ("a-u-G", "\(googleBase)/lightning.png", "-256")
+		// 🌀 Cyclone - windy
+		case 0x1F300: // 🌀
+			return ("a-u-G", "\(googleBase)/windy.png", "-16776961")
+		// 🌈 Rainbow - rainbow
+		case 0x1F308: // 🌈
+			return ("a-u-G", "\(googleBase)/rainbow.png", "-16776961")
+		// 🌪️ Tornado - tornado
+		case 0x1F32A: // 🌪️
+			return ("a-u-G", "\(googleBase)/tornado.png", "-1")
+			
+		// === GLOBE ===
+		// 🌍 Globe - globe
+		case 0x1F30D, 0x1F30E, 0x1F30F, 0x1F310: // 🌍 🌎 🌏 🌐
+			return ("a-u-G", "\(googleBase)/globe.png", "-16776961")
+			
+		// === FOOD ===
+		// 🍔 Burger - restaurant
+		case 0x1F354: // 🍔
+			return ("a-u-G", "\(googleBase)/restaurant.png", "-256")
+		// 🍕 Pizza - restaurant
+		case 0x1F355: // 🍕
+			return ("a-u-G", "\(googleBase)/restaurant.png", "-256")
+		// ☕ Coffee - coffee
+		case 0x2615: // ☕
+			return ("a-u-G", "\(googleBase)/coffee.png", "-256")
+		// 🍺 Beer - bar
+		case 0x1F37A: // 🍺
+			return ("a-u-G", "\(googleBase)/bar.png", "-256")
+		// 🍷 Wine - wine
+		case 0x1F377: // 🍷
+			return ("a-u-G", "\(googleBase)/wine.png", "-65281")
+			
+		// === Default - RED pushpin ===
+		default:
+			return ("a-u-G", "\(googleBase)/red-p pushpin.png", "-16776961")
 		}
 	}
 }
