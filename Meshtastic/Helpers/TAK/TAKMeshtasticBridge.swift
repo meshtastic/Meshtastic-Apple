@@ -749,6 +749,7 @@ final class TAKMeshtasticBridge {
 	/// Map Meshtastic waypoint emoji to TAK icon using Google markers
 	/// Returns (cotType, iconPath, colorArgb)
 	/// Google markers are the only reliable icon type across all TAK clients (ATAK, iTAK, WinTAK)
+	/// Icons sourced from iconsets.sqlite database - Google iconset (UUID: f7f71666-8b28-4b57-9fbb-e38e61d33b79)
 	private func getTakIconForWaypoint(waypoint: Waypoint) -> (String, String, String) {
 		let icon = waypoint.icon
 		
@@ -756,7 +757,7 @@ final class TAKMeshtasticBridge {
 		let googleBase = "f7f71666-8b28-4b57-9fbb-e38e61d33b79/Google"
 		
 		switch icon {
-		// 📍 📌 Pushpin - RED pushpin
+		// 📍 📌 Pushpin - RED pushpin (default)
 		case 0x1F4CD, 0x1F4CC, 1: // 📍 📌
 			return ("a-u-G", "\(googleBase)/red-pushpin.png", "-16776961")
 			
@@ -767,83 +768,106 @@ final class TAKMeshtasticBridge {
 		// 🚨 Siren - caution
 		case 0x1F6A8, 6: // 🚨
 			return ("a-u-G", "\(googleBase)/caution.png", "-256")
-		// 🏥 Hospital - hospital
+		// 🏥 Hospital - hospitals
 		case 0x1F3E5, 0x2695, 9: // 🏥 ➕
-			return ("a-u-G", "\(googleBase)/hospital.png", "-16776961")
-		// 🚑 Ambulance - ambulance
+			return ("a-u-G", "\(googleBase)/hospitals.png", "-16776961")
+		// 🚑 Ambulance - use hospitals
 		case 0x1F691: // 🚑
-			return ("a-u-G", "\(googleBase)/ambulance.png", "-16776961")
+			return ("a-u-G", "\(googleBase)/hospitals.png", "-16776961")
 		// ⚠️ Warning - caution
 		case 0x26A0: // ⚠️
 			return ("a-u-G", "\(googleBase)/caution.png", "-256")
+		// 🚓 Police - police
+		case 0x1F693: // 🚓
+			return ("a-u-G", "\(googleBase)/police.png", "-16776961")
 			
 		// === TRANSPORT ===
-		// 🚗 Car - car
+		// 🚗 Car - bus (closest available)
 		case 0x1F697, 0x1F695, 2: // 🚗 🚕
-			return ("a-u-G", "\(googleBase)/car.png", "-256")
+			return ("a-u-G", "\(googleBase)/bus.png", "-256")
 		// 🚁 Helicopter - heliport
 		case 0x1F681, 11: // 🚁
 			return ("a-u-G", "\(googleBase)/heliport.png", "-16776961")
 		// ⛵ Boat - marina
 		case 0x1F6B5, 12: // ⛵
 			return ("a-u-G", "\(googleBase)/marina.png", "-16776961")
-		// 🚢 Ship - dock
+		// 🚢 Ship - use marina
 		case 0x1F6A2: // 🚢
-			return ("a-u-G", "\(googleBase)/dock.png", "-16776961")
-		// 🚀 Rocket - rocket
+			return ("a-u-G", "\(googleBase)/marina.png", "-16776961")
+		// 🚀 Rocket - use target
 		case 0x1F680: // 🚀
-			return ("a-u-G", "\(googleBase)/rocket.png", "-16776961")
-		// 🛸 UFO - unidentified (use pushpin)
+			return ("a-u-G", "\(googleBase)/target.png", "-16776961")
+		// 🛸 UFO - use purple pushpin
 		case 0x1F6B5, 13: // 🛸
-			return ("a-u-G", "\(googleBase)/purple-p pushpin.png", "-65281")
+			return ("a-u-G", "\(googleBase)/purple-pushpin.png", "-65281")
+		// 🚲 Bicycle - cycling
+		case 0x1F6B2: // 🚲
+			return ("a-u-G", "\(googleBase)/cycling.png", "-16711936")
+		// 🚆 Train - rail
+		case 0x1F686: // 🚆
+			return ("a-u-G", "\(googleBase)/rail.png", "-16711936")
+		// ✈️ Plane - airports
+		case 0x2708: // ✈️
+			return ("a-u-G", "\(googleBase)/airports.png", "-16776961")
+			
+		// === PLACES ===
+		// 🏨 Hotel - lodging
+		case 0x1F3E8: // 🏨
+			return ("a-u-G", "\(googleBase)/lodging.png", "-16776961")
+		// 🏪 Store - convenience
+		case 0x1F3EA: // 🏪
+			return ("a-u-G", "\(googleBase)/convenience.png", "-16711936")
+		// ⛽ Gas - gas_stations
+		case 0x1F6FD: // ⛽
+			return ("a-u-G", "\(googleBase)/gas_stations.png", "-16776961")
 			
 		// === PEOPLE ===
-		// 🚶 Person - man
+		// 🚶 Person - hiker
 		case 0x1F464, 0x1F465, 3: // 👤 👥
-			return ("a-u-G", "\(googleBase)/man.png", "-16711936")
-		// 🏃 Runner - runner
+			return ("a-u-G", "\(googleBase)/hiker.png", "-16711936")
+		// 🏃 Runner - use man
 		case 0x1F3C3: // 🏃
-			return ("a-u-G", "\(googleBase)/runner.png", "-16711936")
+			return ("a-u-G", "\(googleBase)/man.png", "-16711936")
 			
 		// === STRUCTURES ===
-		// 🏠 House - home
+		// 🏠 House - use homegardenbusiness
 		case 0x1F3E0, 0x1F3E1, 4: // 🏠 🏡
-			return ("a-u-G", "\(googleBase)/home.png", "-16711936")
+			return ("a-u-G", "\(googleBase)/homegardenbusiness.png", "-16711936")
 		// ⛺ Tent - campground
 		case 0x26FA, 0x1F3D5, 5: // ⛺ 🏕
 			return ("a-u-G", "\(googleBase)/campground.png", "-256")
-		// 🏰 Castle - castle
+		// 🏰 Castle - use info
 		case 0x1F3F0: // 🏰
-			return ("a-u-G", "\(googleBase)/castle.png", "-16776961")
+			return ("a-u-G", "\(googleBase)/info.png", "-16776961")
 			
 		// === NATURE ===
-		// 🌲 Tree - park
+		// 🌲 Tree - parks
 		case 0x1F332: // 🌲
-			return ("a-u-G", "\(googleBase)/park.png", "-16711936")
-		// 🌳 Tree - park
+			return ("a-u-G", "\(googleBase)/parks.png", "-16711936")
+		// 🌳 Tree - parks
 		case 0x1F333: // 🌳
-			return ("a-u-G", "\(googleBase)/park.png", "-16711936")
-		// 🏔️ Mountain - mountain
+			return ("a-u-G", "\(googleBase)/parks.png", "-16711936")
+		// 🏔️ Mountain - use cross-hairs
 		case 0x1F3D4: // 🏔️
-			return ("a-u-G", "\(googleBase)/mountain.png", "-1")
-		// ⛰️ Mountain - mountain
+			return ("a-u-G", "\(googleBase)/cross-hairs.png", "-1")
+		// ⛰️ Mountain - use cross-hairs
 		case 0x26F0: // ⛰️
-			return ("a-u-G", "\(googleBase)/mountain.png", "-1")
+			return ("a-u-G", "\(googleBase)/cross-hairs.png", "-1")
 		// 💧 Water - water
 		case 0x1F4A7: // 💧
 			return ("a-u-G", "\(googleBase)/water.png", "-16776961")
 		// 🌊 Wave - water
 		case 0x1F30A: // 🌊
 			return ("a-u-G", "\(googleBase)/water.png", "-16776961")
-		// ☁️ Cloud - cloudy
+		// ☁️ Cloud - partly_cloudy
 		case 0x2601, 0x2602: // ☁ ☂
-			return ("a-u-G", "\(googleBase)/cloudy.png", "-1")
-		// 🌙 Moon - moon
+			return ("a-u-G", "\(googleBase)/partly_cloudy.png", "-1")
+		// 🌙 Moon - use star
 		case 0x1F319: // 🌙
-			return ("a-u-G", "\(googleBase)/moon.png", "-16776961")
-		// ⚓ Anchor - anchor
+			return ("a-u-G", "\(googleBase)/star.png", "-16776961")
+		// ⚓ Anchor - use marina
 		case 0x2693: // ⚓
-			return ("a-u-G", "\(googleBase)/anchor.png", "-16776961")
+			return ("a-u-G", "\(googleBase)/marina.png", "-16776961")
 		// ⭐ Star - star
 		case 0x2B50, 0x1F31F: // ⭐ 🌟
 			return ("a-u-G", "\(googleBase)/star.png", "-256")
@@ -852,107 +876,166 @@ final class TAKMeshtasticBridge {
 		// 🚩 Flag - flag
 		case 0x1F6A9: // 🚩
 			return ("a-u-G", "\(googleBase)/flag.png", "-16776961")
-		// 🏁 Checkered flag - finish
+		// 🏁 Checkered flag - use flag
 		case 0x1F3C1, 7: // 🏁
-			return ("a-u-G", "\(googleBase)/finish.png", "-1")
+			return ("a-u-G", "\(googleBase)/flag.png", "-1")
 			
 		// === OBJECTS ===
-		// 💎 Gem - diamond
+		// 📷 Camera
+		case 0x1F4F7: // 📷
+			return ("a-u-G", "\(googleBase)/camera.png", "-16711936")
+		// 🔒 Lock - use info
+		case 0x1F512: // 🔒
+			return ("a-u-G", "\(googleBase)/info.png", "-16711936")
+		// 🔑 Key - use info
+		case 0x1F511: // 🔑
+			return ("a-u-G", "\(googleBase)/info.png", "-16711936")
+		// 📦 Package - use shopping
+		case 0x1F4E6: // 📦
+			return ("a-u-G", "\(googleBase)/shopping.png", "-16711936")
+		// 🚧 Construction - caution
+		case 0x1F6A7: // 🚧
+			return ("a-u-G", "\(googleBase)/caution.png", "-256")
+		// 🎯 Target - target
+		case 0x1F3AF: // 🎯
+			return ("a-u-G", "\(googleBase)/target.png", "-16776961")
+		// 🏹 Sports bow - use target
+		case 0x1F3F9: // 🏹
+			return ("a-u-G", "\(googleBase)/target.png", "-16776961")
+		// 💣 Bomb - use caution
+		case 0x1F4A3: // 💣
+			return ("a-u-G", "\(googleBase)/caution.png", "-16776961")
+		// 🔧 Wrench - use mechanic
+		case 0x1F527: // 🔧
+			return ("a-u-G", "\(googleBase)/mechanic.png", "-16711936")
+		// 🛠️ Tools - use mechanic
+		case 0x1F6E0: // 🛠️
+			return ("a-u-G", "\(googleBase)/mechanic.png", "-16711936")
+		// 📮 Post box - post_office
+		case 0x1F4EE: // 📮
+			return ("a-u-G", "\(googleBase)/post_office.png", "-16776961")
+		// 💎 Gem - use star
 		case 0x1F48E: // 💎
-			return ("a-u-G", "\(googleBase)/diamond.png", "-16776961")
-		// 🔔 Bell - bell
+			return ("a-u-G", "\(googleBase)/star.png", "-16776961")
+		// 🔔 Bell - use info
 		case 0x1F514: // 🔔
-			return ("a-u-G", "\(googleBase)/bell.png", "-256")
-		// 🗺 Map - map
+			return ("a-u-G", "\(googleBase)/info.png", "-256")
+		// 🗺 Map - use marker
 		case 0x1F5FA: // 🗺
-			return ("a-u-G", "\(googleBase)/map.png", "-1")
-		// 🎁 Gift - gift
+			return ("a-u-G", "\(googleBase)/placemark_circle.png", "-1")
+		// 🎁 Gift - use shopping
 		case 0x1F381: // 🎁
-			return ("a-u-G", "\(googleBase)/gift.png", "-16776961")
-		// 💀 Skull - skull
+			return ("a-u-G", "\(googleBase)/shopping.png", "-16776961")
+		// 💀 Skull - use caution
 		case 0x1F480: // 💀
-			return ("a-u-G", "\(googleBase)/skull.png", "-1")
-		// ❄️ Snowflake - snow
+			return ("a-u-G", "\(googleBase)/caution.png", "-1")
+		// ❄️ Snowflake - snowflake_simple
 		case 0x2744: // ❄
-			return ("a-u-G", "\(googleBase)/snowflake.png", "-1")
-		// ☂️ Umbrella - umbrella
+			return ("a-u-G", "\(googleBase)/snowflake_simple.png", "-1")
+		// ☂️ Umbrella - use sunny
 		case 0x26F1: // ⛱
-			return ("a-u-G", "\(googleBase)/umbrella.png", "-16776961")
-		// 💡 Light - lightbulb
+			return ("a-u-G", "\(googleBase)/sunny.png", "-16776961")
+		// 💡 Light - use info
 		case 0x1F4A1: // 💡
-			return ("a-u-G", "\(googleBase)/lightbulb.png", "-256")
-		// 🔋 Battery - battery
+			return ("a-u-G", "\(googleBase)/info-i.png", "-256")
+		// 🔋 Battery - use bars
 		case 0x1F50B: // 🔋
-			return ("a-u-G", "\(googleBase)/battery.png", "-16711936")
+			return ("a-u-G", "\(googleBase)/bars.png", "-16711936")
 		// 📻 Radio - radio
 		case 0x1F4FB: // 📻
 			return ("a-u-G", "\(googleBase)/radio.png", "-16711936")
 		// 📞 Phone - phone
 		case 0x1F4DE, 0x1F4F1: // 📞 📱
 			return ("a-u-G", "\(googleBase)/phone.png", "-16711936")
-		// 💥 Collision - warning
+		// 💥 Collision - caution
 		case 0x1F4A5: // 💥
-			return ("a-u-G", "\(googleBase)/warning.png", "-16776961")
+			return ("a-u-G", "\(googleBase)/caution.png", "-16776961")
 			
 		// === SYMBOLS ===
-		// ❤️ Heart - heart
+		// ❤️ Heart - use flag
 		case 0x2764, 0x1F493, 0x1F49A, 0x1F499: // ❤️ 💓 💚 💙
-			return ("a-u-G", "\(googleBase)/heart.png", "-16776961")
-		// ✅ Check - check
+			return ("a-u-G", "\(googleBase)/flag.png", "-16776961")
+		// ✅ Check - use star
 		case 0x2705, 0x1F7E2: // ✅ 🟢
-			return ("a-u-G", "\(googleBase)/check.png", "-16711936")
-		// ❌ X - x
+			return ("a-u-G", "\(googleBase)/star.png", "-16711936")
+		// ❌ X - use caution
 		case 0x274C, 0x1F6AB: // ❌ 🚫
-			return ("a-u-G", "\(googleBase)/x.png", "-16776961")
+			return ("a-u-G", "\(googleBase)/caution.png", "-16776961")
 			
 		// === WEATHER ===
 		// 🌤️ Sun behind cloud - partlycloudy
 		case 0x1F324: // 🌤️
-			return ("a-u-G", "\(googleBase)/partlycloudy.png", "-256")
+			return ("a-u-G", "\(googleBase)/partly_cloudy.png", "-256")
 		// 🌧️ Rain - rainy
 		case 0x1F327: // 🌧️
 			return ("a-u-G", "\(googleBase)/rainy.png", "-16776961")
-		// 🌨️ Snow - snow
+		// 🌨️ Snow - use snowflake
 		case 0x1F328: // 🌨️
-			return ("a-u-G", "\(googleBase)/snow.png", "-1")
-		// 🌩️ Lightning - lightning
+			return ("a-u-G", "\(googleBase)/snowflake_simple.png", "-1")
+		// 🌩️ Lightning - use caution
 		case 0x1F329: // 🌩
-			return ("a-u-G", "\(googleBase)/lightning.png", "-256")
-		// 🌀 Cyclone - windy
+			return ("a-u-G", "\(googleBase)/caution.png", "-256")
+		// 🌀 Cyclone - use windy
 		case 0x1F300: // 🌀
-			return ("a-u-G", "\(googleBase)/windy.png", "-16776961")
-		// 🌈 Rainbow - rainbow
+			return ("a-u-G", "\(googleBase)/sunny.png", "-16776961")
+		// 🌈 Rainbow - use star
 		case 0x1F308: // 🌈
-			return ("a-u-G", "\(googleBase)/rainbow.png", "-16776961")
-		// 🌪️ Tornado - tornado
+			return ("a-u-G", "\(googleBase)/star.png", "-16776961")
+		// 🌪️ Tornado - use caution
 		case 0x1F32A: // 🌪️
-			return ("a-u-G", "\(googleBase)/tornado.png", "-1")
+			return ("a-u-G", "\(googleBase)/caution.png", "-1")
 			
 		// === GLOBE ===
-		// 🌍 Globe - globe
+		// 🌍 Globe - use marker
 		case 0x1F30D, 0x1F30E, 0x1F30F, 0x1F310: // 🌍 🌎 🌏 🌐
-			return ("a-u-G", "\(googleBase)/globe.png", "-16776961")
+			return ("a-u-G", "\(googleBase)/placemark_circle.png", "-16776961")
 			
 		// === FOOD ===
-		// 🍔 Burger - restaurant
+		// 🍔 Burger - dining
 		case 0x1F354: // 🍔
-			return ("a-u-G", "\(googleBase)/restaurant.png", "-256")
-		// 🍕 Pizza - restaurant
+			return ("a-u-G", "\(googleBase)/dining.png", "-256")
+		// 🍕 Pizza - dining
 		case 0x1F355: // 🍕
-			return ("a-u-G", "\(googleBase)/restaurant.png", "-256")
+			return ("a-u-G", "\(googleBase)/dining.png", "-256")
 		// ☕ Coffee - coffee
 		case 0x2615: // ☕
 			return ("a-u-G", "\(googleBase)/coffee.png", "-256")
-		// 🍺 Beer - bar
+		// 🍺 Beer - bars
 		case 0x1F37A: // 🍺
-			return ("a-u-G", "\(googleBase)/bar.png", "-256")
-		// 🍷 Wine - wine
+			return ("a-u-G", "\(googleBase)/bars.png", "-256")
+		// 🍷 Wine - use bar
 		case 0x1F377: // 🍷
-			return ("a-u-G", "\(googleBase)/wine.png", "-65281")
+			return ("a-u-G", "\(googleBase)/bars.png", "-65281")
+			
+		// === RECREATION ===
+		// 🎣 Fishing
+		case 0x1F3A3: // 🎣
+			return ("a-u-G", "\(googleBase)/fishing.png", "-16776961")
+		// ⛳ Golf
+		case 0x1F3CC: // ⛳
+			return ("a-u-G", "\(googleBase)/golf.png", "-16711936")
+		// ⛷️ Ski
+		case 0x1F3BF: // ⛷️
+			return ("a-u-G", "\(googleBase)/ski.png", "-16711936")
+		// 🏊 Swimming
+		case 0x1F3CA: // 🏊
+			return ("a-u-G", "\(googleBase)/swimming.png", "-16776961")
+		// 🏄 Surfing
+		case 0x1F3C4: // 🏄
+			return ("a-u-G", "\(googleBase)/swimming.png", "-16776961")
+		// 🎣 Fish - fishing
+		case 0x1F41F: // 🐟
+			return ("a-u-G", "\(googleBase)/fishing.png", "-16776961")
+		// 🌾 Rice - farm
+		case 0x1F33E: // 🌾
+			return ("a-u-G", "\(googleBase)/golf.png", "-16711936")
+		// 🐄 Farm animal - use golf
+		case 0x1F404: // 🐄
+			return ("a-u-G", "\(googleBase)/golf.png", "-16711936")
 			
 		// === Default - RED pushpin ===
 		default:
-			return ("a-u-G", "\(googleBase)/red-p pushpin.png", "-16776961")
+			return ("a-u-G", "\(googleBase)/red-pushpin.png", "-16776961")
 		}
 	}
 }
