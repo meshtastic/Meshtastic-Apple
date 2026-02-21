@@ -526,7 +526,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 								bridge.context = AccessoryManager.shared.context
 								server.bridge = bridge
 							}
-							await server.bridge?.broadcastMeshTextMessageToTAK(text: text, from: packet.from, channel: packet.channel)
+							await server.bridge?.broadcastMeshTextMessageToTAK(text: text, from: packet.from, channel: packet.channel, to: packet.to)
 						}
 					}
 				case .remoteHardwareApp:

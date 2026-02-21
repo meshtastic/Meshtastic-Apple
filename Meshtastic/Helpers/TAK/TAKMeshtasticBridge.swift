@@ -610,7 +610,12 @@ final class TAKMeshtasticBridge {
 	
 	/// Broadcast a Meshtastic text message to connected TAK clients
 	/// Called when a text message is received from the mesh
-	func broadcastMeshTextMessageToTAK(text: String, from nodeNum: UInt32, channel: UInt32) async {
+	/// - Parameters:
+	///   - text: The message text
+	///   - from: The sender node number
+	///   - channel: The channel index
+	///   - to: The destination node number (UInt32.max for broadcast)
+	func broadcastMeshTextMessageToTAK(text: String, from nodeNum: UInt32, channel: UInt32, to destination: UInt32) async {
 		// Lazy initialization of bridge if needed
 		if TAKServerManager.shared.bridge == nil {
 			Logger.tak.info("Initializing bridge lazily for text message broadcast")
@@ -632,8 +637,21 @@ final class TAKMeshtasticBridge {
 		let senderName = user.longName ?? user.shortName ?? "Unknown"
 		let uid = "MSG-\(nodeNum)-\(Int(Date().timeIntervalSince1970))"
 		
+		// Determine if this is a DM or broadcast
+		let isDirectMessage = destination != UInt32.max
+		
+		// For now, send all messages to general chat but mark DMs in the message
+		let chatroom = "All Chat Rooms"
+		
+		Logger.tak.info("Text message: isDM=\(isDirectMessage), chatroom=\(chatroom), from=\(senderName)")
+		
+		let senderUid = "MESHTASTIC-\(String(format: "%08X", nodeNum))"
+		
+		// Prefix DM messages with "DM:" so users know it's a direct message
+		let messageText = isDirectMessage ? "DM: \(text)" : text
+		
 		let cotMessage = CoTMessage(
-			uid: "GeoChat.MESHTASTIC-\(String(format: "%08X", nodeNum)).Channel\(channel).\(uid)",
+			uid: "GeoChat.\(senderUid).\(chatroom.replacingOccurrences(of: " ", with: "_")).\(uid)",
 			type: "b-t-f",
 			time: Date(),
 			start: Date(),
@@ -644,16 +662,17 @@ final class TAKMeshtasticBridge {
 			hae: 9999999.0,
 			ce: 9999999.0,
 			le: 9999999.0,
+			contact: CoTContact(callsign: senderName, endpoint: "0.0.0.0:4242:tcp"),
 			chat: CoTChat(
-				message: text,
+				message: messageText,
 				senderCallsign: senderName,
-				chatroom: "All Chat Rooms"
+				chatroom: chatroom
 			),
-			remarks: text
+			remarks: messageText
 		)
 		
 		await server.broadcast(cotMessage)
-		Logger.tak.info("Broadcast mesh text message to TAK: \(senderName)")
+		Logger.tak.info("Broadcast mesh text message to TAK: \(senderName) to \(chatroom)")
 	}
 	
 	/// Broadcast a Meshtastic waypoint to connected TAK clients
@@ -701,7 +720,6 @@ final class TAKMeshtasticBridge {
 		// Map Meshtastic emoji icon to appropriate TAK icon
 		let (cotType, iconPath, colorArgb) = getTakIconForWaypoint(waypoint: waypoint)
 		let userIconXML = "<usericon iconsetpath='\(iconPath)'/>"
-		let colorXML = "<color argb='\(colorArgb)'/>"
 		Logger.tak.info("Waypoint icon: emoji=0x\(String(format: "%08X", waypoint.icon)) -> \(iconPath)")
 		
 		// Handle expiry - if expire is 0, never expire. Otherwise use the expire time
@@ -722,8 +740,8 @@ final class TAKMeshtasticBridge {
 			}
 		}
 		
-		// Include the usericon and color in the detail
-		let rawDetail = "<precisionlocation geopointsrc='GPS' altsrc='GPS'></precisionlocation>\(userIconXML)\(colorXML)"
+		// Include the usericon in the detail (no color to avoid background in TAKware)
+		let rawDetail = "<precisionlocation geopointsrc='GPS' altsrc='GPS'></precisionlocation>\(userIconXML)"
 		
 		let cotMessage = CoTMessage(
 			uid: uid,
@@ -746,296 +764,656 @@ final class TAKMeshtasticBridge {
 		Logger.tak.info("Broadcast mesh waypoint to TAK: \(name) from \(senderName)")
 	}
 	
-	/// Map Meshtastic waypoint emoji to TAK icon using Google markers
+	/// Map Meshtastic waypoint emoji to TAK icon
 	/// Returns (cotType, iconPath, colorArgb)
-	/// Google markers are the only reliable icon type across all TAK clients (ATAK, iTAK, WinTAK)
-	/// Icons sourced from iconsets.sqlite database - Google iconset (UUID: f7f71666-8b28-4b57-9fbb-e38e61d33b79)
+	/// Icon paths use format: UUID/Category/icon.png
+	/// Priority: Google > Generic Icons (fallback)
 	private func getTakIconForWaypoint(waypoint: Waypoint) -> (String, String, String) {
 		let icon = waypoint.icon
 		
-		// Google marker base UUID
-		let googleBase = "f7f71666-8b28-4b57-9fbb-e38e61d33b79/Google"
+		// Icon set UUIDs
+		let googleUUID = "f7f71666-8b28-4b57-9fbb-e38e61d33b79"
+		let genericUUID = "ad78aafb-83a6-4c07-b2b9-a897a8b6a38f"
 		
 		switch icon {
 		// 📍 📌 Pushpin - RED pushpin (default)
 		case 0x1F4CD, 0x1F4CC, 1: // 📍 📌
-			return ("a-u-G", "\(googleBase)/red-pushpin.png", "-16776961")
+			return ("a-u-G", "\(genericUUID)/Tacks/red-pushpin.png", "-16776961")
 			
 		// === EMERGENCY ===
-		// 🔥 Fire - firedept
+		// 🔥 Fire - Google firedept
 		case 0x1F525, 10: // 🔥
-			return ("a-u-G", "\(googleBase)/firedept.png", "-16776961")
-		// 🚨 Siren - caution
+			return ("a-u-G", "\(googleUUID)/Google/firedept.png", "-16776961")
+		// 🚨 Siren - Google caution
 		case 0x1F6A8, 6: // 🚨
-			return ("a-u-G", "\(googleBase)/caution.png", "-256")
-		// 🏥 Hospital - hospitals
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-256")
+		// 🏥 Hospital - Google hospitals
 		case 0x1F3E5, 0x2695, 9: // 🏥 ➕
-			return ("a-u-G", "\(googleBase)/hospitals.png", "-16776961")
-		// 🚑 Ambulance - use hospitals
+			return ("a-u-G", "\(googleUUID)/Google/hospitals.png", "-16776961")
+		// 🚑 Ambulance - Google hospitals (no ambulance in Google)
 		case 0x1F691: // 🚑
-			return ("a-u-G", "\(googleBase)/hospitals.png", "-16776961")
-		// ⚠️ Warning - caution
+			return ("a-u-G", "\(googleUUID)/Google/hospitals.png", "-16776961")
+		// ⚠️ Warning - Google caution
 		case 0x26A0: // ⚠️
-			return ("a-u-G", "\(googleBase)/caution.png", "-256")
-		// 🚓 Police - police
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-256")
+		// 🚓 Police - Google police
 		case 0x1F693: // 🚓
-			return ("a-u-G", "\(googleBase)/police.png", "-16776961")
+			return ("a-u-G", "\(googleUUID)/Google/police.png", "-16776961")
+		// 🏃 Runner - Google man
+		case 0x1F3C3: // 🏃
+			return ("a-u-G", "\(googleUUID)/Google/man.png", "-16711936")
+		// 💀 Skull - Google caution
+		case 0x1F480: // 💀
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-1")
+		// 💣 Bomb - Google caution
+		case 0x1F4A3: // 💣
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
 			
 		// === TRANSPORT ===
-		// 🚗 Car - bus (closest available)
+		// 🚗 Car - Google bus (closest)
 		case 0x1F697, 0x1F695, 2: // 🚗 🚕
-			return ("a-u-G", "\(googleBase)/bus.png", "-256")
-		// 🚁 Helicopter - heliport
+			return ("a-u-G", "\(googleUUID)/Google/bus.png", "-256")
+		// 🚁 Helicopter - Google heliport
 		case 0x1F681, 11: // 🚁
-			return ("a-u-G", "\(googleBase)/heliport.png", "-16776961")
-		// ⛵ Boat - marina
+			return ("a-u-G", "\(googleUUID)/Google/heliport.png", "-16776961")
+		// ⛵ Boat - Google marina
 		case 0x1F6B5, 12: // ⛵
-			return ("a-u-G", "\(googleBase)/marina.png", "-16776961")
-		// 🚢 Ship - use marina
+			return ("a-u-G", "\(googleUUID)/Google/marina.png", "-16776961")
+		// 🚢 Ship - Google marina
 		case 0x1F6A2: // 🚢
-			return ("a-u-G", "\(googleBase)/marina.png", "-16776961")
-		// 🚀 Rocket - use target
+			return ("a-u-G", "\(googleUUID)/Google/marina.png", "-16776961")
+		// 🚀 Rocket - Google target
 		case 0x1F680: // 🚀
-			return ("a-u-G", "\(googleBase)/target.png", "-16776961")
-		// 🛸 UFO - use purple pushpin
+			return ("a-u-G", "\(googleUUID)/Google/target.png", "-16776961")
+		// 🛸 UFO - Generic purple pushpin
 		case 0x1F6B5, 13: // 🛸
-			return ("a-u-G", "\(googleBase)/purple-pushpin.png", "-65281")
-		// 🚲 Bicycle - cycling
+			return ("a-u-G", "\(genericUUID)/Tacks/purple-pushpin.png", "-65281")
+		// 🚲 Bicycle - Google cycling
 		case 0x1F6B2: // 🚲
-			return ("a-u-G", "\(googleBase)/cycling.png", "-16711936")
-		// 🚆 Train - rail
+			return ("a-u-G", "\(googleUUID)/Google/cycling.png", "-16711936")
+		// 🚆 Train - Google rail
 		case 0x1F686: // 🚆
-			return ("a-u-G", "\(googleBase)/rail.png", "-16711936")
-		// ✈️ Plane - airports
+			return ("a-u-G", "\(googleUUID)/Google/rail.png", "-16711936")
+		// ✈️ Plane - Google airports
 		case 0x2708: // ✈️
-			return ("a-u-G", "\(googleBase)/airports.png", "-16776961")
+			return ("a-u-G", "\(googleUUID)/Google/airports.png", "-16776961")
+		// 🚛 Truck - Google bus
+		case 0x1F69A: // 🚛
+			return ("a-u-G", "\(googleUUID)/Google/bus.png", "-16711936")
+		// 🚌 Bus - Google bus
+		case 0x1F68C: // 🚌
+			return ("a-u-G", "\(googleUUID)/Google/bus.png", "-256")
 			
 		// === PLACES ===
-		// 🏨 Hotel - lodging
+		// 🏨 Hotel - Google lodging
 		case 0x1F3E8: // 🏨
-			return ("a-u-G", "\(googleBase)/lodging.png", "-16776961")
-		// 🏪 Store - convenience
+			return ("a-u-G", "\(googleUUID)/Google/lodging.png", "-16776961")
+		// 🏪 Store - Google convenience
 		case 0x1F3EA: // 🏪
-			return ("a-u-G", "\(googleBase)/convenience.png", "-16711936")
-		// ⛽ Gas - gas_stations
+			return ("a-u-G", "\(googleUUID)/Google/convenience.png", "-16711936")
+		// ⛽ Gas - Google gas_stations
 		case 0x1F6FD: // ⛽
-			return ("a-u-G", "\(googleBase)/gas_stations.png", "-16776961")
+			return ("a-u-G", "\(googleUUID)/Google/gas_stations.png", "-16776961")
+		// 🏰 Castle - Google info
+		case 0x1F3F0: // 🏰
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🏛️ Government - Google info
+		case 0x1F3DB: // 🏛️
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// ⛲ Fountain - Generic fountain (use info)
+		case 0x1F6F1: // ⛲
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🏞️ Park - Google parks
+		case 0x1F3DE: // 🏞️
+			return ("a-u-G", "\(googleUUID)/Google/parks.png", "-16711936")
 			
 		// === PEOPLE ===
-		// 🚶 Person - hiker
+		// 🚶 Person - Google hiker
 		case 0x1F464, 0x1F465, 3: // 👤 👥
-			return ("a-u-G", "\(googleBase)/hiker.png", "-16711936")
-		// 🏃 Runner - use man
-		case 0x1F3C3: // 🏃
-			return ("a-u-G", "\(googleBase)/man.png", "-16711936")
+			return ("a-u-G", "\(googleUUID)/Google/hiker.png", "-16711936")
 			
 		// === STRUCTURES ===
-		// 🏠 House - use homegardenbusiness
+		// 🏠 House - Google homegardenbusiness
 		case 0x1F3E0, 0x1F3E1, 4: // 🏠 🏡
-			return ("a-u-G", "\(googleBase)/homegardenbusiness.png", "-16711936")
-		// ⛺ Tent - campground
+			return ("a-u-G", "\(googleUUID)/Google/homegardenbusiness.png", "-16711936")
+		// ⛺ Tent - Google campground
 		case 0x26FA, 0x1F3D5, 5: // ⛺ 🏕
-			return ("a-u-G", "\(googleBase)/campground.png", "-256")
-		// 🏰 Castle - use info
-		case 0x1F3F0: // 🏰
-			return ("a-u-G", "\(googleBase)/info.png", "-16776961")
+			return ("a-u-G", "\(googleUUID)/Google/campground.png", "-256")
+		// 🏚️ Abandoned - Google info
+		case 0x1F6DA: // 🏚️
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🏗️ Construction - Google caution
+		case 0x1F6D7: // 🏗️
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
+		// 🏭 Factory - Google info
+		case 0x1F3ED: // 🏭
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
 			
-		// === NATURE ===
-		// 🌲 Tree - parks
+		// === NATURE / TERRAIN ===
+		// 🌲 Tree - Google parks
 		case 0x1F332: // 🌲
-			return ("a-u-G", "\(googleBase)/parks.png", "-16711936")
-		// 🌳 Tree - parks
+			return ("a-u-G", "\(googleUUID)/Google/parks.png", "-16711936")
+		// 🌳 Tree - Google parks
 		case 0x1F333: // 🌳
-			return ("a-u-G", "\(googleBase)/parks.png", "-16711936")
-		// 🏔️ Mountain - use cross-hairs
+			return ("a-u-G", "\(googleUUID)/Google/parks.png", "-16711936")
+		// 🏔️ Mountain - Google cross-hairs
 		case 0x1F3D4: // 🏔️
-			return ("a-u-G", "\(googleBase)/cross-hairs.png", "-1")
-		// ⛰️ Mountain - use cross-hairs
+			return ("a-u-G", "\(googleUUID)/Google/cross-hairs.png", "-1")
+		// ⛰️ Mountain - Google cross-hairs
 		case 0x26F0: // ⛰️
-			return ("a-u-G", "\(googleBase)/cross-hairs.png", "-1")
-		// 💧 Water - water
+			return ("a-u-G", "\(googleUUID)/Google/cross-hairs.png", "-1")
+		// 💧 Water - Google water
 		case 0x1F4A7: // 💧
-			return ("a-u-G", "\(googleBase)/water.png", "-16776961")
-		// 🌊 Wave - water
+			return ("a-u-G", "\(googleUUID)/Google/water.png", "-16776961")
+		// 🌊 Wave - Google water
 		case 0x1F30A: // 🌊
-			return ("a-u-G", "\(googleBase)/water.png", "-16776961")
-		// ☁️ Cloud - partly_cloudy
+			return ("a-u-G", "\(googleUUID)/Google/water.png", "-16776961")
+		// ☁️ Cloud - Google partly_cloudy
 		case 0x2601, 0x2602: // ☁ ☂
-			return ("a-u-G", "\(googleBase)/partly_cloudy.png", "-1")
-		// 🌙 Moon - use star
+			return ("a-u-G", "\(googleUUID)/Google/partly_cloudy.png", "-1")
+		// 🌙 Moon - Google star
 		case 0x1F319: // 🌙
-			return ("a-u-G", "\(googleBase)/star.png", "-16776961")
-		// ⚓ Anchor - use marina
+			return ("a-u-G", "\(googleUUID)/Google/star.png", "-16776961")
+		// ⚓ Anchor - Google marina
 		case 0x2693: // ⚓
-			return ("a-u-G", "\(googleBase)/marina.png", "-16776961")
-		// ⭐ Star - star
+			return ("a-u-G", "\(googleUUID)/Google/marina.png", "-16776961")
+		// ⭐ Star - Google star
 		case 0x2B50, 0x1F31F: // ⭐ 🌟
-			return ("a-u-G", "\(googleBase)/star.png", "-256")
+			return ("a-u-G", "\(googleUUID)/Google/star.png", "-256")
+		// 🌞 Sun - Google sunny
+		case 0x1F31E: // 🌞
+			return ("a-u-G", "\(googleUUID)/Google/sunny.png", "-256")
 			
 		// === FLAGS/MARKERS ===
-		// 🚩 Flag - flag
+		// 🚩 Flag - Google flag
 		case 0x1F6A9: // 🚩
-			return ("a-u-G", "\(googleBase)/flag.png", "-16776961")
-		// 🏁 Checkered flag - use flag
+			return ("a-u-G", "\(googleUUID)/Google/flag.png", "-16776961")
+		// 🏁 Checkered flag - Google flag
 		case 0x1F3C1, 7: // 🏁
-			return ("a-u-G", "\(googleBase)/flag.png", "-1")
+			return ("a-u-G", "\(googleUUID)/Google/flag.png", "-1")
+		// 🎌 Flags - Google flag
+		case 0x1F38C: // 🎌
+			return ("a-u-G", "\(googleUUID)/Google/flag.png", "-16776961")
 			
 		// === OBJECTS ===
-		// 📷 Camera
+		// 📷 Camera - Google camera
 		case 0x1F4F7: // 📷
-			return ("a-u-G", "\(googleBase)/camera.png", "-16711936")
-		// 🔒 Lock - use info
+			return ("a-u-G", "\(googleUUID)/Google/camera.png", "-16711936")
+		// 🔒 Lock - Google info
 		case 0x1F512: // 🔒
-			return ("a-u-G", "\(googleBase)/info.png", "-16711936")
-		// 🔑 Key - use info
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
+		// 🔑 Key - Google info
 		case 0x1F511: // 🔑
-			return ("a-u-G", "\(googleBase)/info.png", "-16711936")
-		// 📦 Package - use shopping
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
+		// 📦 Package - Google shopping
 		case 0x1F4E6: // 📦
-			return ("a-u-G", "\(googleBase)/shopping.png", "-16711936")
-		// 🚧 Construction - caution
+			return ("a-u-G", "\(googleUUID)/Google/shopping.png", "-16711936")
+		// 🚧 Construction - Google caution
 		case 0x1F6A7: // 🚧
-			return ("a-u-G", "\(googleBase)/caution.png", "-256")
-		// 🎯 Target - target
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-256")
+		// 🎯 Target - Google target
 		case 0x1F3AF: // 🎯
-			return ("a-u-G", "\(googleBase)/target.png", "-16776961")
-		// 🏹 Sports bow - use target
+			return ("a-u-G", "\(googleUUID)/Google/target.png", "-16776961")
+		// 🏹 Sports bow - Google target
 		case 0x1F3F9: // 🏹
-			return ("a-u-G", "\(googleBase)/target.png", "-16776961")
-		// 💣 Bomb - use caution
-		case 0x1F4A3: // 💣
-			return ("a-u-G", "\(googleBase)/caution.png", "-16776961")
-		// 🔧 Wrench - use mechanic
+			return ("a-u-G", "\(googleUUID)/Google/target.png", "-16776961")
+		// 🔧 Wrench - Google mechanic
 		case 0x1F527: // 🔧
-			return ("a-u-G", "\(googleBase)/mechanic.png", "-16711936")
-		// 🛠️ Tools - use mechanic
+			return ("a-u-G", "\(googleUUID)/Google/mechanic.png", "-16711936")
+		// 🛠️ Tools - Google mechanic
 		case 0x1F6E0: // 🛠️
-			return ("a-u-G", "\(googleBase)/mechanic.png", "-16711936")
-		// 📮 Post box - post_office
+			return ("a-u-G", "\(googleUUID)/Google/mechanic.png", "-16711936")
+		// 📮 Post box - Google post_office
 		case 0x1F4EE: // 📮
-			return ("a-u-G", "\(googleBase)/post_office.png", "-16776961")
-		// 💎 Gem - use star
+			return ("a-u-G", "\(googleUUID)/Google/post_office.png", "-16776961")
+		// 💎 Gem - Google star
 		case 0x1F48E: // 💎
-			return ("a-u-G", "\(googleBase)/star.png", "-16776961")
-		// 🔔 Bell - use info
+			return ("a-u-G", "\(googleUUID)/Google/star.png", "-16776961")
+		// 🔔 Bell - Google info
 		case 0x1F514: // 🔔
-			return ("a-u-G", "\(googleBase)/info.png", "-256")
-		// 🗺 Map - use marker
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-256")
+		// 🗺 Map - Generic placemark_circle
 		case 0x1F5FA: // 🗺
-			return ("a-u-G", "\(googleBase)/placemark_circle.png", "-1")
-		// 🎁 Gift - use shopping
+			return ("a-u-G", "\(genericUUID)/Shapes/placemark_circle.png", "-1")
+		// 🎁 Gift - Google shopping
 		case 0x1F381: // 🎁
-			return ("a-u-G", "\(googleBase)/shopping.png", "-16776961")
-		// 💀 Skull - use caution
-		case 0x1F480: // 💀
-			return ("a-u-G", "\(googleBase)/caution.png", "-1")
-		// ❄️ Snowflake - snowflake_simple
+			return ("a-u-G", "\(googleUUID)/Google/shopping.png", "-16776961")
+		// ❄️ Snowflake - Google snowflake_simple
 		case 0x2744: // ❄
-			return ("a-u-G", "\(googleBase)/snowflake_simple.png", "-1")
-		// ☂️ Umbrella - use sunny
+			return ("a-u-G", "\(googleUUID)/Google/snowflake_simple.png", "-1")
+		// ☂️ Umbrella - Google sunny
 		case 0x26F1: // ⛱
-			return ("a-u-G", "\(googleBase)/sunny.png", "-16776961")
-		// 💡 Light - use info
+			return ("a-u-G", "\(googleUUID)/Google/sunny.png", "-16776961")
+		// 💡 Light - Google info-i
 		case 0x1F4A1: // 💡
-			return ("a-u-G", "\(googleBase)/info-i.png", "-256")
-		// 🔋 Battery - use bars
+			return ("a-u-G", "\(googleUUID)/Google/info-i.png", "-256")
+		// 🔋 Battery - Google bars
 		case 0x1F50B: // 🔋
-			return ("a-u-G", "\(googleBase)/bars.png", "-16711936")
-		// 📻 Radio - radio
+			return ("a-u-G", "\(googleUUID)/Google/bars.png", "-16711936")
+		// 📻 Radio - Google radio
 		case 0x1F4FB: // 📻
-			return ("a-u-G", "\(googleBase)/radio.png", "-16711936")
-		// 📞 Phone - phone
+			return ("a-u-G", "\(googleUUID)/Google/radio.png", "-16711936")
+		// 📞 Phone - Google phone
 		case 0x1F4DE, 0x1F4F1: // 📞 📱
-			return ("a-u-G", "\(googleBase)/phone.png", "-16711936")
-		// 💥 Collision - caution
+			return ("a-u-G", "\(googleUUID)/Google/phone.png", "-16711936")
+		// 💥 Collision - Google caution
 		case 0x1F4A5: // 💥
-			return ("a-u-G", "\(googleBase)/caution.png", "-16776961")
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
+		// 🔦 Flashlight - Google sunny
+		case 0x1F526: // 🔦
+			return ("a-u-G", "\(googleUUID)/Google/sunny.png", "-16711936")
+		// 🕯️ Candle - Google sunny
+		case 0x1F56F: // 🕯️
+			return ("a-u-G", "\(googleUUID)/Google/sunny.png", "-16776961")
+		// 📺 TV - Google camera
+		case 0x1F4FA: // 📺
+			return ("a-u-G", "\(googleUUID)/Google/camera.png", "-16711936")
+		// 💾 Disk - Google info
+		case 0x1F4BE: // 💾
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
+		// 📀 DVD - Google info
+		case 0x1F4C0: // 📀
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🖥️ Computer - Google info
+		case 0x1F5A5: // 🖥️
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
+		// ⌨️ Keyboard - Google info
+		case 0x1F5A8: // ⌨️
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
+		// 🖱️ Mouse - Google info
+		case 0x1F5B1: // 🖱️
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
 			
 		// === SYMBOLS ===
-		// ❤️ Heart - use flag
+		// ❤️ Heart - Google flag
 		case 0x2764, 0x1F493, 0x1F49A, 0x1F499: // ❤️ 💓 💚 💙
-			return ("a-u-G", "\(googleBase)/flag.png", "-16776961")
-		// ✅ Check - use star
+			return ("a-u-G", "\(googleUUID)/Google/flag.png", "-16776961")
+		// ✅ Check - Google star
 		case 0x2705, 0x1F7E2: // ✅ 🟢
-			return ("a-u-G", "\(googleBase)/star.png", "-16711936")
-		// ❌ X - use caution
+			return ("a-u-G", "\(googleUUID)/Google/star.png", "-16711936")
+		// ❌ X - Google caution
 		case 0x274C, 0x1F6AB: // ❌ 🚫
-			return ("a-u-G", "\(googleBase)/caution.png", "-16776961")
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
+		// ➰ Curly loop - Google trail
+		case 0x1F0: // ➰
+			return ("a-u-G", "\(googleUUID)/Google/trail.png", "-16776961")
+		// ➿ Double curly loop - Google trail
+		case 0x1F1F: // ➿
+			return ("a-u-G", "\(googleUUID)/Google/trail.png", "-16776961")
 			
 		// === WEATHER ===
-		// 🌤️ Sun behind cloud - partlycloudy
+		// 🌤️ Sun behind cloud - Google partly_cloudy
 		case 0x1F324: // 🌤️
-			return ("a-u-G", "\(googleBase)/partly_cloudy.png", "-256")
-		// 🌧️ Rain - rainy
+			return ("a-u-G", "\(googleUUID)/Google/partly_cloudy.png", "-256")
+		// 🌧️ Rain - Google rainy
 		case 0x1F327: // 🌧️
-			return ("a-u-G", "\(googleBase)/rainy.png", "-16776961")
-		// 🌨️ Snow - use snowflake
+			return ("a-u-G", "\(googleUUID)/Google/rainy.png", "-16776961")
+		// 🌨️ Snow - Google snowflake_simple
 		case 0x1F328: // 🌨️
-			return ("a-u-G", "\(googleBase)/snowflake_simple.png", "-1")
-		// 🌩️ Lightning - use caution
+			return ("a-u-G", "\(googleUUID)/Google/snowflake_simple.png", "-1")
+		// 🌩️ Lightning - Google caution
 		case 0x1F329: // 🌩
-			return ("a-u-G", "\(googleBase)/caution.png", "-256")
-		// 🌀 Cyclone - use windy
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-256")
+		// 🌀 Cyclone - Google sunny
 		case 0x1F300: // 🌀
-			return ("a-u-G", "\(googleBase)/sunny.png", "-16776961")
-		// 🌈 Rainbow - use star
+			return ("a-u-G", "\(googleUUID)/Google/sunny.png", "-16776961")
+		// 🌈 Rainbow - Google star
 		case 0x1F308: // 🌈
-			return ("a-u-G", "\(googleBase)/star.png", "-16776961")
-		// 🌪️ Tornado - use caution
+			return ("a-u-G", "\(googleUUID)/Google/star.png", "-16776961")
+		// 🌪️ Tornado - Google caution
 		case 0x1F32A: // 🌪️
-			return ("a-u-G", "\(googleBase)/caution.png", "-1")
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-1")
+		// 🌋 Volcano - Google volcano
+		case 0x1F30B: // 🌋
+			return ("a-u-G", "\(googleUUID)/Google/volcano.png", "-16776961")
+		// 🏜️ Desert - Google parks
+		case 0x1F3DC: // 🏜️
+			return ("a-u-G", "\(googleUUID)/Google/parks.png", "-16776961")
+		// 🌫️ Fog - Google partly_cloudy
+		case 0x1F32B: // 🌫️
+			return ("a-u-G", "\(googleUUID)/Google/partly_cloudy.png", "-16776961")
+		// 🌬️ Wind - Google partly_cloudy
+		case 0x1F32C: // 🌬️
+			return ("a-u-G", "\(googleUUID)/Google/partly_cloudy.png", "-16711936")
 			
 		// === GLOBE ===
-		// 🌍 Globe - use marker
+		// 🌍 Globe - Generic placemark_circle
 		case 0x1F30D, 0x1F30E, 0x1F30F, 0x1F310: // 🌍 🌎 🌏 🌐
-			return ("a-u-G", "\(googleBase)/placemark_circle.png", "-16776961")
+			return ("a-u-G", "\(genericUUID)/Shapes/placemark_circle.png", "-16776961")
+		// 🗺️ Map - Generic placemark_square
+		case 0x1F5FA: // 🗺
+			return ("a-u-G", "\(genericUUID)/Shapes/placemark_square.png", "-16776961")
+		// 🧭 Compass - Generic compass (use trail)
+		case 0x1F6AD: // 🧭
+			return ("a-u-G", "\(googleUUID)/Google/trail.png", "-16776961")
 			
 		// === FOOD ===
-		// 🍔 Burger - dining
+		// 🍔 Burger - Google dining
 		case 0x1F354: // 🍔
-			return ("a-u-G", "\(googleBase)/dining.png", "-256")
-		// 🍕 Pizza - dining
+			return ("a-u-G", "\(googleUUID)/Google/dining.png", "-256")
+		// 🍕 Pizza - Google dining
 		case 0x1F355: // 🍕
-			return ("a-u-G", "\(googleBase)/dining.png", "-256")
-		// ☕ Coffee - coffee
+			return ("a-u-G", "\(googleUUID)/Google/dining.png", "-256")
+		// ☕ Coffee - Google coffee
 		case 0x2615: // ☕
-			return ("a-u-G", "\(googleBase)/coffee.png", "-256")
-		// 🍺 Beer - bars
+			return ("a-u-G", "\(googleUUID)/Google/coffee.png", "-256")
+		// 🍺 Beer - Google bars
 		case 0x1F37A: // 🍺
-			return ("a-u-G", "\(googleBase)/bars.png", "-256")
-		// 🍷 Wine - use bar
+			return ("a-u-G", "\(googleUUID)/Google/bars.png", "-256")
+		// 🍷 Wine - Google bars
 		case 0x1F377: // 🍷
-			return ("a-u-G", "\(googleBase)/bars.png", "-65281")
+			return ("a-u-G", "\(googleUUID)/Google/bars.png", "-65281")
+		// 🥗 Salad - Google dining
+		case 0x1F957: // 🥗
+			return ("a-u-G", "\(googleUUID)/Google/dining.png", "-16711936")
+		// 🍿 Popcorn - Google movies
+		case 0x1F37F: // 🍿
+			return ("a-u-G", "\(googleUUID)/Google/movies.png", "-16776961")
+		// 🍩 Donut - Google donut
+		case 0x1F369: // 🍩
+			return ("a-u-G", "\(googleUUID)/Google/donut.png", "-16776961")
+		// 🍪 Cookie - Google donut
+		case 0x1F36A: // 🍪
+			return ("a-u-G", "\(googleUUID)/Google/donut.png", "-16776961")
+		// 🍫 Chocolate - Google donut
+		case 0x1F36B: // 🍫
+			return ("a-u-G", "\(googleUUID)/Google/donut.png", "-16776961")
+		// 🍬 Candy - Google donut
+		case 0x1F36C: // 🍬
+			return ("a-u-G", "\(googleUUID)/Google/donut.png", "-16776961")
+		// 🍭 Lollipop - Google donut
+		case 0x1F36D: // 🍭
+			return ("a-u-G", "\(googleUUID)/Google/donut.png", "-16776961")
+		// 🍦 Ice Cream - Google donut
+		case 0x1F368: // 🍦
+			return ("a-u-G", "\(googleUUID)/Google/donut.png", "-16776961")
+		// 🥤 Cup - Google coffee
+		case 0x1F964: // 🥤
+			return ("a-u-G", "\(googleUUID)/Google/coffee.png", "-16776961")
+		// 🍵 Tea - Google coffee
+		case 0x1F375: // 🍵
+			return ("a-u-G", "\(googleUUID)/Google/coffee.png", "-16711936")
+		// 🥃 Whiskey - Google bars
+		case 0x1F943: // 🥃
+			return ("a-u-G", "\(googleUUID)/Google/bars.png", "-16776961")
+		// 🥂 Cheers - Google bars
+		case 0x1F942: // 🥂
+			return ("a-u-G", "\(googleUUID)/Google/bars.png", "-16776961")
+		// 🍾 Bottle - Google bars
+		case 0x1F37E: // 🍾
+			return ("a-u-G", "\(googleUUID)/Google/bars.png", "-16776961")
 			
 		// === RECREATION ===
-		// 🎣 Fishing
+		// 🎣 Fishing - Google fishing
 		case 0x1F3A3: // 🎣
-			return ("a-u-G", "\(googleBase)/fishing.png", "-16776961")
-		// ⛳ Golf
+			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
+		// ⛳ Golf - Google golf
 		case 0x1F3CC: // ⛳
-			return ("a-u-G", "\(googleBase)/golf.png", "-16711936")
-		// ⛷️ Ski
+			return ("a-u-G", "\(googleUUID)/Google/golf.png", "-16711936")
+		// ⛷️ Ski - Google ski
 		case 0x1F3BF: // ⛷️
-			return ("a-u-G", "\(googleBase)/ski.png", "-16711936")
-		// 🏊 Swimming
+			return ("a-u-G", "\(googleUUID)/Google/ski.png", "-16711936")
+		// 🏊 Swimming - Google swimming
 		case 0x1F3CA: // 🏊
-			return ("a-u-G", "\(googleBase)/swimming.png", "-16776961")
-		// 🏄 Surfing
+			return ("a-u-G", "\(googleUUID)/Google/swimming.png", "-16776961")
+		// 🏄 Surfing - Google swimming
 		case 0x1F3C4: // 🏄
-			return ("a-u-G", "\(googleBase)/swimming.png", "-16776961")
-		// 🎣 Fish - fishing
+			return ("a-u-G", "\(googleUUID)/Google/swimming.png", "-16776961")
+		// 🐟 Fish - Google fishing
 		case 0x1F41F: // 🐟
-			return ("a-u-G", "\(googleBase)/fishing.png", "-16776961")
-		// 🌾 Rice - farm
+			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
+		// 🌾 Farm - Google parks
 		case 0x1F33E: // 🌾
-			return ("a-u-G", "\(googleBase)/golf.png", "-16711936")
-		// 🐄 Farm animal - use golf
+			return ("a-u-G", "\(googleUUID)/Google/parks.png", "-16711936")
+		// 🐄 Farm Animal - Google parks
 		case 0x1F404: // 🐄
-			return ("a-u-G", "\(googleBase)/golf.png", "-16711936")
+			return ("a-u-G", "\(googleUUID)/Google/parks.png", "-16711936")
+		// 🐕 Dog - Google hiker
+		case 0x1F415: // 🐕
+			return ("a-u-G", "\(googleUUID)/Google/hiker.png", "-16711936")
+		// 🐈 Cat - Google hiker
+		case 0x1F431: // 🐈
+			return ("a-u-G", "\(googleUUID)/Google/hiker.png", "-16711936")
+		// 🐓 Rooster - Google info
+		case 0x1F413: // 🐓
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦅 Eagle - Google info
+		case 0x1F425: // 🦅
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦋 Butterfly - Google info
+		case 0x1F98B: // 🦋
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐝 Bee - Google info
+		case 0x1F41D: // 🐝
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐞 Beetle - Google info
+		case 0x1F41E: // 🐞
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦀 Crab - Google fishing
+		case 0x1F980: // 🦀
+			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
+		// 🦞 Lobster - Google fishing
+		case 0x1F99E: // 🦞
+			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
+		// 🐚 Shell - Google fishing
+		case 0x1F41A: // 🐚
+			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
+		// 🐙 Octopus - Google fishing
+		case 0x1F419: // 🐙
+			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
+		// 🦑 Squid - Google fishing
+		case 0x1F991: // 🦑
+			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
+		// 🐌 Snail - Google info
+		case 0x1F98C: // 🐌
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦎 Lizard - Google info
+		case 0x1F98E: // 🦎
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐍 Snake - Google info
+		case 0x1F40D: // 🐍
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦖 T-Rex - Google info
+		case 0x1F996: // 🦖
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦕 Sauropod - Google info
+		case 0x1F995: // 🦕
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦈 Shark - Google fishing
+		case 0x1F988: // 🦈
+			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
+		// 🐳 Whale - Google water
+		case 0x1F433: // 🐳
+			return ("a-u-G", "\(googleUUID)/Google/water.png", "-16776961")
+		// 🐬 Dolphin - Google water
+		case 0x1F42C: // 🐬
+			return ("a-u-G", "\(googleUUID)/Google/water.png", "-16776961")
+		// 🐊 Crocodile - Google water
+		case 0x1F40A: // 🐊
+			return ("a-u-G", "\(googleUUID)/Google/water.png", "-16776961")
+		// 🐆 Leopard - Google info
+		case 0x1F406: // 🐆
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐅 Tiger - Google info
+		case 0x1F405: // 🐅
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐃 Buffalo - Google info
+		case 0x1F403: // 🐃
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐂 Ox - Google info
+		case 0x1F402: // 🐂
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐎 Horse - Google info
+		case 0x1F434: // 🐎
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐏 Ram - Google info
+		case 0x1F40F: // 🐏
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐑 Sheep - Google info
+		case 0x1F411: // 🐑
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐐 Goat - Google info
+		case 0x1F410: // 🐐
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦙 Llama - Google info
+		case 0x1F999: // 🦙
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐕‍🦺 Service Dog - Google hiker
+		case 0x1F9BA: // 🐕‍🦺
+			return ("a-u-G", "\(googleUUID)/Google/hiker.png", "-16776961")
+		// 🐩 Poodle - Google hiker
+		case 0x1F429: // 🐩
+			return ("a-u-G", "\(googleUUID)/Google/hiker.png", "-16776961")
+		// 🐈‍⬛ Black Cat - Google hiker
+		case 0x1F408: // 🐈‍⬛
+			return ("a-u-G", "\(googleUUID)/Google/hiker.png", "-16776961")
+		// 🦝 Raccoon - Google info
+		case 0x1F99D: // 🦝
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦊 Fox - Google info
+		case 0x1F98A: // 🦊
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐻 Bear - Google info
+		case 0x1F43B: // 🐻
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐼 Panda - Google info
+		case 0x1F43C: // 🐼
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐨 Koala - Google info
+		case 0x1F428: // 🐨
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐯 Tiger - Google info
+		case 0x1F42F: // 🐯
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦁 Lion - Google info
+		case 0x1F981: // 🦁
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐮 Cow - Google info
+		case 0x1F42E: // 🐮
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐷 Pig - Google info
+		case 0x1F437: // 🐷
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐖 Pig (big) - Google info
+		case 0x1F416: // 🐖
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐗 Boar - Google info
+		case 0x1F417: // 🐗
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🐘 Elephant - Google info
+		case 0x1F418: // 🐘
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦏 Rhino - Google info
+		case 0x1F98F: // 🦏
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦛 Hippo - Google info
+		case 0x1F99B: // 🦛
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦒 Giraffe - Google info
+		case 0x1F992: // 🦒
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦬 Bison - Google info
+		case 0x1F9AC: // 🦬
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦣 Mammoth - Google info
+		case 0x1F9A3: // 🦣
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦌 Deer - Google info
+		case 0x1F98C: // 🦌
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🦌 Moose - Google info
+		case 0x1F98D: // 🦌
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+			
+		// === INFRASTRUCTURE ===
+		// 🚩 Checkpoint - Google flag
+		case 0x1F6A6: // 🚩
+			return ("a-u-G", "\(googleUUID)/Google/flag.png", "-16776961")
+		// ⛔ No Entry - Google caution
+		case 0x1F6D1: // ⛔
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
+		// 🛑 Stop - Google caution
+		case 0x1F6D1: // 🛑
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
+		// 🏕️ Base Camp - Google campground
+		case 0x1F6D1: // 🏕️
+			return ("a-u-G", "\(googleUUID)/Google/campground.png", "-16776961")
+		// 🏢 Office Building - Google homegardenbusiness
+		case 0x1F3E2: // 🏢
+			return ("a-u-G", "\(googleUUID)/Google/homegardenbusiness.png", "-16776961")
+		// 🏬 Bank - Google info
+		case 0x1F3E6: // 🏬
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🏥 Hospital - Google hospitals
+		case 0x1F3E5: // 🏥
+			return ("a-u-G", "\(googleUUID)/Google/hospitals.png", "-16776961")
+		// 🏨 Hotel - Google lodging
+		case 0x1F3E8: // 🏨
+			return ("a-u-G", "\(googleUUID)/Google/lodging.png", "-16776961")
+		// 🏩 Love Hotel - Google lodging
+		case 0x1F3E9: // 🏩
+			return ("a-u-G", "\(googleUUID)/Google/lodging.png", "-16776961")
+		// 🛤️ Railway - Google rail
+		case 0x1F6E2: // 🛤️
+			return ("a-u-G", "\(googleUUID)/Google/rail.png", "-16711936")
+		// 🛣️ Motorway - Google info
+		case 0x1F6E3: // 🛣️
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// ⛽ Fuel Pump - Google gas_stations
+		case 0x1F6FD: // ⛽
+			return ("a-u-G", "\(googleUUID)/Google/gas_stations.png", "-16776961")
+		// 🚎 Trolleybus - Google bus
+		case 0x1F68E: // 🚎
+			return ("a-u-G", "\(googleUUID)/Google/bus.png", "-16776961")
+		// 🚈 Metro - Google rail
+		case 0x1F688: // 🚈
+			return ("a-u-G", "\(googleUUID)/Google/rail.png", "-16711936")
+		// 🚊 Tram - Google tram
+		case 0x1F68A: // 🚊
+			return ("a-u-G", "\(googleUUID)/Google/tram.png", "-16776961")
+		// 🚉 Station - Google rail
+		case 0x1F689: // 🚉
+			return ("a-u-G", "\(googleUUID)/Google/rail.png", "-16776961")
+		// 🛃 Custom - Google info
+		case 0x1F6C3: // 🛃
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🛂 Passport control - Google info
+		case 0x1F6C2: // 🛂
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🚮 Litter - Google info
+		case 0x1F6AE: // 🚮
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
+		// 🚰 Water - Google water
+		case 0x1F6B0: // 🚰
+			return ("a-u-G", "\(googleUUID)/Google/water.png", "-16776961")
+		// 🚱 Non-potable - Google caution
+		case 0x1F6B1: // 🚱
+			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
+		// ♿ Wheelchair - Google wheel_chair_accessible
+		case 0x267F: // ♿
+			return ("a-u-G", "\(googleUUID)/Google/wheel_chair_accessible.png", "-16711936")
+		// 🚻 Bathroom - Google info
+		case 0x1F6BB: // 🚻
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
+		// 🚹 Men's - Google info
+		case 0x1F6B9: // 🚹
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🚺 Women's - Google info
+		case 0x1F6BA: // 🚺
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🚼 Baby - Google info
+		case 0x1F6BC: // 🚼
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🚾 Loo - Google info
+		case 0x1F6BE: // 🚾
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
+		// 🅿️ Parking - Google info
+		case 0x1F17F: // 🅿️
+			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16711936")
 			
 		// === Default - RED pushpin ===
 		default:
-			return ("a-u-G", "\(googleBase)/red-pushpin.png", "-16776961")
+			return ("a-u-G", "\(genericUUID)/Tacks/red-pushpin.png", "-16776961")
 		}
 	}
 }
