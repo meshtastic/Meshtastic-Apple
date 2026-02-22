@@ -460,11 +460,37 @@ final class TAKMeshtasticBridge {
 		}
 
 		let uid = "MESHTASTIC-\(String(format: "%08X", node.num))"
-		let callsign = node.user?.shortName ?? node.user?.longName ?? "MESH-\(node.num)"
+		// Format: "SHORT - Long Name" or just "ShortName" if no long name
+		let callsign: String
+		if let shortName = node.user?.shortName, let longName = node.user?.longName, !longName.isEmpty {
+			callsign = "\(shortName) - \(longName)"
+		} else {
+			callsign = node.user?.shortName ?? node.user?.longName ?? "MESH-\(node.num)"
+		}
 
-		// Get battery level from device metrics
-		let battery = Int(node.latestDeviceMetrics?.batteryLevel ?? 100)
-
+		// Get telemetry from device metrics
+		let deviceMetrics = node.latestDeviceMetrics
+		let battery = Int(deviceMetrics?.batteryLevel ?? 100)
+		let voltage = deviceMetrics?.voltage ?? 0
+		let channelUtil = deviceMetrics?.channelUtilization ?? 0
+		let rssi = deviceMetrics?.rssi ?? 0
+		let snr = deviceMetrics?.snr ?? 0
+		
+		// Build remarks with telemetry info
+		var remarks = "Battery: \(battery)%"
+		if voltage > 0 {
+			remarks += " | Voltage: \(String(format: "%.2f", voltage))V"
+		}
+		if channelUtil > 0 {
+			remarks += " | Chan Util: \(String(format: "%.1f", channelUtil))%"
+		}
+		if rssi != 0 {
+			remarks += " | RSSI: \(rssi) dBm"
+		}
+		if snr != 0 {
+			remarks += " | SNR: \(String(format: "%.1f", snr)) dB"
+		}
+		
 		return CoTMessage.pli(
 			uid: uid,
 			callsign: callsign,
@@ -476,7 +502,8 @@ final class TAKMeshtasticBridge {
 			team: "Green",  // Meshtastic nodes shown as green by default
 			role: "Team Member",
 			battery: battery,
-			staleMinutes: 15  // Meshtastic positions can be older
+			staleMinutes: 15,  // Meshtastic positions can be older
+			remarks: remarks
 		)
 	}
 
