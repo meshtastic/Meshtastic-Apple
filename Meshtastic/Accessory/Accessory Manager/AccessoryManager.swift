@@ -516,16 +516,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					if let text = String(bytes: data.payload, encoding: .utf8) {
 						Logger.tak.debug("Text message received, calling broadcast")
 						let server = TAKServerManager.shared
-						if server.meshToCotEnabled && server.isRunning && !server.connectedClients.isEmpty {
-							if server.bridge == nil {
-								Logger.tak.info("Initializing bridge for text message")
-								let bridge = TAKMeshtasticBridge(
-									accessoryManager: AccessoryManager.shared,
-									takServerManager: server
-								)
-								bridge.context = AccessoryManager.shared.context
-								server.bridge = bridge
-							}
+						if server.ensureBridgeReadyForMeshToCot() {
 							await server.bridge?.broadcastMeshTextMessageToTAK(text: text, from: packet.from, channel: packet.channel, to: packet.to)
 						}
 					}
@@ -537,16 +528,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					if let position = try? Position(serializedBytes: data.payload) {
 						Logger.tak.debug("Position received, calling broadcast")
 						let server = TAKServerManager.shared
-						if server.meshToCotEnabled && server.isRunning && !server.connectedClients.isEmpty {
-							if server.bridge == nil {
-								Logger.tak.info("Initializing bridge for position")
-								let bridge = TAKMeshtasticBridge(
-									accessoryManager: AccessoryManager.shared,
-									takServerManager: server
-								)
-								bridge.context = AccessoryManager.shared.context
-								server.bridge = bridge
-							}
+						if server.ensureBridgeReadyForMeshToCot() {
 							await server.bridge?.broadcastMeshPositionToTAK(position: position, from: packet.from)
 						}
 					}

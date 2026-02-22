@@ -511,7 +511,7 @@ final class TAKMeshtasticBridge {
 
 	/// Send all known mesh node positions to TAK clients
 	/// Useful when a new TAK client connects
-	/// Only sends nodes with positions updated within the last hour
+	/// Only sends nodes with positions updated within the last 2 hours
 	/// Excludes the node we're currently connected to
 	func broadcastAllNodesToTAK() async {
 		guard let takServerManager, takServerManager.isRunning else { return }
@@ -844,7 +844,7 @@ final class TAKMeshtasticBridge {
 		case 0x1F681, 11: // 🚁
 			return ("a-u-G", "\(googleUUID)/Google/heliport.png", "-16776961")
 		// ⛵ Boat - Google marina
-		case 0x1F6B5, 12: // ⛵
+		case 0x26F5, 12: // ⛵
 			return ("a-u-G", "\(googleUUID)/Google/marina.png", "-16776961")
 		// 🚢 Ship - Google marina
 		case 0x1F6A2: // 🚢
@@ -853,7 +853,7 @@ final class TAKMeshtasticBridge {
 		case 0x1F680: // 🚀
 			return ("a-u-G", "\(googleUUID)/Google/target.png", "-16776961")
 		// 🛸 UFO - Generic purple pushpin
-		case 0x1F6B5, 13: // 🛸
+		case 0x1F6B8, 13: // 🛸
 			return ("a-u-G", "\(genericUUID)/Tacks/purple-pushpin.png", "-65281")
 		// 🚲 Bicycle - Google cycling
 		case 0x1F6B2: // 🚲
@@ -1357,13 +1357,13 @@ final class TAKMeshtasticBridge {
 		case 0x1F6A6: // 🚩
 			return ("a-u-G", "\(googleUUID)/Google/flag.png", "-16776961")
 		// ⛔ No Entry - Google caution
-		case 0x1F6D1: // ⛔
+		case 0x26D4: // ⛔
 			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
 		// 🛑 Stop - Google caution
 		case 0x1F6D1: // 🛑
 			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
 		// 🏕️ Base Camp - Google campground
-		case 0x1F6D1: // 🏕️
+		case 0x1F3D5: // 🏕️
 			return ("a-u-G", "\(googleUUID)/Google/campground.png", "-16776961")
 		// 🏢 Office Building - Google homegardenbusiness
 		case 0x1F3E2: // 🏢

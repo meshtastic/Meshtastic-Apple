@@ -9,6 +9,7 @@ import Foundation
 import MeshtasticProtobufs
 import CoreLocation
 import OSLog
+import Combine
 
 /// Converts Meshtastic packets to CoT format for bridging to TAK Server
 final class MeshToCoTConverter: ObservableObject {
@@ -123,12 +124,28 @@ final class MeshToCoTConverter: ObservableObject {
 		// Get emoji based on waypoint icon/expire time
 		let iconEmoji = getEmojiForWaypoint(waypoint)
 		
+		// Handle expiry - if expire is 0, never expire. Otherwise use the expire time as Unix timestamp
+		let stale: Date
+		if waypoint.expire == 0 {
+			// Never expire - set to 1 year from now
+			stale = Date().addingTimeInterval(365 * 24 * 60 * 60)
+		} else {
+			// expire is Unix timestamp when waypoint expires
+			let expireDate = Date(timeIntervalSince1970: TimeInterval(waypoint.expire))
+			if expireDate > Date() {
+				stale = expireDate
+			} else {
+				// Already expired, don't broadcast
+				return nil
+			}
+		}
+		
 		return CoTMessage(
 			uid: uid,
 			type: "b-ttf-ff", // Point feature friend
 			time: Date(),
 			start: Date(),
-			stale: Date().addingTimeInterval(TimeInterval(waypoint.expire * 60)),
+			stale: stale,
 			how: "m-g",
 			latitude: latitude,
 			longitude: longitude,
@@ -156,9 +173,8 @@ final class MeshToCoTConverter: ObservableObject {
 		return CoTMessage.chat(
 			senderUid: senderUid,
 			senderCallsign: senderName,
-			messageId: messageId,
 			message: text,
-			channelName: "Primary"
+			chatroom: "Primary"
 		)
 	}
 	

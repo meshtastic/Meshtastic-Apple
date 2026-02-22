@@ -159,10 +159,10 @@ final class TAKServerManager: ObservableObject {
 				return
 			}
 			
-			let channelName = primaryChannel.name ?? ""
-			let channelPsk = primaryChannel.psk ?? Data()
-			let pskBase64 = channelPsk.base64EncodedString()
-			
+		let channelName = primaryChannel.name ?? ""
+		let channelPsk = primaryChannel.psk ?? Data()
+		let pskBase64 = channelPsk.base64EncodedString()
+		
 		if channelName.isEmpty {
 			issues.append(PrimaryChannelIssue(
 				title: "Unnamed Primary Channel",
@@ -172,22 +172,25 @@ final class TAKServerManager: ObservableObject {
 			isValid = false
 		}
 		
-		let pskLength = pskBase64.count
-		if pskLength == 0 {
+		// Use byte length for encryption strength checks (not Base64 string length)
+		let pskBytes = channelPsk.count
+		if pskBytes == 0 {
 			issues.append(PrimaryChannelIssue(
 				title: "Public Channel Not Supported",
 				description: "TAK Server requires a private channel with encryption. Public channels expose your location and messages. Tap the button below to set up a private TAK channel.",
 				canAutoFix: true
 			))
 			isValid = false
-		} else if pskBase64 == "AQ==" {
+		} else if channelPsk == Data([0x01]) {
+			// Default key is single byte 0x01
 			issues.append(PrimaryChannelIssue(
 				title: "Default Encryption Key",
 				description: "TAK Server requires a unique private channel key. The default key is not secure. Tap the button below to set up a proper private TAK channel.",
 				canAutoFix: true
 			))
 			isValid = false
-		} else if pskLength == 4 {
+		} else if pskBytes < 16 {
+			// Less than 128-bit (16 bytes)
 			issues.append(PrimaryChannelIssue(
 				title: "Weak Encryption Key",
 				description: "TAK Server requires at least 128-bit encryption for your privacy. Tap the button below to set up a secure private TAK channel.",
@@ -527,6 +530,25 @@ final class TAKServerManager: ObservableObject {
 			}
 		}
 	}
+	
+	/// Ensure bridge is initialized and ready for mesh-to-CoT broadcasting
+	/// Returns true if broadcasting is possible (meshToCotEnabled, server running, clients connected)
+	/// Call this before any mesh-to-CoT broadcast operations
+	func ensureBridgeReadyForMeshToCot() -> Bool {
+		guard meshToCotEnabled, isRunning, !connectedClients.isEmpty else { return false }
+		
+		if bridge == nil {
+			Logger.tak.info("Initializing bridge for mesh-to-CoT broadcast")
+			let accessoryManager = AccessoryManager.shared
+			let newBridge = TAKMeshtasticBridge(
+				accessoryManager: accessoryManager,
+				takServerManager: self
+			)
+			newBridge.context = accessoryManager.context
+			bridge = newBridge
+		}
+		return true
+	}
 
 	/// Send a CoT message to a specific client
 	func send(_ cotMessage: CoTMessage, to clientId: UUID) async throws {
@@ -548,7 +570,7 @@ final class TAKServerManager: ObservableObject {
 	// MARK: - Auto-fix Primary Channel
 
 	/// Automatically fix the primary channel to TAK-compatible settings
-	/// Sets: Name="TAK", 256-bit AES key, LoRa channel=0
+	/// Sets: Name="TAK", 256-bit AES key, preserves existing LoRa channel
 	/// Returns true if successful
 	func autoFixPrimaryChannel() async -> Bool {
 		let accessoryManager = AccessoryManager.shared
