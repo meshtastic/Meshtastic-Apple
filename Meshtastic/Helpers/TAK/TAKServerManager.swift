@@ -607,7 +607,10 @@ final class TAKServerManager: ObservableObject {
 			}
 
 			let newKey = generateChannelKey(size: 32)
-			let newPsk = Data(base64Encoded: newKey) ?? Data()
+			guard let newPsk = Data(base64Encoded: newKey) else {
+				Logger.tak.error("Failed to decode generated channel key; aborting primary channel fix")
+				return false
+			}
 
 			primaryChannel.name = "TAK"
 			primaryChannel.psk = newPsk
