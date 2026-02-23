@@ -57,6 +57,8 @@ func generateMessageMarkdown (message: String) -> String {
 
 actor MeshPackets {
 	static let shared = MeshPackets()
+	
+	private var partialAudioMessages: [UInt16: [Int: Data]] = [:]
 
 	// Create an actor-level background context
 	// We keep this alive so sequential writes happen on the same context (efficient)
@@ -733,7 +735,14 @@ actor MeshPackets {
 							}
 						}
 						fetchedMessage[0].relayNode = Int64(packet.relayNode)
-						fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
+						// Audio messages use their own chunk-based delivery system.
+						// A maxRetransmit on a chunk is normal over lossy LoRa — suppress
+						// it so it never shows as an error on the audio bubble.
+						let isAudioMessage = fetchedMessage[0].portNum == Int32(PortNum.audioApp.rawValue)
+						let isMaxRetransmit = routingMessage.errorReason == Routing.Error.maxRetransmit
+						if !(isAudioMessage && isMaxRetransmit) {
+							fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
+						}
 						if routingMessage.errorReason == Routing.Error.none {
 							fetchedMessage[0].receivedACK = true
 							fetchedMessage[0].relays += 1
@@ -1152,6 +1161,310 @@ actor MeshPackets {
 										}
 									}
 								}
+							}
+						}
+					}
+				} catch {
+					Logger.data.error("Failed to fetch MessageUsers \(error.localizedDescription, privacy: .public)")
+				}
+			}
+		}
+	}
+	
+	func audioAppPacket(
+		packet: MeshPacket,
+		wantRangeTestPackets: Bool,
+		critical: Bool = false,
+		connectedNode: Int64,
+		storeForward: Bool = false,
+		appState: AppState?
+	) async {
+		let context = self.backgroundContext
+		await context.perform {
+			let payloadData = packet.decoded.payload
+			
+			// AUDIO_APP multi-part packet must be at least 8 bytes for the header
+			guard payloadData.count >= 8 else {
+				Logger.mesh.error("📉 Received AUDIO_APP packet with insufficient length (less than 8 bytes multi-part header).")
+				return
+			}
+			
+			// Verify header 0xC0 0xDE 0xC2
+			guard payloadData[0] == 0xC0 && payloadData[1] == 0xDE && payloadData[2] == 0xC2 else {
+				Logger.mesh.error("🚨 Received AUDIO_APP packet with invalid header.")
+				return
+			}
+			
+			// The 4th byte is the bitrate marker.
+			if payloadData[3] == 0xFF {
+				let reqAudioId = UInt16(payloadData[4]) << 8 | UInt16(payloadData[5])
+				let startChunk = Int(payloadData[6])
+				Logger.audio.info("🎙️ Received resend request for audio msg \(reqAudioId) from chunk \(startChunk)")
+				
+				let fetchRequest = MessageEntity.fetchRequest()
+				fetchRequest.predicate = NSPredicate(format: "fromUser.num == %lld AND toUser.num == %lld", packet.to, packet.from)
+				fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+				if let msgs = try? context.fetch(fetchRequest),
+				   let originalMsg = msgs.first(where: { UInt16(truncatingIfNeeded: $0.messageId) == reqAudioId && $0.audioData != nil }),
+				   let fullAudio = originalMsg.audioData,
+				   originalMsg.partialAudioInfo == nil {
+					
+					let chunkSize = 200
+					let totalChunks = Int(ceil(Double(fullAudio.count) / Double(chunkSize)))
+					
+					if startChunk < totalChunks {
+						Task {
+							for chunkIndex in startChunk..<totalChunks {
+								let startIndex = chunkIndex * chunkSize
+								let endIndex = min(startIndex + chunkSize, fullAudio.count)
+								let chunkData = fullAudio[startIndex..<endIndex]
+								
+								var respData = Data([
+									0xc0, 0xde, 0xc2, 0x03, // 0x03 = CODEC2_1400
+									UInt8(reqAudioId >> 8), UInt8(reqAudioId & 0xff),
+									UInt8(chunkIndex), UInt8(totalChunks)
+								])
+								respData.append(contentsOf: chunkData)
+								
+								var dataMessage = DataMessage()
+								dataMessage.payload = respData
+								dataMessage.portnum = PortNum.audioApp
+								
+								var meshPkt = MeshPacket()
+								meshPkt.id = UInt32(originalMsg.messageId) + UInt32(chunkIndex) + 2000
+								meshPkt.channel = UInt32(originalMsg.channel)
+								meshPkt.from = packet.to
+								meshPkt.to = packet.from
+								meshPkt.decoded = dataMessage
+								meshPkt.wantAck = true
+								
+								var toRadio = ToRadio()
+								toRadio.packet = meshPkt
+								try? await AccessoryManager.shared.send(toRadio, debugDescription: "🎙️ Sending missing chunk \(chunkIndex) of \(totalChunks)")
+								try? await Task.sleep(nanoseconds: 1_500_000_000)
+							}
+						}
+					}
+				}
+				return
+			}
+			
+			let messageId = UInt16(payloadData[4]) << 8 | UInt16(payloadData[5])
+			let chunkIndex = Int(payloadData[6])
+			let totalChunks = Int(payloadData[7])
+			
+			// Let's extract the actual Codec2 data
+			let chunkData = payloadData.dropFirst(8)
+			
+			Logger.audio.info("🎙️ Audio Packet chunk \(chunkIndex + 1)/\(totalChunks) received. Payload size: \(payloadData.count), chunk bytes size: \(chunkData.count)")
+			
+			var chunks = self.partialAudioMessages[messageId] ?? [:]
+			chunks[chunkIndex] = Data(chunkData)
+			self.partialAudioMessages[messageId] = chunks
+			
+			let isComplete = (chunks.count == totalChunks)
+			
+			var assembledAudioData = Data()
+			if isComplete {
+				for i in 0..<totalChunks {
+					if let data = chunks[i] {
+						assembledAudioData.append(data)
+					}
+				}
+				self.partialAudioMessages.removeValue(forKey: messageId)
+				Logger.audio.info("🎙️ \("Voice Message fully assembled!".localized, privacy: .public) Total bytes: \(assembledAudioData.count)")
+			} else {
+				let partialInfo = PartialVoiceInfo(id: messageId, total: totalChunks, chunks: chunks)
+				if let encoded = try? JSONEncoder().encode(partialInfo) {
+					assembledAudioData = "PARTIAL_AUDIO:".data(using: .utf8)!
+					assembledAudioData.append(encoded)
+				}
+				Logger.audio.info("🎙️ Waiting for more chunks... (\(chunks.count)/\(totalChunks))")
+			}
+			
+			// We intercept the entity creation. If it's a partial update, we fetch the existing entity to update it!
+			let audioData = assembledAudioData // pass it forward
+			let messageUsers = UserEntity.fetchRequest()
+			messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
+			do {
+				let fetchedUsers = try context.fetch(messageUsers)
+				var existingMessage: MessageEntity? = nil
+				let msgFetch = MessageEntity.fetchRequest()
+				msgFetch.predicate = NSPredicate(format: "fromUser.num == %lld", packet.from)
+				msgFetch.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+				msgFetch.fetchLimit = 20
+				if let recentMsgs = try? context.fetch(msgFetch) {
+					existingMessage = recentMsgs.first(where: { $0.partialAudioInfo?.id == messageId })
+				}
+				
+				let newMessage = existingMessage ?? MessageEntity(context: context)
+				if existingMessage == nil {
+					newMessage.messageId = Int64(packet.id)
+					if packet.rxTime > 0 {
+						newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+					} else {
+						newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
+					}
+					if packet.relayNode != 0 {
+						newMessage.relayNode = Int64(packet.relayNode)
+					}
+					newMessage.receivedACK = false
+					newMessage.snr = packet.rxSnr
+					newMessage.rssi = packet.rxRssi
+					newMessage.channel = Int32(packet.channel)
+					newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
+					
+					if packet.decoded.replyID > 0 {
+						newMessage.replyID = Int64(packet.decoded.replyID)
+					}
+					
+					if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
+						newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+					} else if packet.to != Constants.maximumNodeNum {
+						do {
+							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+							newMessage.toUser = newUser
+						} catch CoreDataError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch {
+							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+						}
+					}
+					
+					if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
+						newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+						
+						if newMessage.fromUser?.pkiEncrypted ?? false && packet.pkiEncrypted {
+							newMessage.pkiEncrypted = true
+							newMessage.publicKey = packet.publicKey
+						}
+						
+						if let nodeKey = newMessage.fromUser?.publicKey {
+							if newMessage.toUser != nil && packet.pkiEncrypted && !packet.publicKey.isEmpty {
+								if nodeKey != newMessage.publicKey {
+									newMessage.fromUser?.keyMatch = false
+									newMessage.fromUser?.newPublicKey = newMessage.publicKey
+									let nodeKey = String(nodeKey.base64EncodedString()).prefix(8)
+									let messageKey = String(newMessage.publicKey?.base64EncodedString() ?? "No Key").prefix(8)
+									Logger.data.error("🔑 Key mismatch original key: \(nodeKey, privacy: .public) . . . new key: \(messageKey, privacy: .public) . . .")
+								}
+							}
+						} else if packet.pkiEncrypted {
+							if !packet.publicKey.isEmpty {
+								newMessage.fromUser?.pkiEncrypted = true
+								newMessage.fromUser?.publicKey = packet.publicKey
+							}
+						}
+					} else {
+						do {
+							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+							let newNode = NodeInfoEntity(context: context)
+							newNode.id = Int64(newUser.num)
+							newNode.num = Int64(newUser.num)
+							newNode.user = newUser
+							newMessage.fromUser = newUser
+						} catch CoreDataError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch {
+							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+						}
+					}
+					
+					if packet.rxTime > 0 {
+						newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+					} else {
+						newMessage.fromUser?.userNode?.lastHeard = Date()
+					}
+					
+					if packet.to != Constants.maximumNodeNum && newMessage.fromUser != nil {
+						newMessage.fromUser?.lastMessage = Date()
+					}
+				}
+				
+				// Set text placeholders for Audio App so they aren't blank
+				let messageText = isComplete ? "Voice Message" : "Voice Message (Partial)"
+				newMessage.messagePayload = messageText
+				newMessage.messagePayloadMarkdown = messageText
+				newMessage.audioData = Data(audioData)
+				var messageSaved = false
+				do {
+					try context.save()
+					Logger.data.info("💾 Saved a new audio message for \(newMessage.messageId, privacy: .public)")
+					messageSaved = true
+				} catch {
+					context.rollback()
+					let nsError = error as NSError
+					Logger.data.error("Failed to save new Audio MessageEntity \(nsError, privacy: .public)")
+				}
+				
+				// Send notifications if the message saved properly to core data
+				if messageSaved {
+					if newMessage.fromUser != nil && newMessage.toUser != nil {
+						// Set Unread Message Indicators
+						if packet.to == connectedNode {
+							let unreadCount = newMessage.toUser?.unreadMessages(context: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+							Task { @MainActor in
+								appState?.unreadDirectMessages = unreadCount
+							}
+						}
+						if !(newMessage.fromUser?.mute ?? false) && newMessage.isEmoji == false {
+							// Create an iOS Notification for the received DM message
+							Task {@MainActor in
+								let manager = LocalNotificationManager()
+								manager.notifications = [
+									Notification(
+										id: ("notification.id.\(newMessage.messageId)"),
+										title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+										subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+										content: messageText,
+										target: "messages",
+										path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)",
+										messageId: newMessage.messageId,
+										channel: newMessage.channel,
+										userNum: Int64(packet.from),
+										critical: critical
+									)
+								]
+								manager.schedule()
+								
+								Logger.services.debug("iOS Notification Scheduled for audio message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
+							}
+						}
+					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
+						let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
+						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
+						do {
+							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+							if !fetchedMyInfo.isEmpty {
+								Task {@MainActor in
+									appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages(context: context)
+									for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+										if channel.index == newMessage.channel {
+											context.refresh(channel, mergeChanges: true)
+										}
+										if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false {
+											// Create an iOS Notification for the received channel message
+											let manager = LocalNotificationManager()
+											manager.notifications = [
+												Notification(
+													id: ("notification.id.\(newMessage.messageId)"),
+													title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+													subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+													content: messageText,
+													target: "messages",
+													path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.messageId)",
+													messageId: newMessage.messageId,
+													channel: newMessage.channel,
+													userNum: Int64(newMessage.fromUser?.userId ?? "0"),
+													critical: critical
+												)
+											]
+											manager.schedule()
+											Logger.services.debug("iOS Notification Scheduled for audio message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
+										}
+									}
+									}
+								}
 							} catch {
 								// Handle error
 							}
@@ -1162,7 +1475,6 @@ actor MeshPackets {
 				}
 			}
 		}
-	}
 	
 	func waypointPacket (packet: MeshPacket) async {
 		let context = self.backgroundContext

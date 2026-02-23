@@ -11,7 +11,14 @@ import Foundation
 import MapKit
 import SwiftUI
 
+public struct PartialVoiceInfo: Codable {
+    public let id: UInt16
+    public let total: Int
+    public var chunks: [Int: Data]
+}
+
 extension MessageEntity {
+
 	var timestamp: Date {
 		let time = messageTimestamp
 		return Date(timeIntervalSince1970: TimeInterval(time))
@@ -41,6 +48,19 @@ extension MessageEntity {
 			return aboveMessage.timestamp.addingTimeInterval(3600) < timestamp  // 60 minutes
 		}
 		return false  // First message will have no timestamp
+	}
+
+	public var partialAudioInfo: PartialVoiceInfo? {
+		guard let data = audioData else { return nil }
+		if let prefix = "PARTIAL_AUDIO:".data(using: .utf8), data.count >= prefix.count, data.prefix(prefix.count) == prefix {
+			let json = data.dropFirst(prefix.count)
+			return try? JSONDecoder().decode(PartialVoiceInfo.self, from: json)
+		}
+		return nil
+	}
+
+	public var isAudioMessage: Bool {
+		return audioData != nil && !audioData!.isEmpty && partialAudioInfo == nil
 	}
 
 	func relayDisplay() -> String? {

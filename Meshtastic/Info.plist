@@ -107,6 +107,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>We use the camera to share channels using a QR Code</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We use the microphone to record and send voice messages over the mesh network.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>We use local networking to connect to network-based nodes.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

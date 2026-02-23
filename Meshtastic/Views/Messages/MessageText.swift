@@ -60,13 +60,20 @@ struct MessageText: View {
 	
 	private var messageContent: some View {
 		let markdownText = LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
-		return Text(markdownText)
-			.tint(Self.linkBlue)
-			.padding(.vertical, 10)
-			.padding(.horizontal, 8)
-			.foregroundColor(.white)
-			.background(isCurrentUser ? .accentColor : Color(.gray))
-			.cornerRadius(15)
+		
+		return Group {
+			if message.isAudioMessage {
+				AudioMessageView(message: message, isCurrentUser: isCurrentUser)
+			} else {
+				Text(markdownText)
+					.tint(Self.linkBlue)
+					.padding(.vertical, 10)
+					.padding(.horizontal, 8)
+					.foregroundColor(.white)
+					.background(isCurrentUser ? .accentColor : Color(.gray))
+					.cornerRadius(15)
+			}
+		}
 			.background {
 				TextField("", text: $tapbackText)
 					.keyboardType(.emoji)

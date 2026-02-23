@@ -18,6 +18,9 @@ extension Logger {
 	/// All logs related to data such as decoding error, parsing issues, etc.
 	static let data = Logger(subsystem: subsystem, category: "🗄️ Data")
 
+	/// All logs related to audio and voice messaging
+	static let audio = Logger(subsystem: subsystem, category: "🎙️ Audio")
+
 	/// All logs related to the mesh
 	static let mesh = Logger(subsystem: subsystem, category: "🕸️ Mesh")
 

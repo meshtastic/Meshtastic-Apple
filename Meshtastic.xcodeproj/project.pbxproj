@@ -7,14 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00C196AF93A5D66EDE9B3529 /* fdmdv.c in Sources */ = {isa = PBXBuildFile; fileRef = 15FD0DEE6CB69E6366B9C7D9 /* fdmdv.c */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
 		102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EB02E172F41003D191E /* DatadogRUM */; };
 		108FFECB2DD3F43C00BFAA81 /* ShareContactQRDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */; };
 		108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */; };
+		10C965E4CDAD7500CE78292C /* freedv_data_channel.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA93243067DA58A75A9ACB9 /* freedv_data_channel.c */; };
 		10D109F22E2047D600536CE6 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F12E2047D600536CE6 /* DatadogSessionReplay */; };
 		10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F32E2047D600536CE6 /* DatadogTrace */; };
+		170D9B06868EE38F3819CCFA /* codebookres.c in Sources */ = {isa = PBXBuildFile; fileRef = FE67814C5C1531CF38AAF01D /* codebookres.c */; };
+		1CCC3F7E7E1E93DC65090C30 /* fsk.c in Sources */ = {isa = PBXBuildFile; fileRef = 88FEE96D1CB1C3CB0446CC86 /* fsk.c */; };
+		1EDAD625CD88B65D66C09D55 /* nlp.c in Sources */ = {isa = PBXBuildFile; fileRef = DBAB7A661A9EA6F9EA6C3E7D /* nlp.c */; };
 		230BC3972E31071E0046BF2A /* AccessoryManager+Discovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */; };
 		231251382E3BC96400E6ED07 /* BLEAuthorizationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */; };
 		231A53782E69ADB900216B99 /* NodeFilterParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231A53772E69ADB900216B99 /* NodeFilterParameters.swift */; };
@@ -82,31 +87,57 @@
 		25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5BF2C3F6DA6008036E3 /* Router.swift */; };
 		25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5C12C3F6E4B008036E3 /* AppState.swift */; };
 		25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5D02C4375DF008036E3 /* RouterTests.swift */; };
+		282F3BE9011D878D8225F2EA /* fifo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6EA56F92E99CC8E82BB481A2 /* fifo.c */; };
 		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
+		28A7106ADF632EA44C18A8FD /* codebookge.c in Sources */ = {isa = PBXBuildFile; fileRef = 046BC658D71247D20E5C1DDE /* codebookge.c */; };
+		292A724F2133D641BAFA828B /* codec2.c in Sources */ = {isa = PBXBuildFile; fileRef = F1DF2D95355B2DF098629B57 /* codec2.c */; };
+		2D57FD13038AA551E121E389 /* lpc.c in Sources */ = {isa = PBXBuildFile; fileRef = FF91D8CC88299F4BC6B4E262 /* lpc.c */; };
 		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
+		30188B322B477870CC0DCB5D /* codebookmel.c in Sources */ = {isa = PBXBuildFile; fileRef = 1376A822AD9945A2982EB86C /* codebookmel.c */; };
+		31BD6A035889EC69F2B0A150 /* pack.c in Sources */ = {isa = PBXBuildFile; fileRef = 15DCB6A160FEA1F1C9F59F58 /* pack.c */; };
+		38D85DCAACC3814D42222C85 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B95486DDFE743DEC0C77DDA /* AudioManager.swift */; };
 		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
 		3D3417C82E29D38A006A988B /* GeoJSONOverlayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */; };
 		3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D12E2DC260006A988B /* MapDataManager.swift */; };
 		3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D32E2DC293006A988B /* MapDataFiles.swift */; };
+		4683819E9B137845A748C117 /* ampexp.c in Sources */ = {isa = PBXBuildFile; fileRef = D3D590F1B329DC5606CC3435 /* ampexp.c */; };
+		4BFB09A4DD6922D580FE23C9 /* fm.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B47476BF8AD13E22D3948F2 /* fm.c */; };
+		58C3174DF8189843E98FA1BE /* codebookvqanssi.c in Sources */ = {isa = PBXBuildFile; fileRef = 62052214605F7981AB4E16B6 /* codebookvqanssi.c */; };
+		61AF799CEA1F50EF94A868D9 /* kiss_fft.c in Sources */ = {isa = PBXBuildFile; fileRef = 8C8C5FBA83A9AA066E9580FC /* kiss_fft.c */; };
 		655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F203877F307073096C89179 /* FountainCodec.swift */; };
+		68EEABE647D89A6D014C0753 /* octave.c in Sources */ = {isa = PBXBuildFile; fileRef = 19DF3E7C290B2FE33DF58512 /* octave.c */; };
+		6B2880070608C5AB05AE36CC /* quantise.c in Sources */ = {isa = PBXBuildFile; fileRef = F24ACFDEC130AAA643C1FD0D /* quantise.c */; };
 		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
 		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
 		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
 		7CCBCA0251DAB58FD9D63D06 /* GenericCoTHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */; };
+		7D3753C5DEF1B264DC98FFEE /* phase.c in Sources */ = {isa = PBXBuildFile; fileRef = F4E01BC8D8F7DA94C1185A00 /* phase.c */; };
 		8398407DBA32EE7CFC16A385 /* TAKDataPackageGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */; };
+		8569B90A4FEBA5C3B2DADFC0 /* codebook.c in Sources */ = {isa = PBXBuildFile; fileRef = 7144641D2A44A69B60AF89C1 /* codebook.c */; };
+		85C9F186F65F2ED272607A68 /* kiss_fftr.c in Sources */ = {isa = PBXBuildFile; fileRef = E0B07E6F7E633505CC42E3AC /* kiss_fftr.c */; };
 		8A8F2D8A3769D24BAB88B4A1 /* CoTMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */; };
+		8AA0A9BF5CDE7DA846ECB650 /* Codec2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E5519FF177C8EAB0090BF9B /* Codec2.swift */; };
+		8CC719ABE23573EFA6DBA0DC /* codebookvq.c in Sources */ = {isa = PBXBuildFile; fileRef = FA1F6D1858B350BFFCB62A1E /* codebookvq.c */; };
 		8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */; };
 		8D3F8A412D44C2A6009EAAA4 /* PowerMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */; };
 		8E587743574CE17703E892C6 /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 518D504DED9874EBF9D76578 /* Certificates */; };
+		8EEB68C3558A1188CF4C6B08 /* modem_stats.c in Sources */ = {isa = PBXBuildFile; fileRef = CABDE27B189D655E2BC48FD1 /* modem_stats.c */; };
 		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
+		8FEB6DB93B13447AAF90AF36 /* FreeDV.swift in Sources */ = {isa = PBXBuildFile; fileRef = B748A74F2748D7DBB2386E57 /* FreeDV.swift */; };
 		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
+		9A2342ACA358752D42F03619 /* codebookjvm.c in Sources */ = {isa = PBXBuildFile; fileRef = 150CFE94BB03C70EFEA41C1F /* codebookjvm.c */; };
+		A3FA2F8557CC337B9BFC8890 /* AudioMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CBDAB7E276618CE93AABD1 /* AudioMessageView.swift */; };
 		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
+		AA5D6D8484C1504F903FF024 /* lsp.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C49134BDD91778A11AB60F /* lsp.c */; };
 		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
 		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
+		AF155FFB1DD1DCAB01F16FBE /* freedv_api.c in Sources */ = {isa = PBXBuildFile; fileRef = C47F9C575A14F1653C8C8E36 /* freedv_api.c */; };
 		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
 		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
+		B3CD1889118F735DF4685AB0 /* golay23.c in Sources */ = {isa = PBXBuildFile; fileRef = 8332952E3961C3AE6425F566 /* golay23.c */; };
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
+		B8A09CFA1E7648B60C4B4A23 /* phaseexp.c in Sources */ = {isa = PBXBuildFile; fileRef = 69A0C91CD2C0045525681918 /* phaseexp.c */; };
 		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
 		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
 		BCA9A82C2EC802CF00166292 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA9A82B2EC802CF00166292 /* CompassView.swift */; };
@@ -122,6 +153,12 @@
 		BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */; };
 		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
 		BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */; };
+		C6B0D30CC7F9FFD732F0E8CC /* codebooklspmelvq.c in Sources */ = {isa = PBXBuildFile; fileRef = 286BBC2ECDC343FFCB0869CF /* codebooklspmelvq.c */; };
+		C77C3468F5BDCAAE53A40C18 /* codebookjnd.c in Sources */ = {isa = PBXBuildFile; fileRef = 592327C0E4CDEC4291CFD59B /* codebookjnd.c */; };
+		D28C6A19487831516D4A4D33 /* codebookdt.c in Sources */ = {isa = PBXBuildFile; fileRef = FD49378DBCD61612B0538170 /* codebookdt.c */; };
+		D3FF277934B20C060907B7F3 /* postfilter.c in Sources */ = {isa = PBXBuildFile; fileRef = 31271BFF1C0F6E37C55379FE /* postfilter.c */; };
+		D475CD6920AEC8CA333672C1 /* sine.c in Sources */ = {isa = PBXBuildFile; fileRef = 338044730112CE5E270B5A59 /* sine.c */; };
+		D66892D1E35EEECEE1891294 /* freedv_vhf_framing.c in Sources */ = {isa = PBXBuildFile; fileRef = 9E1F97A9A97BBE4840C39E0C /* freedv_vhf_framing.c */; };
 		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
 		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
@@ -309,7 +346,15 @@
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
+		E08E4CC4F96091E9DBBE74D4 /* modem_probe.c in Sources */ = {isa = PBXBuildFile; fileRef = B73C36724B49AE34180B211A /* modem_probe.c */; };
+		E3B8E6B2DC3DFAD548AE182F /* linreg.c in Sources */ = {isa = PBXBuildFile; fileRef = 53D6032FBE47A0B33BB7351D /* linreg.c */; };
 		E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
+		E73BCBA4EA0005332D6F51CC /* varicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 97CF5CA9453F40F0839C1EF3 /* varicode.c */; };
+		EE1C267EA0D40A5F6F68D94B /* fmfsk.c in Sources */ = {isa = PBXBuildFile; fileRef = 247329DCF2309C523FD490A3 /* fmfsk.c */; };
+		EE5EFBF7DED926AA0A74B2E1 /* cohpsk.c in Sources */ = {isa = PBXBuildFile; fileRef = E456DE8B4BA3128C76C07002 /* cohpsk.c */; };
+		F3FC0D4D5FDAAA4F688CDE8E /* interp.c in Sources */ = {isa = PBXBuildFile; fileRef = 8FD912DBF6F1119A8699E284 /* interp.c */; };
+		F91699C315E2BB10CE51A1B6 /* codebookd.c in Sources */ = {isa = PBXBuildFile; fileRef = 6693572C7DD2658DDBC48417 /* codebookd.c */; };
+		FE0FC04D5EEE49DAECEAA288 /* dump.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F2E757D46242D887BE9DDB5 /* dump.c */; };
 		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
 /* End PBXBuildFile section */
 
@@ -346,10 +391,28 @@
 
 /* Begin PBXFileReference section */
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
+		046BC658D71247D20E5C1DDE /* codebookge.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebookge.c; path = "../Audio/codec2-ios/codebookge.c"; sourceTree = "<group>"; };
+		050559ACD282012A112FA6E9 /* ht_coeff.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ht_coeff.h; path = "../Audio/codec2-ios/ht_coeff.h"; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
+		0756F6893A49116B0163137D /* fdmdv_put_test_bits.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fdmdv_put_test_bits.c; path = "../Audio/codec2-ios/fdmdv_put_test_bits.c"; sourceTree = "<group>"; };
+		0826D1AF76DF4E47997B71E9 /* fsk_put_test_bits.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fsk_put_test_bits.c; path = "../Audio/codec2-ios/fsk_put_test_bits.c"; sourceTree = "<group>"; };
+		08CA29ED4DED584818087181 /* fdmdv_get_test_bits.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fdmdv_get_test_bits.c; path = "../Audio/codec2-ios/fdmdv_get_test_bits.c"; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
+		0CB0075DD11CBE7275DF6E75 /* comp_prim.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = comp_prim.h; path = "../Audio/codec2-ios/comp_prim.h"; sourceTree = "<group>"; };
+		0D2B9E0906A67ED35952A511 /* interp.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = interp.h; path = "../Audio/codec2-ios/interp.h"; sourceTree = "<group>"; };
+		0E5519FF177C8EAB0090BF9B /* Codec2.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Codec2.swift; path = "../Audio/codec2-ios/Codec2.swift"; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
 		108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityToNodeInfo.swift; sourceTree = "<group>"; };
+		1376A822AD9945A2982EB86C /* codebookmel.c */ = {isa = PBXFileReference; includeInIndex = 1; name = codebookmel.c; path = "../Audio/codec2-ios/codebookmel.c"; sourceTree = "<group>"; };
+		150CFE94BB03C70EFEA41C1F /* codebookjvm.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebookjvm.c; path = "../Audio/codec2-ios/codebookjvm.c"; sourceTree = "<group>"; };
+		15DCB6A160FEA1F1C9F59F58 /* pack.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = pack.c; path = "../Audio/codec2-ios/pack.c"; sourceTree = "<group>"; };
+		15FD0DEE6CB69E6366B9C7D9 /* fdmdv.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fdmdv.c; path = "../Audio/codec2-ios/fdmdv.c"; sourceTree = "<group>"; };
+		16FA1E2BF3670B74A985C839 /* cohpsk_mod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = cohpsk_mod.c; path = "../Audio/codec2-ios/cohpsk_mod.c"; sourceTree = "<group>"; };
+		1804F378F01C89F767840F98 /* cohpsk_ch.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = cohpsk_ch.c; path = "../Audio/codec2-ios/cohpsk_ch.c"; sourceTree = "<group>"; };
+		19DF3E7C290B2FE33DF58512 /* octave.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = octave.c; path = "../Audio/codec2-ios/octave.c"; sourceTree = "<group>"; };
+		1C95953F0B9A6672204C9223 /* lpc.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = lpc.h; path = "../Audio/codec2-ios/lpc.h"; sourceTree = "<group>"; };
+		1F2FE8BCB06A418F5BFEB107 /* vhf_deframe_c2.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = vhf_deframe_c2.c; path = "../Audio/codec2-ios/vhf_deframe_c2.c"; sourceTree = "<group>"; };
+		20A447AC3649D3DD522ABA6B /* nlp.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = nlp.h; path = "../Audio/codec2-ios/nlp.h"; sourceTree = "<group>"; };
 		230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Discovery.swift"; sourceTree = "<group>"; };
 		231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEAuthorizationHelper.swift; sourceTree = "<group>"; };
 		231A53772E69ADB900216B99 /* NodeFilterParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeFilterParameters.swift; sourceTree = "<group>"; };
@@ -392,12 +455,14 @@
 		23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+FromRadio.swift"; sourceTree = "<group>"; };
 		23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+ToRadio.swift"; sourceTree = "<group>"; };
 		23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+MQTT.swift"; sourceTree = "<group>"; };
+		23BBCE6176FD2FBC3CFEFAB2 /* fsk_mod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fsk_mod.c; path = "../Audio/codec2-ios/fsk_mod.c"; sourceTree = "<group>"; };
 		23D316922E5618D2002FA4FB /* AsyncGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncGate.swift; sourceTree = "<group>"; };
 		23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResettableTimer.swift; sourceTree = "<group>"; };
 		23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogRecord+StringRepresentation.swift"; sourceTree = "<group>"; };
 		23F061B22E7B056600A1E2EA /* Logger+DataDog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+DataDog.swift"; sourceTree = "<group>"; };
 		23F488112E32980B002C776F /* AccessoryManager+Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Position.swift"; sourceTree = "<group>"; };
 		23FF00B52E323C75001DF095 /* AccessoryManager+Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Connect.swift"; sourceTree = "<group>"; };
+		247329DCF2309C523FD490A3 /* fmfsk.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fmfsk.c; path = "../Audio/codec2-ios/fmfsk.c"; sourceTree = "<group>"; };
 		251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteNodeButton.swift; sourceTree = "<group>"; };
 		251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAlertsButton.swift; sourceTree = "<group>"; };
 		251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangePositionsButton.swift; sourceTree = "<group>"; };
@@ -411,31 +476,108 @@
 		25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25F5D5D02C4375DF008036E3 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
+		286BBC2ECDC343FFCB0869CF /* codebooklspmelvq.c */ = {isa = PBXFileReference; includeInIndex = 1; name = codebooklspmelvq.c; path = "../Audio/codec2-ios/codebooklspmelvq.c"; sourceTree = "<group>"; };
 		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
+		2C5767414B515849B8C84176 /* fec_dec.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fec_dec.c; path = "../Audio/codec2-ios/fec_dec.c"; sourceTree = "<group>"; };
+		2EF6F0D7B4A7A6779CA3D1C4 /* golay23.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = golay23.c; path = "../Audio/codec2-ios/golay23.c"; sourceTree = "<group>"; };
+		31271BFF1C0F6E37C55379FE /* postfilter.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = postfilter.c; path = "../Audio/codec2-ios/postfilter.c"; sourceTree = "<group>"; };
+		337F3C27A57BE6AD26168D7E /* varicode_table.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = varicode_table.h; path = "../Audio/codec2-ios/varicode_table.h"; sourceTree = "<group>"; };
+		338044730112CE5E270B5A59 /* sine.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = sine.c; path = "../Audio/codec2-ios/sine.c"; sourceTree = "<group>"; };
+		373C03BBA3407F238C2BA30B /* generate_codebook.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = generate_codebook.c; path = "../Audio/codec2-ios/generate_codebook.c"; sourceTree = "<group>"; };
+		37C6FA4E251E0030303EFB1C /* defines.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = defines.h; path = "../Audio/codec2-ios/defines.h"; sourceTree = "<group>"; };
+		39D63209DB0AC8107730B735 /* freedv_api.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = freedv_api.h; path = "../Audio/codec2-ios/freedv_api.h"; sourceTree = "<group>"; };
 		3D0A8ABAEF1E587683970927 /* EXICodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EXICodec.swift; sourceTree = "<group>"; };
 		3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayManager.swift; sourceTree = "<group>"; };
 		3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayConfig.swift; sourceTree = "<group>"; };
 		3D3417D12E2DC260006A988B /* MapDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataManager.swift; sourceTree = "<group>"; };
 		3D3417D32E2DC293006A988B /* MapDataFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataFiles.swift; sourceTree = "<group>"; };
 		3F203877F307073096C89179 /* FountainCodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FountainCodec.swift; sourceTree = "<group>"; };
+		4076C3996C0A8077EBE5DC06 /* freedv_vhf_framing.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = freedv_vhf_framing.h; path = "../Audio/codec2-ios/freedv_vhf_framing.h"; sourceTree = "<group>"; };
+		436B87EA49539B7B917E649E /* kiss_fft.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = kiss_fft.h; path = "../Audio/codec2-ios/kiss_fft.h"; sourceTree = "<group>"; };
+		4382531A325F8DCC739E25BF /* modem_stats.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = modem_stats.h; path = "../Audio/codec2-ios/modem_stats.h"; sourceTree = "<group>"; };
+		49C5FFE3D7F98D3C448F3CFF /* fm_demod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fm_demod.c; path = "../Audio/codec2-ios/fm_demod.c"; sourceTree = "<group>"; };
 		4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTMessage.swift; sourceTree = "<group>"; };
+		4B272E35B285C58EDDCD9D48 /* machdep.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = machdep.h; path = "../Audio/codec2-ios/machdep.h"; sourceTree = "<group>"; };
+		4C17EC56BBEDF95A93CE3254 /* fdmdv_demod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fdmdv_demod.c; path = "../Audio/codec2-ios/fdmdv_demod.c"; sourceTree = "<group>"; };
+		4DE6247985365F0D68165B79 /* fdmdv_mod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fdmdv_mod.c; path = "../Audio/codec2-ios/fdmdv_mod.c"; sourceTree = "<group>"; };
+		4E07F6AD8E796F7554144D0E /* freedv_rx.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = freedv_rx.c; path = "../Audio/codec2-ios/freedv_rx.c"; sourceTree = "<group>"; };
+		513868EBDEA4615E8D0671F3 /* codec2_fdmdv.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = codec2_fdmdv.h; path = "../Audio/codec2-ios/codec2_fdmdv.h"; sourceTree = "<group>"; };
 		518D504DED9874EBF9D76578 /* Certificates */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = Certificates; sourceTree = "<group>"; };
+		52EF5138C62892E62F18C0B6 /* codec2_cohpsk.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = codec2_cohpsk.h; path = "../Audio/codec2-ios/codec2_cohpsk.h"; sourceTree = "<group>"; };
+		5375F024DA57EEB988FDD0EF /* fdmdv_interleave.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fdmdv_interleave.c; path = "../Audio/codec2-ios/fdmdv_interleave.c"; sourceTree = "<group>"; };
+		53D4B9419FAFA31D17A73CAF /* rxdec_coeff.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = rxdec_coeff.h; path = "../Audio/codec2-ios/rxdec_coeff.h"; sourceTree = "<group>"; };
+		53D6032FBE47A0B33BB7351D /* linreg.c */ = {isa = PBXFileReference; includeInIndex = 1; name = linreg.c; path = "../Audio/codec2-ios/linreg.c"; sourceTree = "<group>"; };
+		551D45C9C9B8CC6D82CE7508 /* varicode.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = varicode.c; path = "../Audio/codec2-ios/varicode.c"; sourceTree = "<group>"; };
+		57168DBADF491085DC96BC8E /* golay23.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = golay23.h; path = "../Audio/codec2-ios/golay23.h"; sourceTree = "<group>"; };
+		58AEA2C1FF8A2165DA6FFA00 /* fsk_demod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fsk_demod.c; path = "../Audio/codec2-ios/fsk_demod.c"; sourceTree = "<group>"; };
+		592327C0E4CDEC4291CFD59B /* codebookjnd.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebookjnd.c; path = "../Audio/codec2-ios/codebookjnd.c"; sourceTree = "<group>"; };
+		5D757411C3C24261382B26D5 /* golaydectable.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = golaydectable.h; path = "../Audio/codec2-ios/golaydectable.h"; sourceTree = "<group>"; };
+		5DEFEEA94DBB3BC3BE844A8E /* insert_errors.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = insert_errors.c; path = "../Audio/codec2-ios/insert_errors.c"; sourceTree = "<group>"; };
+		5F697360B586D06BDC142FF5 /* c2enc.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = c2enc.c; path = "../Audio/codec2-ios/c2enc.c"; sourceTree = "<group>"; };
+		62052214605F7981AB4E16B6 /* codebookvqanssi.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebookvqanssi.c; path = "../Audio/codec2-ios/codebookvqanssi.c"; sourceTree = "<group>"; };
+		651024D351394672DE754D30 /* pilot_coeff.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = pilot_coeff.h; path = "../Audio/codec2-ios/pilot_coeff.h"; sourceTree = "<group>"; };
+		6592AAC99F686B9A8437952C /* lsp.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = lsp.h; path = "../Audio/codec2-ios/lsp.h"; sourceTree = "<group>"; };
+		6693572C7DD2658DDBC48417 /* codebookd.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebookd.c; path = "../Audio/codec2-ios/codebookd.c"; sourceTree = "<group>"; };
+		69A0C91CD2C0045525681918 /* phaseexp.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = phaseexp.c; path = "../Audio/codec2-ios/phaseexp.c"; sourceTree = "<group>"; };
+		69B0633AB7AFF7EA078CAE96 /* fsk.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = fsk.h; path = "../Audio/codec2-ios/fsk.h"; sourceTree = "<group>"; };
+		6B95486DDFE743DEC0C77DDA /* AudioManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AudioManager.swift; path = Audio/AudioManager.swift; sourceTree = "<group>"; };
+		6C49BD7FA54188FA6FBCDAF1 /* golayenctable.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = golayenctable.h; path = "../Audio/codec2-ios/golayenctable.h"; sourceTree = "<group>"; };
+		6D2CEBA9FD8F4F80931968DB /* os.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = os.h; path = "../Audio/codec2-ios/os.h"; sourceTree = "<group>"; };
 		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
+		6EA56F92E99CC8E82BB481A2 /* fifo.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fifo.c; path = "../Audio/codec2-ios/fifo.c"; sourceTree = "<group>"; };
+		6F313DB3525CB309913A25E2 /* phaseexp.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = phaseexp.h; path = "../Audio/codec2-ios/phaseexp.h"; sourceTree = "<group>"; };
+		7144641D2A44A69B60AF89C1 /* codebook.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebook.c; path = "../Audio/codec2-ios/codebook.c"; sourceTree = "<group>"; };
 		748E4806582595DE80D455CD /* CoTXMLParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTXMLParser.swift; sourceTree = "<group>"; };
+		75EA4C48336F5F3AD9ECAF13 /* linreg.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = linreg.c; path = "../Audio/codec2-ios/linreg.c"; sourceTree = "<group>"; };
+		766181895A03D056BA7AD28A /* fdmdv_internal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = fdmdv_internal.h; path = "../Audio/codec2-ios/fdmdv_internal.h"; sourceTree = "<group>"; };
+		78C49134BDD91778A11AB60F /* lsp.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = lsp.c; path = "../Audio/codec2-ios/lsp.c"; sourceTree = "<group>"; };
+		7AE3B8A8233E7EA41A68F72B /* ssbfilt_coeff.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ssbfilt_coeff.h; path = "../Audio/codec2-ios/ssbfilt_coeff.h"; sourceTree = "<group>"; };
+		7C24E82D365A6B2ACEB758EC /* cohpsk_get_test_bits.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = cohpsk_get_test_bits.c; path = "../Audio/codec2-ios/cohpsk_get_test_bits.c"; sourceTree = "<group>"; };
+		7D56E99AA5A56F162AA9EE7F /* hanning.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = hanning.h; path = "../Audio/codec2-ios/hanning.h"; sourceTree = "<group>"; };
 		7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GenericCoTHandler.swift; sourceTree = "<group>"; };
+		80E6A772B0FA2A8B73F154ED /* codec2.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = codec2.h; path = "../Audio/codec2-ios/codec2.h"; sourceTree = "<group>"; };
 		82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+TAK.swift"; sourceTree = "<group>"; };
+		8332952E3961C3AE6425F566 /* golay23.c */ = {isa = PBXFileReference; includeInIndex = 1; name = golay23.c; path = "../Audio/codec2-ios/golay23.c"; sourceTree = "<group>"; };
+		8530D104BE971699F6D3ABE9 /* fm_fir_coeff.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = fm_fir_coeff.h; path = "../Audio/codec2-ios/fm_fir_coeff.h"; sourceTree = "<group>"; };
+		85622650BD3F1F7908588FB7 /* bpfb.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = bpfb.h; path = "../Audio/codec2-ios/bpfb.h"; sourceTree = "<group>"; };
+		8589C3AADB55CF746ECD837C /* resample.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = resample.c; path = "../Audio/codec2-ios/resample.c"; sourceTree = "<group>"; };
 		87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKMeshtasticBridge.swift; sourceTree = "<group>"; };
+		88FEE96D1CB1C3CB0446CC86 /* fsk.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fsk.c; path = "../Audio/codec2-ios/fsk.c"; sourceTree = "<group>"; };
+		89CCE5B8062906C70DB82EF7 /* freedv_data_channel.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = freedv_data_channel.h; path = "../Audio/codec2-ios/freedv_data_channel.h"; sourceTree = "<group>"; };
+		8C8C5FBA83A9AA066E9580FC /* kiss_fft.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = kiss_fft.c; path = "../Audio/codec2-ios/kiss_fft.c"; sourceTree = "<group>"; };
 		8D3F8A3D2D44B137009EAAA4 /* MeshtasticDataModelV 49.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 49.xcdatamodel"; sourceTree = "<group>"; };
 		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
 		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
+		8F2E757D46242D887BE9DDB5 /* dump.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = dump.c; path = "../Audio/codec2-ios/dump.c"; sourceTree = "<group>"; };
+		8FD912DBF6F1119A8699E284 /* interp.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = interp.c; path = "../Audio/codec2-ios/interp.c"; sourceTree = "<group>"; };
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
+		97CF5CA9453F40F0839C1EF3 /* varicode.c */ = {isa = PBXFileReference; includeInIndex = 1; name = varicode.c; path = "../Audio/codec2-ios/varicode.c"; sourceTree = "<group>"; };
+		98414AFFE44D61A301066EA2 /* fmfsk.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = fmfsk.h; path = "../Audio/codec2-ios/fmfsk.h"; sourceTree = "<group>"; };
+		9B47476BF8AD13E22D3948F2 /* fm.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fm.c; path = "../Audio/codec2-ios/fm.c"; sourceTree = "<group>"; };
+		9C4E569FF1CD430E1F1E9C36 /* c2dec.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = c2dec.c; path = "../Audio/codec2-ios/c2dec.c"; sourceTree = "<group>"; };
+		9D27CF3360652FF2956AD939 /* codec2_fifo.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = codec2_fifo.h; path = "../Audio/codec2-ios/codec2_fifo.h"; sourceTree = "<group>"; };
+		9E1F97A9A97BBE4840C39E0C /* freedv_vhf_framing.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = freedv_vhf_framing.c; path = "../Audio/codec2-ios/freedv_vhf_framing.c"; sourceTree = "<group>"; };
+		9E8D2BDE23B88E2D2E263352 /* codec2_internal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = codec2_internal.h; path = "../Audio/codec2-ios/codec2_internal.h"; sourceTree = "<group>"; };
+		9FE6AB551FF81FDAB87B9F75 /* horus_l2.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = horus_l2.h; path = "../Audio/codec2-ios/horus_l2.h"; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
 		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
+		ABD16D500E9142F8677B805B /* phase.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = phase.h; path = "../Audio/codec2-ios/phase.h"; sourceTree = "<group>"; };
+		AD3DF1610F50A82332CA735D /* genlspdtcb.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = genlspdtcb.c; path = "../Audio/codec2-ios/genlspdtcb.c"; sourceTree = "<group>"; };
+		AE82AD0BA1BD37D22EFD2919 /* noise_samples.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = noise_samples.h; path = "../Audio/codec2-ios/noise_samples.h"; sourceTree = "<group>"; };
+		AEAE0E0966FF42EDC1FE012A /* fec_enc.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fec_enc.c; path = "../Audio/codec2-ios/fec_enc.c"; sourceTree = "<group>"; };
+		AF2B1F46BA1B936449C1B195 /* kiss_fftr.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = kiss_fftr.h; path = "../Audio/codec2-ios/kiss_fftr.h"; sourceTree = "<group>"; };
+		B1B185721BDA6CB6362283CD /* pilots_coh.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = pilots_coh.h; path = "../Audio/codec2-ios/pilots_coh.h"; sourceTree = "<group>"; };
+		B1B3FE8BE7F018F69E6B44C3 /* cohpsk_defs.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = cohpsk_defs.h; path = "../Audio/codec2-ios/cohpsk_defs.h"; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
+		B5976977715EF4F5972D77AB /* codec2_fm.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = codec2_fm.h; path = "../Audio/codec2-ios/codec2_fm.h"; sourceTree = "<group>"; };
+		B5CBDAB7E276618CE93AABD1 /* AudioMessageView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioMessageView.swift; sourceTree = "<group>"; };
+		B73C36724B49AE34180B211A /* modem_probe.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = modem_probe.c; path = "../Audio/codec2-ios/modem_probe.c"; sourceTree = "<group>"; };
+		B748A74F2748D7DBB2386E57 /* FreeDV.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FreeDV.swift; path = "../Audio/codec2-ios/FreeDV.swift"; sourceTree = "<group>"; };
+		BA0C15A5AC198BEB7FFD0239 /* MeshtasticDataModelV56.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV56.xcdatamodel; sourceTree = "<group>"; };
 		BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddContactIntent.swift; sourceTree = "<group>"; };
 		BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelSettingsIntent.swift; sourceTree = "<group>"; };
 		BCA9A82B2EC802CF00166292 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
@@ -444,6 +586,7 @@
 		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
 		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
 		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
+		BCC25C286F19D76DC2363648 /* drs232.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = drs232.c; path = "../Audio/codec2-ios/drs232.c"; sourceTree = "<group>"; };
 		BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactURLHandler.swift; sourceTree = "<group>"; };
 		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
 		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
@@ -451,6 +594,16 @@
 		BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestartNodeIntent.swift; sourceTree = "<group>"; };
 		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
 		BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactoryResetNodeIntent.swift; sourceTree = "<group>"; };
+		C10132D88E9F091309F7E209 /* ampexp.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ampexp.h; path = "../Audio/codec2-ios/ampexp.h"; sourceTree = "<group>"; };
+		C47F9C575A14F1653C8C8E36 /* freedv_api.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = freedv_api.c; path = "../Audio/codec2-ios/freedv_api.c"; sourceTree = "<group>"; };
+		C53CBDB53017AD8200EE078F /* bpf.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = bpf.h; path = "../Audio/codec2-ios/bpf.h"; sourceTree = "<group>"; };
+		C6ED3D49835FD8AF091C3F04 /* comp.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = comp.h; path = "../Audio/codec2-ios/comp.h"; sourceTree = "<group>"; };
+		C81B3FABB273012FD7DA4C96 /* _kiss_fft_guts.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = _kiss_fft_guts.h; path = "../Audio/codec2-ios/_kiss_fft_guts.h"; sourceTree = "<group>"; };
+		C94C1681435EDD1BDE556B39 /* cohpsk_internal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = cohpsk_internal.h; path = "../Audio/codec2-ios/cohpsk_internal.h"; sourceTree = "<group>"; };
+		CABDE27B189D655E2BC48FD1 /* modem_stats.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = modem_stats.c; path = "../Audio/codec2-ios/modem_stats.c"; sourceTree = "<group>"; };
+		D21F9EF3E86D1C739A6ABCA7 /* postfilter.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = postfilter.h; path = "../Audio/codec2-ios/postfilter.h"; sourceTree = "<group>"; };
+		D3D590F1B329DC5606CC3435 /* ampexp.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = ampexp.c; path = "../Audio/codec2-ios/ampexp.c"; sourceTree = "<group>"; };
+		D82D6097266F7542E622350F /* octave.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = octave.h; path = "../Audio/codec2-ios/octave.h"; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
 		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
@@ -463,9 +616,9 @@
 		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
 		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
 		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
+		DBAB7A661A9EA6F9EA6C3E7D /* nlp.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = nlp.c; path = "../Audio/codec2-ios/nlp.c"; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
-		DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 55.xcdatamodel"; sourceTree = "<group>"; };
 		DD05296F2B77F454008E44CD /* MeshtasticDataModelV 26.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 26.xcdatamodel"; sourceTree = "<group>"; };
 		DD0836AB2DE7C7CB00A3A973 /* MeshtasticDataModelV 52.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 52.xcdatamodel"; sourceTree = "<group>"; };
 		DD0BE30C2CB785D8000BA445 /* MeshtasticDataModelV 46.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 46.xcdatamodel"; sourceTree = "<group>"; };
@@ -697,10 +850,52 @@
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		DFA54C9B5F15E146B8D7E58C /* horus_l2.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = horus_l2.c; path = "../Audio/codec2-ios/horus_l2.c"; sourceTree = "<group>"; };
+		E0B07E6F7E633505CC42E3AC /* kiss_fftr.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = kiss_fftr.c; path = "../Audio/codec2-ios/kiss_fftr.c"; sourceTree = "<group>"; };
+		E1BC6088E6BC6C81D43074BC /* fdmdv_channel.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fdmdv_channel.c; path = "../Audio/codec2-ios/fdmdv_channel.c"; sourceTree = "<group>"; };
+		E456DE8B4BA3128C76C07002 /* cohpsk.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = cohpsk.c; path = "../Audio/codec2-ios/cohpsk.c"; sourceTree = "<group>"; };
+		E5C6823D9357543BD740C2FF /* linreg.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = linreg.h; path = "../Audio/codec2-ios/linreg.h"; sourceTree = "<group>"; };
+		E6AD939EBF721DB28205F3F3 /* dump.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = dump.h; path = "../Audio/codec2-ios/dump.h"; sourceTree = "<group>"; };
+		EA8466870CEEB87DAE0B5FD4 /* fmfsk_demod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fmfsk_demod.c; path = "../Audio/codec2-ios/fmfsk_demod.c"; sourceTree = "<group>"; };
+		EA97E1A22D2CD2C7292CD4E9 /* vhf_frame_c2.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = vhf_frame_c2.c; path = "../Audio/codec2-ios/vhf_frame_c2.c"; sourceTree = "<group>"; };
+		EAD05CE44E2C23F92B767A9F /* freedv_tx.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = freedv_tx.c; path = "../Audio/codec2-ios/freedv_tx.c"; sourceTree = "<group>"; };
+		EBA93243067DA58A75A9ACB9 /* freedv_data_channel.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = freedv_data_channel.c; path = "../Audio/codec2-ios/freedv_data_channel.c"; sourceTree = "<group>"; };
+		EC4A8030A100370D6CB8BF66 /* freedv_api_internal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = freedv_api_internal.h; path = "../Audio/codec2-ios/freedv_api_internal.h"; sourceTree = "<group>"; };
+		ED5408844FDC29DB28A46C8F /* varicode.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = varicode.h; path = "../Audio/codec2-ios/varicode.h"; sourceTree = "<group>"; };
+		EDDE02370475091111AB7B07 /* fmfsk_mod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fmfsk_mod.c; path = "../Audio/codec2-ios/fmfsk_mod.c"; sourceTree = "<group>"; };
+		EE1239020475EB6A8C61064A /* test_bits.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = test_bits.h; path = "../Audio/codec2-ios/test_bits.h"; sourceTree = "<group>"; };
+		EEB8FB7812C5C4136CF985E4 /* rn_coh.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = rn_coh.h; path = "../Audio/codec2-ios/rn_coh.h"; sourceTree = "<group>"; };
+		F1DF2D95355B2DF098629B57 /* codec2.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codec2.c; path = "../Audio/codec2-ios/codec2.c"; sourceTree = "<group>"; };
+		F24ACFDEC130AAA643C1FD0D /* quantise.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = quantise.c; path = "../Audio/codec2-ios/quantise.c"; sourceTree = "<group>"; };
+		F2F50FEA0EFB9141C9CBA070 /* cohpsk_demod.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = cohpsk_demod.c; path = "../Audio/codec2-ios/cohpsk_demod.c"; sourceTree = "<group>"; };
+		F3562E21920322124562960D /* fsk_get_test_bits.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = fsk_get_test_bits.c; path = "../Audio/codec2-ios/fsk_get_test_bits.c"; sourceTree = "<group>"; };
+		F4E01BC8D8F7DA94C1185A00 /* phase.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = phase.c; path = "../Audio/codec2-ios/phase.c"; sourceTree = "<group>"; };
+		F5675CB553FA533979D3CAD3 /* test_bits_coh.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = test_bits_coh.h; path = "../Audio/codec2-ios/test_bits_coh.h"; sourceTree = "<group>"; };
+		F6A5EE982CEB9A6EC528BDF9 /* quantise.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = quantise.h; path = "../Audio/codec2-ios/quantise.h"; sourceTree = "<group>"; };
+		F79D810F39D10EAD42EEE986 /* rn.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = rn.h; path = "../Audio/codec2-ios/rn.h"; sourceTree = "<group>"; };
+		F81DB30FC4DB447A9CFD2F4E /* c2sim.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = c2sim.c; path = "../Audio/codec2-ios/c2sim.c"; sourceTree = "<group>"; };
+		FA1F6D1858B350BFFCB62A1E /* codebookvq.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebookvq.c; path = "../Audio/codec2-ios/codebookvq.c"; sourceTree = "<group>"; };
+		FD1F15B15B3792722AC95E4F /* c2demo.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = c2demo.c; path = "../Audio/codec2-ios/c2demo.c"; sourceTree = "<group>"; };
+		FD49378DBCD61612B0538170 /* codebookdt.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebookdt.c; path = "../Audio/codec2-ios/codebookdt.c"; sourceTree = "<group>"; };
+		FDC43ABCD74F190FD11E5EDC /* modem_probe.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = modem_probe.h; path = "../Audio/codec2-ios/modem_probe.h"; sourceTree = "<group>"; };
+		FE67814C5C1531CF38AAF01D /* codebookres.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = codebookres.c; path = "../Audio/codec2-ios/codebookres.c"; sourceTree = "<group>"; };
+		FF260E204FF05BCE0CF78D42 /* cohpsk_put_test_bits.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = cohpsk_put_test_bits.c; path = "../Audio/codec2-ios/cohpsk_put_test_bits.c"; sourceTree = "<group>"; };
+		FF91D8CC88299F4BC6B4E262 /* lpc.c */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.c; name = lpc.c; path = "../Audio/codec2-ios/lpc.c"; sourceTree = "<group>"; };
+		FFB12B56E319CC18912C74A5 /* sine.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = sine.h; path = "../Audio/codec2-ios/sine.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		DD4C11E02E8099C3003F2F2E /* PreferenceKeys */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PreferenceKeys; sourceTree = "<group>"; };
+		DD4C11E02E8099C3003F2F2E /* PreferenceKeys */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = PreferenceKeys;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -903,6 +1098,160 @@
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
 			);
 			path = MeshtasticTests;
+			sourceTree = "<group>";
+		};
+		9C6325F836DEEC9C2831EE40 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				B2DDD6A29266AE97FF1D7D7B /* codec2-ios */,
+				6B95486DDFE743DEC0C77DDA /* AudioManager.swift */,
+			);
+			name = Audio;
+			sourceTree = "<group>";
+		};
+		B2DDD6A29266AE97FF1D7D7B /* codec2-ios */ = {
+			isa = PBXGroup;
+			children = (
+				4E07F6AD8E796F7554144D0E /* freedv_rx.c */,
+				FF260E204FF05BCE0CF78D42 /* cohpsk_put_test_bits.c */,
+				EBA93243067DA58A75A9ACB9 /* freedv_data_channel.c */,
+				8530D104BE971699F6D3ABE9 /* fm_fir_coeff.h */,
+				DBAB7A661A9EA6F9EA6C3E7D /* nlp.c */,
+				B5976977715EF4F5972D77AB /* codec2_fm.h */,
+				E6AD939EBF721DB28205F3F3 /* dump.h */,
+				B1B3FE8BE7F018F69E6B44C3 /* cohpsk_defs.h */,
+				B1B185721BDA6CB6362283CD /* pilots_coh.h */,
+				8C8C5FBA83A9AA066E9580FC /* kiss_fft.c */,
+				338044730112CE5E270B5A59 /* sine.c */,
+				1F2FE8BCB06A418F5BFEB107 /* vhf_deframe_c2.c */,
+				0826D1AF76DF4E47997B71E9 /* fsk_put_test_bits.c */,
+				6693572C7DD2658DDBC48417 /* codebookd.c */,
+				C94C1681435EDD1BDE556B39 /* cohpsk_internal.h */,
+				C10132D88E9F091309F7E209 /* ampexp.h */,
+				39D63209DB0AC8107730B735 /* freedv_api.h */,
+				CABDE27B189D655E2BC48FD1 /* modem_stats.c */,
+				FDC43ABCD74F190FD11E5EDC /* modem_probe.h */,
+				2EF6F0D7B4A7A6779CA3D1C4 /* golay23.c */,
+				E5C6823D9357543BD740C2FF /* linreg.h */,
+				9FE6AB551FF81FDAB87B9F75 /* horus_l2.h */,
+				85622650BD3F1F7908588FB7 /* bpfb.h */,
+				F24ACFDEC130AAA643C1FD0D /* quantise.c */,
+				5F697360B586D06BDC142FF5 /* c2enc.c */,
+				0CB0075DD11CBE7275DF6E75 /* comp_prim.h */,
+				F4E01BC8D8F7DA94C1185A00 /* phase.c */,
+				9C4E569FF1CD430E1F1E9C36 /* c2dec.c */,
+				8FD912DBF6F1119A8699E284 /* interp.c */,
+				31271BFF1C0F6E37C55379FE /* postfilter.c */,
+				9D27CF3360652FF2956AD939 /* codec2_fifo.h */,
+				FA1F6D1858B350BFFCB62A1E /* codebookvq.c */,
+				C53CBDB53017AD8200EE078F /* bpf.h */,
+				7C24E82D365A6B2ACEB758EC /* cohpsk_get_test_bits.c */,
+				6D2CEBA9FD8F4F80931968DB /* os.h */,
+				551D45C9C9B8CC6D82CE7508 /* varicode.c */,
+				1804F378F01C89F767840F98 /* cohpsk_ch.c */,
+				E0B07E6F7E633505CC42E3AC /* kiss_fftr.c */,
+				F3562E21920322124562960D /* fsk_get_test_bits.c */,
+				9E1F97A9A97BBE4840C39E0C /* freedv_vhf_framing.c */,
+				C81B3FABB273012FD7DA4C96 /* _kiss_fft_guts.h */,
+				F1DF2D95355B2DF098629B57 /* codec2.c */,
+				69A0C91CD2C0045525681918 /* phaseexp.c */,
+				046BC658D71247D20E5C1DDE /* codebookge.c */,
+				88FEE96D1CB1C3CB0446CC86 /* fsk.c */,
+				7144641D2A44A69B60AF89C1 /* codebook.c */,
+				5DEFEEA94DBB3BC3BE844A8E /* insert_errors.c */,
+				EC4A8030A100370D6CB8BF66 /* freedv_api_internal.h */,
+				F5675CB553FA533979D3CAD3 /* test_bits_coh.h */,
+				62052214605F7981AB4E16B6 /* codebookvqanssi.c */,
+				EA97E1A22D2CD2C7292CD4E9 /* vhf_frame_c2.c */,
+				6592AAC99F686B9A8437952C /* lsp.h */,
+				F2F50FEA0EFB9141C9CBA070 /* cohpsk_demod.c */,
+				E1BC6088E6BC6C81D43074BC /* fdmdv_channel.c */,
+				37C6FA4E251E0030303EFB1C /* defines.h */,
+				FD1F15B15B3792722AC95E4F /* c2demo.c */,
+				1C95953F0B9A6672204C9223 /* lpc.h */,
+				D82D6097266F7542E622350F /* octave.h */,
+				247329DCF2309C523FD490A3 /* fmfsk.c */,
+				AD3DF1610F50A82332CA735D /* genlspdtcb.c */,
+				15DCB6A160FEA1F1C9F59F58 /* pack.c */,
+				F79D810F39D10EAD42EEE986 /* rn.h */,
+				6EA56F92E99CC8E82BB481A2 /* fifo.c */,
+				BCC25C286F19D76DC2363648 /* drs232.c */,
+				EA8466870CEEB87DAE0B5FD4 /* fmfsk_demod.c */,
+				15FD0DEE6CB69E6366B9C7D9 /* fdmdv.c */,
+				4C17EC56BBEDF95A93CE3254 /* fdmdv_demod.c */,
+				2C5767414B515849B8C84176 /* fec_dec.c */,
+				FFB12B56E319CC18912C74A5 /* sine.h */,
+				436B87EA49539B7B917E649E /* kiss_fft.h */,
+				8589C3AADB55CF746ECD837C /* resample.c */,
+				20A447AC3649D3DD522ABA6B /* nlp.h */,
+				8F2E757D46242D887BE9DDB5 /* dump.c */,
+				050559ACD282012A112FA6E9 /* ht_coeff.h */,
+				4DE6247985365F0D68165B79 /* fdmdv_mod.c */,
+				5D757411C3C24261382B26D5 /* golaydectable.h */,
+				89CCE5B8062906C70DB82EF7 /* freedv_data_channel.h */,
+				C6ED3D49835FD8AF091C3F04 /* comp.h */,
+				52EF5138C62892E62F18C0B6 /* codec2_cohpsk.h */,
+				23BBCE6176FD2FBC3CFEFAB2 /* fsk_mod.c */,
+				0E5519FF177C8EAB0090BF9B /* Codec2.swift */,
+				592327C0E4CDEC4291CFD59B /* codebookjnd.c */,
+				B748A74F2748D7DBB2386E57 /* FreeDV.swift */,
+				F6A5EE982CEB9A6EC528BDF9 /* quantise.h */,
+				B73C36724B49AE34180B211A /* modem_probe.c */,
+				4382531A325F8DCC739E25BF /* modem_stats.h */,
+				5375F024DA57EEB988FDD0EF /* fdmdv_interleave.c */,
+				EE1239020475EB6A8C61064A /* test_bits.h */,
+				7AE3B8A8233E7EA41A68F72B /* ssbfilt_coeff.h */,
+				0756F6893A49116B0163137D /* fdmdv_put_test_bits.c */,
+				7D56E99AA5A56F162AA9EE7F /* hanning.h */,
+				DFA54C9B5F15E146B8D7E58C /* horus_l2.c */,
+				75EA4C48336F5F3AD9ECAF13 /* linreg.c */,
+				57168DBADF491085DC96BC8E /* golay23.h */,
+				E456DE8B4BA3128C76C07002 /* cohpsk.c */,
+				C47F9C575A14F1653C8C8E36 /* freedv_api.c */,
+				D3D590F1B329DC5606CC3435 /* ampexp.c */,
+				FE67814C5C1531CF38AAF01D /* codebookres.c */,
+				6F313DB3525CB309913A25E2 /* phaseexp.h */,
+				80E6A772B0FA2A8B73F154ED /* codec2.h */,
+				766181895A03D056BA7AD28A /* fdmdv_internal.h */,
+				EAD05CE44E2C23F92B767A9F /* freedv_tx.c */,
+				69B0633AB7AFF7EA078CAE96 /* fsk.h */,
+				337F3C27A57BE6AD26168D7E /* varicode_table.h */,
+				9E8D2BDE23B88E2D2E263352 /* codec2_internal.h */,
+				AF2B1F46BA1B936449C1B195 /* kiss_fftr.h */,
+				ED5408844FDC29DB28A46C8F /* varicode.h */,
+				EEB8FB7812C5C4136CF985E4 /* rn_coh.h */,
+				EDDE02370475091111AB7B07 /* fmfsk_mod.c */,
+				513868EBDEA4615E8D0671F3 /* codec2_fdmdv.h */,
+				4B272E35B285C58EDDCD9D48 /* machdep.h */,
+				4076C3996C0A8077EBE5DC06 /* freedv_vhf_framing.h */,
+				9B47476BF8AD13E22D3948F2 /* fm.c */,
+				AE82AD0BA1BD37D22EFD2919 /* noise_samples.h */,
+				373C03BBA3407F238C2BA30B /* generate_codebook.c */,
+				ABD16D500E9142F8677B805B /* phase.h */,
+				FD49378DBCD61612B0538170 /* codebookdt.c */,
+				16FA1E2BF3670B74A985C839 /* cohpsk_mod.c */,
+				D21F9EF3E86D1C739A6ABCA7 /* postfilter.h */,
+				F81DB30FC4DB447A9CFD2F4E /* c2sim.c */,
+				0D2B9E0906A67ED35952A511 /* interp.h */,
+				58AEA2C1FF8A2165DA6FFA00 /* fsk_demod.c */,
+				98414AFFE44D61A301066EA2 /* fmfsk.h */,
+				FF91D8CC88299F4BC6B4E262 /* lpc.c */,
+				19DF3E7C290B2FE33DF58512 /* octave.c */,
+				150CFE94BB03C70EFEA41C1F /* codebookjvm.c */,
+				6C49BD7FA54188FA6FBCDAF1 /* golayenctable.h */,
+				78C49134BDD91778A11AB60F /* lsp.c */,
+				53D4B9419FAFA31D17A73CAF /* rxdec_coeff.h */,
+				49C5FFE3D7F98D3C448F3CFF /* fm_demod.c */,
+				AEAE0E0966FF42EDC1FE012A /* fec_enc.c */,
+				651024D351394672DE754D30 /* pilot_coeff.h */,
+				08CA29ED4DED584818087181 /* fdmdv_get_test_bits.c */,
+				286BBC2ECDC343FFCB0869CF /* codebooklspmelvq.c */,
+				1376A822AD9945A2982EB86C /* codebookmel.c */,
+				8332952E3961C3AE6425F566 /* golay23.c */,
+				53D6032FBE47A0B33BB7351D /* linreg.c */,
+				97CF5CA9453F40F0839C1EF3 /* varicode.c */,
+			);
+			path = "codec2-ios";
 			sourceTree = "<group>";
 		};
 		BCB6137F2C6728E700485544 /* AppIntents */ = {
@@ -1233,6 +1582,7 @@
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
 				6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */,
+				9C6325F836DEEC9C2831EE40 /* Audio */,
 			);
 			path = Meshtastic;
 			sourceTree = "<group>";
@@ -1302,6 +1652,7 @@
 				D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */,
 				D93068D82B81509C0066FBC8 /* TapbackResponses.swift */,
 				D93068D92B81509D0066FBC8 /* TapbackInputView.swift */,
+				B5CBDAB7E276618CE93AABD1 /* AudioMessageView.swift */,
 			);
 			path = Messages;
 			sourceTree = "<group>";
@@ -1937,6 +2288,51 @@
 				655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */,
 				9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */,
 				7CCBCA0251DAB58FD9D63D06 /* GenericCoTHandler.swift in Sources */,
+				10C965E4CDAD7500CE78292C /* freedv_data_channel.c in Sources */,
+				1EDAD625CD88B65D66C09D55 /* nlp.c in Sources */,
+				61AF799CEA1F50EF94A868D9 /* kiss_fft.c in Sources */,
+				D475CD6920AEC8CA333672C1 /* sine.c in Sources */,
+				F91699C315E2BB10CE51A1B6 /* codebookd.c in Sources */,
+				8EEB68C3558A1188CF4C6B08 /* modem_stats.c in Sources */,
+				6B2880070608C5AB05AE36CC /* quantise.c in Sources */,
+				7D3753C5DEF1B264DC98FFEE /* phase.c in Sources */,
+				F3FC0D4D5FDAAA4F688CDE8E /* interp.c in Sources */,
+				D3FF277934B20C060907B7F3 /* postfilter.c in Sources */,
+				8CC719ABE23573EFA6DBA0DC /* codebookvq.c in Sources */,
+				85C9F186F65F2ED272607A68 /* kiss_fftr.c in Sources */,
+				D66892D1E35EEECEE1891294 /* freedv_vhf_framing.c in Sources */,
+				292A724F2133D641BAFA828B /* codec2.c in Sources */,
+				B8A09CFA1E7648B60C4B4A23 /* phaseexp.c in Sources */,
+				28A7106ADF632EA44C18A8FD /* codebookge.c in Sources */,
+				1CCC3F7E7E1E93DC65090C30 /* fsk.c in Sources */,
+				8569B90A4FEBA5C3B2DADFC0 /* codebook.c in Sources */,
+				58C3174DF8189843E98FA1BE /* codebookvqanssi.c in Sources */,
+				EE1C267EA0D40A5F6F68D94B /* fmfsk.c in Sources */,
+				31BD6A035889EC69F2B0A150 /* pack.c in Sources */,
+				282F3BE9011D878D8225F2EA /* fifo.c in Sources */,
+				00C196AF93A5D66EDE9B3529 /* fdmdv.c in Sources */,
+				FE0FC04D5EEE49DAECEAA288 /* dump.c in Sources */,
+				8AA0A9BF5CDE7DA846ECB650 /* Codec2.swift in Sources */,
+				C77C3468F5BDCAAE53A40C18 /* codebookjnd.c in Sources */,
+				8FEB6DB93B13447AAF90AF36 /* FreeDV.swift in Sources */,
+				E08E4CC4F96091E9DBBE74D4 /* modem_probe.c in Sources */,
+				EE5EFBF7DED926AA0A74B2E1 /* cohpsk.c in Sources */,
+				AF155FFB1DD1DCAB01F16FBE /* freedv_api.c in Sources */,
+				4683819E9B137845A748C117 /* ampexp.c in Sources */,
+				170D9B06868EE38F3819CCFA /* codebookres.c in Sources */,
+				4BFB09A4DD6922D580FE23C9 /* fm.c in Sources */,
+				D28C6A19487831516D4A4D33 /* codebookdt.c in Sources */,
+				2D57FD13038AA551E121E389 /* lpc.c in Sources */,
+				68EEABE647D89A6D014C0753 /* octave.c in Sources */,
+				9A2342ACA358752D42F03619 /* codebookjvm.c in Sources */,
+				AA5D6D8484C1504F903FF024 /* lsp.c in Sources */,
+				38D85DCAACC3814D42222C85 /* AudioManager.swift in Sources */,
+				A3FA2F8557CC337B9BFC8890 /* AudioMessageView.swift in Sources */,
+				C6B0D30CC7F9FFD732F0E8CC /* codebooklspmelvq.c in Sources */,
+				30188B322B477870CC0DCB5D /* codebookmel.c in Sources */,
+				B3CD1889118F735DF4685AB0 /* golay23.c in Sources */,
+				E3B8E6B2DC3DFAD548AE182F /* linreg.c in Sources */,
+				E73BCBA4EA0005332D6F51CC /* varicode.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2161,6 +2557,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Meshtastic/Audio/codec2-ios",
+				);
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -2180,6 +2580,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Meshtastic/Meshtastic-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2200,6 +2601,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Meshtastic/Audio/codec2-ios",
+				);
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -2219,6 +2624,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Meshtastic/Meshtastic-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -2416,6 +2822,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				BA0C15A5AC198BEB7FFD0239 /* MeshtasticDataModelV56.xcdatamodel */,
 				DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */,
 				DDDF34392E2CB8E600356DC3 /* MeshtasticDataModelV 54.xcdatamodel */,
 				DD1BEF462DFF284C0090CE24 /* MeshtasticDataModelV 53.xcdatamodel */,
@@ -2472,7 +2879,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */;
+			currentVersion = BA0C15A5AC198BEB7FFD0239 /* MeshtasticDataModelV56.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

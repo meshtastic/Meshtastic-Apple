@@ -15,6 +15,8 @@ struct TextMessageField: View {
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
 	@State private var sendPositionWithMessage = false
+	
+	@StateObject private var audioManager = AudioManager.shared
 
 	var body: some View {
 		SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
@@ -60,9 +62,38 @@ struct TextMessageField: View {
 #endif
 						}
 						.foregroundColor(.primary)
-					if !typingMessage.isEmpty {
+					
+					if audioManager.isRecording {
+						HStack {
+							Text(timeString(time: audioManager.recordingDuration))
+								.foregroundColor(.red)
+								.font(.headline)
+							Spacer()
+							Button(action: {
+								audioManager.cancelRecording()
+							}) {
+								Image(systemName: "trash.circle.fill")
+									.font(.largeTitle)
+									.foregroundColor(.red)
+							}
+							Button(action: sendAudioMessage) {
+								Image(systemName: "arrow.up.circle.fill")
+									.font(.largeTitle)
+									.foregroundColor(.accentColor)
+							}
+						}
+						.padding(.leading, 10)
+					} else if !typingMessage.isEmpty {
 						Button(action: sendMessage) {
 							Image(systemName: "arrow.up.circle.fill")
+								.font(.largeTitle)
+								.foregroundColor(.accentColor)
+						}
+					} else {
+						Button(action: {
+							audioManager.startRecording()
+						}) {
+							Image(systemName: "mic.circle.fill")
 								.font(.largeTitle)
 								.foregroundColor(.accentColor)
 						}
@@ -136,6 +167,30 @@ struct TextMessageField: View {
 				Logger.mesh.info("Error sending message")
 			}
 		}
+	}
+
+	private func sendAudioMessage() {
+		guard let audioData = audioManager.stopRecordingAndEncode() else { return }
+		
+		Task {
+			do {
+				try await accessoryManager.sendAudioMessage(
+					audioData: audioData,
+					toUserNum: destination.userNum,
+					channel: destination.channelNum,
+					replyID: replyMessageId
+				)
+				replyMessageId = 0
+			} catch {
+				Logger.mesh.error("Error sending audio message: \(error)")
+			}
+		}
+	}
+
+	private func timeString(time: TimeInterval) -> String {
+		let minutes = Int(time) / 60 % 60
+		let seconds = Int(time) % 60
+		return String(format:"%02i:%02i", minutes, seconds)
 	}
 }
 

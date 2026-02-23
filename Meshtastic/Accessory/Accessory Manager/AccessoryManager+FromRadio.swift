@@ -246,6 +246,20 @@ extension AccessoryManager {
 
 	}
 
+	func handleAudioAppPacket(_ packet: MeshPacket) async {
+		guard let device = activeConnection?.device, let deviceNum = device.num else {
+			Logger.services.error("Attempt to handle audio message when no connected device.")
+			return
+		}
+
+		await MeshPackets.shared.audioAppPacket(
+			packet: packet,
+			wantRangeTestPackets: wantRangeTestPackets,
+			connectedNode: deviceNum,
+			appState: appState
+		)
+	}
+
 	func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64) {
 		if let storeAndForwardMessage = try? StoreAndForward(serializedBytes: packet.decoded.payload) {
 			// Handle each of the store and forward request / response messages
