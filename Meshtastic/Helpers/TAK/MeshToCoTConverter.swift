@@ -142,7 +142,7 @@ final class MeshToCoTConverter: ObservableObject {
 		
 		return CoTMessage(
 			uid: uid,
-			type: "b-ttf-ff", // Point feature friend
+			type: "b-ttf-ff", // Point feature friend - standard CoT type for waypoints/markers
 			time: Date(),
 			start: Date(),
 			stale: stale,
@@ -192,7 +192,7 @@ final class MeshToCoTConverter: ObservableObject {
 		case .takTracker:
 			return "a-f-G-T-C" // TAK tracker
 		case .sensor:
-			return "a-s" // Sensor
+			return "a-f-G-s" // Sensor with friendly affiliation
 		case .client, .clientMute, .clientHidden, .lostAndFound:
 			return "a-f-G-U-C" // Friendly ground unit
 		default:
