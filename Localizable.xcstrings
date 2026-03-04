@@ -6,6 +6,12 @@
     },
     "\t%@" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41,6 +47,12 @@
     },
     " %@" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -76,6 +88,12 @@
     },
     " %@%%" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@%%"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -99,6 +117,12 @@
     },
     ": %@" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -134,6 +158,12 @@
     },
     ": %d" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ": %d"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -169,6 +199,12 @@
     },
     "(Re)define PIN_GPS_EN for your board." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(Re)define el PIN_GPS_EN para tu placa."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -209,6 +245,12 @@
     },
     "%@" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -245,6 +287,12 @@
     "%@ - %@" : {
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ - %2$@"
@@ -297,6 +345,12 @@
             "value" : "%1$@ - %2$@ - %3$@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ - %3$@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -342,6 +396,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ - %2$@ Towards  %3$@ Back"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ - %2$@ Hacia  %3$@ Vuelta"
           }
         },
         "it" : {
@@ -390,6 +450,12 @@
             "value" : "%@ - Keine Antwort"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - Ninguna respuesta"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -436,6 +502,12 @@
             "value" : "%@ - Nicht gesendet"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ - No enviado"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -477,6 +549,12 @@
     "%@ (%@)" : {
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ (%2$@)"
@@ -530,6 +608,12 @@
             "value" : "%1$@ %2$@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -572,6 +656,12 @@
     "%@ %lld" : {
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$lld"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$lld"
@@ -624,6 +714,12 @@
             "value" : "%@ entfernt"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a %@ de distancia"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -670,6 +766,12 @@
             "value" : "%@ kann bis zu %@ Byte lang sein."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ puede ser hasta %@ bytes de longitud."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -710,6 +812,12 @@
     },
     "%@ Channels?" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Canales?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -750,6 +858,12 @@
     },
     "%@ config data was requested via PKC admin but no response has been returned from the remote node." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ datos de configuración solicitados via PKC admin pero no se ha recibido respuesta desde el nodo remoto."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -766,6 +880,12 @@
     },
     "%@ dB" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dB"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -807,6 +927,12 @@
     "%@, %@" : {
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@, %2$@"
@@ -859,6 +985,12 @@
             "value" : "%1$@: %2$lld / %3$lld"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld / %3$lld"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -900,6 +1032,12 @@
     },
     "%@%%" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@%%"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -940,6 +1078,12 @@
     },
     "%@°F" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@°F"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -980,6 +1124,12 @@
     },
     "%@mA" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@mA"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1014,6 +1164,12 @@
     },
     "%@V" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@V"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1048,6 +1204,12 @@
     },
     "%d" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1101,6 +1263,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%d Hops"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d Salto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d Saltos"
                 }
               }
             }
@@ -1219,6 +1399,12 @@
     "%d%%" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d%%"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1260,6 +1446,12 @@
     "%f%%" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%f%%"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1277,6 +1469,12 @@
     "%lf" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lf"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1317,6 +1515,12 @@
     },
     "%lld" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1364,6 +1568,12 @@
             "value" : "%1$lld %2$@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1399,6 +1609,24 @@
           }
         },
         "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld feature"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld features"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -1480,6 +1708,12 @@
             "value" : "%lld oder weniger Hops entfernt"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld o menos saltos de distancia"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1514,6 +1748,12 @@
     },
     "%lld Readings Total" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Lecturas Totales"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1548,6 +1788,12 @@
     },
     "%lld Total Detection Events" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Eventos de Detección Totales"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1582,6 +1828,12 @@
     },
     "%lld%%" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1626,6 +1878,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%llddb Übertragungsleistung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llddb Potencia de Transmisión"
           }
         },
         "it" : {
@@ -1674,6 +1932,12 @@
             "value" : "%llddBm Übertragungsleistung"
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llddBm Potencia de Transmisión"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1711,6 +1975,12 @@
     },
     "< 1%" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 1%"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1753,6 +2023,12 @@
       "comment" : "A warning label below the picker, indicating that the selected update interval is not one of the optimized options.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️ El valor configurado: (%@) no es una de las opciones optimizadas."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1763,6 +2039,12 @@
     },
     "🦕 End of life Version 🦖 ☄️" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🦕 Versión End of life 🦖 ☄️"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1798,6 +2080,12 @@
     "0" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1809,6 +2097,12 @@
     },
     "1" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1820,6 +2114,12 @@
     },
     "1 byte" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 byte"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1860,6 +2160,12 @@
     },
     "1 hop away" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a 1 salto de distancia"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1901,6 +2207,12 @@
     "2.4 Ghz" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.4 Ghz"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1935,6 +2247,12 @@
     },
     "7" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1975,6 +2293,12 @@
     },
     "12 Hour Clock" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reloj 12 Horas"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1997,6 +2321,12 @@
     },
     "25" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "25"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2037,6 +2367,12 @@
     },
     "50" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "50"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2077,6 +2413,12 @@
     },
     "75" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "75"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2117,6 +2459,12 @@
     },
     "100" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2157,6 +2505,12 @@
     },
     "128 bit" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "128 bit"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2197,6 +2551,12 @@
     },
     "180" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2208,6 +2568,12 @@
     },
     "256 bit" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "256 bit"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2252,6 +2618,12 @@
     },
     "A channel index of 0 indicates the primary channel where broadcast packets are sent from. Location data is broadcast from the first channel where it is enabled with firmware 2.7 forward." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El índice de canal 0 indica el canal principal desde donde se envían los paquetes de broadcast. Los datos de ubicación se transmiten desde el primer canal donde esté habilitado con el firmware 2.7 en adelante."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2271,6 +2643,12 @@
     },
     "A green lock means the channel is securely encrypted with either a 128 or 256 bit AES key." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un candado verde significa que el canal está encriptado de forma segura con una clave AES 128 o 256 bit."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2297,6 +2675,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In a Meshtastic LoRa Mesh there are up to 8 channels. The first one is the Primary channel where most activity happens and is required. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. It talks on its primary and your secondary channel. A channel with the name 'admin' controls nodes remotely. Other channels are for private groups, each with its own key."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un código QR Meshtastic contiene la configuración LoRa y los valores de los canales necesarios para la comunicación radio. Puedes compartir la configuración de canales completa usando la opción Reemplazar Canales, si seleccionas Agregar Canales tus canales compartidos serán añadidos a los canales existentes en la radio receptora."
           }
         },
         "fr" : {
@@ -2363,6 +2747,12 @@
     },
     "A red open lock means the channel is not securely encrypted and is used for precise location data, it uses either no key at all or a 1 byte known key." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un candado rojo abierto significa que el canal no está encriptado de forma segura y se usa para datos de ubicación precisos, que no tiene clave o que tiene una clave de 1 byte conocida."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2379,6 +2769,12 @@
     },
     "A red open lock with a warning means the channel is not securely encrypted and is used for precise location data which is being uplinked to the internet via MQTT, it uses either no key at all or a 1 byte known key." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un candado rojo abierto con un warning significa que el canal no está encriptado de forma segura y se usa para datos de ubicación precisos que están siendo subidos a internet via MQTT, que no tiene clave o que tiene una clave de 1 byte conocida."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2395,6 +2791,12 @@
     },
     "A Trace Route was sent, no response has been received." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un Trace Route fue enviado, no se ha recibido respuesta."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2430,6 +2832,12 @@
     "A yellow open lock lock means the channel is not securely encrypted but it not used for precise location data, it uses either no key at all or a 1 byte known key." : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un candado amarillo abierto significa que el canal no está encriptado de forma segura pero no se usa para datos de ubicación precisos, que no tiene clave o que tiene una clave de 1 byte conocida."
+          }
+        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2442,6 +2850,12 @@
       "comment" : "A description of a yellow open lock in the Channels Help view.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un candado amarillo abierto significa que el canal no está encriptado de forma segura pero no se usa para datos de ubicación precisos, que no tiene clave o que tiene una clave de 1 byte conocida."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2456,6 +2870,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Über Meshtastic"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de"
           }
         },
         "it" : {
@@ -2498,6 +2918,12 @@
             "value" : "Über Meshtastic"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de Meshtastic"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2538,6 +2964,12 @@
             "value" : "Genauigkeit %@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Precisión %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2572,6 +3004,12 @@
     },
     "Ack SNR: %@ dB" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ack SNR: %@ dB"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2606,6 +3044,12 @@
     },
     "Ack Time: %@" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempo ACK: %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2645,6 +3089,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bestätigt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmado"
           }
         },
         "fr" : {
@@ -2711,6 +3161,12 @@
     },
     "Acknowledged by another node" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmado por otro nodo"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2749,6 +3205,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktionen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acciones"
           }
         },
         "it" : {
@@ -2791,6 +3253,12 @@
             "value" : "Aktiv"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activo"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2829,6 +3297,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktivität"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actividad"
           }
         },
         "it" : {
@@ -2872,6 +3346,12 @@
     "ADC Override" : {
       "localizations" : {
         "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ADC Override"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ADC Override"
@@ -2932,6 +3412,12 @@
     },
     "Add Channel" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar Canal"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2966,6 +3452,12 @@
     },
     "Add Channels" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar Canales"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3000,6 +3492,12 @@
     },
     "Add Contact" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar Contacto"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3028,6 +3526,12 @@
     },
     "Add Meshtastic Node %@ as a contact" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar nodo Meshtastic %@ como contacto"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3068,6 +3572,12 @@
             "value" : "Zu Favoriten hinzufügen"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar a favoritos"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3102,6 +3612,12 @@
     },
     "Additional help" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayuda adicional"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3142,6 +3658,12 @@
     },
     "Address" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3182,6 +3704,12 @@
     },
     "Admin Keys" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claves de Admin"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3204,6 +3732,12 @@
     },
     "Administration" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administración"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3244,6 +3778,12 @@
     },
     "Administration Enabled" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administración habilitada"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3272,6 +3812,12 @@
     },
     "Advanced" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanzado"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3312,6 +3858,12 @@
     },
     "Advanced Device GPS" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo GPS Avanzado"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3353,6 +3905,12 @@
     "Advanced GPIO Options" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones GPIO avanzadas"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3387,6 +3945,12 @@
     },
     "Advanced Position Flags" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flags de posición avanzadas"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3432,6 +3996,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nach"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Después"
           }
         },
         "it" : {
@@ -3505,6 +4075,24 @@
                 "stringUnit" : {
                   "state" : "new",
                   "value" : "After %lld Days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Después de %lld Día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "Después de %lld Días"
                 }
               }
             }
@@ -3586,6 +4174,12 @@
             "value" : "Nach dem Ändern der Einstellungen wird das Gerät neu starten."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Después de guardar los valores de configuración el nodo se reseteará."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3657,6 +4251,12 @@
             "value" : "Nachmittag"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarde"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3692,6 +4292,12 @@
     "Airtime" : {
       "localizations" : {
         "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Airtime"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Airtime"
@@ -3761,6 +4367,12 @@
     },
     "Alert" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aviso"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3795,6 +4407,12 @@
     },
     "Alert GPIO buzzer when receiving a bell" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aviso GPIO buzzer cuando se recibe una campana"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3835,6 +4453,12 @@
     },
     "Alert GPIO buzzer when receiving a message" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerta GPIO buzzer cuando se recibe un mensaje"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3869,6 +4493,12 @@
     },
     "Alert GPIO vibra motor when receiving a bell" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerta GPIO vibra motor cuando se recibe una campana"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3909,6 +4539,12 @@
     },
     "Alert GPIO vibra motor when receiving a message" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerta GPIO vibra motor cuando se recibe un mensaje"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3943,6 +4579,12 @@
     },
     "Alert when receiving a bell" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerta cuando se recibe una campana"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3983,6 +4625,12 @@
     },
     "Alert when receiving a message" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerta cuando se recibe un mensaje"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4021,6 +4669,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alle"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos"
           }
         },
         "it" : {
@@ -4063,6 +4717,12 @@
     },
     "Allow Position Requests" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir Peticiones de Posición"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4097,6 +4757,12 @@
     },
     "Alt" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alt"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4135,6 +4801,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Höhe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altitud"
           }
         },
         "it" : {
@@ -4177,6 +4849,12 @@
             "value" : "Höhe %@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altitud %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4211,6 +4889,12 @@
     },
     "Altitude Geoidal Separation" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separación Geoidal de Altitud"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4245,6 +4929,12 @@
     },
     "Altitude is Mean Sea Level" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altitud es nivel medio del mar (MSL)"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4284,6 +4974,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Immer an"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siempre encendido"
           }
         },
         "fr" : {
@@ -4356,6 +5052,12 @@
             "value" : "Immer nach Norden zeigen"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siempre apuntar al norte"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4394,6 +5096,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ambientebeleuchtung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luz ambiente"
           }
         },
         "fr" : {
@@ -4460,6 +5168,12 @@
             "value" : "Ambientebeleuchtungskonfiguration"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración luz ambiente"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4519,6 +5233,12 @@
     "Ambient Lighting module config received: %@" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración del módulo de luz ambiante recibida : %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4589,6 +5309,12 @@
             "value" : "Ein quelloffenes, netzunabhängiges, dezentrales Mesh-Netzwerk, das auf kostengünstigen, stromsparenden Funkgeräten läuft."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una red mesh open source, off-grid, descentralizada, que funciona con radios de bajo coste y de baja potencia."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4629,6 +5355,12 @@
     },
     "Any missed messages will be delivered again." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cualquier mensaje perdido será entregado nuevamente."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4674,6 +5406,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Client (Standard) - Mit App verbundener Client."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicación conectada o dispositivo de mensajería aislado."
           }
         },
         "fr" : {
@@ -4746,6 +5484,12 @@
             "value" : "App-Daten"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos de la aplicación"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4786,6 +5530,12 @@
     },
     "App Files" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivos de la aplicación"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4826,6 +5576,12 @@
     },
     "App Icon" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icono de la App"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4848,6 +5604,12 @@
             "value" : "Mitteilungseinstellungen"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones de la App"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4868,6 +5630,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App-Einstellungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes de la App"
           }
         },
         "it" : {
@@ -4956,6 +5724,12 @@
             "value" : "Ungefährer Standort"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posición Aproximada"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4990,6 +5764,12 @@
     },
     "Are you sure you want to delete this message?" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Estás seguro de que quieres eliminar este mensaje?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5036,6 +5816,12 @@
             "value" : "Bist du sicher dass du den Knoten auf die Werkseinstellungen zurücksetzen willst?"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Estás seguro de que quieres borrar el nodo a valores de fábrica?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5080,6 +5866,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bist Du sicher?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Estás seguro?"
           }
         },
         "fr" : {
@@ -5153,6 +5945,12 @@
             "value" : "Australia / Nuova Zelanda"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Australia / Nueva Zelanda"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5181,6 +5979,12 @@
     },
     "Automatically Connect" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conexión Automática"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5197,6 +6001,12 @@
     },
     "Automatically toggles to the next page on the screen like a carousel, based the specified interval." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambia automáticamente a la siguiente página en pantalla, como un carrusel, según el intervalo especificado."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5243,6 +6053,12 @@
             "value" : "Verfügbare Modem-Voreinstellungen, Standard ist „Long Range - Fast“."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presets del modem disponibles, por defecto es Long Fast.“"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5287,6 +6103,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geräte in der Nähe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radios Disponibles"
           }
         },
         "fr" : {
@@ -5358,6 +6180,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zurück"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atrás"
           }
         },
         "fr" : {
@@ -5446,6 +6274,12 @@
     },
     "Backup your private key to your iCloud keychain." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respalda tu clave privada en el llavero de iCloud."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5469,6 +6303,12 @@
     "Bad" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incorrecto"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5504,6 +6344,12 @@
     "Bad Request" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Petición incorrecta"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5574,6 +6420,12 @@
             "value" : "Bandbreite"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho de banda"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5615,6 +6467,12 @@
     "Bar" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bar"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5655,6 +6513,12 @@
     },
     "Bar Series" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie Bar"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5696,6 +6560,12 @@
     "Barometric Pressure" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presión Barométrica"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5740,6 +6610,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Batterie"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batería"
           }
         },
         "he" : {
@@ -5805,6 +6681,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Batterie Ladung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nivel de Batería"
           }
         },
         "fr" : {
@@ -5878,6 +6760,12 @@
             "value" : "Batterie Ladung %"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nivel de Batería %"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5949,6 +6837,12 @@
             "value" : "Batterie Ladung %d"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nivel de Batería %d"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6013,6 +6907,12 @@
     },
     "Baud" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baudios"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6080,6 +6980,12 @@
             "value" : "Biken"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En bicicleta"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6120,6 +7026,12 @@
     },
     "BLE" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLE"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6164,6 +7076,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Die Bluetooth Pin muss 6 Stellen lang sein."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El código Pin BLE debe tener 6 dígitos."
           }
         },
         "fr" : {
@@ -6231,6 +7149,12 @@
     "Bluetooth" : {
       "localizations" : {
         "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bluetooth"
@@ -6306,6 +7230,12 @@
             "value" : "Bluetooth Konfiguration"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración Bluetooth"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6377,6 +7307,12 @@
             "value" : "Bluetooth Konfiguration empfangen: %@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración Bluetooth recibida: %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6443,6 +7379,12 @@
       "comment" : "A heading displayed on a view that guides users to configure Bluetooth connectivity for the app.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectividad Bluetooth"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6491,6 +7433,12 @@
     },
     "Broadcast Device Metrics" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métricas de Transmisión del Dispositivo"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6502,6 +7450,12 @@
     "Broadcast Interval" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalo de transmisión"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6547,6 +7501,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sendet GPS-Positionspakete mit Priorität."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmitir paquetes de posición GPS con prioridad."
           }
         },
         "fr" : {
@@ -6620,6 +7580,12 @@
             "value" : "Sendet den Standort regelmäßig als Nachricht an den Standardkanal, um die Suche nach dem Gerät zu unterstützen."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmitir la posición como un mensaje al canal por defecto regularmente para ayudar con la recuperación del dispositivo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6691,6 +7657,12 @@
             "value" : "Sendet Telemetriepakete mit Priorität."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmitir los paquetes de telemetría con prioridad."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6755,6 +7727,12 @@
     },
     "Button GPIO" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botón GPIO"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6795,6 +7773,12 @@
     },
     "Buy Complete Radios" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprar Radios Completas"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6835,6 +7819,12 @@
     },
     "Buzzer GPIO" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zumbador GPIO"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6875,6 +7865,12 @@
     },
     "By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al habilitar esta función, aceptas expresamente la transmisión de tu ubicación geográfica en tiempo real de tu dispositivo mediante el protocolo MQTT sin encriptar. Estos datos de ubicación se pueden usar para propósitvos como reporte en mapa en tiempo real, localización de dispositivo y otras funciones de telemetría asociadas."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6905,6 +7901,12 @@
       "extractionState" : "stale",
       "localizations" : {
         "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bytes"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bytes"
@@ -6975,6 +7977,12 @@
     "Bytes Used" : {
       "comment" : "VoiceOver value for bytes used",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bytes Usados"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7001,6 +8009,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rufzeichen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Señal de llamada"
           }
         },
         "it" : {
@@ -7049,6 +8063,12 @@
             "value" : "Das Rufzeichen darf nicht leer sein."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La señal de llamada no debe estar vacía."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7093,6 +8113,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abbrechen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
           }
         },
         "fr" : {
@@ -7160,6 +8186,12 @@
     "Canned Message module config received: %@" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuraciíon del módulo Canned Message recibida: %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7225,6 +8257,12 @@
     "Canned Messages" : {
       "localizations" : {
         "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canned Messages"
+          }
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Canned Messages"
@@ -7299,6 +8337,11 @@
             "state" : "translated",
             "value" : "Canned Messages Config"
           }
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración de Canned Messages"
+          }
         },
         "fr" : {
           "stringUnit" : {
@@ -7365,6 +8408,12 @@
     "Canned Messages Messages Received For: %@" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recibidos Canned Messages para : %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7429,6 +8478,12 @@
     },
     "Carousel Interval" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalo del carrusel"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7467,6 +8522,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kategorien"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
           }
         },
         "it" : {
@@ -7515,6 +8576,12 @@
             "value" : "Kategorie"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoría"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7549,6 +8616,12 @@
     },
     "Ch1 Current" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corriente Ch1"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7583,6 +8656,12 @@
     },
     "Ch1 Voltage" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltaje Ch1"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7617,6 +8696,12 @@
     },
     "Ch2 Current" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corriente Ch2"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7651,6 +8736,12 @@
     },
     "Ch2 Voltage" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltaje Ch2"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7685,6 +8776,12 @@
     },
     "Ch3 Current" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corriente Ch3"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7719,6 +8816,12 @@
     },
     "Ch3 Voltage" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltaje Ch3"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7757,6 +8860,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kanal"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal"
           }
         },
         "fr" : {
@@ -7823,6 +8932,12 @@
     },
     "Channel 0 Included" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 0 Incluído"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7863,6 +8978,12 @@
     },
     "Channel 1" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 1"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7897,6 +9018,12 @@
     },
     "Channel 1 Included" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 1 Incluído"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7937,6 +9064,12 @@
     },
     "Channel 2" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 2"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7971,6 +9104,12 @@
     },
     "Channel 2 Included" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 2 Incluído"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8011,6 +9150,12 @@
     },
     "Channel 3" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 3"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8045,6 +9190,12 @@
     },
     "Channel 3 Included" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 3 Incluído"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8085,6 +9236,12 @@
     },
     "Channel 4 Included" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 4 Incluído"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8125,6 +9282,12 @@
     },
     "Channel 5 Included" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 5 Incluído"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8165,6 +9328,12 @@
     },
     "Channel 6 Included" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 6 Incluído"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8205,6 +9374,12 @@
     },
     "Channel 7 Included" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal 7 Incluído"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8245,6 +9420,12 @@
     },
     "Channel Details" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalles del Canal"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8285,6 +9466,12 @@
     },
     "Channel Name" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del Canal"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8325,6 +9512,12 @@
     },
     "Channel number must be between 0 and 7." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El número del canal debe estar entre 0 y 7."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8365,6 +9558,12 @@
     },
     "Channel Role" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rol del Canal"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8405,6 +9604,12 @@
     },
     "Channel URL" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL del canal"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8443,6 +9648,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kanalbelegung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilización del Canal"
           }
         },
         "fr" : {
@@ -8509,6 +9720,12 @@
     },
     "Channel Utilization %@%%" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilización del canal %@%%"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8547,6 +9764,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kanäle"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canales"
           }
         },
         "fr" : {
@@ -8614,6 +9837,12 @@
     "Channels being added from the QR code did not save. When adding channels the names must be unique." : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los canales añadidos desde el código QR no se guardaron. Cuando se añaden canales los nombres deben ser únicos."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8654,6 +9883,12 @@
     },
     "Channels Help" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayuda de los Canales"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8677,6 +9912,12 @@
     "Chart" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gráfico"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8717,6 +9958,12 @@
     },
     "CHG" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHG"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8752,6 +9999,12 @@
     "China" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "China"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8803,6 +10056,12 @@
     },
     "Clear" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8847,6 +10106,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App-Daten löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar Datos de Aplicación"
           }
         },
         "fr" : {
@@ -8913,6 +10178,12 @@
     },
     "Clear Log" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar Log"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8953,6 +10224,12 @@
             "value" : "Veraltete Knoten löschen"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar nodos obsoletos"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8976,6 +10253,12 @@
     "Client" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9018,6 +10301,12 @@
       "comment" : "A message displayed in a confirmation dialog when trying to favorite a node as a CLIENT_BASE.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente Base solo debe tener como favoritos otros nodos bajo tu control. El uso inapropiado dañará tu mesh local."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9039,6 +10328,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Client - Versteckt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente Oculto"
           }
         },
         "it" : {
@@ -9081,6 +10376,12 @@
     },
     "Client History" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historial del cliente"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9121,6 +10422,12 @@
     },
     "Client History Request Sent" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Petición de cronología del cliente enviada"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9162,6 +10469,12 @@
     "Client Mute" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente Mudo"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9202,6 +10515,12 @@
     },
     "Client options" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones del cliente"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9242,6 +10561,12 @@
     },
     "Clockwise Rotary Event" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento de giro en sentido horario"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9286,6 +10611,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Schließen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar"
           }
         },
         "fr" : {
@@ -9352,6 +10683,12 @@
     },
     "Coding Rate" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasa de codificación"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9396,6 +10733,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Farbe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
           }
         },
         "it" : {
@@ -9444,6 +10787,12 @@
             "value" : "Bleibe mit deinen Freunden und deiner Community in Verbindung, auch abseits vom Mobilfunknetz."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comunícate con tus amigos y tu comunidad fuera de la red móvil."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9460,6 +10809,12 @@
     },
     "Communicating" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En comunicación"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9494,6 +10849,12 @@
     },
     "Community Support" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soporte de la comunidad"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9528,6 +10889,12 @@
     },
     "Compass" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brújula"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9538,6 +10905,12 @@
     },
     "Config" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9587,6 +10960,12 @@
             "value" : "Konfiguration für: %@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración para: %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9621,6 +11000,12 @@
     },
     "Configuration Presets" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presets de Configuración"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9667,6 +11052,12 @@
             "value" : "Konfigurieren"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9703,6 +11094,12 @@
       "comment" : "Button label to guide users to configure Bluetooth connectivity for the app.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar la conectividad Bluetooth"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9721,6 +11118,12 @@
       "comment" : "Button label to configure local network access permissions.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar acceso a la red local"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9741,6 +11144,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Standortberechtigungen konfigurieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar permisos de ubicación"
           }
         },
         "ru" : {
@@ -9765,6 +11174,12 @@
             "value" : "Mitteilungsberechtigungen konfigurieren"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar permisos de notificaciones"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9781,6 +11196,12 @@
     },
     "Confirm" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9815,6 +11236,12 @@
     },
     "Connect" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9835,6 +11262,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verbunden mit einem Knoten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar a un nodo"
           }
         },
         "it" : {
@@ -9871,6 +11304,12 @@
     },
     "Connect to MQTT via Proxy" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar a MQTT via Proxy"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9899,6 +11338,12 @@
     },
     "Connect to new radio?" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Conectar a la nueva radio?"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9937,6 +11382,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Derzeit verbunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectado"
           }
         },
         "fr" : {
@@ -10009,6 +11460,12 @@
             "value" : "Verbunden mit Knoten %@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodo conectado %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10043,6 +11500,12 @@
     },
     "Connected Radio" : {
       "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radio conectada"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10081,6 +11544,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verbinde..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectando . ."
           }
         },
         "fr" : {
@@ -10147,6 +11616,12 @@
     },
     "Connecting to a new radio will clear all app data on the phone." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectarse a una nueva radio borrará todos los datos de la app en el teléfono."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10185,6 +11660,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verbindungsversuch %lld von 10"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intento de conexión %lld de 10"
           }
         },
         "it" : {
@@ -10227,6 +11708,12 @@
     },
     "Connection Name" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de la conexión"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10243,6 +11730,12 @@
     },
     "Consent to Share Unencrypted Node Data via MQTT" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consentir compartir datos del nodo sin cifrar mediante MQTT "
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10272,6 +11765,12 @@
     "Contact Filters" : {
       "extractionState" : "stale",
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtros de contacto"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10294,6 +11793,12 @@
     },
     "Contact URL" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL del contacto"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10327,6 +11832,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kontakte (%@)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contactos (%@)"
           }
         },
         "fr" : {
@@ -10393,6 +11904,12 @@
     },
     "Control Type" : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo de control"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
