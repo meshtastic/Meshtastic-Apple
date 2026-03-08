@@ -8,7 +8,8 @@
 import Foundation
 import CoreData
 
-extension NodeInfoEntity {
+extension NodeInfoEntity: Identifiable {
+	public var id: NSManagedObjectID { objectID }
 
 	var latestPosition: PositionEntity? {
 		return self.positions?.lastObject as? PositionEntity

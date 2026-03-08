@@ -149,6 +149,8 @@
 		DD1BD0EB2C601795008C0C70 /* CLLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0EA2C601795008C0C70 /* CLLocation.swift */; };
 		DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */; };
 		DD1BD0F32C63C65E008C0C70 /* SecurityConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */; };
+		DD0A10022E0292340090CE24 /* NodeDisplayNameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0A10012E0292330090CE24 /* NodeDisplayNameStore.swift */; };
+		DD0A10042E0292360090CE24 /* EditNodeDisplayNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0A10032E0292350090CE24 /* EditNodeDisplayNameView.swift */; };
 		DD1BEF4A2E0292320090CE24 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF492E0292220090CE24 /* KeychainHelper.swift */; };
 		DD1BEF4C2E030D310090CE24 /* KeyBackupStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */; };
 		DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */; };
@@ -487,6 +489,8 @@
 		DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 42.xcdatamodel"; sourceTree = "<group>"; };
 		DD1BD0F22C63C65E008C0C70 /* SecurityConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityConfig.swift; sourceTree = "<group>"; };
 		DD1BEF462DFF284C0090CE24 /* MeshtasticDataModelV 53.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 53.xcdatamodel"; sourceTree = "<group>"; };
+		DD0A10012E0292330090CE24 /* NodeDisplayNameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDisplayNameStore.swift; sourceTree = "<group>"; };
+		DD0A10032E0292350090CE24 /* EditNodeDisplayNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditNodeDisplayNameView.swift; sourceTree = "<group>"; };
 		DD1BEF492E0292220090CE24 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBackupStatus.swift; sourceTree = "<group>"; };
 		DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsHelp.swift; sourceTree = "<group>"; };
@@ -1340,6 +1344,7 @@
 				3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */,
 				BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */,
 				DDD43FE12A78C86B0083A3E9 /* Mqtt */,
+				DD0A10012E0292330090CE24 /* NodeDisplayNameStore.swift */,
 				DD1BEF492E0292220090CE24 /* KeychainHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
@@ -1391,6 +1396,7 @@
 			children = (
 				DD4C11E02E8099C3003F2F2E /* PreferenceKeys */,
 				108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */,
+				DD0A10032E0292350090CE24 /* EditNodeDisplayNameView.swift */,
 				231B3F232D087C020069A07D /* Metrics Columns */,
 				DDAD49EB2AFAE82500B4425D /* Map */,
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
@@ -1791,6 +1797,8 @@
 				BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */,
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
 				BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */,
+				DD0A10022E0292340090CE24 /* NodeDisplayNameStore.swift in Sources */,
+				DD0A10042E0292360090CE24 /* EditNodeDisplayNameView.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
