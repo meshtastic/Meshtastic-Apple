@@ -51,27 +51,29 @@ struct PowerConfig: View {
 			} header: {
 				Text("Power")
 			}
-			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
-				Section {
-					Toggle(isOn: $adcOverride) {
-						Text("ADC Override")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-					if adcOverride {
-						HStack {
-							Text("Multiplier")
-							Spacer()
-							FloatField(title: "Multiplier", number: $adcMultiplier) {
-								(2.0 ... 6.0).contains($0)
-							}
-							.focused($isFocused)
-							Spacer()
-						}
-					}
-				} header: {
-					Text("Battery")
+			Section {
+				Toggle(isOn: $adcOverride) {
+					Label("ADC Multiplier Override", systemImage: "bolt.batteryblock")
+					Text("Override the default ADC multiplier for battery voltage measurement. Set to 0 to use the firmware default.")
 				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+				if adcOverride {
+					HStack {
+						Text("Multiplier")
+						Spacer()
+						FloatField(title: "Multiplier", number: $adcMultiplier) {
+							$0 == 0 || (0.0 ... 7.0).contains($0)
+						}
+						.focused($isFocused)
+						Spacer()
+					}
+					Text("Common values: RAK4631/T114 = 4.916, Heltec V3 = 5.1205. Use 0 for firmware default.")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
+			} header: {
+				Text("Battery")
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
