@@ -43,6 +43,7 @@ struct AudioMessageView: View {
                 .scaledToFit()
                 .frame(width: 28, height: 28)
                 .foregroundColor(isCurrentUser ? .white.opacity(0.8) : .secondary)
+                .accessibilityLabel("Voice message missed")
         } else if message.partialAudioInfo != nil {
             // Partial — some chunks are missing
             Image(systemName: "exclamationmark.triangle.fill")
@@ -50,6 +51,7 @@ struct AudioMessageView: View {
                 .scaledToFit()
                 .frame(width: 28, height: 28)
                 .foregroundColor(isCurrentUser ? .white : .orange)
+                .accessibilityLabel("Partial voice message")
         } else {
             // Full audio — show play/pause for THIS message only
             Button {
@@ -70,6 +72,8 @@ struct AudioMessageView: View {
                     .animation(.easeInOut(duration: 0.15), value: isThisMessagePlaying)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isThisMessagePlaying ? "Pause voice message" : "Play voice message")
+            .accessibilityAddTraits(.allowsDirectInteraction)
         }
     }
 
@@ -97,6 +101,11 @@ struct AudioMessageView: View {
             requestButton(label: "Request Audio", startChunk: 0, audioId: nil)
         } else if let partial = message.partialAudioInfo {
             // Partial: show progress + request button
+            let progress = Double(partial.chunks.count) / Double(partial.total)
+            ProgressView(value: progress)
+                .progressViewStyle(LinearProgressViewStyle(tint: isCurrentUser ? .white : .orange))
+                .scaleEffect(x: 1, y: 2, anchor: .center)
+
             Text("\(partial.chunks.count) of \(partial.total) parts received")
                 .font(.caption)
                 .foregroundColor(isCurrentUser ? .white.opacity(0.8) : .secondary)
@@ -136,10 +145,10 @@ struct AudioMessageView: View {
     // MARK: - Helpers
 
     private func firstMissingChunk(_ partial: PartialVoiceInfo) -> Int {
-        for i in 0..<partial.total {
-            if partial.chunks[i] == nil { return i }
+        for i in 0..<partial.total where partial.chunks[i] == nil {
+            return i
         }
-        return 0
+        return -1
     }
 
     private var bubbleBackground: some View {

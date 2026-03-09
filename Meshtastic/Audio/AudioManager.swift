@@ -2,17 +2,22 @@ import Foundation
 import AVFoundation
 import OSLog
 
+private let audioRecordingMaxDurationReachedNotification = NSNotification.Name("audioRecordingMaxDurationReached")
+
 @MainActor
 class AudioManager: NSObject, ObservableObject, AVAudioRecorderDelegate {
     static let shared = AudioManager()
 
     @Published var isRecording = false
     @Published var isPlaying = false
-    @Published var currentlyPlayingMessageId: Int64? = nil
+    @Published var currentlyPlayingMessageId: Int64?
     @Published var recordingDuration: TimeInterval = 0
 
     // Config based on typical Codec2 needs (8kHz, 16-bit PCM, mono)
     private let sampleRate: Double = 8000
+    
+    // Max recording duration (10 seconds) - matches payload limit of ~5s encoded audio
+    private let maxRecordingDuration: TimeInterval = 10.0
 
     private var audioRecorder: AVAudioRecorder?
     private var audioEngine: AVAudioEngine?
@@ -63,6 +68,11 @@ class AudioManager: NSObject, ObservableObject, AVAudioRecorderDelegate {
             recordingTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
                 guard let self = self, let recorder = self.audioRecorder else { return }
                 self.recordingDuration = recorder.currentTime
+                if self.recordingDuration >= self.maxRecordingDuration {
+                    Logger.audio.info("🎙️ Max recording duration reached, stopping...")
+                    self.stopRecordingCleanup()
+                    NotificationCenter.default.post(name: audioRecordingMaxDurationReachedNotification, object: nil)
+                }
             }
         } catch {
             Logger.services.error("Failed to start recording: \(error)")
@@ -207,7 +217,7 @@ class AudioManager: NSObject, ObservableObject, AVAudioRecorderDelegate {
         currentlyPlayingMessageId = nil
     }
 
-    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+    @MainActor func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         if !flag {
             stopRecordingCleanup()
         }

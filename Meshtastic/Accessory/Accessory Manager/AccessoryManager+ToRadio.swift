@@ -451,11 +451,22 @@ extension AccessoryManager {
 			let chan = channel
 			let repId = replyID
 			
+			// Get connected node's LoRa config for delay calculation
 			var hopLmt: UInt32? = nil
-			let hopsAway = newMessage.toUser?.userNode?.hopsAway ?? 0
-			if hopsAway > Int32(truncatingIfNeeded: newMessage.fromUser?.userNode?.loRaConfig?.hopLimit ?? 0) {
-				hopLmt = UInt32(truncatingIfNeeded: hopsAway)
+			if let fromUserNode = newMessage.fromUser?.userNode {
+				let hopsAway = fromUserNode.hopsAway
+				if hopsAway > Int32(truncatingIfNeeded: fromUserNode.loRaConfig?.hopLimit ?? 0) {
+					hopLmt = UInt32(truncatingIfNeeded: hopsAway)
+				}
 			}
+			
+			// Use the connected node's LoRa config for delay calculation (our device's tx speed)
+			let connectedNodeNum = self.activeConnection?.device.num ?? 0
+			let connectedNodeRequest = NodeInfoEntity.fetchRequest()
+			connectedNodeRequest.predicate = NSPredicate(format: "num == %lld", connectedNodeNum)
+			let connectedNode = try? context.fetch(connectedNodeRequest).first
+			let modemPreset = connectedNode?.loRaConfig?.modemPreset
+			let chunkDelayNs = calculateChunkDelayNs(modemPreset: modemPreset)
 			
 			Task {
 				for chunkIndex in 0..<totalChunks {
@@ -505,7 +516,7 @@ extension AccessoryManager {
 					try? await send(toRadio, debugDescription: logString)
 					
 					if chunkIndex < totalChunks - 1 {
-						try? await Task.sleep(nanoseconds: 1_500_000_000) // Sleep 1.5 seconds between chunks to allow radio queueing
+						try? await Task.sleep(nanoseconds: chunkDelayNs)
 					}
 				}
 			}
@@ -520,6 +531,28 @@ extension AccessoryManager {
 			}
 		} catch {
 			Logger.data.error("💥 Send audio message failure \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+		}
+	}
+	
+	private func calculateChunkDelayNs(modemPreset: Int32?) -> UInt64 {
+		guard let preset = modemPreset else {
+			return 1_500_000_000
+		}
+		switch Config.LoRaConfig.ModemPreset(rawValue: Int(preset)) {
+		case .shortTurbo, .longTurbo:
+			return 200_000_000
+		case .shortFast:
+			return 400_000_000
+		case .mediumFast:
+			return 700_000_000
+		case .longModerate, .longFast:
+			return 1_000_000_000
+		case .mediumSlow, .shortSlow:
+			return 1_500_000_000
+		case .longSlow, .veryLongSlow:
+			return 2_500_000_000
+		default:
+			return 1_500_000_000
 		}
 	}
 
