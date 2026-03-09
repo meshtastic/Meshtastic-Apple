@@ -122,6 +122,15 @@ struct NodeList: View {
 				ContentUnavailableView("Select a Node", systemImage: "flipphone")
 			}
 		}
+		.onAppear {
+			if accessoryManager.isConnected {
+				Logger.services.info("🛣 [NodeList] Refreshing nodes from device")
+				Task {
+					_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
+					try? await accessoryManager.sendWantDatabase()
+				}
+			}
+		}
 		.onChange(of: router.navigationState.nodeListSelectedNodeNum) { _, newNum in
 			if let num = newNum {
 				self.selectedNode = getNodeInfo(id: num, context: context)
