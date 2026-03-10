@@ -11950,6 +11950,12 @@
     },
     "Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable." : {
       "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controla el parpadeo del LED del dispositivo. Para la mayoría de los dispositivos, esto controlará uno de los 4 LEDs, los LED del cargador y GPS no son controlables."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11996,6 +12002,12 @@
             "value" : "Konvexe Hülle"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoltura convexa"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12036,6 +12048,12 @@
             "value" : "Koordinate"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coordenar"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12074,6 +12092,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Koordinate %1$@, %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coordenadas %1$@, %2$@"
           }
         },
         "it" : {
@@ -12122,6 +12146,12 @@
             "value" : "Koordinaten:"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coordenadas:"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12160,6 +12190,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kopieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar"
           }
         },
         "fr" : {
@@ -12230,6 +12266,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Knoten nicht gefunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nodo no encontrado"
           }
         },
         "it" : {
