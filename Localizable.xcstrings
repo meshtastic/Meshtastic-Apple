@@ -9,7 +9,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@"
+            "value" : "\t%@"
           }
         },
         "it" : {
@@ -50,7 +50,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@"
+            "value" : " %@"
           }
         },
         "it" : {
@@ -91,7 +91,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@%%"
+            "value" : " %@%%"
           }
         },
         "it" : {
