@@ -903,6 +903,7 @@
 			isa = PBXGroup;
 			children = (
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
+				05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -1402,7 +1403,6 @@
 				231A53772E69ADB900216B99 /* NodeFilterParameters.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
 				BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */,
-				05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
