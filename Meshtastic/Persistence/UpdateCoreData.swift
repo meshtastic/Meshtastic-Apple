@@ -155,14 +155,34 @@ extension MeshPackets {
 	}
 	
 	nonisolated public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
+		// Ensure we're working with the correct context
+		guard let channelInContext = context.object(with: channel.objectID) as? ChannelEntity else {
+			Logger.data.error("💥 [deleteChannelMessages] Unable to get channel in context")
+			return
+		}
+		
+		// Use a fetch request instead of accessing the relationship directly
+		// Note: MessageEntity.channel is an Int32, not a relationship to ChannelEntity
+		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MessageEntity")
+		fetchRequest.predicate = NSPredicate(format: "channel == %d", channelInContext.index)
+		
+		let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+		batchDeleteRequest.resultType = .resultTypeObjectIDs
+		
 		do {
-			let objects = channel.allPrivateMessages
-			for object in objects {
-				context.delete(object)
+			let result = try context.execute(batchDeleteRequest) as? NSBatchDeleteResult
+			
+			// Merge the changes into the context
+			if let objectIDArray = result?.result as? [NSManagedObjectID] {
+				let changes = [NSDeletedObjectsKey: objectIDArray]
+				NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
+				Logger.data.info("💾 [deleteChannelMessages] Deleted \(objectIDArray.count) messages from channel")
 			}
+			
 			try context.save()
-		} catch let error as NSError {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+		} catch {
+			context.rollback()
+			Logger.data.error("💥 [deleteChannelMessages] Error deleting channel messages: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 	
