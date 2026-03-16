@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		052A45EE2F688BC200DD22E4 /* UpdateCoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052A45ED2F688BC200DD22E4 /* UpdateCoreDataTests.swift */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
@@ -346,6 +347,7 @@
 
 /* Begin PBXFileReference section */
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
+		052A45ED2F688BC200DD22E4 /* UpdateCoreDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCoreDataTests.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
@@ -900,6 +902,7 @@
 		25F5D5C82C4375A8008036E3 /* MeshtasticTests */ = {
 			isa = PBXGroup;
 			children = (
+				052A45ED2F688BC200DD22E4 /* UpdateCoreDataTests.swift */,
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
 			);
 			path = MeshtasticTests;
@@ -1658,6 +1661,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
+				052A45EE2F688BC200DD22E4 /* UpdateCoreDataTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
