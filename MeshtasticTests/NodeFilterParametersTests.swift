@@ -1,332 +1,417 @@
 //
 //  NodeFilterParametersTests.swift
-//  MeshtasticTests
+//  Meshtastic
 //
-//  Created on 3/13/26.
+//  Created on 3/16/26.
 //
 
+import Foundation
 import XCTest
 
+@testable import Meshtastic
+
 @MainActor
-final class NodeFilterParametersTests: XCTestCase {
+class NodeFilterParametersTests: XCTestCase {
 	
-	var sut: NodeFilterParameters!
-	let testSuiteName = "NodeFilterParametersTests"
+	// MARK: - Initialization Tests
 	
-	override func setUp() async throws {
-		try await super.setUp()
+	func testDefaultInitialization() async throws {
+		// Clean up UserDefaults before test
+		clearAllFilterDefaults()
 		
-		// Clear UserDefaults before each test to ensure clean state
-		clearUserDefaults()
+		let filters = NodeFilterParameters()
 		
-		// Create a fresh instance
-		sut = NodeFilterParameters()
-	}
-	
-	override func tearDown() async throws {
-		sut = nil
-		clearUserDefaults()
-		try await super.tearDown()
-	}
-		
-	private func clearUserDefaults() {
-		let defaults = UserDefaults.standard
-		let keys = [
-			"nodeFilter.searchText",
-			"nodeFilter.isOnline",
-			"nodeFilter.isPkiEncrypted",
-			"nodeFilter.isFavorite",
-			"nodeFilter.isIgnored",
-			"nodeFilter.isEnvironment",
-			"nodeFilter.distanceFilter",
-			"nodeFilter.maxDistance",
-			"nodeFilter.hopsAway",
-			"nodeFilter.roleFilter",
-			"nodeFilter.deviceRoles",
-			"nodeFilter.viaLora",
-			"nodeFilter.viaMqtt"
-		]
-		keys.forEach { defaults.removeObject(forKey: $0) }
-	}
-		
-	func testDefaultValues() {
-		XCTAssertEqual(sut.searchText, "", "Search text should default to empty string")
-		XCTAssertFalse(sut.isOnline, "isOnline should default to false")
-		XCTAssertFalse(sut.isPkiEncrypted, "isPkiEncrypted should default to false")
-		XCTAssertFalse(sut.isFavorite, "isFavorite should default to false")
-		XCTAssertFalse(sut.isIgnored, "isIgnored should default to false")
-		XCTAssertFalse(sut.isEnvironment, "isEnvironment should default to false")
-		XCTAssertFalse(sut.distanceFilter, "distanceFilter should default to false")
-		XCTAssertEqual(sut.maxDistance, 800_000, "maxDistance should default to 800,000")
-		XCTAssertEqual(sut.hopsAway, -1.0, "hopsAway should default to -1.0")
-		XCTAssertFalse(sut.roleFilter, "roleFilter should default to false")
-		XCTAssertTrue(sut.deviceRoles.isEmpty, "deviceRoles should default to empty set")
-		XCTAssertTrue(sut.viaLora, "viaLora should default to true")
-		XCTAssertTrue(sut.viaMqtt, "viaMqtt should default to true")
-	}
-		
-	func testSearchTextPersistence() {
-		sut.searchText = "Test Node"
-		
-		// Create new instance to test persistence
-		let newInstance = NodeFilterParameters()
-		XCTAssertEqual(newInstance.searchText, "Test Node", "Search text should persist")
+		XCTAssertEqual(filters.searchText, "")
+		XCTAssertEqual(filters.isOnline, false)
+		XCTAssertEqual(filters.isPkiEncrypted, false)
+		XCTAssertEqual(filters.isFavorite, false)
+		XCTAssertEqual(filters.isIgnored, false)
+		XCTAssertEqual(filters.isEnvironment, false)
+		XCTAssertEqual(filters.distanceFilter, false)
+		XCTAssertEqual(filters.maxDistance, 800_000)
+		XCTAssertEqual(filters.hopsAway, -1.0)
+		XCTAssertEqual(filters.roleFilter, false)
+		XCTAssertTrue(filters.deviceRoles.isEmpty)
+		XCTAssertEqual(filters.viaLora, true)
+		XCTAssertEqual(filters.viaMqtt, true)
 	}
 	
-	func testBooleanFiltersPersistence() {
-		sut.isOnline = true
-		sut.isPkiEncrypted = true
-		sut.isFavorite = true
-		sut.isIgnored = true
-		sut.isEnvironment = true
+	func testInitializationWithPersistedDeviceRoles() async throws {
+		clearAllFilterDefaults()
 		
-		let newInstance = NodeFilterParameters()
-		XCTAssertTrue(newInstance.isOnline, "isOnline should persist")
-		XCTAssertTrue(newInstance.isPkiEncrypted, "isPkiEncrypted should persist")
-		XCTAssertTrue(newInstance.isFavorite, "isFavorite should persist")
-		XCTAssertTrue(newInstance.isIgnored, "isIgnored should persist")
-		XCTAssertTrue(newInstance.isEnvironment, "isEnvironment should persist")
+		// Store device roles in UserDefaults
+		let expectedRoles = [1, 2, 3, 5, 8]
+		UserDefaults.standard.set(expectedRoles, forKey: "nodeFilter.deviceRoles")
+		
+		let filters = NodeFilterParameters()
+		
+		XCTAssertEqual(filters.deviceRoles, Set(expectedRoles))
 	}
 	
-	func testDistanceFilterPersistence() {
-		sut.distanceFilter = true
-		sut.maxDistance = 50_000
+	// MARK: - @AppStorage Persistence Tests
+	
+	func testSearchTextPersistence() async throws {
+		clearAllFilterDefaults()
 		
-		let newInstance = NodeFilterParameters()
-		XCTAssertTrue(newInstance.distanceFilter, "distanceFilter should persist")
-		XCTAssertEqual(newInstance.maxDistance, 50_000, "maxDistance should persist")
+		let filters1 = NodeFilterParameters()
+		filters1.searchText = "Test Node"
+		
+		let filters2 = NodeFilterParameters()
+		XCTAssertEqual(filters2.searchText, "Test Node")
 	}
 	
-	func testHopsAwayPersistence() {
-		sut.hopsAway = 3.0
+	func testBooleanFiltersPersistence() async throws {
+		clearAllFilterDefaults()
 		
-		let newInstance = NodeFilterParameters()
-		XCTAssertEqual(newInstance.hopsAway, 3.0, "hopsAway should persist")
+		let filters1 = NodeFilterParameters()
+		filters1.isOnline = true
+		filters1.isPkiEncrypted = true
+		filters1.isFavorite = true
+		filters1.isIgnored = true
+		filters1.isEnvironment = true
+		filters1.distanceFilter = true
+		filters1.roleFilter = true
+		
+		let filters2 = NodeFilterParameters()
+		XCTAssertEqual(filters2.isOnline, true)
+		XCTAssertEqual(filters2.isPkiEncrypted, true)
+		XCTAssertEqual(filters2.isFavorite, true)
+		XCTAssertEqual(filters2.isIgnored, true)
+		XCTAssertEqual(filters2.isEnvironment, true)
+		XCTAssertEqual(filters2.distanceFilter, true)
+		XCTAssertEqual(filters2.roleFilter, true)
 	}
 	
-	func testRoleFilterPersistence() {
-		sut.roleFilter = true
+	func testNumericFiltersPersistence() async throws {
+		clearAllFilterDefaults()
 		
-		let newInstance = NodeFilterParameters()
-		XCTAssertTrue(newInstance.roleFilter, "roleFilter should persist")
-	}
+		let filters1 = NodeFilterParameters()
+		filters1.maxDistance = 500_000
+		filters1.hopsAway = 3.0
 		
-	func testDeviceRolesInitiallyEmpty() {
-		XCTAssertTrue(sut.deviceRoles.isEmpty, "deviceRoles should be empty initially")
-	}
-	
-	func testDeviceRolesPersistence() {
-		// Add some roles
-		sut.deviceRoles = [0, 1, 2]
-		
-		// Verify they're stored in UserDefaults
-		let stored = UserDefaults.standard.array(forKey: "nodeFilter.deviceRoles") as? [Int]
-		XCTAssertNotNil(stored, "deviceRoles should be stored in UserDefaults")
-		XCTAssertEqual(Set(stored ?? []), Set([0, 1, 2]), "Stored roles should match")
-		
-		// Create new instance to test persistence
-		let newInstance = NodeFilterParameters()
-		XCTAssertEqual(newInstance.deviceRoles, [0, 1, 2], "deviceRoles should persist")
+		let filters2 = NodeFilterParameters()
+		XCTAssertEqual(filters2.maxDistance, 500_000)
+		XCTAssertEqual(filters2.hopsAway, 3.0)
 	}
 	
-	func testDeviceRolesAddAndRemove() {
-		XCTAssertTrue(sut.deviceRoles.isEmpty, "Should start empty")
+	// MARK: - Device Roles Tests
+	
+	func testDeviceRolesPersistence() async throws {
+		clearAllFilterDefaults()
 		
-		// Add roles
-		sut.deviceRoles.insert(1)
-		sut.deviceRoles.insert(3)
-		sut.deviceRoles.insert(5)
-		XCTAssertEqual(sut.deviceRoles.count, 3, "Should have 3 roles")
+		let filters1 = NodeFilterParameters()
+		filters1.deviceRoles = [1, 3, 5, 7]
 		
-		// Remove a role
-		sut.deviceRoles.remove(3)
-		XCTAssertEqual(sut.deviceRoles.count, 2, "Should have 2 roles after removal")
-		XCTAssertTrue(sut.deviceRoles.contains(1), "Should still contain role 1")
-		XCTAssertTrue(sut.deviceRoles.contains(5), "Should still contain role 5")
-		XCTAssertFalse(sut.deviceRoles.contains(3), "Should not contain removed role 3")
+		// Verify it's stored in UserDefaults
+		let storedRoles = UserDefaults.standard.array(forKey: "nodeFilter.deviceRoles") as? [Int]
+		XCTAssertNotNil(storedRoles)
+		XCTAssertEqual(Set(storedRoles!), Set([1, 3, 5, 7]))
 		
-		// Verify persistence after changes
-		let newInstance = NodeFilterParameters()
-		XCTAssertEqual(newInstance.deviceRoles, sut.deviceRoles, "Changes should persist")
-	}
-		
-	func testViaLoraAndMqttBothTrueByDefault() {
-		XCTAssertTrue(sut.viaLora, "viaLora should default to true")
-		XCTAssertTrue(sut.viaMqtt, "viaMqtt should default to true")
+		// Verify it persists to new instance
+		let filters2 = NodeFilterParameters()
+		XCTAssertEqual(filters2.deviceRoles, Set([1, 3, 5, 7]))
 	}
 	
-	func testCanSetViaLoraToFalseWhenMqttIsTrue() {
-		sut.viaLora = false
+	func testAddingDeviceRoles() async throws {
+		clearAllFilterDefaults()
 		
-		XCTAssertFalse(sut.viaLora, "viaLora should be false")
-		XCTAssertTrue(sut.viaMqtt, "viaMqtt should remain true")
+		let filters = NodeFilterParameters()
+		filters.deviceRoles.insert(2)
+		filters.deviceRoles.insert(4)
+		filters.deviceRoles.insert(6)
+		
+		let newFilters = NodeFilterParameters()
+		XCTAssertTrue(newFilters.deviceRoles.contains(2))
+		XCTAssertTrue(newFilters.deviceRoles.contains(4))
+		XCTAssertTrue(newFilters.deviceRoles.contains(6))
+		XCTAssertEqual(newFilters.deviceRoles.count, 3)
 	}
 	
-	func testCanSetViaMqttToFalseWhenLoraIsTrue() {
-		sut.viaMqtt = false
+	func testRemovingDeviceRoles() async throws {
+		clearAllFilterDefaults()
 		
-		XCTAssertFalse(sut.viaMqtt, "viaMqtt should be false")
-		XCTAssertTrue(sut.viaLora, "viaLora should remain true")
+		let filters1 = NodeFilterParameters()
+		filters1.deviceRoles = [1, 2, 3, 4, 5]
+		
+		filters1.deviceRoles.remove(2)
+		filters1.deviceRoles.remove(4)
+		
+		let filters2 = NodeFilterParameters()
+		XCTAssertEqual(filters2.deviceRoles, Set([1, 3, 5]))
+		XCTAssertFalse(filters2.deviceRoles.contains(2))
+		XCTAssertFalse(filters2.deviceRoles.contains(4))
 	}
 	
-	func testEnforcesAtLeastOneViaLoraOrMqtt_WhenSettingLoraFalse() {
-		// First set MQTT to false
-		sut.viaMqtt = false
-		XCTAssertFalse(sut.viaMqtt, "viaMqtt should be false")
-		XCTAssertTrue(sut.viaLora, "viaLora should be true")
+	func testEmptyDeviceRolesPersistence() async throws {
+		clearAllFilterDefaults()
 		
-		// Try to set LoRa to false - should enforce MQTT back to true
-		sut.viaLora = false
+		let filters1 = NodeFilterParameters()
+		filters1.deviceRoles = [1, 2, 3]
 		
-		XCTAssertFalse(sut.viaLora, "viaLora should be false")
-		XCTAssertTrue(sut.viaMqtt, "viaMqtt should be enforced to true")
+		// Clear the set
+		filters1.deviceRoles = []
+		
+		let filters2 = NodeFilterParameters()
+		XCTAssertTrue(filters2.deviceRoles.isEmpty)
 	}
 	
-	func testEnforcesAtLeastOneViaLoraOrMqtt_WhenSettingMqttFalse() {
-		// First set LoRa to false
-		sut.viaLora = false
-		XCTAssertFalse(sut.viaLora, "viaLora should be false")
-		XCTAssertTrue(sut.viaMqtt, "viaMqtt should be true")
+	// MARK: - Via Lora/MQTT Enforcement Tests
+	
+	func testViaLoraEnforcesViaMqtt() async throws {
+		clearAllFilterDefaults()
 		
-		// Try to set MQTT to false - should enforce LoRa back to true
-		sut.viaMqtt = false
+		let filters = NodeFilterParameters()
 		
-		XCTAssertFalse(sut.viaMqtt, "viaMqtt should be false")
-		XCTAssertTrue(sut.viaLora, "viaLora should be enforced to true")
+		// Start with both true
+		XCTAssertEqual(filters.viaLora, true)
+		XCTAssertEqual(filters.viaMqtt, true)
+		
+		// Set viaLora to false
+		filters.viaLora = false
+		
+		// viaMqtt should remain true
+		XCTAssertEqual(filters.viaLora, false)
+		XCTAssertEqual(filters.viaMqtt, true)
+		
+		// Try to set viaMqtt to false - it should enforce viaLora to true
+		filters.viaMqtt = false
+		
+		XCTAssertEqual(filters.viaLora, true)
+		XCTAssertEqual(filters.viaMqtt, false)
 	}
 	
-	func testViaLoraAndMqttPersistence() {
-		sut.viaLora = false
-		sut.viaMqtt = true
+	func testViaMqttEnforcesViaLora() async throws {
+		clearAllFilterDefaults()
 		
-		let newInstance = NodeFilterParameters()
-		XCTAssertFalse(newInstance.viaLora, "viaLora state should persist")
-		XCTAssertTrue(newInstance.viaMqtt, "viaMqtt state should persist")
+		let filters = NodeFilterParameters()
+		
+		// Start with both true
+		XCTAssertEqual(filters.viaLora, true)
+		XCTAssertEqual(filters.viaMqtt, true)
+		
+		// Set viaMqtt to false
+		filters.viaMqtt = false
+		
+		// viaLora should remain true
+		XCTAssertEqual(filters.viaLora, true)
+		XCTAssertEqual(filters.viaMqtt, false)
+		
+		// Try to set viaLora to false - it should enforce viaMqtt to true
+		filters.viaLora = false
+		
+		XCTAssertEqual(filters.viaLora, false)
+		XCTAssertEqual(filters.viaMqtt, true)
+	}
+	
+	func testBothViaTrue() async throws {
+		clearAllFilterDefaults()
+		
+		let filters = NodeFilterParameters()
+		filters.viaLora = true
+		filters.viaMqtt = true
+		
+		XCTAssertEqual(filters.viaLora, true)
+		XCTAssertEqual(filters.viaMqtt, true)
+	}
+	
+	func testViaSettingsPersistence() async throws {
+		clearAllFilterDefaults()
+		
+		let filters1 = NodeFilterParameters()
+		filters1.viaLora = false
+		// viaMqtt should be enforced to true
+		
+		let filters2 = NodeFilterParameters()
+		XCTAssertEqual(filters2.viaLora, false)
+		XCTAssertEqual(filters2.viaMqtt, true)
+	}
+	
+	func testCannotHaveBothViaFalse() async throws {
+		clearAllFilterDefaults()
+		
+		let filters = NodeFilterParameters()
+		
+		// Set viaLora to false first
+		filters.viaLora = false
+		XCTAssertEqual(filters.viaLora, false)
+		XCTAssertEqual(filters.viaMqtt, true)
+		
+		// Try to set viaMqtt to false
+		filters.viaMqtt = false
+		
+		// viaLora should be enforced back to true
+		XCTAssertEqual(filters.viaLora, true)
+		XCTAssertEqual(filters.viaMqtt, false)
 	}
 	
 	// MARK: - ObservableObject Tests
 	
-	func testObjectWillChangeTriggeredOnViaLoraChange() {
-		let expectation = XCTestExpectation(description: "objectWillChange should trigger")
+	func testObjectWillChange() async throws {
+		clearAllFilterDefaults()
 		
-		let cancellable = sut.objectWillChange.sink {
-			expectation.fulfill()
+		let filters = NodeFilterParameters()
+		var changeCount = 0
+		
+		let cancellable = filters.objectWillChange.sink {
+			changeCount += 1
 		}
 		
-		sut.viaLora = false
+		// Modify various properties
+		filters.searchText = "Test"
+		filters.isOnline = true
+		filters.deviceRoles.insert(1)
+		filters.viaLora = false
 		
-		wait(for: [expectation], timeout: 0.1)
+		// Should have triggered changes
+		XCTAssertGreaterThan(changeCount, 0)
+		
 		cancellable.cancel()
 	}
 	
-	func testObjectWillChangeTriggeredOnViaMqttChange() {
-		let expectation = XCTestExpectation(description: "objectWillChange should trigger")
+	// MARK: - Edge Cases
+	
+	func testLargeMaxDistance() async throws {
+		clearAllFilterDefaults()
 		
-		let cancellable = sut.objectWillChange.sink {
-			expectation.fulfill()
-		}
+		let filters = NodeFilterParameters()
+		filters.maxDistance = 10_000_000
 		
-		sut.viaMqtt = false
-		
-		wait(for: [expectation], timeout: 0.1)
-		cancellable.cancel()
+		let newFilters = NodeFilterParameters()
+		XCTAssertEqual(newFilters.maxDistance, 10_000_000)
 	}
 	
-	func testObjectWillChangeTriggeredOnDeviceRolesChange() {
-		let expectation = XCTestExpectation(description: "objectWillChange should trigger")
-		expectation.expectedFulfillmentCount = 1
+	func testNegativeHopsAway() async throws {
+		clearAllFilterDefaults()
 		
-		let cancellable = sut.objectWillChange.sink {
-			expectation.fulfill()
-		}
+		let filters = NodeFilterParameters()
+		filters.hopsAway = -1.0
 		
-		sut.deviceRoles = [1, 2, 3]
-		
-		wait(for: [expectation], timeout: 0.1)
-		cancellable.cancel()
-	}
-		
-	func testMaxDistanceBoundaryValues() {
-		sut.maxDistance = 0
-		XCTAssertEqual(sut.maxDistance, 0, "Should handle zero distance")
-		
-		sut.maxDistance = Double.greatestFiniteMagnitude
-		XCTAssertEqual(sut.maxDistance, Double.greatestFiniteMagnitude, "Should handle large distances")
+		let newFilters = NodeFilterParameters()
+		XCTAssertEqual(newFilters.hopsAway, -1.0)
 	}
 	
-	func testHopsAwayBoundaryValues() {
-		sut.hopsAway = -1.0
-		XCTAssertEqual(sut.hopsAway, -1.0, "Should handle -1 (all hops)")
+	func testZeroHopsAway() async throws {
+		clearAllFilterDefaults()
 		
-		sut.hopsAway = 0.0
-		XCTAssertEqual(sut.hopsAway, 0.0, "Should handle 0 (direct)")
+		let filters = NodeFilterParameters()
+		filters.hopsAway = 0.0
 		
-		sut.hopsAway = 7.0
-		XCTAssertEqual(sut.hopsAway, 7.0, "Should handle maximum hops")
+		let newFilters = NodeFilterParameters()
+		XCTAssertEqual(newFilters.hopsAway, 0.0)
 	}
 	
-	func testSearchTextWithSpecialCharacters() {
-		let specialStrings = [
-			"Test Node #1",
-			"Node@123",
-			"Node with spaces",
-			"Node_with_underscores",
-			"Node-with-dashes",
-			"Node.with.dots",
-			"🎯 Node with emoji"
-		]
+	func testSpecialCharactersInSearchText() async throws {
+		clearAllFilterDefaults()
 		
-		for testString in specialStrings {
-			sut.searchText = testString
-			XCTAssertEqual(sut.searchText, testString, "Should handle: \(testString)")
-		}
+		let filters = NodeFilterParameters()
+		filters.searchText = "Test!@#$%^&*()_+-=[]{}|;':\",./<>?"
+		
+		let newFilters = NodeFilterParameters()
+		XCTAssertEqual(newFilters.searchText, "Test!@#$%^&*()_+-=[]{}|;':\",./<>?")
 	}
 	
-	func testDeviceRolesWithDuplicates() {
-		sut.deviceRoles = [1, 2, 3]
-		sut.deviceRoles.insert(2) // Try to insert duplicate
+	func testUnicodeInSearchText() async throws {
+		clearAllFilterDefaults()
 		
-		XCTAssertEqual(sut.deviceRoles.count, 3, "Set should not contain duplicates")
-		XCTAssertTrue(sut.deviceRoles.contains(1), "Should contain 1")
-		XCTAssertTrue(sut.deviceRoles.contains(2), "Should contain 2")
-		XCTAssertTrue(sut.deviceRoles.contains(3), "Should contain 3")
+		let filters = NodeFilterParameters()
+		filters.searchText = "测试 Тест 🎉🚀"
+		
+		let newFilters = NodeFilterParameters()
+		XCTAssertEqual(newFilters.searchText, "测试 Тест 🎉🚀")
 	}
 	
-	func testMultipleFiltersActive() {
-		sut.searchText = "Test"
-		sut.isOnline = true
-		sut.isFavorite = true
-		sut.distanceFilter = true
-		sut.maxDistance = 100_000
-		sut.hopsAway = 2.0
-		sut.roleFilter = true
-		sut.deviceRoles = [0, 1]
-		sut.viaLora = true
-		sut.viaMqtt = false
+	func testLongSearchText() async throws {
+		clearAllFilterDefaults()
 		
-		// Verify all settings
-		XCTAssertEqual(sut.searchText, "Test")
-		XCTAssertTrue(sut.isOnline)
-		XCTAssertTrue(sut.isFavorite)
-		XCTAssertTrue(sut.distanceFilter)
-		XCTAssertEqual(sut.maxDistance, 100_000)
-		XCTAssertEqual(sut.hopsAway, 2.0)
-		XCTAssertTrue(sut.roleFilter)
-		XCTAssertEqual(sut.deviceRoles, [0, 1])
-		XCTAssertTrue(sut.viaLora)
-		XCTAssertFalse(sut.viaMqtt)
+		let filters = NodeFilterParameters()
+		let longText = String(repeating: "A", count: 1000)
+		filters.searchText = longText
 		
-		// Verify persistence
-		let newInstance = NodeFilterParameters()
-		XCTAssertEqual(newInstance.searchText, "Test")
-		XCTAssertTrue(newInstance.isOnline)
-		XCTAssertTrue(newInstance.isFavorite)
-		XCTAssertTrue(newInstance.distanceFilter)
-		XCTAssertEqual(newInstance.maxDistance, 100_000)
-		XCTAssertEqual(newInstance.hopsAway, 2.0)
-		XCTAssertTrue(newInstance.roleFilter)
-		XCTAssertEqual(newInstance.deviceRoles, [0, 1])
-		XCTAssertTrue(newInstance.viaLora)
-		XCTAssertFalse(newInstance.viaMqtt)
+		let newFilters = NodeFilterParameters()
+		XCTAssertEqual(newFilters.searchText, longText)
+	}
+	
+	func testLargeDeviceRolesSet() async throws {
+		clearAllFilterDefaults()
+		
+		let filters = NodeFilterParameters()
+		filters.deviceRoles = Set(0...100)
+		
+		let newFilters = NodeFilterParameters()
+		XCTAssertEqual(newFilters.deviceRoles, Set(0...100))
+		XCTAssertEqual(newFilters.deviceRoles.count, 101)
+	}
+	
+	// MARK: - Reset/Clear Tests
+	
+	func testResetAllFilters() async throws {
+		clearAllFilterDefaults()
+		
+		let filters = NodeFilterParameters()
+		
+		// Set all values to non-default
+		filters.searchText = "Test"
+		filters.isOnline = true
+		filters.isPkiEncrypted = true
+		filters.isFavorite = true
+		filters.isIgnored = true
+		filters.isEnvironment = true
+		filters.distanceFilter = true
+		filters.maxDistance = 500_000
+		filters.hopsAway = 5.0
+		filters.roleFilter = true
+		filters.deviceRoles = [1, 2, 3]
+		filters.viaLora = false
+		
+		// Reset to defaults
+		filters.searchText = ""
+		filters.isOnline = false
+		filters.isPkiEncrypted = false
+		filters.isFavorite = false
+		filters.isIgnored = false
+		filters.isEnvironment = false
+		filters.distanceFilter = false
+		filters.maxDistance = 800_000
+		filters.hopsAway = -1.0
+		filters.roleFilter = false
+		filters.deviceRoles = []
+		filters.viaLora = true
+		filters.viaMqtt = true
+		
+		// Verify all are back to defaults
+		let newFilters = NodeFilterParameters()
+		XCTAssertEqual(newFilters.searchText, "")
+		XCTAssertEqual(newFilters.isOnline, false)
+		XCTAssertEqual(newFilters.isPkiEncrypted, false)
+		XCTAssertEqual(newFilters.isFavorite, false)
+		XCTAssertEqual(newFilters.isIgnored, false)
+		XCTAssertEqual(newFilters.isEnvironment, false)
+		XCTAssertEqual(newFilters.distanceFilter, false)
+		XCTAssertEqual(newFilters.maxDistance, 800_000)
+		XCTAssertEqual(newFilters.hopsAway, -1.0)
+		XCTAssertEqual(newFilters.roleFilter, false)
+		XCTAssertTrue(newFilters.deviceRoles.isEmpty)
+		XCTAssertEqual(newFilters.viaLora, true)
+		XCTAssertEqual(newFilters.viaMqtt, true)
+	}
+	
+	// MARK: - Helper Functions
+	
+	/// Clears all NodeFilter-related UserDefaults to ensure clean test state
+	private func clearAllFilterDefaults() {
+		let defaults = UserDefaults.standard
+		defaults.removeObject(forKey: "nodeFilter.searchText")
+		defaults.removeObject(forKey: "nodeFilter.isOnline")
+		defaults.removeObject(forKey: "nodeFilter.isPkiEncrypted")
+		defaults.removeObject(forKey: "nodeFilter.isFavorite")
+		defaults.removeObject(forKey: "nodeFilter.isIgnored")
+		defaults.removeObject(forKey: "nodeFilter.isEnvironment")
+		defaults.removeObject(forKey: "nodeFilter.distanceFilter")
+		defaults.removeObject(forKey: "nodeFilter.maxDistance")
+		defaults.removeObject(forKey: "nodeFilter.hopsAway")
+		defaults.removeObject(forKey: "nodeFilter.roleFilter")
+		defaults.removeObject(forKey: "nodeFilter.deviceRoles")
+		defaults.removeObject(forKey: "nodeFilter.viaLora")
+		defaults.removeObject(forKey: "nodeFilter.viaMqtt")
 	}
 }

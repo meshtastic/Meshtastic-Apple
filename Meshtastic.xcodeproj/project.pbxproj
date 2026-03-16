@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		05DCA1AF2F646B3B00D0724C /* NodeFilterParametersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */; };
+		0516B3FE2F68892000D0FC40 /* NodeFilterParametersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */; };
 		0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
@@ -2605,6 +2605,7 @@
 				AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
 				DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
 				25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
+				0516B3FE2F68892000D0FC40 /* NodeFilterParametersTests.swift in Sources */,
 				AA0120250000000000000C01 /* PacketStreamModelTests.swift in Sources */,
 				AA000301CPTST000000000002 /* CarPlayTests.swift in Sources */,
 				DD000001NODNAVTST00000001 /* NodeNavigationTests.swift in Sources */,
@@ -2990,7 +2991,6 @@
 				DD6F65742C6CB80A0053C113 /* View.swift in Sources */,
 				DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
-				05DCA1AF2F646B3B00D0724C /* NodeFilterParametersTests.swift in Sources */,
 				DD6D5A332CA1178300ED3032 /* TraceRoute.swift in Sources */,
 				DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */,
 				BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */,
