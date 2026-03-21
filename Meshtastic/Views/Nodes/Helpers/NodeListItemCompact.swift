@@ -153,33 +153,6 @@ struct NodeListItemCompact: View {
 									imageColor: node.isOnline ? .green : .orange,
 									text: node.lastHeard?.formatted() ?? "Unknown Age".localized)
 					}
-					
-					if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
-						HStack {
-							if let (lastPostion, myCoord) = locationData {
-								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-								let metersAway = nodeCoord.distance(from: myCoord)
-								Image(systemName: "lines.measurement.horizontal")
-									.font(.callout)
-									.symbolRenderingMode(.multicolor)
-									.frame(width: 30)
-								DistanceText(meters: metersAway)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-									.foregroundColor(.gray)
-								let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
-								let headingDegrees = Measurement(value: trueBearing, unit: UnitAngle.degrees)
-								Image(systemName: "location.north")
-									.font(.callout)
-									.symbolRenderingMode(.multicolor)
-									.clipShape(Circle())
-									.rotationEffect(Angle(degrees: headingDegrees.value))
-								let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
-								Text("\(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-									.foregroundColor(.gray)
-							}
-						}
-					}
 					HStack {
 						if node.channel > 0 {
 							IconAndText(systemName: "\(node.channel).circle.fill", text: "Channel")
@@ -218,6 +191,27 @@ struct NodeListItemCompact: View {
 								}
 								if node.hasTraceRoutes {
 									DefaultIconCompact(systemName: "signpost.right.and.left")
+								}
+							}
+						}
+						// Location
+						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
+							Divider().frame(height: 15)
+							HStack {
+								if let (lastPostion, myCoord) = locationData {
+									let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+									let metersAway = nodeCoord.distance(from: myCoord)
+
+									DistanceText(meters: metersAway, isCompact: true)
+										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+										.foregroundColor(.gray)
+									let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
+									let headingDegrees = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+									Image(systemName: "location.north")
+										.font(.callout)
+										.symbolRenderingMode(.multicolor)
+										.clipShape(Circle())
+										.rotationEffect(Angle(degrees: headingDegrees.value))
 								}
 							}
 						}
