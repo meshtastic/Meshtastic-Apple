@@ -9526,8 +9526,6 @@
         }
       }
     },
-    "Compact Layout" : {
-    },
     "Compass" : {
       "localizations" : {
         "ru" : {
@@ -41609,7 +41607,6 @@
       }
     },
     "TAK" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
