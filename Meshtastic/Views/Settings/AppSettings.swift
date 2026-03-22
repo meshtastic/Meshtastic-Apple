@@ -79,7 +79,7 @@ struct AppSettings: View {
 					}
 					.pickerStyle(.segmented)
 				}
-				Section(header: Text("environment")) {
+				Section(header: Text("Environment")) {
 					VStack(alignment: .leading) {
 						Toggle(isOn: $environmentEnableWeatherKit) {
 							Label("Weather Conditions", systemImage: "cloud.sun")
