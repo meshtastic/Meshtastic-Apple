@@ -134,11 +134,11 @@ struct NodeListItemCompact: View {
 	
 	var lineNums: Int {
 		var lines = 1
-		if (shouldShowRole || shouldShowLocation || shouldShowTelemetry) {
+		if shouldShowRole || shouldShowLocation || shouldShowTelemetry {
 			lines += 1
 		}
 		
-		if (shouldShowLastHeard) {
+		if shouldShowLastHeard {
 			lines += 1
 		}
 		
@@ -150,9 +150,18 @@ struct NodeListItemCompact: View {
 		LazyVStack(alignment: .leading) {
 			HStack {
 				// First Column
-				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: CGFloat(circleSize))
-						.padding(.trailing, 5)
+				if lineNums == 1 {
+					let color = Color(hex: UInt32(node.num).toHex()).opacity(100)
+					Text(node.user?.shortName ?? "?")
+						.foregroundColor(color.isLight() ? .black : .white)
+						.bold()
+						.padding(.all, 4)
+						.background(color, in: .capsule)
+				} else {
+					VStack(alignment: .center) {
+						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: CGFloat(circleSize))
+							.padding(.trailing, 5)
+					}
 				}
 				// End First Column
 				// Second Column
@@ -255,8 +264,8 @@ struct NodeListItemCompact: View {
 					if node.favorite {
 						Image(systemName: "star.fill")
 							.symbolRenderingMode(.multicolor)
+						Spacer()
 					}
-					Spacer()
 					// Hops Away
 					if node.hopsAway > 0 {
 						DefaultIconCompact(systemName: "\(node.hopsAway).square")
