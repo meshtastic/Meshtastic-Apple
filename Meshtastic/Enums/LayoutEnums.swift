@@ -25,6 +25,7 @@ enum NodeListDensity: Int, CaseIterable, Identifiable {
  This enum contains the keys for different UserDefault preferences for convenience
  */
 enum NodeListPreferences: String {
+	case shouldShowRole
 	case shouldShowLocation
 	case shouldShowTelemetry
 	case shouldShowPower

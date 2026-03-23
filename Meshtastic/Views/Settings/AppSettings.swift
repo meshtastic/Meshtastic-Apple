@@ -23,11 +23,12 @@ struct AppSettings: View {
 	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
 	// Node Layout Preferences
 	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
-	@AppStorage(NodeListPreferences.shouldShowLocation.rawValue) private var shouldShowLocation: Bool = true
-	@AppStorage(NodeListPreferences.shouldShowPower.rawValue) private var shouldShowPower: Bool = true
-	@AppStorage(NodeListPreferences.shouldShowTelemetry.rawValue) private var shouldShowTelemetry: Bool = true
-	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard: Bool = true
-	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative: Bool = false
+	@AppStorage(NodeListPreferences.shouldShowLocation.rawValue) private var shouldShowLocation = true
+	@AppStorage(NodeListPreferences.shouldShowPower.rawValue) private var shouldShowPower = true
+	@AppStorage(NodeListPreferences.shouldShowTelemetry.rawValue) private var shouldShowTelemetry = true
+	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard = true
+	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative = false
+	@AppStorage(NodeListPreferences.shouldShowRole.rawValue) private var shouldShowRole = true
 
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
@@ -87,6 +88,9 @@ struct AppSettings: View {
 						}
 						.pickerStyle(.segmented)
 						if nodeListDensity == .compact {
+							Toggle(isOn: $shouldShowRole) {
+								Text("Show Role")
+							}
 							Toggle(isOn: $shouldShowLocation) {
 								Text("Show Location")
 							}

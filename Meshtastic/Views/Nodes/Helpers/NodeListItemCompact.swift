@@ -12,11 +12,12 @@ import Foundation
 
 struct NodeListItemCompact: View {
 	
-	@AppStorage(NodeListPreferences.shouldShowLocation.rawValue) private var shouldShowLocation: Bool = true
-	@AppStorage(NodeListPreferences.shouldShowPower.rawValue) private var shouldShowPower: Bool = true
-	@AppStorage(NodeListPreferences.shouldShowTelemetry.rawValue) private var shouldShowTelemetry: Bool = true
-	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard: Bool = true
-	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative: Bool = false
+	@AppStorage(NodeListPreferences.shouldShowLocation.rawValue) private var shouldShowLocation = true
+	@AppStorage(NodeListPreferences.shouldShowPower.rawValue) private var shouldShowPower = true
+	@AppStorage(NodeListPreferences.shouldShowTelemetry.rawValue) private var shouldShowTelemetry = true
+	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard = true
+	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative = false
+	@AppStorage(NodeListPreferences.shouldShowRole.rawValue) private var shouldShowRole = true
 	
 	private var accessibilityDescription: String {
 		var desc = ""
@@ -174,17 +175,19 @@ struct NodeListItemCompact: View {
 					// Display easy to differentiate information in a more compact list
 					HStack(alignment: .bottom) {
 						// Device Role
-						let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
-						DefaultIconCompact(systemName: role?.systemName ?? "figure")
+						if shouldShowRole {
+							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
+							DefaultIconCompact(systemName: role?.systemName ?? "figure")
 
-						if node.user?.unmessagable ?? false {
-							DefaultIconCompact(systemName: "iphone.slash")
-						}
-						if node.isStoreForwardRouter {
-							DefaultIconCompact(systemName: "envelope.arrow.triangle.branch")
-						}
-						if node.viaMqtt && connectedNode != node.num {
-							DefaultIconCompact(systemName: "dot.radiowaves.up.forward")
+							if node.user?.unmessagable ?? false {
+								DefaultIconCompact(systemName: "iphone.slash")
+							}
+							if node.isStoreForwardRouter {
+								DefaultIconCompact(systemName: "envelope.arrow.triangle.branch")
+							}
+							if node.viaMqtt && connectedNode != node.num {
+								DefaultIconCompact(systemName: "dot.radiowaves.up.forward")
+							}
 						}
 						// Telemetry
 						if shouldShowTelemetry && (node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes) {
