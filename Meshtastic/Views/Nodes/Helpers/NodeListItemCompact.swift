@@ -12,6 +12,12 @@ import Foundation
 
 struct NodeListItemCompact: View {
 	
+	@AppStorage(NodeListPreferences.shouldShowLocation.rawValue) private var shouldShowLocation: Bool = true
+	@AppStorage(NodeListPreferences.shouldShowPower.rawValue) private var shouldShowPower: Bool = true
+	@AppStorage(NodeListPreferences.shouldShowTelemetry.rawValue) private var shouldShowTelemetry: Bool = true
+	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard: Bool = true
+	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative: Bool = false
+	
 	private var accessibilityDescription: String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
@@ -140,7 +146,7 @@ struct NodeListItemCompact: View {
 									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
 									textColor: .primary)
 						Spacer()
-						if node.latestDeviceMetrics != nil {
+						if shouldShowPower && node.latestDeviceMetrics != nil {
 							BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
 						}
 						if node.favorite {
@@ -148,10 +154,17 @@ struct NodeListItemCompact: View {
 								.symbolRenderingMode(.multicolor)
 						}
 					}
-					if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
-						IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
-									imageColor: node.isOnline ? .green : .orange,
-									text: node.lastHeard?.formatted() ?? "Unknown Age".localized)
+					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
+						
+						let lastHeardText = lastHeardIsRelative ?
+						node.lastHeard?.formatted(Date.RelativeFormatStyle()) :
+						node.lastHeard?.formatted()
+						
+						IconAndText(
+							systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
+							imageColor: node.isOnline ? .green : .orange,
+							text: lastHeardText ?? "Unknown Age".localized
+						)
 					}
 					HStack {
 						if node.channel > 0 {
@@ -174,7 +187,7 @@ struct NodeListItemCompact: View {
 							DefaultIconCompact(systemName: "dot.radiowaves.up.forward")
 						}
 						// Telemetry
-						if node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes {
+						if shouldShowTelemetry && (node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes) {
 							HStack(alignment: .bottom) {
 								Divider().frame(height: 15)
 								if node.hasDeviceMetrics {
@@ -195,7 +208,7 @@ struct NodeListItemCompact: View {
 							}
 						}
 						// Location
-						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
+						if shouldShowLocation && node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							Divider().frame(height: 15)
 							HStack {
 								if let (lastPostion, myCoord) = locationData {

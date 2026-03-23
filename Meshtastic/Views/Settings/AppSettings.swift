@@ -5,6 +5,7 @@ import SwiftProtobuf
 import MapKit
 import DatadogCore
 import OSLog
+import CoreData
 
 struct AppSettings: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
@@ -20,7 +21,13 @@ struct AppSettings: View {
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
+	// Node Layout Preferences
 	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
+	@AppStorage(NodeListPreferences.shouldShowLocation.rawValue) private var shouldShowLocation: Bool = true
+	@AppStorage(NodeListPreferences.shouldShowPower.rawValue) private var shouldShowPower: Bool = true
+	@AppStorage(NodeListPreferences.shouldShowTelemetry.rawValue) private var shouldShowTelemetry: Bool = true
+	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard: Bool = true
+	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative: Bool = false
 
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
@@ -71,13 +78,35 @@ struct AppSettings: View {
 					}
 #endif
 				}
-				Section(header: Text("Node List Density")) {
-					Picker("Node List Density", selection: $nodeListDensity) {
-						ForEach(NodeListDensity.allCases) { item in
-							Text(item.description).tag(item)
+				Section(header: Text("Node Layout")) {
+					List {
+						Picker("Node List Density", selection: $nodeListDensity) {
+							ForEach(NodeListDensity.allCases) { item in
+								Text(item.description).tag(item)
+							}
 						}
+						.pickerStyle(.segmented)
+						if nodeListDensity == .compact {
+							Toggle(isOn: $shouldShowLocation) {
+								Text("Show Location")
+							}
+							Toggle(isOn: $shouldShowPower) {
+								Text("Show Power")
+							}
+							Toggle(isOn: $shouldShowTelemetry) {
+								Text("Show Telemetry Icons")
+							}
+							Toggle(isOn: $shouldShowLastHeard) {
+								Text("Show Last Heard Time")
+							}
+							if shouldShowLastHeard {
+								Toggle(isOn: $lastHeardIsRelative) {
+									Text("Relative Last Heard Time")
+								}
+							}
+						}
+						BuildTestNode(nodeListDensity: $nodeListDensity)
 					}
-					.pickerStyle(.segmented)
 				}
 				Section(header: Text("Environment")) {
 					VStack(alignment: .leading) {
@@ -188,5 +217,43 @@ struct AppSettings: View {
 								ZStack {
 			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
+	}
+}
+
+struct BuildTestNode: View {
+	@FetchRequest private var nodes: FetchedResults<NodeInfoEntity>
+	@Binding var nodeListDensity: NodeListDensity
+	
+	init(nodeListDensity: Binding<NodeListDensity>) {
+		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
+		request.sortDescriptors = [
+			NSSortDescriptor(key: "ignored", ascending: true),
+			NSSortDescriptor(key: "favorite", ascending: false),
+			NSSortDescriptor(key: "lastHeard", ascending: false),
+			NSSortDescriptor(key: "user.longName", ascending: true)
+		]
+		self._nodes = FetchRequest(fetchRequest: request)
+		self._nodeListDensity = nodeListDensity
+	}
+
+	var body: some View {
+		VStack {
+			if let exampleNode = nodes.first {
+				switch nodeListDensity {
+				case .standard:
+					NodeListItem(
+						node: exampleNode,
+						isDirectlyConnected: true,
+						connectedNode: 0,
+					)
+				case .compact:
+					NodeListItemCompact(
+						node: exampleNode,
+						isDirectlyConnected: true,
+						connectedNode: 0
+					)
+				}
+			}
+		}
 	}
 }
