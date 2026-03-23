@@ -132,15 +132,32 @@ struct NodeListItemCompact: View {
 		return nil
 	}
 	
+	var lineNums: Int {
+		var lines = 1
+		if (shouldShowRole || shouldShowLocation || shouldShowTelemetry) {
+			lines += 1
+		}
+		
+		if (shouldShowLastHeard) {
+			lines += 1
+		}
+		
+		return lines
+	}
+	
 	var body: some View {
+		let circleSize = min(70, 24 * lineNums)
 		LazyVStack(alignment: .leading) {
 			HStack {
+				// First Column
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
+					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: CGFloat(circleSize))
 						.padding(.trailing, 5)
 				}
+				// End First Column
+				// Second Column
 				VStack(alignment: .leading) {
-					HStack {
+					HStack(alignment: .firstTextBaseline) {
 						let (image, color) = userKeyStatus
 						IconAndText(systemName: image,
 									imageColor: color,
@@ -149,10 +166,6 @@ struct NodeListItemCompact: View {
 						Spacer()
 						if shouldShowPower && node.latestDeviceMetrics != nil {
 							BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
-						}
-						if node.favorite {
-							Image(systemName: "star.fill")
-								.symbolRenderingMode(.multicolor)
 						}
 					}
 					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
@@ -232,22 +245,30 @@ struct NodeListItemCompact: View {
 							}
 						}
 
-						Spacer()
-						// Hops Away
-						if node.hopsAway > 0 {
-							DefaultIconCompact(systemName: "\(node.hopsAway).square")
-
-						} else {
-							if node.snr != 0 && !node.viaMqtt {
-								DefaultIconCompact(systemName: "dot.radiowaves.left.and.right")
-									.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
-							}
-						}
-
 					}
 					.padding(EdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 0))
 				}
 				.frame(maxWidth: .infinity, alignment: .leading)
+				// End Second Column
+				// Third Column
+				VStack {
+					if node.favorite {
+						Image(systemName: "star.fill")
+							.symbolRenderingMode(.multicolor)
+					}
+					Spacer()
+					// Hops Away
+					if node.hopsAway > 0 {
+						DefaultIconCompact(systemName: "\(node.hopsAway).square")
+
+					} else {
+						if node.snr != 0 && !node.viaMqtt {
+							DefaultIconCompact(systemName: "dot.radiowaves.left.and.right")
+								.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+						}
+					}
+				}
+				// End Third Column
 			}
 		}
 		.accessibilityElement(children: .ignore)
