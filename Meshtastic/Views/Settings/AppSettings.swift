@@ -81,7 +81,7 @@ struct AppSettings: View {
 				}
 				Section(header: Text("Node Layout")) {
 					List {
-						Picker("Node List Density", selection: $nodeListDensity) {
+						Picker("Node List Density", selection: $nodeListDensity.animation()) {
 							ForEach(NodeListDensity.allCases) { item in
 								Text(item.description).tag(item)
 							}
@@ -100,14 +100,13 @@ struct AppSettings: View {
 							Toggle(isOn: $shouldShowTelemetry) {
 								Text("Show Telemetry Icons")
 							}
-							Toggle(isOn: $shouldShowLastHeard) {
+							Toggle(isOn: $shouldShowLastHeard.animation()) {
 								Text("Show Last Heard Time")
 							}
-							if shouldShowLastHeard {
-								Toggle(isOn: $lastHeardIsRelative) {
-									Text("Relative Last Heard Time")
-								}
+							Toggle(isOn: $lastHeardIsRelative) {
+								Text("Relative Last Heard Time")
 							}
+							.disabled(!shouldShowLastHeard)
 						}
 						BuildTestNode(nodeListDensity: $nodeListDensity)
 					}
