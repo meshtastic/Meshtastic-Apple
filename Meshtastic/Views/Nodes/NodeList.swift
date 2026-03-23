@@ -14,6 +14,7 @@ struct NodeList: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@StateObject var router: Router
+	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingPositionSentAlert = false
@@ -40,7 +41,8 @@ struct NodeList: View {
 				connectedNode: connectedNode,
 				isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
 				deleteNodeId: $deleteNodeId,
-				shareContactNode: $shareContactNode
+				shareContactNode: $shareContactNode,
+				nodeListDensity: $nodeListDensity
 			)
 			.sheet(isPresented: $isEditingFilters) {
 				NodeListFilter(
@@ -160,6 +162,7 @@ fileprivate struct FilteredNodeList: View {
 	@Binding var isPresentingDeleteNodeAlert: Bool
 	@Binding var deleteNodeId: Int64
 	@Binding var shareContactNode: NodeInfoEntity?
+	@Binding var nodeListDensity: NodeListDensity
 
 	// The initializer for the FetchRequest
 	init(
@@ -168,7 +171,8 @@ fileprivate struct FilteredNodeList: View {
 		connectedNode: NodeInfoEntity?,
 		isPresentingDeleteNodeAlert: Binding<Bool>,
 		deleteNodeId: Binding<Int64>,
-		shareContactNode: Binding<NodeInfoEntity?>
+		shareContactNode: Binding<NodeInfoEntity?>,
+		nodeListDensity: Binding<NodeListDensity>
 	) {
 		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
 		request.sortDescriptors = [
@@ -185,6 +189,7 @@ fileprivate struct FilteredNodeList: View {
 		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
 		self._deleteNodeId = deleteNodeId
 		self._shareContactNode = shareContactNode
+		self._nodeListDensity = nodeListDensity
 	}
 
 	// The body of the view
@@ -193,11 +198,19 @@ fileprivate struct FilteredNodeList: View {
 		let nodesWithConnectedFirst = nodes.filter { $0.num == accessoryManager.activeDeviceNum } + nodes.filter { $0.num != accessoryManager.activeDeviceNum }
 		List(nodesWithConnectedFirst, id: \.self, selection: $selectedNode) { node in
 			NavigationLink(value: node) {
-				NodeListItem(
-					node: node,
-					isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
-					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
-				)
+				switch nodeListDensity {
+				case .compact:
+					NodeListItemCompact(
+						node: node,
+						isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
+						connectedNode: accessoryManager.activeConnection?.device.num ?? -1)
+				case .standard:
+					NodeListItem(
+						node: node,
+						isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
+						connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+					)
+				}
 			}
 			.contextMenu {
 				contextMenuActions(

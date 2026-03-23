@@ -15569,6 +15569,7 @@
 
     },
     "environment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -27912,6 +27913,12 @@
         }
       }
     },
+    "Node Layout" : {
+
+    },
+    "Node List Density" : {
+
+    },
     "Node Map" : {
       "localizations" : {
         "de" : {
@@ -33830,6 +33837,9 @@
           }
         }
       }
+    },
+    "Relative Last Heard Time" : {
+
     },
     "Relayed by %d %@" : {
       "localizations" : {
@@ -39831,6 +39841,12 @@
         }
       }
     },
+    "Show Last Heard Time" : {
+
+    },
+    "Show Location" : {
+
+    },
     "Show nodes" : {
       "localizations" : {
         "de" : {
@@ -39950,6 +39966,15 @@
           }
         }
       }
+    },
+    "Show Power" : {
+
+    },
+    "Show Role" : {
+
+    },
+    "Show Telemetry Icons" : {
+
     },
     "Show Waypoints" : {
       "extractionState" : "stale",
@@ -41604,7 +41629,6 @@
       }
     },
     "TAK" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -102,6 +102,8 @@
 		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
 		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
 		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
+		AB61EBF12E3326DC00B35962 /* NodeListItemCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */; };
+		AB6E72762E3FC85A00639328 /* LayoutEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6E72752E3FC85A00639328 /* LayoutEnums.swift */; };
 		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
 		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
 		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
@@ -432,6 +434,8 @@
 		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
 		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
+		AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItemCompact.swift; sourceTree = "<group>"; };
+		AB6E72752E3FC85A00639328 /* LayoutEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEnums.swift; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
 		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
@@ -1143,6 +1147,7 @@
 				DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */,
 				DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */,
 				DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */,
+				AB6E72752E3FC85A00639328 /* LayoutEnums.swift */,
 				DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */,
 				DD268D8D2BCC90E2008073AE /* RouteEnums.swift */,
 				DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */,
@@ -1396,6 +1401,7 @@
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
+				AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
 				231A53772E69ADB900216B99 /* NodeFilterParameters.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
@@ -1693,6 +1699,7 @@
 				DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */,
 				6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
+				AB6E72762E3FC85A00639328 /* LayoutEnums.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
 				DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */,
 				3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */,
@@ -1711,6 +1718,7 @@
 				2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */,
 				233E99B82D849C6500CC3A77 /* HumidityCompactWidget.swift in Sources */,
 				DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */,
+				AB61EBF12E3326DC00B35962 /* NodeListItemCompact.swift in Sources */,
 				233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */,
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
 				108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */,

@@ -294,9 +294,7 @@ struct IconAndText: View {
 }
 
 #Preview {
-	VStack(alignment: .leading) {
-		IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill", text: "foo")
-		IconAndText(systemName: "antenna.radiowaves.left.and.right.circle", text: "bar")
+	List {
 		NodeListItem(node: {
 			let context = PersistenceController.preview.container.viewContext
 			let nodeInfo = NodeInfoEntity(context: context)
