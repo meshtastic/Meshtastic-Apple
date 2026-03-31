@@ -8,6 +8,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
+import CoreData
 
 enum CertificateImportType {
 	case p12
@@ -15,6 +16,15 @@ enum CertificateImportType {
 }
 
 struct TAKServerConfig: View {
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var accessoryManager: AccessoryManager
+
+	@FetchRequest(
+		sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
+		predicate: NSPredicate(format: "role > 0"),
+		animation: .default
+	) private var channels: FetchedResults<ChannelEntity>
+
 	@StateObject private var takServer = TAKServerManager.shared
 	@State private var showingFileImporter = false
 	@State private var importType: CertificateImportType = .p12
@@ -140,6 +150,17 @@ struct TAKServerConfig: View {
 					.foregroundColor(.secondary)
 			}
 
+			if !channels.isEmpty {
+				Picker(selection: $takServer.channel) {
+					ForEach(channels, id: \.index) { channel in
+						channelLabel(channel)
+							.tag(Int(channel.index))
+					}
+				} label: {
+					Label("TAK Channel Index", systemImage: "bubble.left.and.bubble.right")
+				}
+			}
+
 			if takServer.isRunning {
 				Button {
 					Task {
@@ -152,7 +173,7 @@ struct TAKServerConfig: View {
 		} header: {
 			Text("Configuration")
 		} footer: {
-			Text("Secure mTLS connection on port 8089. Both server and client certificates are required.")
+			Text("Secure mTLS connection on port 8089. Both server and client certificates are required. TAK Channel Index selects the channel index where TAK messages will be sent.")
 		}
 	}
 
@@ -279,6 +300,21 @@ struct TAKServerConfig: View {
 		}
 	}
 
+
+	// MARK: - Channel Label
+
+	@ViewBuilder
+	private func channelLabel(_ channel: ChannelEntity) -> some View {
+		if channel.name?.isEmpty ?? false {
+			if channel.role == 1 {
+				Text(String("PrimaryChannel").camelCaseToWords())
+			} else {
+				Text(String("Channel \(channel.index)").camelCaseToWords())
+			}
+		} else {
+			Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+		}
+	}
 
 	// MARK: - Import Handlers
 

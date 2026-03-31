@@ -26,6 +26,8 @@ final class TAKServerManager: ObservableObject {
 
 	// MARK: - Configuration (persisted via AppStorage)
 
+	@AppStorage("takServerChannel") var channel: Int = 0
+
 	@AppStorage("takServerEnabled") var enabled = false {
 		didSet {
 			Task {

@@ -156,10 +156,16 @@ extension MeshPackets {
 	
 	nonisolated public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
 		do {
-			let objects = channel.allPrivateMessages
+			// Copied logic from ChannelEntity.allPrivateMessages, which is always on the MainActor
+			// But this code may not be on the MainActor.
+			let fetchRequest = MessageEntity.fetchRequest()
+			fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", channel.index)
+			let objects = (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+			
 			for object in objects {
 				context.delete(object)
 			}
+			
 			try context.save()
 		} catch let error as NSError {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
