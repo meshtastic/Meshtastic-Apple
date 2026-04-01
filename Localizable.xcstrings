@@ -15569,6 +15569,7 @@
 
     },
     "environment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -36751,7 +36752,7 @@
         }
       }
     },
-    "Secure mTLS connection on port 8089. Both server and client certificates are required." : {
+    "Secure mTLS connection on port 8089. Both server and client certificates are required. TAK Channel Index selects the channel index where TAK messages will be sent." : {
 
     },
     "Security" : {
@@ -41648,6 +41649,9 @@
           }
         }
       }
+    },
+    "TAK Channel Index" : {
+
     },
     "TAK Server" : {
 
