@@ -50,11 +50,11 @@ struct DeviceTests {
 
 	@Test(arguments: [
 		(-50, BLESignalStrength.strong),
-		(-65, BLESignalStrength.strong),
-		(-66, BLESignalStrength.normal),
+		(-64, BLESignalStrength.strong),
+		(-65, BLESignalStrength.normal),
 		(-80, BLESignalStrength.normal),
-		(-85, BLESignalStrength.normal),
-		(-86, BLESignalStrength.weak),
+		(-84, BLESignalStrength.normal),
+		(-85, BLESignalStrength.weak),
 		(-100, BLESignalStrength.weak),
 	])
 	func signalStrength(rssi: Int, expected: BLESignalStrength) {
