@@ -1,17 +1,18 @@
 import Foundation
-import XCTest
+import Testing
 
 @testable import Meshtastic
 
-final class RouterTests: XCTestCase {
+@Suite("Router")
+struct RouterTests {
 
-	func testInitialState() async throws {
+	@Test func initialState() async throws {
 		let router = await Router()
 		let tab = await router.navigationState.selectedTab
-		XCTAssertEqual(tab, .connect)
+		#expect(tab == .connect)
 	}
 
-	func testRouteMessages() async throws {
+	@Test func routeMessages() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///messages",
@@ -19,7 +20,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteMessagesWithChannelIdAndMessageId() async throws {
+	@Test func routeMessagesWithChannelIdAndMessageId() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///messages?channelId=0&messageId=1122334455",
@@ -33,7 +34,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteMessagesWithUserNumAndMessageId() async throws {
+	@Test func routeMessagesWithUserNumAndMessageId() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///messages?userNum=123456789&messageId=9876543210",
@@ -47,7 +48,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteConnect() async throws {
+	@Test func routeConnect() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///connect",
@@ -55,7 +56,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteNodes() async throws {
+	@Test func routeNodes() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///nodes",
@@ -63,7 +64,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteNodesWithNodeNum() async throws {
+	@Test func routeNodesWithNodeNum() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///nodes?nodenum=1234567890",
@@ -74,7 +75,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteMap() async throws {
+	@Test func routeMap() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///map",
@@ -82,7 +83,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteMapWithWaypointId() async throws {
+	@Test func routeMapWithWaypointId() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///map?waypointId=123456",
@@ -93,7 +94,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteMapWithNodeNum() async throws {
+	@Test func routeMapWithNodeNum() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///map?nodenum=1234567890",
@@ -104,7 +105,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteSettings() async throws {
+	@Test func routeSettings() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///settings",
@@ -114,7 +115,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteSettingsAbout() async throws {
+	@Test func routeSettingsAbout() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///settings/about",
@@ -125,7 +126,7 @@ final class RouterTests: XCTestCase {
 		)
 	}
 
-	func testRouteSettingsInvalidSetting() async throws {
+	@Test func routeSettingsInvalidSetting() async throws {
 		try await assertRoute(
 			router: Router(),
 			"meshtastic:///settings/invalidSetting",
@@ -140,9 +141,9 @@ final class RouterTests: XCTestCase {
 		_ urlString: String,
 		_ destination: NavigationState
 	) async throws {
-		let url = try XCTUnwrap(URL(string: urlString))
+		let url = try #require(URL(string: urlString))
 		await router.route(url: url)
 		let state = await router.navigationState
-		XCTAssertEqual(state, destination)
+		#expect(state == destination)
 	}
 }
