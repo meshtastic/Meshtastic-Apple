@@ -7,7 +7,66 @@ import SwiftUI
 class Router: ObservableObject {
 
 	@Published
-	var navigationState: NavigationState
+	var selectedTab: NavigationState.Tab
+
+	@Published
+	var messagesState: MessagesNavigationState?
+
+	@Published
+	var nodeListSelectedNodeNum: Int64?
+
+	@Published
+	var mapState: MapNavigationState?
+
+	@Published
+	var settingsState: SettingsNavigationState?
+
+	/// Computed property that assembles the individual per-tab properties into a `NavigationState`.
+	/// Provided for backward compatibility (e.g. tests) and convenience.
+	var navigationState: NavigationState {
+		get {
+			NavigationState(
+				selectedTab: selectedTab,
+				messages: messagesState,
+				nodeListSelectedNodeNum: nodeListSelectedNodeNum,
+				map: mapState,
+				settings: settingsState
+			)
+		}
+		set {
+			selectedTab = newValue.selectedTab
+			messagesState = newValue.messages
+			nodeListSelectedNodeNum = newValue.nodeListSelectedNodeNum
+			mapState = newValue.map
+			settingsState = newValue.settings
+		}
+	}
+
+	// MARK: Node Object ID Cache
+
+	/// In-memory cache mapping node numbers to their Core Data `NSManagedObjectID` for O(1) lookups.
+	private var nodeObjectIDCache: [Int64: NSManagedObjectID] = [:]
+
+	/// Updates the node cache from a set of fetched nodes. Call this when the node list changes.
+	func updateNodeIndex<C: Collection>(from nodes: C) where C.Element: NodeInfoEntity {
+		nodeObjectIDCache = Dictionary(
+			nodes.map { ($0.num, $0.objectID) },
+			uniquingKeysWith: { _, new in new }
+		)
+	}
+
+	/// Looks up a node using the in-memory cache for O(1) performance, falling back to a Core Data fetch.
+	func cachedNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoEntity? {
+		if let objectID = nodeObjectIDCache[id] {
+			return try? context.existingObject(with: objectID) as? NodeInfoEntity
+		}
+		// Cache miss — fall back to standard fetch
+		let node = getNodeInfo(id: id, context: context)
+		if let node {
+			nodeObjectIDCache[id] = node.objectID
+		}
+		return node
+	}
 
 	private var cancellables: Set<AnyCancellable> = []
 
@@ -16,10 +75,14 @@ class Router: ObservableObject {
 			selectedTab: .connect
 		)
 	) {
-		self.navigationState = navigationState
+		self.selectedTab = navigationState.selectedTab
+		self.messagesState = navigationState.messages
+		self.nodeListSelectedNodeNum = navigationState.nodeListSelectedNodeNum
+		self.mapState = navigationState.map
+		self.settingsState = navigationState.settings
 
-		$navigationState.sink { destination in
-			Logger.services.info("🛣 [App] Routed to \(destination.selectedTab.rawValue, privacy: .public)")
+		$selectedTab.sink { tab in
+			Logger.services.info("🛣 [App] Routed to \(tab.rawValue, privacy: .public)")
 		}.store(in: &cancellables)
 	}
 
@@ -36,7 +99,7 @@ class Router: ObservableObject {
 		if components.path == "/messages" {
 			routeMessages(components)
 		} else if components.path == "/connect" {
-			navigationState.selectedTab = .connect
+			selectedTab = .connect
 		} else if components.path == "/nodes" {
 			routeNodes(components)
 		} else if components.path == "/map" {
@@ -73,8 +136,8 @@ class Router: ObservableObject {
 		} else {
 			nil
 		}
-		navigationState.selectedTab = .messages
-		navigationState.messages = state
+		selectedTab = .messages
+		messagesState = state
 	}
 
 	private func routeNodes(_ components: URLComponents) {
@@ -83,13 +146,13 @@ class Router: ObservableObject {
 			.value
 			.flatMap(Int64.init)
 
-		navigationState.selectedTab = .nodes
-		navigationState.nodeListSelectedNodeNum = nodeId
+		selectedTab = .nodes
+		nodeListSelectedNodeNum = nodeId
 	}
 	func navigateToNodeDetail(nodeNum: Int64) {
 		Logger.services.info("🛣 [App] Direct route to node detail \(nodeNum, privacy: .public)")
-		navigationState.selectedTab = .nodes
-		navigationState.nodeListSelectedNodeNum = nodeNum
+		selectedTab = .nodes
+		nodeListSelectedNodeNum = nodeNum
 	}
 
 	private func routeMap(_ components: URLComponents) {
@@ -102,8 +165,8 @@ class Router: ObservableObject {
 			.value
 			.flatMap(Int64.init)
 
-		navigationState.selectedTab = .map
-		navigationState.map = if let nodeId {
+		selectedTab = .map
+		mapState = if let nodeId {
 			.selectedNode(nodeId)
 		} else if let waypointId {
 			.waypoint(waypointId)
@@ -120,7 +183,7 @@ class Router: ObservableObject {
 			.flatMap(String.init)
 			.flatMap(SettingsNavigationState.init(rawValue:))
 
-		navigationState.selectedTab = .settings
-		navigationState.settings = settingFromPath
+		selectedTab = .settings
+		settingsState = settingFromPath
 	}
 }

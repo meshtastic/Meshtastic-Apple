@@ -343,10 +343,10 @@ struct Settings: View {
 		NavigationStack(
 			path: Binding<[SettingsNavigationState]>(
 				get: {
-					[router.navigationState.settings].compactMap { $0 }
+					[router.settingsState].compactMap { $0 }
 				},
 				set: { newPath in
-					router.navigationState.settings = newPath.first
+					router.settingsState = newPath.first
 				}
 			)
 		) {

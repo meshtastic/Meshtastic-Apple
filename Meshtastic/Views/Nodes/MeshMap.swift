@@ -129,8 +129,8 @@ struct MeshMap: View {
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 				}
-				.onChange(of: router.navigationState) {
-					guard case .map = router.navigationState.selectedTab else { return }
+				.onChange(of: router.mapState) {
+					guard case .map = router.selectedTab else { return }
 					// TODO: handle deep link for waypoints
 				}
 				.onChange(of: selectedMapLayer) { _, newMapLayer in

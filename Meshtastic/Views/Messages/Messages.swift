@@ -25,7 +25,7 @@ struct Messages: View {
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
-			List(selection: $router.navigationState.messages) {
+			List(selection: $router.messagesState) {
 				NavigationLink(value: MessagesNavigationState.channels()) {
 					Spacer()
 					Label {
@@ -74,7 +74,7 @@ struct Messages: View {
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 		} content: {
-			switch router.navigationState.messages {
+			switch router.messagesState {
 			case .channels(let channelId, let messageId):
 				ChannelList(node: $node, channelSelection: $channelSelection)
 					// Removed navigationTitle and navigationBarTitleDisplayMode here.
@@ -91,12 +91,12 @@ struct Messages: View {
 					// The toolbar is now defined inside ChannelMessageList.swift
 			} else if let userSelection {
 				UserMessageList(user: userSelection)
-			} else if case .channels = router.navigationState.messages {
+			} else if case .channels = router.messagesState {
 				Text("Select a channel")
-			} else if case .directMessages = router.navigationState.messages {
+			} else if case .directMessages = router.messagesState {
 				Text("Select a conversation")
 			}
-		}.onChange(of: router.navigationState) {
+		}.onChange(of: router.messagesState) {
 			setupNavigationState()
 		}
 	}
@@ -107,7 +107,7 @@ struct Messages: View {
 			node = getNodeInfo(id: nodeId, context: context)
 		}
 
-		guard let state = router.navigationState.messages else {
+		guard let state = router.messagesState else {
 			channelSelection = nil
 			userSelection = nil
 			return

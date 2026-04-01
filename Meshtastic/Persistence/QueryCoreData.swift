@@ -11,6 +11,7 @@ public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoE
 
 	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
+	fetchNodeInfoRequest.fetchLimit = 1
 
 	do {
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
