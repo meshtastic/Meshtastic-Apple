@@ -512,12 +512,50 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
 					await handleTextMessageAppPacket(packet)
+					// Broadcast text message to TAK clients
+					if let text = String(bytes: data.payload, encoding: .utf8) {
+						Logger.tak.debug("Text message received, calling broadcast")
+						let server = TAKServerManager.shared
+						if server.ensureBridgeReadyForMeshToCot() {
+							await server.bridge?.broadcastMeshTextMessageToTAK(text: text, from: packet.from, channel: packet.channel, to: packet.to)
+						}
+					}
 				case .remoteHardwareApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
 					await MeshPackets.shared.upsertPositionPacket(packet: packet)
+					// Broadcast position to TAK clients
+					if let position = try? Position(serializedBytes: data.payload) {
+						Logger.tak.debug("Position received, calling broadcast")
+						let server = TAKServerManager.shared
+						if server.ensureBridgeReadyForMeshToCot() {
+							await server.bridge?.broadcastMeshPositionToTAK(position: position, from: packet.from)
+						}
+					}
 				case .waypointApp:
+					Logger.tak.info("WAYPOINT APP CASE REACHED")
 					await MeshPackets.shared.waypointPacket(packet: packet)
+					// Broadcast waypoint to TAK clients
+					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
+						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")
+						// Ensure bridge is initialized before calling (not optional chaining, or lazy init won't run)
+						let server = TAKServerManager.shared
+						if server.meshToCotEnabled && server.isRunning && !server.connectedClients.isEmpty {
+							// Force bridge initialization if needed
+							if server.bridge == nil {
+								Logger.tak.info("Initializing bridge on demand")
+								let bridge = TAKMeshtasticBridge(
+									accessoryManager: AccessoryManager.shared,
+									takServerManager: server
+								)
+								bridge.context = AccessoryManager.shared.context
+								server.bridge = bridge
+							}
+							await server.bridge?.broadcastMeshWaypointToTAK(waypoint: waypoint, from: packet.from)
+						} else {
+							Logger.tak.info("Waypoint broadcast skipped: server not ready or no clients")
+						}
+					}
 				case .nodeinfoApp:
 					guard let connectedNodeNum = self.activeDeviceNum else {
 						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for node info upsert.")
