@@ -274,7 +274,6 @@ struct TAKServerConfig: View {
 				}
 			}
 			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
 			if !channels.isEmpty {
 				Picker(selection: $takServer.channel) {
 					ForEach(channels, id: \.index) { channel in
