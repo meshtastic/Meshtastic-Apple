@@ -82,6 +82,7 @@
 		25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5BF2C3F6DA6008036E3 /* Router.swift */; };
 		25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5C12C3F6E4B008036E3 /* AppState.swift */; };
 		25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5D02C4375DF008036E3 /* RouterTests.swift */; };
+		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
 		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
 		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
@@ -411,6 +412,7 @@
 		25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25F5D5D02C4375DF008036E3 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
+		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
 		3D0A8ABAEF1E587683970927 /* EXICodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EXICodec.swift; sourceTree = "<group>"; };
 		3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayManager.swift; sourceTree = "<group>"; };
@@ -900,6 +902,7 @@
 		25F5D5C82C4375A8008036E3 /* MeshtasticTests */ = {
 			isa = PBXGroup;
 			children = (
+				AA00010022E2730EC0060000 /* ConnectViewTests.swift */,
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
 			);
 			path = MeshtasticTests;
@@ -1657,6 +1660,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
 				25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2170,7 +2174,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.8;
+				MARKETING_VERSION = 2.7.9;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -2209,7 +2213,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.8;
+				MARKETING_VERSION = 2.7.9;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -2245,7 +2249,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.8;
+				MARKETING_VERSION = 2.7.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2278,7 +2282,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.8;
+				MARKETING_VERSION = 2.7.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
