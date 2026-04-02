@@ -2,7 +2,6 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-      "shouldTranslate" : false,
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10,7 +9,8 @@
             "value" : ""
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "\t%@" : {
       "localizations" : {
@@ -225,95 +225,83 @@
       },
       "shouldTranslate" : false
     },
-    " : %@" : {
+    ": %@" : {
       "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %@"
+            "value" : ": %@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %@"
+            "value" : ": %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %@"
+            "value" : ": %@"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %@"
+            "value" : ": %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %@"
+            "value" : ": %@"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %@"
+            "value" : ": %@"
           }
         }
       },
       "shouldTranslate" : false
     },
-    " : %d" : {
+    ": %d" : {
       "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %d"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %d"
+            "value" : ": %d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %d"
+            "value" : ": %d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %d"
+            "value" : ": %d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %d"
+            "value" : ": %d"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %d"
+            "value" : ": %d"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " : %d"
+            "value" : ": %d"
           }
         }
       },
@@ -3018,7 +3006,9 @@
         }
       }
     },
-    "A default self-signed certificate is included for localhost connections. Import a custom .p12 if needed. Client CA (.pem) validates connecting TAK clients." : {},
+    "A default self-signed certificate is included for localhost connections. Import a custom .p12 if needed. Client CA (.pem) validates connecting TAK clients." : {
+
+    },
     "A green lock means the channel is securely encrypted with either a 128 or 256 bit AES key." : {
       "localizations" : {
         "es" : {
@@ -3863,7 +3853,9 @@
         }
       }
     },
-    "Add CA" : {},
+    "Add CA" : {
+
+    },
     "Add Channel" : {
       "localizations" : {
         "da" : {
@@ -11484,8 +11476,12 @@
         }
       }
     },
-    "Client CA Certificate" : {},
-    "Client Configuration" : {},
+    "Client CA Certificate" : {
+
+    },
+    "Client Configuration" : {
+
+    },
     "Client Hidden" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -12186,7 +12182,9 @@
         }
       }
     },
-    "Configuration" : {},
+    "Configuration" : {
+
+    },
     "Configuration for: %@" : {
       "localizations" : {
         "da" : {
@@ -14570,7 +14568,9 @@
         }
       }
     },
-    "Delete All" : {},
+    "Delete All" : {
+
+    },
     "Delete all config, keys and BLE bonds? " : {
       "localizations" : {
         "es" : {
@@ -18174,7 +18174,9 @@
         }
       }
     },
-    "Download TAK Server Data Package" : {},
+    "Download TAK Server Data Package" : {
+
+    },
     "Drag & Drop Firmware Update" : {
       "localizations" : {
         "da" : {
@@ -18961,7 +18963,9 @@
         }
       }
     },
-    "Enable TAK Server" : {},
+    "Enable TAK Server" : {
+
+    },
     "Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM." : {
       "localizations" : {
         "da" : {
@@ -19728,8 +19732,12 @@
         }
       }
     },
-    "Enter P12 Password" : {},
-    "Enter the password for the PKCS#12 file" : {},
+    "Enter P12 Password" : {
+
+    },
+    "Enter the password for the PKCS#12 file" : {
+
+    },
     "environment" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -23771,7 +23779,9 @@
         }
       }
     },
-    "Generate a data package (.zip) to configure TAK clients to connect to this server." : {},
+    "Generate a data package (.zip) to configure TAK clients to connect to this server." : {
+
+    },
     "Generate a new private key to replace the one currently in use. The public key will automatically be regenerated from your private key." : {
       "localizations" : {
         "es" : {
@@ -27266,10 +27276,18 @@
         }
       }
     },
-    "Import" : {},
-    "Import .pem" : {},
-    "Import Custom .p12" : {},
-    "Import Error" : {},
+    "Import" : {
+
+    },
+    "Import .pem" : {
+
+    },
+    "Import Custom .p12" : {
+
+    },
+    "Import Error" : {
+
+    },
     "Import Route" : {
       "localizations" : {
         "da" : {
@@ -32997,7 +33015,9 @@
         }
       }
     },
-    "mTLS" : {},
+    "mTLS" : {
+
+    },
     "Multiplier" : {
       "localizations" : {
         "da" : {
@@ -39159,7 +39179,9 @@
         }
       }
     },
-    "Port" : {},
+    "Port" : {
+
+    },
     "Position" : {
       "localizations" : {
         "da" : {
@@ -42816,7 +42838,9 @@
         }
       }
     },
-    "Reload Bundled Certificates" : {},
+    "Reload Bundled Certificates" : {
+
+    },
     "Remote administration for: %@" : {
       "localizations" : {
         "da" : {
@@ -43623,7 +43647,9 @@
         }
       }
     },
-    "Reset to Default" : {},
+    "Reset to Default" : {
+
+    },
     "Restart" : {
       "localizations" : {
         "da" : {
@@ -43676,7 +43702,9 @@
         }
       }
     },
-    "Restart Server" : {},
+    "Restart Server" : {
+
+    },
     "Restart to the node you are connected to" : {
       "localizations" : {
         "da" : {
@@ -46448,8 +46476,6 @@
         }
       }
     },
-    "Secure mTLS connection on port 8089. Both server and client certificates are required." : {},
-
     "Secure mTLS connection on port 8089. Both server and client certificates are required. TAK Channel Index selects the channel index where TAK messages will be sent." : {
       "comment" : "A footer for the TAK Server configuration section.",
       "isCommentAutoGenerated" : true
@@ -49143,7 +49169,9 @@
         }
       }
     },
-    "Server Certificate" : {},
+    "Server Certificate" : {
+
+    },
     "Server Option" : {
       "localizations" : {
         "da" : {
@@ -49190,7 +49218,9 @@
         }
       }
     },
-    "Server Status" : {},
+    "Server Status" : {
+
+    },
     "Set" : {
       "localizations" : {
         "da" : {
@@ -49236,6 +49266,10 @@
           }
         }
       }
+    },
+    "Set a channel name" : {
+      "comment" : "A label for a button that sets a channel name.",
+      "isCommentAutoGenerated" : true
     },
     "Set LoRa Region" : {
       "localizations" : {
@@ -49855,6 +49889,10 @@
           }
         }
       }
+    },
+    "Share with TAK Buddies" : {
+      "comment" : "A button that shares the QR code with TAK buddies.",
+      "isCommentAutoGenerated" : true
     },
     "Share your location in real-time and keep your group coordinated with integrated GPS features." : {
       "localizations" : {
@@ -52018,7 +52056,9 @@
         }
       }
     },
-    "Status" : {},
+    "Status" : {
+
+    },
     "Stay Connected Anywhere" : {
       "localizations" : {
         "de" : {
@@ -52656,9 +52696,18 @@
           }
         }
       }
+    },
+    "TAK Cannot Be Used on Public Channel" : {
+      "comment" : "A warning displayed when the user's primary channel is public.",
+      "isCommentAutoGenerated" : true
+    },
+    "TAK Channel Index" : {
+      "comment" : "A label for the TAK channel index.",
+      "isCommentAutoGenerated" : true
+    },
+    "TAK Server" : {
 
     },
-    "TAK Server" : {},
     "TAK Tracker" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -55989,7 +56038,9 @@
         }
       }
     },
-    "TLS Certificates" : {},
+    "TLS Certificates" : {
+
+    },
     "TLS Enabled" : {
       "localizations" : {
         "da" : {
@@ -62889,88 +62940,6 @@
           }
         }
       }
-    },
-    ": %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %@"
-          }
-        }
-      },
-      "shouldTranslate" : false
-    },
-    ": %d" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %d"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %d"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %d"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %d"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %d"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ": %d"
-          }
-        }
-      },
-      "shouldTranslate" : false
     }
   },
   "version" : "1.1"
