@@ -175,10 +175,12 @@ struct PaxCounterLog: View {
 						titleVisibility: .visible
 					) {
 						Button("Delete all pax data?", role: .destructive) {
-							if clearPax(destNum: node.num, context: context) {
-								Logger.services.info("Cleared Pax Counter for \(node.num, privacy: .public)")
-							} else {
-								Logger.services.error("Clear Pax Counter Log Failed")
+							Task {
+								if await MeshPackets.shared.clearPax(destNum: node.num) {
+									Logger.services.info("Cleared Pax Counter for \(node.num, privacy: .public)")
+								} else {
+									Logger.services.error("Clear Pax Counter Log Failed")
+								}
 							}
 						}
 					}

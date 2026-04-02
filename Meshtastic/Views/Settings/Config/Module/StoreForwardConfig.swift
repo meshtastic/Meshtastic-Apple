@@ -167,6 +167,8 @@ struct StoreForwardConfig: View {
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
+
+			// Note: even if this is the connected node, we don't have to update AccessoryManager.wantStoreAndForwardPackets here, because the node will reboot after we save config changes, and we'll pick up the new value after we reconnect.
 		}
 		.onChange(of: isServer) { oldIsServer, newIsServer in
 			if oldIsServer != newIsServer && newIsServer != node!.storeForwardConfig!.isRouter { hasChanges = true }

@@ -11,7 +11,7 @@ import SwiftUI
 
 struct UserMessageRow: View {
 	
-	@EnvironmentObject var router: Router
+	@EnvironmentObject var appState: AppState
 	@ObservedObject var message: MessageEntity
 	let allMessages: [MessageEntity]
 	let previousMessage: MessageEntity?
@@ -105,7 +105,7 @@ struct UserMessageRow: View {
 					CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 50)
 						.onTapGesture(count: 2) {
 							if let nodeNum = message.fromUser?.num {
-								router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
+								appState.router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
 							}
 						}
 						.padding(.all, 5).offset(y: -7)

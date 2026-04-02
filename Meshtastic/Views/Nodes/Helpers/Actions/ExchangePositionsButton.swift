@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ExchangePositionsButton: View {
 	var node: NodeInfoEntity
+	var connectedNode: NodeInfoEntity
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
@@ -10,7 +11,7 @@ struct ExchangePositionsButton: View {
 	@State private var isPresentingPositionFailedAlert: Bool = false
 
     var body: some View {
-		let hopsAway = Int32(truncatingIfNeeded: node.hopsAway > node.loRaConfig?.hopLimit ?? 0 ? node.hopsAway : node.loRaConfig?.hopLimit ?? 0)
+		let hopsAway = Int32(truncatingIfNeeded: node.hopsAway > connectedNode.loRaConfig?.hopLimit ?? 0 ? node.hopsAway : connectedNode.loRaConfig?.hopLimit ?? 0)
 		Button {
 			Task {
 				do {

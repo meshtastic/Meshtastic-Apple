@@ -32,14 +32,12 @@ extension AccessoryManager {
 					}
 				}
 				// Set initial unread message badge states
-				appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages ?? 0
-				appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages ?? 0
-			}
-			if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
-				wantRangeTestPackets = true
-			}
-			if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].storeForwardConfig?.enabled == true {
-				wantStoreAndForwardPackets = true
+				appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages(context: context) ?? 0
+				appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages(context: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+
+				// Set wantRangeTestPackets and wantStoreAndForwardPackets
+				wantRangeTestPackets = fetchedNodeInfo[0].rangeTestConfig?.enabled ?? false
+				wantStoreAndForwardPackets = fetchedNodeInfo[0].storeForwardConfig?.enabled ?? false
 			}
 		} catch {
 			Logger.data.error("Failed to find a node info for the connected node \(error.localizedDescription, privacy: .public)")
@@ -51,8 +49,12 @@ extension AccessoryManager {
 	func onMqttConnected() {
 		mqttProxyConnected = true
 		mqttError = ""
-		Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected now subscribing to \(self.mqttManager.topic, privacy: .public).")
-		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
+		if mqttManager.shouldSubscribe {
+			Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected now subscribing to \(self.mqttManager.topic, privacy: .public).")
+			mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
+		} else {
+			Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected not subscribing since downlink is not on")
+		}
 	}
 
 	func onMqttDisconnected() {
@@ -83,3 +85,4 @@ extension AccessoryManager {
 		Logger.services.info("📲 [MQTT Client Proxy] onMqttError: \(message, privacy: .public)")
 	}
 }
+

@@ -56,6 +56,9 @@ struct AppSettings: View {
 						}
 						.tint(.accentColor)
 					}
+#if targetEnvironment(macCatalyst)
+					// App Icon Picker is disabled on macOS Catalyst
+#else
 					Button {
 						isPresentingAppIconSheet.toggle()
 					} label: {
@@ -65,8 +68,9 @@ struct AppSettings: View {
 						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
 							.presentationDetents([.medium])
 					}
+#endif
 				}
-				Section(header: Text("environment")) {
+				Section(header: Text("Environment")) {
 					VStack(alignment: .leading) {
 						Toggle(isOn: $environmentEnableWeatherKit) {
 							Label("Weather Conditions", systemImage: "cloud.sun")
@@ -116,7 +120,7 @@ struct AppSettings: View {
 								Text("180")
 							}
 						}
-						Text("Favorited and ignored nodes are always retained. Nodes without PKC keys are cleared from the app database on the schedule set by the user, nodes with PKC keys are cleared only if the interval is set to 7 days or longer. This feature only purges nodes from the app that are not stored in the device node database.")
+						Text("Favorited and ignored nodes are always retained. Other nodes are cleared from the app database on the schedule set by the user. (Nodes with PKC keys are always retained for at least 7 days.) This feature only purges nodes from the app that are not stored in the device node database.")
 							.foregroundStyle(.secondary)
 							.font(idiom == .phone ? .caption : .callout)
 					}
@@ -134,30 +138,31 @@ struct AppSettings: View {
 						Button("Erase all app data?", role: .destructive) {
 							Task {
 								try await accessoryManager.disconnect()
-							}
-							/// Delete any database backups too
-							if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-								url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
-								do {
-									try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite"))
-									/// Delete -shm file
+								
+								/// Delete any database backups too
+								if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+									url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
 									do {
-										try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-wal"))
+										try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite"))
+										/// Delete -shm file
 										do {
-											try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-shm"))
+											try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-wal"))
+											do {
+												try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-shm"))
+											} catch {
+												Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
+											}
 										} catch {
-											Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
+											Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
 										}
 									} catch {
-										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
+										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 									}
-								} catch {
-									Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 								}
+								await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: true)
+								clearNotifications()
+								context.refreshAllObjects()
 							}
-							clearCoreDataDatabase(context: context, includeRoutes: true)
-							clearNotifications()
-							context.refreshAllObjects()
 						}
 					}
 					Button {

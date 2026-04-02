@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct Device: Identifiable, Hashable {
+struct Device: Identifiable, Hashable, Codable, CustomStringConvertible {
+	
 	let id: UUID
 	var name: String
 	var transportType: TransportType
@@ -23,7 +24,9 @@ struct Device: Identifiable, Hashable {
 
 	var connectionState: ConnectionState
 	var wasRestored: Bool = false
-	init(id: UUID, name: String, transportType: TransportType, identifier: String, connectionState: ConnectionState = .disconnected, rssi: Int? = nil, num: Int64? = nil, wasRestored: Bool = false) {
+	var isManualConnection: Bool = false
+	
+	init(id: UUID, name: String, transportType: TransportType, identifier: String, connectionState: ConnectionState = .disconnected, rssi: Int? = nil, num: Int64? = nil, wasRestored: Bool = false, isManualConnection: Bool = false) {
 		self.id = id
 		self.name = name
 		self.transportType = transportType
@@ -32,6 +35,7 @@ struct Device: Identifiable, Hashable {
 		self.rssi = rssi
 		self.num = num
 		self.wasRestored = wasRestored
+		self.isManualConnection = isManualConnection
 	}
 
 	var rssiString: String {
@@ -53,4 +57,16 @@ struct Device: Identifiable, Hashable {
 		}
 	}
 
+	var description: String {
+		switch (shortName, longName) {
+		case (let shortName?, let longName?): // Both shortName and longName are non-nil
+			return "\(longName) (\(shortName))"
+		case (let shortName?, nil): // shortName is non-nil, longName is nil
+			return "\(shortName)"
+		case (nil, let longName?): // shortName is nil, longName is non-nil
+			return "\(longName)"
+		default: // Both are nil
+			return "Device(id: \(id))"
+		}
+	}
 }

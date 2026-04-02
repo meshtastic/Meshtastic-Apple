@@ -84,15 +84,12 @@ struct MapSettingsForm: View {
 							Label("Node History", systemImage: "building.columns.fill")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.onTapGesture {
-							self.nodeHistory.toggle()
-							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+						Toggle(isOn: $enableMapRouteLines) {
+							Label("Route Lines", systemImage: "road.lanes")
 						}
+						.tint(.accentColor)
+
 					}
-					Toggle(isOn: $enableMapRouteLines) {
-						Label("Route Lines", systemImage: "road.lanes")
-					}
-					.tint(.accentColor)
 					Toggle(isOn: $convexHull) {
 						Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
 					}

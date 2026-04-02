@@ -14,7 +14,7 @@ protocol Connection: Actor {
 	var isConnected: Bool { get }
 	func send(_ data: ToRadio) async throws
 	func connect() async throws -> AsyncStream<ConnectionEvent>
-	func disconnect(withError: Error?, shouldReconnect: Bool) throws
+	func disconnect(withError: Error?, shouldReconnect: Bool) async throws
 	func drainPendingPackets() async throws
 	func startDrainPendingPackets() throws
 	
@@ -31,7 +31,7 @@ enum ConnectionEvent {
 	case disconnected(shouldReconnect: Bool)
 }
 
-enum ConnectionState: Equatable {
+enum ConnectionState: Equatable, Codable {
 	case disconnected
 	case connecting
 	case connected

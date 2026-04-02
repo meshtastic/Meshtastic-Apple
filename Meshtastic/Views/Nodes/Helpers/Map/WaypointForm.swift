@@ -30,7 +30,6 @@ struct WaypointForm: View {
 	@State private var expire: Date = Date.now.addingTimeInterval(60 * 480) // 1 minute * 480 = 8 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
-	@State private var detents: Set<PresentationDetent> = [.medium, .fraction(0.85)]
 	@State private var selectedDetent: PresentationDetent = .medium
 	@State private var waypointFailedAlert: Bool = false
 	@State private var createdByNode : NodeInfoEntity? = nil
@@ -503,7 +502,6 @@ struct WaypointForm: View {
 				longitude = waypoint.coordinate.longitude
 			}
 		}
-		.presentationDetents(detents, selection: $selectedDetent)
 		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
 		.presentationDragIndicator(.visible)
 	}

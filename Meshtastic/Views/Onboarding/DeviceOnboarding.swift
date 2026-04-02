@@ -59,7 +59,7 @@ struct DeviceOnboarding: View {
 						makeRow(
 							icon: "person.2.shield",
 							title: String(localized: "User Privacy"),
-							subtitle: String(localized: "Meshtastic does not collect any personal information. We do anonymously collect usage and crash data to improve the app. This helps us understand how the app is being used and where we can make improvements. The data we collect is non-personally identifiable and cannot be linked to you as an individual. You can opt out of this under app settings.")
+							subtitle: String(localized: "Meshtastic does not collect any personal information. We do anonymously collect usage and crash data to improve the app. You can opt out under app settings.")
 						)
 					}
 					.padding()

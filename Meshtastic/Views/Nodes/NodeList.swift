@@ -24,14 +24,14 @@ struct NodeList: View {
 	@StateObject var filters = NodeFilterParameters()
 	@State var isEditingFilters = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
-	
+
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
 			return getNodeInfo(id: num, context: context)
 		}
 		return nil
 	}
-	
+
 	var body: some View {
 		NavigationSplitView {
 			FilteredNodeList(
@@ -137,7 +137,7 @@ struct NodeList: View {
 			}
 		}
 	}
-	
+
 	// Helper to get the count of nodes for the navigation title
 	private func getNodeCount() -> Int {
 		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
@@ -154,7 +154,7 @@ fileprivate struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FetchRequest private var nodes: FetchedResults<NodeInfoEntity>
 	@Environment(\.managedObjectContext) var context
-	
+
 	@Binding var selectedNode: NodeInfoEntity?
 	var connectedNode: NodeInfoEntity?
 	@Binding var isPresentingDeleteNodeAlert: Bool
@@ -179,17 +179,19 @@ fileprivate struct FilteredNodeList: View {
 		]
 		request.predicate = withFilters.buildPredicate()
 		self._nodes = FetchRequest(fetchRequest: request)
-		
+
 		self._selectedNode = selectedNode
 		self.connectedNode = connectedNode
 		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
 		self._deleteNodeId = deleteNodeId
 		self._shareContactNode = shareContactNode
 	}
-	
+
 	// The body of the view
 	var body: some View {
-		List(nodes, id: \.self, selection: $selectedNode) { node in
+		// If the connected node passes filters, always show it first
+		let nodesWithConnectedFirst = nodes.filter { $0.num == accessoryManager.activeDeviceNum } + nodes.filter { $0.num != accessoryManager.activeDeviceNum }
+		List(nodesWithConnectedFirst, id: \.self, selection: $selectedNode) { node in
 			NavigationLink(value: node) {
 				NodeListItem(
 					node: node,
@@ -205,7 +207,7 @@ fileprivate struct FilteredNodeList: View {
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	func contextMenuActions(
 		node: NodeInfoEntity,
@@ -251,6 +253,19 @@ fileprivate struct FilteredNodeList: View {
 				} label: {
 					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
 				}
+				Button {
+					Task {
+						if let fromUser = connectedNode.user, let toUser = node.user {
+							do {
+								_ = try await accessoryManager.exchangeUserInfo(fromUser: fromUser, toUser: toUser)
+							} catch {
+								Logger.mesh.warning("Failed to exchange user info")
+							}
+						}
+					}
+				} label: {
+					Label("Exchange User Info", systemImage: "person.2.badge.gearshape")
+				}
 				TraceRouteButton(
 					node: node
 				)
@@ -276,7 +291,7 @@ fileprivate struct FilteredNodeList: View {
 fileprivate extension NodeFilterParameters {
 	func buildPredicate() -> NSPredicate? {
 		var predicates: [NSPredicate] = []
-		
+
 		// Search text predicates
 		if !searchText.isEmpty {
 			let searchKeys = [
@@ -288,19 +303,19 @@ fileprivate extension NodeFilterParameters {
 			}
 			predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: textPredicates))
 		}
-		
+
 		// Favorite filter
 		if isFavorite {
 			predicates.append(NSPredicate(format: "favorite == YES"))
 		}
-		
+
 		// Via Lora/MQTT filters
 		if viaLora && !viaMqtt {
 			predicates.append(NSPredicate(format: "viaMqtt == NO"))
 		} else if !viaLora && viaMqtt {
 			predicates.append(NSPredicate(format: "viaMqtt == YES"))
 		}
-		
+
 		// Role filter
 		if roleFilter && !deviceRoles.isEmpty {
 			let rolesPredicates = deviceRoles.map {
@@ -308,41 +323,41 @@ fileprivate extension NodeFilterParameters {
 			}
 			predicates.append(NSCompoundPredicate(type: .or, subpredicates: rolesPredicates))
 		}
-		
+
 		// Hops Away filter
 		if hopsAway == 0.0 {
 			predicates.append(NSPredicate(format: "hopsAway == %i", 0))
 		} else if hopsAway > 0.0 {
 			predicates.append(NSPredicate(format: "hopsAway > 0 AND hopsAway <= %i", Int32(hopsAway)))
 		}
-		
+
 		// Online filter
 		if isOnline {
 			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
 		}
-		
+
 		// Encrypted filter
 		if isPkiEncrypted {
 			predicates.append(NSPredicate(format: "user.pkiEncrypted == YES"))
 		}
-		
+
 		// Ignored filter
 		if isIgnored {
 			predicates.append(NSPredicate(format: "ignored == YES"))
 		} else {
 			predicates.append(NSPredicate(format: "ignored == NO"))
 		}
-		
+
 		// Environment filter
 		if isEnvironment {
 			predicates.append(NSPredicate(format: "SUBQUERY(telemetries, $tel, $tel.metricsType == 1).@count > 0"))
 		}
-		
+
 		// Distance filter
 		if distanceFilter {
 			if let pointOfInterest = LocationsHandler.currentLocation {
-				
+
 				if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
 					let d: Double = maxDistance * 1.1
 					let r: Double = 6371009

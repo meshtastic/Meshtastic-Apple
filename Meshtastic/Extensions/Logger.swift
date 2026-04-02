@@ -36,6 +36,9 @@ extension Logger {
 	/// All logs related to the transport layer
 	static let transport = Logger(subsystem: subsystem, category: "🚚 Transport")
 
+	/// All logs related to TAK server and CoT messages
+	static let tak = Logger(subsystem: subsystem, category: "🎯 TAK")
+
 	/// Fetch from the logstore
 	static public func fetch(predicateFormat: String) async throws -> [OSLogEntryLog] {
 

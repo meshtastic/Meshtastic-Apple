@@ -75,7 +75,8 @@ struct MeshMap: View {
 					}
 					.controlSize(.regular)
 					.offset(y: 100)
-					.onMapCameraChange(frequency: MapCameraUpdateFrequency.continuous, { context in
+					.onMapCameraChange(frequency: MapCameraUpdateFrequency.onEnd, { context in
+						// distance is only used for long-press waypoint creation, so we don't need continuous updates which touch @State and force rerenders as we pan and (for distance in particular) zoom around the map. onEnd is more than enough.
 						distance = context.camera.distance
 					})
 					.onTapGesture(count: 1, perform: { position in
@@ -121,7 +122,7 @@ struct MeshMap: View {
 					WaypointForm(waypoint: selection)
 						.padding()
 						.presentationDetents([.large]) // full screen
-						.presentationDragIndicator(.visible) 
+						.presentationDragIndicator(.visible)
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
@@ -132,8 +133,6 @@ struct MeshMap: View {
 
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
-						.presentationDetents([.large])
-
 				}
 				.onChange(of: router.navigationState) {
 					guard case .map = router.navigationState.selectedTab else { return }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 @propertyWrapper
 struct UserDefault<T: Decodable> {
@@ -79,6 +80,8 @@ extension UserDefaults {
 		case showDeviceOnboarding
 		case usageDataAndCrashReporting
 		case autoconnectOnDiscovery
+		case purgeStaleNodeDays
+		case manualConnections
 		case testIntEnum
 	}
 
@@ -176,8 +179,41 @@ extension UserDefaults {
 	@UserDefault(.autoconnectOnDiscovery, defaultValue: true)
 	static var autoconnectOnDiscovery: Bool
 
+	@UserDefault(.purgeStaleNodeDays, defaultValue: 0)
+	static var purgeStaleNodeDays: Double
+
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum
+	
+	static var manualConnections: [Device] {
+		get {
+			// Retrieve data from UserDefaults
+			guard let data = UserDefaults.standard.data(forKey: Keys.manualConnections.rawValue) else {
+				return []
+			}
+			
+			// Decode the Data back to [Device]
+			do {
+				let decoder = JSONDecoder()
+				let devices = try decoder.decode([Device].self, from: data)
+				return devices
+			} catch {
+				return []
+			}
+		}
+		set {
+			do {
+				// Encode the [Device] to Data
+				let encoder = JSONEncoder()
+				let data = try encoder.encode(newValue)
+				
+				// Store the Data in UserDefaults
+				UserDefaults.standard.set(data, forKey: Keys.manualConnections.rawValue)
+			} catch {
+				Logger.transport.error("💥 Failed to encode manualConnections: \(error, privacy: .public)")
+			}
+		}
+	}
 }
 
 enum TestIntEnum: Int, Decodable {

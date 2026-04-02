@@ -1,15 +1,15 @@
 //
-//  UpdateIntervalPicker.swift
-//  Meshtastic
+//  UpdateIntervalPicker.swift
+//  Meshtastic
 //
-//  Copyright(c) Garth Vander Houwen 10/4/25.
+//  Copyright(c) Garth Vander Houwen 10/4/25.
 //
 import SwiftUI
 
 struct UpdateIntervalPicker: View {
 	let config: IntervalConfiguration
 	let pickerLabel: String
-	let formatter = DateComponentsFormatter()
+	let formatter: DateComponentsFormatter // Make it a stored property
 	
 	@Binding var selectedInterval: UpdateInterval
 	
@@ -17,11 +17,14 @@ struct UpdateIntervalPicker: View {
 		config.allowedCases
 			.map { UpdateInterval(from: $0.rawValue) }
 	}
-
+	
 	init(config: IntervalConfiguration, pickerLabel: String, selectedInterval: Binding<UpdateInterval>) {
 		self.config = config
 		self.pickerLabel = pickerLabel
 		self._selectedInterval = selectedInterval
+		let f = DateComponentsFormatter()
+		f.unitsStyle = .full
+		self.formatter = f
 	}
 	
 	var body: some View {
@@ -36,7 +39,7 @@ struct UpdateIntervalPicker: View {
 			if isOutOfRange {
 				let interval: TimeInterval = Double(selectedInterval.intValue)
 				if let formattedString = formatter.string(from: interval) {
-					Text("⚠️ The configured value: (\(formattedString) seconds) is not one of the optimized options.")
+					Text("⚠️ The configured value: (\(formattedString)) is not one of the optimized options.")
 						.font(.caption)
 						.foregroundColor(.orange)
 				}
@@ -44,11 +47,11 @@ struct UpdateIntervalPicker: View {
 		}
 	}
 	private var isOutOfRange: Bool {
-	   switch selectedInterval.type {
-	   case .manual:
-		   return true
-	   case .fixed(let fixedCase):
-		   return !config.allowedCases.contains(fixedCase)
-	   }
-   }
+		switch selectedInterval.type {
+			case .manual:
+			return true
+		case .fixed(let fixedCase):
+			return !config.allowedCases.contains(fixedCase)
+		}
+	}
 }
