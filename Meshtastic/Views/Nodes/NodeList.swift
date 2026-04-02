@@ -11,6 +11,9 @@ import CoreData
 import Foundation
 
 struct NodeList: View {
+	/// Debounce delay for node selection changes (100ms)
+	private static let nodeSelectionDebounceNs: UInt64 = 100_000_000
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@StateObject var router: Router
@@ -125,11 +128,11 @@ struct NodeList: View {
 			}
 		}
 		.onChange(of: router.nodeListSelectedNodeNum) { _, newNum in
-			// Debounce rapid route changes — only process the last selection after 100ms
+			// Debounce rapid route changes — only process the last selection after a short delay
 			nodeSelectionTask?.cancel()
 			nodeSelectionTask = Task {
 				do {
-					try await Task.sleep(nanoseconds: 100_000_000)
+					try await Task.sleep(nanoseconds: Self.nodeSelectionDebounceNs)
 				} catch {
 					return // Cancelled by a newer selection
 				}

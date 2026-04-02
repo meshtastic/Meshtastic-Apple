@@ -45,6 +45,7 @@ class Router: ObservableObject {
 	// MARK: Node Object ID Cache
 
 	/// In-memory cache mapping node numbers to their Core Data `NSManagedObjectID` for O(1) lookups.
+	/// Thread-safe by virtue of Router's @MainActor isolation — all access is on the main thread.
 	private var nodeObjectIDCache: [Int64: NSManagedObjectID] = [:]
 
 	/// Updates the node cache from a set of fetched nodes. Call this when the node list changes.
