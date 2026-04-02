@@ -131,7 +131,8 @@ struct CoTMessage: Identifiable, Sendable {
 		team: String = "Cyan",
 		role: String = "Team Member",
 		battery: Int = 100,
-		staleMinutes: Int = 10
+		staleMinutes: Int = 10,
+		remarks: String? = nil
 	) -> CoTMessage {
 		let now = Date()
 		return CoTMessage(
@@ -149,7 +150,8 @@ struct CoTMessage: Identifiable, Sendable {
 			contact: CoTContact(callsign: callsign, endpoint: "0.0.0.0:4242:tcp"),
 			group: CoTGroup(name: team, role: role),
 			status: CoTStatus(battery: battery),
-			track: CoTTrack(speed: speed, course: course)
+			track: CoTTrack(speed: speed, course: course),
+			remarks: remarks
 		)
 	}
 
