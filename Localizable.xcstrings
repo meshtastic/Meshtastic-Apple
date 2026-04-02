@@ -49247,7 +49247,7 @@
         }
       }
     },
-    "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs." : {
+    "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. 0 hop broadcast messages will not get ACKs." : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
