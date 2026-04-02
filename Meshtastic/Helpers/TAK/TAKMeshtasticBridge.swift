@@ -1001,9 +1001,6 @@ final class TAKMeshtasticBridge {
 		// 🔔 Bell - Google info
 		case 0x1F514: // 🔔
 			return ("a-u-G", "\(googleUUID)/Google/info.png", "-256")
-		// 🗺 Map - Generic placemark_circle
-		case 0x1F5FA: // 🗺
-			return ("a-u-G", "\(genericUUID)/Shapes/placemark_circle.png", "-1")
 		// 🎁 Gift - Google shopping
 		case 0x1F381: // 🎁
 			return ("a-u-G", "\(googleUUID)/Google/shopping.png", "-16776961")
@@ -1233,9 +1230,6 @@ final class TAKMeshtasticBridge {
 		// 🦑 Squid - Google fishing
 		case 0x1F991: // 🦑
 			return ("a-u-G", "\(googleUUID)/Google/fishing.png", "-16776961")
-		// 🐌 Snail - Google info
-		case 0x1F98C: // 🐌
-			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
 		// 🦎 Lizard - Google info
 		case 0x1F98E: // 🦎
 			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
@@ -1364,21 +1358,12 @@ final class TAKMeshtasticBridge {
 		// 🛑 Stop - Google caution
 		case 0x1F6D1: // 🛑
 			return ("a-u-G", "\(googleUUID)/Google/caution.png", "-16776961")
-		// 🏕️ Base Camp - Google campground
-		case 0x1F3D5: // 🏕️
-			return ("a-u-G", "\(googleUUID)/Google/campground.png", "-16776961")
 		// 🏢 Office Building - Google homegardenbusiness
 		case 0x1F3E2: // 🏢
 			return ("a-u-G", "\(googleUUID)/Google/homegardenbusiness.png", "-16776961")
 		// 🏬 Bank - Google info
 		case 0x1F3E6: // 🏬
 			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
-		// 🏥 Hospital - Google hospitals
-		case 0x1F3E5: // 🏥
-			return ("a-u-G", "\(googleUUID)/Google/hospitals.png", "-16776961")
-		// 🏨 Hotel - Google lodging
-		case 0x1F3E8: // 🏨
-			return ("a-u-G", "\(googleUUID)/Google/lodging.png", "-16776961")
 		// 🏩 Love Hotel - Google lodging
 		case 0x1F3E9: // 🏩
 			return ("a-u-G", "\(googleUUID)/Google/lodging.png", "-16776961")
@@ -1388,9 +1373,6 @@ final class TAKMeshtasticBridge {
 		// 🛣️ Motorway - Google info
 		case 0x1F6E3: // 🛣️
 			return ("a-u-G", "\(googleUUID)/Google/info.png", "-16776961")
-		// ⛽ Fuel Pump - Google gas_stations
-		case 0x1F6FD: // ⛽
-			return ("a-u-G", "\(googleUUID)/Google/gas_stations.png", "-16776961")
 		// 🚎 Trolleybus - Google bus
 		case 0x1F68E: // 🚎
 			return ("a-u-G", "\(googleUUID)/Google/bus.png", "-16776961")

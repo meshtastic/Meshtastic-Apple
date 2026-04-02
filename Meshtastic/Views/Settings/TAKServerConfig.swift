@@ -26,8 +26,6 @@ struct TAKServerConfig: View {
 	) private var channels: FetchedResults<ChannelEntity>
 
 	@StateObject private var takServer = TAKServerManager.shared
-	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.managedObjectContext) var context
 	@Environment(\.dismiss) private var dismiss
 	@State private var showingFileImporter = false
 	@State private var importType: CertificateImportType = .p12
