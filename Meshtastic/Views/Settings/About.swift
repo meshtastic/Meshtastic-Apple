@@ -67,3 +67,9 @@ struct AboutMeshtastic: View {
 		.navigationBarTitleDisplayMode(.inline)
 	}
 }
+
+#Preview {
+	NavigationView {
+		AboutMeshtastic()
+	}
+}

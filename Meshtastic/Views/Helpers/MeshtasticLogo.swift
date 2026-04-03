@@ -51,3 +51,8 @@ struct MeshtasticLogo: View {
 		#endif
 	}
 }
+
+#Preview {
+	MeshtasticLogo()
+		.frame(width: 200, height: 44)
+}

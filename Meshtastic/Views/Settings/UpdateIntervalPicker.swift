@@ -55,3 +55,11 @@ struct UpdateIntervalPicker: View {
 		}
 	}
 }
+
+#Preview {
+	UpdateIntervalPicker(
+		config: .broadcastShort,
+		pickerLabel: "Update Interval",
+		selectedInterval: .constant(UpdateInterval(from: 30))
+	)
+}

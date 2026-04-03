@@ -169,3 +169,7 @@ struct AppLogFilter: View {
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 	}
 }
+
+#Preview {
+	AppLogFilter(categories: .constant(Set<Int>()), levels: .constant(Set<Int>()))
+}

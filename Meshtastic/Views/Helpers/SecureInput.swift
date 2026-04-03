@@ -69,3 +69,11 @@ struct SecureInput: View {
 		}
 	}
 }
+
+#Preview {
+	List {
+		SecureInput("Password", text: .constant("s3cretP@ss"), isValid: .constant(true))
+		SecureInput("Invalid Key", text: .constant("short"), isValid: .constant(false))
+		SecureInput("Empty", text: .constant(""), isValid: .constant(true))
+	}
+}

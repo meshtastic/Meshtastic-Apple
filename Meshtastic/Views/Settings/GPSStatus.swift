@@ -65,3 +65,7 @@ struct GPSStatus: View {
 		}
 	}
 }
+
+#Preview {
+	GPSStatus()
+}
