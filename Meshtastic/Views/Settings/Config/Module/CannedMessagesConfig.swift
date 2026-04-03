@@ -355,3 +355,10 @@ struct CannedMessagesConfig: View {
 		self.hasMessagesChanges = false
 	}
 }
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return CannedMessagesConfig(node: nil)
+.environmentObject(AccessoryManager.shared)
+.environment(\.managedObjectContext, context)
+}

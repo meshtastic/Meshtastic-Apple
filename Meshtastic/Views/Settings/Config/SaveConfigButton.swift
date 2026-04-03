@@ -58,3 +58,8 @@ struct SaveConfigButton: View {
 		}
 	}
 }
+
+#Preview {
+SaveConfigButton(node: nil, hasChanges: .constant(true), onConfirmation: { })
+.environmentObject(AccessoryManager.shared)
+}

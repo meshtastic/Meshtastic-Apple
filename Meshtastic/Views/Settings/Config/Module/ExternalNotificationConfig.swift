@@ -283,3 +283,10 @@ struct ExternalNotificationConfig: View {
 	}
 }
 
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return ExternalNotificationConfig(node: nil)
+.environmentObject(AccessoryManager.shared)
+.environment(\.managedObjectContext, context)
+}

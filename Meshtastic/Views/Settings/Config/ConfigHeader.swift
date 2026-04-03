@@ -37,3 +37,13 @@ struct ConfigHeader<T>: View {
 		}
 	}
 }
+
+#Preview {
+ConfigHeader(
+title: "Bluetooth Configuration",
+config: \NodeInfoEntity.bluetoothConfig,
+node: nil,
+onAppear: { }
+)
+.environmentObject(AccessoryManager.shared)
+}

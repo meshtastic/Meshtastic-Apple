@@ -197,3 +197,10 @@ struct StoreForwardConfig: View {
 		self.hasChanges = false
 	}
 }
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return StoreForwardConfig(node: nil)
+.environmentObject(AccessoryManager.shared)
+.environment(\.managedObjectContext, context)
+}

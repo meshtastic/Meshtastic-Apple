@@ -143,3 +143,10 @@ struct RangeTestConfig: View {
 		self.hasChanges = false
 	}
 }
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return RangeTestConfig(node: nil)
+.environmentObject(AccessoryManager.shared)
+.environment(\.managedObjectContext, context)
+}

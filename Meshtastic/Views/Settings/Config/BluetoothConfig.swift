@@ -147,3 +147,11 @@ struct BluetoothConfig: View {
 		self.hasChanges = false
 	}
 }
+
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return BluetoothConfig(node: nil)
+vironmentObject(AccessoryManager.shared)
+vironment(\.managedObjectContext, context)
+}

@@ -321,3 +321,11 @@ struct LoRaConfig: View {
 		self.hasChanges = false
 	}
 }
+
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return LoRaConfig(node: nil)
+vironmentObject(AccessoryManager.shared)
+vironment(\.managedObjectContext, context)
+}

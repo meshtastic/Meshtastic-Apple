@@ -235,3 +235,11 @@ struct DisplayConfig: View {
 		self.hasChanges = false
 	}
 }
+
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return DisplayConfig(node: nil)
+vironmentObject(AccessoryManager.shared)
+vironment(\.managedObjectContext, context)
+}

@@ -226,3 +226,11 @@ private struct FloatField: View {
 			}
 	}
 }
+
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return PowerConfig(node: nil)
+vironmentObject(AccessoryManager.shared)
+vironment(\.managedObjectContext, context)
+}

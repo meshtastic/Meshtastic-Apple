@@ -253,3 +253,10 @@ struct UserConfig: View {
 		}
 	}
 }
+
+#Preview {
+let context = PersistenceController.preview.container.viewContext
+return UserConfig(node: nil)
+.environmentObject(AccessoryManager.shared)
+.environment(\.managedObjectContext, context)
+}
