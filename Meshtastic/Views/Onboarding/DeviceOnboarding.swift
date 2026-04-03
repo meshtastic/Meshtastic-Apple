@@ -454,3 +454,8 @@ struct DeviceOnboarding: View {
 	}
 
 }
+
+#Preview {
+	DeviceOnboarding()
+		.environmentObject(AccessoryManager.shared)
+}

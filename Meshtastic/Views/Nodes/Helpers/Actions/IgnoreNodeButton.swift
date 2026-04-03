@@ -51,3 +51,12 @@ struct IgnoreNodeButton: View {
 		}
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let node = NodeInfoEntity(context: context)
+	node.num = 123456789
+	return IgnoreNodeButton(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}

@@ -36,3 +36,15 @@ struct MessageTemplate: View {
 
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let user = UserEntity(context: context)
+	user.longName = "Test User"
+	user.shortName = "TU"
+	let message = MessageEntity(context: context)
+	message.messagePayload = "Hello, World!"
+	message.messageTimestamp = Int32(Date().timeIntervalSince1970)
+	message.replyID = 0
+	return MessageTemplate(user: user, message: message)
+}

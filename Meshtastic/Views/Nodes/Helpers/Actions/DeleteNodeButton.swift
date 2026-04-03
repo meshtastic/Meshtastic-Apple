@@ -64,3 +64,14 @@ struct DeleteNodeButton: View {
 		}
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let connectedNode = NodeInfoEntity(context: context)
+	connectedNode.num = 987654321
+	let node = NodeInfoEntity(context: context)
+	node.num = 123456789
+	return DeleteNodeButton(connectedNode: connectedNode, node: node)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}
