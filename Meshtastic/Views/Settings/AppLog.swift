@@ -273,5 +273,5 @@ extension AppLog {
 extension OSLogEntry: @retroactive Identifiable { }
 
 #Preview {
-AppLog()
+	AppLog()
 }

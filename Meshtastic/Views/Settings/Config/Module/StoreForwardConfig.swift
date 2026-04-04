@@ -199,8 +199,8 @@ struct StoreForwardConfig: View {
 }
 
 #Preview {
-let context = PersistenceController.preview.container.viewContext
-return StoreForwardConfig(node: nil)
-.environmentObject(AccessoryManager.shared)
-.environment(\.managedObjectContext, context)
+	let context = PersistenceController.preview.container.viewContext
+	return StoreForwardConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

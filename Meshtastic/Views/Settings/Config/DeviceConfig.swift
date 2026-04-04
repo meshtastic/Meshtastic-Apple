@@ -346,10 +346,9 @@ struct DeviceConfig: View {
 	}
 }
 
-
 #Preview {
-let context = PersistenceController.preview.container.viewContext
-return DeviceConfig(node: nil)
-vironmentObject(AccessoryManager.shared)
-vironment(\.managedObjectContext, context)
+	let context = PersistenceController.preview.container.viewContext
+	return DeviceConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

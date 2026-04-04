@@ -256,14 +256,14 @@ struct DeviceMetricsLog: View {
 }
 
 #Preview {
-let context = PersistenceController.preview.container.viewContext
-let node = NodeInfoEntity(context: context)
-node.num = 123456789
-let user = UserEntity(context: context)
-user.longName = "Test Node"
-user.shortName = "TN"
-node.user = user
-return DeviceMetricsLog(node: node)
-.environmentObject(AccessoryManager.shared)
-.environment(\.managedObjectContext, context)
+	let context = PersistenceController.preview.container.viewContext
+	let node = NodeInfoEntity(context: context)
+	node.num = 123456789
+	let user = UserEntity(context: context)
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	return DeviceMetricsLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

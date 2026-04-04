@@ -125,8 +125,8 @@ struct PaxCounterConfig: View {
 }
 
 #Preview {
-let context = PersistenceController.preview.container.viewContext
-return PaxCounterConfig(node: nil)
-.environmentObject(AccessoryManager.shared)
-.environment(\.managedObjectContext, context)
+	let context = PersistenceController.preview.container.viewContext
+	return PaxCounterConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

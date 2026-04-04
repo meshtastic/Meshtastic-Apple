@@ -236,10 +236,9 @@ struct DisplayConfig: View {
 	}
 }
 
-
 #Preview {
-let context = PersistenceController.preview.container.viewContext
-return DisplayConfig(node: nil)
-vironmentObject(AccessoryManager.shared)
-vironment(\.managedObjectContext, context)
+	let context = PersistenceController.preview.container.viewContext
+	return DisplayConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

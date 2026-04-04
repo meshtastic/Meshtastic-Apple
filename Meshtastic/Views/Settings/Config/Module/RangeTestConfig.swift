@@ -145,8 +145,8 @@ struct RangeTestConfig: View {
 }
 
 #Preview {
-let context = PersistenceController.preview.container.viewContext
-return RangeTestConfig(node: nil)
-.environmentObject(AccessoryManager.shared)
-.environment(\.managedObjectContext, context)
+	let context = PersistenceController.preview.container.viewContext
+	return RangeTestConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }
