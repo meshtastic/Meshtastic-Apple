@@ -100,8 +100,7 @@ struct CompassView: View {
 
 						// Cardinal and intercardinal labels
 						ForEach(CompassLabel.allLabels, id: \.degrees) { label in
-							CompassLabelView(label: label, radius: dialRadius - 28)
-								.rotationEffect(.degrees(-locationsHandler.heading))
+							CompassLabelView(label: label, radius: dialRadius - 28, heading: locationsHandler.heading)
 						}
 
 						// North triangle indicator at 0°
@@ -257,13 +256,14 @@ struct CompassLabel {
 struct CompassLabelView: View {
 	let label: CompassLabel
 	let radius: CGFloat
+	let heading: Double
 
 	var body: some View {
 		Text(label.text)
 			.font(.system(size: label.isCardinal ? 18 : 13,
 						  weight: label.isCardinal ? .bold : .medium))
 			.foregroundColor(label.degrees == 0 ? .orange : .primary)
-			.rotationEffect(.degrees(-label.degrees))
+			.rotationEffect(.degrees(-label.degrees + heading))
 			.offset(y: -radius)
 			.rotationEffect(.degrees(label.degrees))
 	}
