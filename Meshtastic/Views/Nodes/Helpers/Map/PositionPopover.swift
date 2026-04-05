@@ -45,18 +45,23 @@ struct PositionPopover: View {
 				Divider()
 				HStack(alignment: .center) {
 					VStack(alignment: .leading) {
-						Button {
-							detentSelection = .large
-							DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-								navigateToCompass = true
+						if position.isPreciseLocation {
+							Button {
+								detentSelection = .large
+								DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+									navigateToCompass = true
+								}
+							} label: {
+								Label {
+									Text("Open Compass")
+								} icon: {
+									Image(systemName: "safari")
+										.symbolRenderingMode(.hierarchical)
+										.frame(width: 35)
+								}
 							}
-						} label: {
-							HStack {
-								Image(systemName: "safari")
-								Text("Open Compass")
-							}
+							.padding(.bottom, 5)
 						}
-						.padding(.bottom, 5)
 						
 						/// Time
 						Label {
@@ -174,6 +179,7 @@ struct PositionPopover: View {
 										.symbolRenderingMode(.hierarchical)
 										.frame(width: 35)
 								}
+								.padding(.bottom, 5)
 							}
 						}
 						/// Speed
