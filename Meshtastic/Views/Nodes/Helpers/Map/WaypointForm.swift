@@ -114,24 +114,19 @@ struct WaypointForm: View {
 					HStack {
 						Text("Icon")
 						Spacer()
-						EmojiOnlyTextField(text: $icon, placeholder: "Select an emoji")
+						TextField("Select an emoji", text: $icon)
+							.keyboardType(.emoji)
 							.font(.title)
 							.focused($iconIsFocused)
-							.onChange(of: icon) {
-								// If it contains non-emoji characters, clear it
-								if !icon.onlyEmojis() {
-									icon = ""
-									return
+							.onChange(of: icon) { _, value in
+								// If a second emoji is entered delete the first one
+								if value.count >= 1 {
+									if value.count > 1 {
+										let index = value.index(value.startIndex, offsetBy: 1)
+										icon = String(value[index])
+									}
 								}
-
-								// If multiple emojis are entered or pasted, keep only the last one
-								if icon.count > 1 {
-									icon = String(icon.suffix(1))
-								}
-								iconIsFocused = false
 							}
-
-
 					}
 					Toggle(isOn: $expires) {
 						Label("Expires", systemImage: "clock.badge.xmark")
