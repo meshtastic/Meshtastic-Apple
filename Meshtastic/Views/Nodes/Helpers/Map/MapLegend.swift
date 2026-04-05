@@ -60,16 +60,6 @@ struct MapLegend: View {
 			}
 			.navigationTitle("Map Legend")
 			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .confirmationAction) {
-					Button {
-						dismiss()
-					} label: {
-						Image(systemName: "xmark.circle.fill")
-							.foregroundStyle(.tertiary)
-					}
-				}
-			}
 		}
 	}
 
@@ -80,7 +70,7 @@ struct MapLegend: View {
 			MapLegendItem(
 				symbol: AnyView(onlineNodeSymbol),
 				title: String(localized: "Online Node"),
-				subtitle: String(localized: "Node heard within the last 120 minutes. Shown with a pulsing ring on the map.")
+				subtitle: String(localized: "Node heard within the last 2 hours. Shown with a pulsing ring on the map.")
 			)
 			MapLegendItem(
 				symbol: AnyView(offlineNodeSymbol),
