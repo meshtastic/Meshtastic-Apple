@@ -183,6 +183,8 @@ struct NodeMapSwiftUI: View {
 			}) {
 				Image(systemName: isShowingLegend ? "map.fill" : "map")
 			}
+			.accessibilityLabel(isShowingLegend ? Text("Hide legend") : Text("Show legend"))
+			.accessibilityHint(Text("Toggles the map legend"))
 			.glassButtonStyle()
 
 			Button(action: {
