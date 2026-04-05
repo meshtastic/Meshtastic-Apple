@@ -11,10 +11,14 @@ import CoreData
 import Foundation
 
 struct NodeList: View {
+	/// Debounce delay for node selection changes (100ms)
+	private static let nodeSelectionDebounceNs: UInt64 = 100_000_000
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@StateObject var router: Router
 	@State private var selectedNode: NodeInfoEntity?
+	@State private var nodeSelectionTask: Task<Void, Never>?
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingPositionSentAlert = false
 	@State private var isPresentingPositionFailedAlert = false
@@ -35,6 +39,7 @@ struct NodeList: View {
 	var body: some View {
 		NavigationSplitView {
 			FilteredNodeList(
+				router: router,
 				withFilters: filters,
 				selectedNode: $selectedNode,
 				connectedNode: connectedNode,
@@ -122,18 +127,27 @@ struct NodeList: View {
 				ContentUnavailableView("Select a Node", systemImage: "flipphone")
 			}
 		}
-		.onChange(of: router.navigationState.nodeListSelectedNodeNum) { _, newNum in
-			if let num = newNum {
-				self.selectedNode = getNodeInfo(id: num, context: context)
-			} else {
-				self.selectedNode = nil
+		.onChange(of: router.nodeListSelectedNodeNum) { _, newNum in
+			// Debounce rapid route changes — only process the last selection after a short delay
+			nodeSelectionTask?.cancel()
+			nodeSelectionTask = Task {
+				do {
+					try await Task.sleep(nanoseconds: Self.nodeSelectionDebounceNs)
+				} catch {
+					return // Cancelled by a newer selection
+				}
+				if let num = newNum {
+					self.selectedNode = router.cachedNodeInfo(id: num, context: context)
+				} else {
+					self.selectedNode = nil
+				}
 			}
 		}
 		.onChange(of: selectedNode) { _, node in
 			if let num = node?.num {
-				router.navigationState.nodeListSelectedNodeNum = num
+				router.nodeListSelectedNodeNum = num
 			} else {
-				router.navigationState.nodeListSelectedNodeNum = nil
+				router.nodeListSelectedNodeNum = nil
 			}
 		}
 	}
@@ -154,6 +168,7 @@ fileprivate struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FetchRequest private var nodes: FetchedResults<NodeInfoEntity>
 	@Environment(\.managedObjectContext) var context
+	var router: Router
 
 	@Binding var selectedNode: NodeInfoEntity?
 	var connectedNode: NodeInfoEntity?
@@ -163,6 +178,7 @@ fileprivate struct FilteredNodeList: View {
 
 	// The initializer for the FetchRequest
 	init(
+		router: Router,
 		withFilters: NodeFilterParameters,
 		selectedNode: Binding<NodeInfoEntity?>,
 		connectedNode: NodeInfoEntity?,
@@ -170,6 +186,7 @@ fileprivate struct FilteredNodeList: View {
 		deleteNodeId: Binding<Int64>,
 		shareContactNode: Binding<NodeInfoEntity?>
 	) {
+		self.router = router
 		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
 		request.sortDescriptors = [
 			NSSortDescriptor(key: "ignored", ascending: true),
@@ -178,6 +195,8 @@ fileprivate struct FilteredNodeList: View {
 			NSSortDescriptor(key: "user.longName", ascending: true)
 		]
 		request.predicate = withFilters.buildPredicate()
+		request.fetchBatchSize = 50
+		request.relationshipKeyPathsForPrefetching = ["user"]
 		self._nodes = FetchRequest(fetchRequest: request)
 
 		self._selectedNode = selectedNode
@@ -189,8 +208,24 @@ fileprivate struct FilteredNodeList: View {
 
 	// The body of the view
 	var body: some View {
-		// If the connected node passes filters, always show it first
-		let nodesWithConnectedFirst = nodes.filter { $0.num == accessoryManager.activeDeviceNum } + nodes.filter { $0.num != accessoryManager.activeDeviceNum }
+		// If the connected node passes filters, always show it first (single-pass)
+		let nodesWithConnectedFirst: [NodeInfoEntity] = {
+			let activeNum = accessoryManager.activeDeviceNum
+			var result: [NodeInfoEntity] = []
+			result.reserveCapacity(nodes.count)
+			var connectedNode: NodeInfoEntity?
+			for node in nodes {
+				if node.num == activeNum {
+					connectedNode = node
+				} else {
+					result.append(node)
+				}
+			}
+			if let connectedNode {
+				result.insert(connectedNode, at: 0)
+			}
+			return result
+		}()
 		List(nodesWithConnectedFirst, id: \.self, selection: $selectedNode) { node in
 			NavigationLink(value: node) {
 				NodeListItem(
@@ -205,6 +240,12 @@ fileprivate struct FilteredNodeList: View {
 					connectedNode: connectedNode
 				)
 			}
+		}
+		.onAppear {
+			router.updateNodeIndex(from: nodes)
+		}
+		.onChange(of: nodes.count) { _, _ in
+			router.updateNodeIndex(from: nodes)
 		}
 	}
 
