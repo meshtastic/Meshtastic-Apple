@@ -264,7 +264,8 @@ struct PositionPopover: View {
 			.navigationDestination(isPresented: $navigateToCompass) {
 				CompassView(
 					waypointLocation: position.coordinate,
-					waypointName: position.nodePosition?.user?.longName ?? "Unknown node",
+					waypointLongName: position.nodePosition?.user?.longName ?? "Unknown node",
+					waypointShortName: position.nodePosition?.user?.shortName ?? "???",
 					color: (position.nodePosition?.user?.num != nil && position.nodePosition?.user?.num != 0) ? Color(UIColor(hex: UInt32(position.nodePosition!.user!.num))) : .orange
 				)
 			}

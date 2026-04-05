@@ -752,7 +752,6 @@
       "shouldTranslate" : false
     },
     "%@ %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {

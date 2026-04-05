@@ -13,9 +13,8 @@ struct CompassView: View {
 
 	/// Single waypoint parameter
 	let waypointLocation: CLLocationCoordinate2D?
-
-	let waypointName: String?
-
+	let waypointLongName: String?
+	let waypointShortName: String?
 	let color: Color
 
 	@ObservedObject private var locationsHandler = LocationsHandler.shared
@@ -79,12 +78,34 @@ struct CompassView: View {
 		NavigationStack {
 			ZStack {
 				VStack(spacing: 0) {
+				
+					if waypointLongName != nil || waypointLocation != nil {
+						Spacer()
+						VStack(spacing: 4) {
+							Text(waypointLongName ?? "Waypoint")
+								.font(.largeTitle)
+
+							if let bearing = bearingToWaypoint() {
+								HStack(spacing: 4) {
+									Image(systemName: "location.north.fill")
+										.font(.title2)
+										.rotationEffect(.degrees(bearing))
+									Text("\(String(format: "%.0f°", bearing))")
+										.font(.title2)
+								}
+								.foregroundColor(.secondary)
+							}
+						}
+						.padding(.bottom, 8)
+					}
+					Spacer()
 					// Top fixed heading indicator triangle
 					Image(systemName: "triangle.fill")
 						.font(.system(size: 14, weight: .bold))
 						.foregroundColor(.primary)
 						.rotationEffect(.degrees(180))
 						.padding(.bottom, 4)
+
 
 					// Rotating compass dial
 					ZStack {
@@ -107,22 +128,35 @@ struct CompassView: View {
 						CompassNorthIndicator(radius: dialRadius + 2)
 
 						// Degree readout at center (counter-rotate to stay fixed)
-						VStack(spacing: 4) {
-							Text(headingText())
-								.font(.system(size: 42, weight: .light, design: .rounded))
-								.foregroundColor(.primary)
-								.monospacedDigit()
+						ZStack {
+							let textColor = color.isLight() ? Color.black : Color.white
 
-							if let distance = distanceToWaypoint() {
-								Text(formatDistance(distance))
-									.font(.system(size: 18, weight: .semibold, design: .rounded))
-									.foregroundColor(color)
-							}
+							Circle()
+								.fill(color)
+								.overlay(
+									Circle().stroke(textColor.opacity(0.75), lineWidth: 4)
+								)
+								.frame(width: 172, height: 172)
 
-							if waypointName != nil || waypointLocation != nil {
-								Text(waypointName ?? "Waypoint")
-									.font(.system(size: 13, weight: .medium))
-									.foregroundColor(color.opacity(0.8))
+							VStack(spacing: 4) {
+								Text(headingText())
+									.font(.system(size: 42, weight: .light, design: .rounded))
+									.foregroundColor(textColor)
+									.monospacedDigit()
+
+								if let distance = distanceToWaypoint() {
+									Text(formatDistance(distance))
+										.font(.system(size: 18, weight: .semibold, design: .rounded))
+										.foregroundColor(textColor.opacity(0.9))
+
+								}
+
+								if waypointShortName != nil || waypointLocation != nil {
+									Text(waypointShortName ?? "WP")
+										.font(.title3)
+										.foregroundColor(textColor.opacity(0.75))
+								}
+
 							}
 						}
 						.rotationEffect(Angle(degrees: locationsHandler.heading))
@@ -141,30 +175,20 @@ struct CompassView: View {
 					}
 					.frame(width: dialRadius * 2 + 40, height: dialRadius * 2 + 40)
 					.rotationEffect(Angle(degrees: -locationsHandler.heading))
-
+					Spacer()
 					// Bottom info
 					if let wp = waypointLocation {
 						VStack(spacing: 6) {
 							HStack(spacing: 4) {
 								Image(systemName: "mappin")
-									.font(.system(size: 11))
-								Text("\(String(format: "%.4f", wp.latitude)), \(String(format: "%.4f", wp.longitude))")
-									.font(.system(size: 12, design: .monospaced))
+									.font(.title2)
+								Text("\(String(format: "%.4f", wp.latitude)) \(String(format: "%.4f", wp.longitude))")
+									.font(.title3)
 							}
 							.foregroundColor(.secondary)
 
-							if let bearing = bearingToWaypoint() {
-								HStack(spacing: 4) {
-									Image(systemName: "location.north.fill")
-										.font(.system(size: 11))
-										.rotationEffect(.degrees(bearing))
-									Text("\(String(format: "%.0f°", bearing))")
-										.font(.system(size: 12, weight: .medium, design: .monospaced))
-								}
-								.foregroundColor(color.opacity(0.7))
-							}
 						}
-						.padding(.top, 20)
+						Spacer()
 					}
 				}
 			}
@@ -325,7 +349,8 @@ struct CompassView_Previews: PreviewProvider {
 	static var previews: some View {
 		CompassView(
 			waypointLocation: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090),
-			waypointName: "Apple Park",
+			waypointLongName: "Apple Park",
+			waypointShortName: "",
 			color: Color.orange
 		)
 	}
