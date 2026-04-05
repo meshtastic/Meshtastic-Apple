@@ -1175,7 +1175,7 @@ actor MeshPackets {
 					// Fetch waypoint by waypointMessage.id, not packet.id
 					let fetchWaypointRequest = WaypointEntity.fetchRequest()
 					fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(waypointMessage.id))
-					
+
 					let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
 					// Fetch the node info to get the short name
 					var nodeShortName: String = "?"
@@ -1199,6 +1199,7 @@ actor MeshPackets {
 						waypoint.longitudeI = waypointMessage.longitudeI
 						waypoint.icon = Int64(waypointMessage.icon)
 						waypoint.locked = Int64(waypointMessage.lockedTo)
+						waypoint.createdBy = Int64(packet.from)
 						if waypointMessage.expire >= 1 {
 							waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 						} else {
@@ -1254,6 +1255,7 @@ actor MeshPackets {
 								existingWaypoint.longitudeI = waypointMessage.longitudeI
 								existingWaypoint.icon = Int64(waypointMessage.icon)
 								existingWaypoint.locked = Int64(waypointMessage.lockedTo)
+								existingWaypoint.lastUpdatedBy = Int64(packet.from)
 								if waypointMessage.expire >= 1 {
 									existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 								} else {
