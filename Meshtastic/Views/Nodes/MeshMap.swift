@@ -171,6 +171,8 @@ struct MeshMap: View {
 						}) {
 							Image(systemName: showLegend ? "map.fill" : "map")
 						}
+						.accessibilityLabel(showLegend ? "Hide map legend" : "Show map legend")
+						.accessibilityHint(showLegend ? "Hides the map legend." : "Shows the map legend.")
 						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
