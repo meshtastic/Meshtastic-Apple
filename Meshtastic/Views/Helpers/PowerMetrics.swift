@@ -94,3 +94,15 @@ struct PowerMetricCompactWidget: View {
 				.background(.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 		}
 }
+
+#Preview {
+	let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
+	Form {
+		LazyVGrid(columns: gridItemLayout) {
+			PowerMetricCompactWidget(type: .voltage, value: 3.72, title: "Channel 1 Voltage")
+			PowerMetricCompactWidget(type: .current, value: 125.3, title: "Channel 1 Current")
+			PowerMetricCompactWidget(type: .voltage, value: 5.01, title: "Channel 2 Voltage")
+			PowerMetricCompactWidget(type: .current, value: 42.7, title: "Channel 2 Current")
+		}
+	}
+}

@@ -205,3 +205,10 @@ struct SerialConfig: View {
 		self.hasChanges = false
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return SerialConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}

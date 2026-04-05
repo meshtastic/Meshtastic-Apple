@@ -59,8 +59,7 @@ extension MessageEntity {
 			let users = try context.fetch(request)
 
 			// If exactly one match is found, return its name
-			if users.count == 1, let name = users.first?.longName, !name.isEmpty
-			{
+			if users.count == 1, let name = users.first?.longName, !name.isEmpty {
 				return "\(name)"
 			}
 
