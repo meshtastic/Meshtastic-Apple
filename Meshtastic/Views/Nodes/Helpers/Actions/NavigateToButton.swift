@@ -54,3 +54,15 @@ struct NavigateToButton: View {
 		}
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let node = NodeInfoEntity(context: context)
+	node.num = 123456789
+	let user = UserEntity(context: context)
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	user.num = 123456789
+	node.user = user
+	return NavigateToButton(node: node)
+}

@@ -56,8 +56,6 @@ struct MessageContextMenuItems: View {
 			let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 
 			// Compute a relay display string if relayNode is present
-			
-
 			VStack {
 				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))")
 					.foregroundColor(.gray)

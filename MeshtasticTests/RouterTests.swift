@@ -214,7 +214,7 @@ struct RouterTests {
 		("debugLogs", SettingsNavigationState.debugLogs),
 		("appFiles", SettingsNavigationState.appFiles),
 		("firmwareUpdates", SettingsNavigationState.firmwareUpdates),
-		("tak", SettingsNavigationState.tak),
+		("tak", SettingsNavigationState.tak)
 	])
 	func routeSettingsPage(path: String, expected: SettingsNavigationState) async throws {
 		try await assertRoute(

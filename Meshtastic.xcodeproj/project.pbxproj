@@ -103,6 +103,7 @@
 		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
 		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
 		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
+		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
 		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
 		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
@@ -434,6 +435,7 @@
 		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
 		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
+		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
 		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
@@ -1988,6 +1990,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -2010,6 +2015,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2174,7 +2182,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.9;
+				MARKETING_VERSION = 2.7.10;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -2213,7 +2221,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.9;
+				MARKETING_VERSION = 2.7.10;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -2249,12 +2257,14 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.9;
+				MARKETING_VERSION = 2.7.10;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2282,12 +2292,14 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.9;
+				MARKETING_VERSION = 2.7.10;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
