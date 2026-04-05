@@ -71,10 +71,7 @@ final class CoTXMLParser: NSObject, XMLParserDelegate {
 	}
 
 	// MARK: - XMLParserDelegate
-
-	func parser(_ parser: XMLParser, didStartElement elementName: String,
-				namespaceURI: String?, qualifiedName qName: String?,
-				attributes attributeDict: [String: String] = [:]) {
+	func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
 		elementStack.append(elementName)
 		currentElement = elementName
 		currentText = ""
@@ -138,8 +135,7 @@ final class CoTXMLParser: NSObject, XMLParserDelegate {
 		}
 	}
 
-	func parser(_ parser: XMLParser, didEndElement elementName: String,
-				namespaceURI: String?, qualifiedName qName: String?) {
+	func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
 		if elementName == "remarks" {
 			remarksText = currentText.trimmingCharacters(in: .whitespacesAndNewlines)
 		}

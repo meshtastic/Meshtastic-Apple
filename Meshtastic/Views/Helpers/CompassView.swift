@@ -38,7 +38,7 @@ struct CompassView: View {
 	}
 
 	// Trigger a vibration if aligned with waypoint
-	private func checkAlignment(bearing: Double,heading: Double) {
+	private func checkAlignment(bearing: Double, heading: Double) {
 		// Compute minimal angular difference between heading and bearing in [0, 180]
 		  let rawDiff = abs(heading - bearing).truncatingRemainder(dividingBy: 360)
 		  let diff = min(rawDiff, 360 - rawDiff)
@@ -53,7 +53,6 @@ struct CompassView: View {
 			inAlignment = false
 		}
 	}
-
 	
 	private func distanceToWaypoint() -> CLLocationDistance? {
 		guard
@@ -76,7 +75,6 @@ struct CompassView: View {
 		return formatter.string(from: measurement)
 	}
 	
-	
 	var body: some View {
 		NavigationStack {
 			VStack(spacing: 15) {
@@ -88,14 +86,14 @@ struct CompassView: View {
 						.foregroundColor(color)
 					
 					if let wp = waypointLocation {
-						HStack{
+						HStack {
 							Image(systemName: "mappin.and.ellipse")
 							Text("\(String(format: "%.4f", wp.latitude)), \(String(format: "%.4f", wp.longitude))")
 							.font(.subheadline)
 						}
 						
 						if let distance = distanceToWaypoint() {
-							HStack{
+							HStack {
 								Image(systemName: "lines.measurement.horizontal")
 								Text("Distance: \(formatDistance(distance))")
 									.font(.subheadline)
@@ -137,7 +135,7 @@ struct CompassView: View {
 						)
 						// Move waypoint marker outside compass
 						.onChange(of: locationsHandler.heading) { _, _ in
-							checkAlignment(bearing: bearing,heading:locationsHandler.heading)
+							checkAlignment(bearing: bearing, heading:locationsHandler.heading)
 						}
 					}
 					
@@ -159,9 +157,7 @@ struct CompassView: View {
 	}
 }
 
-
 // MARK: - Waypoint Marker View
-
 struct WaypointMarkerView: View {
 	let bearing: Double
 	let compassDegrees: Double
@@ -177,9 +173,7 @@ struct WaypointMarkerView: View {
 
 }
 
-
 // MARK: - Bearing Calculator
-
 struct BearingCalculator {
 
 	static func bearingBetween(
@@ -205,9 +199,7 @@ struct BearingCalculator {
 	}
 }
 
-
 // MARK: - Marker Model
-
 struct Marker: Hashable {
 	let degrees: Double
 	let label: String
@@ -239,9 +231,7 @@ struct Marker: Hashable {
 	}
 }
 
-
 // MARK: - Compass Marker View
-
 struct CompassMarkerView: View {
 	let marker: Marker
 	let compassDegrees: Double
@@ -281,9 +271,7 @@ struct CompassMarkerView: View {
 	}
 }
 
-
 // MARK: - Preview
-
 struct CompassView_Previews: PreviewProvider {
 	static var previews: some View {
 		CompassView(
