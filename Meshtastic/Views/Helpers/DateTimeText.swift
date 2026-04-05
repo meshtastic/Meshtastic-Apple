@@ -28,3 +28,11 @@ struct DateTimeText: View {
 		}
 	}
 }
+
+#Preview {
+	VStack {
+		DateTimeText(dateTime: Date())
+		DateTimeText(dateTime: Calendar.current.date(byAdding: .day, value: -1, to: Date()))
+		DateTimeText(dateTime: nil)
+	}
+}

@@ -32,3 +32,15 @@ struct ChannelLock: View {
 		}
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let encryptedChannel = ChannelEntity(context: context)
+	encryptedChannel.psk = Data([0x01, 0x02, 0x03, 0x04])
+	let unencryptedChannel = ChannelEntity(context: context)
+	unencryptedChannel.psk = Data()
+	return HStack(spacing: 16) {
+		ChannelLock(channel: encryptedChannel)
+		ChannelLock(channel: unencryptedChannel)
+	}
+}

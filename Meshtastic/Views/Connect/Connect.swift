@@ -565,18 +565,18 @@ struct DeviceConnectRow: View {
 				}
 				// Show transport type
 #if !targetEnvironment(macCatalyst)
-				HStack(alignment: .center){
+				HStack(alignment: .center) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
-						VStack (alignment: .leading) {
+						VStack(alignment: .leading) {
 							Text("Last seen device:")
 							Text("\(String(describing: device))")
 						}
 					}
 				}.padding(.top, 3.0)
 #else
-				//Different alignment for Mac
-				HStack(alignment: .firstTextBaseline){
+				// Different alignment for Mac
+				HStack(alignment: .firstTextBaseline) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
 						Text("Last seen device: \(String(describing: device))")
@@ -609,4 +609,3 @@ struct DeviceConnectRow: View {
 			}
 	}
 }
-

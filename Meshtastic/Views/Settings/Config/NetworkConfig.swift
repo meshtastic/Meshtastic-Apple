@@ -209,3 +209,10 @@ struct NetworkConfig: View {
 		self.hasChanges = false
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return NetworkConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}
