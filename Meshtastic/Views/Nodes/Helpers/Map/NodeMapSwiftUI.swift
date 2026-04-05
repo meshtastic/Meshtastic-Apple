@@ -182,11 +182,8 @@ struct NodeMapSwiftUI: View {
 				}
 			}) {
 				Image(systemName: isShowingLegend ? "map.fill" : "map")
-					.padding(.vertical, 5)
 			}
-			.tint(Color(UIColor.secondarySystemBackground))
-			.foregroundColor(.accentColor)
-			.buttonStyle(.borderedProminent)
+			.glassButtonStyle()
 
 			Button(action: {
 				withAnimation {
@@ -194,11 +191,8 @@ struct NodeMapSwiftUI: View {
 				}
 			}) {
 				Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
-					.padding(.vertical, 5)
 			}
-			.tint(Color(UIColor.secondarySystemBackground))
-			.foregroundColor(.accentColor)
-			.buttonStyle(.borderedProminent)
+			.glassButtonStyle()
 
 			if scene != nil {
 				Button(action: {
@@ -208,11 +202,8 @@ struct NodeMapSwiftUI: View {
 					isLookingAround = !isLookingAround
 				}) {
 					Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
-						.padding(.vertical, 5)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
-				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
+				.glassButtonStyle()
 			}
 
 			if node.positions?.count ?? 0 > 1 {
@@ -223,11 +214,8 @@ struct NodeMapSwiftUI: View {
 					isShowingAltitude = !isShowingAltitude
 				}) {
 					Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
-						.padding(.vertical, 5)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
-				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
+				.glassButtonStyle()
 			}
 		}
 		.controlSize(.regular)

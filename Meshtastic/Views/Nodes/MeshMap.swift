@@ -170,22 +170,16 @@ struct MeshMap: View {
 							}
 						}) {
 							Image(systemName: showLegend ? "map.fill" : "map")
-								.padding(.vertical, 5)
 						}
-						.tint(Color(UIColor.secondarySystemBackground))
-						.foregroundColor(.accentColor)
-						.buttonStyle(.borderedProminent)
+						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								editingSettings = !editingSettings
 							}
 						}) {
 							Image(systemName: editingSettings ? "info.circle.fill" : "info.circle")
-								.padding(.vertical, 5)
 						}
-						.tint(Color(UIColor.secondarySystemBackground))
-						.foregroundColor(.accentColor)
-						.buttonStyle(.borderedProminent)
+						.glassButtonStyle()
 					}
 					.controlSize(.regular)
 					.padding(5)
