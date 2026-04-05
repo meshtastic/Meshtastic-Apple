@@ -166,10 +166,8 @@ struct WaypointForm: View {
 						newWaypoint.longitudeI = waypoint.longitudeI
 						newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 						newWaypoint.description_p = description
-						// Unicode scalar value for the icon emoji string
 						let unicodeScalers = icon.unicodeScalars
-						// First element as an UInt32
-						let unicode = unicodeScalers[unicodeScalers.startIndex].value
+						let unicode = unicodeScalers.first?.value ?? 128205
 						newWaypoint.icon = unicode
 						if locked {
 							if lockedTo == 0 {
