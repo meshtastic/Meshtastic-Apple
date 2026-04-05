@@ -80,7 +80,7 @@ struct MapLegend: View {
 			MapLegendItem(
 				symbol: AnyView(onlineNodeSymbol),
 				title: String(localized: "Online Node"),
-				subtitle: String(localized: "Node heard within the last 15 minutes. Shown with a pulsing ring on the map.")
+				subtitle: String(localized: "Node heard within the last 120 minutes. Shown with a pulsing ring on the map.")
 			)
 			MapLegendItem(
 				symbol: AnyView(offlineNodeSymbol),
