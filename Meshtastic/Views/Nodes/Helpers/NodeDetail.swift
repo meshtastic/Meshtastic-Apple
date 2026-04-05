@@ -479,13 +479,15 @@ struct NodeDetail: View {
 								}
 								if node.hasPositions {
 								#if !targetEnvironment(macCatalyst)
-									Button {
-										showingCompassSheet = true
-									} label: {
-										Label {
-											Text("Open Compass")
-										} icon: {
-											Image(systemName: "safari")
+									if node.latestPosition?.isPreciseLocation == true {
+										Button {
+											showingCompassSheet = true
+										} label: {
+											Label {
+												Text("Open Compass")
+											} icon: {
+												Image(systemName: "safari")
+											}
 										}
 									}
 								#endif

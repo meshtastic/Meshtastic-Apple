@@ -78,13 +78,11 @@ struct CompassView: View {
 	var body: some View {
 		NavigationStack {
 			ZStack {
-				Color.black.ignoresSafeArea()
-
 				VStack(spacing: 0) {
 					// Top fixed heading indicator triangle
 					Image(systemName: "triangle.fill")
 						.font(.system(size: 14, weight: .bold))
-						.foregroundColor(.white)
+						.foregroundColor(.primary)
 						.rotationEffect(.degrees(180))
 						.padding(.bottom, 4)
 
@@ -92,7 +90,7 @@ struct CompassView: View {
 					ZStack {
 						// Outer bezel ring
 						Circle()
-							.stroke(Color.white.opacity(0.2), lineWidth: 1.5)
+							.stroke(Color.primary.opacity(0.2), lineWidth: 1.5)
 							.frame(width: dialRadius * 2 + 20, height: dialRadius * 2 + 20)
 
 						// Tick marks
@@ -109,11 +107,11 @@ struct CompassView: View {
 						// North triangle indicator at 0°
 						CompassNorthIndicator(radius: dialRadius + 2)
 
-						// Degree readout at center
+						// Degree readout at center (counter-rotate to stay fixed)
 						VStack(spacing: 4) {
 							Text(headingText())
 								.font(.system(size: 42, weight: .light, design: .rounded))
-								.foregroundColor(.white)
+								.foregroundColor(.primary)
 								.monospacedDigit()
 
 							if let distance = distanceToWaypoint() {
@@ -128,6 +126,7 @@ struct CompassView: View {
 									.foregroundColor(color.opacity(0.8))
 							}
 						}
+						.rotationEffect(Angle(degrees: locationsHandler.heading))
 
 						// Waypoint bearing indicator
 						if let bearing = bearingToWaypoint() {
@@ -153,7 +152,7 @@ struct CompassView: View {
 								Text("\(String(format: "%.4f", wp.latitude)), \(String(format: "%.4f", wp.longitude))")
 									.font(.system(size: 12, design: .monospaced))
 							}
-							.foregroundColor(.white.opacity(0.5))
+							.foregroundColor(.secondary)
 
 							if let bearing = bearingToWaypoint() {
 								HStack(spacing: 4) {
@@ -180,7 +179,6 @@ struct CompassView: View {
 				locationsHandler.stopLocationUpdates()
 			}
 			.navigationTitle("Compass")
-			.toolbarColorScheme(.dark, for: .navigationBar)
 		}
 	}
 
@@ -202,7 +200,7 @@ struct CompassTickMark: View {
 
 		let length: CGFloat = isCardinal ? 16 : (isMajor ? 12 : (isMinor ? 8 : 4))
 		let width: CGFloat = isCardinal ? 2.5 : (isMajor ? 1.5 : 1)
-		let tickColor: Color = isCardinal ? .white : (isMajor ? .white.opacity(0.7) : .white.opacity(0.3))
+		let tickColor: Color = isCardinal ? .primary : (isMajor ? .primary.opacity(0.7) : .primary.opacity(0.3))
 
 		// Only draw ticks at 2° intervals
 		if Int(degree) % 2 == 0 {
@@ -264,7 +262,7 @@ struct CompassLabelView: View {
 		Text(label.text)
 			.font(.system(size: label.isCardinal ? 18 : 13,
 						  weight: label.isCardinal ? .bold : .medium))
-			.foregroundColor(label.degrees == 0 ? .orange : .white)
+			.foregroundColor(label.degrees == 0 ? .orange : .primary)
 			.rotationEffect(.degrees(-label.degrees))
 			.offset(y: -radius)
 			.rotationEffect(.degrees(label.degrees))
