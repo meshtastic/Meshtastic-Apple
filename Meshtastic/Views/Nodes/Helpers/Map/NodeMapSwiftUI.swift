@@ -52,6 +52,7 @@ struct NodeMapSwiftUI: View {
 	@State var isLookingAround = false
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
+	@State var isShowingLegend = false
 	@State var isMeshMap = false
 	@State var enabledOverlayConfigs: Set<UUID> = Set()
 
@@ -96,6 +97,13 @@ struct NodeMapSwiftUI: View {
 			}
 			.sheet(isPresented: $isEditingSettings) {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
+			}
+			.sheet(isPresented: $isShowingLegend) {
+				MapLegend(isMeshMap: false)
+					.presentationDetents([.medium, .large])
+					.presentationContentInteraction(.scrolls)
+					.presentationDragIndicator(.visible)
+					.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 			}
 			.onChange(of: selectedMapLayer) { _, newMapLayer in
 				updateMapStyle(for: newMapLayer)
@@ -168,6 +176,18 @@ struct NodeMapSwiftUI: View {
 
 	private var controlButtons: some View {
 		HStack {
+			Button(action: {
+				withAnimation {
+					isShowingLegend = !isShowingLegend
+				}
+			}) {
+				Image(systemName: isShowingLegend ? "map.fill" : "map")
+					.padding(.vertical, 5)
+			}
+			.tint(Color(UIColor.secondarySystemBackground))
+			.foregroundColor(.accentColor)
+			.buttonStyle(.borderedProminent)
+
 			Button(action: {
 				withAnimation {
 					isEditingSettings = !isEditingSettings

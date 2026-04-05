@@ -41,6 +41,7 @@ struct MeshMap: View {
 	@State var selectedWaypointId: String?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
+	@State private var showLegend = false
 	/// Filter
 	@StateObject var filters = NodeFilterParameters()
 
@@ -153,9 +154,27 @@ struct MeshMap: View {
 						filters: filters
 					)
 				}
+				.sheet(isPresented: $showLegend) {
+					MapLegend(isMeshMap: true)
+						.presentationDetents([.medium, .large])
+						.presentationContentInteraction(.scrolls)
+						.presentationDragIndicator(.visible)
+						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+				}
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
 					HStack {
 						Spacer()
+						Button(action: {
+							withAnimation {
+								showLegend = !showLegend
+							}
+						}) {
+							Image(systemName: showLegend ? "map.fill" : "map")
+								.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
 						Button(action: {
 							withAnimation {
 								editingSettings = !editingSettings
