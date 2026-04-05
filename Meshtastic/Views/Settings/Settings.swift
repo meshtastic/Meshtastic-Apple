@@ -452,7 +452,6 @@ struct Settings: View {
 									}
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
-									.tipViewStyle(PersistentTip())
 									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 									.listRowSeparator(.hidden)
 							} else {
