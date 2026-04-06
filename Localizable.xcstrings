@@ -3793,7 +3793,11 @@
         }
       }
     },
+    "ADC Multiplier Override" : {
+
+    },
     "ADC Override" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11997,6 +12001,9 @@
           }
         }
       }
+    },
+    "Common values: RAK4631/T114 = 4.916, Heltec V3 = 5.1205. Use 0 for firmware default." : {
+
     },
     "Communicate off-the-grid with your friends and community without cell service." : {
       "localizations" : {
@@ -37755,6 +37762,9 @@
           }
         }
       }
+    },
+    "Override the default ADC multiplier for battery voltage measurement. Set to 0 to use the firmware default." : {
+
     },
     "Packet Count" : {
       "localizations" : {
