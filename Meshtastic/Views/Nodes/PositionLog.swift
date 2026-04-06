@@ -131,10 +131,12 @@ struct PositionLog: View {
 						titleVisibility: .visible
 					) {
 						Button("Delete all positions?", role: .destructive) {
-							if clearPositions(destNum: node.num, context: context) {
-								Logger.services.info("Successfully Cleared Position Log")
-							} else {
-								Logger.services.error("Clear Position Log Failed")
+							Task {
+								if await MeshPackets.shared.clearPositions(destNum: node.num) {
+									Logger.services.info("Successfully Cleared Position Log")
+								} else {
+									Logger.services.error("Clear Position Log Failed")
+								}
 							}
 						}
 					}
@@ -178,4 +180,17 @@ struct PositionLog: View {
 
 		})
 	}
+}
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let node = NodeInfoEntity(context: context)
+	node.num = 123456789
+	let user = UserEntity(context: context)
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	return PositionLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

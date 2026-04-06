@@ -327,14 +327,26 @@ struct Settings: View {
 		}
 	}
 
+	var takSection: some View {
+		Section(header: Text("TAK")) {
+			NavigationLink(value: SettingsNavigationState.tak) {
+				Label {
+					Text("TAK Server")
+				} icon: {
+					Image(systemName: "target")
+				}
+			}
+		}
+	}
+
 	var body: some View {
 		NavigationStack(
 			path: Binding<[SettingsNavigationState]>(
 				get: {
-					[router.navigationState.settings].compactMap { $0 }
+					[router.settingsState].compactMap { $0 }
 				},
 				set: { newPath in
-					router.navigationState.settings = newPath.first
+					router.settingsState = newPath.first
 				}
 			)
 		) {
@@ -465,6 +477,7 @@ struct Settings: View {
 					developersSection
 #endif
 					firmwareSection
+					takSection
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
@@ -530,6 +543,8 @@ struct Settings: View {
 					Firmware(node: node)
 				case .tools:
 					Tools()
+				case .tak:
+					TAKServerConfig()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

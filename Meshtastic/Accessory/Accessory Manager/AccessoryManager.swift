@@ -135,6 +135,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var lastConnectionError: Error?
 	@Published var isConnected: Bool = false
 	@Published var isConnecting: Bool = false
+	@Published var isInBackground: Bool = false
 
 	var activeConnection: (device: Device, connection: any Connection)?
 
@@ -143,8 +144,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Config
 	public var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
-	var shouldAutomaticallyConnectToPreferredPeripheral = true
-	
+	var shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+	var userRequestedConnectionCancellation = false
+
 	// Conncetion process
 	var connectionSteps: SequentialSteps?
 	
@@ -179,10 +181,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		return transports.first(where: {$0.type == type })
 	}
 	
-	func connectToPreferredDevice() {
+	func connectToPreferredDevice(device: Device? = nil) {
 		if !self.isConnected && !self.isConnecting,
-		   let preferredDevice = self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
-			Task { try await self.connect(to: preferredDevice) }
+		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
+			Task {
+				try await self.connect(to: preferredDevice)
+			}
 		}
 	}
 
@@ -196,6 +200,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
+
+		_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
 		
 		try await withTaskCancellationHandler {
 			var toRadio: ToRadio = ToRadio()
@@ -287,6 +293,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	// Should only be called by UI-facing callers.
 	func disconnect() async throws {
+		self.userRequestedConnectionCancellation = true
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
 
@@ -367,13 +374,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func didReceive(_ event: ConnectionEvent) {
+	func didReceive(_ event: ConnectionEvent) async {
 		packetsReceived += 1
 		
 		switch event {
 		case .data(let fromRadio):
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
-			self.processFromRadio(fromRadio)
+			await self.processFromRadio(fromRadio)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
 				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
@@ -397,19 +404,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Task {
 				// Figure out if we'll reconnect
 				if case .errorWithoutReconnect = event {
-					shouldAutomaticallyConnectToPreferredPeripheral = false
+					shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				} else {
-					shouldAutomaticallyConnectToPreferredPeripheral = true
+					shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 				}
 				
-				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription, privacy: .public) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheral, privacy: .public))")
+				Logger.transport.info("🚨 [Accessory] didReceive with failure: \(error.localizedDescription, privacy: .public) (willReconnect = \(self.shouldAutomaticallyConnectToPreferredPeripheralAfterError, privacy: .public))")
 
 				lastConnectionError = error
 				
 				if let connectionStepper = self.connectionStepper {
 					// If we're in the midst of a connection process, tell the stepper that something happened
 					// This cancels retry connection attempts if we've been asked not to reconnect
-					await connectionStepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !shouldAutomaticallyConnectToPreferredPeripheral)
+					await connectionStepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !shouldAutomaticallyConnectToPreferredPeripheralAfterError)
 				} else {
 					// Normal processing.  Expose the error and disconnect
 					try? await self.closeConnection()
@@ -425,7 +432,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .disconnected:
 			Task {
 				// This is user-initatied, so don't reconnect
-				shouldAutomaticallyConnectToPreferredPeripheral = false
+				shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 				try? await self.closeConnection()
 				updateState(.discovering)
 			}
@@ -481,7 +488,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	private func processFromRadio(_ decodedInfo: FromRadio) {
+	private func processFromRadio(_ decodedInfo: FromRadio) async {
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
 			handleMqttClientProxyMessage(mqttClientProxyMessage)
@@ -490,12 +497,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			handleClientNotification(clientNotification)
 
 		case .myInfo(let myNodeInfo):
-			handleMyInfo(myNodeInfo)
+			await handleMyInfo(myNodeInfo)
 
 		case .packet(let packet):
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = self.activeDeviceNum {
-				updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum, context: context)
+				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)
 			} else {
 				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
 			}
@@ -504,20 +511,58 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			if case let .decoded(data) = packet.payloadVariant {
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
-					handleTextMessageAppPacket(packet)
+					await handleTextMessageAppPacket(packet)
+					// Broadcast text message to TAK clients
+					if let text = String(bytes: data.payload, encoding: .utf8) {
+						Logger.tak.debug("Text message received, calling broadcast")
+						let server = TAKServerManager.shared
+						if server.ensureBridgeReadyForMeshToCot() {
+							await server.bridge?.broadcastMeshTextMessageToTAK(text: text, from: packet.from, channel: packet.channel, to: packet.to)
+						}
+					}
 				case .remoteHardwareApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
-					upsertPositionPacket(packet: packet, context: context)
+					await MeshPackets.shared.upsertPositionPacket(packet: packet)
+					// Broadcast position to TAK clients
+					if let position = try? Position(serializedBytes: data.payload) {
+						Logger.tak.debug("Position received, calling broadcast")
+						let server = TAKServerManager.shared
+						if server.ensureBridgeReadyForMeshToCot() {
+							await server.bridge?.broadcastMeshPositionToTAK(position: position, from: packet.from)
+						}
+					}
 				case .waypointApp:
-					waypointPacket(packet: packet, context: context)
+					Logger.tak.info("WAYPOINT APP CASE REACHED")
+					await MeshPackets.shared.waypointPacket(packet: packet)
+					// Broadcast waypoint to TAK clients
+					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
+						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")
+						// Ensure bridge is initialized before calling (not optional chaining, or lazy init won't run)
+						let server = TAKServerManager.shared
+						if server.meshToCotEnabled && server.isRunning && !server.connectedClients.isEmpty {
+							// Force bridge initialization if needed
+							if server.bridge == nil {
+								Logger.tak.info("Initializing bridge on demand")
+								let bridge = TAKMeshtasticBridge(
+									accessoryManager: AccessoryManager.shared,
+									takServerManager: server
+								)
+								bridge.context = AccessoryManager.shared.context
+								server.bridge = bridge
+							}
+							await server.bridge?.broadcastMeshWaypointToTAK(waypoint: waypoint, from: packet.from)
+						} else {
+							Logger.tak.info("Waypoint broadcast skipped: server not ready or no clients")
+						}
+					}
 				case .nodeinfoApp:
 					guard let connectedNodeNum = self.activeDeviceNum else {
 						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for node info upsert.")
 						return
 					}
 					if packet.from != connectedNodeNum {
-						upsertNodeInfoPacket(packet: packet, context: context)
+						await MeshPackets.shared.upsertNodeInfoPacket(packet: packet)
 					} else {
 						Logger.mesh.error("🕸️ Received a node info packet from ourselves over the mesh. Dropping.")
 					}
@@ -526,16 +571,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for routingPacket.")
 						return
 					}
-					routingPacket(packet: packet, connectedNodeNum: deviceNum, context: context)
+					await MeshPackets.shared.routingPacket(packet: packet, connectedNodeNum: deviceNum)
 				case .adminApp:
-					adminAppPacket(packet: packet, context: context)
+					await MeshPackets.shared.adminAppPacket(packet: packet)
 				case .replyApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Reply App handling as a text message")
 					guard let deviceNum = activeConnection?.device.num else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for replyApp.")
 						return
 					}
-					textMessageAppPacket(packet: packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: deviceNum, context: context, appState: appState)
+					await MeshPackets.shared.textMessageAppPacket(packet: packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: deviceNum, appState: appState)
 				case .ipTunnelApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
 				case .serialApp:
@@ -552,11 +597,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						return
 					}
 					if wantRangeTestPackets {
-						textMessageAppPacket(
+						await MeshPackets.shared.textMessageAppPacket(
 							packet: packet,
 							wantRangeTestPackets: true,
 							connectedNode: deviceNum,
-							context: context,
 							appState: appState
 						)
 					} else {
@@ -567,7 +611,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for telemetryApp.")
 						return
 					}
-					telemetryPacket(packet: packet, connectedNode: deviceNum, context: context)
+					await MeshPackets.shared.telemetryPacket(packet: packet, connectedNode: deviceNum)
 				case .textMessageCompressedApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
 				case .zpsApp:
@@ -575,13 +619,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .privateApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
 				case .atakForwarder:
-					Logger.mesh.info("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED UNHANDLED")
+					handleATAKForwarderPacket(packet)
 				case .simulatorApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
 				case .storeForwardPlusplusApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for SFPP App UNHANDLED UNHANDLED")
 				case .audioApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
+				case .nodeStatusApp:
+					Logger.mesh.info("🕸️ MESH PACKET received for Node Status App UNHANDLED")
 				case .tracerouteApp:
 					handleTraceRouteApp(packet)
 				case .neighborinfoApp:
@@ -589,7 +635,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 					}
 				case .paxcounterApp:
-					paxCounterPacket(packet: decodedInfo.packet, context: context)
+					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet)
 				case .mapReportApp:
 					Logger.mesh.info("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .UNRECOGNIZED:
@@ -597,7 +643,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .max:
 					Logger.services.info("MAX PORT NUM OF 511")
 				case .atakPlugin:
-					Logger.mesh.info("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					handleATAKPluginPacket(packet)
 				case .powerstressApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .reticulumTunnelApp:
@@ -612,19 +658,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 
 		case .nodeInfo(let nodeInfo):
-			handleNodeInfo(nodeInfo)
+			await handleNodeInfo(nodeInfo)
 
 		case .channel(let channel):
-			handleChannel(channel)
+			await handleChannel(channel)
 
 		case .config(let config):
-			handleConfig(config)
+			await handleConfig(config)
 
 		case .moduleConfig(let moduleConfig):
-			handleModuleConfig(moduleConfig)
+			await handleModuleConfig(moduleConfig)
 
 		case .metadata(let metadata):
-			handleDeviceMetadata(metadata)
+			await handleDeviceMetadata(metadata)
 
 		case .deviceuiConfig:
 #if DEBUG

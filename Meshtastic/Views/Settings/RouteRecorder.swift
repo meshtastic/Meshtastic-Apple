@@ -74,8 +74,7 @@ struct RouteRecorder: View {
 									.symbolRenderingMode(.multicolor)
 									.foregroundColor(.red)
 							}
-							.buttonStyle(.bordered)
-							.foregroundColor(.red)
+							.glassButtonStyle()
 							.buttonBorderShape(.circle)
 							.matchedGeometryEffect(id: "Details Button", in: namespace)
 

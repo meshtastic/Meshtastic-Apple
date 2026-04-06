@@ -208,3 +208,7 @@ struct NodeListFilter: View {
 		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }
+
+#Preview {
+	NodeListFilter(filters: NodeFilterParameters())
+}

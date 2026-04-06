@@ -22,6 +22,55 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
+/// Firmware update mode for OTA updates
+public enum OTAMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  ///
+  /// Do not reboot into OTA mode
+  case noRebootOta // = 0
+
+  ///
+  /// Reboot into OTA mode for BLE firmware update
+  case otaBle // = 1
+
+  ///
+  /// Reboot into OTA mode for WiFi firmware update
+  case otaWifi // = 2
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .noRebootOta
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .noRebootOta
+    case 1: self = .otaBle
+    case 2: self = .otaWifi
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .noRebootOta: return 0
+    case .otaBle: return 1
+    case .otaWifi: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [OTAMode] = [
+    .noRebootOta,
+    .otaBle,
+    .otaWifi,
+  ]
+
+}
+
+///
 /// This message is handled by the Admin module and is responsible for all settings/channel read/write operations.
 /// This message is used to do settings operations to both remote AND local nodes.
 /// (Prior to 1.2 these operations were done via special ToRadio operations)
@@ -479,6 +528,16 @@ public struct AdminMessage: Sendable {
   }
 
   ///
+  /// Set specified node-num to be muted
+  public var toggleMutedNode: UInt32 {
+    get {
+      if case .toggleMutedNode(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .toggleMutedNode(newValue)}
+  }
+
+  ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   public var beginEditSettings: Bool {
@@ -532,6 +591,9 @@ public struct AdminMessage: Sendable {
   ///
   /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
   /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
+  /// Deprecated in favor of reboot_ota_mode in 2.7.17
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
   public var rebootOtaSeconds: Int32 {
     get {
       if case .rebootOtaSeconds(let v)? = payloadVariant {return v}
@@ -590,6 +652,26 @@ public struct AdminMessage: Sendable {
       return false
     }
     set {payloadVariant = .nodedbReset(newValue)}
+  }
+
+  ///
+  /// Tell the node to reset into the OTA Loader
+  public var otaRequest: AdminMessage.OTAEvent {
+    get {
+      if case .otaRequest(let v)? = payloadVariant {return v}
+      return AdminMessage.OTAEvent()
+    }
+    set {payloadVariant = .otaRequest(newValue)}
+  }
+
+  ///
+  /// Parameters and sensor configuration
+  public var sensorConfig: SensorConfig {
+    get {
+      if case .sensorConfig(let v)? = payloadVariant {return v}
+      return SensorConfig()
+    }
+    set {payloadVariant = .sensorConfig(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -735,6 +817,9 @@ public struct AdminMessage: Sendable {
     /// Set specified node-num to be un-ignored on the NodeDB on the device
     case removeIgnoredNode(UInt32)
     ///
+    /// Set specified node-num to be muted
+    case toggleMutedNode(UInt32)
+    ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
     case beginEditSettings(Bool)
@@ -753,6 +838,9 @@ public struct AdminMessage: Sendable {
     ///
     /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
     /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
+    /// Deprecated in favor of reboot_ota_mode in 2.7.17
+    ///
+    /// NOTE: This field was marked as deprecated in the .proto file.
     case rebootOtaSeconds(Int32)
     ///
     /// This message is only supported for the simulator Portduino build.
@@ -771,6 +859,12 @@ public struct AdminMessage: Sendable {
     /// Tell the node to reset the nodedb.
     /// When true, favorites are preserved through reset.
     case nodedbReset(Bool)
+    ///
+    /// Tell the node to reset into the OTA Loader
+    case otaRequest(AdminMessage.OTAEvent)
+    ///
+    /// Parameters and sensor configuration
+    case sensorConfig(SensorConfig)
 
   }
 
@@ -928,6 +1022,14 @@ public struct AdminMessage: Sendable {
     ///
     /// TODO: REPLACE
     case paxcounterConfig // = 12
+
+    ///
+    /// TODO: REPLACE
+    case statusmessageConfig // = 13
+
+    ///
+    /// Traffic management module config
+    case trafficmanagementConfig // = 14
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -949,6 +1051,8 @@ public struct AdminMessage: Sendable {
       case 10: self = .ambientlightingConfig
       case 11: self = .detectionsensorConfig
       case 12: self = .paxcounterConfig
+      case 13: self = .statusmessageConfig
+      case 14: self = .trafficmanagementConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -968,6 +1072,8 @@ public struct AdminMessage: Sendable {
       case .ambientlightingConfig: return 10
       case .detectionsensorConfig: return 11
       case .paxcounterConfig: return 12
+      case .statusmessageConfig: return 13
+      case .trafficmanagementConfig: return 14
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -987,6 +1093,8 @@ public struct AdminMessage: Sendable {
       .ambientlightingConfig,
       .detectionsensorConfig,
       .paxcounterConfig,
+      .statusmessageConfig,
+      .trafficmanagementConfig,
     ]
 
   }
@@ -1053,6 +1161,28 @@ public struct AdminMessage: Sendable {
     ///
     /// The touch Y coordinate
     public var touchY: UInt32 = 0
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  ///
+  /// User is requesting an over the air update.
+  /// Node will reboot into the OTA loader
+  public struct OTAEvent: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Tell the node to reboot into OTA mode for firmware update via BLE or WiFi (ESP32 only for now)
+    public var rebootOtaMode: OTAMode = .noRebootOta
+
+    ///
+    /// A 32 byte hash of the OTA firmware.
+    /// Used to verify the integrity of the firmware before applying an update.
+    public var otaHash: Data = Data()
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1235,13 +1365,182 @@ public struct KeyVerificationAdmin: Sendable {
   fileprivate var _securityNumber: UInt32? = nil
 }
 
+public struct SensorConfig: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// SCD4X CO2 Sensor configuration
+  public var scd4XConfig: SCD4X_config {
+    get {return _scd4XConfig ?? SCD4X_config()}
+    set {_scd4XConfig = newValue}
+  }
+  /// Returns true if `scd4XConfig` has been explicitly set.
+  public var hasScd4XConfig: Bool {return self._scd4XConfig != nil}
+  /// Clears the value of `scd4XConfig`. Subsequent reads from it will return its default value.
+  public mutating func clearScd4XConfig() {self._scd4XConfig = nil}
+
+  ///
+  /// SEN5X PM Sensor configuration
+  public var sen5XConfig: SEN5X_config {
+    get {return _sen5XConfig ?? SEN5X_config()}
+    set {_sen5XConfig = newValue}
+  }
+  /// Returns true if `sen5XConfig` has been explicitly set.
+  public var hasSen5XConfig: Bool {return self._sen5XConfig != nil}
+  /// Clears the value of `sen5XConfig`. Subsequent reads from it will return its default value.
+  public mutating func clearSen5XConfig() {self._sen5XConfig = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _scd4XConfig: SCD4X_config? = nil
+  fileprivate var _sen5XConfig: SEN5X_config? = nil
+}
+
+public struct SCD4X_config: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Set Automatic self-calibration enabled
+  public var setAsc: Bool {
+    get {return _setAsc ?? false}
+    set {_setAsc = newValue}
+  }
+  /// Returns true if `setAsc` has been explicitly set.
+  public var hasSetAsc: Bool {return self._setAsc != nil}
+  /// Clears the value of `setAsc`. Subsequent reads from it will return its default value.
+  public mutating func clearSetAsc() {self._setAsc = nil}
+
+  ///
+  /// Recalibration target CO2 concentration in ppm (FRC or ASC)
+  public var setTargetCo2Conc: UInt32 {
+    get {return _setTargetCo2Conc ?? 0}
+    set {_setTargetCo2Conc = newValue}
+  }
+  /// Returns true if `setTargetCo2Conc` has been explicitly set.
+  public var hasSetTargetCo2Conc: Bool {return self._setTargetCo2Conc != nil}
+  /// Clears the value of `setTargetCo2Conc`. Subsequent reads from it will return its default value.
+  public mutating func clearSetTargetCo2Conc() {self._setTargetCo2Conc = nil}
+
+  ///
+  /// Reference temperature in degC
+  public var setTemperature: Float {
+    get {return _setTemperature ?? 0}
+    set {_setTemperature = newValue}
+  }
+  /// Returns true if `setTemperature` has been explicitly set.
+  public var hasSetTemperature: Bool {return self._setTemperature != nil}
+  /// Clears the value of `setTemperature`. Subsequent reads from it will return its default value.
+  public mutating func clearSetTemperature() {self._setTemperature = nil}
+
+  ///
+  /// Altitude of sensor in meters above sea level. 0 - 3000m (overrides ambient pressure)
+  public var setAltitude: UInt32 {
+    get {return _setAltitude ?? 0}
+    set {_setAltitude = newValue}
+  }
+  /// Returns true if `setAltitude` has been explicitly set.
+  public var hasSetAltitude: Bool {return self._setAltitude != nil}
+  /// Clears the value of `setAltitude`. Subsequent reads from it will return its default value.
+  public mutating func clearSetAltitude() {self._setAltitude = nil}
+
+  ///
+  /// Sensor ambient pressure in Pa. 70000 - 120000 Pa (overrides altitude)
+  public var setAmbientPressure: UInt32 {
+    get {return _setAmbientPressure ?? 0}
+    set {_setAmbientPressure = newValue}
+  }
+  /// Returns true if `setAmbientPressure` has been explicitly set.
+  public var hasSetAmbientPressure: Bool {return self._setAmbientPressure != nil}
+  /// Clears the value of `setAmbientPressure`. Subsequent reads from it will return its default value.
+  public mutating func clearSetAmbientPressure() {self._setAmbientPressure = nil}
+
+  ///
+  /// Perform a factory reset of the sensor
+  public var factoryReset: Bool {
+    get {return _factoryReset ?? false}
+    set {_factoryReset = newValue}
+  }
+  /// Returns true if `factoryReset` has been explicitly set.
+  public var hasFactoryReset: Bool {return self._factoryReset != nil}
+  /// Clears the value of `factoryReset`. Subsequent reads from it will return its default value.
+  public mutating func clearFactoryReset() {self._factoryReset = nil}
+
+  ///
+  /// Power mode for sensor (true for low power, false for normal)
+  public var setPowerMode: Bool {
+    get {return _setPowerMode ?? false}
+    set {_setPowerMode = newValue}
+  }
+  /// Returns true if `setPowerMode` has been explicitly set.
+  public var hasSetPowerMode: Bool {return self._setPowerMode != nil}
+  /// Clears the value of `setPowerMode`. Subsequent reads from it will return its default value.
+  public mutating func clearSetPowerMode() {self._setPowerMode = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _setAsc: Bool? = nil
+  fileprivate var _setTargetCo2Conc: UInt32? = nil
+  fileprivate var _setTemperature: Float? = nil
+  fileprivate var _setAltitude: UInt32? = nil
+  fileprivate var _setAmbientPressure: UInt32? = nil
+  fileprivate var _factoryReset: Bool? = nil
+  fileprivate var _setPowerMode: Bool? = nil
+}
+
+public struct SEN5X_config: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Reference temperature in degC
+  public var setTemperature: Float {
+    get {return _setTemperature ?? 0}
+    set {_setTemperature = newValue}
+  }
+  /// Returns true if `setTemperature` has been explicitly set.
+  public var hasSetTemperature: Bool {return self._setTemperature != nil}
+  /// Clears the value of `setTemperature`. Subsequent reads from it will return its default value.
+  public mutating func clearSetTemperature() {self._setTemperature = nil}
+
+  ///
+  /// One-shot mode (true for low power - one-shot mode, false for normal - continuous mode)
+  public var setOneShotMode: Bool {
+    get {return _setOneShotMode ?? false}
+    set {_setOneShotMode = newValue}
+  }
+  /// Returns true if `setOneShotMode` has been explicitly set.
+  public var hasSetOneShotMode: Bool {return self._setOneShotMode != nil}
+  /// Clears the value of `setOneShotMode`. Subsequent reads from it will return its default value.
+  public mutating func clearSetOneShotMode() {self._setOneShotMode = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _setTemperature: Float? = nil
+  fileprivate var _setOneShotMode: Bool? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "meshtastic"
 
+extension OTAMode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NO_REBOOT_OTA\0\u{1}OTA_BLE\0\u{1}OTA_WIFI\0")
+}
+
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{4}\u{10}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{4}\u{f}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1673,6 +1972,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .removeIgnoredNode(v)
         }
       }()
+      case 49: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .toggleMutedNode(v)
+        }
+      }()
       case 64: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -1772,6 +2079,32 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         }
       }()
       case 101: try { try decoder.decodeSingularBytesField(value: &self.sessionPasskey) }()
+      case 102: try {
+        var v: AdminMessage.OTAEvent?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .otaRequest(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .otaRequest(v)
+        }
+      }()
+      case 103: try {
+        var v: SensorConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .sensorConfig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .sensorConfig(v)
+        }
+      }()
       default: break
       }
     }
@@ -1955,6 +2288,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .removeIgnoredNode(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 48)
     }()
+    case .toggleMutedNode?: try {
+      guard case .toggleMutedNode(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 49)
+    }()
     case .beginEditSettings?: try {
       guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 64)
@@ -1999,10 +2336,21 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .nodedbReset(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 100)
     }()
-    case nil: break
+    default: break
     }
     if !self.sessionPasskey.isEmpty {
       try visitor.visitSingularBytesField(value: self.sessionPasskey, fieldNumber: 101)
+    }
+    switch self.payloadVariant {
+    case .otaRequest?: try {
+      guard case .otaRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 102)
+    }()
+    case .sensorConfig?: try {
+      guard case .sensorConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 103)
+    }()
+    default: break
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2020,7 +2368,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{1}EXTNOTIF_CONFIG\0\u{1}STOREFORWARD_CONFIG\0\u{1}RANGETEST_CONFIG\0\u{1}TELEMETRY_CONFIG\0\u{1}CANNEDMSG_CONFIG\0\u{1}AUDIO_CONFIG\0\u{1}REMOTEHARDWARE_CONFIG\0\u{1}NEIGHBORINFO_CONFIG\0\u{1}AMBIENTLIGHTING_CONFIG\0\u{1}DETECTIONSENSOR_CONFIG\0\u{1}PAXCOUNTER_CONFIG\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{1}EXTNOTIF_CONFIG\0\u{1}STOREFORWARD_CONFIG\0\u{1}RANGETEST_CONFIG\0\u{1}TELEMETRY_CONFIG\0\u{1}CANNEDMSG_CONFIG\0\u{1}AUDIO_CONFIG\0\u{1}REMOTEHARDWARE_CONFIG\0\u{1}NEIGHBORINFO_CONFIG\0\u{1}AMBIENTLIGHTING_CONFIG\0\u{1}DETECTIONSENSOR_CONFIG\0\u{1}PAXCOUNTER_CONFIG\0\u{1}STATUSMESSAGE_CONFIG\0\u{1}TRAFFICMANAGEMENT_CONFIG\0")
 }
 
 extension AdminMessage.BackupLocation: SwiftProtobuf._ProtoNameProviding {
@@ -2067,6 +2415,41 @@ extension AdminMessage.InputEvent: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.kbChar != rhs.kbChar {return false}
     if lhs.touchX != rhs.touchX {return false}
     if lhs.touchY != rhs.touchY {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = AdminMessage.protoMessageName + ".OTAEvent"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}reboot_ota_mode\0\u{3}ota_hash\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.rebootOtaMode) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.otaHash) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.rebootOtaMode != .noRebootOta {
+      try visitor.visitSingularEnumField(value: self.rebootOtaMode, fieldNumber: 1)
+    }
+    if !self.otaHash.isEmpty {
+      try visitor.visitSingularBytesField(value: self.otaHash, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: AdminMessage.OTAEvent, rhs: AdminMessage.OTAEvent) -> Bool {
+    if lhs.rebootOtaMode != rhs.rebootOtaMode {return false}
+    if lhs.otaHash != rhs.otaHash {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2247,4 +2630,146 @@ extension KeyVerificationAdmin: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 
 extension KeyVerificationAdmin.MessageType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0INITIATE_VERIFICATION\0\u{1}PROVIDE_SECURITY_NUMBER\0\u{1}DO_VERIFY\0\u{1}DO_NOT_VERIFY\0")
+}
+
+extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SensorConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}scd4x_config\0\u{3}sen5x_config\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._scd4XConfig) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._sen5XConfig) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._scd4XConfig {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._sen5XConfig {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SensorConfig, rhs: SensorConfig) -> Bool {
+    if lhs._scd4XConfig != rhs._scd4XConfig {return false}
+    if lhs._sen5XConfig != rhs._sen5XConfig {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SCD4X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SCD4X_config"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_asc\0\u{3}set_target_co2_conc\0\u{3}set_temperature\0\u{3}set_altitude\0\u{3}set_ambient_pressure\0\u{3}factory_reset\0\u{3}set_power_mode\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self._setAsc) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._setTargetCo2Conc) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self._setTemperature) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._setAltitude) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._setAmbientPressure) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self._factoryReset) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self._setPowerMode) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._setAsc {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._setTargetCo2Conc {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._setTemperature {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._setAltitude {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._setAmbientPressure {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._factoryReset {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 6)
+    } }()
+    try { if let v = self._setPowerMode {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 7)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SCD4X_config, rhs: SCD4X_config) -> Bool {
+    if lhs._setAsc != rhs._setAsc {return false}
+    if lhs._setTargetCo2Conc != rhs._setTargetCo2Conc {return false}
+    if lhs._setTemperature != rhs._setTemperature {return false}
+    if lhs._setAltitude != rhs._setAltitude {return false}
+    if lhs._setAmbientPressure != rhs._setAmbientPressure {return false}
+    if lhs._factoryReset != rhs._factoryReset {return false}
+    if lhs._setPowerMode != rhs._setPowerMode {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SEN5X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SEN5X_config"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_temperature\0\u{3}set_one_shot_mode\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularFloatField(value: &self._setTemperature) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self._setOneShotMode) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._setTemperature {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._setOneShotMode {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SEN5X_config, rhs: SEN5X_config) -> Bool {
+    if lhs._setTemperature != rhs._setTemperature {return false}
+    if lhs._setOneShotMode != rhs._setOneShotMode {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }

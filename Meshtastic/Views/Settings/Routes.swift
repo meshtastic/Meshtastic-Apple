@@ -281,7 +281,7 @@ struct Routes: View {
 							} label: {
 								Label("Export", systemImage: "square.and.arrow.down")
 							}
-							.buttonStyle(.bordered)
+							.glassButtonStyle()
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)
 							.padding(.bottom)

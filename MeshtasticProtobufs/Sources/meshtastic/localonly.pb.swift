@@ -278,6 +278,28 @@ public struct LocalModuleConfig: @unchecked Sendable {
   public mutating func clearPaxcounter() {_uniqueStorage()._paxcounter = nil}
 
   ///
+  /// StatusMessage Config
+  public var statusmessage: ModuleConfig.StatusMessageConfig {
+    get {return _storage._statusmessage ?? ModuleConfig.StatusMessageConfig()}
+    set {_uniqueStorage()._statusmessage = newValue}
+  }
+  /// Returns true if `statusmessage` has been explicitly set.
+  public var hasStatusmessage: Bool {return _storage._statusmessage != nil}
+  /// Clears the value of `statusmessage`. Subsequent reads from it will return its default value.
+  public mutating func clearStatusmessage() {_uniqueStorage()._statusmessage = nil}
+
+  ///
+  /// The part of the config that is specific to the Traffic Management module
+  public var trafficManagement: ModuleConfig.TrafficManagementConfig {
+    get {return _storage._trafficManagement ?? ModuleConfig.TrafficManagementConfig()}
+    set {_uniqueStorage()._trafficManagement = newValue}
+  }
+  /// Returns true if `trafficManagement` has been explicitly set.
+  public var hasTrafficManagement: Bool {return _storage._trafficManagement != nil}
+  /// Clears the value of `trafficManagement`. Subsequent reads from it will return its default value.
+  public mutating func clearTrafficManagement() {_uniqueStorage()._trafficManagement = nil}
+
+  ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
@@ -425,7 +447,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalModuleConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}version\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}version\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0")
 
   fileprivate class _StorageClass {
     var _mqtt: ModuleConfig.MQTTConfig? = nil
@@ -441,6 +463,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _ambientLighting: ModuleConfig.AmbientLightingConfig? = nil
     var _detectionSensor: ModuleConfig.DetectionSensorConfig? = nil
     var _paxcounter: ModuleConfig.PaxcounterConfig? = nil
+    var _statusmessage: ModuleConfig.StatusMessageConfig? = nil
+    var _trafficManagement: ModuleConfig.TrafficManagementConfig? = nil
     var _version: UInt32 = 0
 
       // This property is used as the initial default value for new instances of the type.
@@ -465,6 +489,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _ambientLighting = source._ambientLighting
       _detectionSensor = source._detectionSensor
       _paxcounter = source._paxcounter
+      _statusmessage = source._statusmessage
+      _trafficManagement = source._trafficManagement
       _version = source._version
     }
   }
@@ -498,6 +524,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 12: try { try decoder.decodeSingularMessageField(value: &_storage._ambientLighting) }()
         case 13: try { try decoder.decodeSingularMessageField(value: &_storage._detectionSensor) }()
         case 14: try { try decoder.decodeSingularMessageField(value: &_storage._paxcounter) }()
+        case 15: try { try decoder.decodeSingularMessageField(value: &_storage._statusmessage) }()
+        case 16: try { try decoder.decodeSingularMessageField(value: &_storage._trafficManagement) }()
         default: break
         }
       }
@@ -552,6 +580,12 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._paxcounter {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
       } }()
+      try { if let v = _storage._statusmessage {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
+      } }()
+      try { if let v = _storage._trafficManagement {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -574,6 +608,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._ambientLighting != rhs_storage._ambientLighting {return false}
         if _storage._detectionSensor != rhs_storage._detectionSensor {return false}
         if _storage._paxcounter != rhs_storage._paxcounter {return false}
+        if _storage._statusmessage != rhs_storage._statusmessage {return false}
+        if _storage._trafficManagement != rhs_storage._trafficManagement {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }

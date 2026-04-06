@@ -52,6 +52,7 @@ struct NodeMapSwiftUI: View {
 	@State var isLookingAround = false
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
+	@State var isShowingLegend = false
 	@State var isMeshMap = false
 	@State var enabledOverlayConfigs: Set<UUID> = Set()
 
@@ -96,6 +97,13 @@ struct NodeMapSwiftUI: View {
 			}
 			.sheet(isPresented: $isEditingSettings) {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
+			}
+			.sheet(isPresented: $isShowingLegend) {
+				MapLegend(isMeshMap: false)
+					.presentationDetents([.medium, .large])
+					.presentationContentInteraction(.scrolls)
+					.presentationDragIndicator(.visible)
+					.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 			}
 			.onChange(of: selectedMapLayer) { _, newMapLayer in
 				updateMapStyle(for: newMapLayer)
@@ -170,15 +178,23 @@ struct NodeMapSwiftUI: View {
 		HStack {
 			Button(action: {
 				withAnimation {
+					isShowingLegend = !isShowingLegend
+				}
+			}) {
+				Image(systemName: isShowingLegend ? "map.fill" : "map")
+			}
+			.accessibilityLabel(isShowingLegend ? Text("Hide legend") : Text("Show legend"))
+			.accessibilityHint(Text("Toggles the map legend"))
+			.glassButtonStyle()
+
+			Button(action: {
+				withAnimation {
 					isEditingSettings = !isEditingSettings
 				}
 			}) {
 				Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
-					.padding(.vertical, 5)
 			}
-			.tint(Color(UIColor.secondarySystemBackground))
-			.foregroundColor(.accentColor)
-			.buttonStyle(.borderedProminent)
+			.glassButtonStyle()
 
 			if scene != nil {
 				Button(action: {
@@ -188,11 +204,8 @@ struct NodeMapSwiftUI: View {
 					isLookingAround = !isLookingAround
 				}) {
 					Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
-						.padding(.vertical, 5)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
-				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
+				.glassButtonStyle()
 			}
 
 			if node.positions?.count ?? 0 > 1 {
@@ -203,11 +216,8 @@ struct NodeMapSwiftUI: View {
 					isShowingAltitude = !isShowingAltitude
 				}) {
 					Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
-						.padding(.vertical, 5)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
-				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
+				.glassButtonStyle()
 			}
 		}
 		.controlSize(.regular)

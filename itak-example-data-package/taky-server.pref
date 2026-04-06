@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='ASCII' standalone='yes'?>
+<preferences>
+  <preference version="1" name="cot_streams">
+    <entry key="count" class="class java.lang.Integer">1</entry>
+    <entry key="description0" class="class java.lang.String">Win10 Taky Server</entry>
+    <entry key="enabled0" class="class java.lang.Boolean">true</entry>
+    <entry key="connectString0" class="class java.lang.String">172.30.254.210:8089:ssl</entry>
+  </preference>
+  <preference version="1" name="com.atakmap.app_preferences">
+    <entry key="displayServerConnectionWidget" class="class java.lang.Boolean">true</entry>
+    <entry key="caLocation" class="class java.lang.String">server.p12</entry>
+    <entry key="caPassword" class="class java.lang.String">YOURPASSWORD</entry>
+    <entry key="clientPassword" class="class java.lang.String">YOURPASSWORD</entry>
+    <entry key="certificateLocation" class="class java.lang.String">iphone.p12</entry>
+  </preference>
+</preferences>

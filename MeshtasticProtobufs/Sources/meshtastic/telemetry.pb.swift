@@ -208,6 +208,18 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// BH1750 light sensor
   case bh1750 // = 45
+
+  ///
+  /// HDC1080 Temperature and Humidity Sensor
+  case hdc1080 // = 46
+
+  ///
+  /// STH21 Temperature and R. Humidity sensor
+  case sht21 // = 47
+
+  ///
+  /// Sensirion STC31 CO2 sensor
+  case stc31 // = 48
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -262,6 +274,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 43: self = .sen5X
     case 44: self = .tsl2561
     case 45: self = .bh1750
+    case 46: self = .hdc1080
+    case 47: self = .sht21
+    case 48: self = .stc31
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -314,6 +329,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .sen5X: return 43
     case .tsl2561: return 44
     case .bh1750: return 45
+    case .hdc1080: return 46
+    case .sht21: return 47
+    case .stc31: return 48
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -366,6 +384,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .sen5X,
     .tsl2561,
     .bh1750,
+    .hdc1080,
+    .sht21,
+    .stc31,
   ]
 
 }
@@ -1260,6 +1281,50 @@ public struct LocalStats: Sendable {
   /// Number of packets that were dropped because the transmit queue was full.
   public var numTxDropped: UInt32 = 0
 
+  ///
+  /// Noise floor value measured in dBm
+  public var noiseFloor: Int32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
+/// Traffic management statistics for mesh network optimization
+public struct TrafficManagementStats: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Total number of packets inspected by traffic management
+  public var packetsInspected: UInt32 = 0
+
+  ///
+  /// Number of position packets dropped due to deduplication
+  public var positionDedupDrops: UInt32 = 0
+
+  ///
+  /// Number of NodeInfo requests answered from cache
+  public var nodeinfoCacheHits: UInt32 = 0
+
+  ///
+  /// Number of packets dropped due to rate limiting
+  public var rateLimitDrops: UInt32 = 0
+
+  ///
+  /// Number of unknown/undecryptable packets dropped
+  public var unknownPacketDrops: UInt32 = 0
+
+  ///
+  /// Number of packets with hop_limit exhausted for local-only broadcast
+  public var hopExhaustedPackets: UInt32 = 0
+
+  ///
+  /// Number of times router hop preservation was applied
+  public var routerHopsPreserved: UInt32 = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1477,6 +1542,16 @@ public struct Telemetry: @unchecked Sendable {
     set {_uniqueStorage()._variant = .hostMetrics(newValue)}
   }
 
+  ///
+  /// Traffic management statistics
+  public var trafficManagementStats: TrafficManagementStats {
+    get {
+      if case .trafficManagementStats(let v)? = _storage._variant {return v}
+      return TrafficManagementStats()
+    }
+    set {_uniqueStorage()._variant = .trafficManagementStats(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_Variant: Equatable, Sendable {
@@ -1501,6 +1576,9 @@ public struct Telemetry: @unchecked Sendable {
     ///
     /// Linux host metrics
     case hostMetrics(HostMetrics)
+    ///
+    /// Traffic management statistics
+    case trafficManagementStats(TrafficManagementStats)
 
   }
 
@@ -1529,12 +1607,73 @@ public struct Nau7802Config: Sendable {
   public init() {}
 }
 
+///
+/// SEN5X State, for saving to flash
+public struct SEN5XState: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Last cleaning time for SEN5X
+  public var lastCleaningTime: UInt32 = 0
+
+  ///
+  /// Last cleaning time for SEN5X - valid flag
+  public var lastCleaningValid: Bool = false
+
+  ///
+  /// Config flag for one-shot mode (see admin.proto)
+  public var oneShotMode: Bool = false
+
+  ///
+  /// Last VOC state time for SEN55
+  public var vocStateTime: UInt32 {
+    get {return _vocStateTime ?? 0}
+    set {_vocStateTime = newValue}
+  }
+  /// Returns true if `vocStateTime` has been explicitly set.
+  public var hasVocStateTime: Bool {return self._vocStateTime != nil}
+  /// Clears the value of `vocStateTime`. Subsequent reads from it will return its default value.
+  public mutating func clearVocStateTime() {self._vocStateTime = nil}
+
+  ///
+  /// Last VOC state validity flag for SEN55
+  public var vocStateValid: Bool {
+    get {return _vocStateValid ?? false}
+    set {_vocStateValid = newValue}
+  }
+  /// Returns true if `vocStateValid` has been explicitly set.
+  public var hasVocStateValid: Bool {return self._vocStateValid != nil}
+  /// Clears the value of `vocStateValid`. Subsequent reads from it will return its default value.
+  public mutating func clearVocStateValid() {self._vocStateValid = nil}
+
+  ///
+  /// VOC state array (8x uint8t) for SEN55
+  public var vocStateArray: UInt64 {
+    get {return _vocStateArray ?? 0}
+    set {_vocStateArray = newValue}
+  }
+  /// Returns true if `vocStateArray` has been explicitly set.
+  public var hasVocStateArray: Bool {return self._vocStateArray != nil}
+  /// Clears the value of `vocStateArray`. Subsequent reads from it will return its default value.
+  public mutating func clearVocStateArray() {self._vocStateArray = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _vocStateTime: UInt32? = nil
+  fileprivate var _vocStateValid: Bool? = nil
+  fileprivate var _vocStateArray: UInt64? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "meshtastic"
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0\u{1}HDC1080\0\u{1}SHT21\0\u{1}STC31\0")
 }
 
 extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -2157,7 +2296,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 
 extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalStats"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}uptime_seconds\0\u{3}channel_utilization\0\u{3}air_util_tx\0\u{3}num_packets_tx\0\u{3}num_packets_rx\0\u{3}num_packets_rx_bad\0\u{3}num_online_nodes\0\u{3}num_total_nodes\0\u{3}num_rx_dupe\0\u{3}num_tx_relay\0\u{3}num_tx_relay_canceled\0\u{3}heap_total_bytes\0\u{3}heap_free_bytes\0\u{3}num_tx_dropped\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}uptime_seconds\0\u{3}channel_utilization\0\u{3}air_util_tx\0\u{3}num_packets_tx\0\u{3}num_packets_rx\0\u{3}num_packets_rx_bad\0\u{3}num_online_nodes\0\u{3}num_total_nodes\0\u{3}num_rx_dupe\0\u{3}num_tx_relay\0\u{3}num_tx_relay_canceled\0\u{3}heap_total_bytes\0\u{3}heap_free_bytes\0\u{3}num_tx_dropped\0\u{3}noise_floor\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2179,6 +2318,7 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.heapTotalBytes) }()
       case 13: try { try decoder.decodeSingularUInt32Field(value: &self.heapFreeBytes) }()
       case 14: try { try decoder.decodeSingularUInt32Field(value: &self.numTxDropped) }()
+      case 15: try { try decoder.decodeSingularInt32Field(value: &self.noiseFloor) }()
       default: break
       }
     }
@@ -2227,6 +2367,9 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if self.numTxDropped != 0 {
       try visitor.visitSingularUInt32Field(value: self.numTxDropped, fieldNumber: 14)
     }
+    if self.noiseFloor != 0 {
+      try visitor.visitSingularInt32Field(value: self.noiseFloor, fieldNumber: 15)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2245,6 +2388,67 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if lhs.heapTotalBytes != rhs.heapTotalBytes {return false}
     if lhs.heapFreeBytes != rhs.heapFreeBytes {return false}
     if lhs.numTxDropped != rhs.numTxDropped {return false}
+    if lhs.noiseFloor != rhs.noiseFloor {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension TrafficManagementStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TrafficManagementStats"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}packets_inspected\0\u{3}position_dedup_drops\0\u{3}nodeinfo_cache_hits\0\u{3}rate_limit_drops\0\u{3}unknown_packet_drops\0\u{3}hop_exhausted_packets\0\u{3}router_hops_preserved\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.packetsInspected) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.positionDedupDrops) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.nodeinfoCacheHits) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.rateLimitDrops) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.unknownPacketDrops) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.hopExhaustedPackets) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.routerHopsPreserved) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.packetsInspected != 0 {
+      try visitor.visitSingularUInt32Field(value: self.packetsInspected, fieldNumber: 1)
+    }
+    if self.positionDedupDrops != 0 {
+      try visitor.visitSingularUInt32Field(value: self.positionDedupDrops, fieldNumber: 2)
+    }
+    if self.nodeinfoCacheHits != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodeinfoCacheHits, fieldNumber: 3)
+    }
+    if self.rateLimitDrops != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rateLimitDrops, fieldNumber: 4)
+    }
+    if self.unknownPacketDrops != 0 {
+      try visitor.visitSingularUInt32Field(value: self.unknownPacketDrops, fieldNumber: 5)
+    }
+    if self.hopExhaustedPackets != 0 {
+      try visitor.visitSingularUInt32Field(value: self.hopExhaustedPackets, fieldNumber: 6)
+    }
+    if self.routerHopsPreserved != 0 {
+      try visitor.visitSingularUInt32Field(value: self.routerHopsPreserved, fieldNumber: 7)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: TrafficManagementStats, rhs: TrafficManagementStats) -> Bool {
+    if lhs.packetsInspected != rhs.packetsInspected {return false}
+    if lhs.positionDedupDrops != rhs.positionDedupDrops {return false}
+    if lhs.nodeinfoCacheHits != rhs.nodeinfoCacheHits {return false}
+    if lhs.rateLimitDrops != rhs.rateLimitDrops {return false}
+    if lhs.unknownPacketDrops != rhs.unknownPacketDrops {return false}
+    if lhs.hopExhaustedPackets != rhs.hopExhaustedPackets {return false}
+    if lhs.routerHopsPreserved != rhs.routerHopsPreserved {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2370,7 +2574,7 @@ extension HostMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Telemetry"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}time\0\u{3}device_metrics\0\u{3}environment_metrics\0\u{3}air_quality_metrics\0\u{3}power_metrics\0\u{3}local_stats\0\u{3}health_metrics\0\u{3}host_metrics\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}time\0\u{3}device_metrics\0\u{3}environment_metrics\0\u{3}air_quality_metrics\0\u{3}power_metrics\0\u{3}local_stats\0\u{3}health_metrics\0\u{3}host_metrics\0\u{3}traffic_management_stats\0")
 
   fileprivate class _StorageClass {
     var _time: UInt32 = 0
@@ -2497,6 +2701,19 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._variant = .hostMetrics(v)
           }
         }()
+        case 9: try {
+          var v: TrafficManagementStats?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .trafficManagementStats(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .trafficManagementStats(v)
+          }
+        }()
         default: break
         }
       }
@@ -2540,6 +2757,10 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case .hostMetrics?: try {
         guard case .hostMetrics(let v)? = _storage._variant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+      }()
+      case .trafficManagementStats?: try {
+        guard case .trafficManagementStats(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
       }()
       case nil: break
       }
@@ -2593,6 +2814,65 @@ extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   public static func ==(lhs: Nau7802Config, rhs: Nau7802Config) -> Bool {
     if lhs.zeroOffset != rhs.zeroOffset {return false}
     if lhs.calibrationFactor != rhs.calibrationFactor {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SEN5XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SEN5XState"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}last_cleaning_time\0\u{3}last_cleaning_valid\0\u{3}one_shot_mode\0\u{3}voc_state_time\0\u{3}voc_state_valid\0\u{3}voc_state_array\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.lastCleaningTime) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.lastCleaningValid) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.oneShotMode) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._vocStateTime) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self._vocStateValid) }()
+      case 6: try { try decoder.decodeSingularFixed64Field(value: &self._vocStateArray) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.lastCleaningTime != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lastCleaningTime, fieldNumber: 1)
+    }
+    if self.lastCleaningValid != false {
+      try visitor.visitSingularBoolField(value: self.lastCleaningValid, fieldNumber: 2)
+    }
+    if self.oneShotMode != false {
+      try visitor.visitSingularBoolField(value: self.oneShotMode, fieldNumber: 3)
+    }
+    try { if let v = self._vocStateTime {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._vocStateValid {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._vocStateArray {
+      try visitor.visitSingularFixed64Field(value: v, fieldNumber: 6)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SEN5XState, rhs: SEN5XState) -> Bool {
+    if lhs.lastCleaningTime != rhs.lastCleaningTime {return false}
+    if lhs.lastCleaningValid != rhs.lastCleaningValid {return false}
+    if lhs.oneShotMode != rhs.oneShotMode {return false}
+    if lhs._vocStateTime != rhs._vocStateTime {return false}
+    if lhs._vocStateValid != rhs._vocStateValid {return false}
+    if lhs._vocStateArray != rhs._vocStateArray {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
