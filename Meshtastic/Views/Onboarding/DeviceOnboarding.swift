@@ -14,6 +14,7 @@ struct DeviceOnboarding: View {
 	}
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@ObservedObject private var locationsHandler: LocationsHandler = .shared
 	@State var navigationPath: [SetupGuide] = []
 	@State var locationStatus = LocationsHandler.shared.manager.authorizationStatus
 	@AppStorage("provideLocation") private var provideLocation: Bool = false
@@ -239,10 +240,7 @@ struct DeviceOnboarding: View {
 						title: String(localized: "Battery Usage"),
 						subtitle: String(localized: "Enabling background activity may increase battery usage. You can toggle this at any time in the app settings.")
 					)
-					Toggle(isOn: Binding(
-						get: { LocationsHandler.shared.backgroundActivity },
-						set: { LocationsHandler.shared.backgroundActivity = $0 }
-					)) {
+					Toggle(isOn: $locationsHandler.backgroundActivity) {
 						Label {
 							Text("Enable Background Activity")
 						} icon: {

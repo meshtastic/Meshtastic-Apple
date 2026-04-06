@@ -62,7 +62,7 @@ struct Firmware: View {
 						.foregroundStyle(.red)
 						.font(.title2)
 						.padding(.bottom)
-					Text("Current Firmware Version: \(connectedVersion), Latest Firmware Version: \(accessoryManager.minimumVersion)")
+					Text("Current Firmware Version: \(connectedVersion), Minimum Required Version: \(accessoryManager.minimumVersion)")
 						.fixedSize(horizontal: false, vertical: true)
 						.font(.title3)
 						.padding(.bottom)
