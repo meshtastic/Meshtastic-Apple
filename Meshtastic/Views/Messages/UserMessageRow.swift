@@ -28,15 +28,15 @@ struct UserMessageRow: View {
 	}
 	
 	init(message: MessageEntity,
-		 allMessages: [MessageEntity],
-		 previousMessage: MessageEntity?,
-		 preferredPeripheralNum: Int,
-		 user: UserEntity,
-		 replyMessageId: Binding<Int64>,
-		 messageFieldFocused: FocusState<Bool>.Binding,
-		 messageToHighlight: Binding<Int64>,
-		 scrollView: ScrollViewProxy,
-		 onInteractionComplete: @escaping () -> Void) {
+	     allMessages: [MessageEntity],
+	     previousMessage: MessageEntity?,
+	     preferredPeripheralNum: Int,
+	     user: UserEntity,
+	     replyMessageId: Binding<Int64>,
+	     messageFieldFocused: FocusState<Bool>.Binding,
+	     messageToHighlight: Binding<Int64>,
+	     scrollView: ScrollViewProxy,
+	     onInteractionComplete: @escaping () -> Void) {
 		// Initialize ObservedObject with the concrete instance
 		self._message = ObservedObject(initialValue: message)
 		self.allMessages = allMessages
@@ -88,7 +88,7 @@ struct UserMessageRow: View {
 							Image(systemName: "arrowshape.turn.up.left.fill")
 								.symbolRenderingMode(.hierarchical).imageScale(.large)
 								.foregroundColor(.accentColor).padding(.leading)
-							Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+							Text(messageReply?.displayedPayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
 						}
 						.padding(10)
 						.overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.blue, lineWidth: 0.5))
