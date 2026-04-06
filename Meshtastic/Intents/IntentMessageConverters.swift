@@ -48,8 +48,8 @@ enum IntentMessageConverters {
 	/// Builds a stable conversation identifier from a message.
 	/// Channel messages use "channel-<N>", direct messages use "dm-<nodeNum>".
 	static func conversationIdentifier(for message: MessageEntity) -> String {
-		if message.toUser != nil {
-			return "dm-\(message.toUser?.num ?? 0)"
+		if let toUser = message.toUser {
+			return "dm-\(toUser.num)"
 		}
 		return "channel-\(message.channel)"
 	}
