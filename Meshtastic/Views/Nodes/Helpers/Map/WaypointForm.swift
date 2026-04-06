@@ -32,9 +32,8 @@ struct WaypointForm: View {
 	@State private var lockedTo: Int64 = 0
 	@State private var selectedDetent: PresentationDetent = .medium
 	@State private var waypointFailedAlert: Bool = false
-	@State private var createdByNode : NodeInfoEntity? = nil
-	@State private var lastUpdatedByNode : NodeInfoEntity? = nil
-
+	@State private var createdByNode: NodeInfoEntity? = nil
+	@State private var lastUpdatedByNode: NodeInfoEntity? = nil
 
 	var body: some View {
 		Group {
@@ -530,5 +529,3 @@ struct WaypointForm: View {
 		   }
 	   }
 }
-
-

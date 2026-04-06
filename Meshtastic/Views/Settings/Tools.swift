@@ -47,7 +47,7 @@ struct Tools: View {
 	}
 
 	var body: some View {
-		VStack{
+		VStack {
 			List {
 				Section(header: Text("Create Node Contact NFC Tag")) {
 					if let node = connectedNode {
