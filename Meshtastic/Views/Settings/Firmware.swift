@@ -13,14 +13,13 @@ struct Firmware: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	var node: NodeInfoEntity?
-	@State var minimumVersion = "2.5.4"
 	@State var version = ""
 	@State private var currentDevice: DeviceHardware?
 	@State private var latestStable: FirmwareRelease?
 	@State private var latestAlpha: FirmwareRelease?
 
 	var body: some View {
-		let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
+		let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
 		let connectedVersion = accessoryManager.activeConnection?.device.firmwareVersion ?? "Unknown"
 		ScrollView {
 			VStack(alignment: .leading) {
@@ -63,7 +62,7 @@ struct Firmware: View {
 						.foregroundStyle(.red)
 						.font(.title2)
 						.padding(.bottom)
-					Text("Current Firmware Version: \(connectedVersion), Latest Firmware Version: \(minimumVersion)")
+					Text("Current Firmware Version: \(connectedVersion), Latest Firmware Version: \(accessoryManager.minimumVersion)")
 						.fixedSize(horizontal: false, vertical: true)
 						.font(.title3)
 						.padding(.bottom)

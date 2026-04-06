@@ -8,6 +8,7 @@ struct DeviceOnboarding: View {
 	enum SetupGuide: Hashable {
 		case notifications
 		case location
+		case backgroundActivity
 		case localNetwork
 		case bluetooth
 	}
@@ -209,6 +210,69 @@ struct DeviceOnboarding: View {
 		}
 	}
 	
+	var backgroundActivityView: some View {
+		VStack {
+			ScrollView(.vertical) {
+				VStack {
+					Text("Background Activity")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				VStack(alignment: .leading, spacing: 16) {
+					Text(createBackgroundActivityString())
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "location.fill",
+						title: String(localized: "Continuous Location Updates"),
+						subtitle: String(localized: "Keep the mesh map updated and send your position to the mesh even while using other apps.")
+					)
+					makeRow(
+						icon: "antenna.radiowaves.left.and.right",
+						title: String(localized: "Background Mesh Tracking"),
+						subtitle: String(localized: "Receive position updates from other nodes and maintain an accurate picture of the mesh while in the background.")
+					)
+					makeRow(
+						icon: "battery.100.bolt",
+						title: String(localized: "Battery Usage"),
+						subtitle: String(localized: "Enabling background activity may increase battery usage. You can toggle this at any time in the app settings.")
+					)
+					Toggle(isOn: Binding(
+						get: { LocationsHandler.shared.backgroundActivity },
+						set: { LocationsHandler.shared.backgroundActivity = $0 }
+					)) {
+						Label {
+							Text("Enable Background Activity")
+						} icon: {
+							Image(systemName: "location.circle")
+						}
+					}
+					.fixedSize()
+					.scaleEffect(0.85)
+					.padding(.leading, 52)
+					.tint(.accentColor)
+				}
+				.padding()
+			}
+			Spacer()
+			Button {
+				Task {
+					await goToNextStep(after: .backgroundActivity)
+				}
+			} label: {
+				Text("Continue")
+					.frame(maxWidth: .infinity)
+			}
+			.padding()
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.buttonStyle(.borderedProminent)
+		}
+	}
+	
 	var localNetworkView: some View {
 		VStack {
 			ScrollView(.vertical) {
@@ -313,6 +377,8 @@ struct DeviceOnboarding: View {
 						notificationView
 					case .location:
 						locationView
+					case .backgroundActivity:
+						backgroundActivityView
 					case .bluetooth:
 						bluetoothView
 					case .localNetwork:
@@ -382,8 +448,10 @@ struct DeviceOnboarding: View {
 		case .location:
 			locationStatus = LocationsHandler.shared.manager.authorizationStatus
 			if locationStatus != .notDetermined && locationStatus != .restricted {
-				navigationPath.append(.localNetwork)
+				navigationPath.append(.backgroundActivity)
 			}
+		case .backgroundActivity:
+			navigationPath.append(.localNetwork)
 		case .localNetwork:
 			navigationPath.append(.bluetooth)
 			
@@ -393,6 +461,15 @@ struct DeviceOnboarding: View {
 	}
 	
 	// MARK: Formatting
+	func createBackgroundActivityString() -> AttributedString {
+		var fullText = AttributedString("Meshtastic can track your location in the background to keep the mesh map updated and send your position to the mesh even when the app is not in the foreground. You can update this setting at any time from settings.")
+		if let range = fullText.range(of: "settings") {
+			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
+			fullText[range].foregroundColor = .blue
+		}
+		return fullText
+	}
+	
 	func createLocationString() -> AttributedString {
 		var fullText = AttributedString(localized: "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from settings.")
 		if let range = fullText.range(of: String(localized: "settings")) {

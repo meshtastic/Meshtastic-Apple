@@ -116,7 +116,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Constants
 	let NONCE_ONLY_CONFIG = 69420
 	let NONCE_ONLY_DB = 69421
-	let minimumVersion = "2.3.15"
+	let minimumVersion = "2.5.18"
+	let securityVersion = "2.6.0"
 
 	// Global Objects
 	// Chicken/Egg problem.  Set in the App object immediately after

@@ -25,6 +25,7 @@ struct Connect: View {
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
+	@State var showSecurityVersionNag = false
 	@State var liveActivityStarted = false
 	@ObservedObject var manualConnections = ManualConnectionList.shared
 	
@@ -347,6 +348,16 @@ struct Connect: View {
 		//		.onChange(of: accessoryManager) {
 		//			invalidFirmwareVersion = self.bleManager.invalidVersion
 		//		}
+		.sheet(isPresented: $invalidFirmwareVersion) {
+			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
+		}
+		.sheet(isPresented: $showSecurityVersionNag) {
+			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
+		}
 		.onChange(of: self.accessoryManager.state) { _, state in
 			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
@@ -363,6 +374,11 @@ struct Connect: View {
 					}
 				} catch {
 					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
+				}
+				// Check firmware version on connection
+				invalidFirmwareVersion = !accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
+				if !invalidFirmwareVersion {
+					showSecurityVersionNag = !accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
 				}
 			}
 		}

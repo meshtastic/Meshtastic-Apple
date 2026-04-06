@@ -1,28 +1,28 @@
 //
-//  InvalidVersion.swift
+//  SecurityVersionNag.swift
 //  Meshtastic
 //
-//  Copyright(c) Garth Vander Houwen 7/13/22.
+//  Copyright(c) Garth Vander Houwen 2024.
 //
 import SwiftUI
 
-struct InvalidVersion: View {
+struct SecurityVersionNag: View {
 
 	@Environment(\.dismiss) private var dismiss
 
-	@State var minimumVersion = ""
+	@State var minimumSecureVersion = ""
 	@State var version = ""
 
 	var body: some View {
 		VStack(spacing: 0) {
 			ScrollView {
 				VStack(spacing: 20) {
-					Image(systemName: "exclamationmark.triangle.fill")
+					Image(systemName: "shield.slash.fill")
 						.font(.system(size: 60))
-						.foregroundColor(.orange)
+						.foregroundColor(.red)
 						.padding(.top, 40)
 
-					Text("Firmware Update Required")
+					Text("Security Update Recommended")
 						.font(.largeTitle.bold())
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
@@ -32,13 +32,13 @@ struct InvalidVersion: View {
 							Label {
 								Text("Connected firmware: **\(version)**")
 							} icon: {
-								Image(systemName: "wifi.slash")
-									.foregroundColor(.red)
+								Image(systemName: "wifi.exclamationmark")
+									.foregroundColor(.orange)
 							}
 							.font(.body)
 						}
 						Label {
-							Text("Minimum required: **\(minimumVersion)**")
+							Text("Recommended secure version: **\(minimumSecureVersion)**")
 						} icon: {
 							Image(systemName: "checkmark.shield.fill")
 								.foregroundColor(.green)
@@ -49,12 +49,18 @@ struct InvalidVersion: View {
 					.background(Color(.secondarySystemBackground))
 					.cornerRadius(12)
 
-					Text("The Meshtastic Apple app requires firmware version \(minimumVersion) or later. Older firmware versions are no longer supported and may have compatibility issues or missing features.")
-						.font(.body)
-						.foregroundColor(.secondary)
-						.multilineTextAlignment(.center)
-						.fixedSize(horizontal: false, vertical: true)
-						.padding(.horizontal)
+					VStack(alignment: .leading, spacing: 12) {
+						Text("Security Advisory")
+							.font(.headline)
+						Text("Your connected device is running firmware older than **\(minimumSecureVersion)**, which contains known security vulnerabilities. Updating your firmware is strongly recommended to protect your device and mesh network.")
+							.font(.body)
+							.foregroundColor(.secondary)
+							.fixedSize(horizontal: false, vertical: true)
+					}
+					.padding()
+					.background(Color(.secondarySystemBackground))
+					.cornerRadius(12)
+					.padding(.horizontal)
 
 					VStack(alignment: .leading, spacing: 12) {
 						Text("How to Update")
@@ -73,13 +79,6 @@ struct InvalidVersion: View {
 						.buttonStyle(.bordered)
 						.controlSize(.regular)
 						.buttonBorderShape(.capsule)
-						Link(destination: URL(string: "https://meshtastic.org/docs/faq")!) {
-							Label("Additional Help", systemImage: "questionmark.circle.fill")
-								.frame(maxWidth: .infinity)
-						}
-						.buttonStyle(.bordered)
-						.controlSize(.regular)
-						.buttonBorderShape(.capsule)
 					}
 					.padding()
 					.background(Color(.secondarySystemBackground))
@@ -89,18 +88,16 @@ struct InvalidVersion: View {
 				.padding(.bottom, 20)
 			}
 
-			#if targetEnvironment(macCatalyst)
 			Button {
 				dismiss()
 			} label: {
-				Label("Close", systemImage: "xmark")
+				Text("Dismiss")
 					.frame(maxWidth: .infinity)
 			}
 			.buttonStyle(.borderedProminent)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding()
-			#endif
 		}
 	}
 }
