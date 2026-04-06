@@ -5,6 +5,7 @@
 //  Created by Ben on 8/20/23.
 //
 
+import Intents
 import SwiftUI
 import OSLog
 
@@ -31,6 +32,23 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		}
 		return true
 	}
+
+	// MARK: - SiriKit Intent Handling
+
+	/// Routes incoming SiriKit intents to the appropriate handler for CarPlay and Siri messaging support.
+	func application(_ application: UIApplication, handlerFor intent: INIntent) -> Any? {
+		switch intent {
+		case is INSendMessageIntent:
+			return SendMessageIntentHandler()
+		case is INSearchForMessagesIntent:
+			return SearchForMessagesIntentHandler()
+		case is INSetMessageAttributeIntent:
+			return SetMessageAttributeIntentHandler()
+		default:
+			return nil
+		}
+	}
+
 	// Lets us show the notification in the app in the foreground
 	func userNotificationCenter(
 		_ center: UNUserNotificationCenter,
