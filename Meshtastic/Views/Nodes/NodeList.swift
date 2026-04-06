@@ -130,7 +130,7 @@ struct NodeList: View {
 		.onChange(of: router.nodeListSelectedNodeNum) { _, newNum in
 			// Debounce rapid route changes — only process the last selection after a short delay
 			nodeSelectionTask?.cancel()
-			nodeSelectionTask = Task {
+			nodeSelectionTask = Task { @MainActor in
 				do {
 					try await Task.sleep(nanoseconds: Self.nodeSelectionDebounceNs)
 				} catch {
