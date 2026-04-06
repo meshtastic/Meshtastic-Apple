@@ -12,7 +12,13 @@ struct MessageContextMenuItems: View {
 	@Binding var isShowingDeleteConfirmation: Bool
 	@Binding var isShowingTapbackInput: Bool
 	let onReply: () -> Void
-	@State var relayDisplay: String? = nil
+	let canTranslate: Bool
+	let hasTranslatedText: Bool
+	let isShowingTranslatedText: Bool
+	let onTranslate: () -> Void
+	let onToggleTranslatedText: () -> Void
+	let onClearTranslation: () -> Void
+	@State var relayDisplay: String?
 
 	var body: some View {
 		VStack {
@@ -42,6 +48,25 @@ struct MessageContextMenuItems: View {
 			Image(systemName: "arrowshape.turn.up.left")
 		}
 
+		if canTranslate {
+			Button(action: onTranslate) {
+				Text("Translate")
+				Image(systemName: "translate")
+			}
+		}
+
+		if hasTranslatedText {
+			Button(action: onToggleTranslatedText) {
+				Text(isShowingTranslatedText ? "Show Original" : "Show Translation")
+				Image(systemName: isShowingTranslatedText ? "text.bubble" : "globe")
+			}
+
+			Button(role: .destructive, action: onClearTranslation) {
+				Text("Clear Translation")
+				Image(systemName: "trash")
+			}
+		}
+
 		Button {
 			UIPasteboard.general.string = message.messagePayload
 		} label: {
@@ -56,7 +81,6 @@ struct MessageContextMenuItems: View {
 			let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 
 			// Compute a relay display string if relayNode is present
-			
 
 			VStack {
 				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))")
