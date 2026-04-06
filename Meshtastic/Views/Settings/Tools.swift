@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+#if !targetEnvironment(macCatalyst)
 import CoreNFC
+#endif
 import MeshtasticProtobufs
 import OSLog
 
@@ -14,7 +16,9 @@ struct Tools: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.managedObjectContext) var context
 
+	#if !targetEnvironment(macCatalyst)
 	@StateObject private var nfcReader = NFCReader()
+	#endif
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -24,9 +28,13 @@ struct Tools: View {
 	}
 
 	var qrString: String {
+		guard let connectedNode = connectedNode else {
+			return ""
+		}
+
 		var contact = SharedContact()
-		contact.nodeNum = UInt32(connectedNode?.num ?? 0)
-		contact.user = connectedNode?.toProto().user ?? User()
+		contact.nodeNum = UInt32(connectedNode.num)
+		contact.user = connectedNode.toProto().user
 		contact.manuallyVerified = true
 
 		do {
@@ -43,14 +51,15 @@ struct Tools: View {
 			List {
 				Section(header: Text("Create Node Contact NFC Tag")) {
 					if let node = connectedNode {
-						Text("Node Name: \(node.user?.longName ?? "Unknown")")
-						
+						Text("Node Name: \(node.user?.longName ?? "Unknown".localized)")
+						#if !targetEnvironment(macCatalyst)
 						Button {
 							nfcReader.scan(theActualData: qrString)
 						} label: {
 							Label("Write Contact to NFC Tag", systemImage: "tag")
 						}
 						.disabled(qrString.isEmpty)
+						#endif
 					}
 				}
 			}
@@ -61,9 +70,13 @@ struct Tools: View {
 }
 
 #Preview {
-	Tools()
+	let context = PersistenceController.preview.container.viewContext
+	return Tools()
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }
 
+#if !targetEnvironment(macCatalyst)
 final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
 
 	private let logger = Logger(subsystem: "org.meshtastic.app", category: "NFC")
@@ -115,7 +128,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 				return
 			}
 
-			tag.queryNDEFStatus { status, _, error in
+			tag.queryNDEFStatus { status, capacity, error in
 				if let error {
 					self.logger.error("Failed to query NDEF status: \(error.localizedDescription)")
 					session.alertMessage = "Failed to read tag."
@@ -147,6 +160,13 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 
 					let message = NFCNDEFMessage(records: [payload])
 
+					guard message.length <= capacity else {
+						self.logger.error("Payload (\(message.length) bytes) exceeds tag capacity (\(capacity) bytes)")
+						session.alertMessage = "Tag too small to hold contact data."
+						session.invalidate()
+						return
+					}
+
 					tag.writeNDEF(message) { error in
 						if let error {
 							self.logger.error("Failed to write NDEF: \(error.localizedDescription)")
@@ -162,3 +182,4 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 		}
 	}
 }
+#endif
