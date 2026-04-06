@@ -52,7 +52,7 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 		}
 
 		guard let data = content.data(using: .utf8), data.count <= 200 else {
-			return .needsValue()
+			return .unsupported()
 		}
 
 		return .success(with: content)
@@ -119,16 +119,20 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 					isEmoji: false,
 					replyID: 0
 				)
-			} else if let recipient = intent.recipients?.first,
-					  let handleValue = recipient.personHandle?.value,
-					  let nodeNum = Int64(handleValue) {
-				try await AccessoryManager.shared.sendMessage(
-					message: content,
-					toUserNum: nodeNum,
-					channel: 0,
-					isEmoji: false,
-					replyID: 0
-				)
+			} else if let recipients = intent.recipients, !recipients.isEmpty {
+				for recipient in recipients {
+					guard let handleValue = recipient.personHandle?.value,
+						  let nodeNum = Int64(handleValue) else {
+						continue
+					}
+					try await AccessoryManager.shared.sendMessage(
+						message: content,
+						toUserNum: nodeNum,
+						channel: 0,
+						isEmoji: false,
+						replyID: 0
+					)
+				}
 			} else {
 				return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 			}
