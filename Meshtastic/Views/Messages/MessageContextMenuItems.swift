@@ -97,7 +97,7 @@ struct MessageContextMenuItems: View {
 			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) && message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
-					Text("RSSI \(String(format: "%.2f", message.rssi)) dBm")
+					Text("RSSI \(message.rssi) dBm")
 				}
 			} else if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) {
 				VStack {

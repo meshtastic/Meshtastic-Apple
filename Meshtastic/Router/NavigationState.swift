@@ -53,6 +53,7 @@ enum SettingsNavigationState: String {
 	case appFiles
 	case firmwareUpdates
 	case tak
+	case tools
 }
 
 struct NavigationState: Hashable {

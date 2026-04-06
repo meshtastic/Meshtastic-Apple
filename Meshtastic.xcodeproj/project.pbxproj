@@ -101,6 +101,7 @@
 		8E587743574CE17703E892C6 /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 518D504DED9874EBF9D76578 /* Certificates */; };
 		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
 		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
+		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
 		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
 		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
@@ -348,6 +349,7 @@
 
 /* Begin PBXFileReference section */
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
+		1D5AD8037A0D583C614B0597 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
@@ -1034,6 +1036,7 @@
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */,
 				0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */,
+				1D5AD8037A0D583C614B0597 /* Tools.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1942,6 +1945,7 @@
 				E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */,
 				FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */,
 				A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */,
+				DCC919C6B47C15BB0795456C /* Tools.swift in Sources */,
 				8398407DBA32EE7CFC16A385 /* TAKDataPackageGenerator.swift in Sources */,
 				655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */,
 				9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */,
