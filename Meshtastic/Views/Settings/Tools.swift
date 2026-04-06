@@ -135,6 +135,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 					session.invalidate()
 					return
 				}
+				self.logger.debug("Tag NDEF status: \(String(describing: status)), capacity: \(capacity) bytes")
 
 				switch status {
 				case .notSupported:
