@@ -41,6 +41,7 @@ struct MeshMap: View {
 	@State var selectedWaypointId: String?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
+	@State private var showLegend = false
 	/// Filter
 	@StateObject var filters = NodeFilterParameters()
 
@@ -120,17 +121,22 @@ struct MeshMap: View {
 				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
-						.presentationDetents([.large])
+						.padding()
+						.presentationDetents([.large]) // full screen
+						.presentationDragIndicator(.visible)
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
+						.padding()
 						.presentationDetents([.large])
+						.presentationDragIndicator(.visible)
 				}
+
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 				}
-				.onChange(of: router.navigationState) {
-					guard case .map = router.navigationState.selectedTab else { return }
+				.onChange(of: router.mapState) {
+					guard case .map = router.selectedTab else { return }
 					// TODO: handle deep link for waypoints
 				}
 				.onChange(of: selectedMapLayer) { _, newMapLayer in
@@ -153,20 +159,34 @@ struct MeshMap: View {
 						filters: filters
 					)
 				}
+				.sheet(isPresented: $showLegend) {
+					MapLegend(isMeshMap: true)
+						.presentationDetents([.medium, .large])
+						.presentationContentInteraction(.scrolls)
+						.presentationDragIndicator(.visible)
+						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+				}
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
 					HStack {
 						Spacer()
+						Button(action: {
+							withAnimation {
+								showLegend = !showLegend
+							}
+						}) {
+							Image(systemName: showLegend ? "map.fill" : "map")
+						}
+						.accessibilityLabel(showLegend ? "Hide map legend" : "Show map legend")
+						.accessibilityHint(showLegend ? "Hides the map legend." : "Shows the map legend.")
+						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								editingSettings = !editingSettings
 							}
 						}) {
 							Image(systemName: editingSettings ? "info.circle.fill" : "info.circle")
-								.padding(.vertical, 5)
 						}
-						.tint(Color(UIColor.secondarySystemBackground))
-						.foregroundColor(.accentColor)
-						.buttonStyle(.borderedProminent)
+						.glassButtonStyle()
 					}
 					.controlSize(.regular)
 					.padding(5)
