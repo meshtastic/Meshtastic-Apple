@@ -35,7 +35,6 @@ struct RangeTestConfig: View {
 		return hexLen < 3
 	}
 
-	
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
