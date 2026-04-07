@@ -276,14 +276,12 @@ struct Settings: View {
 				}
 			}
 
-			// Update this list with the modules that are shown above. If all are not supported
-			// Then show a message.
-			if !isAnySupported([.ambientlightingConfig, .cannedmsgConfig,
-								.detectionsensorConfig, .extnotifConfig,
-								.mqttConfig, .rangetestConfig, .paxcounterConfig,
-								.audioConfig, .serialConfig, .storeforwardConfig,
-								.telemetryConfig]) {
-				Text("This node does not support any configurable modules.")
+			NavigationLink(value: SettingsNavigationState.takConfig) {
+				Label {
+					Text("TAK")
+				} icon: {
+					Image(systemName: "shield.checkered")
+				}
 			}
 		} header: {
 			Text("Module Configuration")
@@ -545,6 +543,8 @@ struct Settings: View {
 					Tools()
 				case .tak:
 					TAKServerConfig()
+				case .takConfig:
+					TAKModuleConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
