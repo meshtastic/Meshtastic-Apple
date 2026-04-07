@@ -54,7 +54,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   case bmp280 // = 6
 
   ///
-  /// High accuracy temperature and humidity
+  /// TODO - REMOVE High accuracy temperature and humidity
   case shtc3 // = 7
 
   ///
@@ -74,7 +74,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   case qmc5883L // = 11
 
   ///
-  /// High accuracy temperature and humidity
+  /// TODO - REMOVE High accuracy temperature and humidity
   case sht31 // = 12
 
   ///
@@ -94,7 +94,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   case rcwl9620 // = 16
 
   ///
-  /// Sensirion High accuracy temperature and humidity
+  /// TODO - REMOVE Sensirion High accuracy temperature and humidity
   case sht4X // = 17
 
   ///
@@ -214,12 +214,20 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   case hdc1080 // = 46
 
   ///
-  /// STH21 Temperature and R. Humidity sensor
+  /// TODO - REMOVE STH21 Temperature and R. Humidity sensor
   case sht21 // = 47
 
   ///
   /// Sensirion STC31 CO2 sensor
   case stc31 // = 48
+
+  ///
+  /// SCD30 CO2, humidity, temperature sensor
+  case scd30 // = 49
+
+  ///
+  /// SHT family of sensors for temperature and humidity
+  case shtxx // = 50
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -277,6 +285,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 46: self = .hdc1080
     case 47: self = .sht21
     case 48: self = .stc31
+    case 49: self = .scd30
+    case 50: self = .shtxx
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -332,6 +342,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .hdc1080: return 46
     case .sht21: return 47
     case .stc31: return 48
+    case .scd30: return 49
+    case .shtxx: return 50
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -387,6 +399,8 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .hdc1080,
     .sht21,
     .stc31,
+    .scd30,
+    .shtxx,
   ]
 
 }
@@ -1673,7 +1687,7 @@ public struct SEN5XState: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0\u{1}HDC1080\0\u{1}SHT21\0\u{1}STC31\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0\u{1}HDC1080\0\u{1}SHT21\0\u{1}STC31\0\u{1}SCD30\0\u{1}SHTXX\0")
 }
 
 extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
