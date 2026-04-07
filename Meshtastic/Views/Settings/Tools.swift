@@ -12,6 +12,7 @@ import CoreNFC
 import MeshtasticProtobufs
 import OSLog
 
+@available(iOS 18, *)
 struct Tools: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.managedObjectContext) var context
@@ -69,6 +70,7 @@ struct Tools: View {
 	}
 }
 
+@available(iOS 18, *)
 #Preview {
 	let context = PersistenceController.preview.container.viewContext
 	return Tools()
@@ -77,6 +79,7 @@ struct Tools: View {
 }
 
 #if !targetEnvironment(macCatalyst)
+@available(iOS 18, *)
 final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
 
 	private let logger = Logger(subsystem: "org.meshtastic.app", category: "NFC")

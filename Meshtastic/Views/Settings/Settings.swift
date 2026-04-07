@@ -367,11 +367,13 @@ struct Settings: View {
 						Image(systemName: "gearshape")
 					}
 				}
-				NavigationLink(value: SettingsNavigationState.tools) {
-					Label {
-						Text("Tools")
-					} icon: {
-						Image(systemName: "hammer")
+				if #available(iOS 18, *) {
+					NavigationLink(value: SettingsNavigationState.tools) {
+						Label {
+							Text("Tools")
+						} icon: {
+							Image(systemName: "hammer")
+						}
 					}
 				}
 				NavigationLink(value: SettingsNavigationState.routes) {
@@ -542,7 +544,9 @@ struct Settings: View {
 				case .firmwareUpdates:
 					Firmware(node: node)
 				case .tools:
-					Tools()
+					if #available(iOS 18, *) {
+						Tools()
+					}
 				case .tak:
 					TAKServerConfig()
 				}
