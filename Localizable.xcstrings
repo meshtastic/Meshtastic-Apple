@@ -55318,7 +55318,6 @@
       }
     },
     "This node does not support any configurable modules." : {
-      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {

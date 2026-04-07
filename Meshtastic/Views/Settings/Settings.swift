@@ -33,12 +33,46 @@ struct Settings: View {
 
 	// MARK: Helper
 
+	private var moduleConfigurationNode: NodeInfoEntity? {
+		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
+		return nodes.first(where: { $0.num == nodeNum })
+	}
+
+	private var showsAnyModuleConfiguration: Bool {
+		isAnySupported([
+			.ambientlightingConfig,
+			.cannedmsgConfig,
+			.detectionsensorConfig,
+			.extnotifConfig,
+			.mqttConfig,
+			.rangetestConfig,
+			.paxcounterConfig,
+			.serialConfig,
+			.storeforwardConfig,
+			.telemetryConfig
+		]) || isTAKModuleSupported()
+	}
+
 	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
-		return Int(nodes.first(where: { $0.num == preferredNodeNum })?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
+		return Int(moduleConfigurationNode?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
 	}
 
 	private func isAnySupported(_ modules: [ExcludedModules]) -> Bool {
 		return modules.map(isModuleSupported).contains(true)
+	}
+
+	private func isTAKModuleSupported() -> Bool {
+		guard let node = moduleConfigurationNode else { return false }
+		if node.takConfig != nil {
+			return true
+		}
+
+		guard let roleValue = node.deviceConfig?.role ?? node.user?.role,
+			  let deviceRole = DeviceRoles(rawValue: Int(roleValue)) else {
+			return false
+		}
+
+		return deviceRole == .tak || deviceRole == .takTracker
 	}
 
 	// MARK: Views
@@ -276,12 +310,19 @@ struct Settings: View {
 				}
 			}
 
-			NavigationLink(value: SettingsNavigationState.takConfig) {
-				Label {
-					Text("TAK")
-				} icon: {
-					Image(systemName: "shield.checkered")
+			if isTAKModuleSupported() {
+				NavigationLink(value: SettingsNavigationState.takConfig) {
+					Label {
+						Text("TAK")
+					} icon: {
+						Image(systemName: "shield.checkered")
+					}
 				}
+			}
+
+			if !showsAnyModuleConfiguration {
+				Text("This node does not support any configurable modules.")
+					.foregroundColor(.secondary)
 			}
 		} header: {
 			Text("Module Configuration")
