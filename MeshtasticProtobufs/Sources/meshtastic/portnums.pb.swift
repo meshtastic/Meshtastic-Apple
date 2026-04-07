@@ -212,6 +212,11 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
   case powerstressApp // = 74
 
   ///
+  /// LoraWAN Payload Transport
+  /// ENCODING: compact binary LoRaWAN uplink (10-byte RF metadata + PHY payload) - see LoRaWANBridgeModule
+  case lorawanBridge // = 75
+
+  ///
   /// Reticulum Network Stack Tunnel App
   /// ENCODING: Fragmented RNS Packet. Handled by Meshtastic RNS interface
   case reticulumTunnelApp // = 76
@@ -221,6 +226,12 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// arbitrary telemetry over meshtastic that is not covered by telemetry.proto
   /// ENCODING: CayenneLLP
   case cayenneApp // = 77
+
+  ///
+  /// GroupAlarm integration
+  /// Used for transporting GroupAlarm-related messages between Meshtastic nodes
+  /// and companion applications/services.
+  case groupalarmApp // = 112
 
   ///
   /// Private applications should use portnums >= 256.
@@ -273,8 +284,10 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 72: self = .atakPlugin
     case 73: self = .mapReportApp
     case 74: self = .powerstressApp
+    case 75: self = .lorawanBridge
     case 76: self = .reticulumTunnelApp
     case 77: self = .cayenneApp
+    case 112: self = .groupalarmApp
     case 256: self = .privateApp
     case 257: self = .atakForwarder
     case 511: self = .max
@@ -313,8 +326,10 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .atakPlugin: return 72
     case .mapReportApp: return 73
     case .powerstressApp: return 74
+    case .lorawanBridge: return 75
     case .reticulumTunnelApp: return 76
     case .cayenneApp: return 77
+    case .groupalarmApp: return 112
     case .privateApp: return 256
     case .atakForwarder: return 257
     case .max: return 511
@@ -353,8 +368,10 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
     .atakPlugin,
     .mapReportApp,
     .powerstressApp,
+    .lorawanBridge,
     .reticulumTunnelApp,
     .cayenneApp,
+    .groupalarmApp,
     .privateApp,
     .atakForwarder,
     .max,
@@ -365,5 +382,5 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension PortNum: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_APP\0\u{1}TEXT_MESSAGE_APP\0\u{1}REMOTE_HARDWARE_APP\0\u{1}POSITION_APP\0\u{1}NODEINFO_APP\0\u{1}ROUTING_APP\0\u{1}ADMIN_APP\0\u{1}TEXT_MESSAGE_COMPRESSED_APP\0\u{1}WAYPOINT_APP\0\u{1}AUDIO_APP\0\u{1}DETECTION_SENSOR_APP\0\u{1}ALERT_APP\0\u{1}KEY_VERIFICATION_APP\0\u{2}\u{14}REPLY_APP\0\u{1}IP_TUNNEL_APP\0\u{1}PAXCOUNTER_APP\0\u{1}STORE_FORWARD_PLUSPLUS_APP\0\u{1}NODE_STATUS_APP\0\u{2}\u{1c}SERIAL_APP\0\u{1}STORE_FORWARD_APP\0\u{1}RANGE_TEST_APP\0\u{1}TELEMETRY_APP\0\u{1}ZPS_APP\0\u{1}SIMULATOR_APP\0\u{1}TRACEROUTE_APP\0\u{1}NEIGHBORINFO_APP\0\u{1}ATAK_PLUGIN\0\u{1}MAP_REPORT_APP\0\u{1}POWERSTRESS_APP\0\u{2}\u{2}RETICULUM_TUNNEL_APP\0\u{1}CAYENNE_APP\0\u{2}s\u{2}PRIVATE_APP\0\u{1}ATAK_FORWARDER\0\u{2}~\u{3}MAX\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_APP\0\u{1}TEXT_MESSAGE_APP\0\u{1}REMOTE_HARDWARE_APP\0\u{1}POSITION_APP\0\u{1}NODEINFO_APP\0\u{1}ROUTING_APP\0\u{1}ADMIN_APP\0\u{1}TEXT_MESSAGE_COMPRESSED_APP\0\u{1}WAYPOINT_APP\0\u{1}AUDIO_APP\0\u{1}DETECTION_SENSOR_APP\0\u{1}ALERT_APP\0\u{1}KEY_VERIFICATION_APP\0\u{2}\u{14}REPLY_APP\0\u{1}IP_TUNNEL_APP\0\u{1}PAXCOUNTER_APP\0\u{1}STORE_FORWARD_PLUSPLUS_APP\0\u{1}NODE_STATUS_APP\0\u{2}\u{1c}SERIAL_APP\0\u{1}STORE_FORWARD_APP\0\u{1}RANGE_TEST_APP\0\u{1}TELEMETRY_APP\0\u{1}ZPS_APP\0\u{1}SIMULATOR_APP\0\u{1}TRACEROUTE_APP\0\u{1}NEIGHBORINFO_APP\0\u{1}ATAK_PLUGIN\0\u{1}MAP_REPORT_APP\0\u{1}POWERSTRESS_APP\0\u{1}LORAWAN_BRIDGE\0\u{1}RETICULUM_TUNNEL_APP\0\u{1}CAYENNE_APP\0\u{2}#GROUPALARM_APP\0\u{2}P\u{2}PRIVATE_APP\0\u{1}ATAK_FORWARDER\0\u{2}~\u{3}MAX\0")
 }
