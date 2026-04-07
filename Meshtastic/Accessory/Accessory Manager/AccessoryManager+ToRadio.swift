@@ -1824,7 +1824,9 @@ extension AccessoryManager {
 
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.takConfig
-		adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from = UInt32(fromUser.num)
