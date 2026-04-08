@@ -30,14 +30,19 @@ struct TAKModuleConfig: View {
 		return DeviceRoles(rawValue: Int(role))
 	}
 
-	private var isConnectedNode: Bool {
-		guard let node else { return false }
-		return node.num == accessoryManager.activeDeviceNum
-	}
-
 	var body: some View {
 		Form {
 			ConfigHeader(title: "TAK", config: \.takConfig, node: node, onAppear: setTAKValues)
+
+			if accessoryManager.isConnected, node?.takConfig == nil {
+				Section {
+					HStack(spacing: 12) {
+						ProgressView()
+						Text("Loading TAK config from the node.")
+							.foregroundColor(.secondary)
+					}
+				}
+			}
 
 			if let deviceRole, deviceRole != .tak && deviceRole != .takTracker {
 				Section {
@@ -79,7 +84,7 @@ struct TAKModuleConfig: View {
 					.font(.callout)
 			}
 		}
-		.disabled(!accessoryManager.isConnected || (!isConnectedNode && node?.takConfig == nil))
+		.disabled(!accessoryManager.isConnected || node?.takConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
