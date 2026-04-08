@@ -113,6 +113,8 @@ actor MeshPackets {
 			await self.upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum)
 		case .storeForward:
 			await self.upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum)
+		case .tak:
+			await self.upsertTAKModuleConfigPacket(config: config.tak, nodeNum: nodeNum)
 		default:
 #if DEBUG
 			Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
@@ -627,6 +629,8 @@ actor MeshPackets {
 						self.upsertStoreForwardModuleConfigPacket(config: moduleConfig.storeForward, nodeNum: Int64(packet.from), context: context)
 					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
 						self.upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
+					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.tak(moduleConfig.tak) {
+						self.upsertTAKModuleConfigPacket(config: moduleConfig.tak, nodeNum: Int64(packet.from), context: context)
 					}
 				} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
 					if let rt = try? RTTTLConfig(serializedBytes: packet.decoded.payload) {

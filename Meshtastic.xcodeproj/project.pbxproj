@@ -101,8 +101,8 @@
 		8E587743574CE17703E892C6 /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 518D504DED9874EBF9D76578 /* Certificates */; };
 		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
 		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
-		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
 		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
+		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
 		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
 		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
@@ -135,6 +135,7 @@
 		D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
 		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
 		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
+		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD09240001E7FAD600E70001 /* MapLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD09240002E7FAD600E70001 /* MapLegend.swift */; };
@@ -349,11 +350,12 @@
 
 /* Begin PBXFileReference section */
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
-		1D5AD8037A0D583C614B0597 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
+		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
 		108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityToNodeInfo.swift; sourceTree = "<group>"; };
+		1D5AD8037A0D583C614B0597 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
 		230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Discovery.swift"; sourceTree = "<group>"; };
 		231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEAuthorizationHelper.swift; sourceTree = "<group>"; };
 		231A53772E69ADB900216B99 /* NodeFilterParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeFilterParameters.swift; sourceTree = "<group>"; };
@@ -437,6 +439,7 @@
 		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
+		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
 		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
@@ -1084,6 +1087,7 @@
 				DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */,
 				DD6193782863875F00E59241 /* SerialConfig.swift */,
 				DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */,
+				AA0001042F07A4B000600001 /* TAKModuleConfig.swift */,
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
 			);
 			path = Module;
@@ -1945,6 +1949,7 @@
 				E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */,
 				FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */,
 				A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */,
+				AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */,
 				DCC919C6B47C15BB0795456C /* Tools.swift in Sources */,
 				8398407DBA32EE7CFC16A385 /* TAKDataPackageGenerator.swift in Sources */,
 				655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */,
@@ -2439,6 +2444,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */,
 				DD7D46262F833B520028AC1A /* MeshtasticDataModelV 56.xcdatamodel */,
 				DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */,
 				DDDF34392E2CB8E600356DC3 /* MeshtasticDataModelV 54.xcdatamodel */,
@@ -2496,7 +2502,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD7D46262F833B520028AC1A /* MeshtasticDataModelV 56.xcdatamodel */;
+			currentVersion = AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
