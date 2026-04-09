@@ -28,35 +28,23 @@ struct Channels: View {
 	@Environment(\.sizeCategory) var sizeCategory
 	@Environment(\.colorScheme) private var colorScheme
 
-	var node: NodeInfoEntity?
+	var node: NodeInfoEntity
 
-	@State var hasChanges = false
-	@State var hasValidKey = true
-	@State private var isPresentingSaveConfirm: Bool = false
-	@State var channelIndex: Int32 = 0
-	@State var channelName = ""
-	@State var channelKeySize = 16
-	@State var channelKey = "AQ=="
-	@State var channelRole = 0
-	@State var uplink = false
-	@State var downlink = false
-	@State var positionPrecision = 32.0
-	@State var preciseLocation = true
-	@State var positionsEnabled = true
-	@State var supportedVersion = true
-	@State var selectedChannel: ChannelEntity?
-
-	/// Minimum Version for granular position configuration
-	@State var minimumVersion = "2.2.24"
+	@State private var isEditingChannel = false
+	@State private var selectedChannel: ChannelEntity?
+	@State private var editContext: NSManagedObjectContext?
 	@State private var showingHelp = false
 
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
-						  NSSortDescriptor(key: "lastHeard", ascending: false),
-						  NSSortDescriptor(key: "user.longName", ascending: true)],
-		animation: .default)
+	@FetchRequest private var channels: FetchedResults<ChannelEntity>
 
-	var nodes: FetchedResults<NodeInfoEntity>
+	init(node: NodeInfoEntity) {
+		self.node = node
+		_channels = FetchRequest(
+			sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
+			predicate: NSPredicate(format: "myInfoChannel.myNodeNum == %lld", node.num),
+			animation: .default
+		)
+	}
 
 	var body: some View {
 
@@ -65,79 +53,24 @@ struct Channels: View {
 				TipView(CreateChannelsTip(), arrowEdge: .bottom)
 					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 					.listRowSeparator(.hidden)
-				if node != nil && node?.myInfo != nil {
-					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
-						Button(action: {
-							channelIndex = channel.index
-							channelRole = Int(channel.role)
-							channelKey = channel.psk?.base64EncodedString() ?? ""
-							if channelKey.count == 0 {
-								channelKeySize = 0
-							} else if channelKey == "AQ==" {
-								channelKeySize = -1
-							} else if channelKey.count == 4 {
-								channelKeySize = 1
-							} else if channelKey.count == 24 {
-								channelKeySize = 16
-							} else if channelKey.count == 32 {
-								channelKeySize = 24
-							} else if channelKey.count == 44 {
-								channelKeySize = 32
-							}
-							channelName = channel.name ?? ""
-							uplink = channel.uplinkEnabled
-							downlink = channel.downlinkEnabled
-							positionPrecision = Double(channel.positionPrecision)
-							if !supportedVersion && channelRole == 1 {
-								positionPrecision = 32
-								preciseLocation = true
-								positionsEnabled = true
-								if channelKey == "AQ==" {
-									positionPrecision = 14
-									preciseLocation = false
-								}
-							} else if !supportedVersion && channelRole == 2 {
-								positionPrecision = 0
-								preciseLocation = false
-								positionsEnabled = false
-							} else {
-								if channelKey == "AQ==" {
-									preciseLocation = false
-									if (positionPrecision > 0 && positionPrecision < 11) || positionPrecision > 14 {
-										positionPrecision = 14
-									}
-								} else if positionPrecision == 32 {
-									preciseLocation = true
-									positionsEnabled = true
-								} else {
-									preciseLocation = false
-								}
-								if positionPrecision == 0 {
-									positionsEnabled = false
-								} else {
-									positionsEnabled = true
-								}
-							}
-							hasChanges = false
-							selectedChannel = channel
-						}) {
-							VStack(alignment: .leading) {
-								HStack {
-									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
-										.padding(.trailing, 5)
-										.brightness(0.1)
-									VStack {
-										HStack {
-											ChannelLock(channel: channel)
-											if channel.name?.isEmpty ?? false {
-												if channel.role == 1 {
-													Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
-												} else {
-													Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
-												}
+				ForEach(channels) { channel in
+					Button(action: { beginEditing(channel: channel) }) {
+						VStack(alignment: .leading) {
+							HStack {
+								CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
+									.padding(.trailing, 5)
+									.brightness(0.1)
+								VStack {
+									HStack {
+										ChannelLock(channel: channel)
+										if channel.name?.isEmpty ?? true {
+											if channel.role == 1 {
+												Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
 											} else {
-												Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
+												Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
 											}
+										} else {
+											Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
 										}
 									}
 								}
@@ -146,89 +79,24 @@ struct Channels: View {
 					}
 				}
 			}
-			.sheet(item: $selectedChannel) { _ in
+			.sheet(isPresented: $isEditingChannel, onDismiss: cancelEditing) {
 				#if targetEnvironment(macCatalyst)
 				Text("Channel")
 					.font(.largeTitle)
 					.padding()
 				#endif
-				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
-					.presentationDetents([.large])
-					.presentationDragIndicator(.visible)
-				.onFirstAppear {
-					supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
+				if let channel = selectedChannel {
+					ChannelForm(channel: channel)
+						.presentationDetents([.large])
+						.presentationDragIndicator(.visible)
 				}
 				HStack {
 					Button {
-						var channel = Channel()
-						channel.index = channelIndex
-						channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
-							channel.index = channelIndex
-							channel.settings.name = channelName
-							channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
-							channel.settings.uplinkEnabled = uplink
-							channel.settings.downlinkEnabled = downlink
-							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
-							selectedChannel!.role = Int32(channelRole)
-							selectedChannel!.index = channelIndex
-							selectedChannel!.name = channelName
-							selectedChannel!.psk = Data(base64Encoded: channelKey) ?? Data()
-							selectedChannel!.uplinkEnabled = uplink
-							selectedChannel!.downlinkEnabled = downlink
-							selectedChannel!.positionPrecision = Int32(positionPrecision)
-
-							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
-								return
-							}
-							if mutableChannels.contains(selectedChannel as Any) {
-								let replaceChannel = mutableChannels.first(where: { selectedChannel?.psk == ($0 as AnyObject).psk && selectedChannel?.name == ($0 as AnyObject).name})
-								mutableChannels.replaceObject(at: mutableChannels.index(of: replaceChannel as Any), with: selectedChannel as Any)
-							} else {
-								mutableChannels.add(selectedChannel as Any)
-							}
-							node?.myInfo?.channels = mutableChannels.copy() as? NSOrderedSet
-							context.refresh(selectedChannel!, mergeChanges: true)
-						if channel.role != Channel.Role.disabled {
-							do {
-								try context.save()
-								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
-							} catch {
-								context.rollback()
-								let nsError = error as NSError
-								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
-							}
-						} else {
-							let objects = selectedChannel?.allPrivateMessages ?? []
-							for object in objects {
-								context.delete(object)
-							}
-							for node in nodes where node.channel == channel.index {
-								context.delete(node)
-							}
-							context.delete(selectedChannel!)
-							do {
-								try context.save()
-								Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
-							} catch {
-								context.rollback()
-								let nsError = error as NSError
-								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
-							}
-						}
-						Task {
-							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								selectedChannel = nil
-								channelName = ""
-								channelRole	= 2
-								hasChanges = false
-							}
-							accessoryManager.mqttManager.connectFromConfigSettings(node: node!)
-						}
+						saveChannel()
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(!accessoryManager.isConnected)// || !hasChanges)// !hasValidKey)
+					.disabled(!accessoryManager.isConnected)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
@@ -246,37 +114,9 @@ struct Channels: View {
 					#endif
 				}
 			}
-			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
-
+			if channels.count < 8 {
 				Button {
-					let channelIndexes = node?.myInfo?.channels?.compactMap({(ch) -> Int in
-						return (ch as AnyObject).index
-					})
-					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
-					channelKeySize = 16
-					let key = generateChannelKey(size: channelKeySize)
-					channelName = ""
-					channelIndex = Int32(firstChannelIndex)
-					channelRole = 2
-					channelKey = key
-					positionsEnabled = false
-					preciseLocation = false
-					positionPrecision = 0
-					uplink = false
-					downlink = false
-
-					let newChannel = ChannelEntity(context: context)
-					newChannel.id = channelIndex
-					newChannel.index = channelIndex
-					newChannel.uplinkEnabled = uplink
-					newChannel.downlinkEnabled = downlink
-					newChannel.name = channelName
-					newChannel.role = Int32(channelRole)
-					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
-					newChannel.positionPrecision = Int32(positionPrecision)
-					selectedChannel = newChannel
-					hasChanges = true
-
+					addChannel()
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")
 				}
@@ -314,6 +154,102 @@ struct Channels: View {
 		ZStack {
 			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
+	}
+
+	// MARK: - Editing helpers
+
+	private func beginEditing(channel: ChannelEntity) {
+		let childContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+		childContext.parent = context
+		guard let channelInChild = childContext.object(with: channel.objectID) as? ChannelEntity else { return }
+		editContext = childContext
+		selectedChannel = channelInChild
+		isEditingChannel = true
+	}
+
+	private func addChannel() {
+		let channelIndexes = channels.map { Int($0.index) }
+		let nextIndex = firstMissingChannelIndex(channelIndexes)
+		let key = generateChannelKey(size: 16)
+
+		let childContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+		childContext.parent = context
+
+		let newChannel = ChannelEntity(context: childContext)
+		newChannel.id = Int32(nextIndex)
+		newChannel.index = Int32(nextIndex)
+		newChannel.role = 2 // Secondary
+		newChannel.name = ""
+		newChannel.psk = Data(base64Encoded: key)
+		newChannel.uplinkEnabled = false
+		newChannel.downlinkEnabled = false
+		newChannel.positionPrecision = 0
+
+		if let myInfo = node.myInfo,
+		   let myInfoInChild = childContext.object(with: myInfo.objectID) as? MyInfoEntity {
+			newChannel.myInfoChannel = myInfoInChild
+		}
+
+		editContext = childContext
+		selectedChannel = newChannel
+		isEditingChannel = true
+	}
+
+	private func saveChannel() {
+		guard let editCtx = editContext, let channel = selectedChannel else { return }
+
+		let isNew = channel.objectID.isTemporaryID
+		let channelIndex = channel.index
+		let proto = channel.protoBuf
+
+		if channel.role == 0 { // Disabled = delete existing channel
+			if !isNew, let parentChannel = context.object(with: channel.objectID) as? ChannelEntity {
+				for message in parentChannel.allPrivateMessages {
+					context.delete(message)
+				}
+				let nodesFetch = NodeInfoEntity.fetchRequest()
+				nodesFetch.predicate = NSPredicate(format: "channel == %d", channelIndex)
+				let orphans = (try? context.fetch(nodesFetch)) ?? []
+				for orphan in orphans {
+					context.delete(orphan)
+				}
+				context.delete(parentChannel)
+				do {
+					try context.save()
+					Logger.data.info("💾 Deleted Channel \(channelIndex)")
+				} catch {
+					context.rollback()
+					let nsError = error as NSError
+					Logger.data.error("Unresolved CoreData error deleting channel. Error: \(nsError, privacy: .public)")
+				}
+			}
+			isEditingChannel = false
+			return
+		}
+
+		do {
+			try editCtx.save()
+			try context.save()
+			Logger.data.info("💾 Saved Channel: \(proto.settings.name, privacy: .public)")
+		} catch {
+			editCtx.rollback()
+			let nsError = error as NSError
+			Logger.data.error("Unresolved CoreData error saving channel. Error: \(nsError, privacy: .public)")
+			return
+		}
+
+		Task {
+			_ = try? await accessoryManager.saveChannel(channel: proto, fromUser: node.user!, toUser: node.user!)
+			Task { @MainActor in
+				isEditingChannel = false
+			}
+			accessoryManager.mqttManager.connectFromConfigSettings(node: node)
+		}
+	}
+
+	private func cancelEditing() {
+		selectedChannel = nil
+		editContext = nil
 	}
 }
 

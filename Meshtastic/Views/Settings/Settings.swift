@@ -487,7 +487,9 @@ struct Settings: View {
 				case .lora:
 					LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .channels:
-					Channels(node: node)
+					if let node {
+						Channels(node: node)
+					}
 				case .shareQRCode:
 					ShareChannels(node: node)
 				case .user:

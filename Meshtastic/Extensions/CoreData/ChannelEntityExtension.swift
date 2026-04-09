@@ -54,6 +54,8 @@ extension ChannelEntity {
 		channel.settings.name = self.name ?? ""
 		channel.settings.psk = self.psk ?? Data()
 		channel.role = Channel.Role(rawValue: Int(self.role)) ?? Channel.Role.secondary
+		channel.settings.uplinkEnabled = self.uplinkEnabled
+		channel.settings.downlinkEnabled = self.downlinkEnabled
 		channel.settings.moduleSettings.positionPrecision = UInt32(self.positionPrecision)
 		channel.settings.moduleSettings.isMuted = self.mute
 		return channel

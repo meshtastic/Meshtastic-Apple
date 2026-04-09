@@ -179,53 +179,58 @@ actor MeshPackets {
 	}
 	
 	nonisolated private func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectContext) {
-		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
-			let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
-			Logger.mesh.info("🎛️ \(logString, privacy: .public)")
-			
-			let fetchedMyInfoRequest = MyInfoEntity.fetchRequest()
-			fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
-			
-			do {
-				let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest)
-				if fetchedMyInfo.count == 1 {
-					let newChannel = ChannelEntity(context: context)
-					newChannel.id = Int32(channel.index)
-					newChannel.index = Int32(channel.index)
-					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
-					newChannel.downlinkEnabled = channel.settings.downlinkEnabled
-					newChannel.name = channel.settings.name
-					newChannel.role = Int32(channel.role.rawValue)
-					newChannel.psk = channel.settings.psk
-					if channel.settings.hasModuleSettings {
-						newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
-						newChannel.mute = channel.settings.moduleSettings.isMuted
-					}
-					guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
-						return
-					}
-					if let oldChannel = mutableChannels.first(where: {($0 as AnyObject).index == newChannel.index }) as? ChannelEntity {
-						let index = mutableChannels.index(of: oldChannel as Any)
-						mutableChannels.replaceObject(at: index, with: newChannel)
-					} else {
-						mutableChannels.add(newChannel)
-					}
-					fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-					context.refresh(newChannel, mergeChanges: true)
-					do {
-						try context.save()
-					} catch {
-						Logger.data.error("💥 Failed to save channel: \(error.localizedDescription, privacy: .public)")
-					}
-					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
-				} else if channel.role.rawValue > 0 {
-					Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
-				}
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				Logger.data.error("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
+		guard channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled else { return }
+		let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
+		Logger.mesh.info("🎛️ \(logString, privacy: .public)")
+
+		let fetchedMyInfoRequest = MyInfoEntity.fetchRequest()
+		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
+		fetchedMyInfoRequest.fetchLimit = 1
+
+		do {
+			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest)
+			guard let myInfo = fetchedMyInfo.first else {
+				Logger.data.error("💥 Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
+				return
 			}
+
+			// Fetch by index alone (the uniqueness key) so we always find an existing entity
+			// regardless of whether myInfoChannel was previously corrupted to nil.
+			// Never insert a new entity that would conflict with an existing one — the resulting
+			// NSManagedObjectContextDidSave notification would carry the pre-resolution nil value
+			// for myInfoChannel, making the channel vanish from any @FetchRequest predicated on it.
+			let channelFetch = ChannelEntity.fetchRequest()
+			channelFetch.predicate = NSPredicate(format: "index == %d", Int(channel.index))
+			channelFetch.fetchLimit = 1
+
+			let channelEntity: ChannelEntity
+			if let existing = try context.fetch(channelFetch).first {
+				channelEntity = existing
+			} else {
+				channelEntity = ChannelEntity(context: context)
+				channelEntity.id = Int32(channel.index)
+				channelEntity.index = Int32(channel.index)
+			}
+
+			// Always (re-)establish the relationship — a no-op if already correct,
+			// but repairs channels whose myInfoChannel was nullified by the old code.
+			channelEntity.myInfoChannel = myInfo
+			channelEntity.uplinkEnabled = channel.settings.uplinkEnabled
+			channelEntity.downlinkEnabled = channel.settings.downlinkEnabled
+			channelEntity.name = channel.settings.name
+			channelEntity.role = Int32(channel.role.rawValue)
+			channelEntity.psk = channel.settings.psk
+			if channel.settings.hasModuleSettings {
+				channelEntity.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
+				channelEntity.mute = channel.settings.moduleSettings.isMuted
+			}
+
+			try context.save()
+			Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(myInfo.myNodeNum, privacy: .public)")
+		} catch {
+			context.rollback()
+			let nsError = error as NSError
+			Logger.data.error("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 		}
 	}
 	

@@ -10,19 +10,18 @@ import MapKit
 
 struct ChannelForm: View {
 
-	@Binding var channelIndex: Int32
-	@Binding var channelName: String
-	@Binding var channelKeySize: Int
-	@Binding var channelKey: String
-	@Binding var channelRole: Int
-	@Binding var uplink: Bool
-	@Binding var downlink: Bool
-	@Binding var positionPrecision: Double
-	@Binding var preciseLocation: Bool
-	@Binding var positionsEnabled: Bool
-	@Binding var hasChanges: Bool
-	@Binding var hasValidKey: Bool
-	@Binding var supportedVersion: Bool
+	@ObservedObject var channel: ChannelEntity
+	@EnvironmentObject var accessoryManager: AccessoryManager
+
+	/// UI-only state derived from channel data on appear
+	@State private var channelKey = ""
+	@State private var channelKeySize = 16
+	@State private var positionsEnabled = true
+	@State private var preciseLocation = true
+	@State private var hasValidKey = true
+	@State private var supportedVersion = true
+
+	private let minimumVersion = "2.2.24"
 
 	var body: some View {
 		NavigationStack {
@@ -33,20 +32,18 @@ struct ChannelForm: View {
 						Spacer()
 						TextField(
 							"Channel Name",
-							text: $channelName
+							text: Binding(
+								get: { channel.name ?? "" },
+								set: { channel.name = $0 }
+							)
 						)
 						.disableAutocorrection(true)
 						.keyboardType(.alphabet)
 						.foregroundColor(Color.gray)
-						.onChange(of: channelName) {
-							channelName = channelName.replacing(" ", with: "")
-							var totalBytes = channelName.utf8.count
-							// Only mess with the value if it is too big
-							while totalBytes > 11 {
-								channelName = String(channelName.dropLast())
-								totalBytes = channelName.utf8.count
-							}
-							hasChanges = true
+						.onChange(of: channel.name) { _, name in
+							var trimmed = (name ?? "").replacingOccurrences(of: " ", with: "")
+							while trimmed.utf8.count > 11 { trimmed = String(trimmed.dropLast()) }
+							if trimmed != name { channel.name = trimmed }
 						}
 					}
 					HStack {
@@ -62,10 +59,12 @@ struct ChannelForm: View {
 						Button {
 							if channelKeySize == -1 {
 								channelKey = "AQ=="
+							} else if channelKeySize > 0 {
+								channelKey = generateChannelKey(size: channelKeySize)
 							} else {
-								let key = generateChannelKey(size: channelKeySize)
-								channelKey = key
+								channelKey = ""
 							}
+							channel.psk = Data(base64Encoded: channelKey)
 						} label: {
 							Image(systemName: "lock.rotation")
 								.font(.title)
@@ -90,27 +89,22 @@ struct ChannelForm: View {
 						.background(
 							RoundedRectangle(cornerRadius: 10.0)
 								.stroke(
-									hasValidKey ?
-									Color.clear :
-										Color.red
-									, lineWidth: 2.0)
-
+									hasValidKey ? Color.clear : Color.red,
+									lineWidth: 2.0)
 						)
-						.onChange(of: channelKey) {
-
-							let tempKey = Data(base64Encoded: channelKey) ?? Data()
-							if tempKey.count == channelKeySize || channelKeySize == -1 {
-								hasValidKey = true
-							} else {
-								hasValidKey = false
-							}
-							hasChanges = true
+						.onChange(of: channelKey) { _, key in
+							let data = Data(base64Encoded: key) ?? Data()
+							hasValidKey = data.count == channelKeySize || channelKeySize == -1
+							channel.psk = data.isEmpty ? nil : data
 						}
 						.disabled(channelKeySize <= 0)
 					}
 					HStack {
-						if channelRole == 1 {
-							Picker("Channel Role", selection: $channelRole) {
+						if channel.role == 1 {
+							Picker("Channel Role", selection: Binding(
+								get: { Int(channel.role) },
+								set: { channel.role = Int32($0) }
+							)) {
 								Text("Primary").tag(1)
 							}
 							.pickerStyle(.automatic)
@@ -118,7 +112,10 @@ struct ChannelForm: View {
 						} else {
 							Text("Channel Role")
 							Spacer()
-							Picker("Channel Role", selection: $channelRole) {
+							Picker("Channel Role", selection: Binding(
+								get: { Int(channel.role) },
+								set: { channel.role = Int32($0) }
+							)) {
 								Text("Disabled").tag(0)
 								Text("Secondary").tag(2)
 							}
@@ -130,14 +127,17 @@ struct ChannelForm: View {
 				Section(header: Text("Position")) {
 					VStack(alignment: .leading) {
 						Toggle(isOn: $positionsEnabled) {
-							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
+							Label(
+								channel.role == 1 ? "Positions Enabled" : "Allow Position Requests",
+								systemImage: positionsEnabled ? "mappin" : "mappin.slash"
+							)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.disabled(!supportedVersion)
 					}
 
 					if positionsEnabled {
-						if (channelKey != "AQ==" && channelKeySize > 1)  && channelRole > 0 {
+						if channelKey != "AQ==" && channelKeySize > 1 && channel.role > 0 {
 							VStack(alignment: .leading) {
 								Toggle(isOn: $preciseLocation) {
 									Label("Precise Location", systemImage: "scope")
@@ -145,108 +145,130 @@ struct ChannelForm: View {
 								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 								.disabled(!supportedVersion)
 								.listRowSeparator(.visible)
-								.onChange(of: preciseLocation) { _, pl in
-									if pl == false {
-										positionPrecision = 15
-									}
-								}
 							}
 						}
 						if !preciseLocation {
 							VStack(alignment: .leading) {
 								Label("Approximate Location", systemImage: "location.slash.circle.fill")
-
-								Slider(value: $positionPrecision, in: 12...15, step: 1) {
+								Slider(
+									value: Binding(
+										get: { Double(channel.positionPrecision) },
+										set: { channel.positionPrecision = Int32($0) }
+									),
+									in: 12...15,
+									step: 1
+								) {
 								} minimumValueLabel: {
 									Image(systemName: "plus")
 								} maximumValueLabel: {
 									Image(systemName: "minus")
 								}
-								Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
+								Text(PositionPrecision(rawValue: Int(channel.positionPrecision))?.description ?? "")
 									.foregroundColor(.gray)
 									.font(.callout)
 							}
 						}
 					}
 				}
+
 				Section(header: Text("MQTT")) {
-					Toggle(isOn: $uplink) {
+					Toggle(isOn: Binding(
+						get: { channel.uplinkEnabled },
+						set: { channel.uplinkEnabled = $0 }
+					)) {
 						Label("Uplink Enabled", systemImage: "arrowshape.up")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
-					Toggle(isOn: $downlink) {
+					Toggle(isOn: Binding(
+						get: { channel.downlinkEnabled },
+						set: { channel.downlinkEnabled = $0 }
+					)) {
 						Label("Downlink Enabled", systemImage: "arrowshape.down")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
-			.onChange(of: channelName) {
-				hasChanges = true
-			}
-			.onChange(of: channelKeySize) {
-				if channelKeySize == -1 {
-					channelKey = "AQ=="
-				} else {
-					let key = generateChannelKey(size: channelKeySize)
-					channelKey = key
-				}
-				hasChanges = true
-			}
-			.onChange(of: channelKey) {
-				hasChanges = true
-			}
-			.onChange(of: channelKeySize) {
-				if channelKeySize == -1 {
-					if channelRole == 0 {
+			.onFirstAppear {
+				supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
+				channelKey = channel.psk?.base64EncodedString() ?? ""
+				channelKeySize = keySizeFromPsk(channel.psk)
+
+				if !supportedVersion {
+					if channel.role == 1 {
+						positionsEnabled = true
+						if channelKey == "AQ==" {
+							preciseLocation = false
+							channel.positionPrecision = 14
+						} else {
+							preciseLocation = true
+							channel.positionPrecision = 32
+						}
+					} else {
+						positionsEnabled = false
 						preciseLocation = false
+						channel.positionPrecision = 0
 					}
-					channelKey = "AQ=="
+				} else {
+					positionsEnabled = channel.positionPrecision > 0
+					if channelKey == "AQ==" {
+						preciseLocation = false
+						let p = channel.positionPrecision
+						if p > 0 && (p < 11 || p > 14) {
+							channel.positionPrecision = 14
+						}
+					} else {
+						preciseLocation = channel.positionPrecision == 32
+					}
 				}
 			}
-			.onChange(of: channelRole) {
-				hasChanges = true
+			.onChange(of: channelKeySize) { _, size in
+				if size == -1 {
+					channelKey = "AQ=="
+				} else if size > 0 {
+					channelKey = generateChannelKey(size: size)
+				} else {
+					channelKey = ""
+				}
+				channel.psk = channelKey.isEmpty ? nil : Data(base64Encoded: channelKey)
 			}
-			.onChange(of: preciseLocation) { _, loc in
-				if loc == true {
+			.onChange(of: positionsEnabled) { _, enabled in
+				if enabled {
+					if channel.positionPrecision == 0 {
+						channel.positionPrecision = 15
+					}
+				} else {
+					channel.positionPrecision = 0
+					preciseLocation = false
+				}
+			}
+			.onChange(of: preciseLocation) { _, precise in
+				if precise {
 					if channelKey == "AQ==" || channelKeySize <= 1 {
 						preciseLocation = false
 					} else {
-						positionPrecision = 32
+						channel.positionPrecision = 32
 					}
 				} else {
-					positionPrecision = 14
-				}
-				hasChanges = true
-			}
-			.onChange(of: positionPrecision) {
-				hasChanges = true
-			}
-			.onChange(of: positionsEnabled) { _, pe in
-				if pe {
-					if positionPrecision == 0 {
-						positionPrecision = 15
+					if channel.positionPrecision == 32 {
+						channel.positionPrecision = 14
 					}
-				} else {
-					positionPrecision = 0
-				}
-				hasChanges = true
-			}
-			.onChange(of: uplink) {
-				hasChanges = true
-			}
-			.onChange(of: downlink) {
-				hasChanges = true
-			}
-			.onFirstAppear {
-				let tempKey = Data(base64Encoded: channelKey) ?? Data()
-				if tempKey.count == channelKeySize || channelKeySize == -1 {
-					hasValidKey = true
-				} else {
-					hasValidKey = false
 				}
 			}
+		}
+	}
+
+	private func keySizeFromPsk(_ psk: Data?) -> Int {
+		let key = psk?.base64EncodedString() ?? ""
+		if key.isEmpty { return 0 }
+		if key == "AQ==" { return -1 }
+		switch key.count {
+		case 4: return 1
+		case 24: return 16
+		case 32: return 24
+		case 44: return 32
+		default: return 16
 		}
 	}
 }

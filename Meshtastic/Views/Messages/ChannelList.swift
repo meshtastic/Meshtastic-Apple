@@ -22,11 +22,26 @@ struct ChannelList: View {
 
 	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
 
-	@FetchRequest(
+	@FetchRequest private var channels: FetchedResults<ChannelEntity>
+
+	init(node: Binding<NodeInfoEntity?>, channelSelection: Binding<ChannelEntity?>) {
+		_node = node
+		_channelSelection = channelSelection
+		let predicate: NSPredicate
+		if let nodeNum = node.wrappedValue?.num {
+			predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+				NSPredicate(format: "myInfoChannel.myNodeNum == %lld", nodeNum),
+				NSPredicate(format: "role > 0")
+			])
+		} else {
+			predicate = NSPredicate(value: false)
+		}
+		_channels = FetchRequest(
 			sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
-			predicate: nil,
+			predicate: predicate,
 			animation: .default
-		) private var channels: FetchedResults<ChannelEntity>
+		)
+	}
 
 	@ViewBuilder
 	private func makeChannelRow(
