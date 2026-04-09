@@ -244,6 +244,709 @@ public enum MemberRole: SwiftProtobuf.Enum, Swift.CaseIterable {
 }
 
 ///
+/// CoT how field values.
+/// Represents how the coordinates were generated.
+public enum CotHow: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  ///
+  /// Unspecified
+  case unspecified // = 0
+
+  ///
+  /// Human entered
+  case hE // = 1
+
+  ///
+  /// Machine generated
+  case mG // = 2
+
+  ///
+  /// Human GPS/INS derived
+  case hGIGO // = 3
+
+  ///
+  /// Machine relayed (imported from another system/gateway)
+  case mR // = 4
+
+  ///
+  /// Machine fused (corroborated from multiple sources)
+  case mF // = 5
+
+  ///
+  /// Machine predicted
+  case mP // = 6
+
+  ///
+  /// Machine simulated
+  case mS // = 7
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .hE
+    case 2: self = .mG
+    case 3: self = .hGIGO
+    case 4: self = .mR
+    case 5: self = .mF
+    case 6: self = .mP
+    case 7: self = .mS
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .hE: return 1
+    case .mG: return 2
+    case .hGIGO: return 3
+    case .mR: return 4
+    case .mF: return 5
+    case .mP: return 6
+    case .mS: return 7
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [CotHow] = [
+    .unspecified,
+    .hE,
+    .mG,
+    .hGIGO,
+    .mR,
+    .mF,
+    .mP,
+    .mS,
+  ]
+
+}
+
+///
+/// Well-known CoT event types.
+/// When the type is known, use the enum value for efficient encoding.
+/// For unknown types, set cot_type_id to CotType_Other and populate cot_type_str.
+public enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  ///
+  /// Unknown or unmapped type, use cot_type_str
+  case other // = 0
+
+  ///
+  /// a-f-G-U-C: Friendly ground unit combat
+  case aFGUC // = 1
+
+  ///
+  /// a-f-G-U-C-I: Friendly ground unit combat infantry
+  case aFGUCI // = 2
+
+  ///
+  /// a-n-A-C-F: Neutral aircraft civilian fixed-wing
+  case aNACF // = 3
+
+  ///
+  /// a-n-A-C-H: Neutral aircraft civilian helicopter
+  case aNACH // = 4
+
+  ///
+  /// a-n-A-C: Neutral aircraft civilian
+  case aNAC // = 5
+
+  ///
+  /// a-f-A-M-H: Friendly aircraft military helicopter
+  case aFAMH // = 6
+
+  ///
+  /// a-f-A-M: Friendly aircraft military
+  case aFAM // = 7
+
+  ///
+  /// a-f-A-M-F-F: Friendly aircraft military fixed-wing fighter
+  case aFAMFF // = 8
+
+  ///
+  /// a-f-A-M-H-A: Friendly aircraft military helicopter attack
+  case aFAMHA // = 9
+
+  ///
+  /// a-f-A-M-H-U-M: Friendly aircraft military helicopter utility medium
+  case aFAMHUM // = 10
+
+  ///
+  /// a-h-A-M-F-F: Hostile aircraft military fixed-wing fighter
+  case aHAMFF // = 11
+
+  ///
+  /// a-h-A-M-H-A: Hostile aircraft military helicopter attack
+  case aHAMHA // = 12
+
+  ///
+  /// a-u-A-C: Unknown aircraft civilian
+  case aUAC // = 13
+
+  ///
+  /// t-x-d-d: Tasking delete/disconnect
+  case tXDD // = 14
+
+  ///
+  /// a-f-G-E-S-E: Friendly ground equipment sensor
+  case aFGESE // = 15
+
+  ///
+  /// a-f-G-E-V-C: Friendly ground equipment vehicle
+  case aFGEVC // = 16
+
+  ///
+  /// a-f-S: Friendly sea
+  case aFS // = 17
+
+  ///
+  /// a-f-A-M-F: Friendly aircraft military fixed-wing
+  case aFAMF // = 18
+
+  ///
+  /// a-f-A-M-F-C-H: Friendly aircraft military fixed-wing cargo heavy
+  case aFAMFCH // = 19
+
+  ///
+  /// a-f-A-M-F-U-L: Friendly aircraft military fixed-wing utility light
+  case aFAMFUL // = 20
+
+  ///
+  /// a-f-A-M-F-L: Friendly aircraft military fixed-wing liaison
+  case aFAMFL // = 21
+
+  ///
+  /// a-f-A-M-F-P: Friendly aircraft military fixed-wing patrol
+  case aFAMFP // = 22
+
+  ///
+  /// a-f-A-C-H: Friendly aircraft civilian helicopter
+  case aFACH // = 23
+
+  ///
+  /// a-n-A-M-F-Q: Neutral aircraft military fixed-wing drone
+  case aNAMFQ // = 24
+
+  ///
+  /// b-t-f: GeoChat message
+  case bTF // = 25
+
+  ///
+  /// b-r-f-h-c: CASEVAC/MEDEVAC report
+  case bRFHC // = 26
+
+  ///
+  /// b-a-o-pan: Ring the bell / alert all
+  case bAOPan // = 27
+
+  ///
+  /// b-a-o-opn: Troops in contact
+  case bAOOpn // = 28
+
+  ///
+  /// b-a-o-can: Cancel alert
+  case bAOCan // = 29
+
+  ///
+  /// b-a-o-tbl: 911 alert
+  case bAOTbl // = 30
+
+  ///
+  /// b-a-g: Geofence breach alert
+  case bAG // = 31
+
+  ///
+  /// a-f-G: Friendly ground (generic)
+  case aFG // = 32
+
+  ///
+  /// a-f-G-U: Friendly ground unit (generic)
+  case aFGU // = 33
+
+  ///
+  /// a-h-G: Hostile ground (generic)
+  case aHG // = 34
+
+  ///
+  /// a-u-G: Unknown ground (generic)
+  case aUG // = 35
+
+  ///
+  /// a-n-G: Neutral ground (generic)
+  case aNG // = 36
+
+  ///
+  /// b-m-r: Route
+  case bMR // = 37
+
+  ///
+  /// b-m-p-w: Route waypoint
+  case bMPW // = 38
+
+  ///
+  /// b-m-p-s-p-i: Self-position marker
+  case bMPSPI // = 39
+
+  ///
+  /// u-d-f: Freeform shape (line/polygon)
+  case uDF // = 40
+
+  ///
+  /// u-d-r: Rectangle
+  case uDR // = 41
+
+  ///
+  /// u-d-c-c: Circle
+  case uDCC // = 42
+
+  ///
+  /// u-rb-a: Range/bearing line
+  case uRbA // = 43
+
+  ///
+  /// a-h-A: Hostile aircraft (generic)
+  case aHA // = 44
+
+  ///
+  /// a-u-A: Unknown aircraft (generic)
+  case aUA // = 45
+
+  ///
+  /// a-f-A-M-H-Q: Friendly aircraft military helicopter observation
+  case aFAMHQ // = 46
+
+  ///
+  /// a-f-A-C-F: Friendly aircraft civilian fixed-wing
+  case aFACF // = 47
+
+  ///
+  /// a-f-A-C: Friendly aircraft civilian (generic)
+  case aFAC // = 48
+
+  ///
+  /// a-f-A-C-L: Friendly aircraft civilian lighter-than-air
+  case aFACL // = 49
+
+  ///
+  /// a-f-A: Friendly aircraft (generic)
+  case aFA // = 50
+
+  ///
+  /// a-f-A-M-H-C: Friendly aircraft military helicopter cargo
+  case aFAMHC // = 51
+
+  ///
+  /// a-n-A-M-F-F: Neutral aircraft military fixed-wing fighter
+  case aNAMFF // = 52
+
+  ///
+  /// a-u-A-C-F: Unknown aircraft civilian fixed-wing
+  case aUACF // = 53
+
+  ///
+  /// a-f-G-U-C-F-T-A: Friendly ground unit combat forces theater aviation
+  case aFGUCFTA // = 54
+
+  ///
+  /// a-f-G-U-C-V-S: Friendly ground unit combat vehicle support
+  case aFGUCVS // = 55
+
+  ///
+  /// a-f-G-U-C-R-X: Friendly ground unit combat reconnaissance exploitation
+  case aFGUCRX // = 56
+
+  ///
+  /// a-f-G-U-C-I-Z: Friendly ground unit combat infantry mechanized
+  case aFGUCIZ // = 57
+
+  ///
+  /// a-f-G-U-C-E-C-W: Friendly ground unit combat engineer construction wheeled
+  case aFGUCECW // = 58
+
+  ///
+  /// a-f-G-U-C-I-L: Friendly ground unit combat infantry light
+  case aFGUCIL // = 59
+
+  ///
+  /// a-f-G-U-C-R-O: Friendly ground unit combat reconnaissance other
+  case aFGUCRO // = 60
+
+  ///
+  /// a-f-G-U-C-R-V: Friendly ground unit combat reconnaissance cavalry
+  case aFGUCRV // = 61
+
+  ///
+  /// a-f-G-U-H: Friendly ground unit headquarters
+  case aFGUH // = 62
+
+  ///
+  /// a-f-G-U-U-M-S-E: Friendly ground unit support medical surgical evacuation
+  case aFGUUMSE // = 63
+
+  ///
+  /// a-f-G-U-S-M-C: Friendly ground unit support maintenance collection
+  case aFGUSMC // = 64
+
+  ///
+  /// a-f-G-E-S: Friendly ground equipment sensor (generic)
+  case aFGES // = 65
+
+  ///
+  /// a-f-G-E: Friendly ground equipment (generic)
+  case aFGE // = 66
+
+  ///
+  /// a-f-G-E-V-C-U: Friendly ground equipment vehicle utility
+  case aFGEVCU // = 67
+
+  ///
+  /// a-f-G-E-V-C-ps: Friendly ground equipment vehicle public safety
+  case aFGEVCPs // = 68
+
+  ///
+  /// a-u-G-E-V: Unknown ground equipment vehicle
+  case aUGEV // = 69
+
+  ///
+  /// a-f-S-N-N-R: Friendly sea surface non-naval rescue
+  case aFSNNR // = 70
+
+  ///
+  /// a-f-F-B: Friendly force boundary
+  case aFFB // = 71
+
+  ///
+  /// b-m-p-s-p-loc: Self-position location marker
+  case bMPSPLoc // = 72
+
+  ///
+  /// b-i-v: Imagery/video
+  case bIV // = 73
+
+  ///
+  /// b-f-t-r: File transfer request
+  case bFTR // = 74
+
+  ///
+  /// b-f-t-a: File transfer acknowledgment
+  case bFTA // = 75
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .other
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .other
+    case 1: self = .aFGUC
+    case 2: self = .aFGUCI
+    case 3: self = .aNACF
+    case 4: self = .aNACH
+    case 5: self = .aNAC
+    case 6: self = .aFAMH
+    case 7: self = .aFAM
+    case 8: self = .aFAMFF
+    case 9: self = .aFAMHA
+    case 10: self = .aFAMHUM
+    case 11: self = .aHAMFF
+    case 12: self = .aHAMHA
+    case 13: self = .aUAC
+    case 14: self = .tXDD
+    case 15: self = .aFGESE
+    case 16: self = .aFGEVC
+    case 17: self = .aFS
+    case 18: self = .aFAMF
+    case 19: self = .aFAMFCH
+    case 20: self = .aFAMFUL
+    case 21: self = .aFAMFL
+    case 22: self = .aFAMFP
+    case 23: self = .aFACH
+    case 24: self = .aNAMFQ
+    case 25: self = .bTF
+    case 26: self = .bRFHC
+    case 27: self = .bAOPan
+    case 28: self = .bAOOpn
+    case 29: self = .bAOCan
+    case 30: self = .bAOTbl
+    case 31: self = .bAG
+    case 32: self = .aFG
+    case 33: self = .aFGU
+    case 34: self = .aHG
+    case 35: self = .aUG
+    case 36: self = .aNG
+    case 37: self = .bMR
+    case 38: self = .bMPW
+    case 39: self = .bMPSPI
+    case 40: self = .uDF
+    case 41: self = .uDR
+    case 42: self = .uDCC
+    case 43: self = .uRbA
+    case 44: self = .aHA
+    case 45: self = .aUA
+    case 46: self = .aFAMHQ
+    case 47: self = .aFACF
+    case 48: self = .aFAC
+    case 49: self = .aFACL
+    case 50: self = .aFA
+    case 51: self = .aFAMHC
+    case 52: self = .aNAMFF
+    case 53: self = .aUACF
+    case 54: self = .aFGUCFTA
+    case 55: self = .aFGUCVS
+    case 56: self = .aFGUCRX
+    case 57: self = .aFGUCIZ
+    case 58: self = .aFGUCECW
+    case 59: self = .aFGUCIL
+    case 60: self = .aFGUCRO
+    case 61: self = .aFGUCRV
+    case 62: self = .aFGUH
+    case 63: self = .aFGUUMSE
+    case 64: self = .aFGUSMC
+    case 65: self = .aFGES
+    case 66: self = .aFGE
+    case 67: self = .aFGEVCU
+    case 68: self = .aFGEVCPs
+    case 69: self = .aUGEV
+    case 70: self = .aFSNNR
+    case 71: self = .aFFB
+    case 72: self = .bMPSPLoc
+    case 73: self = .bIV
+    case 74: self = .bFTR
+    case 75: self = .bFTA
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .other: return 0
+    case .aFGUC: return 1
+    case .aFGUCI: return 2
+    case .aNACF: return 3
+    case .aNACH: return 4
+    case .aNAC: return 5
+    case .aFAMH: return 6
+    case .aFAM: return 7
+    case .aFAMFF: return 8
+    case .aFAMHA: return 9
+    case .aFAMHUM: return 10
+    case .aHAMFF: return 11
+    case .aHAMHA: return 12
+    case .aUAC: return 13
+    case .tXDD: return 14
+    case .aFGESE: return 15
+    case .aFGEVC: return 16
+    case .aFS: return 17
+    case .aFAMF: return 18
+    case .aFAMFCH: return 19
+    case .aFAMFUL: return 20
+    case .aFAMFL: return 21
+    case .aFAMFP: return 22
+    case .aFACH: return 23
+    case .aNAMFQ: return 24
+    case .bTF: return 25
+    case .bRFHC: return 26
+    case .bAOPan: return 27
+    case .bAOOpn: return 28
+    case .bAOCan: return 29
+    case .bAOTbl: return 30
+    case .bAG: return 31
+    case .aFG: return 32
+    case .aFGU: return 33
+    case .aHG: return 34
+    case .aUG: return 35
+    case .aNG: return 36
+    case .bMR: return 37
+    case .bMPW: return 38
+    case .bMPSPI: return 39
+    case .uDF: return 40
+    case .uDR: return 41
+    case .uDCC: return 42
+    case .uRbA: return 43
+    case .aHA: return 44
+    case .aUA: return 45
+    case .aFAMHQ: return 46
+    case .aFACF: return 47
+    case .aFAC: return 48
+    case .aFACL: return 49
+    case .aFA: return 50
+    case .aFAMHC: return 51
+    case .aNAMFF: return 52
+    case .aUACF: return 53
+    case .aFGUCFTA: return 54
+    case .aFGUCVS: return 55
+    case .aFGUCRX: return 56
+    case .aFGUCIZ: return 57
+    case .aFGUCECW: return 58
+    case .aFGUCIL: return 59
+    case .aFGUCRO: return 60
+    case .aFGUCRV: return 61
+    case .aFGUH: return 62
+    case .aFGUUMSE: return 63
+    case .aFGUSMC: return 64
+    case .aFGES: return 65
+    case .aFGE: return 66
+    case .aFGEVCU: return 67
+    case .aFGEVCPs: return 68
+    case .aUGEV: return 69
+    case .aFSNNR: return 70
+    case .aFFB: return 71
+    case .bMPSPLoc: return 72
+    case .bIV: return 73
+    case .bFTR: return 74
+    case .bFTA: return 75
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [CotType] = [
+    .other,
+    .aFGUC,
+    .aFGUCI,
+    .aNACF,
+    .aNACH,
+    .aNAC,
+    .aFAMH,
+    .aFAM,
+    .aFAMFF,
+    .aFAMHA,
+    .aFAMHUM,
+    .aHAMFF,
+    .aHAMHA,
+    .aUAC,
+    .tXDD,
+    .aFGESE,
+    .aFGEVC,
+    .aFS,
+    .aFAMF,
+    .aFAMFCH,
+    .aFAMFUL,
+    .aFAMFL,
+    .aFAMFP,
+    .aFACH,
+    .aNAMFQ,
+    .bTF,
+    .bRFHC,
+    .bAOPan,
+    .bAOOpn,
+    .bAOCan,
+    .bAOTbl,
+    .bAG,
+    .aFG,
+    .aFGU,
+    .aHG,
+    .aUG,
+    .aNG,
+    .bMR,
+    .bMPW,
+    .bMPSPI,
+    .uDF,
+    .uDR,
+    .uDCC,
+    .uRbA,
+    .aHA,
+    .aUA,
+    .aFAMHQ,
+    .aFACF,
+    .aFAC,
+    .aFACL,
+    .aFA,
+    .aFAMHC,
+    .aNAMFF,
+    .aUACF,
+    .aFGUCFTA,
+    .aFGUCVS,
+    .aFGUCRX,
+    .aFGUCIZ,
+    .aFGUCECW,
+    .aFGUCIL,
+    .aFGUCRO,
+    .aFGUCRV,
+    .aFGUH,
+    .aFGUUMSE,
+    .aFGUSMC,
+    .aFGES,
+    .aFGE,
+    .aFGEVCU,
+    .aFGEVCPs,
+    .aUGEV,
+    .aFSNNR,
+    .aFFB,
+    .bMPSPLoc,
+    .bIV,
+    .bFTR,
+    .bFTA,
+  ]
+
+}
+
+///
+/// Geopoint and altitude source
+public enum GeoPointSource: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  ///
+  /// Unspecified
+  case unspecified // = 0
+
+  ///
+  /// GPS derived
+  case gps // = 1
+
+  ///
+  /// User entered
+  case user // = 2
+
+  ///
+  /// Network/external
+  case network // = 3
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .gps
+    case 2: self = .user
+    case 3: self = .network
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .gps: return 1
+    case .user: return 2
+    case .network: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [GeoPointSource] = [
+    .unspecified,
+    .gps,
+    .user,
+    .network,
+  ]
+
+}
+
+///
 /// Packets for the official ATAK Plugin
 public struct TAKPacket: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -482,6 +1185,299 @@ public struct PLI: Sendable {
   public init() {}
 }
 
+///
+/// Aircraft track information from ADS-B or military air tracking.
+/// Covers the majority of observed real-world CoT traffic.
+public struct AircraftTrack: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// ICAO hex identifier (e.g. "AD237C")
+  public var icao: String = String()
+
+  ///
+  /// Aircraft registration (e.g. "N946AK")
+  public var registration: String = String()
+
+  ///
+  /// Flight number/callsign (e.g. "ASA864")
+  public var flight: String = String()
+
+  ///
+  /// ICAO aircraft type designator (e.g. "B39M")
+  public var aircraftType: String = String()
+
+  ///
+  /// Transponder squawk code (0-7777 octal)
+  public var squawk: UInt32 = 0
+
+  ///
+  /// ADS-B emitter category (e.g. "A3")
+  public var category: String = String()
+
+  ///
+  /// Received signal strength * 10 (e.g. -194 for -19.4 dBm)
+  public var rssiX10: Int32 = 0
+
+  ///
+  /// Whether receiver has GPS fix
+  public var gps: Bool = false
+
+  ///
+  /// CoT host ID for source attribution
+  public var cotHostID: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
+/// ATAK v2 packet with expanded CoT field support and zstd dictionary compression.
+/// Sent on ATAK_PLUGIN_V2 port. The wire payload is:
+///   [1 byte flags][zstd-compressed TAKPacketV2 protobuf]
+/// Flags byte: bits 0-5 = dictionary ID, bits 6-7 = reserved.
+public struct TAKPacketV2: @unchecked Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Well-known CoT event type enum.
+  /// Use CotType_Other with cot_type_str for unknown types.
+  public var cotTypeID: CotType {
+    get {return _storage._cotTypeID}
+    set {_uniqueStorage()._cotTypeID = newValue}
+  }
+
+  ///
+  /// How the coordinates were generated
+  public var how: CotHow {
+    get {return _storage._how}
+    set {_uniqueStorage()._how = newValue}
+  }
+
+  ///
+  /// Callsign
+  public var callsign: String {
+    get {return _storage._callsign}
+    set {_uniqueStorage()._callsign = newValue}
+  }
+
+  ///
+  /// Team color assignment
+  public var team: Team {
+    get {return _storage._team}
+    set {_uniqueStorage()._team = newValue}
+  }
+
+  ///
+  /// Role of the group member
+  public var role: MemberRole {
+    get {return _storage._role}
+    set {_uniqueStorage()._role = newValue}
+  }
+
+  ///
+  /// Latitude, multiply by 1e-7 to get degrees in floating point
+  public var latitudeI: Int32 {
+    get {return _storage._latitudeI}
+    set {_uniqueStorage()._latitudeI = newValue}
+  }
+
+  ///
+  /// Longitude, multiply by 1e-7 to get degrees in floating point
+  public var longitudeI: Int32 {
+    get {return _storage._longitudeI}
+    set {_uniqueStorage()._longitudeI = newValue}
+  }
+
+  ///
+  /// Altitude in meters (HAE)
+  public var altitude: Int32 {
+    get {return _storage._altitude}
+    set {_uniqueStorage()._altitude = newValue}
+  }
+
+  ///
+  /// Speed in cm/s
+  public var speed: UInt32 {
+    get {return _storage._speed}
+    set {_uniqueStorage()._speed = newValue}
+  }
+
+  ///
+  /// Course in degrees * 100 (0-36000)
+  public var course: UInt32 {
+    get {return _storage._course}
+    set {_uniqueStorage()._course = newValue}
+  }
+
+  ///
+  /// Battery level 0-100
+  public var battery: UInt32 {
+    get {return _storage._battery}
+    set {_uniqueStorage()._battery = newValue}
+  }
+
+  ///
+  /// Geopoint source
+  public var geoSrc: GeoPointSource {
+    get {return _storage._geoSrc}
+    set {_uniqueStorage()._geoSrc = newValue}
+  }
+
+  ///
+  /// Altitude source
+  public var altSrc: GeoPointSource {
+    get {return _storage._altSrc}
+    set {_uniqueStorage()._altSrc = newValue}
+  }
+
+  ///
+  /// Device UID (UUID string or device ID like "ANDROID-xxxx")
+  public var uid: String {
+    get {return _storage._uid}
+    set {_uniqueStorage()._uid = newValue}
+  }
+
+  ///
+  /// Device callsign
+  public var deviceCallsign: String {
+    get {return _storage._deviceCallsign}
+    set {_uniqueStorage()._deviceCallsign = newValue}
+  }
+
+  ///
+  /// Stale time as seconds offset from event time
+  public var staleSeconds: UInt32 {
+    get {return _storage._staleSeconds}
+    set {_uniqueStorage()._staleSeconds = newValue}
+  }
+
+  ///
+  /// TAK client version string
+  public var takVersion: String {
+    get {return _storage._takVersion}
+    set {_uniqueStorage()._takVersion = newValue}
+  }
+
+  ///
+  /// TAK device model
+  public var takDevice: String {
+    get {return _storage._takDevice}
+    set {_uniqueStorage()._takDevice = newValue}
+  }
+
+  ///
+  /// TAK platform (ATAK-CIV, WebTAK, etc.)
+  public var takPlatform: String {
+    get {return _storage._takPlatform}
+    set {_uniqueStorage()._takPlatform = newValue}
+  }
+
+  ///
+  /// TAK OS version
+  public var takOs: String {
+    get {return _storage._takOs}
+    set {_uniqueStorage()._takOs = newValue}
+  }
+
+  ///
+  /// Connection endpoint
+  public var endpoint: String {
+    get {return _storage._endpoint}
+    set {_uniqueStorage()._endpoint = newValue}
+  }
+
+  ///
+  /// Phone number
+  public var phone: String {
+    get {return _storage._phone}
+    set {_uniqueStorage()._phone = newValue}
+  }
+
+  ///
+  /// CoT event type string, only populated when cot_type_id is CotType_Other
+  public var cotTypeStr: String {
+    get {return _storage._cotTypeStr}
+    set {_uniqueStorage()._cotTypeStr = newValue}
+  }
+
+  ///
+  /// The payload of the packet
+  public var payloadVariant: OneOf_PayloadVariant? {
+    get {return _storage._payloadVariant}
+    set {_uniqueStorage()._payloadVariant = newValue}
+  }
+
+  ///
+  /// Position report (true = PLI, no extra fields beyond the common ones above)
+  public var pli: Bool {
+    get {
+      if case .pli(let v)? = _storage._payloadVariant {return v}
+      return false
+    }
+    set {_uniqueStorage()._payloadVariant = .pli(newValue)}
+  }
+
+  ///
+  /// ATAK GeoChat message
+  public var chat: GeoChat {
+    get {
+      if case .chat(let v)? = _storage._payloadVariant {return v}
+      return GeoChat()
+    }
+    set {_uniqueStorage()._payloadVariant = .chat(newValue)}
+  }
+
+  ///
+  /// Aircraft track data (ADS-B, military air)
+  public var aircraft: AircraftTrack {
+    get {
+      if case .aircraft(let v)? = _storage._payloadVariant {return v}
+      return AircraftTrack()
+    }
+    set {_uniqueStorage()._payloadVariant = .aircraft(newValue)}
+  }
+
+  ///
+  /// Generic CoT detail XML for unmapped types
+  public var rawDetail: Data {
+    get {
+      if case .rawDetail(let v)? = _storage._payloadVariant {return v}
+      return Data()
+    }
+    set {_uniqueStorage()._payloadVariant = .rawDetail(newValue)}
+  }
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// The payload of the packet
+  public enum OneOf_PayloadVariant: Equatable, Sendable {
+    ///
+    /// Position report (true = PLI, no extra fields beyond the common ones above)
+    case pli(Bool)
+    ///
+    /// ATAK GeoChat message
+    case chat(GeoChat)
+    ///
+    /// Aircraft track data (ADS-B, military air)
+    case aircraft(AircraftTrack)
+    ///
+    /// Generic CoT detail XML for unmapped types
+    case rawDetail(Data)
+
+  }
+
+  public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "meshtastic"
@@ -492,6 +1488,18 @@ extension Team: SwiftProtobuf._ProtoNameProviding {
 
 extension MemberRole: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Unspecifed\0\u{1}TeamMember\0\u{1}TeamLead\0\u{1}HQ\0\u{1}Sniper\0\u{1}Medic\0\u{1}ForwardObserver\0\u{1}RTO\0\u{1}K9\0")
+}
+
+extension CotHow: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CotHow_Unspecified\0\u{1}CotHow_h_e\0\u{1}CotHow_m_g\0\u{1}CotHow_h_g_i_g_o\0\u{1}CotHow_m_r\0\u{1}CotHow_m_f\0\u{1}CotHow_m_p\0\u{1}CotHow_m_s\0")
+}
+
+extension CotType: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CotType_Other\0\u{1}CotType_a_f_G_U_C\0\u{1}CotType_a_f_G_U_C_I\0\u{1}CotType_a_n_A_C_F\0\u{1}CotType_a_n_A_C_H\0\u{1}CotType_a_n_A_C\0\u{1}CotType_a_f_A_M_H\0\u{1}CotType_a_f_A_M\0\u{1}CotType_a_f_A_M_F_F\0\u{1}CotType_a_f_A_M_H_A\0\u{1}CotType_a_f_A_M_H_U_M\0\u{1}CotType_a_h_A_M_F_F\0\u{1}CotType_a_h_A_M_H_A\0\u{1}CotType_a_u_A_C\0\u{1}CotType_t_x_d_d\0\u{1}CotType_a_f_G_E_S_E\0\u{1}CotType_a_f_G_E_V_C\0\u{1}CotType_a_f_S\0\u{1}CotType_a_f_A_M_F\0\u{1}CotType_a_f_A_M_F_C_H\0\u{1}CotType_a_f_A_M_F_U_L\0\u{1}CotType_a_f_A_M_F_L\0\u{1}CotType_a_f_A_M_F_P\0\u{1}CotType_a_f_A_C_H\0\u{1}CotType_a_n_A_M_F_Q\0\u{1}CotType_b_t_f\0\u{1}CotType_b_r_f_h_c\0\u{1}CotType_b_a_o_pan\0\u{1}CotType_b_a_o_opn\0\u{1}CotType_b_a_o_can\0\u{1}CotType_b_a_o_tbl\0\u{1}CotType_b_a_g\0\u{1}CotType_a_f_G\0\u{1}CotType_a_f_G_U\0\u{1}CotType_a_h_G\0\u{1}CotType_a_u_G\0\u{1}CotType_a_n_G\0\u{1}CotType_b_m_r\0\u{1}CotType_b_m_p_w\0\u{1}CotType_b_m_p_s_p_i\0\u{1}CotType_u_d_f\0\u{1}CotType_u_d_r\0\u{1}CotType_u_d_c_c\0\u{1}CotType_u_rb_a\0\u{1}CotType_a_h_A\0\u{1}CotType_a_u_A\0\u{1}CotType_a_f_A_M_H_Q\0\u{1}CotType_a_f_A_C_F\0\u{1}CotType_a_f_A_C\0\u{1}CotType_a_f_A_C_L\0\u{1}CotType_a_f_A\0\u{1}CotType_a_f_A_M_H_C\0\u{1}CotType_a_n_A_M_F_F\0\u{1}CotType_a_u_A_C_F\0\u{1}CotType_a_f_G_U_C_F_T_A\0\u{1}CotType_a_f_G_U_C_V_S\0\u{1}CotType_a_f_G_U_C_R_X\0\u{1}CotType_a_f_G_U_C_I_Z\0\u{1}CotType_a_f_G_U_C_E_C_W\0\u{1}CotType_a_f_G_U_C_I_L\0\u{1}CotType_a_f_G_U_C_R_O\0\u{1}CotType_a_f_G_U_C_R_V\0\u{1}CotType_a_f_G_U_H\0\u{1}CotType_a_f_G_U_U_M_S_E\0\u{1}CotType_a_f_G_U_S_M_C\0\u{1}CotType_a_f_G_E_S\0\u{1}CotType_a_f_G_E\0\u{1}CotType_a_f_G_E_V_C_U\0\u{1}CotType_a_f_G_E_V_C_ps\0\u{1}CotType_a_u_G_E_V\0\u{1}CotType_a_f_S_N_N_R\0\u{1}CotType_a_f_F_B\0\u{1}CotType_b_m_p_s_p_loc\0\u{1}CotType_b_i_v\0\u{1}CotType_b_f_t_r\0\u{1}CotType_b_f_t_a\0")
+}
+
+extension GeoPointSource: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0GeoPointSource_Unspecified\0\u{1}GeoPointSource_GPS\0\u{1}GeoPointSource_USER\0\u{1}GeoPointSource_NETWORK\0")
 }
 
 extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -782,6 +1790,364 @@ extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, 
     if lhs.altitude != rhs.altitude {return false}
     if lhs.speed != rhs.speed {return false}
     if lhs.course != rhs.course {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension AircraftTrack: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".AircraftTrack"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}icao\0\u{1}registration\0\u{1}flight\0\u{3}aircraft_type\0\u{1}squawk\0\u{1}category\0\u{3}rssi_x10\0\u{1}gps\0\u{3}cot_host_id\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.icao) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.registration) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.flight) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.aircraftType) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.squawk) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self.category) }()
+      case 7: try { try decoder.decodeSingularSInt32Field(value: &self.rssiX10) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.gps) }()
+      case 9: try { try decoder.decodeSingularStringField(value: &self.cotHostID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.icao.isEmpty {
+      try visitor.visitSingularStringField(value: self.icao, fieldNumber: 1)
+    }
+    if !self.registration.isEmpty {
+      try visitor.visitSingularStringField(value: self.registration, fieldNumber: 2)
+    }
+    if !self.flight.isEmpty {
+      try visitor.visitSingularStringField(value: self.flight, fieldNumber: 3)
+    }
+    if !self.aircraftType.isEmpty {
+      try visitor.visitSingularStringField(value: self.aircraftType, fieldNumber: 4)
+    }
+    if self.squawk != 0 {
+      try visitor.visitSingularUInt32Field(value: self.squawk, fieldNumber: 5)
+    }
+    if !self.category.isEmpty {
+      try visitor.visitSingularStringField(value: self.category, fieldNumber: 6)
+    }
+    if self.rssiX10 != 0 {
+      try visitor.visitSingularSInt32Field(value: self.rssiX10, fieldNumber: 7)
+    }
+    if self.gps != false {
+      try visitor.visitSingularBoolField(value: self.gps, fieldNumber: 8)
+    }
+    if !self.cotHostID.isEmpty {
+      try visitor.visitSingularStringField(value: self.cotHostID, fieldNumber: 9)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: AircraftTrack, rhs: AircraftTrack) -> Bool {
+    if lhs.icao != rhs.icao {return false}
+    if lhs.registration != rhs.registration {return false}
+    if lhs.flight != rhs.flight {return false}
+    if lhs.aircraftType != rhs.aircraftType {return false}
+    if lhs.squawk != rhs.squawk {return false}
+    if lhs.category != rhs.category {return false}
+    if lhs.rssiX10 != rhs.rssiX10 {return false}
+    if lhs.gps != rhs.gps {return false}
+    if lhs.cotHostID != rhs.cotHostID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TAKPacketV2"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{2}\u{7}pli\0\u{1}chat\0\u{1}aircraft\0\u{3}raw_detail\0")
+
+  fileprivate class _StorageClass {
+    var _cotTypeID: CotType = .other
+    var _how: CotHow = .unspecified
+    var _callsign: String = String()
+    var _team: Team = .unspecifedColor
+    var _role: MemberRole = .unspecifed
+    var _latitudeI: Int32 = 0
+    var _longitudeI: Int32 = 0
+    var _altitude: Int32 = 0
+    var _speed: UInt32 = 0
+    var _course: UInt32 = 0
+    var _battery: UInt32 = 0
+    var _geoSrc: GeoPointSource = .unspecified
+    var _altSrc: GeoPointSource = .unspecified
+    var _uid: String = String()
+    var _deviceCallsign: String = String()
+    var _staleSeconds: UInt32 = 0
+    var _takVersion: String = String()
+    var _takDevice: String = String()
+    var _takPlatform: String = String()
+    var _takOs: String = String()
+    var _endpoint: String = String()
+    var _phone: String = String()
+    var _cotTypeStr: String = String()
+    var _payloadVariant: TAKPacketV2.OneOf_PayloadVariant?
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _cotTypeID = source._cotTypeID
+      _how = source._how
+      _callsign = source._callsign
+      _team = source._team
+      _role = source._role
+      _latitudeI = source._latitudeI
+      _longitudeI = source._longitudeI
+      _altitude = source._altitude
+      _speed = source._speed
+      _course = source._course
+      _battery = source._battery
+      _geoSrc = source._geoSrc
+      _altSrc = source._altSrc
+      _uid = source._uid
+      _deviceCallsign = source._deviceCallsign
+      _staleSeconds = source._staleSeconds
+      _takVersion = source._takVersion
+      _takDevice = source._takDevice
+      _takPlatform = source._takPlatform
+      _takOs = source._takOs
+      _endpoint = source._endpoint
+      _phone = source._phone
+      _cotTypeStr = source._cotTypeStr
+      _payloadVariant = source._payloadVariant
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularEnumField(value: &_storage._cotTypeID) }()
+        case 2: try { try decoder.decodeSingularEnumField(value: &_storage._how) }()
+        case 3: try { try decoder.decodeSingularStringField(value: &_storage._callsign) }()
+        case 4: try { try decoder.decodeSingularEnumField(value: &_storage._team) }()
+        case 5: try { try decoder.decodeSingularEnumField(value: &_storage._role) }()
+        case 6: try { try decoder.decodeSingularSFixed32Field(value: &_storage._latitudeI) }()
+        case 7: try { try decoder.decodeSingularSFixed32Field(value: &_storage._longitudeI) }()
+        case 8: try { try decoder.decodeSingularSInt32Field(value: &_storage._altitude) }()
+        case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._speed) }()
+        case 10: try { try decoder.decodeSingularUInt32Field(value: &_storage._course) }()
+        case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._battery) }()
+        case 12: try { try decoder.decodeSingularEnumField(value: &_storage._geoSrc) }()
+        case 13: try { try decoder.decodeSingularEnumField(value: &_storage._altSrc) }()
+        case 14: try { try decoder.decodeSingularStringField(value: &_storage._uid) }()
+        case 15: try { try decoder.decodeSingularStringField(value: &_storage._deviceCallsign) }()
+        case 16: try { try decoder.decodeSingularUInt32Field(value: &_storage._staleSeconds) }()
+        case 17: try { try decoder.decodeSingularStringField(value: &_storage._takVersion) }()
+        case 18: try { try decoder.decodeSingularStringField(value: &_storage._takDevice) }()
+        case 19: try { try decoder.decodeSingularStringField(value: &_storage._takPlatform) }()
+        case 20: try { try decoder.decodeSingularStringField(value: &_storage._takOs) }()
+        case 21: try { try decoder.decodeSingularStringField(value: &_storage._endpoint) }()
+        case 22: try { try decoder.decodeSingularStringField(value: &_storage._phone) }()
+        case 23: try { try decoder.decodeSingularStringField(value: &_storage._cotTypeStr) }()
+        case 30: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .pli(v)
+          }
+        }()
+        case 31: try {
+          var v: GeoChat?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .chat(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .chat(v)
+          }
+        }()
+        case 32: try {
+          var v: AircraftTrack?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .aircraft(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .aircraft(v)
+          }
+        }()
+        case 33: try {
+          var v: Data?
+          try decoder.decodeSingularBytesField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .rawDetail(v)
+          }
+        }()
+        default: break
+        }
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if _storage._cotTypeID != .other {
+        try visitor.visitSingularEnumField(value: _storage._cotTypeID, fieldNumber: 1)
+      }
+      if _storage._how != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._how, fieldNumber: 2)
+      }
+      if !_storage._callsign.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._callsign, fieldNumber: 3)
+      }
+      if _storage._team != .unspecifedColor {
+        try visitor.visitSingularEnumField(value: _storage._team, fieldNumber: 4)
+      }
+      if _storage._role != .unspecifed {
+        try visitor.visitSingularEnumField(value: _storage._role, fieldNumber: 5)
+      }
+      if _storage._latitudeI != 0 {
+        try visitor.visitSingularSFixed32Field(value: _storage._latitudeI, fieldNumber: 6)
+      }
+      if _storage._longitudeI != 0 {
+        try visitor.visitSingularSFixed32Field(value: _storage._longitudeI, fieldNumber: 7)
+      }
+      if _storage._altitude != 0 {
+        try visitor.visitSingularSInt32Field(value: _storage._altitude, fieldNumber: 8)
+      }
+      if _storage._speed != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._speed, fieldNumber: 9)
+      }
+      if _storage._course != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._course, fieldNumber: 10)
+      }
+      if _storage._battery != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._battery, fieldNumber: 11)
+      }
+      if _storage._geoSrc != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._geoSrc, fieldNumber: 12)
+      }
+      if _storage._altSrc != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._altSrc, fieldNumber: 13)
+      }
+      if !_storage._uid.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._uid, fieldNumber: 14)
+      }
+      if !_storage._deviceCallsign.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._deviceCallsign, fieldNumber: 15)
+      }
+      if _storage._staleSeconds != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._staleSeconds, fieldNumber: 16)
+      }
+      if !_storage._takVersion.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._takVersion, fieldNumber: 17)
+      }
+      if !_storage._takDevice.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._takDevice, fieldNumber: 18)
+      }
+      if !_storage._takPlatform.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._takPlatform, fieldNumber: 19)
+      }
+      if !_storage._takOs.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._takOs, fieldNumber: 20)
+      }
+      if !_storage._endpoint.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._endpoint, fieldNumber: 21)
+      }
+      if !_storage._phone.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._phone, fieldNumber: 22)
+      }
+      if !_storage._cotTypeStr.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cotTypeStr, fieldNumber: 23)
+      }
+      switch _storage._payloadVariant {
+      case .pli?: try {
+        guard case .pli(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 30)
+      }()
+      case .chat?: try {
+        guard case .chat(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 31)
+      }()
+      case .aircraft?: try {
+        guard case .aircraft(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 32)
+      }()
+      case .rawDetail?: try {
+        guard case .rawDetail(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBytesField(value: v, fieldNumber: 33)
+      }()
+      case nil: break
+      }
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: TAKPacketV2, rhs: TAKPacketV2) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._cotTypeID != rhs_storage._cotTypeID {return false}
+        if _storage._how != rhs_storage._how {return false}
+        if _storage._callsign != rhs_storage._callsign {return false}
+        if _storage._team != rhs_storage._team {return false}
+        if _storage._role != rhs_storage._role {return false}
+        if _storage._latitudeI != rhs_storage._latitudeI {return false}
+        if _storage._longitudeI != rhs_storage._longitudeI {return false}
+        if _storage._altitude != rhs_storage._altitude {return false}
+        if _storage._speed != rhs_storage._speed {return false}
+        if _storage._course != rhs_storage._course {return false}
+        if _storage._battery != rhs_storage._battery {return false}
+        if _storage._geoSrc != rhs_storage._geoSrc {return false}
+        if _storage._altSrc != rhs_storage._altSrc {return false}
+        if _storage._uid != rhs_storage._uid {return false}
+        if _storage._deviceCallsign != rhs_storage._deviceCallsign {return false}
+        if _storage._staleSeconds != rhs_storage._staleSeconds {return false}
+        if _storage._takVersion != rhs_storage._takVersion {return false}
+        if _storage._takDevice != rhs_storage._takDevice {return false}
+        if _storage._takPlatform != rhs_storage._takPlatform {return false}
+        if _storage._takOs != rhs_storage._takOs {return false}
+        if _storage._endpoint != rhs_storage._endpoint {return false}
+        if _storage._phone != rhs_storage._phone {return false}
+        if _storage._cotTypeStr != rhs_storage._cotTypeStr {return false}
+        if _storage._payloadVariant != rhs_storage._payloadVariant {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

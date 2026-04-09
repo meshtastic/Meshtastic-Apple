@@ -644,6 +644,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.services.info("MAX PORT NUM OF 511")
 				case .atakPlugin:
 					handleATAKPluginPacket(packet)
+				case .atakPluginV2:
+					handleATAKPluginV2Packet(packet)
 				case .powerstressApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .reticulumTunnelApp:

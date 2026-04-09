@@ -11,6 +11,7 @@
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
 		102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EB02E172F41003D191E /* DatadogRUM */; };
+		10794B232F8713CB000CA23F /* MeshtasticTAK in Frameworks */ = {isa = PBXBuildFile; productRef = 10794B222F8713CB000CA23F /* MeshtasticTAK */; };
 		108FFECB2DD3F43C00BFAA81 /* ShareContactQRDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */; };
 		108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */; };
 		10D109F22E2047D600536CE6 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F12E2047D600536CE6 /* DatadogSessionReplay */; };
@@ -102,8 +103,8 @@
 		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
 		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
 		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
-		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
 		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
+		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
 		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
 		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
 		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
@@ -352,7 +353,6 @@
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
-		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
 		108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityToNodeInfo.swift; sourceTree = "<group>"; };
 		1D5AD8037A0D583C614B0597 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
@@ -440,6 +440,7 @@
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
+		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
 		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
@@ -730,6 +731,7 @@
 				102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */,
 				10D109F22E2047D600536CE6 /* DatadogSessionReplay in Frameworks */,
 				102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */,
+				10794B232F8713CB000CA23F /* MeshtasticTAK in Frameworks */,
 				102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */,
 				DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
 				10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */,
@@ -1524,6 +1526,7 @@
 				102B5EB02E172F41003D191E /* DatadogRUM */,
 				10D109F12E2047D600536CE6 /* DatadogSessionReplay */,
 				10D109F32E2047D600536CE6 /* DatadogTrace */,
+				10794B222F8713CB000CA23F /* MeshtasticTAK */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
@@ -1595,6 +1598,7 @@
 				25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
 				259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
+				10794B212F8713CB000CA23F /* XCLocalSwiftPackageReference "../TAKPacket-SDK/swift" */,
 			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
@@ -2360,6 +2364,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		10794B212F8713CB000CA23F /* XCLocalSwiftPackageReference "../TAKPacket-SDK/swift" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../TAKPacket-SDK/swift";
+		};
 		25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = MeshtasticProtobufs;
@@ -2414,6 +2422,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogRUM;
+		};
+		10794B222F8713CB000CA23F /* MeshtasticTAK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MeshtasticTAK;
 		};
 		10D109F12E2047D600536CE6 /* DatadogSessionReplay */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -7,6 +7,7 @@
 
 import Foundation
 import MeshtasticProtobufs
+import MeshtasticTAK
 import OSLog
 
 extension AccessoryManager {
@@ -55,7 +56,7 @@ extension AccessoryManager {
 	/// - Parameters:
 	///   - takPacket: The TAKPacket protobuf to send
 	///   - channel: Channel to send on (0 = default/primary)
-	func sendTAKPacket(_ takPacket: TAKPacket, channel: UInt32 = 0) async throws {
+	func sendTAKPacket(_ takPacket: MeshtasticProtobufs.TAKPacket, channel: UInt32 = 0) async throws {
 		Logger.tak.debug("=== Sending TAKPacket to Mesh ===")
 
 		guard let activeConnection else {
@@ -160,7 +161,7 @@ extension AccessoryManager {
 		}
 
 		// Parse uncompressed TAKPacket protobuf
-		let takPacket: TAKPacket
+		let takPacket: MeshtasticProtobufs.TAKPacket
 		do {
 			takPacket = try TAKPacket(serializedBytes: payload)
 		} catch {
@@ -178,6 +179,86 @@ extension AccessoryManager {
 		Task {
 			await TAKServerManager.shared.bridge?.broadcastToTAKClients(takPacket, from: packet.from)
 		}
+	}
+
+	// MARK: - Receive TAK V2 Packet from Mesh (Port 78)
+
+	/// Handle incoming ATAK Plugin V2 packet from the mesh network
+	/// Wire format: [flags byte][zstd-compressed TAKPacketV2 protobuf]
+	/// Uses TAKPacket-SDK for decompression
+	func handleATAKPluginV2Packet(_ packet: MeshPacket) {
+		guard case let .decoded(data) = packet.payloadVariant else {
+			Logger.tak.warning("Received ATAK V2 packet without decoded payload")
+			return
+		}
+
+		Logger.tak.debug("Received ATAK V2 packet: \(data.payload.count) bytes from node \(packet.from)")
+
+		let wirePayload = data.payload
+		guard wirePayload.count >= 2 else {
+			Logger.tak.warning("ATAK V2 payload too short: \(wirePayload.count) bytes")
+			return
+		}
+
+		// Decompress using TAKPacket-SDK
+		do {
+			let compressor = MeshtasticTAK.TakCompressor()
+			let takPacketV2 = try compressor.decompress(wirePayload)
+
+			Logger.tak.info("Decompressed ATAK V2 packet from node \(packet.from): \(takPacketV2.callsign)")
+
+			// Convert TAKPacketV2 → CoT XML → parse to CoTMessage → broadcast
+			let builder = MeshtasticTAK.CotXmlBuilder()
+			let cotXml = builder.build(takPacketV2)
+
+			if let cotData = cotXml.data(using: .utf8) {
+				let cotMessage = try CoTMessage.parseData(cotData)
+				Task {
+					await TAKServerManager.shared.broadcast(cotMessage)
+				}
+				Logger.tak.info("Forwarded ATAK V2 to TAK clients: \(cotMessage.type)")
+			}
+		} catch {
+			Logger.tak.error("Failed to decompress ATAK V2 packet: \(error.localizedDescription)")
+		}
+	}
+
+	// MARK: - Send TAK V2 Packet to Mesh
+
+	/// Send a compressed TAK V2 wire payload to the mesh
+	func sendTAKV2Packet(_ wirePayload: Data, channel: UInt32 = 0) async throws {
+		guard let activeConnection else {
+			throw AccessoryError.connectionFailed("Not connected to Meshtastic device")
+		}
+		guard let deviceNum = activeConnection.device.num else {
+			throw AccessoryError.connectionFailed("No device number available")
+		}
+
+		var dataMessage = DataMessage()
+		dataMessage.portnum = .atakPluginV2  // Port 78
+		dataMessage.payload = wirePayload
+
+		var meshPacket = MeshPacket()
+		meshPacket.to = 0xFFFFFFFF  // Broadcast
+		meshPacket.from = UInt32(deviceNum)
+		meshPacket.channel = channel
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.decoded = dataMessage
+
+		var toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		try await send(toRadio, debugDescription: "Sending TAKPacket V2 to mesh")
+		Logger.tak.info("Sent TAK V2 packet to mesh (port=78, channel=\(channel), size=\(wirePayload.count) bytes)")
+	}
+
+	/// Send a CoT message to the mesh using the V2 protocol
+	func sendCoTToMeshV2(_ cotXml: String, channel: UInt32 = 0) async throws {
+		let parser = MeshtasticTAK.CotXmlParser()
+		let packet = parser.parse(cotXml)
+		let compressor = MeshtasticTAK.TakCompressor()
+		let wirePayload = try compressor.compress(packet)
+		try await sendTAKV2Packet(wirePayload, channel: channel)
 	}
 
 	// MARK: - Handle ATAK Forwarder Packet (Port 257)
