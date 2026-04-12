@@ -171,7 +171,7 @@ struct AppLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("Meshtastic Application Logs"),
+			defaultFilename: "Meshtastic Application Logs \({ let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd_HHmmss"; return f.string(from: .now) }())",
 			onCompletion: { result in
 				switch result {
 				case .success:
