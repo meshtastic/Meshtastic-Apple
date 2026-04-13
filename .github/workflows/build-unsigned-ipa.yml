@@ -51,7 +51,7 @@ jobs:
       - name: Build Xcode archive (Unsigned)
         run: |
           # Select workspace or project based on the environment variable
-          if[ "$USE_WORKSPACE" = "true" ]; then
+          if [ "$USE_WORKSPACE" = "true" ]; then
             BUILD_TARGET="-workspace $PROJECT_NAME.xcworkspace"
           else
             BUILD_TARGET="-project $PROJECT_NAME.xcodeproj"
