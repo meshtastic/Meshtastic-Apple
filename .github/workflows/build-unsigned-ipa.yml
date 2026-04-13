@@ -63,6 +63,8 @@ jobs:
             $BUILD_TARGET \
             -scheme "$SCHEME_NAME" \
             -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
             -archivePath "$(pwd)/build/$PROJECT_NAME.xcarchive" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
