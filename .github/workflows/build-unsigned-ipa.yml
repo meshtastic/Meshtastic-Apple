@@ -1,0 +1,90 @@
+name: Build and Release Unsigned IPA
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers the workflow on version tags (e.g., v1.0.0, v2.1)
+  workflow_dispatch: # Allows triggering the build manually from the GitHub Actions UI
+
+# Required permissions to create a release and upload assets
+permissions:
+  contents: write
+
+env:
+  PROJECT_NAME: "Meshtastic"
+  SCHEME_NAME: "Meshtastic"
+  USE_WORKSPACE: "true"
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to get the full git history for extracting the commit hash
+
+      - name: Extract commit hash and define release metadata
+        id: metadata
+        run: |
+          # Extract the short commit hash
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          
+          # Determine the app version based on how the workflow was triggered
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            # If triggered by a tag push (e.g., v1.2.3)
+            APP_VERSION="${GITHUB_REF_NAME}"
+            TAG_NAME="${GITHUB_REF_NAME}"
+          else
+            # If triggered manually (workflow_dispatch)
+            APP_VERSION="dev-build"
+            TAG_NAME="build-${COMMIT_HASH}"
+          fi
+          
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          
+          # Set the release title containing both the app version and the latest commit
+          echo "RELEASE_TITLE=$APP_VERSION (Commit: $COMMIT_HASH)" >> $GITHUB_ENV
+
+      - name: Build Xcode archive (Unsigned)
+        run: |
+          # Select workspace or project based on the environment variable
+          if[ "$USE_WORKSPACE" = "true" ]; then
+            BUILD_TARGET="-workspace $PROJECT_NAME.xcworkspace"
+          else
+            BUILD_TARGET="-project $PROJECT_NAME.xcodeproj"
+          fi
+          
+          # Build the archive without requiring code signing
+          # Important flags: CODE_SIGNING_ALLOWED=NO and CODE_SIGN_IDENTITY=""
+          xcodebuild archive \
+            $BUILD_TARGET \
+            -scheme "$SCHEME_NAME" \
+            -configuration Release \
+            -archivePath "$(pwd)/build/$PROJECT_NAME.xcarchive" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package into Unsigned IPA
+        run: |
+          cd build
+          
+          # The standard workaround to create an unsigned .ipa is to place the compiled .app 
+          # folder into a 'Payload' directory and compress it. ExportArchive command won't work without a profile.
+          mkdir -p Payload
+          mv "$PROJECT_NAME.xcarchive/Products/Applications/$PROJECT_NAME.app" Payload/
+          
+          # Compress the Payload folder recursively into an .ipa file quietly (-q) with max compression (-9)
+          zip -qr9 "$PROJECT_NAME.ipa" Payload/
+
+      - name: Create GitHub Release and Upload IPA
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.RELEASE_TITLE }}
+          tag_name: ${{ env.TAG_NAME }}
+          files: build/${{ env.PROJECT_NAME }}.ipa
+          draft: false
+          prerelease: false
