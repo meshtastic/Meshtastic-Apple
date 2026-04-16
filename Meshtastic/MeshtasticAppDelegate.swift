@@ -30,6 +30,12 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		Task { @MainActor in
 			TAKServerManager.shared.initializeOnStartup()
 		}
+		// Request Siri authorization so intent donations work and CarPlay messaging is available.
+		#if !targetEnvironment(macCatalyst)
+		INPreferences.requestSiriAuthorization { status in
+			Logger.services.info("Siri authorization status: \(String(describing: status))")
+		}
+		#endif
 		return true
 	}
 
