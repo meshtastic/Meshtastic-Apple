@@ -25,7 +25,6 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		if locationsHandler.backgroundActivity {
 			locationsHandler.backgroundActivity = true
 		}
-		
 		if Calendar.current.date(byAdding: .day, value: 1, to: UserDefaults.lastDeviceAPIUpdate)! < Date() {
 			// lastUpdate is older than 1 day
 			Task {
@@ -37,6 +36,10 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			Logger.services.info("📋 Device list API data update is not needed...")
 		}
 		
+		// Initialize TAK Server if enabled
+		Task { @MainActor in
+			TAKServerManager.shared.initializeOnStartup()
+		}
 		return true
 	}
 	// Lets us show the notification in the app in the foreground

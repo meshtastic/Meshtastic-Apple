@@ -12,6 +12,24 @@ import MapKit
 import SwiftUI
 
 extension MessageEntity {
+	var hasTranslatedPayload: Bool {
+		!(messagePayloadTranslated?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+	}
+
+	var displayedPayload: String {
+		if showTranslatedMessage, hasTranslatedPayload {
+			return messagePayloadTranslated ?? messagePayload ?? "EMPTY MESSAGE"
+		}
+		return messagePayload ?? "EMPTY MESSAGE"
+	}
+
+	var displayedMarkdownPayload: String {
+		if showTranslatedMessage, hasTranslatedPayload {
+			return messagePayloadTranslatedMarkdown ?? messagePayloadTranslated ?? messagePayload ?? "EMPTY MESSAGE"
+		}
+		return messagePayloadMarkdown ?? messagePayload ?? "EMPTY MESSAGE"
+	}
+
 	var timestamp: Date {
 		let time = messageTimestamp
 		return Date(timeIntervalSince1970: TimeInterval(time))
@@ -59,8 +77,7 @@ extension MessageEntity {
 			let users = try context.fetch(request)
 
 			// If exactly one match is found, return its name
-			if users.count == 1, let name = users.first?.longName, !name.isEmpty
-			{
+			if users.count == 1, let name = users.first?.longName, !name.isEmpty {
 				return "\(name)"
 			}
 

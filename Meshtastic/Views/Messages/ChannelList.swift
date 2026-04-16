@@ -160,9 +160,16 @@ struct ChannelList: View {
 									titleVisibility: .visible
 								) {
 									Button(role: .destructive) {
-										deleteChannelMessages(channel: channelToDeleteMessages!, context: context)
-										context.refresh(myInfo, mergeChanges: true)
-										channelToDeleteMessages = nil
+										Task {
+											await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
+											await MainActor.run {
+												context.refresh(channel, mergeChanges: true)
+												context.refresh(myInfo, mergeChanges: true)
+												
+												// Reset state
+												channelToDeleteMessages = nil
+											}
+										}
 									} label: {
 										Text("Delete")
 									}

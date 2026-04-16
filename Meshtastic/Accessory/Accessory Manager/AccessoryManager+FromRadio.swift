@@ -65,7 +65,7 @@ extension AccessoryManager {
 		Logger.services.error("⚠️ Client Notification: \(clientNotification.message, privacy: .public)")
 	}
 
-	func handleMyInfo(_ myNodeInfo: MyNodeInfo) {
+	func handleMyInfo(_ myNodeInfo: MyNodeInfo) async {
 		// TODO: this works for connections like BLE that have a uniqueId, but what about ones like serial?
 		guard let connectedDeviceId = activeConnection?.device.id.uuidString else {
 			Logger.services.error("⚠️ Failed to decode MyInfo, no connected device ID")
@@ -75,7 +75,8 @@ extension AccessoryManager {
 
 		updateDevice(key: \.num, value: Int64(myNodeInfo.myNodeNum))
 
-		if let myInfo = myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId, context: context) {
+		if let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId),
+		   let myInfo = try? context.existingObject(with: myInfoId) as? MyInfoEntity {
 			if let bleName = myInfo.bleName {
 				updateDevice(key: \.name, value: bleName)
 				updateDevice(key: \.longName, value: bleName)
@@ -93,9 +94,11 @@ extension AccessoryManager {
 		}
 		tryClearExistingChannels()
 
+		// Initialize TAK bridge for TAK integration
+		initializeTAKBridge()
 	}
 
-	func handleNodeInfo(_ nodeInfo: NodeInfo) {
+	func handleNodeInfo(_ nodeInfo: NodeInfo) async {
 		if let continuation = self.firstDatabaseNodeInfoContinuation {
 			continuation.resume()
 			self.firstDatabaseNodeInfoContinuation = nil
@@ -107,10 +110,13 @@ extension AccessoryManager {
 		}
 
 		// Check if we're in database retrieval mode to defer saves for performance
-		let isRetrievingDatabase = if case .retrievingDatabase = self.state { true } else { false }
+		// Commented out: No need to defer save when nodeInfoPacket is now happening off the main thread
+		// let isRetrievingDatabase = if case .retrievingDatabase = self.state { true } else { false }
 		
 		// TODO: nodeInfoPacket's channel: parameter is not used
-		if let nodeInfo = nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, context: context, deferSave: isRetrievingDatabase) {
+		// deferSave hard coded: No need to defer save when nodeInfoPacket is now happening off the main thread
+		if let nodeInfoId = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: false),
+		   let nodeInfo = try? context.existingObject(with: nodeInfoId) as? NodeInfoEntity {
 			if let activeDevice = activeConnection?.device, activeDevice.num == nodeInfo.num {
 				if let user = nodeInfo.user {
 					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
@@ -136,24 +142,24 @@ extension AccessoryManager {
 
 	}
 
-	func handleChannel(_ channel: Channel) {
+	func handleChannel(_ channel: Channel) async {
 		guard let deviceNum = activeConnection?.device.num else {
 			Logger.data.error("Attempt to process channel information when no connected device.")
 			return
 		}
 
-		channelPacket(channel: channel, fromNum: Int64(truncatingIfNeeded: deviceNum), context: context)
+		await MeshPackets.shared.channelPacket(channel: channel, fromNum: Int64(truncatingIfNeeded: deviceNum))
 
 	}
 
-	func handleConfig(_ config: Config) {
+	func handleConfig(_ config: Config) async {
 		guard let device = activeConnection?.device, let deviceNum = device.num, let longName = device.longName else {
 			Logger.data.error("Attempt to process channel information when no connected device.")
 			return
 		}
 
 		// Local config parses out the variants.  Should we do that here maybe?
-		localConfig(config: config, context: context, nodeNum: Int64(truncatingIfNeeded: deviceNum), nodeLongName: longName)
+		await MeshPackets.shared.localConfig(config: config, nodeNum: Int64(truncatingIfNeeded: deviceNum), nodeLongName: longName)
 
 		// Handle Timezone
 		if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
@@ -167,12 +173,12 @@ extension AccessoryManager {
 		}
 	}
 
-	func handleModuleConfig(_ moduleConfigPacket: ModuleConfig) {
+	func handleModuleConfig(_ moduleConfigPacket: ModuleConfig) async {
 		guard let device = activeConnection?.device, let deviceNum = device.num, let longName = device.longName else {
 			Logger.services.error("Attempt to process channel information when no connected device.")
 			return
 		}
-		moduleConfig(config: moduleConfigPacket, context: context, nodeNum: Int64(truncatingIfNeeded: deviceNum), nodeLongName: longName)
+		await MeshPackets.shared.moduleConfig(config: moduleConfigPacket, nodeNum: Int64(truncatingIfNeeded: deviceNum), nodeLongName: longName)
 		// Get Canned Message Message List if the Module is Canned Messages
 		if moduleConfigPacket.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfigPacket.cannedMessage) {
 			try? getCannedMessageModuleMessages(destNum: deviceNum, wantResponse: true)
@@ -183,7 +189,7 @@ extension AccessoryManager {
 		}
 	}
 
-	func handleDeviceMetadata(_ metadata: DeviceMetadata) {
+	func handleDeviceMetadata(_ metadata: DeviceMetadata) async {
 		// Note: moved firmware version check to be inline with connection process
 		guard let device = activeConnection?.device, let deviceNum = device.num else {
 			Logger.services.error("Attempt to process device metadata information when no connected device.")
@@ -194,7 +200,7 @@ extension AccessoryManager {
 
 		updateDevice(key: \.firmwareVersion, value: metadata.firmwareVersion)
 
-		deviceMetadataPacket(metadata: metadata, fromNum: deviceNum, context: context)
+		await MeshPackets.shared.deviceMetadataPacket(metadata: metadata, fromNum: deviceNum)
 	}
 
 	internal func tryClearExistingChannels() {
@@ -225,17 +231,16 @@ extension AccessoryManager {
 
 	}
 
-	func handleTextMessageAppPacket(_ packet: MeshPacket) {
+	func handleTextMessageAppPacket(_ packet: MeshPacket) async {
 		guard let device = activeConnection?.device, let deviceNum = device.num else {
 			Logger.services.error("Attempt to handle text message when no connected device.")
 			return
 		}
 
-		textMessageAppPacket(
+		await MeshPackets.shared.textMessageAppPacket(
 			packet: packet,
 			wantRangeTestPackets: wantRangeTestPackets,
 			connectedNode: deviceNum,
-			context: context,
 			appState: appState
 		)
 
@@ -320,25 +325,27 @@ extension AccessoryManager {
 			case .UNRECOGNIZED:
 				Logger.mesh.info("\("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
 			case .routerTextDirect:
-				Logger.mesh.info("\("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
-				textMessageAppPacket(
-					packet: packet,
-					wantRangeTestPackets: false,
-					connectedNode: connectedNodeNum,
-					storeForward: true,
-					context: context,
-					appState: appState
-				)
+				Task {
+					Logger.mesh.info("\("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+					await MeshPackets.shared.textMessageAppPacket(
+						packet: packet,
+						wantRangeTestPackets: false,
+						connectedNode: connectedNodeNum,
+						storeForward: true,
+						appState: appState
+					)
+				}
 			case .routerTextBroadcast:
-				Logger.mesh.info("\("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
-				textMessageAppPacket(
-					packet: packet,
-					wantRangeTestPackets: false,
-					connectedNode: connectedNodeNum,
-					storeForward: true,
-					context: context,
-					appState: appState
-				)
+				Task {
+					Logger.mesh.info("\("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+					await MeshPackets.shared.textMessageAppPacket(
+						packet: packet,
+						wantRangeTestPackets: false,
+						connectedNode: connectedNodeNum,
+						storeForward: true,
+						appState: appState
+					)
+				}
 			}
 		}
 	}

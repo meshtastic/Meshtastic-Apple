@@ -193,9 +193,13 @@ struct MeshtasticAppleApp: App {
 			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
+			accessoryManager.isInBackground = (newScenePhase == .background)
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
+				// Stop Session Replay when app goes to background to prevent crashes
+				// from accessing SwiftUI view hierarchy while backgrounded
+				SessionReplay.stopRecording()
 				accessoryManager.appDidEnterBackground()
 				do {
 					try persistenceController.container.viewContext.save()
@@ -209,6 +213,8 @@ struct MeshtasticAppleApp: App {
 				Logger.services.info("🎬 [App] Scene is inactive")
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
+				// Resume Session Replay when app becomes active
+				SessionReplay.startRecording()
 				accessoryManager.appDidBecomeActive()
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")

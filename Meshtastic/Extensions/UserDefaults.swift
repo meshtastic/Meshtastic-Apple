@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 @propertyWrapper
 struct UserDefault<T: Decodable> {
@@ -79,6 +80,7 @@ extension UserDefaults {
 		case showDeviceOnboarding
 		case usageDataAndCrashReporting
 		case autoconnectOnDiscovery
+		case purgeStaleNodeDays
 		case manualConnections
 		case testIntEnum
 		case lastDeviceAPIUpdate
@@ -179,6 +181,9 @@ extension UserDefaults {
 	@UserDefault(.autoconnectOnDiscovery, defaultValue: true)
 	static var autoconnectOnDiscovery: Bool
 
+	@UserDefault(.purgeStaleNodeDays, defaultValue: 0)
+	static var purgeStaleNodeDays: Double
+
 	@UserDefault(.testIntEnum, defaultValue: .one)
 	static var testIntEnum: TestIntEnum
 	
@@ -207,7 +212,7 @@ extension UserDefaults {
 				// Store the Data in UserDefaults
 				UserDefaults.standard.set(data, forKey: Keys.manualConnections.rawValue)
 			} catch {
-				print("Failed to encode manualConnections: \(error)")
+				Logger.transport.error("💥 Failed to encode manualConnections: \(error, privacy: .public)")
 			}
 		}
 	}
@@ -216,7 +221,6 @@ extension UserDefaults {
 	
 	@UserDefault(.lastFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastFirmwareAPIUpdate: Date
-}
 
 enum TestIntEnum: Int, Decodable {
 	case one = 1

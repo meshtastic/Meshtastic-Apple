@@ -23,16 +23,16 @@ struct ChannelMessageRow: View {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
 	}
 	
-	init(message: MessageEntity, 
-		 allMessages: FetchedResults<MessageEntity>,
-		 previousMessage: MessageEntity?,
-		 preferredPeripheralNum: Int,
-		 channel: ChannelEntity,
-		 replyMessageId: Binding<Int64>,
-		 messageFieldFocused: FocusState<Bool>.Binding,
-		 messageToHighlight: Binding<Int64>,
-		 scrollView: ScrollViewProxy,
-		 onInteractionComplete: @escaping () -> Void) {
+	init(message: MessageEntity,
+	     allMessages: FetchedResults<MessageEntity>,
+	     previousMessage: MessageEntity?,
+	     preferredPeripheralNum: Int,
+	     channel: ChannelEntity,
+	     replyMessageId: Binding<Int64>,
+	     messageFieldFocused: FocusState<Bool>.Binding,
+	     messageToHighlight: Binding<Int64>,
+	     scrollView: ScrollViewProxy,
+	     onInteractionComplete: @escaping () -> Void) {
 		// Initialize ObservedObject with the concrete instance
 		self._message = ObservedObject(initialValue: message)
 		self.allMessages = allMessages
@@ -80,7 +80,7 @@ struct ChannelMessageRow: View {
 							}
 						}
 					} label: {
-						Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+						Text(messageReply?.displayedPayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
 							.padding(10)
 							.overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.blue, lineWidth: 0.5))
 						Image(systemName: "arrowshape.turn.up.left.fill")

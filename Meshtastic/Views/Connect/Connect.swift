@@ -44,8 +44,8 @@ struct Connect: View {
 									VStack(alignment: .center) {
 										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
 											.padding(.trailing, 5)
-										if let metrics = node?.latestDeviceMetrics {
-											BatteryCompact(batteryLevel: metrics.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
+										if node?.latestDeviceMetrics != nil {
+											BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
 												.padding(.trailing, 5)
 										}
 									}
@@ -221,8 +221,8 @@ struct Connect: View {
 										Text("Retreiving nodes . .")
 											.font(.callout)
 											.foregroundColor(.orange)
-									case .retrying(let attempt, let maxAttempts):
-										Text("Connection Attempt \(attempt) of \(maxAttempts)")
+									case .retrying(let attempt):
+										Text("Connection Attempt \(attempt) of 10")
 											.font(.callout)
 											.foregroundColor(.orange)
 									default:
@@ -511,23 +511,23 @@ struct ManualConnectionMenu: View {
 			})
 		}.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
 			Button("Connect to new radio?", role: .destructive) {
-				   if let device = deviceForManualConnection {
-					   UserDefaults.preferredPeripheralId = device.id.uuidString
-					   UserDefaults.preferredPeripheralNum = 0
-					   if accessoryManager.allowDisconnect {
-						   Task { try await accessoryManager.disconnect() }
-					   }
-					   clearCoreDataDatabase(context: context, includeRoutes: false)
-					   clearNotifications()
-					   Task {
-						   try await selectedTransport?.transport.manuallyConnect(toDevice: device)
-					   }
-					   
-					   // Clean up just in case
-					   deviceForManualConnection = nil
-				   }
-			   }
-		   }
+				Task {
+					if let device = deviceForManualConnection {
+						UserDefaults.preferredPeripheralId = device.id.uuidString
+						UserDefaults.preferredPeripheralNum = 0
+						if accessoryManager.allowDisconnect {
+							try await accessoryManager.disconnect()
+						}
+						await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+						clearNotifications()
+						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
+						
+						// Clean up just in case
+						deviceForManualConnection = nil
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -565,18 +565,18 @@ struct DeviceConnectRow: View {
 				}
 				// Show transport type
 #if !targetEnvironment(macCatalyst)
-				HStack(alignment: .center){
+				HStack(alignment: .center) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
-						VStack (alignment: .leading) {
+						VStack(alignment: .leading) {
 							Text("Last seen device:")
 							Text("\(String(describing: device))")
 						}
 					}
 				}.padding(.top, 3.0)
 #else
-				//Different alignment for Mac
-				HStack(alignment: .firstTextBaseline){
+				// Different alignment for Mac
+				HStack(alignment: .firstTextBaseline) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
 						Text("Last seen device: \(String(describing: device))")
@@ -593,18 +593,19 @@ struct DeviceConnectRow: View {
 		}.padding([.bottom, .top])
 			.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
 				Button("Connect to new radio?", role: .destructive) {
-					UserDefaults.preferredPeripheralId = device.id.uuidString
-					UserDefaults.preferredPeripheralNum = 0
-					if accessoryManager.allowDisconnect {
-						Task { try await accessoryManager.disconnect() }
-					}
-					clearCoreDataDatabase(context: context, includeRoutes: false)
-					clearNotifications()
 					Task {
+						UserDefaults.preferredPeripheralId = device.id.uuidString
+						UserDefaults.preferredPeripheralNum = 0
+						if accessoryManager.allowDisconnect {
+							try await accessoryManager.disconnect()
+						}
+						await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+						clearNotifications()
+						
 						try await accessoryManager.connect(to: device)
+						
 					}
 				}
 			}
 	}
 }
-

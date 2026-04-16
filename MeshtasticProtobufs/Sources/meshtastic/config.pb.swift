@@ -1032,6 +1032,10 @@ public struct Config: Sendable {
     /// If true, node names will show in long format
     public var useLongNodeName: Bool = false
 
+    ///
+    /// If true, the device will display message bubbles on screen.
+    public var enableMessageBubbles: Bool = false
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1474,6 +1478,13 @@ public struct Config: Sendable {
       set {_uniqueStorage()._configOkToMqtt = newValue}
     }
 
+    ///
+    /// Set where LORA FEM is enabled, disabled, or not present
+    public var femLnaMode: Config.LoRaConfig.FEM_LNA_Mode {
+      get {return _storage._femLnaMode}
+      set {_uniqueStorage()._femLnaMode = newValue}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum RegionCode: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -1795,6 +1806,53 @@ public struct Config: Sendable {
         .longModerate,
         .shortTurbo,
         .longTurbo,
+      ]
+
+    }
+
+    public enum FEM_LNA_Mode: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+
+      ///
+      /// FEM_LNA is present but disabled
+      case disabled // = 0
+
+      ///
+      /// FEM_LNA is present and enabled
+      case enabled // = 1
+
+      ///
+      /// FEM_LNA is not present on the device
+      case notPresent // = 2
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .disabled
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .disabled
+        case 1: self = .enabled
+        case 2: self = .notPresent
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .disabled: return 0
+        case .enabled: return 1
+        case .notPresent: return 2
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [Config.LoRaConfig.FEM_LNA_Mode] = [
+        .disabled,
+        .enabled,
+        .notPresent,
       ]
 
     }
@@ -2536,7 +2594,7 @@ extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf.
 
 extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".DisplayConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}screen_on_secs\0\u{3}gps_format\0\u{3}auto_screen_carousel_secs\0\u{3}compass_north_top\0\u{3}flip_screen\0\u{1}units\0\u{1}oled\0\u{1}displaymode\0\u{3}heading_bold\0\u{3}wake_on_tap_or_motion\0\u{3}compass_orientation\0\u{3}use_12h_clock\0\u{3}use_long_node_name\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}screen_on_secs\0\u{3}gps_format\0\u{3}auto_screen_carousel_secs\0\u{3}compass_north_top\0\u{3}flip_screen\0\u{1}units\0\u{1}oled\0\u{1}displaymode\0\u{3}heading_bold\0\u{3}wake_on_tap_or_motion\0\u{3}compass_orientation\0\u{3}use_12h_clock\0\u{3}use_long_node_name\0\u{3}enable_message_bubbles\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2557,6 +2615,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 11: try { try decoder.decodeSingularEnumField(value: &self.compassOrientation) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self.use12HClock) }()
       case 13: try { try decoder.decodeSingularBoolField(value: &self.useLongNodeName) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.enableMessageBubbles) }()
       default: break
       }
     }
@@ -2602,6 +2661,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.useLongNodeName != false {
       try visitor.visitSingularBoolField(value: self.useLongNodeName, fieldNumber: 13)
     }
+    if self.enableMessageBubbles != false {
+      try visitor.visitSingularBoolField(value: self.enableMessageBubbles, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2619,6 +2681,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.compassOrientation != rhs.compassOrientation {return false}
     if lhs.use12HClock != rhs.use12HClock {return false}
     if lhs.useLongNodeName != rhs.useLongNodeName {return false}
+    if lhs.enableMessageBubbles != rhs.enableMessageBubbles {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2646,7 +2709,7 @@ extension Config.DisplayConfig.CompassOrientation: SwiftProtobuf._ProtoNameProvi
 
 extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".LoRaConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}use_preset\0\u{3}modem_preset\0\u{1}bandwidth\0\u{3}spread_factor\0\u{3}coding_rate\0\u{3}frequency_offset\0\u{1}region\0\u{3}hop_limit\0\u{3}tx_enabled\0\u{3}tx_power\0\u{3}channel_num\0\u{3}override_duty_cycle\0\u{3}sx126x_rx_boosted_gain\0\u{3}override_frequency\0\u{3}pa_fan_disabled\0\u{4}X\u{1}ignore_incoming\0\u{3}ignore_mqtt\0\u{3}config_ok_to_mqtt\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}use_preset\0\u{3}modem_preset\0\u{1}bandwidth\0\u{3}spread_factor\0\u{3}coding_rate\0\u{3}frequency_offset\0\u{1}region\0\u{3}hop_limit\0\u{3}tx_enabled\0\u{3}tx_power\0\u{3}channel_num\0\u{3}override_duty_cycle\0\u{3}sx126x_rx_boosted_gain\0\u{3}override_frequency\0\u{3}pa_fan_disabled\0\u{4}X\u{1}ignore_incoming\0\u{3}ignore_mqtt\0\u{3}config_ok_to_mqtt\0\u{3}fem_lna_mode\0")
 
   fileprivate class _StorageClass {
     var _usePreset: Bool = false
@@ -2667,6 +2730,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _ignoreIncoming: [UInt32] = []
     var _ignoreMqtt: Bool = false
     var _configOkToMqtt: Bool = false
+    var _femLnaMode: Config.LoRaConfig.FEM_LNA_Mode = .disabled
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -2695,6 +2759,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _ignoreIncoming = source._ignoreIncoming
       _ignoreMqtt = source._ignoreMqtt
       _configOkToMqtt = source._configOkToMqtt
+      _femLnaMode = source._femLnaMode
     }
   }
 
@@ -2731,6 +2796,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 103: try { try decoder.decodeRepeatedUInt32Field(value: &_storage._ignoreIncoming) }()
         case 104: try { try decoder.decodeSingularBoolField(value: &_storage._ignoreMqtt) }()
         case 105: try { try decoder.decodeSingularBoolField(value: &_storage._configOkToMqtt) }()
+        case 106: try { try decoder.decodeSingularEnumField(value: &_storage._femLnaMode) }()
         default: break
         }
       }
@@ -2793,6 +2859,9 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       if _storage._configOkToMqtt != false {
         try visitor.visitSingularBoolField(value: _storage._configOkToMqtt, fieldNumber: 105)
       }
+      if _storage._femLnaMode != .disabled {
+        try visitor.visitSingularEnumField(value: _storage._femLnaMode, fieldNumber: 106)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2820,6 +2889,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._ignoreIncoming != rhs_storage._ignoreIncoming {return false}
         if _storage._ignoreMqtt != rhs_storage._ignoreMqtt {return false}
         if _storage._configOkToMqtt != rhs_storage._configOkToMqtt {return false}
+        if _storage._femLnaMode != rhs_storage._femLnaMode {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2835,6 +2905,10 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
 
 extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LONG_FAST\0\u{1}LONG_SLOW\0\u{1}VERY_LONG_SLOW\0\u{1}MEDIUM_SLOW\0\u{1}MEDIUM_FAST\0\u{1}SHORT_SLOW\0\u{1}SHORT_FAST\0\u{1}LONG_MODERATE\0\u{1}SHORT_TURBO\0\u{1}LONG_TURBO\0")
+}
+
+extension Config.LoRaConfig.FEM_LNA_Mode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DISABLED\0\u{1}ENABLED\0\u{1}NOT_PRESENT\0")
 }
 
 extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

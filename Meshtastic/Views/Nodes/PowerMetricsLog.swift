@@ -242,10 +242,12 @@ struct PowerMetricsLog: View {
 						titleVisibility: .visible
 					) {
 						Button("Delete Power metrics?", role: .destructive) {
-							if clearTelemetry(destNum: node.num, metricsType: 2, context: context) {
-								Logger.data.notice("Cleared Power Metrics for \(node.num, privacy: .public)")
-							} else {
-								Logger.data.error("Clear Power Metrics Log Failed")
+							Task {
+								if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 2) {
+									Logger.data.notice("Cleared Power Metrics for \(node.num, privacy: .public)")
+								} else {
+									Logger.data.error("Clear Power Metrics Log Failed")
+								}
 							}
 						}
 					}
@@ -294,4 +296,17 @@ struct PowerMetricsLog: View {
 			}
 		)
 	}
+}
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let node = NodeInfoEntity(context: context)
+	node.num = 123456789
+	let user = UserEntity(context: context)
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	return PowerMetricsLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

@@ -34,12 +34,46 @@ struct Settings: View {
 
 	// MARK: Helper
 
+	private var moduleConfigurationNode: NodeInfoEntity? {
+		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
+		return nodes.first(where: { $0.num == nodeNum })
+	}
+
+	private var showsAnyModuleConfiguration: Bool {
+		isAnySupported([
+			.ambientlightingConfig,
+			.cannedmsgConfig,
+			.detectionsensorConfig,
+			.extnotifConfig,
+			.mqttConfig,
+			.rangetestConfig,
+			.paxcounterConfig,
+			.serialConfig,
+			.storeforwardConfig,
+			.telemetryConfig
+		]) || isTAKModuleSupported()
+	}
+
 	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
-		return Int(nodes.first(where: { $0.num == preferredNodeNum })?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
+		return Int(moduleConfigurationNode?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
 	}
 
 	private func isAnySupported(_ modules: [ExcludedModules]) -> Bool {
 		return modules.map(isModuleSupported).contains(true)
+	}
+
+	private func isTAKModuleSupported() -> Bool {
+		guard let node = moduleConfigurationNode else { return false }
+		if node.takConfig != nil {
+			return true
+		}
+
+		guard let roleValue = node.deviceConfig?.role ?? node.user?.role,
+			  let deviceRole = DeviceRoles(rawValue: Int(roleValue)) else {
+			return false
+		}
+
+		return deviceRole == .tak || deviceRole == .takTracker
 	}
 
 	// MARK: Views
@@ -277,14 +311,19 @@ struct Settings: View {
 				}
 			}
 
-			// Update this list with the modules that are shown above. If all are not supported
-			// Then show a message.
-			if !isAnySupported([.ambientlightingConfig, .cannedmsgConfig,
-								.detectionsensorConfig, .extnotifConfig,
-								.mqttConfig, .rangetestConfig, .paxcounterConfig,
-								.audioConfig, .serialConfig, .storeforwardConfig,
-								.telemetryConfig]) {
+			if isTAKModuleSupported() {
+				NavigationLink(value: SettingsNavigationState.takConfig) {
+					Label {
+						Text("TAK")
+					} icon: {
+						Image(systemName: "shield.checkered")
+					}
+				}
+			}
+
+			if !showsAnyModuleConfiguration {
 				Text("This node does not support any configurable modules.")
+					.foregroundColor(.secondary)
 			}
 		} header: {
 			Text("Module Configuration")
@@ -312,77 +351,6 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
-			NavigationLink {
-				CoreDataBrowser()
-			} label: {
-				Label("Database Browser", systemImage: "server.rack")
-			}
-			Button {
-				Task.detached {
-					await MainActor.run {
-						let persistenceController = PersistenceController.shared.container
-						for i in 0...persistenceController.managedObjectModel.entities.count-1 {
-							
-							let entity = persistenceController.managedObjectModel.entities[i]
-							let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
-							var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-							let entityName = entity.name ?? "UNK"
-							
-							if !["DeviceHardwareEntity","DeviceHardwareImageEntity", "DeviceHardwareTagEntity"].contains(entityName) {
-								// These are non-node-specific "app level" data, keep them even when switching nodes
-								continue
-							}
-							
-							// Execute the delete for this entry
-							deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-							do {
-								try context.executeAndMergeChanges(using: deleteRequest)
-							} catch {
-								Logger.data.error("\(error.localizedDescription, privacy: .public)")
-							}
-						}
-					}
-					Logger.data.debug("CoreData Delete complete, waiting 3 seconds")
-					try? await Thread.sleep(forTimeInterval: 5.0)
-					Logger.data.debug("Refreshing from API")
-					try? await MeshtasticAPI.shared.refreshDevicesAPIData()
-				}
-			} label: {
-				Text("Test Devices API Refresh")
-			}
-			Button {
-				Task.detached {
-					await MainActor.run {
-						let persistenceController = PersistenceController.shared.container
-						for i in 0...persistenceController.managedObjectModel.entities.count-1 {
-							
-							let entity = persistenceController.managedObjectModel.entities[i]
-							let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
-							var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-							let entityName = entity.name ?? "UNK"
-							
-							if !["FirmwareReleaseEntity"].contains(entityName) {
-								// These are non-node-specific "app level" data, keep them even when switching nodes
-								continue
-							}
-							
-							// Execute the delete for this entry
-							deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-							do {
-								try context.executeAndMergeChanges(using: deleteRequest)
-							} catch {
-								Logger.data.error("\(error.localizedDescription, privacy: .public)")
-							}
-						}
-					}
-					Logger.data.debug("CoreData Delete complete, waiting 3 seconds")
-					try? await Thread.sleep(forTimeInterval: 5.0)
-					Logger.data.debug("Refreshing Firmware from API")
-					try? await MeshtasticAPI.shared.refreshFirmwareAPIData()
-				}
-			} label: {
-				Text("Test Firmware API Refresh")
-			}
 		}
 	}
 
@@ -399,14 +367,26 @@ struct Settings: View {
 		}
 	}
 
+	var takSection: some View {
+		Section(header: Text("TAK")) {
+			NavigationLink(value: SettingsNavigationState.tak) {
+				Label {
+					Text("TAK Server")
+				} icon: {
+					Image(systemName: "target")
+				}
+			}
+		}
+	}
+
 	var body: some View {
 		NavigationStack(
 			path: Binding<[SettingsNavigationState]>(
 				get: {
-					[router.navigationState.settings].compactMap { $0 }
+					[router.settingsState].compactMap { $0 }
 				},
 				set: { newPath in
-					router.navigationState.settings = newPath.first
+					router.settingsState = newPath.first
 				}
 			)
 		) {
@@ -425,6 +405,15 @@ struct Settings: View {
 						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
+					}
+				}
+				if #available(iOS 18, *) {
+					NavigationLink(value: SettingsNavigationState.tools) {
+						Label {
+							Text("Tools")
+						} icon: {
+							Image(systemName: "hammer")
+						}
 					}
 				}
 				NavigationLink(value: SettingsNavigationState.routes) {
@@ -530,6 +519,7 @@ struct Settings: View {
 					developersSection
 #endif
 					firmwareSection
+					takSection
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
@@ -592,11 +582,15 @@ struct Settings: View {
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:
-					if let firmwareView = Firmware(node: node) {
-						firmwareView
-					} else {
-						Text("Please connect to a device to see firmware updates.")
+					Firmware(node: node)
+				case .tools:
+					if #available(iOS 18, *) {
+						Tools()
 					}
+				case .tak:
+					TAKServerConfig()
+				case .takConfig:
+					TAKModuleConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

@@ -10,8 +10,16 @@ struct MessageContextMenuItems: View {
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
 	@Binding var isShowingDeleteConfirmation: Bool
+	@Binding var isShowingTapbackInput: Bool
 	let onReply: () -> Void
 	@State var relayDisplay: String? = nil
+	let canTranslate: Bool
+	let hasTranslatedText: Bool
+	let isShowingTranslatedText: Bool
+	let onTranslate: () -> Void
+	let onToggleTranslatedText: () -> Void
+	let onClearTranslation: () -> Void
+	@State var relayDisplay: String?
 
 	var body: some View {
 		VStack {
@@ -55,9 +63,35 @@ struct MessageContextMenuItems: View {
 			}
 		}
 
+		Button("Tapback") {
+			// The context menu needs a moment to dismiss before the focus state can be changed.
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+				isShowingTapbackInput = true
+			}
+		}
+
 		Button(action: onReply) {
 			Text("Reply")
 			Image(systemName: "arrowshape.turn.up.left")
+		}
+
+		if canTranslate {
+			Button(action: onTranslate) {
+				Text("Translate")
+				Image(systemName: "translate")
+			}
+		}
+
+		if hasTranslatedText {
+			Button(action: onToggleTranslatedText) {
+				Text(isShowingTranslatedText ? "Show Original" : "Show Translation")
+				Image(systemName: isShowingTranslatedText ? "text.bubble" : "globe")
+			}
+
+			Button(role: .destructive, action: onClearTranslation) {
+				Text("Clear Translation")
+				Image(systemName: "trash")
+			}
 		}
 
 		Button {
@@ -91,7 +125,7 @@ struct MessageContextMenuItems: View {
 			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) && message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
-					Text("RSSI \(String(format: "%.2f", message.rssi)) dBm")
+					Text("RSSI \(message.rssi) dBm")
 				}
 			} else if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) {
 				VStack {
