@@ -33,6 +33,27 @@ jobs:
             const BOT_COMMENT_MARKER = '<!-- bug-analyzer-bot -->';
             const MODELS_API_URL = 'https://models.inference.ai.azure.com/chat/completions';
 
+            // ── tuneable constants ────────────────────────────────────────────
+            // Minimum character count for a field to be considered non-blank.
+            const MIN_FIELD_LENGTH = 10;
+            // Steps-to-reproduce needs more detail than a one-liner to be useful.
+            const MIN_STEPS_LENGTH = 30;
+            // Cap how many tokens the model may return per response.
+            const MAX_RESPONSE_TOKENS = 1200;
+            // Low temperature → deterministic, factual answers (not creative).
+            const MODEL_TEMPERATURE = 0.2;
+            // How deep to recurse when scanning the repo for Swift files.
+            const MAX_SEARCH_DEPTH = 4;
+            // Max number of file paths sent to the model for relevance ranking.
+            const MAX_FILES_TO_LIST = 300;
+            // Max number of files whose contents are actually read and included.
+            const MAX_FILES_TO_READ = 5;
+            // Ask the model to return a slightly larger set so that if some paths
+            // don't exist we still have MAX_FILES_TO_READ valid candidates to read.
+            const FILE_SELECTION_BUFFER = 3;
+            // Max lines read from each source file to stay within token budget.
+            const MAX_LINES_PER_FILE = 250;
+
             // ── helpers ──────────────────────────────────────────────────────
 
             async function callModelsAPI(systemMessage, userMessage) {
@@ -48,8 +69,8 @@ jobs:
                     { role: 'system', content: systemMessage },
                     { role: 'user',   content: userMessage   },
                   ],
-                  max_tokens: 1200,
-                  temperature: 0.2,
+                  max_tokens: MAX_RESPONSE_TOKENS,
+                  temperature: MODEL_TEMPERATURE,
                 }),
               });
               if (!response.ok) {
@@ -73,7 +94,7 @@ jobs:
             }
 
             function isBlank(s) {
-              return !s || s.length < 10;
+              return !s || s.length < MIN_FIELD_LENGTH;
             }
 
             // ── main ─────────────────────────────────────────────────────────
@@ -111,7 +132,7 @@ jobs:
                 '(e.g. `2.3.14.abcdef1`). You can find it under *Settings → Firmware* ' +
                 'in the app or on the node screen.'
               );
-            if (isBlank(stepsToReproduce) || stepsToReproduce.length < 30)
+            if (isBlank(stepsToReproduce) || stepsToReproduce.length < MIN_STEPS_LENGTH)
               missing.push(
                 '- **Steps to Reproduce** – please list numbered, minimal steps that ' +
                 'consistently trigger the issue. Include your iOS/iPadOS version and ' +
@@ -171,7 +192,7 @@ Please update the issue with the missing information and we'll take another look
               ]);
 
               function collectSwiftFiles(dir, depth) {
-                if (depth > 4) return [];
+                if (depth > MAX_SEARCH_DEPTH) return [];
                 const results = [];
                 let entries;
                 try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
@@ -192,7 +213,7 @@ Please update the issue with the missing information and we'll take another look
               const allFiles  = collectSwiftFiles(root, 0);
               const fileList  = allFiles
                 .map(f => path.relative(root, f))
-                .slice(0, 300)
+                .slice(0, MAX_FILES_TO_LIST)
                 .join('\n');
 
               // Ask the model which files are most relevant.
@@ -203,7 +224,8 @@ Please update the issue with the missing information and we'll take another look
                 `Current: ${currentBehavior}\n` +
                 (additionalComments ? `Additional: ${additionalComments}\n` : '') +
                 `\nAvailable Swift source files:\n${fileList}\n\n` +
-                'Return ONLY a JSON array (no markdown, no explanation) of the 5–8 ' +
+                'Return ONLY a JSON array (no markdown, no explanation) of the ' +
+                `${MAX_FILES_TO_READ}–${MAX_FILES_TO_READ + FILE_SELECTION_BUFFER} ` +
                 'file paths most likely to contain the bug.';
 
               let relevantFiles = [];
@@ -216,14 +238,14 @@ Please update the issue with the missing information and we'll take another look
                 core.warning(`File selection failed: ${e.message}`);
               }
 
-              // Read up to 5 files, capping each at 250 lines to stay within token budget.
+              // Read up to MAX_FILES_TO_READ files, capping each at MAX_LINES_PER_FILE lines to stay within token budget.
               let codeContext = '';
-              for (const relPath of relevantFiles.slice(0, 5)) {
+              for (const relPath of relevantFiles.slice(0, MAX_FILES_TO_READ)) {
                 const absPath = path.join(root, relPath);
                 if (!fs.existsSync(absPath)) continue;
                 try {
                   const content = fs.readFileSync(absPath, 'utf8');
-                  const snippet = content.split('\n').slice(0, 250).join('\n');
+                  const snippet = content.split('\n').slice(0, MAX_LINES_PER_FILE).join('\n');
                   codeContext += `\n\n### ${relPath}\n\`\`\`swift\n${snippet}\n\`\`\``;
                 } catch (_) {}
               }
