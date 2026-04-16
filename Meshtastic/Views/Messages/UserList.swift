@@ -6,13 +6,13 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import TipKit
 
 struct UserList: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var editingFilters = false
 	@State private var showingHelp = false
@@ -69,28 +69,26 @@ struct UserList: View {
 
 fileprivate struct FilteredUserList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 
-	@FetchRequest private var users: FetchedResults<UserEntity>
+	@Query(sort: [SortDescriptor(\UserEntity.lastMessage, order: .reverse),
+				  SortDescriptor(\UserEntity.longName)])
+	private var allUsers: [UserEntity]
 	@Binding var userSelection: UserEntity?
 	@Binding var node: NodeInfoEntity?
 
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	@State private var userToDeleteMessages: UserEntity?
+	private var filters: NodeFilterParameters
 
 	init(withFilters: NodeFilterParameters, node: Binding<NodeInfoEntity?>, userSelection: Binding<UserEntity?>) {
-		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
-		request.sortDescriptors = [
-			NSSortDescriptor(key: "lastMessage", ascending: false),
-			NSSortDescriptor(key: "userNode.favorite", ascending: false),
-			NSSortDescriptor(key: "pkiEncrypted", ascending: false),
-			NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
-			NSSortDescriptor(key: "longName", ascending: true)
-		]
-		request.predicate = withFilters.buildPredicate()
-		self._users = FetchRequest(fetchRequest: request)
+		self.filters = withFilters
 		self._node = node
 		self._userSelection = userSelection
+	}
+
+	private var users: [UserEntity] {
+		allUsers.filter { filters.matches(user: $0) }
 	}
 
 	var body: some View {
@@ -188,7 +186,6 @@ fileprivate struct FilteredUserList: View {
 								Logger.data.info("Unfavorited a node")
 							}
 						}
-						context.refresh(user, mergeChanges: true)
 						do {
 							try context.save()
 						} catch {
@@ -226,7 +223,6 @@ fileprivate struct FilteredUserList: View {
 					Button(role: .destructive) {
 						Task {
 							await MeshPackets.shared.deleteUserMessages(user: userToDeleteMessages!)
-							context.refresh(node!.user!, mergeChanges: true)
 						}
 					} label: {
 						Text("Delete")
@@ -239,6 +235,84 @@ fileprivate struct FilteredUserList: View {
 	}
 }
 fileprivate extension NodeFilterParameters {
+	func matches(user: UserEntity) -> Bool {
+		// Search text
+		if !searchText.isEmpty {
+			let text = searchText.lowercased()
+			let matchesSearch = [user.userId, user.numString, user.hwModel, user.hwDisplayName, user.longName, user.shortName]
+				.compactMap { $0?.lowercased() }
+				.contains { $0.contains(text) }
+			if !matchesSearch { return false }
+		}
+		// Mqtt and lora
+		if !(viaLora && viaMqtt) {
+			if viaLora {
+				if user.userNode?.viaMqtt == true { return false }
+			} else {
+				if user.userNode?.viaMqtt != true { return false }
+			}
+		}
+		// Roles
+		if roleFilter && !deviceRoles.isEmpty {
+			let userRole = Int(user.role)
+			if !deviceRoles.contains(userRole) { return false }
+		}
+		// Hops Away
+		if hopsAway == 0 {
+			if user.userNode?.hopsAway != 0 { return false }
+		} else if hopsAway > -1 {
+			let nodeHops = user.userNode?.hopsAway ?? 0
+			if nodeHops <= 0 || nodeHops > Int32(hopsAway) { return false }
+		}
+		// Online
+		if isOnline {
+			let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date()) ?? Date.distantPast
+			if let lastHeard = user.userNode?.lastHeard, lastHeard < twoHoursAgo { return false }
+			if user.userNode?.lastHeard == nil { return false }
+		}
+		// Encrypted
+		if isPkiEncrypted {
+			if !user.pkiEncrypted { return false }
+		}
+		// Favorites
+		if isFavorite {
+			if user.userNode?.favorite != true { return false }
+		}
+		// Distance
+		if distanceFilter {
+			if let poi = LocationsHandler.currentLocation,
+			   poi.latitude != LocationsHandler.DefaultLocation.latitude,
+			   poi.longitude != LocationsHandler.DefaultLocation.longitude {
+				let d = maxDistance * 1.1
+				let r: Double = 6371009
+				let meanLat = poi.latitude * .pi / 180
+				let deltaLat = d / r * 180 / .pi
+				let deltaLon = d / (r * cos(meanLat)) * 180 / .pi
+				let minLat = poi.latitude - deltaLat
+				let maxLat = poi.latitude + deltaLat
+				let minLon = poi.longitude - deltaLon
+				let maxLon = poi.longitude + deltaLon
+				let hasNearbyPosition = (user.userNode?.positions ?? []).contains { pos in
+					guard pos.latest else { return false }
+					let lon = Double(pos.longitudeI) / 1e7
+					let lat = Double(pos.latitudeI) / 1e7
+					return lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat
+				}
+				if !hasNearbyPosition { return false }
+			}
+		}
+		// Unmessagable filter
+		if user.unmessagable {
+			let hasMessages = !(user.receivedMessages ?? []).isEmpty || !(user.sentMessages ?? []).isEmpty
+			if !hasMessages { return false }
+		}
+		// Ignored
+		if user.userNode?.ignored == true { return false }
+		// Connected node
+		if user.numString == String(UserDefaults.preferredPeripheralNum) { return false }
+		return true
+	}
+
 	func buildPredicate() -> NSPredicate? {
 		var predicates: [NSPredicate] = []
 		// Search text predicates

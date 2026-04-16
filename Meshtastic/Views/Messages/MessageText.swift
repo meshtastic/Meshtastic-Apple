@@ -20,7 +20,7 @@ struct MessageText: View {
 	)
 	static let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
 	static let timeFormatString = (localeTimeFormat ?? "j:mm:ss:a")
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	
 	let message: MessageEntity
@@ -284,10 +284,10 @@ struct MessageText: View {
 				)
 				await MainActor.run {
 					switch tapBackDestination {
-					case let .channel(channel):
-						context.refresh(channel, mergeChanges: true)
-					case let .user(user):
-						context.refresh(user, mergeChanges: true)
+					case .channel:
+						break
+					case .user:
+						break
 					}
 				}
 			} catch {

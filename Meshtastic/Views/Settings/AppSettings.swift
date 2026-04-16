@@ -8,7 +8,7 @@ import OSLog
 
 struct AppSettings: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
@@ -159,9 +159,8 @@ struct AppSettings: View {
 										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 									}
 								}
-								await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: true)
+								await PersistenceController.shared.clearDatabase(includeRoutes: true)
 								clearNotifications()
-								context.refreshAllObjects()
 							}
 						}
 					}

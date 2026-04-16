@@ -10,7 +10,7 @@ import OSLog
 
 struct DeviceMetricsLog: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
@@ -21,7 +21,7 @@ struct DeviceMetricsLog: View {
 	@State private var batteryChartColor: Color = .blue
 	@State private var airtimeChartColor: Color = .yellow
 	@State private var channelUtilizationChartColor: Color = .green
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
 	@State private var chartSelection: Date?
@@ -30,7 +30,7 @@ struct DeviceMetricsLog: View {
 		VStack {
 			if node.hasDeviceMetrics {
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
+				let deviceMetrics = node.telemetries.filter { $0.metricsType == 0 }.reversed()
 				let chartData = deviceMetrics
 						.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 						.sorted { $0.time! < $1.time! }
@@ -255,15 +255,17 @@ struct DeviceMetricsLog: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	node.user = user
-	return DeviceMetricsLog(node: node)
+	DeviceMetricsLog(node: node)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }
+*/

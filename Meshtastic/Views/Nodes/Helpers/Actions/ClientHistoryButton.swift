@@ -41,12 +41,14 @@ struct ClientHistoryButton: View {
     }
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let connectedNode = NodeInfoEntity(context: context)
+	let connectedNode = NodeInfoEntity()
 	connectedNode.num = 987654321
-	return ClientHistoryButton(connectedNode: connectedNode, node: node)
+	ClientHistoryButton(connectedNode: connectedNode, node: node)
 		.environmentObject(AccessoryManager.shared)
 }
+*/

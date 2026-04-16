@@ -59,7 +59,7 @@ class MetricsChartSeries: ObservableObject {
 		@ChartContentBuilder chartBody: @escaping (MetricsChartSeries, ClosedRange<Float>?, Date, Value) -> ChartBody?
 	) {
 
-		// This works because TelemetryEntity is an NSManagedObject and derrived from NSObject
+		// This works because TelemetryEntity is an @Model and conforms to PersistentModel
 		self.id = id
 		self.name = name
 		self.abbreviatedName = abbreviatedName

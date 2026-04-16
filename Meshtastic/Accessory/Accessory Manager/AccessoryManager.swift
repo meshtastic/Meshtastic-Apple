@@ -122,7 +122,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Chicken/Egg problem.  Set in the App object immediately after
 	// AppState and AccessoryManager are created
 	var appState: AppState!
-	let context = PersistenceController.shared.container.viewContext
+	let context = PersistenceController.shared.context
 	let mqttManager = MqttClientProxyManager.shared
 
 	// Published Stuff
@@ -489,6 +489,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	private func processFromRadio(_ decodedInfo: FromRadio) async {
+		Logger.transport.info("📻 [processFromRadio] Processing: \(String(describing: decodedInfo.payloadVariant), privacy: .public)")
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
 			handleMqttClientProxyMessage(mqttClientProxyMessage)

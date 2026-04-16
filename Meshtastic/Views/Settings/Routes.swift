@@ -6,14 +6,14 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import MapKit
 import OSLog
 
 struct Routes: View {
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var selectedRoute: RouteEntity?
 	@State private var importing = false
@@ -27,9 +27,9 @@ struct Routes: View {
 	@State var enabled = true
 	@State var color = Color(red: 51, green: 199, blue: 88)
 
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "enabled", ascending: false), NSSortDescriptor(key: "name", ascending: true), NSSortDescriptor(key: "date", ascending: false)], animation: .default)
-
-	var routes: FetchedResults<RouteEntity>
+	@Query(sort: [SortDescriptor(\RouteEntity.name, order: .forward),
+				  SortDescriptor(\RouteEntity.date, order: .reverse)])
+	var routes: [RouteEntity]
 	var body: some View {
 
 		VStack {
@@ -72,7 +72,8 @@ struct Routes: View {
 								}
 							}
 							if latIndex >= 0 && longIndex >= 0 {
-								let newRoute = RouteEntity(context: context)
+								let newRoute = RouteEntity()
+								context.insert(newRoute)
 								newRoute.name = String(routeName)
 								newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
 								newRoute.color = Int64(UIColor.random.hex)
@@ -84,13 +85,14 @@ struct Routes: View {
 									if data.count > 1 {
 										let latitude = latIndex >= 0 ? data[latIndex].trimmingCharacters(in: .whitespaces) : "0"
 										let longitude = longIndex >= 0 ? data[longIndex].trimmingCharacters(in: .whitespaces) : "0"
-										let loc = LocationEntity(context: context)
+										let loc = LocationEntity()
+										context.insert(loc)
 										loc.latitudeI = Int32((Double(latitude) ?? 0) * 1e7)
 										loc.longitudeI = Int32((Double(longitude) ?? 0) * 1e7)
 										newLocations.append(loc)
 									}
 								}
-								newRoute.locations? = NSOrderedSet(array: newLocations)
+								newRoute.locations = newLocations
 								do {
 									try context.save()
 								} catch let error as NSError {
@@ -143,7 +145,7 @@ struct Routes: View {
 							}
 						}
 					}
-					.badge(Text("\(Image(systemName: "mappin.and.ellipse")) \(route.locations?.count ?? 0)"))
+					.badge(Text("\(Image(systemName: "mappin.and.ellipse")) \(route.locations.count)"))
 							.font(.headline)
 					.swipeActions {
 						Button(role: .destructive) {
@@ -163,7 +165,7 @@ struct Routes: View {
 			} else {
 				VStack {
 					if selectedRoute != nil {
-						let locationArray = selectedRoute?.locations?.array as? [LocationEntity] ?? []
+						let locationArray = selectedRoute?.locations ?? []
 						let lineCoords = locationArray.compactMap({(location) -> CLLocationCoordinate2D in
 							return location.locationCoordinate ?? LocationsHandler.DefaultLocation
 						})
@@ -276,7 +278,7 @@ struct Routes: View {
 						.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
 						.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
 							Button {
-								exportString = routeToCsvFile(locations: selectedRoute!.locations!.array as? [LocationEntity] ?? [])
+								exportString = routeToCsvFile(locations: selectedRoute?.locations ?? [])
 								isExporting = true
 							} label: {
 								Label("Export", systemImage: "square.and.arrow.down")

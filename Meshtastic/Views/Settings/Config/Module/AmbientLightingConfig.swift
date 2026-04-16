@@ -10,7 +10,7 @@ import OSLog
 
 struct AmbientLightingConfig: View {
 	@Environment(\.self) var environment
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -136,8 +136,7 @@ struct AmbientLightingConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return AmbientLightingConfig(node: nil)
+	AmbientLightingConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

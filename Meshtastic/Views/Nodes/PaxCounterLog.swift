@@ -11,7 +11,7 @@ import OSLog
 
 struct PaxCounterLog: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@State private var isPresentingClearLogConfirm: Bool = false
@@ -21,66 +21,70 @@ struct PaxCounterLog: View {
 	@State private var bleChartColor: Color = .blue
 	@State private var wifiChartColor: Color = .orange
 	@State private var paxChartColor: Color = .green
-	@ObservedObject  var node: NodeInfoEntity
+	@Bindable  var node: NodeInfoEntity
+
+	@ViewBuilder
+	private func paxChart(chartData: [PaxCounterEntity], maxValue: Int32) -> some View {
+		Chart {
+			ForEach(chartData, id: \.self) { point in
+				Plot {
+					PointMark(
+						x: .value("x", point.time!),
+						y: .value("y", (point.wifi + point.ble))
+					)
+				}
+				.accessibilityLabel("Total PAX")
+				.accessibilityValue("X: \(point.time!), Y: \(point.wifi + point.ble)")
+				.foregroundStyle(paxChartColor)
+				.interpolationMethod(.cardinal)
+
+				Plot {
+					PointMark(
+						x: .value("x", point.time!),
+						y: .value("y", point.wifi)
+					)
+				}
+				.accessibilityLabel("WiFi")
+				.accessibilityValue("X: \(point.time!), Y: \(point.wifi)")
+				.foregroundStyle(wifiChartColor)
+
+				Plot {
+					PointMark(
+						x: .value("x", point.time!),
+						y: .value("y", point.ble)
+					)
+				}
+				.accessibilityLabel("BLE")
+				.accessibilityValue("X: \(point.time!), Y: \(point.ble)")
+				.foregroundStyle(bleChartColor)
+			}
+		}
+		.chartXAxis(content: {
+			AxisMarks(position: .top)
+		})
+		.chartXAxis(.automatic)
+		.chartYScale(domain: 0...maxValue)
+		.chartForegroundStyleScale([
+			"BLE".localized: .blue,
+			"WiFi".localized: .orange,
+			"Total PAX".localized: .green
+		])
+		.chartLegend(position: .automatic, alignment: .bottom)
+	}
 
 	var body: some View {
 		VStack {
 			if node.hasPax {
 
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-				let pax = node.pax?.reversed() as? [PaxCounterEntity] ?? []
+				let pax = Array(node.pax.reversed())
 				let chartData = pax
 						.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 						.sorted { $0.time! < $1.time! }
 				let maxValue = (chartData.map { $0.wifi }.max() ?? 0) + (chartData.map { $0.ble }.max() ?? 0) + 5
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(pax.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-
-						Chart {
-							ForEach(chartData, id: \.self) { point in
-								Plot {
-									PointMark(
-										x: .value("x", point.time!),
-										y: .value("y", (point.wifi + point.ble))
-									)
-								}
-								.accessibilityLabel("Total PAX")
-								.accessibilityValue("X: \(point.time!), Y: \(point.wifi + point.ble)")
-								.foregroundStyle(paxChartColor)
-								.interpolationMethod(.cardinal)
-
-								Plot {
-									PointMark(
-										x: .value("x", point.time!),
-										y: .value("y", point.wifi)
-									)
-								}
-								.accessibilityLabel("WiFi")
-								.accessibilityValue("X: \(point.time!), Y: \(point.wifi)")
-								.foregroundStyle(wifiChartColor)
-
-								Plot {
-									PointMark(
-										x: .value("x", point.time!),
-										y: .value("y", point.ble)
-									)
-								}
-								.accessibilityLabel("BLE")
-								.accessibilityValue("X: \(point.time!), Y: \(point.ble)")
-								.foregroundStyle(bleChartColor)
-							}
-						}
-						.chartXAxis(content: {
-							AxisMarks(position: .top)
-						})
-						.chartXAxis(.automatic)
-						.chartYScale(domain: 0...maxValue)
-						.chartForegroundStyleScale([
-							"BLE".localized: .blue,
-							"WiFi".localized: .orange,
-							"Total PAX".localized: .green
-						])
-						.chartLegend(position: .automatic, alignment: .bottom)
+						paxChart(chartData: chartData, maxValue: maxValue)
 					}
 					.frame(minHeight: 250)
 				}
@@ -225,15 +229,17 @@ struct PaxCounterLog: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	node.user = user
-	return PaxCounterLog(node: node)
+	PaxCounterLog(node: node)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }
+*/

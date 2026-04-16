@@ -16,16 +16,12 @@ struct PositionAltitude {
 
 struct PositionAltitudeChart: View {
 	@Environment(\.dismiss) private var dismiss
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State private var lineWidth = 2.0
 
 	var data: [PositionAltitude] {
 		let fiveYearsAgo = Calendar.current.date(byAdding: .year, value: -5, to: Date())
-		guard let nodePositions = node.positions,
-			let positions = Array(nodePositions) as? [PositionEntity]
-		else {
-			return []
-		}
+		let positions = node.positions
 
 		let filteredPositions = positions.filter({$0.time != nil && ($0.time ?? fiveYearsAgo!) > fiveYearsAgo!})
 		return filteredPositions.map {

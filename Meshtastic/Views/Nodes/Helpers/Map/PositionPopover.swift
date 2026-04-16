@@ -11,7 +11,7 @@ import MapKit
 struct PositionPopover: View {
 	
 	@ObservedObject var locationsHandler = LocationsHandler.shared
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var appState: AppState
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.dismiss) private var dismiss
@@ -81,7 +81,7 @@ struct PositionPopover: View {
 						.padding(.bottom, 5)
 						/// Coordinate
 						Label {
-							Text("\(String(format: "%.6f", position.coordinate.latitude)), \(String(format: "%.6f", position.coordinate.longitude))")
+							Text("\(String(format: "%.6f", position.nodeCoordinate?.latitude ?? 0)), \(String(format: "%.6f", position.nodeCoordinate?.longitude ?? 0))")
 								.textSelection(.enabled)
 								.foregroundColor(.primary)
 								.font(idiom == .phone ? .callout : .body)
@@ -169,7 +169,8 @@ struct PositionPopover: View {
 						if let lastLocation = locationsHandler.locationsArray.last {
 							/// Distance
 							if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
-								let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
+								let posCoord = position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+								let metersAway = posCoord.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
 								Label {
 									Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 										.foregroundColor(.primary)
@@ -263,7 +264,7 @@ struct PositionPopover: View {
 			.presentationBackgroundInteraction(.enabled(upThrough: .large))
 			.navigationDestination(isPresented: $navigateToCompass) {
 				CompassView(
-					waypointLocation: position.coordinate,
+					waypointLocation: position.nodeCoordinate ?? LocationsHandler.DefaultLocation,
 					waypointLongName: position.nodePosition?.user?.longName ?? "Unknown node",
 					waypointShortName: position.nodePosition?.user?.shortName ?? "???",
 					color: (position.nodePosition?.user?.num != nil && position.nodePosition?.user?.num != 0) ? Color(UIColor(hex: UInt32(position.nodePosition!.user!.num))) : .orange

@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		48E682ECE71246C3BFBD6B8F /* ChannelEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E6EDE744E3446FA1084499 /* ChannelEntity.swift */; };
+		898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */; };
+		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
+		10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */; };
+		D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3204EF969484E549C139730 /* MessageEntity.swift */; };
+		85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */; };
+		9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7101240749F24E96835A040A /* NodeInfoEntity.swift */; };
+		D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
+		93FFCD83202042FB85B47CFD /* RouteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */; };
+		5D3AFC6F08ED4C909C830C55 /* TelemetryEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31483AF5F5354D3481698E32 /* TelemetryEntity.swift */; };
+		7B1684B5E1AF4137829C03B8 /* TraceRouteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */; };
+		70A5B362F7EC4F14A99A8C39 /* UserEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 918722D2C1474B2D99ED01DC /* UserEntity.swift */; };
+		E340A7CA75194A49AB8763C7 /* WaypointEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
@@ -37,8 +50,6 @@
 		233E99C72D84A70900CC3A77 /* SoilCompactWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */; };
 		233E99CB2D85AAA900CC3A77 /* RainfallCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */; };
 		2344A2AB2D66974300170A77 /* ManagedAttributePropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */; };
-		2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */; };
-		2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */; };
 		2344A2B12D68DFF800170A77 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C49D8F2C471AEA0024FBD1 /* Constants.swift */; };
 		2346A7192E2FB9A300CB9239 /* SerialConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A7182E2FB9A300CB9239 /* SerialConnection.swift */; };
 		2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */; };
@@ -349,6 +360,19 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		45E6EDE744E3446FA1084499 /* ChannelEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEntity.swift; sourceTree = "<group>"; };
+		4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigModels.swift; sourceTree = "<group>"; };
+		509A1C42A695463093654617 /* DeviceMetadataEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetadataEntity.swift; sourceTree = "<group>"; };
+		38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchema.swift; sourceTree = "<group>"; };
+		F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
+		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
+		7101240749F24E96835A040A /* NodeInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntity.swift; sourceTree = "<group>"; };
+		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
+		DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteModels.swift; sourceTree = "<group>"; };
+		31483AF5F5354D3481698E32 /* TelemetryEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEntity.swift; sourceTree = "<group>"; };
+		D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteModels.swift; sourceTree = "<group>"; };
+		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
+		E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntity.swift; sourceTree = "<group>"; };
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
@@ -1277,6 +1301,19 @@
 		DDC2E18826CE24EE0042C5E4 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				45E6EDE744E3446FA1084499 /* ChannelEntity.swift */,
+				4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */,
+				509A1C42A695463093654617 /* DeviceMetadataEntity.swift */,
+				38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */,
+				F3204EF969484E549C139730 /* MessageEntity.swift */,
+				DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */,
+				7101240749F24E96835A040A /* NodeInfoEntity.swift */,
+				A97241903A924144A3EEB679 /* PositionEntity.swift */,
+				DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */,
+				31483AF5F5354D3481698E32 /* TelemetryEntity.swift */,
+				D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */,
+				918722D2C1474B2D99ED01DC /* UserEntity.swift */,
+				E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */,
 				2344A2AC2D66978000170A77 /* CoreData */,
 				231B3F1E2D0879BC0069A07D /* Metrics Visualization */,
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
@@ -1680,6 +1717,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				48E682ECE71246C3BFBD6B8F /* ChannelEntity.swift in Sources */,
+				898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */,
+				B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */,
+				10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */,
+				D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */,
+				85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */,
+				9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */,
+				D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */,
+				93FFCD83202042FB85B47CFD /* RouteModels.swift in Sources */,
+				5D3AFC6F08ED4C909C830C55 /* TelemetryEntity.swift in Sources */,
+				7B1684B5E1AF4137829C03B8 /* TraceRouteModels.swift in Sources */,
+				70A5B362F7EC4F14A99A8C39 /* UserEntity.swift in Sources */,
+				E340A7CA75194A49AB8763C7 /* WaypointEntity.swift in Sources */,
 				230BC3972E31071E0046BF2A /* AccessoryManager+Discovery.swift in Sources */,
 				25F26B1F2C2F611300C9CD9D /* AppData.swift in Sources */,
 				25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */,
@@ -1916,7 +1966,6 @@
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */,
-				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
 				BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */,

@@ -15,7 +15,7 @@ import OSLog
 @available(iOS 18, *)
 struct Tools: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 
 	#if !targetEnvironment(macCatalyst)
 	@StateObject private var nfcReader = NFCReader()
@@ -72,10 +72,9 @@ struct Tools: View {
 
 @available(iOS 18, *)
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return Tools()
+	Tools()
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }
 
 #if !targetEnvironment(macCatalyst)

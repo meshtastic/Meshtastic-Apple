@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 @preconcurrency import CoreBluetooth
 import SwiftUI
 import OSLog
@@ -348,15 +349,19 @@ actor BLETransport: Transport {
 		
 		// Get the device name
 		if let nodeNum {
-			let fetchMyInfoRequest = NodeInfoEntity.fetchRequest()
-			fetchMyInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+			let nodeNumVal = Int64(nodeNum)
+			let descriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate { $0.num == nodeNumVal }
+			)
 			do {
-				let fetchedMyInfo = try PersistenceController.shared.container.viewContext.fetch(fetchMyInfoRequest)
-				if fetchedMyInfo.count > 0 {
-					if let longName = fetchedMyInfo[0].user?.longName {
+				let container = PersistenceController.shared.container
+				let bgContext = ModelContext(container)
+				let fetchedNodes = try bgContext.fetch(descriptor)
+				if let first = fetchedNodes.first {
+					if let longName = first.user?.longName {
 						device.longName = longName
 					}
-					if let shortName = fetchedMyInfo[0].user?.shortName {
+					if let shortName = first.user?.shortName {
 						device.shortName = shortName
 					}
 				}

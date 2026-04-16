@@ -10,7 +10,7 @@ import SwiftUI
 
 struct NetworkConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -211,8 +211,7 @@ struct NetworkConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return NetworkConfig(node: nil)
+	NetworkConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

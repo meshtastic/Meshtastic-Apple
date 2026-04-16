@@ -5,7 +5,7 @@
 //  Created by Garth Vander Houwen on 12/24/21.
 //
 
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -13,31 +13,28 @@ import SwiftUI
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@Environment(\.scenePhase) var scenePhase
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FocusState var messageFieldFocused: Bool
-	@ObservedObject var myInfo: MyInfoEntity
-	@ObservedObject var channel: ChannelEntity
+	@Bindable var myInfo: MyInfoEntity
+	@Bindable var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageToHighlight: Int64 = 0
-	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
+	@Query private var allPrivateMessages: [MessageEntity]
 	
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
 		self.myInfo = myInfo
 		self.channel = channel
 		
-		// Configure fetch request here
-		let request: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-		request.sortDescriptors = [
-			NSSortDescriptor(keyPath: \MessageEntity.messageTimestamp, ascending: true)
-		]
-		request.predicate = NSPredicate(
-			format: "channel == %ld AND toUser == nil AND isEmoji == false",
-			channel.index
+		let channelIndex = channel.index
+		_allPrivateMessages = Query(
+			filter: #Predicate<MessageEntity> {
+				$0.channel == channelIndex && $0.toUser == nil && $0.isEmoji == false
+			},
+			sort: \MessageEntity.messageTimestamp
 		)
-		_allPrivateMessages = FetchRequest(fetchRequest: request)
 	}
 	
 	func handleInteractionComplete() {
@@ -53,7 +50,6 @@ struct ChannelMessageList: View {
 			try context.save()
 			Logger.data.info("📖 [App] All unread messages marked as read.")
 			appState.unreadChannelMessages = myInfo.unreadMessages
-			context.refresh(myInfo, mergeChanges: true)
 		} catch {
 			Logger.data.error("Failed to read messages: \(error.localizedDescription, privacy: .public)")
 		}

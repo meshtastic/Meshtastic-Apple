@@ -6,13 +6,13 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import TipKit
 
 struct Messages: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@ObservedObject	var router: Router
 	@Binding var unreadChannelMessages: Int
@@ -116,10 +116,7 @@ struct Messages: View {
 		switch state {
 		case .channels(channelId: let channelId, messageId: _):
 			if let channelId {
-				channelSelection = node?.myInfo?.channels?.first(where: { channel in
-					guard let channel = channel as? ChannelEntity else { return false }
-					return channel.id == channelId
-				}) as? ChannelEntity
+				channelSelection = node?.myInfo?.channels.first { $0.id == channelId }
 			} else {
 				channelSelection = nil
 				userSelection = nil

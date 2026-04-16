@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/28/21.
 //
 
-import CoreData
+import SwiftData
 import CoreLocation
 import MapKit
 import MeshtasticProtobufs
@@ -14,44 +14,14 @@ import SwiftUI
 extension PositionEntity {
 
 	@MainActor
-	static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
-		
-		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
-		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
-		let positionPredicate = NSPredicate(format: "nodePosition != nil AND nodePosition.user != nil AND latest == true AND nodePosition.user.shortName != ''")
-		request.predicate = positionPredicate
-
-		// Distance Predicate
-		if let cl = LocationsHandler.currentLocation {
-			
-			let d: Double = UserDefaults.meshMapDistance * 1.1
-			let r: Double = 6371009 // Earth's mean radius in meters
-			
-			// Calculate Bounding Box
-			let meanLatitidue = cl.latitude * .pi / 180
-			let deltaLatitude = d / r * 180 / .pi
-			let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
-			
-			let minLatitude: Double = cl.latitude - deltaLatitude
-			let maxLatitude: Double = cl.latitude + deltaLatitude
-			let minLongitude: Double = cl.longitude - deltaLongitude
-			let maxLongitude: Double = cl.longitude + deltaLongitude
-			
-			// Scale bounding box values by 1e7 and use integer attributes (longitudeI, latitudeI)
-			let scale: Double = 1e7
-			let minLongitudeI = Int(minLongitude * scale)
-			let maxLongitudeI = Int(maxLongitude * scale)
-			let minLatitudeI = Int(minLatitude * scale)
-			let maxLatitudeI = Int(maxLatitude * scale)
-			
-			// Use integer comparison in the predicate
-			let distancePredicate = NSPredicate(format: "(%ld <= longitudeI) AND (longitudeI <= %ld) AND (%ld <= latitudeI) AND (latitudeI <= %ld)",
-											   minLongitudeI, maxLongitudeI, minLatitudeI, maxLatitudeI)
-			
-			request.predicate = NSCompoundPredicate(type: .and, subpredicates: [positionPredicate, distancePredicate])
-		}
-		
-		return request
+	static func allPositionsFetchDescriptor() -> FetchDescriptor<PositionEntity> {
+		var descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> { pos in
+				pos.nodePosition != nil && pos.latest == true
+			},
+			sortBy: [SortDescriptor(\.time, order: .reverse)]
+		)
+		return descriptor
 	}
 	var latitude: Double? {
 
@@ -127,9 +97,19 @@ extension PositionEntity {
 	}
 }
 
-extension PositionEntity: MKAnnotation {
-	public var coordinate: CLLocationCoordinate2D { nodeCoordinate ?? LocationsHandler.DefaultLocation }
-	public var fuzzedCoordinate: CLLocationCoordinate2D { fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation }
-	public var title: String? {  nodePosition?.user?.shortName ?? "Unknown".localized }
-	public var subtitle: String? {  time?.formatted() }
+class PositionAnnotation: NSObject, MKAnnotation {
+	let positionEntity: PositionEntity
+	@objc dynamic var coordinate: CLLocationCoordinate2D
+	var fuzzedCoordinate: CLLocationCoordinate2D
+	var title: String?
+	var subtitle: String?
+
+	init(position: PositionEntity) {
+		self.positionEntity = position
+		self.coordinate = position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+		self.fuzzedCoordinate = position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
+		self.title = position.nodePosition?.user?.shortName ?? "Unknown".localized
+		self.subtitle = position.time?.formatted()
+		super.init()
+	}
 }

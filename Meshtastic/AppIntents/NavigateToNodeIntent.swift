@@ -8,7 +8,7 @@
 import Foundation
 import AppIntents
 import CoreLocation
-import CoreData
+import SwiftData
 import UIKit
 
 @available(iOS 16.4, *)
@@ -26,12 +26,15 @@ struct NavigateToNodeIntent: ForegroundContinuableIntent {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		let nodeNumInt64 = Int64(nodeNum)
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.num == nodeNumInt64 }
+		)
+		descriptor.fetchLimit = 1
 
 		do {
-			guard let fetchedNode = try PersistenceController.shared.container.viewContext.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity],
-				  fetchedNode.count == 1 else {
+			let fetchedNode = try await MainActor.run { try PersistenceController.shared.context.fetch(descriptor) }
+			guard fetchedNode.count == 1 else {
 				throw $nodeNum.needsValueError("Could not find node")
 			}
 

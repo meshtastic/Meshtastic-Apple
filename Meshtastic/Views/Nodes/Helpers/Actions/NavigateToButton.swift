@@ -7,7 +7,7 @@
 
 import SwiftUI
 import CoreLocation
-import CoreData
+import SwiftData
 import OSLog
 
 struct NavigateToButton: View {
@@ -21,11 +21,13 @@ struct NavigateToButton: View {
 			}
 			Logger.services.info("Fetching NodeInfoEntity for userNum: \(userNum, privacy: .public)")
 
-			let fetchRequest: NSFetchRequest<NodeInfoEntity> = NSFetchRequest(entityName: "NodeInfoEntity")
-			fetchRequest.predicate = NSPredicate(format: "num == %lld", Int64(userNum))
+			var descriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.num == userNum }
+			)
+			descriptor.fetchLimit = 1
 
 			do {
-				let fetchedNodes = try PersistenceController.shared.container.viewContext.fetch(fetchRequest)
+				let fetchedNodes = try PersistenceController.shared.context.fetch(descriptor)
 				guard let nodeInfo = fetchedNodes.first else {
 					Logger.services.error("NavigateToAction: Node with userNum \(userNum, privacy: .public) not found in Core Data")
 					return
@@ -55,14 +57,16 @@ struct NavigateToButton: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	user.num = 123456789
 	node.user = user
-	return NavigateToButton(node: node)
+	NavigateToButton(node: node)
 }
+*/

@@ -2,7 +2,7 @@ import SwiftUI
 import OSLog
 
 struct TapbackResponses: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 
 	let message: MessageEntity
 	let onRead: () -> Void

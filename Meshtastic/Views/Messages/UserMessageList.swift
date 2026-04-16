@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 
@@ -14,21 +14,19 @@ struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@FocusState var messageFieldFocused: Bool
-	@ObservedObject var user: UserEntity
+	@Bindable var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
 	@State private var messageToHighlight: Int64 = 0
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
-	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
-
-	init(user: UserEntity) {
-		self.user = user
-
-		// Configure fetch request here
-		let request: NSFetchRequest<MessageEntity> = user.messageFetchRequest
-		_allPrivateMessages = FetchRequest(fetchRequest: request)
+	private var allPrivateMessages: [MessageEntity] {
+		let sent = user.sentMessages ?? []
+		let received = user.receivedMessages ?? []
+		return (sent + received)
+			.filter { !$0.isEmoji }
+			.sorted { $0.messageTimestamp < $1.messageTimestamp }
 	}
 
 	func handleInteractionComplete() {
@@ -49,8 +47,6 @@ struct UserMessageList: View {
 			   let connectedUser = connectedNode.user {
 				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 			}
-
-			context.refresh(user, mergeChanges: true)
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}

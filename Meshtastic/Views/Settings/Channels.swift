@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 4/8/22.
 //
 
-import CoreData
+import SwiftData
 import MapKit
 import MeshtasticProtobufs
 import OSLog
@@ -22,7 +22,7 @@ func generateChannelKey(size: Int) -> String {
 
 struct Channels: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
@@ -50,13 +50,8 @@ struct Channels: View {
 	@State var minimumVersion = "2.2.24"
 	@State private var showingHelp = false
 
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
-						  NSSortDescriptor(key: "lastHeard", ascending: false),
-						  NSSortDescriptor(key: "user.longName", ascending: true)],
-		animation: .default)
-
-	var nodes: FetchedResults<NodeInfoEntity>
+	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
+	var nodes: [NodeInfoEntity]
 
 	var body: some View {
 
@@ -66,7 +61,7 @@ struct Channels: View {
 					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 					.listRowSeparator(.hidden)
 				if node != nil && node?.myInfo != nil {
-					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
+					ForEach(node?.myInfo?.channels ?? [], id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
@@ -177,17 +172,15 @@ struct Channels: View {
 							selectedChannel!.downlinkEnabled = downlink
 							selectedChannel!.positionPrecision = Int32(positionPrecision)
 
-							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
+							guard var channels = node?.myInfo?.channels else {
 								return
 							}
-							if mutableChannels.contains(selectedChannel as Any) {
-								let replaceChannel = mutableChannels.first(where: { selectedChannel?.psk == ($0 as AnyObject).psk && selectedChannel?.name == ($0 as AnyObject).name})
-								mutableChannels.replaceObject(at: mutableChannels.index(of: replaceChannel as Any), with: selectedChannel as Any)
+							if let idx = channels.firstIndex(where: { $0.psk == selectedChannel?.psk && $0.name == selectedChannel?.name }) {
+								channels[idx] = selectedChannel!
 							} else {
-								mutableChannels.add(selectedChannel as Any)
+								channels.append(selectedChannel!)
 							}
-							node?.myInfo?.channels = mutableChannels.copy() as? NSOrderedSet
-							context.refresh(selectedChannel!, mergeChanges: true)
+							node?.myInfo?.channels = channels
 						if channel.role != Channel.Role.disabled {
 							do {
 								try context.save()
@@ -246,12 +239,10 @@ struct Channels: View {
 					#endif
 				}
 			}
-			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
+			if node?.myInfo?.channels.count ?? 0 < 8 && node != nil {
 
 				Button {
-					let channelIndexes = node?.myInfo?.channels?.compactMap({(ch) -> Int in
-						return (ch as AnyObject).index
-					})
+					let channelIndexes = node?.myInfo?.channels.map { Int($0.index) }
 					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
 					channelKeySize = 16
 					let key = generateChannelKey(size: channelKeySize)
@@ -265,7 +256,8 @@ struct Channels: View {
 					uplink = false
 					downlink = false
 
-					let newChannel = ChannelEntity(context: context)
+					let newChannel = ChannelEntity()
+					context.insert(newChannel)
 					newChannel.id = channelIndex
 					newChannel.index = channelIndex
 					newChannel.uplinkEnabled = uplink

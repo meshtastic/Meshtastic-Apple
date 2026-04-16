@@ -6,41 +6,36 @@
 //
 
 import Foundation
-import CoreData
+import SwiftData
 
 extension MyInfoEntity {
-	var messagePredicate: NSPredicate {
-		return NSPredicate(format: "toUser == nil AND isEmoji == false")
-	}
-
-	var messageFetchRequest: NSFetchRequest<MessageEntity> {
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = messagePredicate
-		return fetchRequest
-	}
-
+	@MainActor
 	var messageList: [MessageEntity] {
-		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = messageFetchRequest
-
-		return (try? context.fetch(messageFetchRequest)) ?? [MessageEntity]()
+		let context = PersistenceController.shared.context
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { msg in
+				msg.toUser == nil && msg.isEmoji == false
+			},
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
+		)
+		return (try? context.fetch(descriptor)) ?? []
 	}
 
-	func unreadMessages(context: NSManagedObjectContext) -> Int {
-		// Returns the count of unread *channel* messages
-		let fetchRequest = messageFetchRequest
-		fetchRequest.sortDescriptors = [] // sort is irrelevant.
-		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
-
-		return (try? context.count(for: fetchRequest)) ?? 0
+	@MainActor
+	func unreadMessages(context: ModelContext) -> Int {
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { msg in
+				msg.toUser == nil && msg.isEmoji == false && msg.read == false
+			}
+		)
+		return (try? context.fetchCount(descriptor)) ?? 0
 	}
 
-	// Backwards-compatible property (uses viewContext)
-	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.container.viewContext) }
+	@MainActor
+	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.context) }
 
 	var hasAdmin: Bool {
-		let adminChannel = channels?.filter { ($0 as AnyObject).name?.lowercased() == "admin" }
-		return adminChannel?.count ?? 0 > 0
+		let adminChannel = channels.filter { $0.name?.lowercased() == "admin" }
+		return adminChannel.count > 0
 	}
 }

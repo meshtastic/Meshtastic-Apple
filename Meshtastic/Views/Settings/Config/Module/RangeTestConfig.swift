@@ -5,13 +5,13 @@
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
 import MeshtasticProtobufs
-import CoreData
+import SwiftData
 import OSLog
 import SwiftUI
 
 struct RangeTestConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -23,7 +23,7 @@ struct RangeTestConfig: View {
 	@State var save = false
 	@State private var sender: UpdateInterval = UpdateInterval(from: 0)
 	private var isPrimaryChannelPublic: Bool {
-		guard let channels = node?.myInfo?.channels?.array as? [ChannelEntity] else {
+		guard let channels = node?.myInfo?.channels else {
 			return false
 		}
 		// Treat the primary channel on this node as "public" when it is effectively unencrypted
@@ -144,8 +144,7 @@ struct RangeTestConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return RangeTestConfig(node: nil)
+	RangeTestConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 import CocoaMQTT
 import OSLog
 import MeshtasticProtobufs
@@ -18,10 +19,12 @@ extension AccessoryManager {
 			return
 		}
 
-		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(deviceNum))
+		let nodeNum = Int64(deviceNum)
+		let descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.num == nodeNum }
+		)
 		do {
-			let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest)
+			let fetchedNodeInfo = try context.fetch(descriptor)
 			if fetchedNodeInfo.count == 1 {
 				// Subscribe to Mqtt Client Proxy if enabled
 				if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {

@@ -1,9 +1,9 @@
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 
 struct MessageContextMenuItems: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	let message: MessageEntity
@@ -148,7 +148,7 @@ struct MessageContextMenuItems: View {
 }
 
 private extension MessageDestination {
-	var managedObject: NSManagedObject {
+	var persistentModel: any PersistentModel {
 		switch self {
 		case let .user(user): return user
 		case let .channel(channel): return channel

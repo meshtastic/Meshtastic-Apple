@@ -48,7 +48,7 @@ class MetricsTableColumn: ObservableObject {
 		visible: Bool = true,
 		@ViewBuilder tableBody: @escaping (MetricsTableColumn, Value) -> TableContent?
 	) {
-		// This works because TelemetryEntity is an NSManagedObject and derrived from NSObject
+		// This works because TelemetryEntity is an @Model and conforms to PersistentModel
 		self.id = id
 		self.name = name
 		self.abbreviatedName = abbreviatedName

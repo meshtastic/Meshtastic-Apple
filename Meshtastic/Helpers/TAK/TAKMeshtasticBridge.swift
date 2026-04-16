@@ -8,7 +8,7 @@
 import Foundation
 import MeshtasticProtobufs
 import OSLog
-import CoreData
+import SwiftData
 
 /// Bridges CoT messages between TAK clients and the Meshtastic mesh network
 /// Handles bidirectional conversion and message routing
@@ -18,8 +18,8 @@ final class TAKMeshtasticBridge {
 	weak var accessoryManager: AccessoryManager?
 	weak var takServerManager: TAKServerManager?
 
-	/// Core Data context for node lookups
-	var context: NSManagedObjectContext?
+	/// SwiftData context for node lookups
+	var context: ModelContext?
 
 	/// Lookup table mapping callsigns to device UIDs
 	/// Populated when receiving PLI packets from other TAK users
@@ -519,7 +519,7 @@ final class TAKMeshtasticBridge {
 		guard let takServerManager, takServerManager.isRunning else { return }
 		
 		// Get context - try the bridge's context first, then fall back to PersistenceController
-		let context = self.context ?? PersistenceController.shared.container.viewContext
+		let context = self.context ?? PersistenceController.shared.context
 		
 		let twoHoursAgo = Date().addingTimeInterval(-7200)
 		
@@ -530,14 +530,13 @@ final class TAKMeshtasticBridge {
 		
 		// Fetch all nodes - be more lenient, include any node that's been heard from
 		// We'll check positions when creating CoT messages
-		let fetchRequest: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-		fetchRequest.predicate = NSPredicate(
-			format: "user != nil"
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.user != nil },
+			sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)]
 		)
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "lastHeard", ascending: false)]
 		
 		do {
-			let nodes = try context.fetch(fetchRequest)
+			let nodes = try context.fetch(descriptor)
 			Logger.tak.info("Found \(nodes.count) total nodes with user info, connected node: \(connectedNodeNum)")
 			
 			var broadcastCount = 0
@@ -594,15 +593,17 @@ final class TAKMeshtasticBridge {
 
 	private func lookupNodeInfo(nodeNum: UInt32) -> NodeInfoEntity? {
 		// Use PersistenceController's viewContext directly to ensure we can find nodes
-		let context = PersistenceController.shared.container.viewContext
+		let context = PersistenceController.shared.context
 
 		// Use the same format as MeshPackets - num is Int64
-		let fetchRequest: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-		fetchRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		fetchRequest.fetchLimit = 1
+		let nodeNumInt64 = Int64(nodeNum)
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.num == nodeNumInt64 }
+		)
+		descriptor.fetchLimit = 1
 
 		do {
-			return try context.fetch(fetchRequest).first
+			return try context.fetch(descriptor).first
 		} catch {
 			Logger.tak.warning("Failed to lookup node info for \(nodeNum): \(error.localizedDescription)")
 			return nil

@@ -10,12 +10,12 @@ import MapKit
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct WaypointForm: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@Environment(\.dismiss) private var dismiss
 	@State var waypoint: WaypointEntity
 	let distanceFormatter = MKDistanceFormatter()
@@ -43,20 +43,20 @@ struct WaypointForm: View {
 			Divider()
 			Form {
 				if let cl = LocationsHandler.currentLocation {
-					let distance = CLLocation(latitude: cl.latitude, longitude: cl.longitude).distance(from: CLLocation(latitude: waypoint.coordinate.latitude, longitude: waypoint.coordinate.longitude ))
+					let distance = CLLocation(latitude: cl.latitude, longitude: cl.longitude).distance(from: CLLocation(latitude: waypoint.mapCoordinate.latitude, longitude: waypoint.mapCoordinate.longitude ))
 					Section(header: Text("Coordinate") ) {
 						HStack {
 							Text("Location:")
 								.foregroundColor(.secondary)
-							Text("\(String(format: "%.5f", waypoint.coordinate.latitude) + "," + String(format: "%.5f", waypoint.coordinate.longitude))")
+							Text("\(String(format: "%.5f", waypoint.mapCoordinate.latitude) + "," + String(format: "%.5f", waypoint.mapCoordinate.longitude))")
 								.textSelection(.enabled)
 								.foregroundColor(.secondary)
 								.font(.caption)
 							
 						}
 						Button {
-							waypoint.coordinate.longitude = cl.longitude
-							waypoint.coordinate.latitude = cl.latitude
+							waypoint.longitudeI = Int32(cl.longitude * 1e7)
+							waypoint.latitudeI = Int32(cl.latitude * 1e7)
 						} label: {
 							HStack {
 								Text("Use my Location")
@@ -65,7 +65,7 @@ struct WaypointForm: View {
 						}
 						.accessibilityLabel("Set to current location")
 						HStack {
-							if waypoint.coordinate.latitude != 0 && waypoint.coordinate.longitude != 0 {
+							if waypoint.mapCoordinate.latitude != 0 && waypoint.mapCoordinate.longitude != 0 {
 								DistanceText(meters: distance)
 									.foregroundColor(Color.gray)
 							}
@@ -288,7 +288,7 @@ struct WaypointForm: View {
 					Text(waypoint.name ?? "?")
 						.font(.largeTitle)
 					Spacer()
-					if waypoint.locked > 0 && waypoint.locked != UInt32(accessoryManager.activeDeviceNum ?? 0) {
+					if waypoint.locked {
 						Image(systemName: "lock.fill")
 							.font(.largeTitle)
 					} else {
@@ -359,7 +359,7 @@ struct WaypointForm: View {
 					Label {
 						Text("Coordinates:")
 							.foregroundColor(.primary)
-						Text("\(String(format: "%.6f", waypoint.coordinate.latitude)), \(String(format: "%.6f", waypoint.coordinate.longitude))")
+						Text("\(String(format: "%.6f", waypoint.mapCoordinate.latitude)), \(String(format: "%.6f", waypoint.mapCoordinate.longitude))")
 							.textSelection(.enabled)
 							.foregroundColor(.secondary)
 							.font(.caption2)
@@ -369,7 +369,7 @@ struct WaypointForm: View {
 					.padding(.bottom)
 					// Drop Maps Pin
 					Button(action: {
-						if let url = URL(string: "http://maps.apple.com/?ll=\(waypoint.coordinate.latitude),\(waypoint.coordinate.longitude)&q=\(waypoint.name ?? "Dropped Pin")") {
+						if let url = URL(string: "http://maps.apple.com/?ll=\(waypoint.mapCoordinate.latitude),\(waypoint.mapCoordinate.longitude)&q=\(waypoint.name ?? "Dropped Pin")") {
 							UIApplication.shared.open(url)
 						}
 					}) {
@@ -410,7 +410,7 @@ struct WaypointForm: View {
 					/// Distance
 					if let cl = LocationsHandler.currentLocation {
 						if cl.distance(from: cl) > 0.0 {
-							let metersAway = waypoint.coordinate.distance(from: cl)
+							let metersAway = waypoint.mapCoordinate.distance(from: cl)
 							Label {
 								Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
@@ -479,9 +479,8 @@ struct WaypointForm: View {
 				} else {
 					expires = false
 				}
-				if waypoint.locked > 0 {
+				if waypoint.locked {
 					locked = true
-					lockedTo = waypoint.locked
 				}
 			} else {
 				name = ""
@@ -490,8 +489,8 @@ struct WaypointForm: View {
 				expires = false
 				expire = Date.now.addingTimeInterval(60 * 480)
 				icon = "📍"
-				latitude = waypoint.coordinate.latitude
-				longitude = waypoint.coordinate.longitude
+				latitude = waypoint.mapCoordinate.latitude
+				longitude = waypoint.mapCoordinate.longitude
 			}
 		}
 		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
@@ -501,12 +500,14 @@ struct WaypointForm: View {
 	private func fetchNodeInfo() async {
 		   // --- Fetch createdBy node ---
 		   if waypoint.createdBy != 0 {
-			   let createdByFetch: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-			   createdByFetch.predicate = NSPredicate(format: "num == %lld", Int64(waypoint.createdBy))
-			   createdByFetch.fetchLimit = 1
+			   let createdByNum = Int64(waypoint.createdBy)
+			   var createdByDescriptor = FetchDescriptor<NodeInfoEntity>(
+				   predicate: #Predicate<NodeInfoEntity> { $0.num == createdByNum }
+			   )
+			   createdByDescriptor.fetchLimit = 1
 			   
 			   do {
-				   let nodes = try context.fetch(createdByFetch)
+				   let nodes = try context.fetch(createdByDescriptor)
 				   createdByNode = nodes.first
 			   } catch {
 				   Logger.services.warning("Error fetching createdBy node: \(error.localizedDescription)")
@@ -516,12 +517,14 @@ struct WaypointForm: View {
 		   // --- Fetch lastUpdatedBy node (only if different from createdBy) ---
 		   if waypoint.lastUpdatedBy != 0,
 			  waypoint.lastUpdatedBy != waypoint.createdBy {
-			   let updatedByFetch: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-			   updatedByFetch.predicate = NSPredicate(format: "num == %lld", Int64(waypoint.lastUpdatedBy))
-			   updatedByFetch.fetchLimit = 1
+			   let updatedByNum = Int64(waypoint.lastUpdatedBy)
+			   var updatedByDescriptor = FetchDescriptor<NodeInfoEntity>(
+				   predicate: #Predicate<NodeInfoEntity> { $0.num == updatedByNum }
+			   )
+			   updatedByDescriptor.fetchLimit = 1
 			   
 			   do {
-				   let nodes = try context.fetch(updatedByFetch)
+				   let nodes = try context.fetch(updatedByDescriptor)
 				   lastUpdatedByNode = nodes.first
 			   } catch {
 				   Logger.services.warning("Error fetching lastUpdatedBy node: \(error.localizedDescription)")

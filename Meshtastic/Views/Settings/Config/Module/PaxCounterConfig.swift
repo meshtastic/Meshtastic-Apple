@@ -10,7 +10,7 @@ import SwiftUI
 import OSLog
 
 struct PaxCounterConfig: View {
-	@Environment(\.managedObjectContext) private var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -125,8 +125,7 @@ struct PaxCounterConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return PaxCounterConfig(node: nil)
+	PaxCounterConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

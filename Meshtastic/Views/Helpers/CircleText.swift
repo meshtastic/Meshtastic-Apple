@@ -4,7 +4,7 @@ A view draws a circle in the background of the shortName text
 */
 
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct CircleText: View {
 	var text: String

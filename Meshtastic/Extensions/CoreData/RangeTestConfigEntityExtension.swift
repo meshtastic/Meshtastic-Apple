@@ -1,12 +1,9 @@
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 
 extension RangeTestConfigEntity {
-	convenience init(
-		context: NSManagedObjectContext,
-		config: ModuleConfig.RangeTestConfig
-	) {
-		self.init(context: context)
+	convenience init(config: ModuleConfig.RangeTestConfig) {
+		self.init()
 		self.sender = Int32(config.sender)
 		self.enabled = config.enabled
 		self.save = config.save

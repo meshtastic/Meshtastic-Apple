@@ -5,14 +5,14 @@
 //  Copyright(c) Garth Vander Houwen 10/1/2025
 //
 
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import SwiftUI
 
 struct UserMessageRow: View {
 	
 	@EnvironmentObject var appState: AppState
-	@ObservedObject var message: MessageEntity
+	@Bindable var message: MessageEntity
 	let allMessages: [MessageEntity]
 	let previousMessage: MessageEntity?
 	let preferredPeripheralNum: Int
@@ -38,7 +38,7 @@ struct UserMessageRow: View {
 	     scrollView: ScrollViewProxy,
 	     onInteractionComplete: @escaping () -> Void) {
 		// Initialize ObservedObject with the concrete instance
-		self._message = ObservedObject(initialValue: message)
+		self.message = message
 		self.allMessages = allMessages
 		self.previousMessage = previousMessage
 		self.preferredPeripheralNum = preferredPeripheralNum

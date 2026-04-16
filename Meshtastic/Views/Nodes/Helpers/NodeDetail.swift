@@ -19,13 +19,13 @@ struct NodeDetail: View {
 	var modemPreset: ModemPresets = ModemPresets(
 		rawValue: UserDefaults.modemPreset
 	) ?? ModemPresets.longFast
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
 	var connectedNode: NodeInfoEntity?
-	@ObservedObject	var node: NodeInfoEntity
+	@Bindable	var node: NodeInfoEntity
 	@State private var environmentSectionHeight: CGFloat = 0
 	@State var showingCompassSheet = false
 	
@@ -69,7 +69,7 @@ struct NodeDetail: View {
 								}
 								.accessibilityElement(children: .combine)
 							}
-							if node.telemetries?.count ?? 0 > 0 {
+							if node.telemetries.count > 0 {
 								Spacer()
 								BatteryGauge(node: node)
 							}
@@ -134,9 +134,7 @@ struct NodeDetail: View {
 								}
 								Spacer()
 								Button(action: {
-									context.perform {
-										UIPasteboard.general.string = publicKey
-									}
+									UIPasteboard.general.string = publicKey
 								}) {
 									HStack {
 										Image(systemName: "key.horizontal.fill")
@@ -185,7 +183,7 @@ struct NodeDetail: View {
 							}
 							.accessibilityElement(children: .combine)
 						}
-						if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
+						if let dm = node.telemetries.filter({ $0.metricsType == 0 }).last, let uptimeSeconds = dm.uptimeSeconds {
 							HStack {
 								Label {
 									Text("\("Uptime".localized)")
@@ -401,7 +399,7 @@ struct NodeDetail: View {
 									.symbolRenderingMode(.multicolor)
 							}
 						}
-						.disabled(node.traceRoutes?.count ?? 0 == 0)
+						.disabled(node.traceRoutes.count == 0)
 						NavigationLink {
 							PowerMetricsLog(node: node)
 						} label: {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import CoreLocation
 import MapKit
 
@@ -30,10 +31,10 @@ private struct NodeMapContentEquatableWrapper<Content: View>: View, Equatable {
 }
 
 struct NodeMapSwiftUI: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	/// Parameters
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
@@ -58,11 +59,8 @@ struct NodeMapSwiftUI: View {
 
 	@State private var mapRegion = MKCoordinateRegion.init()
 
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
-				  predicate: NSPredicate(
-					format: "expire == nil || expire >= %@", Date() as NSDate
-				  ), animation: .none)
-	private var waypoints: FetchedResults<WaypointEntity>
+	@Query(sort: \WaypointEntity.name, order: .reverse)
+	private var waypoints: [WaypointEntity]
 
 	var body: some View {
 		if node.hasPositions {
@@ -78,7 +76,7 @@ struct NodeMapSwiftUI: View {
 				configuredMap
 			}
 		}
-		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions?.count ?? 0) points")), displayMode: .inline)
+		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions.count) points")), displayMode: .inline)
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(
@@ -123,8 +121,8 @@ struct NodeMapSwiftUI: View {
 	}
 
 	private var mapContentSignature: NodeMapContentSignature {
-		let positionCount = node.positions?.count ?? 0
-		let lastPositionTime = (node.positions?.lastObject as? PositionEntity)?.time
+		let positionCount = node.positions.count
+		let lastPositionTime = node.positions.last?.time
 		return NodeMapContentSignature(nodeNum: node.num, positionCount: positionCount, lastPositionTime: lastPositionTime, showNodeHistory: showNodeHistory, showRouteLines: showRouteLines, showConvexHull: showConvexHull, favorite: node.favorite)
 	}
 
@@ -208,7 +206,7 @@ struct NodeMapSwiftUI: View {
 				.glassButtonStyle()
 			}
 
-			if node.positions?.count ?? 0 > 1 {
+			if node.positions.count > 1 {
 				Button(action: {
 					if isLookingAround {
 						isLookingAround = false
@@ -241,15 +239,15 @@ struct NodeMapSwiftUI: View {
 	private func handleNodeChange() {
 		isLookingAround = false
 		isShowingAltitude = false
-		let newMostRecent = node.positions?.lastObject as? PositionEntity
-		if node.positions?.count ?? 0 > 1 {
+		let newMostRecent = node.positions.last
+		if node.positions.count > 1 {
 			position = .automatic
-		} else if let mrCoord = newMostRecent?.coordinate {
+		} else if let mrCoord = newMostRecent?.nodeCoordinate {
 			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
 		}
-		if let newMostRecent {
+		if let newMostRecent, let coord = newMostRecent.nodeCoordinate {
 			Task {
-				scene = try? await fetchScene(for: newMostRecent.coordinate)
+				scene = try? await fetchScene(for: coord)
 			}
 		}
 	}
@@ -257,13 +255,13 @@ struct NodeMapSwiftUI: View {
 	private func handleAppear() {
 		UIApplication.shared.isIdleTimerDisabled = true
 		updateMapStyle(for: selectedMapLayer)
-		let mostRecent = node.positions?.lastObject as? PositionEntity
-		if node.positions?.count ?? 0 > 1 {
+		let mostRecent = node.positions.last
+		if node.positions.count > 1 {
 			position = .automatic
-		} else if let mrCoord = mostRecent?.coordinate {
+		} else if let mrCoord = mostRecent?.nodeCoordinate {
 			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
 		}
-		if scene == nil, let mrCoord = mostRecent?.coordinate {
+		if scene == nil, let mrCoord = mostRecent?.nodeCoordinate {
 			Task {
 				scene = try? await fetchScene(for: mrCoord)
 			}

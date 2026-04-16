@@ -5,88 +5,62 @@
 //  Created(c) Garth Vander Houwen 1/16/23.
 //
 
-import CoreData
+import Foundation
+import SwiftData
 
-public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoEntity? {
-
-	let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
-	fetchNodeInfoRequest.fetchLimit = 1
-
-	do {
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest)
-		if fetchedNode.count == 1 {
-			return fetchedNode[0]
-		}
-	} catch {
-		return nil
-	}
-	return nil
+func getNodeInfo(id: Int64, context: ModelContext) -> NodeInfoEntity? {
+	let num = id
+	var descriptor = FetchDescriptor<NodeInfoEntity>(
+		predicate: #Predicate { $0.num == num }
+	)
+	descriptor.fetchLimit = 1
+	return try? context.fetch(descriptor).first
 }
 
-public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectContext) -> [UInt32] {
-
+func getStoreAndForwardMessageIds(seconds: Int, context: ModelContext) -> [UInt32] {
 	let time = seconds * -1
-	let fetchMessagesRequest = MessageEntity.fetchRequest()
 	let timeRange = Calendar.current.date(byAdding: .minute, value: time, to: Date())
 	let milleseconds = Int32(timeRange?.timeIntervalSince1970 ?? 0)
-	fetchMessagesRequest.predicate =  NSPredicate(format: "messageTimestamp >= %d", milleseconds)
-
-	do {
-		let fetchedMessages = try context.fetch(fetchMessagesRequest)
-		if fetchedMessages.count == 1 {
-			return fetchedMessages.map { UInt32($0.messageId) }
-		}
-	} catch {
-		return []
-	}
-	return []
+	let descriptor = FetchDescriptor<MessageEntity>(
+		predicate: #Predicate { $0.messageTimestamp >= milleseconds }
+	)
+	let fetchedMessages = (try? context.fetch(descriptor)) ?? []
+	return fetchedMessages.map { UInt32($0.messageId) }
 }
 
-public func getTraceRoute(id: Int64, context: NSManagedObjectContext) -> TraceRouteEntity? {
-
-	let fetchTraceRouteRequest = TraceRouteEntity.fetchRequest()
-	fetchTraceRouteRequest.predicate = NSPredicate(format: "id == %lld", Int64(id))
-
-	do {
-		let fetchedTraceRoute = try context.fetch(fetchTraceRouteRequest)
-		if fetchedTraceRoute.count == 1 {
-			return fetchedTraceRoute[0]
-		}
-	} catch {
-		return nil
-	}
-	return nil
+func getTraceRoute(id: Int64, context: ModelContext) -> TraceRouteEntity? {
+	let traceId = id
+	var descriptor = FetchDescriptor<TraceRouteEntity>(
+		predicate: #Predicate { $0.id == traceId }
+	)
+	descriptor.fetchLimit = 1
+	return try? context.fetch(descriptor).first
 }
 
-public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
-
-	let fetchUserRequest = UserEntity.fetchRequest()
-	fetchUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
-
-	do {
-		let fetchedUser = try context.fetch(fetchUserRequest)
-		if fetchedUser.count == 1 {
-			return fetchedUser[0]
-		}
-	} catch {
-		return UserEntity(context: context)
+func getUser(id: Int64, context: ModelContext) -> UserEntity {
+	let userNum = id
+	let descriptor = FetchDescriptor<UserEntity>(
+		predicate: #Predicate { $0.num == userNum }
+	)
+	if let existing = try? context.fetch(descriptor).first {
+		return existing
 	}
-	return UserEntity(context: context)
+	let newUser = UserEntity()
+	newUser.num = id
+	context.insert(newUser)
+	return newUser
 }
 
-public func getWaypoint(id: Int64, context: NSManagedObjectContext) -> WaypointEntity {
-
-	let fetchWaypointRequest = WaypointEntity.fetchRequest()
-	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(id))
-
-	do {
-		let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
-		if fetchedWaypoint.count == 1 {
-			return fetchedWaypoint[0]
-		}
-	} catch {
-		return WaypointEntity(context: context)
+func getWaypoint(id: Int64, context: ModelContext) -> WaypointEntity {
+	let waypointId = id
+	let descriptor = FetchDescriptor<WaypointEntity>(
+		predicate: #Predicate { $0.id == waypointId }
+	)
+	if let existing = try? context.fetch(descriptor).first {
+		return existing
 	}
-	return WaypointEntity(context: context)
+	let newWaypoint = WaypointEntity()
+	newWaypoint.id = id
+	context.insert(newWaypoint)
+	return newWaypoint
 }

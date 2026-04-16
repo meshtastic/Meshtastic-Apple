@@ -3,7 +3,7 @@ import MeshtasticProtobufs
 import OSLog
 
 struct PowerConfig: View {
-	@Environment(\.managedObjectContext) private var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
@@ -228,8 +228,7 @@ private struct FloatField: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return PowerConfig(node: nil)
+	PowerConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

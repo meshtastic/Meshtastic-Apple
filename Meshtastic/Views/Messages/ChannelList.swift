@@ -6,12 +6,12 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 
 struct ChannelList: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Binding var node: NodeInfoEntity?
 	@Binding var channelSelection: ChannelEntity?
@@ -22,11 +22,8 @@ struct ChannelList: View {
 
 	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
 
-	@FetchRequest(
-			sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
-			predicate: nil,
-			animation: .default
-		) private var channels: FetchedResults<ChannelEntity>
+	@Query(sort: \ChannelEntity.index)
+	private var channels: [ChannelEntity]
 
 	@ViewBuilder
 	private func makeChannelRow(
@@ -108,72 +105,74 @@ struct ChannelList: View {
 			}
 		}
 	}
+	@ViewBuilder
+	private func makeChannelListItem(
+		node: NodeInfoEntity,
+		myInfo: MyInfoEntity,
+		channel: ChannelEntity
+	) -> some View {
+		let hasMessages = channel.mostRecentPrivateMessage != nil
+		makeChannelRow(myInfo: myInfo, channel: channel)
+			.alignmentGuide(.listRowSeparatorLeading) {
+				$0[.leading]
+			}
+			.frame(height: 62)
+			.contextMenu {
+				if hasMessages {
+					Button(role: .destructive) {
+						isPresentingDeleteChannelMessagesConfirm = true
+						channelToDeleteMessages = channel
+					} label: {
+						Label("Delete Messages", systemImage: "trash")
+					}
+				}
+				Button {
+					channel.mute.toggle()
+					Task {
+						do {
+							_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
+							Task { @MainActor in
+								do {
+									try context.save()
+								} catch {
+									context.rollback()
+									Logger.data.error("💥 Save Channel Mute Error")
+								}
+							}
+						} catch {
+							Logger.mesh.error("Unable to save channel")
+						}
+					}
+				} label: {
+					Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
+				}
+			}
+			.confirmationDialog(
+				"This conversation will be deleted.",
+				isPresented: $isPresentingDeleteChannelMessagesConfirm,
+				titleVisibility: .visible
+			) {
+				Button(role: .destructive) {
+					Task {
+						await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
+						await MainActor.run {
+							channelToDeleteMessages = nil
+						}
+					}
+				} label: {
+					Text("Delete")
+				}
+			}
+	}
+
 	var body: some View {
 		VStack {
 			// Display Contacts for the rest of the non admin channels
 			if let node, let myInfo = node.myInfo {
 				List(selection: $channelSelection) {
 					ForEach(channels) { (channel: ChannelEntity) in
-						let hasMessages = channel.mostRecentPrivateMessage != nil
 						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
-							makeChannelRow(myInfo: myInfo, channel: channel)
-								.alignmentGuide(.listRowSeparatorLeading) {
-									$0[.leading]
-								}
-								.frame(height: 62)
-								.contextMenu {
-									if hasMessages {
-										Button(role: .destructive) {
-											isPresentingDeleteChannelMessagesConfirm = true
-											channelToDeleteMessages = channel
-										} label: {
-											Label("Delete Messages", systemImage: "trash")
-										}
-									}
-									Button {
-										channel.mute.toggle()
-										do {
-											Task {
-												do {
-													_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
-													Task { @MainActor in
-														do {
-															context.refresh(channel, mergeChanges: true)
-															try context.save()
-														} catch {
-															context.rollback()
-															Logger.data.error("💥 Save Channel Mute Error")
-														}
-													}
-												} catch {
-													Logger.mesh.error("Unable to save channel")
-												}
-											}
-										}
-									} label: {
-										Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
-									}
-								}
-								.confirmationDialog(
-									"This conversation will be deleted.",
-									isPresented: $isPresentingDeleteChannelMessagesConfirm,
-									titleVisibility: .visible
-								) {
-									Button(role: .destructive) {
-										Task {
-											await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
-											await MainActor.run {
-												context.refresh(channel, mergeChanges: true)
-												context.refresh(myInfo, mergeChanges: true)
-												
-												// Reset state
-												channelToDeleteMessages = nil
-											}
-										}
-									} label: {
-										Text("Delete")
-									}
-								}
+							makeChannelListItem(node: node, myInfo: myInfo, channel: channel)
 						}
 					}
 				}

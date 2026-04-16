@@ -10,7 +10,7 @@ import StoreKit
 import OSLog
 
 struct Firmware: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	var node: NodeInfoEntity?
 	@State var minimumVersion = "2.5.4"
@@ -208,8 +208,7 @@ struct Firmware: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return Firmware(node: nil)
+	Firmware(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

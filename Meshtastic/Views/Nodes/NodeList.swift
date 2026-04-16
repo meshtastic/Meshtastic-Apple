@@ -7,14 +7,14 @@
 import SwiftUI
 import CoreLocation
 import OSLog
-import CoreData
+import SwiftData
 import Foundation
 
 struct NodeList: View {
 	/// Debounce delay for node selection changes (100ms)
 	private static let nodeSelectionDebounceNs: UInt64 = 100_000_000
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@StateObject var router: Router
 	@State private var selectedNode: NodeInfoEntity?
@@ -27,6 +27,7 @@ struct NodeList: View {
 	@State private var shareContactNode: NodeInfoEntity?
 	@StateObject var filters = NodeFilterParameters()
 	@State var isEditingFilters = false
+	@State private var filteredNodeCount: Int = 0
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	var connectedNode: NodeInfoEntity? {
@@ -45,7 +46,8 @@ struct NodeList: View {
 				connectedNode: connectedNode,
 				isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
 				deleteNodeId: $deleteNodeId,
-				shareContactNode: $shareContactNode
+				shareContactNode: $shareContactNode,
+				filteredNodeCount: $filteredNodeCount
 			)
 			.sheet(isPresented: $isEditingFilters) {
 				NodeListFilter(
@@ -72,7 +74,7 @@ struct NodeList: View {
 			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
 			.autocorrectionDisabled(true)
 			.scrollDismissesKeyboard(.immediately)
-			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(getNodeCount())))
+			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(filteredNodeCount)))
 			.listStyle(.plain)
 			.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
 				Button("OK") { }.keyboardShortcut(.defaultAction)
@@ -152,12 +154,6 @@ struct NodeList: View {
 		}
 	}
 
-	// Helper to get the count of nodes for the navigation title
-	private func getNodeCount() -> Int {
-		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-		request.predicate = filters.buildPredicate()
-		return (try? context.count(for: request)) ?? 0
-	}
 }
 
 //
@@ -166,8 +162,9 @@ struct NodeList: View {
 //
 fileprivate struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@FetchRequest private var nodes: FetchedResults<NodeInfoEntity>
-	@Environment(\.managedObjectContext) var context
+	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
+	private var allNodes: [NodeInfoEntity]
+	@Environment(\.modelContext) private var context
 	var router: Router
 
 	@Binding var selectedNode: NodeInfoEntity?
@@ -175,6 +172,8 @@ fileprivate struct FilteredNodeList: View {
 	@Binding var isPresentingDeleteNodeAlert: Bool
 	@Binding var deleteNodeId: Int64
 	@Binding var shareContactNode: NodeInfoEntity?
+	@Binding var filteredNodeCount: Int
+	private var filters: NodeFilterParameters
 
 	// The initializer for the FetchRequest
 	init(
@@ -184,26 +183,21 @@ fileprivate struct FilteredNodeList: View {
 		connectedNode: NodeInfoEntity?,
 		isPresentingDeleteNodeAlert: Binding<Bool>,
 		deleteNodeId: Binding<Int64>,
-		shareContactNode: Binding<NodeInfoEntity?>
+		shareContactNode: Binding<NodeInfoEntity?>,
+		filteredNodeCount: Binding<Int>
 	) {
 		self.router = router
-		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-		request.sortDescriptors = [
-			NSSortDescriptor(key: "ignored", ascending: true),
-			NSSortDescriptor(key: "favorite", ascending: false),
-			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true)
-		]
-		request.predicate = withFilters.buildPredicate()
-		request.fetchBatchSize = 50
-		request.relationshipKeyPathsForPrefetching = ["user"]
-		self._nodes = FetchRequest(fetchRequest: request)
-
+		self.filters = withFilters
 		self._selectedNode = selectedNode
 		self.connectedNode = connectedNode
 		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
 		self._deleteNodeId = deleteNodeId
 		self._shareContactNode = shareContactNode
+		self._filteredNodeCount = filteredNodeCount
+	}
+
+	private var nodes: [NodeInfoEntity] {
+		allNodes.filter { filters.matches(node: $0) }
 	}
 
 	// The body of the view
@@ -243,9 +237,11 @@ fileprivate struct FilteredNodeList: View {
 		}
 		.onAppear {
 			router.updateNodeIndex(from: nodes)
+			filteredNodeCount = nodes.count
 		}
-		.onChange(of: nodes.count) { _, _ in
+		.onChange(of: nodes.count) { _, newCount in
 			router.updateNodeIndex(from: nodes)
+			filteredNodeCount = newCount
 		}
 	}
 
@@ -330,6 +326,73 @@ fileprivate struct FilteredNodeList: View {
 //
 
 fileprivate extension NodeFilterParameters {
+	func matches(node: NodeInfoEntity) -> Bool {
+		// Search text
+		if !searchText.isEmpty {
+			let text = searchText.lowercased()
+			let fields = [node.user?.userId, node.user?.numString, node.user?.hwModel,
+						  node.user?.hwDisplayName, node.user?.longName, node.user?.shortName]
+			let matchesSearch = fields.compactMap { $0?.lowercased() }.contains { $0.contains(text) }
+			if !matchesSearch { return false }
+		}
+		// Favorite
+		if isFavorite && !node.favorite { return false }
+		// Via Lora/MQTT
+		if viaLora && !viaMqtt && node.viaMqtt { return false }
+		if !viaLora && viaMqtt && !node.viaMqtt { return false }
+		// Roles
+		if roleFilter && !deviceRoles.isEmpty {
+			let userRole = Int(node.user?.role ?? 0)
+			if !deviceRoles.contains(userRole) { return false }
+		}
+		// Hops Away
+		if hopsAway == 0 && node.hopsAway != 0 { return false }
+		if hopsAway > 0 && (node.hopsAway <= 0 || node.hopsAway > Int32(hopsAway)) { return false }
+		// Online
+		if isOnline {
+			let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date()) ?? Date.distantPast
+			if let lastHeard = node.lastHeard, lastHeard < twoHoursAgo { return false }
+			if node.lastHeard == nil { return false }
+		}
+		// Encrypted
+		if isPkiEncrypted && node.user?.pkiEncrypted != true { return false }
+		// Ignored
+		if isIgnored {
+			if !node.ignored { return false }
+		} else {
+			if node.ignored { return false }
+		}
+		// Environment
+		if isEnvironment {
+			let hasEnvTelemetry = (node.telemetries ?? []).contains { $0.metricsType == 1 }
+			if !hasEnvTelemetry { return false }
+		}
+		// Distance
+		if distanceFilter {
+			if let poi = LocationsHandler.currentLocation,
+			   poi.latitude != LocationsHandler.DefaultLocation.latitude,
+			   poi.longitude != LocationsHandler.DefaultLocation.longitude {
+				let d = maxDistance * 1.1
+				let r: Double = 6371009
+				let meanLat = poi.latitude * .pi / 180
+				let deltaLat = d / r * 180 / .pi
+				let deltaLon = d / (r * cos(meanLat)) * 180 / .pi
+				let minLat = poi.latitude - deltaLat
+				let maxLat = poi.latitude + deltaLat
+				let minLon = poi.longitude - deltaLon
+				let maxLon = poi.longitude + deltaLon
+				let hasNearbyPosition = (node.positions ?? []).contains { pos in
+					guard pos.latest else { return false }
+					let lon = Double(pos.longitudeI) / 1e7
+					let lat = Double(pos.latitudeI) / 1e7
+					return lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat
+				}
+				if !hasNearbyPosition { return false }
+			}
+		}
+		return true
+	}
+
 	func buildPredicate() -> NSPredicate? {
 		var predicates: [NSPredicate] = []
 

@@ -25,7 +25,7 @@ struct PositionFlags: OptionSet {
 
 struct PositionConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
@@ -548,9 +548,7 @@ struct PositionConfig: View {
 				Logger.mesh.error("Remove Fixed Position Failed")
 			}
 		}
-		let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
-		mutablePositions?.removeAllObjects()
-		node?.positions = mutablePositions
+		node?.positions = []
 		node?.positionConfig?.fixedPosition = false
 		do {
 			try context.save()
@@ -564,8 +562,7 @@ struct PositionConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return PositionConfig(node: nil)
+	PositionConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

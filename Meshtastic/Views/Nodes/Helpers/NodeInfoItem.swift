@@ -11,7 +11,7 @@ import MapKit
 
 struct NodeInfoItem: View {
 
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State private var currentDevice: DeviceHardware?
 
 	var body: some View {

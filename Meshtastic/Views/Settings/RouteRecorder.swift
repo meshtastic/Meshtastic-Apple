@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import MapKit
 import CoreLocation
 import CoreMotion
@@ -15,7 +15,7 @@ import OSLog
 struct RouteRecorder: View {
 
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic)
 	@State var isShowingDetails = false
@@ -182,7 +182,8 @@ struct RouteRecorder: View {
 										locationsHandler.elevationGain = 0.0
 										locationsHandler.locationsArray.removeAll()
 										locationsHandler.recordingStarted = Date()
-										let newRoute = RouteEntity(context: context)
+										let newRoute = RouteEntity()
+										context.insert(newRoute)
 										newRoute.date = Date()
 										let at = ActivityType(rawValue: activity)
 										newRoute.name = "\(newRoute.date?.relativeTimeOfDay() ?? "morning".localized) \(at?.fileNameString ?? "hike")"
@@ -241,7 +242,6 @@ struct RouteRecorder: View {
 											rec.enabled = true
 											rec.distance = locationsHandler.distanceTraveled
 											rec.elevationGain = locationsHandler.elevationGain
-											context.refresh(rec, mergeChanges: true)
 										}
 										locationsHandler.isRecording = false
 										locationsHandler.isRecordingPaused = false
@@ -296,7 +296,8 @@ struct RouteRecorder: View {
 					if locationsHandler.isRecording {
 						if let loc = newLoc {
 							if recording != nil {
-								let locationEntity = LocationEntity(context: context)
+								let locationEntity = LocationEntity()
+								context.insert(locationEntity)
 								locationEntity.routeLocation = recording
 								locationEntity.id = Int32(locationsHandler.count)
 								locationEntity.altitude = Int32(loc.altitude)
