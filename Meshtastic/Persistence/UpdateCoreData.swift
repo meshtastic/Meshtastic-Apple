@@ -430,18 +430,13 @@ extension MeshPackets {
 					}
 				}
 				
-				let myInfoEntity = MyInfoEntity(context: context)
-				myInfoEntity.myNodeNum = Int64(packet.from)
-				myInfoEntity.rebootCount = 0
-				newNode.myInfo = myInfoEntity
 				do {
 					try context.save()
 					Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
-					Logger.data.info("💾 [MyInfoEntity] Saved a new myInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("💥 [MyInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
+					Logger.data.error("💥 [NodeInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
 				}
 				
 			} else {
