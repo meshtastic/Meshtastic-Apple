@@ -38,6 +38,7 @@ struct WaypointForm: View {
 	var body: some View {
 		Group {
 		if editMode {
+			VStack {
 			Text((waypoint.id > 0) ? "Editing Waypoint" : "Create Waypoint")
 				.font(.largeTitle)
 			Divider()
@@ -280,6 +281,7 @@ struct WaypointForm: View {
 					.padding(.bottom)
 				}
 			}
+			} // VStack
 		} else {
 			VStack {
 				HStack {
@@ -409,8 +411,8 @@ struct WaypointForm: View {
 					}
 					/// Distance
 					if let cl = LocationsHandler.currentLocation {
-						if cl.distance(from: cl) > 0.0 {
-							let metersAway = waypoint.mapCoordinate.distance(from: cl)
+						let metersAway = waypoint.mapCoordinate.distance(from: cl)
+						if metersAway > 0.0 {
 							Label {
 								Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
@@ -497,38 +499,39 @@ struct WaypointForm: View {
 		.presentationDragIndicator(.visible)
 	}
 	
+	@MainActor
 	private func fetchNodeInfo() async {
-		   // --- Fetch createdBy node ---
-		   if waypoint.createdBy != 0 {
-			   let createdByNum = Int64(waypoint.createdBy)
-			   var createdByDescriptor = FetchDescriptor<NodeInfoEntity>(
-				   predicate: #Predicate<NodeInfoEntity> { $0.num == createdByNum }
-			   )
-			   createdByDescriptor.fetchLimit = 1
-			   
-			   do {
-				   let nodes = try context.fetch(createdByDescriptor)
-				   createdByNode = nodes.first
-			   } catch {
-				   Logger.services.warning("Error fetching createdBy node: \(error.localizedDescription)")
-			   }
-		   }
-		   
-		   // --- Fetch lastUpdatedBy node (only if different from createdBy) ---
-		   if waypoint.lastUpdatedBy != 0,
-			  waypoint.lastUpdatedBy != waypoint.createdBy {
-			   let updatedByNum = Int64(waypoint.lastUpdatedBy)
-			   var updatedByDescriptor = FetchDescriptor<NodeInfoEntity>(
-				   predicate: #Predicate<NodeInfoEntity> { $0.num == updatedByNum }
-			   )
-			   updatedByDescriptor.fetchLimit = 1
-			   
-			   do {
-				   let nodes = try context.fetch(updatedByDescriptor)
-				   lastUpdatedByNode = nodes.first
-			   } catch {
-				   Logger.services.warning("Error fetching lastUpdatedBy node: \(error.localizedDescription)")
-			   }
-		   }
-	   }
+		// --- Fetch createdBy node ---
+		if waypoint.createdBy != 0 {
+			let createdByNum = Int64(waypoint.createdBy)
+			var createdByDescriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.num == createdByNum }
+			)
+			createdByDescriptor.fetchLimit = 1
+
+			do {
+				let nodes = try context.fetch(createdByDescriptor)
+				createdByNode = nodes.first
+			} catch {
+				Logger.services.warning("Error fetching createdBy node: \(error.localizedDescription)")
+			}
+		}
+
+		// --- Fetch lastUpdatedBy node (only if different from createdBy) ---
+		if waypoint.lastUpdatedBy != 0,
+		   waypoint.lastUpdatedBy != waypoint.createdBy {
+			let updatedByNum = Int64(waypoint.lastUpdatedBy)
+			var updatedByDescriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.num == updatedByNum }
+			)
+			updatedByDescriptor.fetchLimit = 1
+
+			do {
+				let nodes = try context.fetch(updatedByDescriptor)
+				lastUpdatedByNode = nodes.first
+			} catch {
+				Logger.services.warning("Error fetching lastUpdatedBy node: \(error.localizedDescription)")
+			}
+		}
+	}
 }
