@@ -38,6 +38,7 @@ struct WaypointForm: View {
 	var body: some View {
 		Group {
 		if editMode {
+			VStack {
 			Text((waypoint.id > 0) ? "Editing Waypoint" : "Create Waypoint")
 				.font(.largeTitle)
 			Divider()
@@ -280,6 +281,7 @@ struct WaypointForm: View {
 					.padding(.bottom)
 				}
 			}
+			} // VStack
 		} else {
 			VStack {
 				HStack {
