@@ -409,8 +409,8 @@ struct WaypointForm: View {
 					}
 					/// Distance
 					if let cl = LocationsHandler.currentLocation {
-						if cl.distance(from: cl) > 0.0 {
-							let metersAway = waypoint.coordinate.distance(from: cl)
+						let metersAway = waypoint.coordinate.distance(from: cl)
+						if metersAway > 0.0 {
 							Label {
 								Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 									.foregroundColor(.primary)
@@ -498,34 +498,33 @@ struct WaypointForm: View {
 		.presentationDragIndicator(.visible)
 	}
 	
+	@MainActor
 	private func fetchNodeInfo() async {
-		   // --- Fetch createdBy node ---
-		   if waypoint.createdBy != 0 {
-			   let createdByFetch: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-			   createdByFetch.predicate = NSPredicate(format: "num == %lld", Int64(waypoint.createdBy))
-			   createdByFetch.fetchLimit = 1
-			   
-			   do {
-				   let nodes = try context.fetch(createdByFetch)
-				   createdByNode = nodes.first
-			   } catch {
-				   Logger.services.warning("Error fetching createdBy node: \(error.localizedDescription)")
-			   }
-		   }
-		   
-		   // --- Fetch lastUpdatedBy node (only if different from createdBy) ---
-		   if waypoint.lastUpdatedBy != 0,
-			  waypoint.lastUpdatedBy != waypoint.createdBy {
-			   let updatedByFetch: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-			   updatedByFetch.predicate = NSPredicate(format: "num == %lld", Int64(waypoint.lastUpdatedBy))
-			   updatedByFetch.fetchLimit = 1
-			   
-			   do {
-				   let nodes = try context.fetch(updatedByFetch)
-				   lastUpdatedByNode = nodes.first
-			   } catch {
-				   Logger.services.warning("Error fetching lastUpdatedBy node: \(error.localizedDescription)")
-			   }
-		   }
-	   }
+		// --- Fetch createdBy node ---
+		if waypoint.createdBy != 0 {
+			let createdByFetch: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
+			createdByFetch.predicate = NSPredicate(format: "num == %lld", Int64(waypoint.createdBy))
+			createdByFetch.fetchLimit = 1
+			do {
+				let nodes = try context.fetch(createdByFetch)
+				createdByNode = nodes.first
+			} catch {
+				Logger.services.warning("Error fetching createdBy node: \(error.localizedDescription)")
+			}
+		}
+
+		// --- Fetch lastUpdatedBy node (only if different from createdBy) ---
+		if waypoint.lastUpdatedBy != 0,
+		   waypoint.lastUpdatedBy != waypoint.createdBy {
+			let updatedByFetch: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
+			updatedByFetch.predicate = NSPredicate(format: "num == %lld", Int64(waypoint.lastUpdatedBy))
+			updatedByFetch.fetchLimit = 1
+			do {
+				let nodes = try context.fetch(updatedByFetch)
+				lastUpdatedByNode = nodes.first
+			} catch {
+				Logger.services.warning("Error fetching lastUpdatedBy node: \(error.localizedDescription)")
+			}
+		}
+	}
 }
