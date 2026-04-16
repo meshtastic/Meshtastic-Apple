@@ -315,6 +315,11 @@
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
 		E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
 		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
+		43C0CB306098FD005C2D489F /* IntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA63632A10C2DD076FA222BE /* IntentHandler.swift */; };
+		7717E5954788B23527BACF65 /* IntentMessageConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */; };
+		AB4622DCF4B1D4115ED00312 /* SendMessageIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */; };
+		B0E4EEF2D2C41A884A5E949C /* SearchForMessagesIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */; };
+		9BC51D7EF97090D149658843 /* SetMessageAttributeIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -707,6 +712,11 @@
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		CA63632A10C2DD076FA222BE /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
+		39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentMessageConverters.swift; sourceTree = "<group>"; };
+		5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessageIntentHandler.swift; sourceTree = "<group>"; };
+		0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchForMessagesIntentHandler.swift; sourceTree = "<group>"; };
+		CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMessageAttributeIntentHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -933,6 +943,18 @@
 				BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */,
 			);
 			path = AppIntents;
+			sourceTree = "<group>";
+		};
+		D05BD108B673E15AD4B01BC8 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				CA63632A10C2DD076FA222BE /* IntentHandler.swift */,
+				39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */,
+				5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */,
+				0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */,
+				CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */,
+			);
+			path = Intents;
 			sourceTree = "<group>";
 		};
 		C37572859BC745C4284A9B42 /* TAK */ = {
@@ -1230,6 +1252,7 @@
 			children = (
 				237AEB8D2E1FE120003B7CE3 /* Accessory */,
 				BCB6137F2C6728E700485544 /* AppIntents */,
+				D05BD108B673E15AD4B01BC8 /* Intents */,
 				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
 				25F5D5BC2C3F6D7B008036E3 /* Router */,
 				DD7709392AA1ABA1007A8BF0 /* Tips */,
@@ -1680,6 +1703,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43C0CB306098FD005C2D489F /* IntentHandler.swift in Sources */,
+				7717E5954788B23527BACF65 /* IntentMessageConverters.swift in Sources */,
+				AB4622DCF4B1D4115ED00312 /* SendMessageIntentHandler.swift in Sources */,
+				B0E4EEF2D2C41A884A5E949C /* SearchForMessagesIntentHandler.swift in Sources */,
+				9BC51D7EF97090D149658843 /* SetMessageAttributeIntentHandler.swift in Sources */,
 				230BC3972E31071E0046BF2A /* AccessoryManager+Discovery.swift in Sources */,
 				25F26B1F2C2F611300C9CD9D /* AppData.swift in Sources */,
 				25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */,
