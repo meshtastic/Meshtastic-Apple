@@ -59,7 +59,11 @@ class Router: ObservableObject {
 	/// Looks up a node using the in-memory cache for O(1) performance, falling back to a Core Data fetch.
 	func cachedNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoEntity? {
 		if let objectID = nodeObjectIDCache[id] {
-			return try? context.existingObject(with: objectID) as? NodeInfoEntity
+			if let node = try? context.existingObject(with: objectID) as? NodeInfoEntity {
+				return node
+			}
+			// Stale entry (object deleted or faulted) — evict and fall back to a fresh fetch
+			nodeObjectIDCache.removeValue(forKey: id)
 		}
 		// Cache miss — fall back to standard fetch
 		let node = getNodeInfo(id: id, context: context)

@@ -244,7 +244,7 @@ fileprivate struct FilteredNodeList: View {
 		.onAppear {
 			router.updateNodeIndex(from: nodes)
 		}
-		.onChange(of: nodes.count) { _, _ in
+		.onChange(of: nodes.map(\.objectID)) { _, _ in
 			router.updateNodeIndex(from: nodes)
 		}
 	}
