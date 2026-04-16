@@ -239,51 +239,13 @@ struct Channels: View {
 					#endif
 				}
 			}
-			if node?.myInfo?.channels.count ?? 0 < 8 && node != nil {
-
-				Button {
-					let channelIndexes = node?.myInfo?.channels.map { Int($0.index) }
-					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
-					channelKeySize = 16
-					let key = generateChannelKey(size: channelKeySize)
-					channelName = ""
-					channelIndex = Int32(firstChannelIndex)
-					channelRole = 2
-					channelKey = key
-					positionsEnabled = false
-					preciseLocation = false
-					positionPrecision = 0
-					uplink = false
-					downlink = false
-
-					let newChannel = ChannelEntity()
-					context.insert(newChannel)
-					newChannel.id = channelIndex
-					newChannel.index = channelIndex
-					newChannel.uplinkEnabled = uplink
-					newChannel.downlinkEnabled = downlink
-					newChannel.name = channelName
-					newChannel.role = Int32(channelRole)
-					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
-					newChannel.positionPrecision = Int32(positionPrecision)
-					selectedChannel = newChannel
-					hasChanges = true
-
-				} label: {
-					Label("Add Channel", systemImage: "plus.square")
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-			}
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
 				.presentationDetents([.large])
 				.presentationDragIndicator(.visible)
 		}
-		.safeAreaInset(edge: .bottom, alignment: .leading) {
+		.safeAreaInset(edge: .bottom) {
 			HStack {
 				Button(action: {
 					withAnimation {
@@ -296,9 +258,46 @@ struct Channels: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.controlSize(.regular)
+				Spacer()
+				if node?.myInfo?.channels.count ?? 0 < 8 && node != nil {
+					Button {
+						let channelIndexes = node?.myInfo?.channels.map { Int($0.index) }
+						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
+						channelKeySize = 16
+						let key = generateChannelKey(size: channelKeySize)
+						channelName = ""
+						channelIndex = Int32(firstChannelIndex)
+						channelRole = 2
+						channelKey = key
+						positionsEnabled = false
+						preciseLocation = false
+						positionPrecision = 0
+						uplink = false
+						downlink = false
+
+						let newChannel = ChannelEntity()
+						context.insert(newChannel)
+						newChannel.id = channelIndex
+						newChannel.index = channelIndex
+						newChannel.uplinkEnabled = uplink
+						newChannel.downlinkEnabled = downlink
+						newChannel.name = channelName
+						newChannel.role = Int32(channelRole)
+						newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
+						newChannel.positionPrecision = Int32(positionPrecision)
+						selectedChannel = newChannel
+						hasChanges = true
+					} label: {
+						Label("Add Channel", systemImage: "plus.square")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+				}
 			}
-			.controlSize(.regular)
-			.padding(5)
+			.padding(.horizontal, 10)
+			.padding(.vertical, 5)
 		}
 		.padding(.bottom, 5)
 		.navigationTitle("Channels")

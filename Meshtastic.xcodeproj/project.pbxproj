@@ -49,7 +49,6 @@
 		233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C42D84A0B600CC3A77 /* CompactWidget.swift */; };
 		233E99C72D84A70900CC3A77 /* SoilCompactWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */; };
 		233E99CB2D85AAA900CC3A77 /* RainfallCompactWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */; };
-		2344A2AB2D66974300170A77 /* ManagedAttributePropertyWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */; };
 		2344A2B12D68DFF800170A77 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C49D8F2C471AEA0024FBD1 /* Constants.swift */; };
 		2346A7192E2FB9A300CB9239 /* SerialConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A7182E2FB9A300CB9239 /* SerialConnection.swift */; };
 		2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */; };
@@ -407,9 +406,6 @@
 		233E99C42D84A0B600CC3A77 /* CompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactWidget.swift; sourceTree = "<group>"; };
 		233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoilCompactWidgets.swift; sourceTree = "<group>"; };
 		233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainfallCompactWidget.swift; sourceTree = "<group>"; };
-		2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedAttributePropertyWrapper.swift; sourceTree = "<group>"; };
-		2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TelemetryEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		2346A7182E2FB9A300CB9239 /* SerialConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConnection.swift; sourceTree = "<group>"; };
 		2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialTransport.swift; sourceTree = "<group>"; };
 		2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualConnectionList.swift; sourceTree = "<group>"; };
@@ -822,15 +818,6 @@
 			path = "Compact Widgets";
 			sourceTree = "<group>";
 		};
-		2344A2AC2D66978000170A77 /* CoreData */ = {
-			isa = PBXGroup;
-			children = (
-				2344A2AD2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift */,
-				2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */,
-			);
-			path = CoreData;
-			sourceTree = "<group>";
-		};
 		237AEB8D2E1FE120003B7CE3 /* Accessory */ = {
 			isa = PBXGroup;
 			children = (
@@ -1013,7 +1000,6 @@
 			isa = PBXGroup;
 			children = (
 				108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */,
-				2344A2AA2D66973D00170A77 /* ManagedAttributePropertyWrapper.swift */,
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
 				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
 				DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */,
@@ -1337,7 +1323,6 @@
 				D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */,
 				918722D2C1474B2D99ED01DC /* UserEntity.swift */,
 				E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */,
-				2344A2AC2D66978000170A77 /* CoreData */,
 				231B3F1E2D0879BC0069A07D /* Metrics Visualization */,
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 			);
@@ -1987,7 +1972,6 @@
 				DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */,
-				2344A2AB2D66974300170A77 /* ManagedAttributePropertyWrapper.swift in Sources */,
 				BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */,
 				D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */,
 				BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */,
@@ -1996,9 +1980,7 @@
 				2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */,
 				BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
-				2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */,
 				2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */,
-				2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */,
 				D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */,
 				237AEB8F2E1FE457003B7CE3 /* Transport.swift in Sources */,
 				DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,

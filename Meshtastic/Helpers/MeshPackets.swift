@@ -177,8 +177,15 @@ actor MeshPackets {
 			do {
 				let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
 				if fetchedMyInfo.count == 1 {
-					let newChannel = ChannelEntity()
-					modelContext.insert(newChannel)
+					let existing = fetchedMyInfo[0].channels.first(where: { $0.index == Int32(channel.index) })
+					let newChannel: ChannelEntity
+					if let existing {
+						newChannel = existing
+					} else {
+						newChannel = ChannelEntity()
+						modelContext.insert(newChannel)
+						fetchedMyInfo[0].channels.append(newChannel)
+					}
 					newChannel.id = Int32(channel.index)
 					newChannel.index = Int32(channel.index)
 					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
@@ -189,11 +196,6 @@ actor MeshPackets {
 					if channel.settings.hasModuleSettings {
 						newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
 						newChannel.mute = channel.settings.moduleSettings.isMuted
-					}
-					if let oldIndex = fetchedMyInfo[0].channels.firstIndex(where: { $0.index == newChannel.index }) {
-						fetchedMyInfo[0].channels[oldIndex] = newChannel
-					} else {
-						fetchedMyInfo[0].channels.append(newChannel)
 					}
 					do {
 						try modelContext.save()

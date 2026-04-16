@@ -661,6 +661,7 @@ extension AccessoryManager {
 
 			let traceRoute = TraceRouteEntity()
 			context.insert(traceRoute)
+			traceRoute.sent = true
 			// TODO: Not sure what's going on here. We always have a fromNodeNum
 			let nodes = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == destNum || $0.num == fromNodeNum })
 			do {
