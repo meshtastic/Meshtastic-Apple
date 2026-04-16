@@ -10,7 +10,7 @@ import OSLog
 import MeshtasticProtobufs
 import CoreBluetooth
 
-private let maxRetries = 1
+private let maxRetries = 2
 private let retryDelay: Duration = .seconds(2)
 
 extension AccessoryManager {
