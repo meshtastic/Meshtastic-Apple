@@ -90,4 +90,5 @@ jobs:
           tag_name: ${{ env.TAG_NAME }}
           files: build/${{ env.PROJECT_NAME }}.ipa
           draft: false
-          prerelease: false
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
+          target_commitish: ${{ github.sha }}
