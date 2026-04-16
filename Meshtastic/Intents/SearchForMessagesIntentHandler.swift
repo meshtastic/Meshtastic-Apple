@@ -45,13 +45,18 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 				}
 			}
 
-			// Filter by date range
+			// Filter by date range.
+			// INDateComponentsRange exposes DateComponents on all platforms;
+			// .startDate/.endDate are iOS-only and unavailable on Mac Catalyst.
 			if let dateRange = intent.dateTimeRange {
-				if let startDate = dateRange.startDate {
+				let calendar = Calendar.current
+				if let startComponents = dateRange.startDateComponents,
+				   let startDate = calendar.date(from: startComponents) {
 					let startTimestamp = Int32(startDate.timeIntervalSince1970)
 					predicates.append(NSPredicate(format: "messageTimestamp >= %d", startTimestamp))
 				}
-				if let endDate = dateRange.endDate {
+				if let endComponents = dateRange.endDateComponents,
+				   let endDate = calendar.date(from: endComponents) {
 					let endTimestamp = Int32(endDate.timeIntervalSince1970)
 					predicates.append(NSPredicate(format: "messageTimestamp <= %d", endTimestamp))
 				}

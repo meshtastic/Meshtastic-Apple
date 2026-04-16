@@ -80,7 +80,11 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 			return .disambiguation(with: speakables)
 		}
 
+		#if targetEnvironment(macCatalyst)
+		return .unsupported()
+		#else
 		return .unsupported(forReason: .noHandlesForValue)
+		#endif
 	}
 
 	// MARK: - Confirmation

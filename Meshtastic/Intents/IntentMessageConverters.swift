@@ -41,7 +41,7 @@ enum IntentMessageConverters {
 			sender: sender,
 			recipients: recipients,
 			groupName: groupName,
-			messageType: message.isEmoji ? .tapback : .text
+			messageType: .text
 		)
 	}
 
