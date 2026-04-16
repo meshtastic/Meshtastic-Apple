@@ -116,6 +116,8 @@ Each settings item has an associated deep link. No parameters are supported for 
 | `meshtastic:///settings/telemetry` | Telemetry |
 | **TAK** | |
 | `meshtastic:///settings/tak` | TAK Config |
+| **Tools** | |
+| `meshtastic:///settings/tools` | Tools |
 | **Logging** | |
 | `meshtastic:///settings/debugLogs` | Debug Logs |
 | **Developers** | |
