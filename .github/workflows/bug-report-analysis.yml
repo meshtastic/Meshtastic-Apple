@@ -1,0 +1,290 @@
+name: 🐞 Bug Report Analyzer
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  issues: write
+  contents: read
+  models: read
+
+jobs:
+  analyze-bug-report:
+    name: Analyze Bug Report
+    runs-on: ubuntu-latest
+    # Run when a bug or triage label is present on the issue, or was just applied
+    if: |
+      contains(github.event.issue.labels.*.name, 'bug') ||
+      contains(github.event.issue.labels.*.name, 'triage') ||
+      github.event.label.name == 'bug' ||
+      github.event.label.name == 'triage'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Analyze bug report and post findings
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const BOT_COMMENT_MARKER = '<!-- bug-analyzer-bot -->';
+            const MODELS_API_URL = 'https://models.inference.ai.azure.com/chat/completions';
+
+            // ── helpers ──────────────────────────────────────────────────────
+
+            async function callModelsAPI(systemMessage, userMessage) {
+              const response = await fetch(MODELS_API_URL, {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  model: 'gpt-4o-mini',
+                  messages: [
+                    { role: 'system', content: systemMessage },
+                    { role: 'user',   content: userMessage   },
+                  ],
+                  max_tokens: 1200,
+                  temperature: 0.2,
+                }),
+              });
+              if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Models API ${response.status}: ${text}`);
+              }
+              const data = await response.json();
+              return data.choices[0].message.content.trim();
+            }
+
+            function extractSection(body, heading) {
+              // Matches GitHub issue form sections: ### Heading\ncontent
+              const re = new RegExp(
+                `###\\s*${heading}\\s*\\n([\\s\\S]*?)(?=\\n###|$)`,
+                'i'
+              );
+              const m = body.match(re);
+              if (!m) return '';
+              const value = m[1].trim();
+              return value === '_No response_' ? '' : value;
+            }
+
+            function isBlank(s) {
+              return !s || s.length < 10;
+            }
+
+            // ── main ─────────────────────────────────────────────────────────
+
+            const issue = context.payload.issue;
+            const body  = issue.body  || '';
+            const title = issue.title || '';
+
+            // Skip if we have already left an analysis comment on this issue.
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: issue.number,
+              per_page: 100,
+            });
+            if (comments.some(c => c.body.includes(BOT_COMMENT_MARKER))) {
+              core.info('Already analyzed this issue – skipping.');
+              return;
+            }
+
+            // ── parse template fields ─────────────────────────────────────────
+
+            const firmwareVersion   = extractSection(body, 'Firmware Version');
+            const stepsToReproduce  = extractSection(body, 'What did you do\\?');
+            const expectedBehavior  = extractSection(body, 'Expected Behavior');
+            const currentBehavior   = extractSection(body, 'Current Behavior');
+            const additionalComments = extractSection(body, 'Additional comments');
+
+            // ── completeness check ────────────────────────────────────────────
+
+            const missing = [];
+            if (isBlank(firmwareVersion))
+              missing.push(
+                '- **Firmware Version** – please provide the exact version string ' +
+                '(e.g. `2.3.14.abcdef1`). You can find it under *Settings → Firmware* ' +
+                'in the app or on the node screen.'
+              );
+            if (isBlank(stepsToReproduce) || stepsToReproduce.length < 30)
+              missing.push(
+                '- **Steps to Reproduce** – please list numbered, minimal steps that ' +
+                'consistently trigger the issue. Include your iOS/iPadOS version and ' +
+                'device model.'
+              );
+            if (isBlank(expectedBehavior))
+              missing.push(
+                '- **Expected Behavior** – describe what you expected to happen.'
+              );
+            if (isBlank(currentBehavior))
+              missing.push(
+                '- **Current Behavior** – describe what actually happens instead.'
+              );
+
+            if (missing.length > 0) {
+              const commentBody = `${BOT_COMMENT_MARKER}
+## 🤖 Additional Information Needed
+
+Thank you for filing this bug report! To help us isolate the root cause we need a bit more detail:
+
+${missing.join('\n')}
+
+### Helpful extras (if applicable)
+- iOS / iPadOS version and device model
+- Whether this is a **regression** – did it work in an earlier version?
+- Console logs or a crash report from the app's [Debug Log](https://meshtastic.org/docs/software/apple/ios-debug/) feature
+- Screenshots or a screen recording if the issue is visual
+
+Please update the issue with the missing information and we'll take another look. Thank you! 🙏`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issue.number,
+                body: commentBody,
+              });
+              core.info('Posted "needs more info" comment.');
+              return;
+            }
+
+            // ── code analysis ─────────────────────────────────────────────────
+
+            const SYSTEM_MESSAGE =
+              'You are an expert iOS/macOS Swift developer helping to triage bug ' +
+              'reports for the Meshtastic Apple app – a SwiftUI mesh-radio ' +
+              'communication app that uses Bluetooth LE and a Core Data stack. ' +
+              'Be concise, specific, and reference real code paths when possible.';
+
+            try {
+              const fs   = require('fs');
+              const path = require('path');
+
+              // Collect all Swift source file paths (max depth 4, skip generated dirs).
+              const SKIP_DIRS = new Set([
+                'node_modules', '.git', 'DerivedData', 'build',
+                'MeshtasticProtobufs',
+              ]);
+
+              function collectSwiftFiles(dir, depth) {
+                if (depth > 4) return [];
+                const results = [];
+                let entries;
+                try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+                catch (_) { return results; }
+                for (const e of entries) {
+                  if (e.name.startsWith('.') || SKIP_DIRS.has(e.name)) continue;
+                  const full = path.join(dir, e.name);
+                  if (e.isDirectory()) {
+                    results.push(...collectSwiftFiles(full, depth + 1));
+                  } else if (e.name.endsWith('.swift')) {
+                    results.push(full);
+                  }
+                }
+                return results;
+              }
+
+              const root      = process.cwd();
+              const allFiles  = collectSwiftFiles(root, 0);
+              const fileList  = allFiles
+                .map(f => path.relative(root, f))
+                .slice(0, 300)
+                .join('\n');
+
+              // Ask the model which files are most relevant.
+              const fileSelectionPrompt =
+                `Bug title: ${title}\n` +
+                `Steps to reproduce: ${stepsToReproduce}\n` +
+                `Expected: ${expectedBehavior}\n` +
+                `Current: ${currentBehavior}\n` +
+                (additionalComments ? `Additional: ${additionalComments}\n` : '') +
+                `\nAvailable Swift source files:\n${fileList}\n\n` +
+                'Return ONLY a JSON array (no markdown, no explanation) of the 5–8 ' +
+                'file paths most likely to contain the bug.';
+
+              let relevantFiles = [];
+              try {
+                const raw = await callModelsAPI(SYSTEM_MESSAGE, fileSelectionPrompt);
+                // Strip potential markdown fences before parsing.
+                const cleaned = raw.replace(/```[a-z]*\n?/g, '').trim();
+                relevantFiles = JSON.parse(cleaned);
+              } catch (e) {
+                core.warning(`File selection failed: ${e.message}`);
+              }
+
+              // Read up to 5 files, capping each at 250 lines to stay within token budget.
+              let codeContext = '';
+              for (const relPath of relevantFiles.slice(0, 5)) {
+                const absPath = path.join(root, relPath);
+                if (!fs.existsSync(absPath)) continue;
+                try {
+                  const content = fs.readFileSync(absPath, 'utf8');
+                  const snippet = content.split('\n').slice(0, 250).join('\n');
+                  codeContext += `\n\n### ${relPath}\n\`\`\`swift\n${snippet}\n\`\`\``;
+                } catch (_) {}
+              }
+
+              const analysisPrompt =
+                `Bug title: ${title}\n` +
+                `Firmware Version: ${firmwareVersion}\n` +
+                `Steps to reproduce: ${stepsToReproduce}\n` +
+                `Expected: ${expectedBehavior}\n` +
+                `Current: ${currentBehavior}\n` +
+                (additionalComments ? `Additional: ${additionalComments}\n` : '') +
+                (codeContext
+                  ? `\nRelevant source code:${codeContext}\n`
+                  : '\n(No source files matched – reason from code structure)\n') +
+                '\nPlease provide:\n' +
+                '1. **Likely root cause** – a concise hypothesis with references to ' +
+                'specific files, types, or functions.\n' +
+                '2. **Relevant code areas** – file paths and line ranges worth ' +
+                'investigating.\n' +
+                '3. **Clarifying questions** – any details that would confirm or rule ' +
+                'out the hypothesis.\n' +
+                '4. **Suggested investigation steps** – what a developer should do ' +
+                'next.\n';
+
+              const analysis = await callModelsAPI(SYSTEM_MESSAGE, analysisPrompt);
+
+              const commentBody = `${BOT_COMMENT_MARKER}
+## 🤖 Automated Bug Report Analysis
+
+Thank you for the detailed report! Here is an automated analysis to help the maintainers investigate:
+
+${analysis}
+
+---
+*This analysis was generated automatically from the issue description and the repository source. A human maintainer will review and follow up shortly.*`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issue.number,
+                body: commentBody,
+              });
+              core.info('Posted analysis comment.');
+
+            } catch (error) {
+              core.warning(`AI analysis failed (${error.message}). Posting fallback acknowledgement.`);
+
+              const fallback = `${BOT_COMMENT_MARKER}
+## 🤖 Bug Report Received
+
+Thank you for this detailed bug report! A maintainer will review it and investigate the root cause.
+
+If you can provide any of the following it will speed up the investigation:
+- Device logs from the [Debug Log](https://meshtastic.org/docs/software/apple/ios-debug/) feature
+- Whether this is a regression (last known-good firmware version)
+- A minimal set of steps that consistently reproduce the issue`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issue.number,
+                body: fallback,
+              });
+            }
