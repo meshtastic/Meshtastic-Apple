@@ -21,9 +21,15 @@ struct AppLog: View {
 	@State private var levels: Set<Int> =  []
 	@State var isExporting = false
 	@State var exportString = ""
+	@State var exportFilename = "Meshtastic Application Logs"
 	@State var isEditingFilters = false
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	private static let logFileDateFormatter: DateFormatter = {
+		let f = DateFormatter()
+		f.dateFormat = "yyyy-MM-dd_HHmmss"
+		return f
+	}()
 	private let dateFormatStyle = Date.FormatStyle()
 		.hour(.twoDigits(amPM: .omitted))
 		.minute()
@@ -171,7 +177,7 @@ struct AppLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: "Meshtastic Application Logs \({ let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd_HHmmss"; return f.string(from: .now) }())",
+			defaultFilename: exportFilename,
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -200,6 +206,7 @@ struct AppLog: View {
 				ToolbarItem(placement: .navigationBarTrailing) {
 					Button(action: {
 						exportString = logToCsvFile(log: logs)
+						exportFilename = "Meshtastic Application Logs \(Self.logFileDateFormatter.string(from: .now))"
 						isExporting = true
 					}) {
 						Image(systemName: "square.and.arrow.down")
