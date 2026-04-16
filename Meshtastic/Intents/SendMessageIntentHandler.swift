@@ -3,8 +3,9 @@
 //  Meshtastic
 //
 //  Handles INSendMessageIntent for CarPlay and Siri messaging.
-//  Resolves recipients (mesh nodes) and channels, validates the message,
-//  and sends it through the AccessoryManager.
+//  Meshtastic supports exactly one destination per message: either a single
+//  direct-message recipient (a mesh node) or a channel (speakableGroupName).
+//  Multiple recipients are not supported.
 //
 
 import CoreData
@@ -23,27 +24,25 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 			return [.needsValue()]
 		}
 
-		let context = PersistenceController.shared.container.viewContext
-		var results: [INSendMessageRecipientResolutionResult] = []
-
-		for recipient in recipients {
-			let searchTerm = recipient.displayName
-			let matchingUsers = await MainActor.run {
-				IntentMessageConverters.findUsers(matching: searchTerm, in: context)
-			}
-
-			if matchingUsers.isEmpty {
-				results.append(.unsupported(forReason: .noAccount))
-			} else if matchingUsers.count == 1, let user = matchingUsers.first {
-				let person = IntentMessageConverters.inPerson(from: user)
-				results.append(.success(with: person))
-			} else {
-				let persons = matchingUsers.map { IntentMessageConverters.inPerson(from: $0) }
-				results.append(.disambiguation(with: persons))
-			}
+		// Meshtastic only supports a single direct-message recipient.
+		if recipients.count > 1 {
+			return [.unsupported(forReason: .noAccount)]
 		}
 
-		return results
+		let context = PersistenceController.shared.container.viewContext
+		let searchTerm = recipients[0].displayName
+		let matchingUsers = await MainActor.run {
+			IntentMessageConverters.findUsers(matching: searchTerm, in: context)
+		}
+
+		if matchingUsers.isEmpty {
+			return [.unsupported(forReason: .noAccount)]
+		} else if matchingUsers.count == 1, let user = matchingUsers.first {
+			return [.success(with: IntentMessageConverters.inPerson(from: user))]
+		} else {
+			let persons = matchingUsers.map { IntentMessageConverters.inPerson(from: $0) }
+			return [.disambiguation(with: persons)]
+		}
 	}
 
 	func resolveContent(for intent: INSendMessageIntent) async -> INStringResolutionResult {
@@ -108,6 +107,7 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 
 		do {
 			if let groupName = intent.speakableGroupName {
+				// Channel message
 				let context = PersistenceController.shared.container.viewContext
 				let channelIndex = await MainActor.run {
 					IntentMessageConverters.channelIndex(for: groupName.spokenPhrase, in: context)
@@ -119,20 +119,17 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 					isEmoji: false,
 					replyID: 0
 				)
-			} else if let recipients = intent.recipients, !recipients.isEmpty {
-				for recipient in recipients {
-					guard let handleValue = recipient.personHandle?.value,
-						  let nodeNum = Int64(handleValue) else {
-						continue
-					}
-					try await AccessoryManager.shared.sendMessage(
-						message: content,
-						toUserNum: nodeNum,
-						channel: 0,
-						isEmoji: false,
-						replyID: 0
-					)
-				}
+			} else if let recipient = intent.recipients?.first,
+					  let handleValue = recipient.personHandle?.value,
+					  let nodeNum = Int64(handleValue) {
+				// Direct message to a single node
+				try await AccessoryManager.shared.sendMessage(
+					message: content,
+					toUserNum: nodeNum,
+					channel: 0,
+					isEmoji: false,
+					replyID: 0
+				)
 			} else {
 				return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 			}
