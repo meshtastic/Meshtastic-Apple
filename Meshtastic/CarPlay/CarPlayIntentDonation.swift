@@ -1,7 +1,8 @@
-// MARK: CarPlayIntentDonation
 //
 //  CarPlayIntentDonation.swift
 //  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 4/16/26.
 //
 //  Donates SiriKit interactions when messages are received so that
 //  conversations appear in CarPlay's messaging interface and Siri
@@ -118,7 +119,7 @@ enum CarPlayIntentDonation {
 
 	// MARK: - Helpers
 
-	private static func mePerson() -> INPerson {
+	static func mePerson() -> INPerson {
 		let meHandle = INPersonHandle(value: "me", type: .unknown)
 		return INPerson(
 			personHandle: meHandle,
@@ -131,7 +132,7 @@ enum CarPlayIntentDonation {
 		)
 	}
 
-	private static func channelDisplayName(for index: Int32) -> String {
+	static func channelDisplayName(for index: Int32) -> String {
 		if index == 0 {
 			return "Primary Channel"
 		}

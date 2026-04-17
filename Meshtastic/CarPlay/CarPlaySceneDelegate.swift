@@ -1,12 +1,15 @@
-// MARK: CarPlaySceneDelegate
 //
 //  CarPlaySceneDelegate.swift
 //  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 4/16/26.
 //
 //  CarPlay Communication app scene delegate.
 //  For communication apps, the system provides the messaging UI.
 //  This delegate manages the CarPlay scene lifecycle and shows
 //  favorite contacts and channels for quick messaging via Siri.
+//  Tapping a favorite pushes a CPContactTemplate detail view
+//  with a native message button that launches Siri compose.
 //
 
 import CarPlay
@@ -15,7 +18,7 @@ import CoreData
 import Intents
 import OSLog
 
-class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
+class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPInterfaceControllerDelegate {
 
 	var interfaceController: CPInterfaceController?
 	private var cancellables = Set<AnyCancellable>()
@@ -31,6 +34,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 	) {
 		Logger.services.info("🚗 [CarPlay] Connected")
 		self.interfaceController = interfaceController
+		interfaceController.delegate = self
 
 		let rootTemplate = buildRootTemplate()
 		interfaceController.setRootTemplate(rootTemplate, animated: false, completion: nil)
@@ -52,6 +56,13 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 		cancellables.removeAll()
 		self.interfaceController = nil
 	}
+
+	// MARK: - CPInterfaceControllerDelegate
+
+	func templateWillAppear(_ aTemplate: CPTemplate, animated: Bool) {}
+	func templateDidAppear(_ aTemplate: CPTemplate, animated: Bool) {}
+	func templateWillDisappear(_ aTemplate: CPTemplate, animated: Bool) {}
+	func templateDidDisappear(_ aTemplate: CPTemplate, animated: Bool) {}
 
 	// MARK: - Root Template
 
@@ -114,13 +125,16 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 				guard let user = node.user else { return nil }
 				let name = user.longName ?? user.shortName ?? "Unknown"
 				let shortName = user.shortName ?? "?"
+				let unreadCount = user.unreadMessages(context: context)
+
+				let detailText = unreadCount > 0 ? "\(shortName) · \(unreadCount) unread" : shortName
 				let item = CPListItem(
 					text: name,
-					detailText: shortName,
+					detailText: detailText,
 					image: UIImage(systemName: "person.circle.fill")
 				)
 				item.handler = { [weak self] _, completion in
-					self?.startMessageIntent(toNodeNum: node.num, name: name)
+					self?.pushContactTemplate(node: node)
 					completion()
 				}
 				item.isEnabled = true
@@ -145,9 +159,17 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 			let name = (channel.name?.isEmpty ?? true)
 				? (channel.index == 0 ? "Primary Channel" : "Channel \(channel.index)")
 				: channel.name!
+			let unreadCount = channel.unreadMessages(context: context)
+
+			let detailText: String
+			if unreadCount > 0 {
+				detailText = (channel.index == 0 ? "Primary" : "Ch \(channel.index)") + " · \(unreadCount) unread"
+			} else {
+				detailText = channel.index == 0 ? "Primary" : "Ch \(channel.index)"
+			}
 			let item = CPListItem(
 				text: name,
-				detailText: channel.index == 0 ? "Primary" : "Ch \(channel.index)",
+				detailText: detailText,
 				image: UIImage(systemName: channel.index == 0 ? "bubble.left.and.bubble.right.fill" : "bubble.left.and.bubble.right")
 			)
 			item.handler = { [weak self] _, completion in
@@ -159,9 +181,37 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 		}
 	}
 
-	// MARK: - Siri Message Intents
+	// MARK: - Contact Detail Template
 
-	private func startMessageIntent(toNodeNum: Int64, name: String) {
+	private func pushContactTemplate(node: NodeInfoEntity) {
+		guard let interfaceController,
+			  let user = node.user else { return }
+
+		let name = user.longName ?? user.shortName ?? "Unknown"
+		let shortName = user.shortName ?? "?"
+
+		let placeholderImage = UIImage(systemName: "person.circle.fill")!
+			.withTintColor(.systemBlue, renderingMode: .alwaysOriginal)
+		let contact = CPContact(name: name, image: placeholderImage)
+		contact.subtitle = shortName
+		if node.hopsAway >= 0 {
+			contact.informativeText = node.hopsAway == 0 ? "Direct" : "\(node.hopsAway) hop\(node.hopsAway == 1 ? "" : "s") away"
+		}
+
+		// Native message button that launches Siri compose flow
+		let messageButton = CPContactMessageButton(phoneOrEmail: name)
+		contact.actions = [messageButton]
+
+		// Also donate the intent so Siri has context for this contact
+		donateMessageIntent(toNodeNum: node.num, name: name)
+
+		let contactTemplate = CPContactTemplate(contact: contact)
+		interfaceController.pushTemplate(contactTemplate, animated: true, completion: nil)
+	}
+
+	// MARK: - Intent Donation
+
+	private func donateMessageIntent(toNodeNum: Int64, name: String) {
 		let person = INPerson(
 			personHandle: INPersonHandle(value: "\(toNodeNum)", type: .unknown),
 			nameComponents: nil,
