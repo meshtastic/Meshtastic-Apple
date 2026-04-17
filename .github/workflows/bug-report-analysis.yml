@@ -3,6 +3,12 @@ name: 🐞 Bug Report Analyzer
 on:
   issues:
     types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to analyze'
+        required: true
+        type: number
 
 permissions:
   issues: write
@@ -13,8 +19,9 @@ jobs:
   analyze-bug-report:
     name: Analyze Bug Report
     runs-on: ubuntu-latest
-    # Run when a bug or triage label is present on the issue, or was just applied
+    # Run when a bug or triage label is present on the issue, was just applied, or triggered manually
     if: |
+      github.event_name == 'workflow_dispatch' ||
       contains(github.event.issue.labels.*.name, 'bug') ||
       contains(github.event.issue.labels.*.name, 'triage') ||
       github.event.label.name == 'bug' ||
@@ -99,7 +106,29 @@ jobs:
 
             // ── main ─────────────────────────────────────────────────────────
 
-            const issue = context.payload.issue;
+            // Support manual workflow_dispatch by fetching the issue when triggered that way.
+            let issue;
+            if (context.eventName === 'workflow_dispatch') {
+              const issueNumber = parseInt(context.payload.inputs.issue_number, 10);
+              if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+                core.setFailed(`Invalid issue_number: "${context.payload.inputs.issue_number}". Must be a positive integer.`);
+                return;
+              }
+              try {
+                const { data } = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: issueNumber,
+                });
+                issue = data;
+              } catch (err) {
+                core.setFailed(`Could not fetch issue #${issueNumber}: ${err.message}`);
+                return;
+              }
+            } else {
+              issue = context.payload.issue;
+            }
+
             const body  = issue.body  || '';
             const title = issue.title || '';
 
