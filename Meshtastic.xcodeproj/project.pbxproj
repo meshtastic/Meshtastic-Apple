@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA000201CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
+		AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
@@ -354,6 +356,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
+		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
@@ -759,6 +763,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA000201CPLAY000000000005 /* CarPlay */ = {
+			isa = PBXGroup;
+			children = (
+				AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */,
+				AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */,
+			);
+			path = CarPlay;
+			sourceTree = "<group>";
+		};
 		231B3F1E2D0879BC0069A07D /* Metrics Visualization */ = {
 			isa = PBXGroup;
 			children = (
@@ -1251,6 +1264,7 @@
 			isa = PBXGroup;
 			children = (
 				237AEB8D2E1FE120003B7CE3 /* Accessory */,
+				AA000201CPLAY000000000005 /* CarPlay */,
 				BCB6137F2C6728E700485544 /* AppIntents */,
 				D05BD108B673E15AD4B01BC8 /* Intents */,
 				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
@@ -1704,6 +1718,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				43C0CB306098FD005C2D489F /* IntentHandler.swift in Sources */,
+				AA000201CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */,
+				AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */,
 				7717E5954788B23527BACF65 /* IntentMessageConverters.swift in Sources */,
 				AB4622DCF4B1D4115ED00312 /* SendMessageIntentHandler.swift in Sources */,
 				B0E4EEF2D2C41A884A5E949C /* SearchForMessagesIntentHandler.swift in Sources */,
