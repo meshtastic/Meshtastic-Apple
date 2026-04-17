@@ -110,12 +110,21 @@ jobs:
             let issue;
             if (context.eventName === 'workflow_dispatch') {
               const issueNumber = parseInt(context.payload.inputs.issue_number, 10);
-              const { data } = await github.rest.issues.get({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                issue_number: issueNumber,
-              });
-              issue = data;
+              if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+                core.setFailed(`Invalid issue_number: "${context.payload.inputs.issue_number}". Must be a positive integer.`);
+                return;
+              }
+              try {
+                const { data } = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: issueNumber,
+                });
+                issue = data;
+              } catch (err) {
+                core.setFailed(`Could not fetch issue #${issueNumber}: ${err.message}`);
+                return;
+              }
             } else {
               issue = context.payload.issue;
             }
