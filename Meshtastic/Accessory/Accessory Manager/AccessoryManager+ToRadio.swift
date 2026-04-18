@@ -166,7 +166,6 @@ extension AccessoryManager {
 
 					// Update local database with the new node info
 					// FUTURE: after https://github.com/meshtastic/firmware/pull/8495 is merged, `favorite: true` becomes `favorite: (connectedDeviceRole != DeviceRoles.clientBase)`
-					upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: true, context: context)
 					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: true)
 				}
 			} catch {

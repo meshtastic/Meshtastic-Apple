@@ -60,7 +60,6 @@ struct ChannelMessageList: View {
 	}
 
 	private func routerIsShowingThisChannel() -> Bool {
-		guard appState.router.navigationState.selectedTab == .messages else { return false }
 		guard appState.router.selectedTab == .messages else { return false }
 		return scenePhase == .active
 	}

@@ -83,7 +83,9 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>INIntentsSupported</key>
 	<array>
-		<string>Intent</string>
+		<string>INSendMessageIntent</string>
+		<string>INSearchForMessagesIntent</string>
+		<string>INSetMessageAttributeIntent</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
@@ -119,6 +121,8 @@
 	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to display it on the mesh map, show and filter by distance as well as to have GPS coordinates to send to the connected device. Route Recording uses location in the background.</string>
+	<key>NSSiriUsageDescription</key>
+	<string>Siri is used for messaging to send and receive Meshtastic messages by voice and through CarPlay.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>Privacy – Bluetooth Always Usage Description</key>

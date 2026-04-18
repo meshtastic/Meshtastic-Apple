@@ -208,8 +208,6 @@ fileprivate struct FilteredNodeList: View {
 
 	// The body of the view
 	var body: some View {
-		// If the connected node passes filters, always show it first
-		let nodesWithConnectedFirst = nodes.filter { $0.num == accessoryManager.activeDeviceNum } + nodes.filter { $0.num != accessoryManager.activeDeviceNum }
 		// If the connected node passes filters, always show it first (single-pass)
 		let nodesWithConnectedFirst: [NodeInfoEntity] = {
 			let activeNum = accessoryManager.activeDeviceNum

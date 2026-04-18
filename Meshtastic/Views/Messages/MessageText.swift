@@ -38,35 +38,8 @@ struct MessageText: View {
 		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
 			messageContent
 				.environment(\.openURL, OpenURLAction { url in
-					saveChannelLink = nil
-					var addChannels = false
-					if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
-						// Handle contact URL
-						ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
-						return .handled // Prevent default browser opening
-					} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
-						// Handle channel URL
-						let components = url.absoluteString.components(separatedBy: "#")
-						guard !components.isEmpty, let lastComponent = components.last else {
-							Logger.services.error("No valid components found in channel URL: \(url.absoluteString, privacy: .public)")
-							return .discarded
-						}
-						addChannels = Bool(url.query?.contains("add=true") ?? false)
-						guard let lastComponent = components.last else {
-							Logger.services.error("Channel URL missing fragment component: \(url.absoluteString, privacy: .public)")
-							self.saveChannelLink = nil
-							return .discarded
-						}
-						let cs = lastComponent.components(separatedBy: "?").first ?? ""
-						self.saveChannelLink = SaveChannelLinkData(data: cs, add: addChannels)
-						Logger.services.debug("Add Channel: \(addChannels, privacy: .public)")
-						Logger.mesh.debug("Opening Channel Settings URL: \(url.absoluteString, privacy: .public)")
-						return .handled // Prevent default browser opening
-					}
-					return .systemAction // Open other URLs in browser
-				})
-			// Display sheet for channel settings
 					handleURL(url)
+				})
 				.sheet(item: $saveChannelLink) { link in
 					SaveChannelQRCode(
 						channelSetLink: link.data,

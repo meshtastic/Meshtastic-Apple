@@ -12,7 +12,6 @@ struct MessageContextMenuItems: View {
 	@Binding var isShowingDeleteConfirmation: Bool
 	@Binding var isShowingTapbackInput: Bool
 	let onReply: () -> Void
-	@State var relayDisplay: String? = nil
 	let canTranslate: Bool
 	let hasTranslatedText: Bool
 	let isShowingTranslatedText: Bool
@@ -33,32 +32,6 @@ struct MessageContextMenuItems: View {
 				let result = message.relayDisplay()
 				DispatchQueue.main.async {
 					relayDisplay = result
-				}
-			}
-		}
-
-		Menu("Tapback") {
-			ForEach(Tapbacks.allCases) { tb in
-				Button {
-					Task {
-						do {
-							try await accessoryManager.sendMessage(
-								message: tb.emojiString,
-								toUserNum: tapBackDestination.userNum,
-								channel: tapBackDestination.channelNum,
-								isEmoji: true,
-								replyID: message.messageId
-							)
-							Task { @MainActor in
-								self.context.refresh(tapBackDestination.managedObject, mergeChanges: true)
-							}
-						} catch {
-							Logger.services.warning("Failed to send tapback.")
-						}
-					}
-				} label: {
-					Text(tb.description)
-					Image(uiImage: tb.emojiString.image()!)
 				}
 			}
 		}
@@ -108,7 +81,6 @@ struct MessageContextMenuItems: View {
 			let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 
 			// Compute a relay display string if relayNode is present
-			
 
 			VStack {
 				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))")

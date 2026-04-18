@@ -289,6 +289,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false
+		
+		// Cancel any existing discovery task so startDiscovery() always creates a fresh one.
+		// Without this, if discovery was still running from before the connection attempt,
+		// startDiscovery() would silently no-op and the device would never reappear in the list.
+		discoveryTask?.cancel()
+		discoveryTask = nil
+		
 		self.startDiscovery()
 	}
 	

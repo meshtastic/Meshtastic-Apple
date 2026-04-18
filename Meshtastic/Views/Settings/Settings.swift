@@ -301,6 +301,14 @@ struct Settings: View {
 				}
 			}
 
+			NavigationLink(value: SettingsNavigationState.tak) {
+				Label {
+					Text("TAK Server")
+				} icon: {
+					Image(systemName: "target")
+				}
+			}
+
 			if isModuleSupported(.telemetryConfig) {
 				NavigationLink(value: SettingsNavigationState.telemetry) {
 					Label {
@@ -349,6 +357,15 @@ struct Settings: View {
 					Text("App Files")
 				} icon: {
 					Image(systemName: "folder")
+				}
+			}
+			if #available(iOS 18, *) {
+				NavigationLink(value: SettingsNavigationState.tools) {
+					Label {
+						Text("Tools")
+					} icon: {
+						Image(systemName: "hammer")
+					}
 				}
 			}
 		}
@@ -536,7 +553,11 @@ struct Settings: View {
 				case .lora:
 					LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .channels:
-					Channels(node: node)
+					if let node = node {
+						Channels(node: node)
+					} else {
+						Text("Loading...")
+					}
 				case .shareQRCode:
 					ShareChannels(node: node)
 				case .user:
