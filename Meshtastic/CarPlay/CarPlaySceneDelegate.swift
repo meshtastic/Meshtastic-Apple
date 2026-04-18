@@ -5,11 +5,8 @@
 //  Copyright(c) Garth Vander Houwen 4/16/26.
 //
 //  CarPlay Communication app scene delegate.
-//  For communication apps, the system provides the messaging UI.
-//  This delegate manages the CarPlay scene lifecycle and shows
-//  favorite contacts and channels for quick messaging via Siri.
-//  Tapping a favorite pushes a CPContactTemplate detail view
-//  with a native message button that launches Siri compose.
+//  Uses a tab bar with Channels and Direct Messages tabs,
+//  matching the main app's Messages navigation structure.
 //
 
 import CarPlay
@@ -17,6 +14,9 @@ import Combine
 import CoreData
 import Intents
 import OSLog
+#if canImport(ActivityKit)
+import ActivityKit
+#endif
 
 class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPInterfaceControllerDelegate {
 
@@ -24,6 +24,15 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	private var cancellables = Set<AnyCancellable>()
 	private var context: NSManagedObjectContext {
 		PersistenceController.shared.container.viewContext
+	}
+
+	private func lastHeardText(_ date: Date?) -> String {
+		guard let date else { return "Never heard" }
+		let interval = Date().timeIntervalSince(date)
+		if interval < 60 { return "Just now" }
+		if interval < 3600 { return "\(Int(interval / 60))m ago" }
+		if interval < 86400 { return "\(Int(interval / 3600))h ago" }
+		return "\(Int(interval / 86400))d ago"
 	}
 
 	// MARK: - CPTemplateApplicationSceneDelegate
@@ -41,11 +50,21 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 		// Observe connection state changes and refresh the template
 		AccessoryManager.shared.$isConnected
+			.removeDuplicates()
+			.dropFirst() // Skip initial value — we already set the root template above
 			.receive(on: DispatchQueue.main)
-			.sink { [weak self] _ in
+			.sink { [weak self] isConnected in
 				self?.refreshRootTemplate()
+				if isConnected {
+					self?.startLiveActivityIfNeeded()
+				}
 			}
 			.store(in: &cancellables)
+
+		// Start Live Activity immediately if already connected
+		if AccessoryManager.shared.isConnected {
+			startLiveActivityIfNeeded()
+		}
 	}
 
 	func templateApplicationScene(
@@ -53,6 +72,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		didDisconnectInterfaceController interfaceController: CPInterfaceController
 	) {
 		Logger.services.info("🚗 [CarPlay] Disconnected")
+		endLiveActivity()
 		cancellables.removeAll()
 		self.interfaceController = nil
 	}
@@ -75,69 +95,116 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	private func buildRootTemplate() -> CPTemplate {
 		let connected = AccessoryManager.shared.isConnected
 
+		// Channels tab
+		let channelsTab = buildChannelsTab(connected: connected)
+
+		// Direct Messages tab
+		let directMessagesTab = buildDirectMessagesTab(connected: connected)
+
+		let tabBar = CPTabBarTemplate(templates: [channelsTab, directMessagesTab])
+		return tabBar
+	}
+
+	// MARK: - Channels Tab
+
+	private func buildChannelsTab(connected: Bool) -> CPListTemplate {
 		var sections = [CPListSection]()
 
-		// Status section
-		let statusItem = CPListItem(
-			text: connected ? "Connected" : "Not Connected",
-			detailText: connected
-				? (AccessoryManager.shared.activeConnection?.device.name ?? "Unknown Device")
-				: "Open Meshtastic on your phone to connect",
-			image: UIImage(systemName: connected
-				? "antenna.radiowaves.left.and.right"
-				: "antenna.radiowaves.left.and.right.slash")
-		)
-		statusItem.isEnabled = false
-		sections.append(CPListSection(items: [statusItem], header: "Status", sectionIndexTitle: nil))
+		if connected {
+			let channelItems = fetchChannelItems()
+			if !channelItems.isEmpty {
+				sections.append(CPListSection(items: channelItems))
+			} else {
+				let emptyItem = CPListItem(text: "No Channels", detailText: nil)
+				emptyItem.isEnabled = false
+				sections.append(CPListSection(items: [emptyItem]))
+			}
+		} else {
+			let statusItem = CPListItem(
+				text: "Not Connected",
+				detailText: "Open Meshtastic to connect",
+				image: UIImage(systemName: "antenna.radiowaves.left.and.right.slash")
+			)
+			statusItem.isEnabled = false
+			sections.append(CPListSection(items: [statusItem]))
+		}
+
+		let template = CPListTemplate(title: "Channels", sections: sections)
+		template.tabImage = UIImage(systemName: "bubble.left.and.bubble.right")
+		return template
+	}
+
+	// MARK: - Direct Messages Tab
+
+	private func buildDirectMessagesTab(connected: Bool) -> CPListTemplate {
+		var sections = [CPListSection]()
 
 		if connected {
-			// Favorite contacts section
 			let favoriteItems = fetchFavoriteContactItems()
 			if !favoriteItems.isEmpty {
 				sections.append(CPListSection(items: favoriteItems, header: "Favorites", sectionIndexTitle: nil))
 			}
 
-			// Channels section
-			let channelItems = fetchChannelItems()
-			if !channelItems.isEmpty {
-				sections.append(CPListSection(items: channelItems, header: "Channels", sectionIndexTitle: nil))
+			let dmItems = fetchDirectMessageItems()
+			if !dmItems.isEmpty {
+				sections.append(CPListSection(items: dmItems, header: "Recent", sectionIndexTitle: nil))
 			}
+
+			if favoriteItems.isEmpty && dmItems.isEmpty {
+				let emptyItem = CPListItem(text: "No Messages", detailText: "No direct message history")
+				emptyItem.isEnabled = false
+				sections.append(CPListSection(items: [emptyItem]))
+			}
+		} else {
+			let statusItem = CPListItem(
+				text: "Not Connected",
+				detailText: "Open Meshtastic to connect",
+				image: UIImage(systemName: "antenna.radiowaves.left.and.right.slash")
+			)
+			statusItem.isEnabled = false
+			sections.append(CPListSection(items: [statusItem]))
 		}
 
-		let listTemplate = CPListTemplate(title: "Meshtastic", sections: sections)
-		listTemplate.tabImage = UIImage(systemName: "antenna.radiowaves.left.and.right")
-		return listTemplate
+		let template = CPListTemplate(title: "Direct Messages", sections: sections)
+		template.tabImage = UIImage(systemName: "bubble.left.and.text.bubble.right")
+		return template
 	}
 
 	// MARK: - Data Fetching
 
-	private func fetchFavoriteContactItems() -> [CPListItem] {
+	private func fetchFavoriteContactItems() -> [CPMessageListItem] {
 		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
 		request.predicate = NSPredicate(format: "favorite == YES AND num != %lld", AccessoryManager.shared.activeDeviceNum ?? 0)
-		request.sortDescriptors = [
-			NSSortDescriptor(key: "user.longName", ascending: true)
-		]
+		request.sortDescriptors = [NSSortDescriptor(key: "lastHeard", ascending: false)]
 		request.relationshipKeyPathsForPrefetching = ["user"]
 
 		do {
 			let nodes = try context.fetch(request)
-			return nodes.compactMap { node -> CPListItem? in
+			return nodes.compactMap { node -> CPMessageListItem? in
 				guard let user = node.user else { return nil }
 				let name = user.longName ?? user.shortName ?? "Unknown"
-				let shortName = user.shortName ?? "?"
 				let unreadCount = user.unreadMessages(context: context)
+				let hasUnread = unreadCount > 0
 
-				let detailText = unreadCount > 0 ? "\(shortName) · \(unreadCount) unread" : shortName
-				let item = CPListItem(
-					text: name,
-					detailText: detailText,
-					image: UIImage(systemName: "person.circle.fill")
+				let leadingConfig = CPMessageListItemLeadingConfiguration(
+					leadingItem: .star,
+					leadingImage: UIImage(systemName: "person.circle.fill"),
+					unread: hasUnread
 				)
-				item.handler = { [weak self] _, completion in
-					self?.pushContactTemplate(node: node)
-					completion()
-				}
-				item.isEnabled = true
+
+				let item = CPMessageListItem(
+					fullName: name,
+					phoneOrEmailAddress: "\(node.num)@meshtastic.local",
+					leadingConfiguration: leadingConfig,
+					trailingConfiguration: nil,
+					detailText: hasUnread ? "\(unreadCount) unread" : nil,
+					trailingText: lastHeardText(node.lastHeard)
+				)
+				item.conversationIdentifier = "dm-\(node.num)"
+				item.userInfo = node.num
+
+				donateMessageIntent(toNodeNum: node.num, name: name)
+
 				return item
 			}
 		} catch {
@@ -146,7 +213,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		}
 	}
 
-	private func fetchChannelItems() -> [CPListItem] {
+	private func fetchChannelItems() -> [CPMessageListItem] {
 		guard let connectedNum = AccessoryManager.shared.activeDeviceNum,
 			  let connectedNode = getNodeInfo(id: connectedNum, context: context),
 			  let myInfo = connectedNode.myInfo,
@@ -154,71 +221,105 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			return []
 		}
 
-		return channels.compactMap { channel -> CPListItem? in
+		return channels.compactMap { channel -> CPMessageListItem? in
 			guard channel.role > 0 else { return nil }
 			let name = (channel.name?.isEmpty ?? true)
 				? (channel.index == 0 ? "Primary Channel" : "Channel \(channel.index)")
 				: channel.name!
 			let unreadCount = channel.unreadMessages(context: context)
+			let hasUnread = unreadCount > 0
+			let channelIndex = Int(channel.index)
 
-			let detailText: String
-			if unreadCount > 0 {
-				detailText = (channel.index == 0 ? "Primary" : "Ch \(channel.index)") + " · \(unreadCount) unread"
-			} else {
-				detailText = channel.index == 0 ? "Primary" : "Ch \(channel.index)"
-			}
-			let item = CPListItem(
-				text: name,
-				detailText: detailText,
-				image: UIImage(systemName: channel.index == 0 ? "bubble.left.and.bubble.right.fill" : "bubble.left.and.bubble.right")
+			let leadingConfig = CPMessageListItemLeadingConfiguration(
+				leadingItem: .none,
+				leadingImage: UIImage(systemName: channel.index == 0 ? "bubble.left.and.bubble.right.fill" : "bubble.left.and.bubble.right"),
+				unread: hasUnread
 			)
-			item.handler = { [weak self] _, completion in
-				self?.startChannelMessageIntent(channelIndex: Int(channel.index), channelName: name)
-				completion()
-			}
-			item.isEnabled = true
+
+			let item = CPMessageListItem(
+				conversationIdentifier: "channel-\(channelIndex)",
+				text: name,
+				leadingConfiguration: leadingConfig,
+				trailingConfiguration: nil,
+				detailText: hasUnread ? "\(unreadCount) unread" : (channel.index == 0 ? "Primary" : "Ch \(channel.index)"),
+				trailingText: nil
+			)
+			item.phoneOrEmailAddress = "channel-\(channelIndex)@meshtastic.local"
+			item.userInfo = channelIndex
+
+			donateChannelIntent(channelIndex: channelIndex, channelName: name)
+
 			return item
 		}
 	}
 
-	// MARK: - Contact Detail Template
+	private func fetchDirectMessageItems() -> [CPMessageListItem] {
+		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
+		let connectedNum = AccessoryManager.shared.activeDeviceNum ?? 0
 
-	private func pushContactTemplate(node: NodeInfoEntity) {
-		guard let interfaceController,
-			  let user = node.user else { return }
+		// Match the app's UserList: exclude self, exclude ignored, exclude favorites (shown above), show unmessagable only if they have messages
+		let notSelf = NSPredicate(format: "userNode.num != %lld", connectedNum)
+		let notIgnored = NSPredicate(format: "userNode.ignored == NO")
+		let notFavorite = NSPredicate(format: "userNode.favorite == NO")
+		let unmessagableFilter = NSCompoundPredicate(type: .or, subpredicates: [
+			NSPredicate(format: "unmessagable == NO"),
+			NSPredicate(format: "receivedMessages.@count > 0 OR sentMessages.@count > 0")
+		])
+		request.predicate = NSCompoundPredicate(type: .and, subpredicates: [notSelf, notIgnored, notFavorite, unmessagableFilter])
+		request.sortDescriptors = [
+			NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
+			NSSortDescriptor(key: "lastMessage", ascending: false),
+			NSSortDescriptor(key: "longName", ascending: true)
+		]
+		request.fetchLimit = 24 // CarPlay limits list items
 
-		let name = user.longName ?? user.shortName ?? "Unknown"
-		let shortName = user.shortName ?? "?"
+		do {
+			let users = try context.fetch(request)
+			return users.compactMap { user -> CPMessageListItem? in
+				guard let node = user.userNode else { return nil }
+				let name = user.longName ?? user.shortName ?? "Unknown"
+				let unreadCount = user.unreadMessages(context: context)
+				let hasUnread = unreadCount > 0
+				let nodeNum = node.num
 
-		let placeholderImage = UIImage(systemName: "person.circle.fill")!
-			.withTintColor(.systemBlue, renderingMode: .alwaysOriginal)
-		let contact = CPContact(name: name, image: placeholderImage)
-		contact.subtitle = shortName
-		if node.hopsAway >= 0 {
-			contact.informativeText = node.hopsAway == 0 ? "Direct" : "\(node.hopsAway) hop\(node.hopsAway == 1 ? "" : "s") away"
+				let leadingConfig = CPMessageListItemLeadingConfiguration(
+					leadingItem: .none,
+					leadingImage: UIImage(systemName: "person.circle.fill"),
+					unread: hasUnread
+				)
+
+				let item = CPMessageListItem(
+					fullName: name,
+					phoneOrEmailAddress: "\(nodeNum)@meshtastic.local",
+					leadingConfiguration: leadingConfig,
+					trailingConfiguration: nil,
+					detailText: hasUnread ? "\(unreadCount) unread" : nil,
+					trailingText: lastHeardText(node.lastHeard)
+				)
+				item.conversationIdentifier = "dm-\(nodeNum)"
+				item.userInfo = nodeNum
+
+				donateMessageIntent(toNodeNum: nodeNum, name: name)
+
+				return item
+			}
+		} catch {
+			Logger.services.error("🚗 [CarPlay] Failed to fetch DM users: \(error.localizedDescription, privacy: .public)")
+			return []
 		}
-
-		// Native message button that launches Siri compose flow
-		let messageButton = CPContactMessageButton(phoneOrEmail: name)
-		contact.actions = [messageButton]
-
-		// Also donate the intent so Siri has context for this contact
-		donateMessageIntent(toNodeNum: node.num, name: name)
-
-		let contactTemplate = CPContactTemplate(contact: contact)
-		interfaceController.pushTemplate(contactTemplate, animated: true, completion: nil)
 	}
 
 	// MARK: - Intent Donation
 
 	private func donateMessageIntent(toNodeNum: Int64, name: String) {
+		let handleValue = "\(toNodeNum)@meshtastic.local"
 		let person = INPerson(
-			personHandle: INPersonHandle(value: "\(toNodeNum)", type: .unknown),
+			personHandle: INPersonHandle(value: handleValue, type: .emailAddress),
 			nameComponents: nil,
 			displayName: name,
 			image: nil,
-			contactIdentifier: nil,
-			customIdentifier: "meshtastic-node-\(toNodeNum)"
+			contactIdentifier: "\(toNodeNum)",
+			customIdentifier: "\(toNodeNum)"
 		)
 		let intent = INSendMessageIntent(
 			recipients: [person],
@@ -239,10 +340,19 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		}
 	}
 
-	private func startChannelMessageIntent(channelIndex: Int, channelName: String) {
+	private func donateChannelIntent(channelIndex: Int, channelName: String) {
+		let channelHandle = "channel-\(channelIndex)@meshtastic.local"
+		let recipient = INPerson(
+			personHandle: INPersonHandle(value: channelHandle, type: .emailAddress),
+			nameComponents: nil,
+			displayName: channelName,
+			image: nil,
+			contactIdentifier: channelHandle,
+			customIdentifier: channelHandle
+		)
 		let groupName = INSpeakableString(spokenPhrase: channelName)
 		let intent = INSendMessageIntent(
-			recipients: nil,
+			recipients: [recipient],
 			outgoingMessageType: .outgoingMessageText,
 			content: nil,
 			speakableGroupName: groupName,
@@ -259,4 +369,69 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			}
 		}
 	}
+
+	// MARK: - Live Activity
+
+#if canImport(ActivityKit)
+	private func startLiveActivityIfNeeded() {
+		guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+			Logger.services.info("🚗 [CarPlay] Live Activities not enabled")
+			return
+		}
+
+		// Don't start another if one is already running
+		guard Activity<MeshActivityAttributes>.activities.isEmpty else {
+			Logger.services.info("🚗 [CarPlay] Live Activity already active")
+			return
+		}
+
+		guard let connectedNum = AccessoryManager.shared.activeDeviceNum else { return }
+		let connectedNode = getNodeInfo(id: connectedNum, context: context)
+		let nodeName = connectedNode?.user?.longName ?? "Meshtastic"
+		let nodeShortName = connectedNode?.user?.shortName ?? "?"
+
+		// Fetch latest local stats telemetry
+		let localStats = connectedNode?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
+		let mostRecent = localStats?.lastObject as? TelemetryEntity
+
+		let timerSeconds = 900 // 15 minute local stats interval
+		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
+		let initialState = MeshActivityAttributes.ContentState(
+			uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
+			channelUtilization: mostRecent?.channelUtilization ?? 0.0,
+			airtime: mostRecent?.airUtilTx ?? 0.0,
+			sentPackets: UInt32(mostRecent?.numPacketsTx ?? 0),
+			receivedPackets: UInt32(mostRecent?.numPacketsRx ?? 0),
+			badReceivedPackets: UInt32(mostRecent?.numPacketsRxBad ?? 0),
+			dupeReceivedPackets: UInt32(mostRecent?.numRxDupe ?? 0),
+			packetsSentRelay: UInt32(mostRecent?.numTxRelay ?? 0),
+			packetsCanceledRelay: UInt32(mostRecent?.numTxRelayCanceled ?? 0),
+			nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
+			totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
+			timerRange: Date.now...future
+		)
+
+		let attributes = MeshActivityAttributes(nodeNum: Int(connectedNum), name: nodeName, shortName: nodeShortName)
+		let content = ActivityContent(state: initialState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
+
+		do {
+			let activity = try Activity<MeshActivityAttributes>.request(attributes: attributes, content: content, pushType: nil)
+			Logger.services.info("🚗 [CarPlay] Started Live Activity: \(activity.id)")
+		} catch {
+			Logger.services.error("🚗 [CarPlay] Failed to start Live Activity: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	private func endLiveActivity() {
+		Task {
+			for activity in Activity<MeshActivityAttributes>.activities {
+				await activity.end(nil, dismissalPolicy: .immediate)
+				Logger.services.info("🚗 [CarPlay] Ended Live Activity: \(activity.id)")
+			}
+		}
+	}
+#else
+	private func startLiveActivityIfNeeded() {}
+	private func endLiveActivity() {}
+#endif
 }

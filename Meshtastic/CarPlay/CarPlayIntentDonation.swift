@@ -74,7 +74,8 @@ enum CarPlayIntentDonation {
 
 		let intent: INSendMessageIntent
 		if toUserNum != 0 {
-			let recipientHandle = INPersonHandle(value: String(toUserNum), type: .unknown)
+			let handleValue = "\(toUserNum)@meshtastic.local"
+			let recipientHandle = INPersonHandle(value: handleValue, type: .emailAddress)
 			let recipient = INPerson(
 				personHandle: recipientHandle,
 				nameComponents: nil,

@@ -376,7 +376,7 @@ struct Connect: View {
 		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
 		let mostRecent = localStats?.lastObject as? TelemetryEntity
 		
-		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown")
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
