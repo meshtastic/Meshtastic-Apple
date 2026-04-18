@@ -10,8 +10,8 @@ struct SecurityVersionNag: View {
 
 	@Environment(\.dismiss) private var dismiss
 
-	@State var minimumSecureVersion = ""
-	@State var version = ""
+	let minimumSecureVersion: String
+	let version: String
 
 	var body: some View {
 		VStack(spacing: 0) {

@@ -1,4 +1,5 @@
 import CoreBluetooth
+import Intents
 import OSLog
 import SwiftUI
 import Foundation
@@ -11,6 +12,7 @@ struct DeviceOnboarding: View {
 		case backgroundActivity
 		case localNetwork
 		case bluetooth
+		case siri
 	}
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -366,6 +368,61 @@ struct DeviceOnboarding: View {
 		}
 	}
 	
+	var siriView: some View {
+		VStack {
+			ScrollView(.vertical) {
+				VStack {
+					Text("Siri & Shortcuts")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				VStack(alignment: .leading, spacing: 16) {
+					Text(createSiriString())
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "message",
+						title: String(localized: "Send a Group Message"),
+						subtitle: String(localized: "\"Send a Meshtastic group message\" — send a message to a mesh channel.")
+					)
+					makeRow(
+						icon: "bubble",
+						title: String(localized: "Send a Direct Message"),
+						subtitle: String(localized: "\"Send a Meshtastic direct message\" — send a private message to a node.")
+					)
+					makeRow(
+						icon: "power",
+						title: String(localized: "Shut Down / Restart Node"),
+						subtitle: String(localized: "\"Shut down my Meshtastic node\" or \"Restart my Meshtastic node\".")
+					)
+					makeRow(
+						icon: "antenna.radiowaves.left.and.right.slash",
+						title: String(localized: "Disconnect Node"),
+						subtitle: String(localized: "\"Disconnect Meshtastic\" — disconnect from the connected BLE node.")
+					)
+				}
+				.padding()
+			}
+			Spacer()
+			Button {
+				Task {
+					await requestSiriPermissions()
+					await goToNextStep(after: .siri)
+				}
+			} label: {
+				Text("Configure Siri & Shortcuts")
+					.frame(maxWidth: .infinity)
+			}
+			.padding()
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.buttonStyle(.borderedProminent)
+		}
+	}
+	
 	var body: some View {
 		NavigationStack(path: $navigationPath) {
 			welcomeView
@@ -381,6 +438,8 @@ struct DeviceOnboarding: View {
 						bluetoothView
 					case .localNetwork:
 						localNetworkView
+					case .siri:
+						siriView
 					}
 				}
 		}
@@ -445,7 +504,7 @@ struct DeviceOnboarding: View {
 			}
 		case .location:
 			locationStatus = LocationsHandler.shared.manager.authorizationStatus
-			if locationStatus != .notDetermined && locationStatus != .restricted {
+			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
 				navigationPath.append(.backgroundActivity)
 			}
 		case .backgroundActivity:
@@ -454,6 +513,8 @@ struct DeviceOnboarding: View {
 			navigationPath.append(.bluetooth)
 			
 		case .bluetooth:
+			navigationPath.append(.siri)
+		case .siri:
 			dismiss()
 		}
 	}
@@ -495,6 +556,15 @@ struct DeviceOnboarding: View {
 		return fullText
 	}
 	
+	func createSiriString() -> AttributedString {
+		var fullText = AttributedString("Meshtastic supports Siri and Shortcuts so you can control your mesh hands-free. You can update Siri permissions at any time from settings.")
+		if let range = fullText.range(of: "settings") {
+			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
+			fullText[range].foregroundColor = .blue
+		}
+		return fullText
+	}
+	
 	// MARK: Permission Checks
 	func requestNotificationsPermissions() async {
 		let center = UNUserNotificationCenter.current()
@@ -526,6 +596,22 @@ struct DeviceOnboarding: View {
 	
 	func requestBluetoothPermissions() async {
 		_ = await BluetoothAuthorizationHelper.requestBluetoothAuthorization()
+	}
+	
+	func requestSiriPermissions() async {
+		await withCheckedContinuation { continuation in
+			INPreferences.requestSiriAuthorization { status in
+				switch status {
+				case .authorized:
+					Logger.services.info("Siri permissions are enabled")
+				case .denied:
+					Logger.services.info("Siri permissions denied")
+				default:
+					Logger.services.info("Siri permissions status: \(status.rawValue)")
+				}
+				continuation.resume()
+			}
+		}
 	}
 
 }

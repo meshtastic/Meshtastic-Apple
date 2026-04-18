@@ -10,8 +10,8 @@ struct InvalidVersion: View {
 
 	@Environment(\.dismiss) private var dismiss
 
-	@State var minimumVersion = ""
-	@State var version = ""
+	let minimumVersion: String
+	let version: String
 
 	var body: some View {
 		VStack(spacing: 0) {
