@@ -44,6 +44,7 @@ public class TelemetryEntity: NSManagedObject, Identifiable {
 	@ManagedAttribute<Float>(attributeName: "windSpeed") public var windSpeed: Float?
 	@ManagedAttribute<Float>(attributeName: "irLux") public var irLux: Float?
 	@ManagedAttribute<Float>(attributeName: "lux") public var lux: Float?
+	@ManagedAttribute<Float>(attributeName: "noiseFloor") public var noiseFloor: Float?
 	@ManagedAttribute<Float>(attributeName: "uvLux") public var uvLux: Float?
 	@ManagedAttribute<Float>(attributeName: "whiteLux") public var whiteLux: Float?
 	@ManagedAttribute<Float>(attributeName: "radiation") public var radiation: Float?
