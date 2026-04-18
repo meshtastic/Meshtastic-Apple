@@ -4,7 +4,7 @@
 //
 //  Copyright (c) Garth Vander Houwen 1/13/23.
 //
-import SwiftData
+@preconcurrency import SwiftData
 import CoreLocation
 import MapKit
 import SwiftUI

@@ -8,7 +8,7 @@
 import Foundation
 import MeshtasticProtobufs
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 
 extension AccessoryManager {
 

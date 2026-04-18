@@ -10,7 +10,7 @@ import MapKit
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 
 struct WaypointForm: View {
 

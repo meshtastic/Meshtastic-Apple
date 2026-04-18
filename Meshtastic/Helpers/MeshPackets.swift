@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import SwiftUI
 import RegexBuilder
@@ -58,7 +58,7 @@ func generateMessageMarkdown (message: String) -> String {
 @ModelActor
 actor MeshPackets {
 	static let shared: MeshPackets = {
-		let container = PersistenceController.shared.container
+		let container = MainActor.assumeIsolated { PersistenceController.shared.container }
 		return MeshPackets(modelContainer: container)
 	}()
 	

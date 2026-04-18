@@ -8,7 +8,6 @@
 //  Multiple recipients are not supported.
 //
 
-import CoreData
 import Intents
 import OSLog
 
@@ -29,7 +28,6 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 			return [.unsupported(forReason: .noAccount)]
 		}
 
-		let context = PersistenceController.shared.container.viewContext
 		let recipient = recipients[0]
 		let handleValue = recipient.personHandle?.value ?? ""
 
@@ -43,10 +41,10 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 			return [.success(with: recipient)]
 		}
 
-		// Otherwise search by display name
-		let searchTerm = recipient.displayName ?? handleValue
+		let searchTerm = recipient.displayName.isEmpty ? handleValue : recipient.displayName
 		let matchingUsers = await MainActor.run {
-			IntentMessageConverters.findUsers(matching: searchTerm, in: context)
+			let context = PersistenceController.shared.context
+			return IntentMessageConverters.findUsers(matching: searchTerm, in: context)
 		}
 
 		if matchingUsers.isEmpty {
@@ -79,9 +77,9 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 			return .needsValue()
 		}
 
-		let context = PersistenceController.shared.container.viewContext
 		let matchingChannels = await MainActor.run {
-			IntentMessageConverters.findChannels(matching: groupName.spokenPhrase, in: context)
+			let context = PersistenceController.shared.context
+			return IntentMessageConverters.findChannels(matching: groupName.spokenPhrase, in: context)
 		}
 
 		if matchingChannels.count == 1, let channel = matchingChannels.first {
@@ -126,9 +124,9 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 		do {
 			if let groupName = intent.speakableGroupName {
 				// Channel message
-				let context = PersistenceController.shared.container.viewContext
 				let channelIndex = await MainActor.run {
-					IntentMessageConverters.channelIndex(for: groupName.spokenPhrase, in: context)
+					let context = PersistenceController.shared.context
+					return IntentMessageConverters.channelIndex(for: groupName.spokenPhrase, in: context)
 				}
 				try await AccessoryManager.shared.sendMessage(
 					message: content,

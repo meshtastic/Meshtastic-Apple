@@ -530,13 +530,12 @@ final class TAKMeshtasticBridge {
 		
 		// Fetch all nodes - be more lenient, include any node that's been heard from
 		// We'll check positions when creating CoT messages
-		var descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate<NodeInfoEntity> { $0.user != nil },
-			sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)]
-		)
+		let descriptor = FetchDescriptor<NodeInfoEntity>()
 		
 		do {
 			let nodes = try context.fetch(descriptor)
+				.filter { $0.user != nil }
+				.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
 			Logger.tak.info("Found \(nodes.count) total nodes with user info, connected node: \(connectedNodeNum)")
 			
 			var broadcastCount = 0
@@ -595,15 +594,11 @@ final class TAKMeshtasticBridge {
 		// Use PersistenceController's viewContext directly to ensure we can find nodes
 		let context = PersistenceController.shared.context
 
-		// Use the same format as MeshPackets - num is Int64
-		let nodeNumInt64 = Int64(nodeNum)
-		var descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate<NodeInfoEntity> { $0.num == nodeNumInt64 }
-		)
-		descriptor.fetchLimit = 1
+		let descriptor = FetchDescriptor<NodeInfoEntity>()
 
 		do {
-			return try context.fetch(descriptor).first
+			let nodeNumInt64 = Int64(nodeNum)
+			return try context.fetch(descriptor).first { $0.num == nodeNumInt64 }
 		} catch {
 			Logger.tak.warning("Failed to lookup node info for \(nodeNum): \(error.localizedDescription)")
 			return nil

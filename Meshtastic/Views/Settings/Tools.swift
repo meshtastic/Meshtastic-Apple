@@ -180,6 +180,11 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 						}
 						session.invalidate()
 					}
+
+				@unknown default:
+					self.logger.error("Unsupported NDEF status")
+					session.alertMessage = "Unsupported tag status."
+					session.invalidate()
 				}
 			}
 		}

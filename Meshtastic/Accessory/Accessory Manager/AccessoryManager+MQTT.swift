@@ -6,9 +6,9 @@
 //
 
 import Foundation
-import SwiftData
 import CocoaMQTT
 import OSLog
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 
 extension AccessoryManager {

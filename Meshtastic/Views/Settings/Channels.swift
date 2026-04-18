@@ -28,7 +28,7 @@ struct Channels: View {
 	@Environment(\.sizeCategory) var sizeCategory
 	@Environment(\.colorScheme) private var colorScheme
 
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 
 	@State var hasChanges = false
 	@State var hasValidKey = true
@@ -242,7 +242,7 @@ struct Channels: View {
 			if (node.myInfo?.channels ?? []).count < 8 {
 
 				Button {
-					let channelIndexes = node.myInfo?.channels?.compactMap { ch -> Int in
+					let channelIndexes = node.myInfo?.channels.compactMap { ch -> Int in
 						return Int(ch.index)
 					}
 					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
@@ -299,9 +299,9 @@ struct Channels: View {
 				.buttonStyle(.borderedProminent)
 				.controlSize(.regular)
 				Spacer()
-				if node?.myInfo?.channels.count ?? 0 < 8 && node != nil {
+				if node.myInfo?.channels.count ?? 0 < 8 {
 					Button {
-						let channelIndexes = node?.myInfo?.channels.map { Int($0.index) }
+						let channelIndexes = node.myInfo?.channels.map { Int($0.index) }
 						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
 						channelKeySize = 16
 						let key = generateChannelKey(size: channelKeySize)

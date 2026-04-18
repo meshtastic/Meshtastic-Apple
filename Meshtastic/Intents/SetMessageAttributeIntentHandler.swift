@@ -3,12 +3,12 @@
 //  Meshtastic
 //
 //  Handles INSetMessageAttributeIntent for CarPlay and Siri.
-//  Marks messages as read or unread in Core Data.
+//  Marks messages as read or unread in SwiftData.
 //
 
-import CoreData
 import Intents
 import OSLog
+import SwiftData
 
 final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeIntentHandling {
 
@@ -39,20 +39,21 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 		}
 
 		let attribute = intent.attribute
-		// Use a private background context so Core Data work does not block the main thread.
-		let bgContext = PersistenceController.shared.container.newBackgroundContext()
-		bgContext.automaticallyMergesChangesFromParent = true
+		let messageIds = Set(identifiers.compactMap(Int64.init))
+		guard !messageIds.isEmpty else {
+			return INSetMessageAttributeIntentResponse(code: .failure, userActivity: nil)
+		}
 
-		let success: Bool = await bgContext.perform {
-			let messageIds = identifiers.compactMap { Int64($0) }
-			guard !messageIds.isEmpty else { return false }
-
-			let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-			fetchRequest.predicate = NSPredicate(format: "messageId IN %@", messageIds)
+		let success = await MainActor.run { () -> Bool in
+			let context = PersistenceController.shared.context
+			let descriptor = FetchDescriptor<MessageEntity>()
 
 			do {
-				let messages = try bgContext.fetch(fetchRequest)
-				guard !messages.isEmpty else { return false }
+				let allMessages = try context.fetch(descriptor)
+				let messages = allMessages.filter { messageIds.contains($0.messageId) }
+				guard !messages.isEmpty else {
+					return false
+				}
 
 				for message in messages {
 					switch attribute {
@@ -61,15 +62,14 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 					case .unread:
 						message.read = false
 					case .flagged, .unflagged:
-						// Meshtastic does not support message flagging
 						break
 					default:
 						break
 					}
 				}
 
-				if bgContext.hasChanges {
-					try bgContext.save()
+				if context.hasChanges {
+					try context.save()
 				}
 				Logger.services.info("CarPlay/Siri: Updated \(messages.count) message(s) to \(String(describing: attribute))")
 				return true
