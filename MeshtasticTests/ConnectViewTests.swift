@@ -364,7 +364,7 @@ struct InvalidVersionTests {
 	}
 
 	@Test func viewCreationWithEmptyVersions() {
-		let view = InvalidVersion()
+		let view = InvalidVersion(minimumVersion: "", version: "")
 		#expect(view.minimumVersion == "")
 		#expect(view.version == "")
 	}

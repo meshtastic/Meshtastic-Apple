@@ -122,6 +122,28 @@ Each settings item has an associated deep link. No parameters are supported for 
 | `meshtastic:///settings/appFiles` | App Files |
 | `meshtastic:///settings/firmwareUpdates` | Firmware Updates |
 
+## CarPlay
+
+The app supports CarPlay for hands-free mesh messaging while driving. The CarPlay interface shows connection status, favorite contacts, and channels.
+
+### Siri Voice Commands
+
+Use these Siri voice commands on CarPlay to interact with Meshtastic:
+
+| Intent | Example Phrase |
+| --- | --- |
+| `INSendMessageIntent` | "Send a message on Meshtastic" |
+| `INSearchForMessagesIntent` | "Search Meshtastic messages" |
+| `INSetMessageAttributeIntent` | "Mark Meshtastic message as read" |
+
+### Features
+
+- **Connection Status** — Shows whether a Meshtastic device is connected and the device name
+- **Favorite Contacts** — Lists nodes marked as favorites with unread message counts; tap to view contact detail with a native Siri compose button
+- **Channels** — Lists configured channels with unread counts; tap to start a channel message via Siri
+- **Incoming Message Notifications** — Siri announces incoming Meshtastic messages when Announce Notifications is enabled
+- **Conversation History** — Sent and received messages appear in CarPlay Messages for quick access
+
 ## Release Process
 
 For more information on how a new release of Meshtastic is managed, please refer to [RELEASING.md](./RELEASING.md)

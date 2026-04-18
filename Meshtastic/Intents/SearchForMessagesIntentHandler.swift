@@ -19,15 +19,33 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 	// MARK: - Handling
 
 	func handle(intent: INSearchForMessagesIntent) async -> INSearchForMessagesIntentResponse {
-		let context = PersistenceController.shared.container.viewContext
+		// Use a private background context so the fetch does not block the main thread.
+		let bgContext = PersistenceController.shared.container.newBackgroundContext()
+		bgContext.automaticallyMergesChangesFromParent = true
 
-		let messages: [INMessage] = await MainActor.run {
+		let messages: [INMessage] = await bgContext.perform {
 			let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
 			var predicates: [NSPredicate] = []
 
 			// Exclude admin and emoji messages
 			predicates.append(NSPredicate(format: "admin == NO"))
 			predicates.append(NSPredicate(format: "isEmoji == NO"))
+
+			// Filter by conversation identifiers (e.g., "dm-123456" or "channel-0")
+			// This is the primary filter when Siri reads messages for a CarPlay contact.
+			if let conversationIds = intent.conversationIdentifiers, !conversationIds.isEmpty {
+				var conversationPredicates: [NSPredicate] = []
+				for convId in conversationIds {
+					if convId.hasPrefix("dm-"), let nodeNum = Int64(convId.dropFirst("dm-".count)) {
+						conversationPredicates.append(NSPredicate(format: "fromUser.num == %lld", nodeNum))
+					} else if convId.hasPrefix("channel-"), let channelIndex = Int32(convId.dropFirst("channel-".count)) {
+						conversationPredicates.append(NSPredicate(format: "channel == %d AND toUser == nil", channelIndex))
+					}
+				}
+				if !conversationPredicates.isEmpty {
+					predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: conversationPredicates))
+				}
+			}
 
 			// Filter by identifiers (specific message IDs)
 			if let identifiers = intent.identifiers, !identifiers.isEmpty {
@@ -37,9 +55,12 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 				}
 			}
 
-			// Filter by sender
+			// Filter by sender — parse @meshtastic.local email-format handles
 			if let senders = intent.senders, !senders.isEmpty {
-				let senderNums = senders.compactMap { $0.personHandle?.value }.compactMap { Int64($0) }
+				let senderNums = senders.compactMap { sender -> Int64? in
+					guard let handleValue = sender.personHandle?.value else { return nil }
+					return IntentMessageConverters.directMessageNodeNum(from: handleValue)
+				}
 				if !senderNums.isEmpty {
 					predicates.append(NSPredicate(format: "fromUser.num IN %@", senderNums))
 				}
@@ -62,16 +83,19 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 				}
 			}
 
-			// Filter by group/channel name
+			// Filter by group/channel name or handle
 			if let groupNames = intent.speakableGroupNames, !groupNames.isEmpty {
 				let channelIndices: [Int32] = groupNames.compactMap { groupName in
+					if let idx = IntentMessageConverters.channelIndex(fromHandleOrName: groupName.spokenPhrase) {
+						return Int32(idx)
+					}
 					let channels = IntentMessageConverters.findChannels(
-						matching: groupName.spokenPhrase, in: context
+						matching: groupName.spokenPhrase, in: bgContext
 					)
 					return channels.first.map { Int32($0.index) }
 				}
 				if !channelIndices.isEmpty {
-					predicates.append(NSPredicate(format: "channel IN %@", channelIndices))
+					predicates.append(NSPredicate(format: "channel IN %@ AND toUser == nil", channelIndices))
 				}
 			}
 
@@ -91,7 +115,7 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 			fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser", "toUser"]
 
 			do {
-				let results = try context.fetch(fetchRequest)
+				let results = try bgContext.fetch(fetchRequest)
 				return results.map { IntentMessageConverters.inMessage(from: $0) }
 			} catch {
 				Logger.services.error("CarPlay/Siri: Failed to search messages: \(error.localizedDescription)")

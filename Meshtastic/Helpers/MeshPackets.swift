@@ -142,7 +142,7 @@ actor MeshPackets {
 					myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 					myInfoEntity.deviceId = myInfo.deviceID
 					myInfoEntity.pioEnv = myInfo.pioEnv
-					
+
 					do {
 						try context.save()
 						Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
@@ -1088,6 +1088,9 @@ actor MeshPackets {
 					}
 					// Send notifications if the message saved properly to core data
 					if messageSaved {
+						// Donate to SiriKit so the message appears in CarPlay Messages
+						CarPlayIntentDonation.donateReceivedMessage(newMessage)
+
 						if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 							return
 						}

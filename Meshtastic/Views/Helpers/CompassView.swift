@@ -15,7 +15,6 @@ struct CompassView: View {
 	let waypointLocation: CLLocationCoordinate2D?
 	let waypointLongName: String?
 	let waypointShortName: String?
-	var waypointName: String? { waypointLongName }
 	let color: Color
 
 	@ObservedObject private var locationsHandler = LocationsHandler.shared
@@ -83,7 +82,7 @@ struct CompassView: View {
 					if waypointLongName != nil || waypointLocation != nil {
 						Spacer()
 						VStack(spacing: 4) {
-							Text(waypointLongName ?? waypointName ?? "Waypoint")
+							Text(waypointLongName ?? "Waypoint")
 								.font(.largeTitle)
 
 							if let bearing = bearingToWaypoint() {

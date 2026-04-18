@@ -218,9 +218,10 @@ extension UserDefaults {
 	}
 	@UserDefault(.lastDeviceAPIUpdate, defaultValue: .distantPast)
 	static var lastDeviceAPIUpdate: Date
-	
+
 	@UserDefault(.lastFirmwareAPIUpdate, defaultValue: .distantPast)
 	static var lastFirmwareAPIUpdate: Date
+}
 
 enum TestIntEnum: Int, Decodable {
 	case one = 1

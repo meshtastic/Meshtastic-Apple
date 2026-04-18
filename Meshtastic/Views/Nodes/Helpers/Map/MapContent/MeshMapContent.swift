@@ -40,7 +40,7 @@ struct MeshMapContent: MapContent {
 	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
 	@Binding var enabledOverlayConfigs: Set<UUID>
 	
-	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
+	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .none)
 	var positions: FetchedResults<PositionEntity>
 	
 	@FetchRequest(fetchRequest: WaypointEntity.allWaypointssFetchRequest(), animation: .none)
@@ -184,10 +184,13 @@ struct MeshMapContent: MapContent {
 	
 	@MapContentBuilder
 	var meshMap: some MapContent {
-		let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
-		let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
-			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-		})
+		// Only compute LoRa node coordinates when the convex hull is actually displayed.
+		// The filter scans the entire positions array on every render, so guard it.
+		let loraCoords: [CLLocationCoordinate2D] = showConvexHull
+			? positions
+				.filter { !($0.nodePosition?.viaMqtt ?? true) }
+				.compactMap { $0.nodeCoordinate ?? LocationsHandler.DefaultLocation }
+			: []
 		/// Convex Hull
 		if showConvexHull {
 			if loraCoords.count > 0 {
@@ -214,8 +217,10 @@ struct MeshMapContent: MapContent {
 		let allStyledFeatures = GeoJSONOverlayManager.shared.loadStyledFeaturesForConfigs(enabledOverlayConfigs)
 		
 		return Group {
-			ForEach(0..<allStyledFeatures.count, id: \.self) { index in
-				let styledFeature = allStyledFeatures[index]
+			// GeoJSONStyledFeature is Identifiable with a stable UUID assigned at creation.
+			// Using ForEach with Identifiable gives SwiftUI stable identity for diffing,
+			// avoiding full teardown/rebuild of overlay views on each render.
+			ForEach(allStyledFeatures) { styledFeature in
 				let feature = styledFeature.feature
 				let geometryType = feature.geometry.type
 				

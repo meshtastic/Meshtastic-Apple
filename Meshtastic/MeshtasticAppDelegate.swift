@@ -36,7 +36,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		} else {
 			Logger.services.info("📋 Device list API data update is not needed...")
 		}
-		
+
 		// Initialize TAK Server if enabled
 		Task { @MainActor in
 			TAKServerManager.shared.initializeOnStartup()
