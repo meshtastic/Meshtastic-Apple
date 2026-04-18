@@ -46,6 +46,26 @@ extension View {
 			self
 		}
 	}
+
+	/// Standard capsule-shaped prominent button styling.
+	/// On iOS 26+ the button also receives a glass background effect.
+	@ViewBuilder
+	func capsuleButtonStyle() -> some View {
+		if #available(iOS 26.0, macOS 26.0, *) {
+			self
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.buttonStyle(.borderedProminent)
+				.glassEffect(in: .capsule)
+		} else {
+			self
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.buttonStyle(.borderedProminent)
+		}
+	}
 }
 
 private struct FirstAppear: ViewModifier {

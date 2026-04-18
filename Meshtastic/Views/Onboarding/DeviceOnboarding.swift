@@ -25,25 +25,20 @@ struct DeviceOnboarding: View {
 	/// The Title View
 	var title: some View {
 		VStack {
-			Text("Welcome to")
-				.font(.title2.bold())
-				.multilineTextAlignment(.center)
-				.fixedSize(horizontal: false, vertical: true)
-			Text("Meshtastic")
-				.font(.largeTitle.bold())
+			Text("Welcome to Meshtastic")
+				.font(.title.bold())
 				.multilineTextAlignment(.center)
 				.fixedSize(horizontal: false, vertical: true)
 		}
 	}
 	
 	var welcomeView: some View {
-		VStack {
+		VStack(spacing: 0) {
 			ScrollView(.vertical) {
 				VStack {
 					// Title
 					title
 						.padding(.top)
-					// Onboarding
 					VStack(alignment: .leading, spacing: 16) {
 						makeRow(
 							icon: "antenna.radiowaves.left.and.right",
@@ -63,14 +58,34 @@ struct DeviceOnboarding: View {
 						makeRow(
 							icon: "person.2.shield",
 							title: String(localized: "User Privacy"),
-							subtitle: String(localized: "Meshtastic does not collect any personal information. We do anonymously collect usage and crash data to improve the app. You can opt out under app settings.")
+							subtitle: String(localized: "Meshtastic does not collect any personal information. We do anonymously collect usage and crash data to improve the app.")
+						)
+						makeRow(
+							icon: "bell.badge",
+							title: String(localized: "Message Notifications"),
+							subtitle: String(localized: "Receive notifications for incoming messages and critical alerts even when the app is in the background.")
+						)
+						makeRow(
+							icon: "custom.bluetooth",
+							title: String(localized: "Bluetooth Connectivity"),
+							subtitle: String(localized: "Connect to your Meshtastic node via Bluetooth Low Energy for the best messaging experience.")
+						)
+						makeRow(
+							icon: "network",
+							title: String(localized: "Local Network Access"),
+							subtitle: String(localized: "Connect to nodes on your local Wi-Fi network.")
+						)
+						makeRow(
+							icon: "car.fill",
+							title: String(localized: "Siri & CarPlay"),
+							subtitle: String(localized: "Send and receive Meshtastic messages hands-free using Siri and CarPlay.")
 						)
 					}
-					.padding()
+					.padding(.horizontal)
+					.padding(.bottom)
 				}
-				.interactiveDismissDisabled()
 			}
-			Spacer()
+			.interactiveDismissDisabled()
 			Button {
 				Task {
 					await goToNextStep(after: nil)
@@ -79,10 +94,7 @@ struct DeviceOnboarding: View {
 				Text("Get started")
 					.frame(maxWidth: .infinity)
 			}
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -137,10 +149,7 @@ struct DeviceOnboarding: View {
 				Text("Configure notification permissions")
 					.frame(maxWidth: .infinity)
 			}
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -206,10 +215,7 @@ struct DeviceOnboarding: View {
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -266,10 +272,7 @@ struct DeviceOnboarding: View {
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -316,10 +319,7 @@ struct DeviceOnboarding: View {
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -361,10 +361,7 @@ struct DeviceOnboarding: View {
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -372,7 +369,7 @@ struct DeviceOnboarding: View {
 		VStack {
 			ScrollView(.vertical) {
 				VStack {
-					Text("Siri & Shortcuts")
+					Text("Siri, Shortcuts & CarPlay")
 						.font(.largeTitle.bold())
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
@@ -382,6 +379,11 @@ struct DeviceOnboarding: View {
 						.font(.body.bold())
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "car.fill",
+						title: String(localized: "CarPlay Messaging"),
+						subtitle: String(localized: "Read and reply to Meshtastic channel and direct messages directly from your car's display using CarPlay.")
+					)
 					makeRow(
 						icon: "message",
 						title: String(localized: "Send a Group Message"),
@@ -416,10 +418,7 @@ struct DeviceOnboarding: View {
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -445,7 +444,37 @@ struct DeviceOnboarding: View {
 		}
 		.toolbar(.hidden)
 	}
-	
+
+	@ViewBuilder
+	func makeCompactRow(icon: String, title: String, subtitle: String) -> some View {
+		HStack(alignment: .center, spacing: 12) {
+			Group {
+				if icon.starts(with: "custom.") {
+					Image(icon)
+						.resizable()
+						.symbolRenderingMode(.multicolor)
+				} else {
+					Image(systemName: icon)
+						.resizable()
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.aspectRatio(contentMode: .fit)
+			.frame(width: 28, height: 28)
+			.padding(.leading, 4)
+			VStack(alignment: .leading, spacing: 1) {
+				Text(title)
+					.font(.footnote.weight(.semibold))
+					.foregroundColor(.primary)
+				Text(subtitle)
+					.font(.caption)
+					.foregroundColor(.secondary)
+					.fixedSize(horizontal: false, vertical: true)
+			}
+		}
+		.accessibilityElement(children: .combine)
+	}
+
 	@ViewBuilder
 	func makeRow(
 		icon: String,
@@ -474,11 +503,11 @@ struct DeviceOnboarding: View {
 			}
 			VStack(alignment: .leading) {
 				Text(title)
-					.font(.subheadline.weight(.semibold))
+					.font(.footnote.weight(.semibold))
 					.foregroundColor(.primary)
 					.fixedSize(horizontal: false, vertical: true)
 				Text(subtitle)
-					.font(.subheadline)
+					.font(.footnote)
 					.foregroundColor(.secondary)
 					.fixedSize(horizontal: false, vertical: true)
 			}.multilineTextAlignment(.leading)
@@ -557,7 +586,7 @@ struct DeviceOnboarding: View {
 	}
 	
 	func createSiriString() -> AttributedString {
-		var fullText = AttributedString("Meshtastic supports Siri and Shortcuts so you can control your mesh hands-free. You can update Siri permissions at any time from settings.")
+		var fullText = AttributedString("Meshtastic supports Siri, Shortcuts, and CarPlay so you can send and receive messages hands-free. You can update Siri permissions at any time from settings.")
 		if let range = fullText.range(of: "settings") {
 			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
 			fullText[range].foregroundColor = .blue
