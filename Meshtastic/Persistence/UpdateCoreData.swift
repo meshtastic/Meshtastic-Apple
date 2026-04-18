@@ -184,7 +184,12 @@ extension MeshPackets {
 	
 	nonisolated public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
 		do {
-			let objects = user.messageList
+			// Fetch messages using the same context that will perform the deletes.
+			// user.messageList fetches from viewContext, which would cause a context-mismatch
+			// crash when this method is called with a background context.
+			let fetchRequest = MessageEntity.fetchRequest()
+			fetchRequest.predicate = user.messageFetchRequest.predicate
+			let objects = (try? context.fetch(fetchRequest)) ?? []
 			for object in objects {
 				context.delete(object)
 			}
