@@ -333,12 +333,18 @@ struct FirmwareTagView: View {
 }
 
 private struct FirmwareRow: View {
-	
+
+	@EnvironmentObject var accessoryManager: AccessoryManager
+
 	@ObservedObject var firmwareFile: FirmwareFile
-	
+
 	@State var unsupporedInstallationMessage: Bool = false
 	@State var showInstallationSheet: FirmwareFile.FirmwareType?
-	
+
+	/// ESP32 OTA (BLE/WiFi) requires the AdminMessage.OTAEvent protocol with otaHash,
+	/// which was added to Meshtastic firmware in 2.7.10.
+	private let minimumESP32OTAVersion = "2.7.10"
+
 	var body: some View {
 		VStack {
 			HStack {
@@ -350,11 +356,11 @@ private struct FirmwareRow: View {
 				case .otaZip:
 					Text("ZIP").font(.caption2)
 				}
-				
+
 				Text("\(firmwareFile.versionId)")
 					.font(.caption2)
 					.foregroundColor(.secondary)
-				
+
 				switch firmwareFile.releaseType {
 				case .stable:
 					FirmwareTagView("STABLE", color: Color.green)
@@ -363,13 +369,17 @@ private struct FirmwareRow: View {
 				case .unlisted:
 					FirmwareTagView("UNLISTED", color: Color.orange)
 				}
-				
+
+				if firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion) {
+					FirmwareTagView("Requires \(minimumESP32OTAVersion)+", color: .orange)
+				}
+
 				Spacer()
 
 				switch firmwareFile.status {
 				case .downloading:
 					ProgressView()
-					
+
 				case .downloaded:
 					Button {
 						switch firmwareFile.firmwareType {
@@ -390,6 +400,7 @@ private struct FirmwareRow: View {
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(UIDevice.current.userInterfaceIdiom == .phone ? .small : .regular)
+					.disabled(firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion))
 					
 				case .notDownloaded:
 					Button {

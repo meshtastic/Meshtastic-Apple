@@ -14,18 +14,26 @@ struct ESP32OTAIntroSheet: View {
 		case intro
 		case updater
 	}
-	
+
+	/// ESP32 OTA (BLE/WiFi) requires AdminMessage.OTAEvent with otaHash for authentication,
+	/// added to Meshtastic firmware in 2.7.10.
+	private let minimumOTAVersion = "2.7.10"
+
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.managedObjectContext) var context
-	
+
 	let binFileURL: URL
-	
-	
+
 	@State var showWifiUpdater = false
 	@State var debugHost: String = ""
 	@State var showBLEUpdater = false
-	
+
+	/// True when the connected device's firmware supports the OTAEvent protocol.
+	private var firmwareSupportsOTA: Bool {
+		accessoryManager.checkIsVersionSupported(forVersion: minimumOTAVersion)
+	}
+
 	var body: some View {
 		NavigationStack {
 			List {
@@ -33,14 +41,14 @@ struct ESP32OTAIntroSheet: View {
 					VStack(alignment: .leading, spacing: 12) {
 						Label("Desktop Recommended", systemImage: "desktopcomputer")
 							.font(.headline)
-						
+
 						Text("The recommended way to update ESP32 devices is using the **Web Flasher** on a desktop computer (Chrome-based browser).")
 							.fixedSize(horizontal: false, vertical: true)
-						
+
 						Text("The **Web Flasher** does not support updating on this device or over USB or BLE.")
 							.font(.caption)
 							.foregroundStyle(.secondary)
-						
+
 						Link(destination: URL(string: "https://flash.meshtastic.org")!) {
 							HStack {
 								Text("Open Web Flasher")
@@ -51,31 +59,49 @@ struct ESP32OTAIntroSheet: View {
 						.buttonStyle(.bordered)
 						.controlSize(.regular)
 					}.listRowBackground(Color(UIColor.tertiarySystemBackground))
-					
+
 				} footer: {
 					Color.clear.frame(height: 5)
 				}
-				
+
+				if !firmwareSupportsOTA {
+					Section {
+						HStack(spacing: 12) {
+							Image(systemName: "exclamationmark.triangle.fill")
+								.foregroundStyle(.orange)
+							VStack(alignment: .leading, spacing: 4) {
+								Text("Firmware Update Required")
+									.font(.subheadline.bold())
+								Text("ESP32 OTA updating requires firmware \(minimumOTAVersion) or later. Update your device firmware using the Web Flasher first.")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+									.fixedSize(horizontal: false, vertical: true)
+							}
+						}
+						.padding(.vertical, 4)
+					}
+				}
+
 				switch OTAMode {
 				case .wifi:
 					Section {
 						VStack(alignment: .leading, spacing: 12) {
 							Label("WiFi OTA Updating", systemImage: "wifi")
 								.font(.headline)
-							
+
 							HStack(alignment: .top, spacing: 12) {
 								Image(systemName: "lock.shield")
 									.font(.title2)
 									.foregroundStyle(.blue)
-								
+
 								Text("Advanced Users Only.")
 									.font(.callout)
 							}
-							
+
 							Text("If you device has the proper updater loaded into the OTA_1 partition, you can attempt to use the WiFi update process.")
 								.font(.caption)
 								.foregroundStyle(.secondary)
-							
+
 							Button(role: .destructive) {
 								self.showWifiUpdater = true
 							} label: {
@@ -84,7 +110,8 @@ struct ESP32OTAIntroSheet: View {
 							.buttonStyle(.borderedProminent)
 							.controlSize(.large)
 							.frame(maxWidth: .infinity)
-							.cornerRadius(10).disabled(accessoryManager.activeDeviceNum == nil)
+							.cornerRadius(10)
+							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
 						}
 						.padding()
 						.listRowBackground(Color(UIColor.tertiarySystemBackground))
@@ -93,20 +120,20 @@ struct ESP32OTAIntroSheet: View {
 					VStack(alignment: .leading, spacing: 12) {
 						Label("BLE OTA Updating", systemImage: "wifi")
 							.font(.headline)
-						
+
 						HStack(alignment: .top, spacing: 12) {
 							Image(systemName: "lock.shield")
 								.font(.title2)
 								.foregroundStyle(.blue)
-							
+
 							Text("Advanced Users Only.")
 								.font(.callout)
 						}
-						
+
 						Text("If you device has the proper updater loaded into the OTA_1 partition, you can attempt to use the BLE update process.")
 							.font(.caption)
 							.foregroundStyle(.secondary)
-						
+
 						Button(role: .destructive) {
 							self.showBLEUpdater = true
 						} label: {
@@ -115,7 +142,8 @@ struct ESP32OTAIntroSheet: View {
 						.buttonStyle(.borderedProminent)
 						.controlSize(.large)
 						.frame(maxWidth: .infinity)
-						.cornerRadius(10).disabled(accessoryManager.activeDeviceNum == nil)
+						.cornerRadius(10)
+						.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
 					}
 					.padding()
 					.listRowBackground(Color(UIColor.tertiarySystemBackground))
