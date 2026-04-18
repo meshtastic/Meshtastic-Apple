@@ -1,4 +1,5 @@
 import CoreBluetooth
+import Intents
 import OSLog
 import SwiftUI
 import Foundation
@@ -8,11 +9,14 @@ struct DeviceOnboarding: View {
 	enum SetupGuide: Hashable {
 		case notifications
 		case location
+		case backgroundActivity
 		case localNetwork
 		case bluetooth
+		case siri
 	}
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@ObservedObject private var locationsHandler: LocationsHandler = .shared
 	@State var navigationPath: [SetupGuide] = []
 	@State var locationStatus = LocationsHandler.shared.manager.authorizationStatus
 	@AppStorage("provideLocation") private var provideLocation: Bool = false
@@ -21,25 +25,20 @@ struct DeviceOnboarding: View {
 	/// The Title View
 	var title: some View {
 		VStack {
-			Text("Welcome to")
-				.font(.title2.bold())
-				.multilineTextAlignment(.center)
-				.fixedSize(horizontal: false, vertical: true)
-			Text("Meshtastic")
-				.font(.largeTitle.bold())
+			Text("Welcome to Meshtastic")
+				.font(.title.bold())
 				.multilineTextAlignment(.center)
 				.fixedSize(horizontal: false, vertical: true)
 		}
 	}
 	
 	var welcomeView: some View {
-		VStack {
+		VStack(spacing: 0) {
 			ScrollView(.vertical) {
 				VStack {
 					// Title
 					title
 						.padding(.top)
-					// Onboarding
 					VStack(alignment: .leading, spacing: 16) {
 						makeRow(
 							icon: "antenna.radiowaves.left.and.right",
@@ -59,14 +58,34 @@ struct DeviceOnboarding: View {
 						makeRow(
 							icon: "person.2.shield",
 							title: String(localized: "User Privacy"),
-							subtitle: String(localized: "Meshtastic does not collect any personal information. We do anonymously collect usage and crash data to improve the app. You can opt out under app settings.")
+							subtitle: String(localized: "Meshtastic does not collect any personal information. We do anonymously collect usage and crash data to improve the app.")
+						)
+						makeRow(
+							icon: "bell.badge",
+							title: String(localized: "Message Notifications"),
+							subtitle: String(localized: "Receive notifications for incoming messages and critical alerts even when the app is in the background.")
+						)
+						makeRow(
+							icon: "custom.bluetooth",
+							title: String(localized: "Bluetooth Connectivity"),
+							subtitle: String(localized: "Connect to your Meshtastic node via Bluetooth Low Energy for the best messaging experience.")
+						)
+						makeRow(
+							icon: "network",
+							title: String(localized: "Local Network Access"),
+							subtitle: String(localized: "Connect to nodes on your local Wi-Fi network.")
+						)
+						makeRow(
+							icon: "car.fill",
+							title: String(localized: "Siri & CarPlay"),
+							subtitle: String(localized: "Send and receive Meshtastic messages hands-free using Siri and CarPlay.")
 						)
 					}
-					.padding()
+					.padding(.horizontal)
+					.padding(.bottom)
 				}
-				.interactiveDismissDisabled()
 			}
-			Spacer()
+			.interactiveDismissDisabled()
 			Button {
 				Task {
 					await goToNextStep(after: nil)
@@ -75,10 +94,7 @@ struct DeviceOnboarding: View {
 				Text("Get started")
 					.frame(maxWidth: .infinity)
 			}
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -133,10 +149,7 @@ struct DeviceOnboarding: View {
 				Text("Configure notification permissions")
 					.frame(maxWidth: .infinity)
 			}
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -202,10 +215,64 @@ struct DeviceOnboarding: View {
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
+			.capsuleButtonStyle()
+		}
+	}
+	
+	var backgroundActivityView: some View {
+		VStack {
+			ScrollView(.vertical) {
+				VStack {
+					Text("Background Activity")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				VStack(alignment: .leading, spacing: 16) {
+					Text(createBackgroundActivityString())
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "location.fill",
+						title: String(localized: "Continuous Location Updates"),
+						subtitle: String(localized: "Keep the mesh map updated and send your position to the mesh even while using other apps.")
+					)
+					makeRow(
+						icon: "antenna.radiowaves.left.and.right",
+						title: String(localized: "Background Mesh Tracking"),
+						subtitle: String(localized: "Receive position updates from other nodes and maintain an accurate picture of the mesh while in the background.")
+					)
+					makeRow(
+						icon: "battery.100.bolt",
+						title: String(localized: "Battery Usage"),
+						subtitle: String(localized: "Enabling background activity may increase battery usage. You can toggle this at any time in the app settings.")
+					)
+					Toggle(isOn: $locationsHandler.backgroundActivity) {
+						Label {
+							Text("Enable Background Activity")
+						} icon: {
+							Image(systemName: "location.circle")
+						}
+					}
+					.fixedSize()
+					.scaleEffect(0.85)
+					.padding(.leading, 52)
+					.tint(.accentColor)
+				}
+				.padding()
+			}
+			Spacer()
+			Button {
+				Task {
+					await goToNextStep(after: .backgroundActivity)
+				}
+			} label: {
+				Text("Continue")
+					.frame(maxWidth: .infinity)
+			}
 			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -252,10 +319,7 @@ struct DeviceOnboarding: View {
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -297,10 +361,64 @@ struct DeviceOnboarding: View {
 					.frame(maxWidth: .infinity)
 			}
 			.padding()
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
+			.capsuleButtonStyle()
+		}
+	}
+	
+	var siriView: some View {
+		VStack {
+			ScrollView(.vertical) {
+				VStack {
+					Text("Siri, Shortcuts & CarPlay")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				VStack(alignment: .leading, spacing: 16) {
+					Text(createSiriString())
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "car.fill",
+						title: String(localized: "CarPlay Messaging"),
+						subtitle: String(localized: "Read and reply to Meshtastic channel and direct messages directly from your car's display using CarPlay.")
+					)
+					makeRow(
+						icon: "message",
+						title: String(localized: "Send a Group Message"),
+						subtitle: String(localized: "\"Send a Meshtastic group message\" — send a message to a mesh channel.")
+					)
+					makeRow(
+						icon: "bubble",
+						title: String(localized: "Send a Direct Message"),
+						subtitle: String(localized: "\"Send a Meshtastic direct message\" — send a private message to a node.")
+					)
+					makeRow(
+						icon: "power",
+						title: String(localized: "Shut Down / Restart Node"),
+						subtitle: String(localized: "\"Shut down my Meshtastic node\" or \"Restart my Meshtastic node\".")
+					)
+					makeRow(
+						icon: "antenna.radiowaves.left.and.right.slash",
+						title: String(localized: "Disconnect Node"),
+						subtitle: String(localized: "\"Disconnect Meshtastic\" — disconnect from the connected BLE node.")
+					)
+				}
+				.padding()
+			}
+			Spacer()
+			Button {
+				Task {
+					await requestSiriPermissions()
+					await goToNextStep(after: .siri)
+				}
+			} label: {
+				Text("Configure Siri & Shortcuts")
+					.frame(maxWidth: .infinity)
+			}
 			.padding()
-			.buttonStyle(.borderedProminent)
+			.capsuleButtonStyle()
 		}
 	}
 	
@@ -313,16 +431,50 @@ struct DeviceOnboarding: View {
 						notificationView
 					case .location:
 						locationView
+					case .backgroundActivity:
+						backgroundActivityView
 					case .bluetooth:
 						bluetoothView
 					case .localNetwork:
 						localNetworkView
+					case .siri:
+						siriView
 					}
 				}
 		}
 		.toolbar(.hidden)
 	}
-	
+
+	@ViewBuilder
+	func makeCompactRow(icon: String, title: String, subtitle: String) -> some View {
+		HStack(alignment: .center, spacing: 12) {
+			Group {
+				if icon.starts(with: "custom.") {
+					Image(icon)
+						.resizable()
+						.symbolRenderingMode(.multicolor)
+				} else {
+					Image(systemName: icon)
+						.resizable()
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.aspectRatio(contentMode: .fit)
+			.frame(width: 28, height: 28)
+			.padding(.leading, 4)
+			VStack(alignment: .leading, spacing: 1) {
+				Text(title)
+					.font(.footnote.weight(.semibold))
+					.foregroundColor(.primary)
+				Text(subtitle)
+					.font(.caption)
+					.foregroundColor(.secondary)
+					.fixedSize(horizontal: false, vertical: true)
+			}
+		}
+		.accessibilityElement(children: .combine)
+	}
+
 	@ViewBuilder
 	func makeRow(
 		icon: String,
@@ -351,11 +503,11 @@ struct DeviceOnboarding: View {
 			}
 			VStack(alignment: .leading) {
 				Text(title)
-					.font(.subheadline.weight(.semibold))
+					.font(.footnote.weight(.semibold))
 					.foregroundColor(.primary)
 					.fixedSize(horizontal: false, vertical: true)
 				Text(subtitle)
-					.font(.subheadline)
+					.font(.footnote)
 					.foregroundColor(.secondary)
 					.fixedSize(horizontal: false, vertical: true)
 			}.multilineTextAlignment(.leading)
@@ -381,18 +533,31 @@ struct DeviceOnboarding: View {
 			}
 		case .location:
 			locationStatus = LocationsHandler.shared.manager.authorizationStatus
-			if locationStatus != .notDetermined && locationStatus != .restricted {
-				navigationPath.append(.localNetwork)
+			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
+				navigationPath.append(.backgroundActivity)
 			}
+		case .backgroundActivity:
+			navigationPath.append(.localNetwork)
 		case .localNetwork:
 			navigationPath.append(.bluetooth)
 			
 		case .bluetooth:
+			navigationPath.append(.siri)
+		case .siri:
 			dismiss()
 		}
 	}
 	
 	// MARK: Formatting
+	func createBackgroundActivityString() -> AttributedString {
+		var fullText = AttributedString("Meshtastic can track your location in the background to keep the mesh map updated and send your position to the mesh even when the app is not in the foreground. You can update this setting at any time from settings.")
+		if let range = fullText.range(of: "settings") {
+			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
+			fullText[range].foregroundColor = .blue
+		}
+		return fullText
+	}
+	
 	func createLocationString() -> AttributedString {
 		var fullText = AttributedString(localized: "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from settings.")
 		if let range = fullText.range(of: String(localized: "settings")) {
@@ -413,6 +578,15 @@ struct DeviceOnboarding: View {
 	
 	func createBluetoothString() -> AttributedString {
 		var fullText = AttributedString("Meshtastic uses Bluetooth to connect to BLE-based accessories.  You can update the permissions at any time from settings.")
+		if let range = fullText.range(of: "settings") {
+			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
+			fullText[range].foregroundColor = .blue
+		}
+		return fullText
+	}
+	
+	func createSiriString() -> AttributedString {
+		var fullText = AttributedString("Meshtastic supports Siri, Shortcuts, and CarPlay so you can send and receive messages hands-free. You can update Siri permissions at any time from settings.")
 		if let range = fullText.range(of: "settings") {
 			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
 			fullText[range].foregroundColor = .blue
@@ -451,6 +625,22 @@ struct DeviceOnboarding: View {
 	
 	func requestBluetoothPermissions() async {
 		_ = await BluetoothAuthorizationHelper.requestBluetoothAuthorization()
+	}
+	
+	func requestSiriPermissions() async {
+		await withCheckedContinuation { continuation in
+			INPreferences.requestSiriAuthorization { status in
+				switch status {
+				case .authorized:
+					Logger.services.info("Siri permissions are enabled")
+				case .denied:
+					Logger.services.info("Siri permissions denied")
+				default:
+					Logger.services.info("Siri permissions status: \(status.rawValue)")
+				}
+				continuation.resume()
+			}
+		}
 	}
 
 }
