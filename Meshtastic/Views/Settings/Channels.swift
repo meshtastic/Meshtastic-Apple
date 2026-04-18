@@ -28,7 +28,7 @@ struct Channels: View {
 	@Environment(\.sizeCategory) var sizeCategory
 	@Environment(\.colorScheme) private var colorScheme
 
-	var node: NodeInfoEntity?
+	@ObservedObject var node: NodeInfoEntity
 
 	@State var hasChanges = false
 	@State var hasValidKey = true
@@ -65,8 +65,8 @@ struct Channels: View {
 				TipView(CreateChannelsTip(), arrowEdge: .bottom)
 					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 					.listRowSeparator(.hidden)
-				if node != nil && node?.myInfo != nil {
-					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
+				if node.myInfo != nil {
+					ForEach(node.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
@@ -177,7 +177,7 @@ struct Channels: View {
 							selectedChannel!.downlinkEnabled = downlink
 							selectedChannel!.positionPrecision = Int32(positionPrecision)
 
-							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
+							guard let mutableChannels = node.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
 								return
 							}
 							if mutableChannels.contains(selectedChannel as Any) {
@@ -186,7 +186,7 @@ struct Channels: View {
 							} else {
 								mutableChannels.add(selectedChannel as Any)
 							}
-							node?.myInfo?.channels = mutableChannels.copy() as? NSOrderedSet
+							node.myInfo?.channels = mutableChannels.copy() as? NSOrderedSet
 							context.refresh(selectedChannel!, mergeChanges: true)
 						if channel.role != Channel.Role.disabled {
 							do {
@@ -216,14 +216,14 @@ struct Channels: View {
 							}
 						}
 						Task {
-							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node.user!, toUser: node.user!)
 							Task { @MainActor in
 								selectedChannel = nil
 								channelName = ""
 								channelRole	= 2
 								hasChanges = false
 							}
-							accessoryManager.mqttManager.connectFromConfigSettings(node: node!)
+							accessoryManager.mqttManager.connectFromConfigSettings(node: node)
 						}
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
@@ -246,10 +246,10 @@ struct Channels: View {
 					#endif
 				}
 			}
-			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
+			if node.myInfo?.channels?.array.count ?? 0 < 8 {
 
 				Button {
-					let channelIndexes = node?.myInfo?.channels?.compactMap({(ch) -> Int in
+					let channelIndexes = node.myInfo?.channels?.compactMap({(ch) -> Int in
 						return (ch as AnyObject).index
 					})
 					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
