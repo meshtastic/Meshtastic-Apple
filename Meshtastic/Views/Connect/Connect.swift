@@ -26,7 +26,9 @@ struct Connect: View {
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var showSecurityVersionNag = false
+#if !targetEnvironment(macCatalyst)
 	@State var liveActivityStarted = false
+#endif
 	@ObservedObject var manualConnections = ManualConnectionList.shared
 	
 	var body: some View {
