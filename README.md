@@ -144,6 +144,7 @@ Use these Siri voice commands on CarPlay to interact with Meshtastic:
 - **Incoming Message Notifications** — Siri announces incoming Meshtastic messages when Announce Notifications is enabled
 - **Conversation History** — Sent and received messages appear in CarPlay Messages for quick access
 
+
 ## Release Process
 
 For more information on how a new release of Meshtastic is managed, please refer to [RELEASING.md](./RELEASING.md)

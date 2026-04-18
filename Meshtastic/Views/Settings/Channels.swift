@@ -167,6 +167,45 @@ struct Channels: View {
 						}
 					}
 				}
+				if node.myInfo?.channels?.array.count ?? 0 < 8 {
+					Button {
+						let channelIndexes = node.myInfo?.channels?.compactMap({(ch) -> Int in
+							return (ch as AnyObject).index
+						})
+						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
+						channelKeySize = 16
+						let key = generateChannelKey(size: channelKeySize)
+						channelName = ""
+						channelIndex = Int32(firstChannelIndex)
+						channelRole = 2
+						channelKey = key
+						positionsEnabled = false
+						preciseLocation = false
+						positionPrecision = 0
+						uplink = false
+						downlink = false
+
+						let newChannel = ChannelEntity(context: context)
+						newChannel.id = channelIndex
+						newChannel.index = channelIndex
+						newChannel.uplinkEnabled = uplink
+						newChannel.downlinkEnabled = downlink
+						newChannel.name = channelName
+						newChannel.role = Int32(channelRole)
+						newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
+						newChannel.positionPrecision = Int32(positionPrecision)
+						selectedChannel = newChannel
+						hasChanges = true
+
+					} label: {
+						Label("Add Channel", systemImage: "plus.square")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.frame(maxWidth: .infinity)
+					.padding(.vertical, 8)
+				}
 			}
 			.sheet(item: $selectedChannel) { _ in
 				#if targetEnvironment(macCatalyst)
@@ -271,45 +310,6 @@ struct Channels: View {
 					#endif
 				}
 			}
-			if (node.myInfo?.channels ?? []).count < 8 {
-
-				Button {
-					let channelIndexes = node.myInfo?.channels.compactMap { ch -> Int in
-						return Int(ch.index)
-					}
-					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
-					channelKeySize = 16
-					let key = generateChannelKey(size: channelKeySize)
-					channelName = ""
-					channelIndex = Int32(firstChannelIndex)
-					channelRole = 2
-					channelKey = key
-					positionsEnabled = false
-					preciseLocation = false
-					positionPrecision = 0
-					uplink = false
-					downlink = false
-
-					let newChannel = ChannelEntity()
-					newChannel.id = channelIndex
-					newChannel.index = channelIndex
-					newChannel.uplinkEnabled = uplink
-					newChannel.downlinkEnabled = downlink
-					newChannel.name = channelName
-					newChannel.role = Int32(channelRole)
-					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
-					newChannel.positionPrecision = Int32(positionPrecision)
-					selectedChannel = newChannel
-					hasChanges = true
-
-				} label: {
-					Label("Add Channel", systemImage: "plus.square")
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-			}
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
@@ -326,49 +326,10 @@ struct Channels: View {
 					Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
 						.padding(.vertical, 5)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
-				.controlSize(.regular)
-				Spacer()
-				if node.myInfo?.channels.count ?? 0 < 8 {
-					Button {
-						let channelIndexes = node.myInfo?.channels.map { Int($0.index) }
-						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
-						channelKeySize = 16
-						let key = generateChannelKey(size: channelKeySize)
-						channelName = ""
-						channelIndex = Int32(firstChannelIndex)
-						channelRole = 2
-						channelKey = key
-						positionsEnabled = false
-						preciseLocation = false
-						positionPrecision = 0
-						uplink = false
-						downlink = false
-
-						let newChannel = ChannelEntity()
-						context.insert(newChannel)
-						newChannel.id = channelIndex
-						newChannel.index = channelIndex
-						newChannel.uplinkEnabled = uplink
-						newChannel.downlinkEnabled = downlink
-						newChannel.name = channelName
-						newChannel.role = Int32(channelRole)
-						newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
-						newChannel.positionPrecision = Int32(positionPrecision)
-						selectedChannel = newChannel
-						hasChanges = true
-					} label: {
-						Label("Add Channel", systemImage: "plus.square")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-				}
 			}
-			.padding(.horizontal, 10)
-			.padding(.vertical, 5)
+			.controlSize(.regular)
+			.padding(5)
 		}
 		.padding(.bottom, 5)
 		.navigationTitle("Channels")
