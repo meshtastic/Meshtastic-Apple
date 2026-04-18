@@ -372,7 +372,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	// MARK: - Live Activity
 
-#if canImport(ActivityKit)
+#if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
 	private func startLiveActivityIfNeeded() {
 		guard ActivityAuthorizationInfo().areActivitiesEnabled else {
 			Logger.services.info("🚗 [CarPlay] Live Activities not enabled")
