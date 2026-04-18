@@ -19,9 +19,11 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 	// MARK: - Handling
 
 	func handle(intent: INSearchForMessagesIntent) async -> INSearchForMessagesIntentResponse {
-		let context = PersistenceController.shared.container.viewContext
+		// Use a private background context so the fetch does not block the main thread.
+		let bgContext = PersistenceController.shared.container.newBackgroundContext()
+		bgContext.automaticallyMergesChangesFromParent = true
 
-		let messages: [INMessage] = await MainActor.run {
+		let messages: [INMessage] = await bgContext.perform {
 			let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
 			var predicates: [NSPredicate] = []
 
@@ -88,7 +90,7 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 						return Int32(idx)
 					}
 					let channels = IntentMessageConverters.findChannels(
-						matching: groupName.spokenPhrase, in: context
+						matching: groupName.spokenPhrase, in: bgContext
 					)
 					return channels.first.map { Int32($0.index) }
 				}
@@ -113,7 +115,7 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 			fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser", "toUser"]
 
 			do {
-				let results = try context.fetch(fetchRequest)
+				let results = try bgContext.fetch(fetchRequest)
 				return results.map { IntentMessageConverters.inMessage(from: $0) }
 			} catch {
 				Logger.services.error("CarPlay/Siri: Failed to search messages: \(error.localizedDescription)")

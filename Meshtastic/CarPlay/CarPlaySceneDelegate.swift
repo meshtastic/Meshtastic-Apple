@@ -22,13 +22,20 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	var interfaceController: CPInterfaceController?
 	private var cancellables = Set<AnyCancellable>()
-	private var context: NSManagedObjectContext {
-		PersistenceController.shared.container.viewContext
-	}
+	// Retained template references so we can call updateSections rather than replacing the whole tree.
+	private var channelsTemplate: CPListTemplate?
+	private var directMessagesTemplate: CPListTemplate?
+	// Tracks which conversation identifiers have already had a contact intent donated
+	// during this CarPlay session so we don't re-donate on every refresh.
+	private var donatedConversationIds = Set<String>()
 
-	private func lastHeardText(_ date: Date?) -> String {
+	private lazy var context: NSManagedObjectContext = PersistenceController.shared.container.viewContext
+
+	/// Returns a human-readable "last heard" string.
+	/// `now` is passed in so all rows in a single render share one `Date()` allocation.
+	private func lastHeardText(_ date: Date?, now: Date) -> String {
 		guard let date else { return "Never heard" }
-		let interval = Date().timeIntervalSince(date)
+		let interval = now.timeIntervalSince(date)
 		if interval < 60 { return "Just now" }
 		if interval < 3600 { return "\(Int(interval / 60))m ago" }
 		if interval < 86400 { return "\(Int(interval / 3600))h ago" }
@@ -45,16 +52,16 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		self.interfaceController = interfaceController
 		interfaceController.delegate = self
 
-		let rootTemplate = buildRootTemplate()
-		interfaceController.setRootTemplate(rootTemplate, animated: false, completion: nil)
+		buildAndSetRootTemplate(animated: false)
 
-		// Observe connection state changes and refresh the template
+		// Observe connection state changes and refresh sections (not the whole template tree).
+		// Debounce absorbs reconnect spikes that would otherwise fire multiple expensive refreshes.
 		AccessoryManager.shared.$isConnected
 			.removeDuplicates()
-			.dropFirst() // Skip initial value — we already set the root template above
-			.receive(on: DispatchQueue.main)
+			.dropFirst() // Skip initial value — we already built sections above
+			.debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
 			.sink { [weak self] isConnected in
-				self?.refreshRootTemplate()
+				self?.refreshSections()
 				if isConnected {
 					self?.startLiveActivityIfNeeded()
 				}
@@ -74,6 +81,9 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		Logger.services.info("🚗 [CarPlay] Disconnected")
 		endLiveActivity()
 		cancellables.removeAll()
+		donatedConversationIds.removeAll()
+		channelsTemplate = nil
+		directMessagesTemplate = nil
 		self.interfaceController = nil
 	}
 
@@ -86,88 +96,82 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	// MARK: - Root Template
 
-	private func refreshRootTemplate() {
-		guard let interfaceController else { return }
-		let rootTemplate = buildRootTemplate()
-		interfaceController.setRootTemplate(rootTemplate, animated: true, completion: nil)
-	}
-
-	private func buildRootTemplate() -> CPTemplate {
+	/// Called once at connection time.  Builds and caches the two `CPListTemplate` tabs.
+	private func buildAndSetRootTemplate(animated: Bool) {
 		let connected = AccessoryManager.shared.isConnected
 
-		// Channels tab
-		let channelsTab = buildChannelsTab(connected: connected)
+		let chTemplate = CPListTemplate(title: "Channels", sections: buildChannelSections(connected: connected))
+		chTemplate.tabImage = UIImage(systemName: "bubble.left.and.bubble.right")
+		channelsTemplate = chTemplate
 
-		// Direct Messages tab
-		let directMessagesTab = buildDirectMessagesTab(connected: connected)
+		let dmTemplate = CPListTemplate(title: "Direct Messages", sections: buildDirectMessageSections(connected: connected))
+		dmTemplate.tabImage = UIImage(systemName: "bubble.left.and.text.bubble.right")
+		directMessagesTemplate = dmTemplate
 
-		let tabBar = CPTabBarTemplate(templates: [channelsTab, directMessagesTab])
-		return tabBar
+		let tabBar = CPTabBarTemplate(templates: [chTemplate, dmTemplate])
+		interfaceController?.setRootTemplate(tabBar, animated: animated, completion: nil)
 	}
 
-	// MARK: - Channels Tab
+	/// Called on subsequent connection-state changes — updates sections in-place
+	/// instead of tearing down and rebuilding the entire template hierarchy.
+	private func refreshSections() {
+		let connected = AccessoryManager.shared.isConnected
+		channelsTemplate?.updateSections(buildChannelSections(connected: connected))
+		directMessagesTemplate?.updateSections(buildDirectMessageSections(connected: connected))
+	}
 
-	private func buildChannelsTab(connected: Bool) -> CPListTemplate {
-		var sections = [CPListSection]()
+	// MARK: - Section Builders
 
-		if connected {
-			let channelItems = fetchChannelItems()
-			if !channelItems.isEmpty {
-				sections.append(CPListSection(items: channelItems))
-			} else {
-				let emptyItem = CPListItem(text: "No Channels", detailText: nil)
-				emptyItem.isEnabled = false
-				sections.append(CPListSection(items: [emptyItem]))
-			}
-		} else {
+	private func buildChannelSections(connected: Bool) -> [CPListSection] {
+		guard connected else {
 			let statusItem = CPListItem(
 				text: "Not Connected",
 				detailText: "Open Meshtastic to connect",
 				image: UIImage(systemName: "antenna.radiowaves.left.and.right.slash")
 			)
 			statusItem.isEnabled = false
-			sections.append(CPListSection(items: [statusItem]))
+			return [CPListSection(items: [statusItem])]
 		}
 
-		let template = CPListTemplate(title: "Channels", sections: sections)
-		template.tabImage = UIImage(systemName: "bubble.left.and.bubble.right")
-		return template
+		let channelItems = fetchChannelItems()
+		if channelItems.isEmpty {
+			let emptyItem = CPListItem(text: "No Channels", detailText: nil)
+			emptyItem.isEnabled = false
+			return [CPListSection(items: [emptyItem])]
+		}
+		return [CPListSection(items: channelItems)]
 	}
 
-	// MARK: - Direct Messages Tab
-
-	private func buildDirectMessagesTab(connected: Bool) -> CPListTemplate {
-		var sections = [CPListSection]()
-
-		if connected {
-			let favoriteItems = fetchFavoriteContactItems()
-			if !favoriteItems.isEmpty {
-				sections.append(CPListSection(items: favoriteItems, header: "Favorites", sectionIndexTitle: nil))
-			}
-
-			let dmItems = fetchDirectMessageItems()
-			if !dmItems.isEmpty {
-				sections.append(CPListSection(items: dmItems, header: "Recent", sectionIndexTitle: nil))
-			}
-
-			if favoriteItems.isEmpty && dmItems.isEmpty {
-				let emptyItem = CPListItem(text: "No Messages", detailText: "No direct message history")
-				emptyItem.isEnabled = false
-				sections.append(CPListSection(items: [emptyItem]))
-			}
-		} else {
+	private func buildDirectMessageSections(connected: Bool) -> [CPListSection] {
+		guard connected else {
 			let statusItem = CPListItem(
 				text: "Not Connected",
 				detailText: "Open Meshtastic to connect",
 				image: UIImage(systemName: "antenna.radiowaves.left.and.right.slash")
 			)
 			statusItem.isEnabled = false
-			sections.append(CPListSection(items: [statusItem]))
+			return [CPListSection(items: [statusItem])]
 		}
 
-		let template = CPListTemplate(title: "Direct Messages", sections: sections)
-		template.tabImage = UIImage(systemName: "bubble.left.and.text.bubble.right")
-		return template
+		var sections = [CPListSection]()
+
+		let favoriteItems = fetchFavoriteContactItems()
+		if !favoriteItems.isEmpty {
+			sections.append(CPListSection(items: favoriteItems, header: "Favorites", sectionIndexTitle: nil))
+		}
+
+		let dmItems = fetchDirectMessageItems()
+		if !dmItems.isEmpty {
+			sections.append(CPListSection(items: dmItems, header: "Recent", sectionIndexTitle: nil))
+		}
+
+		if favoriteItems.isEmpty && dmItems.isEmpty {
+			let emptyItem = CPListItem(text: "No Messages", detailText: "No direct message history")
+			emptyItem.isEnabled = false
+			sections.append(CPListSection(items: [emptyItem]))
+		}
+
+		return sections
 	}
 
 	// MARK: - Data Fetching
@@ -180,11 +184,16 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 		do {
 			let nodes = try context.fetch(request)
+			let nodeNums = nodes.compactMap { $0.user != nil ? $0.num : nil as Int64? }
+			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
+			let now = Date()
+
 			return nodes.compactMap { node -> CPMessageListItem? in
 				guard let user = node.user else { return nil }
 				let name = user.longName ?? user.shortName ?? "Unknown"
-				let unreadCount = user.unreadMessages(context: context)
+				let unreadCount = unreadCounts[node.num] ?? 0
 				let hasUnread = unreadCount > 0
+				let convId = "dm-\(node.num)"
 
 				let leadingConfig = CPMessageListItemLeadingConfiguration(
 					leadingItem: .star,
@@ -198,12 +207,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 					leadingConfiguration: leadingConfig,
 					trailingConfiguration: nil,
 					detailText: hasUnread ? "\(unreadCount) unread" : nil,
-					trailingText: lastHeardText(node.lastHeard)
+					trailingText: lastHeardText(node.lastHeard, now: now)
 				)
-				item.conversationIdentifier = "dm-\(node.num)"
+				item.conversationIdentifier = convId
 				item.userInfo = node.num
 
-				donateMessageIntent(toNodeNum: node.num, name: name)
+				donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: name)
 
 				return item
 			}
@@ -221,14 +230,18 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			return []
 		}
 
-		return channels.compactMap { channel -> CPMessageListItem? in
-			guard channel.role > 0 else { return nil }
+		let activeChannels = channels.filter { $0.role > 0 }
+		let channelIndices = activeChannels.map { $0.index }
+		let unreadCounts = fetchUnreadCountsForChannels(channelIndices: channelIndices)
+
+		return activeChannels.compactMap { channel -> CPMessageListItem? in
 			let name = (channel.name?.isEmpty ?? true)
 				? (channel.index == 0 ? "Primary Channel" : "Channel \(channel.index)")
 				: channel.name!
-			let unreadCount = channel.unreadMessages(context: context)
-			let hasUnread = unreadCount > 0
 			let channelIndex = Int(channel.index)
+			let unreadCount = unreadCounts[channel.index] ?? 0
+			let hasUnread = unreadCount > 0
+			let convId = "channel-\(channelIndex)"
 
 			let leadingConfig = CPMessageListItemLeadingConfiguration(
 				leadingItem: .none,
@@ -237,17 +250,17 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			)
 
 			let item = CPMessageListItem(
-				conversationIdentifier: "channel-\(channelIndex)",
+				conversationIdentifier: convId,
 				text: name,
 				leadingConfiguration: leadingConfig,
 				trailingConfiguration: nil,
 				detailText: hasUnread ? "\(unreadCount) unread" : (channel.index == 0 ? "Primary" : "Ch \(channel.index)"),
 				trailingText: nil
 			)
-			item.phoneOrEmailAddress = "channel-\(channelIndex)@meshtastic.local"
+			item.phoneOrEmailAddress = "\(convId)@meshtastic.local"
 			item.userInfo = channelIndex
 
-			donateChannelIntent(channelIndex: channelIndex, channelName: name)
+			donateChannelIntentIfNeeded(conversationId: convId, channelIndex: channelIndex, channelName: name)
 
 			return item
 		}
@@ -257,30 +270,38 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
 		let connectedNum = AccessoryManager.shared.activeDeviceNum ?? 0
 
-		// Match the app's UserList: exclude self, exclude ignored, exclude favorites (shown above), show unmessagable only if they have messages
+		// Match the app's UserList: exclude self, ignored, favorites (shown above).
+		// Use `lastMessage != nil` instead of the expensive `@count` aggregate predicate
+		// to find nodes that have exchanged at least one message.
 		let notSelf = NSPredicate(format: "userNode.num != %lld", connectedNum)
 		let notIgnored = NSPredicate(format: "userNode.ignored == NO")
 		let notFavorite = NSPredicate(format: "userNode.favorite == NO")
-		let unmessagableFilter = NSCompoundPredicate(type: .or, subpredicates: [
+		let hasMessagesOrMessagable = NSCompoundPredicate(type: .or, subpredicates: [
 			NSPredicate(format: "unmessagable == NO"),
-			NSPredicate(format: "receivedMessages.@count > 0 OR sentMessages.@count > 0")
+			NSPredicate(format: "lastMessage != nil")
 		])
-		request.predicate = NSCompoundPredicate(type: .and, subpredicates: [notSelf, notIgnored, notFavorite, unmessagableFilter])
+		request.predicate = NSCompoundPredicate(type: .and, subpredicates: [notSelf, notIgnored, notFavorite, hasMessagesOrMessagable])
 		request.sortDescriptors = [
 			NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
 			NSSortDescriptor(key: "lastMessage", ascending: false),
 			NSSortDescriptor(key: "longName", ascending: true)
 		]
 		request.fetchLimit = 24 // CarPlay limits list items
+		request.relationshipKeyPathsForPrefetching = ["userNode"]
 
 		do {
 			let users = try context.fetch(request)
+			let nodeNums = users.compactMap { $0.userNode?.num }
+			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
+			let now = Date()
+
 			return users.compactMap { user -> CPMessageListItem? in
 				guard let node = user.userNode else { return nil }
 				let name = user.longName ?? user.shortName ?? "Unknown"
-				let unreadCount = user.unreadMessages(context: context)
-				let hasUnread = unreadCount > 0
 				let nodeNum = node.num
+				let unreadCount = unreadCounts[nodeNum] ?? 0
+				let hasUnread = unreadCount > 0
+				let convId = "dm-\(nodeNum)"
 
 				let leadingConfig = CPMessageListItemLeadingConfiguration(
 					leadingItem: .none,
@@ -294,12 +315,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 					leadingConfiguration: leadingConfig,
 					trailingConfiguration: nil,
 					detailText: hasUnread ? "\(unreadCount) unread" : nil,
-					trailingText: lastHeardText(node.lastHeard)
+					trailingText: lastHeardText(node.lastHeard, now: now)
 				)
-				item.conversationIdentifier = "dm-\(nodeNum)"
+				item.conversationIdentifier = convId
 				item.userInfo = nodeNum
 
-				donateMessageIntent(toNodeNum: nodeNum, name: name)
+				donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: name)
 
 				return item
 			}
@@ -309,9 +330,58 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		}
 	}
 
+	// MARK: - Unread Count Batch Fetching
+
+	/// Fetches unread message counts for multiple DM node numbers in a single query,
+	/// then groups the results in-memory. This avoids the N+1 count-per-row pattern
+	/// while staying compatible with Core Data's relationship keypath restrictions.
+	private func fetchUnreadCountsForDMs(nodeNums: [Int64]) -> [Int64: Int] {
+		guard !nodeNums.isEmpty else { return [:] }
+
+		let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+			NSPredicate(format: "read == NO"),
+			NSPredicate(format: "fromUser.num IN %@", nodeNums)
+		])
+		fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser"]
+
+		let results = (try? context.fetch(fetchRequest)) ?? []
+		var counts = [Int64: Int]()
+		for message in results {
+			if let num = message.fromUser?.num {
+				counts[num, default: 0] += 1
+			}
+		}
+		return counts
+	}
+
+	/// Fetches unread message counts for multiple channel indices in a single query,
+	/// then groups the results in-memory.
+	private func fetchUnreadCountsForChannels(channelIndices: [Int32]) -> [Int32: Int] {
+		guard !channelIndices.isEmpty else { return [:] }
+
+		let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+			NSPredicate(format: "read == NO"),
+			NSPredicate(format: "toUser == nil"),
+			NSPredicate(format: "channel IN %@", channelIndices)
+		])
+
+		let results = (try? context.fetch(fetchRequest)) ?? []
+		var counts = [Int32: Int]()
+		for message in results {
+			counts[message.channel, default: 0] += 1
+		}
+		return counts
+	}
+
 	// MARK: - Intent Donation
 
-	private func donateMessageIntent(toNodeNum: Int64, name: String) {
+	/// Donates a contact intent for a DM conversation the first time it is seen this session.
+	/// Subsequent renders are no-ops, avoiding repeated IPC calls to the intents daemon.
+	private func donateMessageIntentIfNeeded(conversationId: String, toNodeNum: Int64, name: String) {
+		guard donatedConversationIds.insert(conversationId).inserted else { return }
+
 		let handleValue = "\(toNodeNum)@meshtastic.local"
 		let person = INPerson(
 			personHandle: INPersonHandle(value: handleValue, type: .emailAddress),
@@ -326,7 +396,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			outgoingMessageType: .outgoingMessageText,
 			content: nil,
 			speakableGroupName: nil,
-			conversationIdentifier: "dm-\(toNodeNum)",
+			conversationIdentifier: conversationId,
 			serviceName: "Meshtastic",
 			sender: nil,
 			attachments: nil
@@ -340,7 +410,10 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		}
 	}
 
-	private func donateChannelIntent(channelIndex: Int, channelName: String) {
+	/// Donates a contact intent for a channel conversation the first time it is seen this session.
+	private func donateChannelIntentIfNeeded(conversationId: String, channelIndex: Int, channelName: String) {
+		guard donatedConversationIds.insert(conversationId).inserted else { return }
+
 		let channelHandle = "channel-\(channelIndex)@meshtastic.local"
 		let recipient = INPerson(
 			personHandle: INPersonHandle(value: channelHandle, type: .emailAddress),
@@ -356,7 +429,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			outgoingMessageType: .outgoingMessageText,
 			content: nil,
 			speakableGroupName: groupName,
-			conversationIdentifier: "channel-\(channelIndex)",
+			conversationIdentifier: conversationId,
 			serviceName: "Meshtastic",
 			sender: nil,
 			attachments: nil
