@@ -34,6 +34,7 @@ struct MeshActivityAttributes: ActivityAttributes {
 	// Fixed non-changing properties about your activity go here!
 	var nodeNum: Int
 	var name: String
+	var shortName: String
 }
 #endif
 #endif

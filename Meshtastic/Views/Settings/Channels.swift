@@ -28,7 +28,7 @@ struct Channels: View {
 	@Environment(\.sizeCategory) var sizeCategory
 	@Environment(\.colorScheme) private var colorScheme
 
-	var node: NodeInfoEntity?
+	@ObservedObject var node: NodeInfoEntity
 
 	@State var hasChanges = false
 	@State var hasValidKey = true
@@ -60,8 +60,8 @@ struct Channels: View {
 				TipView(CreateChannelsTip(), arrowEdge: .bottom)
 					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 					.listRowSeparator(.hidden)
-				if node != nil && node?.myInfo != nil {
-					ForEach(node?.myInfo?.channels ?? [], id: \.self) { (channel: ChannelEntity) in
+				if node.myInfo != nil {
+					ForEach(node.myInfo?.channels ?? [], id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
@@ -172,7 +172,7 @@ struct Channels: View {
 							selectedChannel!.downlinkEnabled = downlink
 							selectedChannel!.positionPrecision = Int32(positionPrecision)
 
-							guard var channels = node?.myInfo?.channels else {
+							guard var channels = node.myInfo?.channels else {
 								return
 							}
 							if let idx = channels.firstIndex(where: { $0.psk == selectedChannel?.psk && $0.name == selectedChannel?.name }) {
@@ -180,7 +180,7 @@ struct Channels: View {
 							} else {
 								channels.append(selectedChannel!)
 							}
-							node?.myInfo?.channels = channels
+							node.myInfo?.channels = channels
 						if channel.role != Channel.Role.disabled {
 							do {
 								try context.save()
@@ -209,14 +209,14 @@ struct Channels: View {
 							}
 						}
 						Task {
-							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node.user!, toUser: node.user!)
 							Task { @MainActor in
 								selectedChannel = nil
 								channelName = ""
 								channelRole	= 2
 								hasChanges = false
 							}
-							accessoryManager.mqttManager.connectFromConfigSettings(node: node!)
+							accessoryManager.mqttManager.connectFromConfigSettings(node: node)
 						}
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
@@ -238,6 +238,45 @@ struct Channels: View {
 					.padding(.bottom)
 					#endif
 				}
+			}
+			if (node.myInfo?.channels ?? []).count < 8 {
+
+				Button {
+					let channelIndexes = node.myInfo?.channels?.compactMap { ch -> Int in
+						return Int(ch.index)
+					}
+					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
+					channelKeySize = 16
+					let key = generateChannelKey(size: channelKeySize)
+					channelName = ""
+					channelIndex = Int32(firstChannelIndex)
+					channelRole = 2
+					channelKey = key
+					positionsEnabled = false
+					preciseLocation = false
+					positionPrecision = 0
+					uplink = false
+					downlink = false
+
+					let newChannel = ChannelEntity()
+					newChannel.id = channelIndex
+					newChannel.index = channelIndex
+					newChannel.uplinkEnabled = uplink
+					newChannel.downlinkEnabled = downlink
+					newChannel.name = channelName
+					newChannel.role = Int32(channelRole)
+					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
+					newChannel.positionPrecision = Int32(positionPrecision)
+					selectedChannel = newChannel
+					hasChanges = true
+
+				} label: {
+					Label("Add Channel", systemImage: "plus.square")
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
 			}
 		}
 		.sheet(isPresented: $showingHelp) {

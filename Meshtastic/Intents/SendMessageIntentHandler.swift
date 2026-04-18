@@ -30,7 +30,21 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 		}
 
 		let context = PersistenceController.shared.container.viewContext
-		let searchTerm = recipients[0].displayName
+		let recipient = recipients[0]
+		let handleValue = recipient.personHandle?.value ?? ""
+
+		// If this is a channel handle, accept it directly
+		if IntentMessageConverters.channelIndex(fromHandleOrName: handleValue) != nil {
+			return [.success(with: recipient)]
+		}
+
+		// If the handle resolves to a node number, accept it directly
+		if IntentMessageConverters.directMessageNodeNum(from: handleValue) != nil {
+			return [.success(with: recipient)]
+		}
+
+		// Otherwise search by display name
+		let searchTerm = recipient.displayName ?? handleValue
 		let matchingUsers = await MainActor.run {
 			IntentMessageConverters.findUsers(matching: searchTerm, in: context)
 		}
@@ -71,20 +85,20 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 		}
 
 		if matchingChannels.count == 1, let channel = matchingChannels.first {
-			let speakable = INSpeakableString(spokenPhrase: channel.name ?? "Channel \(channel.index)")
+			let speakable = INSpeakableString(
+				spokenPhrase: IntentMessageConverters.channelDisplayName(for: channel.index, named: channel.name)
+			)
 			return .success(with: speakable)
 		} else if matchingChannels.count > 1 {
 			let speakables = matchingChannels.map {
-				INSpeakableString(spokenPhrase: $0.name ?? "Channel \($0.index)")
+				INSpeakableString(
+					spokenPhrase: IntentMessageConverters.channelDisplayName(for: $0.index, named: $0.name)
+				)
 			}
 			return .disambiguation(with: speakables)
 		}
 
-		#if targetEnvironment(macCatalyst)
 		return .unsupported()
-		#else
-		return .unsupported(forReason: .noHandlesForValue)
-		#endif
 	}
 
 	// MARK: - Confirmation
@@ -124,16 +138,27 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 					replyID: 0
 				)
 			} else if let recipient = intent.recipients?.first,
-					  let handleValue = recipient.personHandle?.value,
-					  let nodeNum = Int64(handleValue) {
+					  let handleValue = recipient.personHandle?.value {
+				if let channelIndex = IntentMessageConverters.channelIndex(fromHandleOrName: handleValue) {
+					try await AccessoryManager.shared.sendMessage(
+						message: content,
+						toUserNum: 0,
+						channel: Int32(channelIndex),
+						isEmoji: false,
+						replyID: 0
+					)
+				} else if let nodeNum = IntentMessageConverters.directMessageNodeNum(from: handleValue) {
 				// Direct message to a single node
-				try await AccessoryManager.shared.sendMessage(
-					message: content,
-					toUserNum: nodeNum,
-					channel: 0,
-					isEmoji: false,
-					replyID: 0
-				)
+					try await AccessoryManager.shared.sendMessage(
+						message: content,
+						toUserNum: nodeNum,
+						channel: 0,
+						isEmoji: false,
+						replyID: 0
+					)
+				} else {
+					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
+				}
 			} else {
 				return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 			}

@@ -61,6 +61,18 @@ struct MapLegend: View {
 			.navigationTitle("Map Legend")
 			.navigationBarTitleDisplayMode(.inline)
 		}
+#if targetEnvironment(macCatalyst)
+		Spacer()
+		Button {
+			dismiss()
+		} label: {
+			Label("Close", systemImage: "xmark")
+		}
+		.buttonStyle(.bordered)
+		.buttonBorderShape(.capsule)
+		.controlSize(.large)
+		.padding(.bottom)
+#endif
 	}
 
 	// MARK: - Sections

@@ -39,9 +39,11 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 		}
 
 		let attribute = intent.attribute
-		let context = PersistenceController.shared.container.viewContext
+		// Use a private background context so Core Data work does not block the main thread.
+		let bgContext = PersistenceController.shared.container.newBackgroundContext()
+		bgContext.automaticallyMergesChangesFromParent = true
 
-		let success: Bool = await MainActor.run {
+		let success: Bool = await bgContext.perform {
 			let messageIds = identifiers.compactMap { Int64($0) }
 			guard !messageIds.isEmpty else { return false }
 
@@ -49,7 +51,7 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 			fetchRequest.predicate = NSPredicate(format: "messageId IN %@", messageIds)
 
 			do {
-				let messages = try context.fetch(fetchRequest)
+				let messages = try bgContext.fetch(fetchRequest)
 				guard !messages.isEmpty else { return false }
 
 				for message in messages {
@@ -66,8 +68,8 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 					}
 				}
 
-				if context.hasChanges {
-					try context.save()
+				if bgContext.hasChanges {
+					try bgContext.save()
 				}
 				Logger.services.info("CarPlay/Siri: Updated \(messages.count) message(s) to \(String(describing: attribute))")
 				return true

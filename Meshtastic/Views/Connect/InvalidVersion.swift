@@ -10,55 +10,97 @@ struct InvalidVersion: View {
 
 	@Environment(\.dismiss) private var dismiss
 
-	@State var minimumVersion = ""
-	@State var version = ""
+	let minimumVersion: String
+	let version: String
 
 	var body: some View {
+		VStack(spacing: 0) {
+			ScrollView {
+				VStack(spacing: 20) {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.font(.system(size: 60))
+						.foregroundColor(.orange)
+						.padding(.top, 40)
 
-		VStack {
+					Text("Firmware Update Required")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
 
-			Text("Update Your Firmware")
-				.font(.largeTitle)
-				.foregroundColor(.orange)
-
-			Divider()
-			VStack {
-				Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above.")
-						.font(.title2)
-						.padding(.bottom)
-				Link("Firmware update docs", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/")!)
-					.font(.title)
-					.padding()
-				Link("Additional help", destination: URL(string: "https://meshtastic.org/docs/faq")!)
-					.font(.title)
-					.padding()
-			}
-			.padding()
-			Divider()
-				.padding(.top)
-			VStack {
-				Text("🦕 End of life Version 🦖 ☄️")
-					.font(.title3)
-					.foregroundColor(.orange)
-					.padding(.bottom)
-				Text("Version \(minimumVersion) includes substantial network optimizations and extensive changes to devices and client apps. Only nodes version \(minimumVersion) and above are supported.")
-					.font(.callout)
-					.padding([.leading, .trailing, .bottom])
-
-				#if targetEnvironment(macCatalyst)
-					Button {
-						dismiss()
-					} label: {
-						Label("Close", systemImage: "xmark")
-
+					VStack(spacing: 8) {
+						if !version.isEmpty {
+							Label {
+								Text("Connected firmware: **\(version)**")
+							} icon: {
+								Image(systemName: "wifi.slash")
+									.foregroundColor(.red)
+							}
+							.font(.body)
+						}
+						Label {
+							Text("Minimum required: **\(minimumVersion)**")
+						} icon: {
+							Image(systemName: "checkmark.shield.fill")
+								.foregroundColor(.green)
+						}
+						.font(.body)
 					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
 					.padding()
-				#endif
+					.background(Color(.secondarySystemBackground))
+					.cornerRadius(12)
 
-			}.padding()
+					Text("The Meshtastic Apple app requires firmware version \(minimumVersion) or later. Older firmware versions are no longer supported and may have compatibility issues or missing features.")
+						.font(.body)
+						.foregroundColor(.secondary)
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+						.padding(.horizontal)
+
+					VStack(alignment: .leading, spacing: 12) {
+						Text("How to Update")
+							.font(.headline)
+						Link(destination: URL(string: "https://flasher.meshtastic.org")!) {
+							Label("Open Web Flasher", systemImage: "bolt.fill")
+								.frame(maxWidth: .infinity)
+						}
+						.buttonStyle(.borderedProminent)
+						.controlSize(.regular)
+						.buttonBorderShape(.capsule)
+						Link(destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/")!) {
+							Label("Firmware Update Docs", systemImage: "book.fill")
+								.frame(maxWidth: .infinity)
+						}
+						.buttonStyle(.bordered)
+						.controlSize(.regular)
+						.buttonBorderShape(.capsule)
+						Link(destination: URL(string: "https://meshtastic.org/docs/faq")!) {
+							Label("Additional Help", systemImage: "questionmark.circle.fill")
+								.frame(maxWidth: .infinity)
+						}
+						.buttonStyle(.bordered)
+						.controlSize(.regular)
+						.buttonBorderShape(.capsule)
+					}
+					.padding()
+					.background(Color(.secondarySystemBackground))
+					.cornerRadius(12)
+					.padding(.horizontal)
+				}
+				.padding(.bottom, 20)
+			}
+
+			#if targetEnvironment(macCatalyst)
+			Button {
+				dismiss()
+			} label: {
+				Label("Close", systemImage: "xmark")
+					.frame(maxWidth: .infinity)
+			}
+			.buttonStyle(.borderedProminent)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			#endif
 		}
 	}
 }
