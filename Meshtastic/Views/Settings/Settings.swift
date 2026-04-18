@@ -300,22 +300,20 @@ struct Settings: View {
 				}
 			}
 
+			NavigationLink(value: SettingsNavigationState.tak) {
+				Label {
+					Text("TAK Server")
+				} icon: {
+					Image(systemName: "target")
+				}
+			}
+
 			if isModuleSupported(.telemetryConfig) {
 				NavigationLink(value: SettingsNavigationState.telemetry) {
 					Label {
 						Text("Telemetry")
 					} icon: {
 						Image(systemName: "chart.xyaxis.line")
-					}
-				}
-			}
-
-			if isTAKModuleSupported() {
-				NavigationLink(value: SettingsNavigationState.takConfig) {
-					Label {
-						Text("TAK")
-					} icon: {
-						Image(systemName: "shield.checkered")
 					}
 				}
 			}
@@ -348,6 +346,15 @@ struct Settings: View {
 					Text("App Files")
 				} icon: {
 					Image(systemName: "folder")
+				}
+			}
+			if #available(iOS 18, *) {
+				NavigationLink(value: SettingsNavigationState.tools) {
+					Label {
+						Text("Tools")
+					} icon: {
+						Image(systemName: "hammer")
+					}
 				}
 			}
 		}
@@ -404,15 +411,6 @@ struct Settings: View {
 						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
-					}
-				}
-				if #available(iOS 18, *) {
-					NavigationLink(value: SettingsNavigationState.tools) {
-						Label {
-							Text("Tools")
-						} icon: {
-							Image(systemName: "hammer")
-						}
 					}
 				}
 				NavigationLink(value: SettingsNavigationState.routes) {
@@ -518,7 +516,6 @@ struct Settings: View {
 					developersSection
 #endif
 					firmwareSection
-					takSection
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
