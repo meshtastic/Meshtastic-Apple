@@ -22,8 +22,19 @@ struct ChannelList: View {
 
 	var restrictedChannels = ["gpio", "mqtt", "serial", "admin"]
 
-	@Query(sort: \ChannelEntity.index)
-	private var channels: [ChannelEntity]
+	private var visibleChannels: [ChannelEntity] {
+		guard let myInfo = node?.myInfo else { return [] }
+
+		var channelsByIndex: [Int32: ChannelEntity] = [:]
+		for channel in myInfo.channels {
+			channelsByIndex[channel.index] = channel
+		}
+
+		return channelsByIndex
+			.values
+			.filter { !restrictedChannels.contains($0.name?.lowercased() ?? "") }
+			.sorted { $0.index < $1.index }
+	}
 
 	@ViewBuilder
 	private func makeChannelRow(
@@ -170,10 +181,8 @@ struct ChannelList: View {
 			// Display Contacts for the rest of the non admin channels
 			if let node, let myInfo = node.myInfo {
 				List(selection: $channelSelection) {
-					ForEach(channels) { (channel: ChannelEntity) in
-						if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
-							makeChannelListItem(node: node, myInfo: myInfo, channel: channel)
-						}
+					ForEach(visibleChannels) { (channel: ChannelEntity) in
+						makeChannelListItem(node: node, myInfo: myInfo, channel: channel)
 					}
 				}
 				.olderThanOS26 { $0.padding([.top, .bottom]) }

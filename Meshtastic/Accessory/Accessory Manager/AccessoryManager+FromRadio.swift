@@ -218,7 +218,18 @@ extension AccessoryManager {
 		do {
 			let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 			if fetchedMyInfo.count == 1 {
+				let channelsToDelete = fetchedMyInfo[0].channels
+				for channel in channelsToDelete {
+					context.delete(channel)
+				}
 				fetchedMyInfo[0].channels.removeAll()
+
+				// Clean orphaned channels from older app versions where channels were
+				// detached but not deleted, which can create duplicate rows in queries.
+				let allChannels = try context.fetch(FetchDescriptor<ChannelEntity>())
+				for channel in allChannels where channel.myInfoChannel == nil {
+					context.delete(channel)
+				}
 				do {
 					try context.save()
 				} catch {
