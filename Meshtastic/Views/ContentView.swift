@@ -17,7 +17,7 @@ struct ContentView: View {
 	}
 
 	var body: some View {
-		TabView(selection: $appState.router.navigationState.selectedTab) {
+		TabView(selection: $appState.router.selectedTab) {
 			Messages(
 				router: appState.router,
 				unreadChannelMessages: $appState.unreadChannelMessages,

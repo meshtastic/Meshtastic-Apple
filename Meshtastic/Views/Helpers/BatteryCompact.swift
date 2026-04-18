@@ -111,3 +111,15 @@ struct BatteryCompact: View {
 		} ?? "Unknown")
 	}
 }
+
+#Preview {
+	VStack(spacing: 12) {
+		BatteryCompact(batteryLevel: 75, font: .caption, iconFont: .caption, color: .gray)
+		BatteryCompact(batteryLevel: 50, font: .caption, iconFont: .caption, color: .gray)
+		BatteryCompact(batteryLevel: 25, font: .caption, iconFont: .caption, color: .gray)
+		BatteryCompact(batteryLevel: 10, font: .caption, iconFont: .caption, color: .gray)
+		BatteryCompact(batteryLevel: 100, font: .caption, iconFont: .caption, color: .gray)
+		BatteryCompact(batteryLevel: 101, font: .caption, iconFont: .caption, color: .gray)
+		BatteryCompact(batteryLevel: nil, font: .caption, iconFont: .caption, color: .gray)
+	}
+}

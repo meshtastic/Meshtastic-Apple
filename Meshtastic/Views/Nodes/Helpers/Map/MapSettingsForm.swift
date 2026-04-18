@@ -228,3 +228,13 @@ struct MapSettingsForm: View {
 
 	}
 }
+
+#Preview {
+	MapSettingsForm(
+		traffic: .constant(false),
+		pointsOfInterest: .constant(true),
+		mapLayer: .constant(.standard),
+		meshMap: .constant(true),
+		enabledOverlayConfigs: .constant(Set<UUID>())
+	)
+}

@@ -113,6 +113,8 @@ actor MeshPackets {
 			await self.upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum)
 		case .storeForward:
 			await self.upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum)
+		case .tak:
+			await self.upsertTAKModuleConfigPacket(config: config.tak, nodeNum: nodeNum)
 		default:
 #if DEBUG
 			Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
@@ -627,6 +629,8 @@ actor MeshPackets {
 						self.upsertStoreForwardModuleConfigPacket(config: moduleConfig.storeForward, nodeNum: Int64(packet.from), context: context)
 					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
 						self.upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
+					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.tak(moduleConfig.tak) {
+						self.upsertTAKModuleConfigPacket(config: moduleConfig.tak, nodeNum: Int64(packet.from), context: context)
 					}
 				} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
 					if let rt = try? RTTTLConfig(serializedBytes: packet.decoded.payload) {
@@ -1050,10 +1054,18 @@ actor MeshPackets {
 						/// Make a new from user if they are unknown
 						do {
 							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
-							let newNode = NodeInfoEntity(context: context)
-							newNode.id = Int64(newUser.num)
-							newNode.num = Int64(newUser.num)
-							newNode.user = newUser
+							// Reuse an existing NodeInfoEntity if present to avoid creating duplicates
+							let fetchExistingNodeRequest = NodeInfoEntity.fetchRequest()
+							fetchExistingNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+							let existingNodes = try context.fetch(fetchExistingNodeRequest)
+							if let existingNode = existingNodes.first {
+								existingNode.user = newUser
+							} else {
+								let newNode = NodeInfoEntity(context: context)
+								newNode.id = Int64(newUser.num)
+								newNode.num = Int64(newUser.num)
+								newNode.user = newUser
+							}
 							newMessage.fromUser = newUser
 						} catch CoreDataError.invalidInput(let message) {
 							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
@@ -1175,7 +1187,7 @@ actor MeshPackets {
 					// Fetch waypoint by waypointMessage.id, not packet.id
 					let fetchWaypointRequest = WaypointEntity.fetchRequest()
 					fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(waypointMessage.id))
-					
+
 					let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
 					// Fetch the node info to get the short name
 					var nodeShortName: String = "?"
@@ -1199,6 +1211,7 @@ actor MeshPackets {
 						waypoint.longitudeI = waypointMessage.longitudeI
 						waypoint.icon = Int64(waypointMessage.icon)
 						waypoint.locked = Int64(waypointMessage.lockedTo)
+						waypoint.createdBy = Int64(packet.from)
 						if waypointMessage.expire >= 1 {
 							waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 						} else {
@@ -1254,6 +1267,7 @@ actor MeshPackets {
 								existingWaypoint.longitudeI = waypointMessage.longitudeI
 								existingWaypoint.icon = Int64(waypointMessage.icon)
 								existingWaypoint.locked = Int64(waypointMessage.lockedTo)
+								existingWaypoint.lastUpdatedBy = Int64(packet.from)
 								if waypointMessage.expire >= 1 {
 									existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 								} else {
@@ -1278,4 +1292,3 @@ actor MeshPackets {
 		}
 	}
 }
-

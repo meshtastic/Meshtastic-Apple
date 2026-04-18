@@ -424,9 +424,7 @@ struct TAKServerConfig: View {
 		}
 	}
 
-
 	// MARK: - Channel Label
-
 	@ViewBuilder
 	private func channelLabel(_ channel: ChannelEntity) -> some View {
 		if channel.name?.isEmpty ?? false {

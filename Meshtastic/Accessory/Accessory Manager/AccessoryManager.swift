@@ -288,6 +288,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false
+		
+		// Cancel any existing discovery task so startDiscovery() always creates a fresh one.
+		// Without this, if discovery was still running from before the connection attempt,
+		// startDiscovery() would silently no-op and the device would never reappear in the list.
+		discoveryTask?.cancel()
+		discoveryTask = nil
+		
 		self.startDiscovery()
 	}
 	
@@ -650,10 +657,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .keyVerificationApp:
 					Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-				case .unknownApp:
-					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .cayenneApp:
 					Logger.mesh.info("🕸️ MESH PACKET received Cayenne App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .groupalarmApp:
+					Logger.mesh.info("🕸️ MESH PACKET received Group Alarm App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .lorawanBridge:
+					Logger.mesh.info("🕸️ MESH PACKET received for LoRaWAN Bridge UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .unknownApp:
+					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
 			}
 

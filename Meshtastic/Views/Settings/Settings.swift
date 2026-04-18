@@ -33,12 +33,46 @@ struct Settings: View {
 
 	// MARK: Helper
 
+	private var moduleConfigurationNode: NodeInfoEntity? {
+		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
+		return nodes.first(where: { $0.num == nodeNum })
+	}
+
+	private var showsAnyModuleConfiguration: Bool {
+		isAnySupported([
+			.ambientlightingConfig,
+			.cannedmsgConfig,
+			.detectionsensorConfig,
+			.extnotifConfig,
+			.mqttConfig,
+			.rangetestConfig,
+			.paxcounterConfig,
+			.serialConfig,
+			.storeforwardConfig,
+			.telemetryConfig
+		]) || isTAKModuleSupported()
+	}
+
 	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
-		return Int(nodes.first(where: { $0.num == preferredNodeNum })?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
+		return Int(moduleConfigurationNode?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
 	}
 
 	private func isAnySupported(_ modules: [ExcludedModules]) -> Bool {
 		return modules.map(isModuleSupported).contains(true)
+	}
+
+	private func isTAKModuleSupported() -> Bool {
+		guard let node = moduleConfigurationNode else { return false }
+		if node.takConfig != nil {
+			return true
+		}
+
+		guard let roleValue = node.deviceConfig?.role ?? node.user?.role,
+			  let deviceRole = DeviceRoles(rawValue: Int(roleValue)) else {
+			return false
+		}
+
+		return deviceRole == .tak || deviceRole == .takTracker
 	}
 
 	// MARK: Views
@@ -276,14 +310,19 @@ struct Settings: View {
 				}
 			}
 
-			// Update this list with the modules that are shown above. If all are not supported
-			// Then show a message.
-			if !isAnySupported([.ambientlightingConfig, .cannedmsgConfig,
-								.detectionsensorConfig, .extnotifConfig,
-								.mqttConfig, .rangetestConfig, .paxcounterConfig,
-								.audioConfig, .serialConfig, .storeforwardConfig,
-								.telemetryConfig]) {
+			if isTAKModuleSupported() {
+				NavigationLink(value: SettingsNavigationState.takConfig) {
+					Label {
+						Text("TAK")
+					} icon: {
+						Image(systemName: "shield.checkered")
+					}
+				}
+			}
+
+			if !showsAnyModuleConfiguration {
 				Text("This node does not support any configurable modules.")
+					.foregroundColor(.secondary)
 			}
 		} header: {
 			Text("Module Configuration")
@@ -343,10 +382,10 @@ struct Settings: View {
 		NavigationStack(
 			path: Binding<[SettingsNavigationState]>(
 				get: {
-					[router.navigationState.settings].compactMap { $0 }
+					[router.settingsState].compactMap { $0 }
 				},
 				set: { newPath in
-					router.navigationState.settings = newPath.first
+					router.settingsState = newPath.first
 				}
 			)
 		) {
@@ -365,6 +404,15 @@ struct Settings: View {
 						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
+					}
+				}
+				if #available(iOS 18, *) {
+					NavigationLink(value: SettingsNavigationState.tools) {
+						Label {
+							Text("Tools")
+						} icon: {
+							Image(systemName: "hammer")
+						}
 					}
 				}
 				NavigationLink(value: SettingsNavigationState.routes) {
@@ -538,8 +586,14 @@ struct Settings: View {
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
+				case .tools:
+					if #available(iOS 18, *) {
+						Tools()
+					}
 				case .tak:
 					TAKServerConfig()
+				case .takConfig:
+					TAKModuleConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

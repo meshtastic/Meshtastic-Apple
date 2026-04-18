@@ -494,4 +494,3 @@ enum TAKConnectionError: LocalizedError {
 		}
 	}
 }
-

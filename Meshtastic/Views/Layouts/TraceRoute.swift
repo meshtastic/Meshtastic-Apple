@@ -22,6 +22,13 @@ struct TraceRouteComponent<V: View>: View {
 	}
 }
 
+#Preview {
+	TraceRouteComponent {
+		Image(systemName: "antenna.radiowaves.left.and.right")
+			.font(.title)
+	}
+}
+
 struct TraceRoute: Layout {
 	var animatableData: AnimatablePair<CGFloat, CGFloat> {
 		get {
