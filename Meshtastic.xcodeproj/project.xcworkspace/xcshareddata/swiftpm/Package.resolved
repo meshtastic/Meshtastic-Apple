@@ -1,5 +1,5 @@
 {
-  "originHash" : "2569905853aec088d5bac6b540eac77f78963f88b406e8dd95a88c40623cc8b4",
+  "originHash" : "7d747a138ea225de00b815c2d9ed46c704c081d98cc8d1018c8d11cb91f39bc4",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/DataDog/dd-sdk-ios.git",
       "state" : {
-        "revision" : "d0a42d8067665cb6ee86af51251ccc071f62bd54",
-        "version" : "2.29.0"
+        "revision" : "2cddcb47c021365c5a6ebc377cb379aa979c450e",
+        "version" : "3.4.0"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "102a647b573f60f73afdce5613a51d71349fe507",
-        "version" : "1.30.0"
+        "revision" : "c169a5744230951031770e27e475ff6eefe51f9d",
+        "version" : "1.33.3"
       }
     }
   ],

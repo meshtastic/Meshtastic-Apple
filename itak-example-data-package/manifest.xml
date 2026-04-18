@@ -1,0 +1,12 @@
+<MissionPackageManifest version="2">
+  <Configuration>
+    <Parameter name="uid" value="bcfaa4a5-2224-4095-bbe3-fdaa22a82741"/>
+    <Parameter name="name" value="testbox_DP"/>
+    <Parameter name="onReceiveDelete" value="true"/>
+  </Configuration>
+  <Contents>
+    <Content ignore="false" zipEntry="taky-server.pref"/>
+    <Content ignore="false" zipEntry="server.p12"/>
+    <Content ignore="false" zipEntry="iphone.p12"/>
+  </Contents>
+</MissionPackageManifest>

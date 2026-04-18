@@ -30,6 +30,9 @@ extension AccessoryManager {
 		packetsSent = 0
 		packetsReceived = 0
 		expectedNodeDBSize = nil
+	
+		self.allowDisconnect = true
+		self.userRequestedConnectionCancellation = false
 		
 		// Prepare to connect
 		self.connectionStepper = SequentialSteps(maxRetries: maxRetries, retryDelay: retryDelay) {
@@ -40,7 +43,6 @@ extension AccessoryManager {
 				if retryAttempt > 0 {
 					try await self.closeConnection() // clean-up before retries.
 					self.updateState(.retrying(attempt: retryAttempt + 1))
-					self.allowDisconnect = true
 				} else {
 					self.updateState(.connecting)
 				}
@@ -61,7 +63,7 @@ extension AccessoryManager {
 					self.updateState(.communicating)
 					self.connectionEventTask = Task {
 						for await event in eventStream {
-							self.didReceive(event)
+							await self.didReceive(event)
 						}
 						Logger.transport.info("[Accessory] Event stream closed")
 					}

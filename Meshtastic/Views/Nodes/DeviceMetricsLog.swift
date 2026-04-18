@@ -199,10 +199,12 @@ struct DeviceMetricsLog: View {
 						titleVisibility: .visible
 					) {
 						Button("Delete all device metrics?", role: .destructive) {
-							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
-								Logger.data.notice("Cleared Device Metrics for \(node.num, privacy: .public)")
-							} else {
-								Logger.data.error("Clear Device Metrics Log Failed")
+							Task {
+								if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 0) {
+									Logger.data.notice("Cleared Device Metrics for \(node.num, privacy: .public)")
+								} else {
+									Logger.data.error("Clear Device Metrics Log Failed")
+								}
 							}
 						}
 					}

@@ -191,20 +191,26 @@ actor BLEConnection: Connection {
 	}
 	
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
-				// Make sure we're connected
-		guard self.peripheral.state == .connected else {
-			throw AccessoryError.ioFailed("BLE peripheral not connected")
-		}
-		
-		return try await withTaskCancellationHandler {
-			try await discoverServices()
-			startRSSITask()
-			return self.getPacketStream()
-		} onCancel: {
-			Task {
-				await self.continueConnectionProcess(throwing: CancellationError())
-				await self.notifyTransportOfDisconnect()
+		do {
+			// Make sure we're connected
+			guard self.peripheral.state == .connected else {
+				throw AccessoryError.ioFailed("BLE peripheral not connected")
 			}
+			
+			return try await withTaskCancellationHandler {
+				try await discoverServices()
+				startRSSITask()
+				return self.getPacketStream()
+			} onCancel: {
+				Task {
+					await self.continueConnectionProcess(throwing: CancellationError())
+					await self.notifyTransportOfDisconnect()
+				}
+			}
+		} catch {
+			// Before we throw, let the transport know we didn't successfully connect
+			await self.notifyTransportOfDisconnect()
+			throw error
 		}
 	}
 	
