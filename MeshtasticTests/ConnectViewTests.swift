@@ -55,7 +55,7 @@ struct DeviceTests {
 		(-80, BLESignalStrength.normal),
 		(-84, BLESignalStrength.normal),
 		(-85, BLESignalStrength.weak),
-		(-100, BLESignalStrength.weak),
+		(-100, BLESignalStrength.weak)
 	])
 	func signalStrength(rssi: Int, expected: BLESignalStrength) {
 		let device = Device(
@@ -209,7 +209,7 @@ struct TransportTypeTests {
 	@Test(arguments: [
 		(TransportType.ble, "BLE"),
 		(TransportType.tcp, "TCP"),
-		(TransportType.serial, "Serial"),
+		(TransportType.serial, "Serial")
 	])
 	func rawValues(type: TransportType, expected: String) {
 		#expect(type.rawValue == expected)
@@ -307,7 +307,7 @@ struct NavigationStateTests {
 		NavigationState.Tab.connect,
 		NavigationState.Tab.nodes,
 		NavigationState.Tab.map,
-		NavigationState.Tab.settings,
+		NavigationState.Tab.settings
 	])
 	func tabRawValues(tab: NavigationState.Tab) {
 		#expect(NavigationState.Tab(rawValue: tab.rawValue) == tab)

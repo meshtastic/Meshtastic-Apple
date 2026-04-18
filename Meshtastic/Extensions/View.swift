@@ -66,6 +66,18 @@ extension View {
 				.buttonStyle(.borderedProminent)
 		}
 	}
+
+	@ViewBuilder
+	func glassButtonStyle() -> some View {
+		if #available(iOS 26.0, macOS 26.0, *) {
+			self.buttonStyle(.glass)
+		} else {
+			self
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+		}
+	}
 }
 
 private struct FirstAppear: ViewModifier {

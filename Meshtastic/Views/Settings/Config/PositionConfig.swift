@@ -562,3 +562,10 @@ struct PositionConfig: View {
 		}
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return PositionConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}

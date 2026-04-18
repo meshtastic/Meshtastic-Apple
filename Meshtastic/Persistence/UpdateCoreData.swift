@@ -184,7 +184,12 @@ extension MeshPackets {
 	
 	nonisolated public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
 		do {
-			let objects = user.messageList
+			// Fetch messages using the same context that will perform the deletes.
+			// user.messageList fetches from viewContext, which would cause a context-mismatch
+			// crash when this method is called with a background context.
+			let fetchRequest = MessageEntity.fetchRequest()
+			fetchRequest.predicate = user.messageFetchRequest.predicate
+			let objects = (try? context.fetch(fetchRequest)) ?? []
 			for object in objects {
 				context.delete(object)
 			}
@@ -430,18 +435,13 @@ extension MeshPackets {
 					}
 				}
 				
-				let myInfoEntity = MyInfoEntity(context: context)
-				myInfoEntity.myNodeNum = Int64(packet.from)
-				myInfoEntity.rebootCount = 0
-				newNode.myInfo = myInfoEntity
 				do {
 					try context.save()
 					Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
-					Logger.data.info("💾 [MyInfoEntity] Saved a new myInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("💥 [MyInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
+					Logger.data.error("💥 [NodeInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
 				}
 				
 			} else {
@@ -1789,6 +1789,53 @@ extension MeshPackets {
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("💥 [TelemetryConfigEntity] Fetching node for core data TelemetryConfigEntity failed: \(nsError, privacy: .public)")
+		}
+	}
+
+	func upsertTAKModuleConfigPacket(config: ModuleConfig.TAKConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) async {
+		let context = self.backgroundContext
+		await context.perform {
+			self.upsertTAKModuleConfigPacket(config: config, nodeNum: nodeNum, sessionPasskey: sessionPasskey, context: context)
+		}
+	}
+
+	nonisolated func upsertTAKModuleConfigPacket(config: ModuleConfig.TAKConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
+
+		let logString = String.localizedStringWithFormat("TAK module config received: %@".localized, String(nodeNum))
+		Logger.data.info("🎯 \(logString, privacy: .public)")
+
+		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		do {
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].takConfig == nil {
+					let newTAKConfig = TAKConfigEntity(context: context)
+					newTAKConfig.team = Int32(config.team.rawValue)
+					newTAKConfig.role = Int32(config.role.rawValue)
+					fetchedNode[0].takConfig = newTAKConfig
+				} else {
+					fetchedNode[0].takConfig?.team = Int32(config.team.rawValue)
+					fetchedNode[0].takConfig?.role = Int32(config.role.rawValue)
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				do {
+					try context.save()
+					Logger.data.info("💾 [TAKConfigEntity] Updated TAK Module Config for node: \(nodeNum.toHex(), privacy: .public)")
+				} catch {
+					context.rollback()
+					let nsError = error as NSError
+					Logger.data.error("💥 [TAKConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
+				}
+			} else {
+				Logger.data.error("💥 [TAKConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save TAK Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [TAKConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
 }

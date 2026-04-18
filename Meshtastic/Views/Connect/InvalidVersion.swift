@@ -104,3 +104,7 @@ struct InvalidVersion: View {
 		}
 	}
 }
+
+#Preview {
+	InvalidVersion(minimumVersion: "2.5.4", version: "2.3.0")
+}
