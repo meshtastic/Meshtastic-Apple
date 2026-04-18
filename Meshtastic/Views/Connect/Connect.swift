@@ -377,11 +377,13 @@ struct Connect: View {
 				} catch {
 					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
 				}
-				// Check firmware version on connection
+			// Check firmware version on connection (only if version is known)
+			if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
 				let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
 				let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
 				invalidFirmwareVersion = !meetsMinimumVersion
 				showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
+			}
 			}
 		}
 	}
