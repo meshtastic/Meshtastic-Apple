@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Meshtastic needs Bluetooth to connect directly to your Meshtastic radio for foxhunt direction finding.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.</string>
+	<key>WKApplication</key>
+	<true/>
+	<key>WKRunsIndependentlyOfCompanionApp</key>
+	<true/>
+</dict>
+</plist>
