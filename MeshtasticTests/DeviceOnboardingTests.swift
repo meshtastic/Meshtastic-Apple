@@ -148,6 +148,35 @@ struct OnboardingStringFormatterTests {
 @Suite("DeviceOnboarding navigation")
 struct OnboardingNavigationTests {
 
+	private func firstStepIsValid(_ first: DeviceOnboarding.SetupGuide?) -> Bool {
+		switch first {
+		case .notifications, .location, .backgroundActivity:
+			return true
+		default:
+			return false
+		}
+	}
+
+	@Test func startRoutesToAnEarlyFlowStep() async {
+		let view = DeviceOnboarding()
+		await view.goToNextStep(after: nil)
+		#expect(view.navigationPath.count == 1)
+		#expect(firstStepIsValid(view.navigationPath.first))
+	}
+
+	@Test func notificationsRoutesToLocationOrBackgroundActivity() async {
+		let view = DeviceOnboarding()
+		await view.goToNextStep(after: .notifications)
+		#expect(view.navigationPath.count == 1)
+		#expect(view.navigationPath.first == .location || view.navigationPath.first == .backgroundActivity)
+	}
+
+	@Test func locationRoutesToBackgroundActivityWhenAuthorizedOrStays() async {
+		let view = DeviceOnboarding()
+		await view.goToNextStep(after: .location)
+		#expect(view.navigationPath.isEmpty || view.navigationPath == [.backgroundActivity])
+	}
+
 	@Test func backgroundActivityAlwaysGoesToLocalNetwork() async {
 		let view = DeviceOnboarding()
 		await view.goToNextStep(after: .backgroundActivity)
@@ -177,5 +206,13 @@ struct OnboardingNavigationTests {
 		await view.goToNextStep(after: .localNetwork)
 		await view.goToNextStep(after: .bluetooth)
 		#expect(view.navigationPath == [.localNetwork, .bluetooth, .siri])
+	}
+
+	@Test func fullDeterministicTailFromBackgroundToSiri() async {
+		let view = DeviceOnboarding()
+		await view.goToNextStep(after: .backgroundActivity)
+		await view.goToNextStep(after: .localNetwork)
+		await view.goToNextStep(after: .bluetooth)
+		#expect(view.navigationPath.last == .siri)
 	}
 }
