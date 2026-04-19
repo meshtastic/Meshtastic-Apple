@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import CoreLocation
+import UserNotifications
 import Testing
 @testable import Meshtastic
 
@@ -148,71 +150,89 @@ struct OnboardingStringFormatterTests {
 @Suite("DeviceOnboarding navigation")
 struct OnboardingNavigationTests {
 
-	private func firstStepIsValid(_ first: DeviceOnboarding.SetupGuide?) -> Bool {
-		switch first {
-		case .notifications, .location, .backgroundActivity:
-			return true
-		default:
-			return false
-		}
+	private func nextStep(
+		after step: DeviceOnboarding.SetupGuide?,
+		notificationStatus: UNAuthorizationStatus,
+		criticalAlertSetting: UNNotificationSetting,
+		locationStatus: CLAuthorizationStatus
+	) -> DeviceOnboarding.SetupGuide? {
+		let view = DeviceOnboarding()
+		return view.nextStep(
+			after: step,
+			notificationStatus: notificationStatus,
+			criticalAlertSetting: criticalAlertSetting,
+			locationStatus: locationStatus
+		)
 	}
 
-	@Test func startRoutesToAnEarlyFlowStep() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: nil)
-		#expect(view.navigationPath.count == 1)
-		#expect(firstStepIsValid(view.navigationPath.first))
+	@Test func startRoutesToNotificationsWhenNotificationsUnknown() {
+		let step = nextStep(
+			after: nil,
+			notificationStatus: .notDetermined,
+			criticalAlertSetting: .notSupported,
+			locationStatus: .authorizedAlways
+		)
+		#expect(step == .notifications)
 	}
 
-	@Test func notificationsRoutesToLocationOrBackgroundActivity() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .notifications)
-		#expect(view.navigationPath.count == 1)
-		#expect(view.navigationPath.first == .location || view.navigationPath.first == .backgroundActivity)
+	@Test func startRoutesToLocationWhenNotificationsKnownAndLocationDenied() {
+		let step = nextStep(
+			after: nil,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .denied
+		)
+		#expect(step == .location)
 	}
 
-	@Test func locationRoutesToBackgroundActivityWhenAuthorizedOrStays() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .location)
-		#expect(view.navigationPath.isEmpty || view.navigationPath == [.backgroundActivity])
+	@Test func startRoutesToBackgroundActivityWhenLocationAuthorized() {
+		let step = nextStep(
+			after: nil,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .authorizedWhenInUse
+		)
+		#expect(step == .backgroundActivity)
 	}
 
-	@Test func backgroundActivityAlwaysGoesToLocalNetwork() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .backgroundActivity)
-		#expect(view.navigationPath == [.localNetwork])
+	@Test func notificationsRoutesToLocationOrBackgroundActivity() {
+		let denied = nextStep(
+			after: .notifications,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .denied
+		)
+		let authorized = nextStep(
+			after: .notifications,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .authorizedAlways
+		)
+		#expect(denied == .location)
+		#expect(authorized == .backgroundActivity)
 	}
 
-	@Test func localNetworkAlwaysGoesToBluetooth() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .localNetwork)
-		#expect(view.navigationPath == [.bluetooth])
+	@Test func locationRoutesToBackgroundActivityOnlyWhenAuthorized() {
+		let authorized = nextStep(
+			after: .location,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .authorizedAlways
+		)
+		let denied = nextStep(
+			after: .location,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .denied
+		)
+		#expect(authorized == .backgroundActivity)
+		#expect(denied == nil)
 	}
 
-	@Test func bluetoothAlwaysGoesToSiri() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .bluetooth)
-		#expect(view.navigationPath == [.siri])
-	}
-
-	@Test func navigationPathStartsEmpty() {
-		let view = DeviceOnboarding()
-		#expect(view.navigationPath.isEmpty)
-	}
-
-	@Test func deterministicStepsAppendInOrder() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .backgroundActivity)
-		await view.goToNextStep(after: .localNetwork)
-		await view.goToNextStep(after: .bluetooth)
-		#expect(view.navigationPath == [.localNetwork, .bluetooth, .siri])
-	}
-
-	@Test func fullDeterministicTailFromBackgroundToSiri() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .backgroundActivity)
-		await view.goToNextStep(after: .localNetwork)
-		await view.goToNextStep(after: .bluetooth)
-		#expect(view.navigationPath.last == .siri)
+	@Test func deterministicTailFlowMapping() {
+		#expect(nextStep(after: .backgroundActivity, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .localNetwork)
+		#expect(nextStep(after: .localNetwork, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .bluetooth)
+		#expect(nextStep(after: .bluetooth, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .siri)
+		#expect(nextStep(after: .siri, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == nil)
 	}
 }
