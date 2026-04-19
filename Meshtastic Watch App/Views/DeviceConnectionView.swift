@@ -143,15 +143,7 @@ struct DeviceConnectionView: View {
 
 	@ViewBuilder
 	private func signalIcon(rssi: Int) -> some View {
-		let imageName: String
-		if rssi > -65 {
-			imageName = "wifi"
-		} else if rssi > -85 {
-			imageName = "wifi"
-		} else {
-			imageName = "wifi.exclamationmark"
-		}
-		Image(systemName: imageName)
+		Image(systemName: rssi > -85 ? "wifi" : "wifi.exclamationmark")
 			.font(.system(size: 12))
 			.foregroundStyle(rssi > -65 ? .green : (rssi > -85 ? .yellow : .red))
 	}

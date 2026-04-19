@@ -261,7 +261,7 @@ private struct WatchCompassLabel {
 // MARK: - Color helper
 
 extension Color {
-	/// Quick luminance check so centre text is readable on the distance colour.
+	/// Quick luminance check so center text is readable on the distance color.
 	var isWatchLight: Bool {
 		// Approximate: yellow and lighter colours are "light"
 		if self == .yellow || self == .orange || self == .white { return true }
