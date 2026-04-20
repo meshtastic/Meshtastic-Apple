@@ -36,21 +36,21 @@ struct FoxhuntCompassView: View {
 			let size = min(geometry.size.width, geometry.size.height)
 			let dialRadius = size * 0.44
 
-			VStack(spacing: 2) {
+			VStack(spacing: 0) {
 				// Node short name circle
 				WatchCircleText(
 					text: node.shortName.isEmpty ? "?" : node.shortName,
 					color: WatchCircleText.color(for: node.num),
-					circleSize: 32
+					circleSize: 26
 				)
 
-				ZStack {
-					// Fixed heading indicator at top
+					ZStack {
+					// Fixed heading indicator at top of ring
 					Image(systemName: "triangle.fill")
 						.font(.system(size: 8, weight: .bold))
-						.foregroundStyle(.primary)
+						.foregroundStyle(.white.opacity(0.9))
 						.rotationEffect(.degrees(180))
-						.offset(y: -(dialRadius + 12))
+						.offset(y: -(dialRadius + 6))
 
 					// Rotating compass group
 					ZStack {
@@ -86,10 +86,19 @@ struct FoxhuntCompassView: View {
 
 						// Bearing arrow to target
 						if let bearing = bearingToNode() {
-							Image(systemName: "arrowtriangle.up.fill")
-								.font(.system(size: 12, weight: .bold))
+							// Directional cone showing general heading direction
+							DirectionCone(
+								bearing: bearing,
+								heading: locationManager.heading,
+								radius: dialRadius + 10,
+								color: distanceColor
+							)
+
+							Image(systemName: "location.north.fill")
+								.font(.system(size: 22, weight: .bold))
 								.foregroundStyle(distanceColor)
-								.offset(y: -(dialRadius + 8))
+								.shadow(color: distanceColor.opacity(0.8), radius: 6)
+								.offset(y: -(dialRadius + 20))
 								.rotationEffect(.degrees(bearing))
 								.onChange(of: locationManager.heading) {
 									checkAlignment(bearing: bearing, heading: locationManager.heading)
@@ -98,7 +107,7 @@ struct FoxhuntCompassView: View {
 					}
 					.rotationEffect(.degrees(-locationManager.heading))
 				}
-				.frame(width: dialRadius * 2 + 30, height: dialRadius * 2 + 30)
+				.frame(width: dialRadius * 2 + 48, height: dialRadius * 2 + 48)
 
 				// Distance at bottom
 				if let dist = distanceToNode() {
@@ -164,13 +173,13 @@ struct FoxhuntCompassView: View {
 		return node.distance(from: userLoc)
 	}
 
-	/// Colour that shifts from blue (far) → yellow (mid) → red (close).
+	/// Colour that shifts from red (far) → yellow (mid) → green (close).
 	private var distanceColor: Color {
-		guard let dist = distanceToNode() else { return .blue }
+		guard let dist = distanceToNode() else { return .red }
 		let ratio = min(dist / Self.maxDistanceMetres, 1.0)
-		if ratio > 0.66 { return .blue }
+		if ratio > 0.66 { return .red }
 		if ratio > 0.33 { return .yellow }
-		return .red
+		return .green
 	}
 
 	private func checkAlignment(bearing: Double, heading: Double) {
@@ -208,6 +217,62 @@ struct FoxhuntCompassView: View {
 		var bearing = atan2(y, x) * 180 / .pi
 		if bearing < 0 { bearing += 360 }
 		return bearing
+	}
+}
+
+// MARK: - Direction Cone (Backtrack-style scope)
+
+/// A translucent cone drawn from the centre of the compass toward the
+/// bearing, giving a visual "scope" so the user can see when they are
+/// heading in roughly the right direction.
+private struct DirectionCone: View {
+	let bearing: Double
+	let heading: Double
+	let radius: CGFloat
+	let color: Color
+
+	/// Half-width of the cone in degrees.
+	private let coneHalfAngle: Double = 20
+
+	var body: some View {
+		let onTarget = isOnTarget
+
+		ConeShape(halfAngle: coneHalfAngle, radius: radius)
+			.fill(
+				RadialGradient(
+					colors: [
+						color.opacity(onTarget ? 0.55 : 0.3),
+						color.opacity(onTarget ? 0.25 : 0.08)
+					],
+					center: .center,
+					startRadius: 0,
+					endRadius: radius
+				)
+			)
+			.rotationEffect(.degrees(bearing))
+	}
+
+	private var isOnTarget: Bool {
+		let rawDiff = abs(heading - bearing).truncatingRemainder(dividingBy: 360)
+		let diff = min(rawDiff, 360 - rawDiff)
+		return diff <= coneHalfAngle
+	}
+}
+
+private struct ConeShape: Shape {
+	let halfAngle: Double
+	let radius: CGFloat
+
+	func path(in rect: CGRect) -> Path {
+		let center = CGPoint(x: rect.midX, y: rect.midY)
+		let startAngle = Angle(degrees: -90 - halfAngle)
+		let endAngle = Angle(degrees: -90 + halfAngle)
+
+		var path = Path()
+		path.move(to: center)
+		path.addArc(center: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: false)
+		path.closeSubpath()
+		return path
 	}
 }
 
