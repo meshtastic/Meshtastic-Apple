@@ -9,22 +9,27 @@ import SwiftUI
 
 @MainActor
 final class NodeFilterParameters: ObservableObject {
-	// Public variables
-	@Published var searchText = ""
-	@Published var isOnline = false
-	@Published var isPkiEncrypted = false
-	@Published var isFavorite = false
-	@Published var isIgnored = false
-	@Published var isEnvironment = false
-	@Published var distanceFilter = false
-	@Published var maxDistance: Double = 800_000
-	@Published var hopsAway: Double = -1.0
-	@Published var roleFilter = false
-	@Published var deviceRoles: Set<Int> = []
+	@AppStorage("nodeFilter.searchText") var searchText = ""
+	@AppStorage("nodeFilter.isOnline") var isOnline = false
+	@AppStorage("nodeFilter.isPkiEncrypted") var isPkiEncrypted = false
+	@AppStorage("nodeFilter.isFavorite") var isFavorite = false
+	@AppStorage("nodeFilter.isIgnored") var isIgnored = false
+	@AppStorage("nodeFilter.isEnvironment") var isEnvironment = false
+	@AppStorage("nodeFilter.distanceFilter") var distanceFilter = false
+	@AppStorage("nodeFilter.maxDistance") var maxDistance: Double = 800_000
+	@AppStorage("nodeFilter.hopsAway") var hopsAway: Double = -1.0
+	@AppStorage("nodeFilter.roleFilter") var roleFilter = false
 	
-	// Private backing vars
-	@Published private var _viaLora = true
-	@Published private var _viaMqtt = true
+	// deviceRoles requires custom storage since Set<Int> isn't directly supported by @AppStorage
+	@Published var deviceRoles: Set<Int> = [] {
+		didSet {
+			let array = Array(deviceRoles)
+			UserDefaults.standard.set(array, forKey: "nodeFilter.deviceRoles")
+		}
+	}
+	
+	@AppStorage("nodeFilter.viaLora") private var _viaLora = true
+	@AppStorage("nodeFilter.viaMqtt") private var _viaMqtt = true
 	
 	// Public computed wrappers with enforcement
 	var viaLora: Bool {
@@ -46,6 +51,13 @@ final class NodeFilterParameters: ObservableObject {
 			if !_viaLora && !_viaMqtt {
 				_viaLora = true   // enforce at least one ON
 			}
+		}
+	}
+	
+	// Initialize and load the deviceRoles from UserDefaults
+	init() {
+		if let storedRoles = UserDefaults.standard.array(forKey: "nodeFilter.deviceRoles") as? [Int] {
+			self.deviceRoles = Set(storedRoles)
 		}
 	}
 }
