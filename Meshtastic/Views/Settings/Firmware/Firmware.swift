@@ -342,8 +342,8 @@ private struct FirmwareRow: View {
 	@State var showInstallationSheet: FirmwareFile.FirmwareType?
 
 	/// ESP32 OTA (BLE/WiFi) requires the AdminMessage.OTAEvent protocol with otaHash,
-	/// which was added to Meshtastic firmware in 2.7.10.
-	private let minimumESP32OTAVersion = "2.7.10"
+	/// which was added to Meshtastic firmware in 2.7.18.
+	private let minimumESP32OTAVersion = "2.7.18"
 
 	var body: some View {
 		VStack {

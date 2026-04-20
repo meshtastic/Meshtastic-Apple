@@ -16,8 +16,8 @@ struct ESP32OTAIntroSheet: View {
 	}
 
 	/// ESP32 OTA (BLE/WiFi) requires AdminMessage.OTAEvent with otaHash for authentication,
-	/// added to Meshtastic firmware in 2.7.10.
-	private let minimumOTAVersion = "2.7.10"
+	/// added to Meshtastic firmware in 2.7.18.
+	private let minimumOTAVersion = "2.7.18"
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) var dismiss
