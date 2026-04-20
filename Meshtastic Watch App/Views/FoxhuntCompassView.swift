@@ -34,87 +34,78 @@ struct FoxhuntCompassView: View {
 	var body: some View {
 		GeometryReader { geometry in
 			let size = min(geometry.size.width, geometry.size.height)
-			let dialRadius = size * 0.44
+			let dialRadius = size * 0.48
 
-			VStack(spacing: 0) {
-				// Node short name circle
+			ZStack {
+				// Fixed heading indicator at top of ring
+				Image(systemName: "triangle.fill")
+					.font(.system(size: 8, weight: .bold))
+					.foregroundStyle(.white.opacity(0.9))
+					.rotationEffect(.degrees(180))
+					.offset(y: -(dialRadius + 6))
+
+				// Rotating compass group
+				ZStack {
+					// Outer ring
+					Circle()
+						.stroke(Color.primary.opacity(0.3), lineWidth: 3)
+						.frame(width: dialRadius * 2 + 8, height: dialRadius * 2 + 8)
+
+					// Tick marks (every 10° for watch readability)
+					ForEach(0..<36, id: \.self) { i in
+						let deg = Double(i) * 10
+						WatchTickMark(degree: deg, radius: dialRadius)
+					}
+
+					// Cardinal labels
+					ForEach(WatchCompassLabel.allLabels, id: \.degrees) { label in
+						Text(label.text)
+							.font(.system(size: label.isCardinal ? 11 : 8, weight: label.isCardinal ? .bold : .medium))
+							.foregroundStyle(label.degrees == 0 ? .orange : .primary)
+							.rotationEffect(.degrees(-label.degrees + locationManager.heading))
+							.offset(y: -(dialRadius - 14))
+							.rotationEffect(.degrees(label.degrees))
+					}
+
+					// North indicator
+					WatchTriangle()
+						.fill(.orange)
+						.frame(width: 7, height: 6)
+						.offset(y: -(dialRadius + 3))
+
+					// Centre readout (includes distance)
+					centreReadout(dialRadius: dialRadius)
+
+					// Bearing arrow to target
+					if let bearing = bearingToNode() {
+						// Directional cone showing general heading direction
+						DirectionCone(
+							bearing: bearing,
+							heading: locationManager.heading,
+							radius: dialRadius + 4,
+							color: distanceColor
+						)
+
+						Image(systemName: "location.north.fill")
+							.font(.system(size: 26, weight: .bold))
+							.foregroundStyle(distanceColor)
+							.shadow(color: distanceColor.opacity(0.8), radius: 6)
+							.offset(y: -(dialRadius + 16))
+							.rotationEffect(.degrees(bearing))
+							.onChange(of: locationManager.heading) {
+								checkAlignment(bearing: bearing, heading: locationManager.heading)
+							}
+					}
+				}
+				.rotationEffect(.degrees(-locationManager.heading))
+
+				// Node short name circle at top
 				WatchCircleText(
 					text: node.shortName.isEmpty ? "?" : node.shortName,
 					color: WatchCircleText.color(for: node.num),
 					circleSize: 26
 				)
-
-					ZStack {
-					// Fixed heading indicator at top of ring
-					Image(systemName: "triangle.fill")
-						.font(.system(size: 8, weight: .bold))
-						.foregroundStyle(.white.opacity(0.9))
-						.rotationEffect(.degrees(180))
-						.offset(y: -(dialRadius + 6))
-
-					// Rotating compass group
-					ZStack {
-						// Outer ring
-						Circle()
-							.stroke(Color.primary.opacity(0.3), lineWidth: 3)
-							.frame(width: dialRadius * 2 + 8, height: dialRadius * 2 + 8)
-
-						// Tick marks (every 10° for watch readability)
-						ForEach(0..<36, id: \.self) { i in
-							let deg = Double(i) * 10
-							WatchTickMark(degree: deg, radius: dialRadius)
-						}
-
-						// Cardinal labels
-						ForEach(WatchCompassLabel.allLabels, id: \.degrees) { label in
-							Text(label.text)
-								.font(.system(size: label.isCardinal ? 11 : 8, weight: label.isCardinal ? .bold : .medium))
-								.foregroundStyle(label.degrees == 0 ? .orange : .primary)
-								.rotationEffect(.degrees(-label.degrees + locationManager.heading))
-								.offset(y: -(dialRadius - 14))
-								.rotationEffect(.degrees(label.degrees))
-						}
-
-						// North indicator
-						WatchTriangle()
-							.fill(.orange)
-							.frame(width: 7, height: 6)
-							.offset(y: -(dialRadius + 3))
-
-						// Centre readout
-						centreReadout(dialRadius: dialRadius)
-
-						// Bearing arrow to target
-						if let bearing = bearingToNode() {
-							// Directional cone showing general heading direction
-							DirectionCone(
-								bearing: bearing,
-								heading: locationManager.heading,
-								radius: dialRadius + 10,
-								color: distanceColor
-							)
-
-							Image(systemName: "location.north.fill")
-								.font(.system(size: 22, weight: .bold))
-								.foregroundStyle(distanceColor)
-								.shadow(color: distanceColor.opacity(0.8), radius: 6)
-								.offset(y: -(dialRadius + 20))
-								.rotationEffect(.degrees(bearing))
-								.onChange(of: locationManager.heading) {
-									checkAlignment(bearing: bearing, heading: locationManager.heading)
-								}
-						}
-					}
-					.rotationEffect(.degrees(-locationManager.heading))
-				}
-				.frame(width: dialRadius * 2 + 48, height: dialRadius * 2 + 48)
-
-				// Distance at bottom
-				if let dist = distanceToNode() {
-					Text(formatDistance(dist))
-						.font(.system(size: 14, weight: .semibold, design: .rounded))
-						.foregroundStyle(distanceColor)
-				}
+				.offset(y: -(dialRadius + 32))
 			}
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
 		}
@@ -142,13 +133,19 @@ struct FoxhuntCompassView: View {
 
 			VStack(spacing: 1) {
 				Text(headingText)
-					.font(.system(size: 20, weight: .light, design: .rounded))
+					.font(.system(size: 24, weight: .light, design: .rounded))
 					.monospacedDigit()
 					.foregroundStyle(textColor)
 
 				if let bearing = bearingToNode() {
 					Text("\(String(format: "%.0f°", bearing))")
-						.font(.system(size: 10, weight: .medium, design: .rounded))
+						.font(.system(size: 12, weight: .medium, design: .rounded))
+						.foregroundStyle(textColor.opacity(0.8))
+				}
+
+				if let dist = distanceToNode() {
+					Text(formatDistance(dist))
+						.font(.system(size: 12, weight: .semibold, design: .rounded))
 						.foregroundStyle(textColor.opacity(0.8))
 				}
 			}
