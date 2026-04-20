@@ -37,6 +37,12 @@ final class WatchSessionManager: NSObject, ObservableObject {
 
 	// MARK: - Public API
 
+	/// Whether a paired Watch with the Meshtastic app installed is available.
+	var isWatchAvailable: Bool {
+		guard let session, session.activationState == .activated else { return false }
+		return session.isPaired && session.isWatchAppInstalled
+	}
+
 	/// Send a specific node to the Watch as a foxhunt target.
 	/// The Watch will pin this node in its foxhunt list regardless of distance.
 	func sendNodeForFoxhunt(_ nodeNum: Int64) {
