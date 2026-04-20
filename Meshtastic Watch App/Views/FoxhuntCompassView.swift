@@ -34,14 +34,15 @@ struct FoxhuntCompassView: View {
 	var body: some View {
 		GeometryReader { geometry in
 			let size = min(geometry.size.width, geometry.size.height)
-			let dialRadius = size * 0.38
+			let dialRadius = size * 0.44
 
 			VStack(spacing: 2) {
-				// Node name
-				Text(node.shortName.isEmpty ? node.longName : node.shortName)
-					.font(.system(size: 13, weight: .semibold, design: .rounded))
-					.foregroundStyle(.secondary)
-					.lineLimit(1)
+				// Node short name circle
+				WatchCircleText(
+					text: node.shortName.isEmpty ? "?" : node.shortName,
+					color: WatchCircleText.color(for: node.num),
+					circleSize: 32
+				)
 
 				ZStack {
 					// Fixed heading indicator at top
@@ -55,7 +56,7 @@ struct FoxhuntCompassView: View {
 					ZStack {
 						// Outer ring
 						Circle()
-							.stroke(Color.primary.opacity(0.15), lineWidth: 1)
+							.stroke(Color.primary.opacity(0.3), lineWidth: 3)
 							.frame(width: dialRadius * 2 + 8, height: dialRadius * 2 + 8)
 
 						// Tick marks (every 10° for watch readability)
@@ -265,6 +266,9 @@ extension Color {
 	var isWatchLight: Bool {
 		// Approximate: yellow and lighter colours are "light"
 		if self == .yellow || self == .orange || self == .white { return true }
-		return false
+		// For arbitrary colours, resolve RGBA and compute relative luminance
+		guard let components = cgColor?.components, components.count >= 3 else { return false }
+		let luminance = 0.299 * components[0] + 0.587 * components[1] + 0.114 * components[2]
+		return luminance > 0.6
 	}
 }

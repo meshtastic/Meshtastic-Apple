@@ -8,6 +8,7 @@ import WeatherKit
 import MapKit
 import CoreLocation
 import OSLog
+import WatchConnectivity
 
 struct NodeDetail: View {
 	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
@@ -479,6 +480,17 @@ struct NodeDetail: View {
 								}
 								if node.hasPositions {
 								#if !targetEnvironment(macCatalyst)
+									if node.latestPosition?.isPreciseLocation == true && WCSession.isSupported() && WCSession.default.isPaired && WCSession.default.isWatchAppInstalled {
+										Button {
+											WatchSessionManager.shared.sendNodeForFoxhunt(node.num)
+										} label: {
+											Label {
+												Text("Foxhunt on your watch")
+											} icon: {
+												Image("custom.foxhunt")
+											}
+										}
+									}
 									if node.latestPosition?.isPreciseLocation == true {
 										Button {
 											showingCompassSheet = true

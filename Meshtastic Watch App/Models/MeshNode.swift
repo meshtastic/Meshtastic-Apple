@@ -9,8 +9,8 @@ import Foundation
 import CoreLocation
 
 /// Lightweight in-memory model for a mesh node seen by the watch.
-/// Avoids Core Data dependency so the watch app can run standalone.
-struct MeshNode: Identifiable, Equatable {
+/// Transferred from the companion iOS app via WatchConnectivity.
+struct MeshNode: Identifiable, Equatable, Codable {
 	/// Meshtastic node number (unique on the mesh).
 	let num: UInt32
 	/// Stable identifier derived from the node number.

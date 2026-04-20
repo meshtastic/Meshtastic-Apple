@@ -23585,6 +23585,9 @@
         }
       }
     },
+    "Foxhunt on your watch" : {
+
+    },
     "Frequency" : {
       "localizations" : {
         "da" : {
@@ -29153,10 +29156,10 @@
         }
       }
     },
-    "Loading..." : {
+    "Loading TAK config from the node." : {
 
     },
-    "Loading TAK config from the node." : {
+    "Loading..." : {
 
     },
     "Local Network Access" : {

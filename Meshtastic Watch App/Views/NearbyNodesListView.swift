@@ -12,19 +12,28 @@ import CoreLocation
 /// position.  Tapping a node opens the foxhunt compass pointing at it.
 struct NearbyNodesListView: View {
 
-	@ObservedObject var bleManager: WatchBLEManager
+	@ObservedObject var phoneManager: PhoneConnectivityManager
 	@ObservedObject var locationManager: WatchLocationManager
+	@State private var selectedNode: MeshNode?
 
 	/// Nodes filtered to ≤ 0.5 miles with a known position, sorted by distance.
+	/// Also includes any nodes pinned as foxhunt targets from the iOS app.
 	private var nearbyNodes: [MeshNode] {
 		guard let userLoc = locationManager.currentLocation else { return [] }
-		return bleManager.nodes.values
+		let targets = phoneManager.foxhuntTargets
+		return phoneManager.nodes.values
 			.filter { node in
-				guard node.coordinate != nil,
-					  let dist = node.distance(from: userLoc) else { return false }
+				guard node.coordinate != nil else { return false }
+				// Always include foxhunt targets regardless of distance
+				if targets.contains(node.num) { return true }
+				guard let dist = node.distance(from: userLoc) else { return false }
 				return dist <= FoxhuntCompassView.maxDistanceMetres
 			}
 			.sorted { a, b in
+				let aIsTarget = targets.contains(a.num)
+				let bIsTarget = targets.contains(b.num)
+				// Foxhunt targets sort first
+				if aIsTarget != bIsTarget { return aIsTarget }
 				let dA = a.distance(from: userLoc) ?? .greatestFiniteMagnitude
 				let dB = b.distance(from: userLoc) ?? .greatestFiniteMagnitude
 				return dA < dB
@@ -39,7 +48,23 @@ struct NearbyNodesListView: View {
 				nodeList
 			}
 		}
-		.navigationTitle("Foxhunt")
+		.navigationTitle {
+			HStack(spacing: 4) {
+				Image("logo-white")
+					.resizable()
+					.scaledToFit()
+					.frame(height: 16)
+				Image("custom.foxhunt")
+					.font(.system(size: 14))
+					.foregroundStyle(.orange)
+				Text("Foxhunt")
+					.font(.headline)
+					.foregroundStyle(.green)
+			}
+		}
+		.sheet(item: $selectedNode) { node in
+			FoxhuntCompassView(node: node, locationManager: locationManager)
+		}
 	}
 
 	// MARK: - Sub-views
@@ -58,8 +83,8 @@ struct NearbyNodesListView: View {
 				.multilineTextAlignment(.center)
 				.padding(.horizontal)
 
-			if bleManager.connectionState != .connected {
-				Text("Connect to a radio first.")
+			if !phoneManager.hasReceivedData {
+				Text("Open Meshtastic on your iPhone to sync.")
 					.font(.caption2)
 					.foregroundStyle(.orange)
 			}
@@ -70,7 +95,9 @@ struct NearbyNodesListView: View {
 	@ViewBuilder
 	private var nodeList: some View {
 		List(nearbyNodes) { node in
-			NavigationLink(destination: FoxhuntCompassView(node: node, locationManager: locationManager)) {
+			Button {
+				selectedNode = node
+			} label: {
 				nodeRow(node)
 			}
 		}
@@ -79,7 +106,13 @@ struct NearbyNodesListView: View {
 	@ViewBuilder
 	private func nodeRow(_ node: MeshNode) -> some View {
 		let userLoc = locationManager.currentLocation
+		let isTarget = phoneManager.foxhuntTargets.contains(node.num)
 		HStack {
+			WatchCircleText(
+				text: node.shortName,
+				color: WatchCircleText.color(for: node.num),
+				circleSize: 28
+			)
 			VStack(alignment: .leading, spacing: 2) {
 				Text(node.longName)
 					.font(.system(size: 14, weight: .semibold))

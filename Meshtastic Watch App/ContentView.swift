@@ -11,23 +11,19 @@ import SwiftUI
 ///
 /// Uses a tab-based layout:
 /// 1. **Foxhunt** – nearby nodes list → compass
-/// 2. **Radio** – BLE device connection
+/// 2. **Phone** – companion phone connectivity status
 struct ContentView: View {
 
-	@StateObject private var bleManager = WatchBLEManager()
+	@StateObject private var phoneManager = PhoneConnectivityManager()
 	@StateObject private var locationManager = WatchLocationManager()
 
 	var body: some View {
 		TabView {
 			// Tab 1: Foxhunt
-			NavigationStack {
-				NearbyNodesListView(bleManager: bleManager, locationManager: locationManager)
-			}
+			NearbyNodesListView(phoneManager: phoneManager, locationManager: locationManager)
 
-			// Tab 2: Radio connection
-			NavigationStack {
-				DeviceConnectionView(bleManager: bleManager)
-			}
+			// Tab 2: Phone connectivity
+			DeviceConnectionView(phoneManager: phoneManager)
 		}
 		.tabViewStyle(.verticalPage)
 		.onAppear {
