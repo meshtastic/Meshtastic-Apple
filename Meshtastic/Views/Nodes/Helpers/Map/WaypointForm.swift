@@ -239,8 +239,8 @@ struct WaypointForm: View {
 							newWaypoint.longitudeI = waypoint.longitudeI
 							// Unicode scalar value for the icon emoji string
 							let unicodeScalers = icon.unicodeScalars
-							// First element as an UInt32
-							let unicode = unicodeScalers[unicodeScalers.startIndex].value
+						// First element as an UInt32 (fall back to 📍 if empty)
+						let unicode = unicodeScalers.first?.value ?? 128205
 							newWaypoint.icon = unicode
 							if locked {
 								if lockedTo == 0 {
