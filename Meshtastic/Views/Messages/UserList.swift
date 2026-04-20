@@ -114,7 +114,7 @@ fileprivate struct FilteredUserList: View {
 							.brightness(0.2)
 					}
 
-					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
+					CircleText(text: user.displayShortName, color: Color(UIColor(hex: UInt32(user.num))))
 
 					VStack(alignment: .leading) {
 						HStack {
@@ -131,7 +131,7 @@ fileprivate struct FilteredUserList: View {
 								Image(systemName: "lock.open.fill")
 									.foregroundColor(.yellow)
 							}
-							Text(user.longName ?? "Unknown".localized)
+							Text(user.displayLongName)
 								.font(.headline)
 								.allowsTightening(true)
 							Spacer()

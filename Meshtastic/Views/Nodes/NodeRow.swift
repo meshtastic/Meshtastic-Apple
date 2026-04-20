@@ -9,16 +9,16 @@ struct NodeRow: View {
 
 			HStack {
 
-				CircleText(text: node.user?.shortName ?? "???", color: Color.accentColor).offset(y: 1).padding(.trailing, 5)
+				CircleText(text: node.user?.displayShortName ?? "???", color: Color.accentColor).offset(y: 1).padding(.trailing, 5)
 					.offset(x: -15)
 
-				if UIDevice.current.userInterfaceIdiom == .pad {
-					Text(node.user?.longName ?? "Unknown").font(.headline)
-						.offset(x: -15)
-				} else {
-					Text(node.user?.longName ?? "Unknown").font(.title)
-						.offset(x: -15)
-				}
+	if UIDevice.current.userInterfaceIdiom == .pad {
+			Text(node.user?.displayLongName ?? "Unknown").font(.headline)
+			.offset(x: -15)
+		} else {
+			Text(node.user?.displayLongName ?? "Unknown").font(.title)
+			.offset(x: -15)
+		}
 			}
 			.padding(.bottom, 10)
 

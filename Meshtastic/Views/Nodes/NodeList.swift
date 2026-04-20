@@ -21,6 +21,7 @@ struct NodeList: View {
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
 	@State private var shareContactNode: NodeInfoEntity?
+	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
 	@StateObject var filters = NodeFilterParameters()
 	@State var isEditingFilters = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
@@ -40,7 +41,8 @@ struct NodeList: View {
 				connectedNode: connectedNode,
 				isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
 				deleteNodeId: $deleteNodeId,
-				shareContactNode: $shareContactNode
+				shareContactNode: $shareContactNode,
+				nodeForDisplayNameEdit: $nodeForDisplayNameEdit
 			)
 			.sheet(isPresented: $isEditingFilters) {
 				NodeListFilter(
@@ -93,16 +95,19 @@ struct NodeList: View {
 								do {
 									try await accessoryManager.removeNode(node: node, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
 								} catch {
-									Logger.data.error("Failed to delete node \(node.user?.longName ?? "Unknown".localized, privacy: .public)")
+									Logger.data.error("Failed to delete node \(node.user?.displayLongName ?? "Unknown".localized, privacy: .public)")
 								}
 							}
 						}
 					}
 				}
 			}
-			.sheet(item: $shareContactNode) { selectedNode in
-				ShareContactQRDialog(node: selectedNode.toProto())
-			}
+		.sheet(item: $shareContactNode) { selectedNode in
+			ShareContactQRDialog(node: selectedNode.toProto())
+		}
+		.sheet(item: $nodeForDisplayNameEdit) { node in
+			EditNodeDisplayNameView(node: node)
+		}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
 			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
 				ConnectedDevice(
@@ -160,6 +165,7 @@ fileprivate struct FilteredNodeList: View {
 	@Binding var isPresentingDeleteNodeAlert: Bool
 	@Binding var deleteNodeId: Int64
 	@Binding var shareContactNode: NodeInfoEntity?
+	@Binding var nodeForDisplayNameEdit: NodeInfoEntity?
 
 	// The initializer for the FetchRequest
 	init(
@@ -168,7 +174,8 @@ fileprivate struct FilteredNodeList: View {
 		connectedNode: NodeInfoEntity?,
 		isPresentingDeleteNodeAlert: Binding<Bool>,
 		deleteNodeId: Binding<Int64>,
-		shareContactNode: Binding<NodeInfoEntity?>
+		shareContactNode: Binding<NodeInfoEntity?>,
+		nodeForDisplayNameEdit: Binding<NodeInfoEntity?>
 	) {
 		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
 		request.sortDescriptors = [
@@ -185,6 +192,7 @@ fileprivate struct FilteredNodeList: View {
 		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
 		self._deleteNodeId = deleteNodeId
 		self._shareContactNode = shareContactNode
+		self._nodeForDisplayNameEdit = nodeForDisplayNameEdit
 	}
 
 	// The body of the view
@@ -213,6 +221,11 @@ fileprivate struct FilteredNodeList: View {
 		node: NodeInfoEntity,
 		connectedNode: NodeInfoEntity?
 	) -> some View {
+		Button {
+			nodeForDisplayNameEdit = node
+		} label: {
+			Label("Set display name", systemImage: "pencil.circle")
+		}
 		if let user = node.user {
 			NodeAlertsButton(context: context, node: node, user: user)
 			if !user.unmessagable && user.num == UserDefaults.preferredPeripheralNum {

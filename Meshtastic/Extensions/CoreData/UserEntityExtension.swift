@@ -65,6 +65,24 @@ extension UserEntity {
 	// Backwards-compatible property (uses viewContext)
 	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.container.viewContext) }
 
+	/// Local display name for this node (if set), otherwise the device longName.
+	var displayLongName: String {
+		if let custom = NodeDisplayNameStore.displayName(for: num) {
+			return custom
+		}
+		return longName ?? "Unknown".localized
+	}
+
+	/// Short label for this node: first 4 characters of display name if set, otherwise device shortName.
+	var displayShortName: String {
+		if let custom = NodeDisplayNameStore.displayName(for: num) {
+			let trimmed = custom.trimmingCharacters(in: .whitespacesAndNewlines)
+			if trimmed.isEmpty { return shortName ?? "?" }
+			return String(trimmed.prefix(4))
+		}
+		return shortName ?? "?"
+	}
+
 	/// SVG Images for Vendors who are signed project backers
 	var hardwareImage: String? {
 		guard let hwModel else { return nil }

@@ -28,7 +28,9 @@ struct NodeDetail: View {
 	@ObservedObject	var node: NodeInfoEntity
 	@State private var environmentSectionHeight: CGFloat = 0
 	@State var showingCompassSheet = false
-	
+	@State private var showingDisplayNameSheet = false
+	@State private var displayNameRefresh = 0
+
 	var body: some View {
 		NavigationStack {
 			ScrollViewReader { scrollView in
@@ -49,11 +51,11 @@ struct NodeDetail: View {
 					Section("Node") { // Node
 						HStack(alignment: .center) {
 							Spacer()
-							CircleText(
-								text: node.user?.shortName ?? "?",
-								color: Color(UIColor(hex: UInt32(node.num))),
-								circleSize: 75
-							)
+CircleText(
+									text: node.user?.displayShortName ?? "?",
+									color: Color(UIColor(hex: UInt32(node.num))),
+									circleSize: 75
+								)
 							if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
 								Spacer()
 								VStack {
@@ -118,6 +120,23 @@ struct NodeDetail: View {
 							Spacer()
 							Text(node.num.toHex())
 								.textSelection(.enabled)
+						}
+						.accessibilityElement(children: .combine)
+						Button {
+							showingDisplayNameSheet = true
+						} label: {
+							HStack {
+								Label {
+									Text("Display name")
+								} icon: {
+									Image(systemName: "pencil.circle")
+										.symbolRenderingMode(.hierarchical)
+								}
+								Spacer()
+								Text(node.user?.displayLongName ?? "—")
+									.foregroundStyle(.secondary)
+									.lineLimit(1)
+							}
 						}
 						.accessibilityElement(children: .combine)
 						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
@@ -575,14 +594,22 @@ struct NodeDetail: View {
 						}
 					}
 				}
-				.sheet(isPresented: $showingCompassSheet) {
-					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointName: node.user?.longName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
-						}
+.sheet(isPresented: $showingCompassSheet) {
+					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointName: node.user?.displayLongName, color: Color(UIColor(hex: UInt32(node.num))))
+				}
+				.sheet(isPresented: $showingDisplayNameSheet) {
+					EditNodeDisplayNameView(node: node)
+						.onDisappear { displayNameRefresh += 1 }
+				}
+				.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { _ in
+					displayNameRefresh += 1
+				}
 				.onAppear {
 					scrollView.scrollTo("topOfList", anchor: .top)
 				}
 				.listStyle(.insetGrouped)
-				.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
+				.navigationTitle(String((node.user?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
+				.id(displayNameRefresh)
 				.navigationBarTitleDisplayMode(.inline)
 			}
 		}

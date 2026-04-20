@@ -13,13 +13,11 @@ struct NodeListItem: View {
 	
 	private var accessibilityDescription: String {
 		var desc = ""
-		if let shortName = node.user?.shortName {
-			desc = shortName.formatNodeNameForVoiceOver()
-		} else if let longName = node.user?.longName {
-			desc = longName
-		} else {
-			desc = "Unknown".localized + " " + "Node".localized
-		}
+		let shortName = node.user?.displayShortName ?? "?"
+		let longName = node.user?.displayLongName ?? "Unknown".localized
+		desc = shortName.formatNodeNameForVoiceOver()
+		if desc.isEmpty { desc = longName }
+		if desc.isEmpty { desc = "Unknown".localized + " " + "Node".localized }
 		if isDirectlyConnected {
 			desc += ", currently connected"
 		}
@@ -128,7 +126,7 @@ struct NodeListItem: View {
 		LazyVStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
+					CircleText(text: node.user?.displayShortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 						.padding(.trailing, 5)
 					if node.latestDeviceMetrics != nil {
 						BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
@@ -138,10 +136,10 @@ struct NodeListItem: View {
 				VStack(alignment: .leading) {
 					HStack {
 						let (image, color) = userKeyStatus
-						IconAndText(systemName: image,
-									imageColor: color,
-									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
-									textColor: .primary)
+			IconAndText(systemName: image,
+				imageColor: color,
+				text: (node.user?.displayLongName ?? "Unknown".localized).addingVariationSelectors,
+				textColor: .primary)
 						if node.favorite {
 							Spacer()
 							Image(systemName: "star.fill")
