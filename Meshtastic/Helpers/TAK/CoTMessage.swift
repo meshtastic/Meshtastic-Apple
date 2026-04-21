@@ -75,6 +75,13 @@ struct CoTMessage: Identifiable, Sendable {
 	/// Used to preserve generic CoT elements (colors, shapes, labels, etc.)
 	var rawDetailXML: String?
 
+	/// The complete original `<event>...</event>` XML as received from the
+	/// TAK client. Preferred over `toXML()` for the SDK compression path
+	/// because `toXML()` loses shape geometry (`<link point="..."/>`
+	/// vertices) that the app's parser treats as "known" elements but has
+	/// no field to store.
+	var sourceEventXml: String?
+
 	// MARK: - Initialization
 
 	init(
@@ -281,14 +288,19 @@ struct CoTMessage: Identifiable, Sendable {
 
 	// MARK: - XML Generation
 
-	/// Generate CoT XML string for transmission to TAK clients
+	/// Generate CoT XML string for transmission to TAK clients.
+	///
+	/// **Important:** the output must NOT include an `<?xml ... ?>` declaration. The CoT TCP
+	/// streaming protocol used by ATAK / iTAK / WinTAK is a continuous sequence of `<event>`
+	/// elements concatenated together; an XML declaration is only legal at the very start
+	/// of a document and the client will drop the connection as malformed the moment it
+	/// sees a second declaration mid-stream.
 	private static let xmlDateFormatStyle = Date.ISO8601FormatStyle(includingFractionalSeconds: true, timeZone: TimeZone(secondsFromGMT: 0)!)
 
 	func toXML() -> String {
 		let dateFormatter = Self.xmlDateFormatStyle
 
-		var cot = "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
-		cot += "<event version='2.0' uid='\(uid.xmlEscaped)' "
+		var cot = "<event version='2.0' uid='\(uid.xmlEscaped)' "
 		cot += "type='\(type)' "
 		cot += "time='\(time.formatted(dateFormatter))' "
 		cot += "start='\(start.formatted(dateFormatter))' "

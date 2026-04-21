@@ -135,13 +135,16 @@ final class TAKMeshtasticBridge {
 
 	// MARK: - TAK → Meshtastic (CoT to TAKPacket)
 
-	/// Send a CoT message received from TAK to the Meshtastic mesh
-	func sendToMesh(_ cotMessage: CoTMessage) async {
+	/// Send a CoT message received from TAK to the Meshtastic mesh.
+	/// `clientInfo` carries the originating TAK client's identity (learned from
+	/// their PLI) and is used as a fallback callsign for GeoChat messages that
+	/// lack a `<contact>` element.
+	func sendToMesh(_ cotMessage: CoTMessage, clientInfo: TAKClientInfo? = nil) async {
 		guard let takServerManager else {
 			Logger.tak.warning("Cannot send to mesh: TAKServerManager not available")
 			return
 		}
-		
+
 		guard !takServerManager.userReadOnlyMode else {
 			Logger.tak.info("TAK Server in read-only mode: Ignoring message from TAK client")
 			return
@@ -159,33 +162,33 @@ final class TAKMeshtasticBridge {
 
 		let channel = UInt32(TAKServerManager.shared.channel)
 
-		// Determine send method based on CoT type
-		let sendMethod = GenericCoTHandler.shared.classifySendMethod(for: cotMessage)
+		// Enrich GeoChat messages with a <contact> element when the original
+		// XML lacks one. iTAK/ATAK GeoChat events put the sender identity
+		// only in <__chat senderCallsign="...">, but the SDK parser extracts
+		// the proto callsign field from <contact callsign="...">. Without a
+		// <contact> element, the proto callsign is empty → "UNKNOWN" on the
+		// receiving end. Only applies to messages FROM the connected TAK
+		// client — mesh-originated messages flow through receivedFromMesh().
+		var enrichedMessage = cotMessage
+		if cotMessage.type == "b-t-f",
+		   (cotMessage.contact?.callsign ?? "").isEmpty {
+			let cs = cotMessage.chat?.senderCallsign
+				?? clientInfo?.callsign
+				?? "UNKNOWN"
+			enrichedMessage.contact = CoTContact(callsign: cs)
+		}
 
-		switch sendMethod {
-		case .takPacketPLI, .takPacketChat:
-			// Use TAKPacket protobuf on ATAK_PLUGIN port (72)
-			guard let takPacket = convertToTAKPacket(cot: cotMessage) else {
-				Logger.tak.warning("Failed to convert CoT to TAKPacket: \(cotMessage.type)")
-				return
-			}
-
-			do {
-				try await accessoryManager.sendTAKPacket(takPacket, channel: channel)
-				Logger.tak.info("Sent TAKPacket to mesh: \(cotMessage.type)")
-			} catch {
-				Logger.tak.error("Failed to send TAKPacket to mesh: \(error.localizedDescription)")
-			}
-
-		case .exiDirect, .exiFountain:
-			// Use EXI compression on ATAK_FORWARDER port (257)
-			GenericCoTHandler.shared.accessoryManager = accessoryManager
-			do {
-				try await GenericCoTHandler.shared.sendGenericCoT(cotMessage, channel: channel)
-				Logger.tak.info("Sent generic CoT to mesh via ATAK_FORWARDER: \(cotMessage.type)")
-			} catch {
-				Logger.tak.error("Failed to send generic CoT to mesh: \(error.localizedDescription)")
-			}
+		// V2 protocol: Convert CoT XML → compress with SDK → send on port 78.
+		// Prefer the original source XML from the TAK client — toXML() loses
+		// shape geometry (<link point="..."/> vertices) that the app's parser
+		// strips as "known" elements but has no field to store.
+		// For GeoChat, use toXML() since the enrichment modifies contact.
+		do {
+			let cotXml = (cotMessage.type != "b-t-f" ? cotMessage.sourceEventXml : nil)
+				?? enrichedMessage.toXML()
+			try await accessoryManager.sendCoTToMeshV2(cotXml, channel: channel)
+		} catch {
+			Logger.tak.error("Failed to send V2 to mesh: \(error.localizedDescription)")
 		}
 	}
 
