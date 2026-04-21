@@ -202,7 +202,10 @@ actor BLETransport: Transport {
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		guard let peripheral = discoveredPeripherals[UUID(uuidString: device.identifier)!] else {
+		guard let uuid = UUID(uuidString: device.identifier) else {
+			throw AccessoryError.connectionFailed("Invalid peripheral identifier: '\(device.identifier)'")
+		}
+		guard let peripheral = discoveredPeripherals[uuid] else {
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		
@@ -265,9 +268,14 @@ actor BLETransport: Transport {
 				// Should disconnect, show error, and retry when re-advertised
 				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
 				shouldReconnect = true
-			default:
-				// Fallback for other CBError codes
+			case .connectionFailed: // 4
+				// Transient radio / power-cycle scenario — attempt reconnect
 				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
+				shouldReconnect = true
+			default:
+				// Fallback for other CBError codes — treat as transient to avoid permanent hangs
+				Logger.transport.error("🛜 [BLETransport] Disconnected with CBError code: \(cbError.code.rawValue) - \(cbError.localizedDescription)")
+				shouldReconnect = true
 			}
 		case let otherError:
 			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription)")
@@ -277,12 +285,15 @@ actor BLETransport: Transport {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Resuming connection continuation with error.")
 			continuation.resume(throwing: error)
 			self.connectContinuation = nil
+			// Still notify the transport so state resets cleanly
+			connectionDidDisconnect(fromPeripheral: peripheral)
 		} else if let activeConnection = self.activeConnection {
-			// Inform the active connection that there was an error and it should disconnect
-			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Disconnecting the active connection.")
+			// Inform the active connection that there was an error and it should disconnect.
+			// BLEConnection.disconnect(withError:shouldReconnect:) internally calls connectionDidDisconnect,
+			// so we must NOT call it again here — doing so would emit duplicate .deviceLost events.
+			Logger.transport.debug("🛜 [BLETransport] Error while connected. Disconnecting the active connection.")
 			Task {
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
-				await self.connectionDidDisconnect(fromPeripheral: peripheral)
 			}
 		} else {
 			Logger.transport.error("🚨 [BLETransport] unhandled error.  May be in an inconsistent state.")
@@ -413,7 +424,7 @@ actor BLETransport: Transport {
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
 				let connectTask = Task { @MainActor in
 					// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
-					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: false, wantDatabase: false, versionCheck: false)
+					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
 				}
 				do {
 					try await connectTask.value

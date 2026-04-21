@@ -179,6 +179,9 @@ actor BLEConnection: Connection {
 	
 	func getPacketStream() -> AsyncStream<ConnectionEvent> {
 		AsyncStream<ConnectionEvent> { continuation in
+			// Finish any previous stream so its consumer's `for await` loop terminates cleanly
+			// instead of hanging indefinitely on the abandoned continuation.
+			self.connectionStreamContinuation?.finish()
 			self.connectionStreamContinuation = continuation
 		}
 	}
