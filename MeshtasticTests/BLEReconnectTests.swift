@@ -5,7 +5,7 @@ import Testing
 
 // MARK: - BLE Reconnect Bug-Fix Tests
 //
-// These tests cover the fixes made in fix/ble-reconnect-crash:
+// These tests cover the BLE reconnect crash fixes:
 //   • connect(to:) no longer force-unwraps UUID(uuidString:) — invalid identifiers throw gracefully
 //   • Device model correctly represents BLE identifier states
 
@@ -30,9 +30,11 @@ struct BLEReconnectTests {
 			#expect(device.identifier == validUUID)
 		}
 
-		/// An empty identifier must NOT crash — the fix converts the force-unwrap to a safe guard-let.
-		/// Prior to the fix, `UUID(uuidString: "")!` would trap at runtime.
-		@Test func emptyIdentifierDoesNotProduceCrash() {
+		/// An empty identifier is accepted by the Device model layer without crashing.
+		/// The guard-let that prevents a crash lives inside BLETransport.connect(to:); the Foundation
+		/// API behaviour it relies on (UUID(uuidString:) returning nil) is covered by
+		/// `invalidUUIDStringsReturnNilFromFoundation` below.
+		@Test func emptyIdentifierStoredSafelyInDeviceModel() {
 			let id = UUID()
 			let device = Device(
 				id: id,
@@ -40,8 +42,6 @@ struct BLEReconnectTests {
 				transportType: .ble,
 				identifier: ""
 			)
-			// Device construction itself never crashes — the guard-let is inside BLETransport.connect(to:).
-			// This test validates the Device model accepts the value safely.
 			#expect(device.identifier == "")
 		}
 
@@ -80,8 +80,10 @@ struct BLEReconnectTests {
 	}
 
 	// MARK: - BLE Signal Strength edge cases
+	// Boundary values (-65, -84, -85, etc.) are already covered by DeviceTests.signalStrength
+	// in ConnectViewTests.swift; only extreme values outside that range are added here.
 
-	@Suite("Signal strength boundary values")
+	@Suite("Signal strength edge cases")
 	struct SignalStrengthBoundaryTests {
 
 		static let testUUID = UUID()
@@ -90,27 +92,7 @@ struct BLEReconnectTests {
 			Device(id: Self.testUUID, name: "R", transportType: .ble, identifier: "ID", rssi: rssi)
 		}
 
-		/// Exact boundary -65: should be .normal (not .strong).
-		@Test func rssiAtNormalStrongBoundary() {
-			#expect(device(rssi: -65).getSignalStrength() == .normal)
-		}
-
-		/// One below the boundary (-64): should be .strong.
-		@Test func rssiJustAboveNormalStrongBoundary() {
-			#expect(device(rssi: -64).getSignalStrength() == .strong)
-		}
-
-		/// Exact boundary -85: should be .weak (not .normal).
-		@Test func rssiAtWeakNormalBoundary() {
-			#expect(device(rssi: -85).getSignalStrength() == .weak)
-		}
-
-		/// One above the boundary (-84): should be .normal.
-		@Test func rssiJustAboveWeakNormalBoundary() {
-			#expect(device(rssi: -84).getSignalStrength() == .normal)
-		}
-
-		/// Extreme values should not crash.
+		/// Extreme RSSI values (beyond the documented -120 .. 0 range) must not crash.
 		@Test(arguments: [0, -1, -120, Int.min])
 		func extremeRSSIValuesDoNotCrash(rssi: Int) {
 			let strength = device(rssi: rssi).getSignalStrength()

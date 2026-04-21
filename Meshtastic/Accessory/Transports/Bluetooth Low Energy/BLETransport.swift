@@ -279,14 +279,15 @@ actor BLETransport: Transport {
 			}
 		case let otherError:
 			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription)")
+			shouldReconnect = true
 		}
 		
 		if let continuation = self.connectContinuation {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Resuming connection continuation with error.")
 			continuation.resume(throwing: error)
 			self.connectContinuation = nil
-			// Still notify the transport so state resets cleanly
-			connectionDidDisconnect(fromPeripheral: peripheral)
+			// Do NOT call connectionDidDisconnect here — connect(to:)'s catch block already calls it
+			// after the continuation throws, so calling it here would emit duplicate .deviceLost events.
 		} else if let activeConnection = self.activeConnection {
 			// Inform the active connection that there was an error and it should disconnect.
 			// BLEConnection.disconnect(withError:shouldReconnect:) internally calls connectionDidDisconnect,
