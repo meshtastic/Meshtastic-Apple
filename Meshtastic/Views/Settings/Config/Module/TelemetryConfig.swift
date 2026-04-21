@@ -241,3 +241,10 @@ struct TelemetryConfig: View {
 		self.hasChanges = false
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return TelemetryConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}

@@ -25,7 +25,10 @@ struct Connect: View {
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
+	@State var showSecurityVersionNag = false
+#if !targetEnvironment(macCatalyst)
 	@State var liveActivityStarted = false
+#endif
 	@ObservedObject var manualConnections = ManualConnectionList.shared
 	
 	var body: some View {
@@ -347,6 +350,16 @@ struct Connect: View {
 		//		.onChange(of: accessoryManager) {
 		//			invalidFirmwareVersion = self.bleManager.invalidVersion
 		//		}
+		.sheet(isPresented: $invalidFirmwareVersion) {
+			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
+		}
+		.sheet(isPresented: $showSecurityVersionNag) {
+			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
+		}
 		.onChange(of: self.accessoryManager.state) { _, state in
 			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
@@ -364,6 +377,13 @@ struct Connect: View {
 				} catch {
 					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
 				}
+			// Check firmware version on connection (only if version is known)
+			if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
+				let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
+				let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
+				invalidFirmwareVersion = !meetsMinimumVersion
+				showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
+			}
 			}
 		}
 	}
@@ -376,7 +396,7 @@ struct Connect: View {
 		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
 		let mostRecent = localStats?.lastObject as? TelemetryEntity
 		
-		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown")
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
@@ -565,18 +585,18 @@ struct DeviceConnectRow: View {
 				}
 				// Show transport type
 #if !targetEnvironment(macCatalyst)
-				HStack(alignment: .center){
+				HStack(alignment: .center) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
-						VStack (alignment: .leading) {
+						VStack(alignment: .leading) {
 							Text("Last seen device:")
 							Text("\(String(describing: device))")
 						}
 					}
 				}.padding(.top, 3.0)
 #else
-				//Different alignment for Mac
-				HStack(alignment: .firstTextBaseline){
+				// Different alignment for Mac
+				HStack(alignment: .firstTextBaseline) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
 						Text("Last seen device: \(String(describing: device))")
@@ -609,4 +629,3 @@ struct DeviceConnectRow: View {
 			}
 	}
 }
-

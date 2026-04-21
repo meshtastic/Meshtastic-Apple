@@ -119,3 +119,12 @@ struct LEDIndicator: View {
 			}
 	}
 }
+
+#Preview {
+	HStack(spacing: 12) {
+		LEDIndicator(flash: .constant(1), color: .green)
+			.frame(width: 10, height: 10)
+		LEDIndicator(flash: .constant(0), color: .red)
+			.frame(width: 10, height: 10)
+	}
+}

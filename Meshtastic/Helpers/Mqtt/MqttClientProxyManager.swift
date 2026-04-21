@@ -184,4 +184,3 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		Logger.mqtt.debug("📲 [MQTT Client Proxy] pong")
 	}
 }
-

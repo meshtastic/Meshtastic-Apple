@@ -114,3 +114,10 @@ struct RtttlConfig: View {
 		self.hasChanges = false
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return RtttlConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}
