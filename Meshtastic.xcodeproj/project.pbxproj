@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0529232A2F68DB9C00930463 /* WindSpeedColumnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052923282F68DB7E00930463 /* WindSpeedColumnTests.swift */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
@@ -347,6 +348,7 @@
 
 /* Begin PBXFileReference section */
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
+		052923282F68DB7E00930463 /* WindSpeedColumnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindSpeedColumnTests.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
@@ -758,6 +760,7 @@
 				231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */,
 				2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */,
 				231B3F262D0885240069A07D /* MetricsColumnDetail.swift */,
+				052923282F68DB7E00930463 /* WindSpeedColumnTests.swift */,
 			);
 			path = "Metrics Columns";
 			sourceTree = "<group>";
@@ -1662,6 +1665,7 @@
 			files = (
 				AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
 				25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
+				0529232A2F68DB9C00930463 /* WindSpeedColumnTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

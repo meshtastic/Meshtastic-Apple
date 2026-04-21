@@ -199,14 +199,21 @@ extension MetricsColumnList {
 				visible: false,
 				tableBody: { _, speed in
 					speed.map {
-						let windSpeed = Measurement(
-							value: Double($0), unit: UnitSpeed.kilometersPerHour)
+						let speedInMetersPerSecond = Double($0)
+						
+						let windSpeed: Measurement<UnitSpeed>
+						if speedInMetersPerSecond < 10 {
+							windSpeed = Measurement(value: speedInMetersPerSecond, unit: UnitSpeed.metersPerSecond)
+						} else {
+							windSpeed = Measurement(value: speedInMetersPerSecond, unit: UnitSpeed.kilometersPerHour)
+						}
+						
 						return Text(
 							windSpeed.formatted(
 								.measurement(
 									width: .abbreviated,
 									numberFormatStyle: .number.grouping(.never)
-													.precision(.fractionLength(0))))
+										.precision(.fractionLength(0))))
 						)
 					} ?? Text(verbatim: Constants.nilValueIndicator)
 				}),
