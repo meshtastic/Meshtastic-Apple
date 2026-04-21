@@ -108,6 +108,17 @@ final class TAKServerManager: ObservableObject {
 	private var connectionTasks: [ObjectIdentifier: Task<Void, Never>] = [:]
 	private let queue = DispatchQueue(label: "tak.server", qos: .userInitiated)
 
+	// Offline message queue — buffers mesh-originated CoT messages when no TAK
+	// clients are connected, then drains them when a client reconnects. Entries
+	// expire after offlineQueueTTL to avoid delivering stale situational data.
+	private struct QueuedMessage {
+		let cotMessage: CoTMessage
+		let enqueuedAt: Date
+	}
+	private var offlineQueue: [QueuedMessage] = []
+	private let offlineQueueTTL: TimeInterval = 5 * 60  // 5 minutes
+	private let offlineQueueMaxSize = 50
+
 	private init() {}
 
 	// MARK: - Initialization
@@ -478,10 +489,13 @@ final class TAKServerManager: ObservableObject {
 		case .connected(let clientInfo):
 			connectedClients.append(clientInfo)
 			Logger.tak.info("TAK client connected: \(clientInfo.displayName)")
-			
+
+			// Drain any messages that arrived while no clients were connected
+			await drainOfflineQueue()
+
 			// Send all mesh node positions to the newly connected client
 			if meshToCotEnabled {
-				await bridge?.broadcastAllNodesToTAK()
+				await ensureBridge().broadcastAllNodesToTAK()
 			}
 
 		case .clientInfoUpdated(let clientInfo):
@@ -490,10 +504,11 @@ final class TAKServerManager: ObservableObject {
 				connectedClients[index] = clientInfo
 			}
 
-		case .message(let cotMessage):
+		case .message(let cotMessage, let clientInfo):
 			Logger.tak.info("Received CoT from TAK client: \(cotMessage.type)")
-			// Forward to Meshtastic mesh via bridge
-			await bridge?.sendToMesh(cotMessage)
+			// Forward to Meshtastic mesh via bridge (lazily create if needed)
+			let activeBridge = ensureBridge()
+			await activeBridge.sendToMesh(cotMessage, clientInfo: clientInfo)
 
 		case .disconnected:
 			await removeConnection(connectionId)
@@ -516,9 +531,20 @@ final class TAKServerManager: ObservableObject {
 
 	// MARK: - Message Distribution
 
-	/// Broadcast a CoT message to all connected TAK clients
+	/// Broadcast a CoT message to all connected TAK clients.
+	/// When no clients are connected, queues the message for delivery
+	/// when a client reconnects (up to 5-minute TTL, max 50 messages).
 	func broadcast(_ cotMessage: CoTMessage) async {
-		guard !connections.isEmpty else { return }
+		guard !connections.isEmpty else {
+			// No clients — queue for delivery on reconnect
+			let cutoff = Date().addingTimeInterval(-offlineQueueTTL)
+			offlineQueue.removeAll { $0.enqueuedAt < cutoff }
+			if offlineQueue.count >= offlineQueueMaxSize {
+				offlineQueue.removeFirst()
+			}
+			offlineQueue.append(QueuedMessage(cotMessage: cotMessage, enqueuedAt: Date()))
+			return
+		}
 
 		Logger.tak.info("Broadcasting CoT to \(self.connections.count) TAK client(s): \(cotMessage.type)")
 
@@ -532,24 +558,59 @@ final class TAKServerManager: ObservableObject {
 			}
 		}
 	}
+
+	/// Broadcast raw CoT XML verbatim to TAK clients, bypassing CoTMessage
+	/// parsing which strips shape detail elements (vertices, colors, stroke).
+	func broadcastRawXml(_ xml: String) async {
+		guard !connections.isEmpty else { return }
+		for (connectionId, connection) in connections {
+			do {
+				try await connection.sendRawXML(xml)
+			} catch {
+				Logger.tak.error("Failed to send raw XML to TAK client: \(error.localizedDescription)")
+				await removeConnection(connectionId)
+			}
+		}
+	}
+
+	/// Drain any queued messages to newly connected TAK clients.
+	private func drainOfflineQueue() async {
+		let cutoff = Date().addingTimeInterval(-offlineQueueTTL)
+		let valid = offlineQueue.filter { $0.enqueuedAt >= cutoff }.map(\.cotMessage)
+		offlineQueue.removeAll()
+		if !valid.isEmpty {
+			Logger.tak.info("Draining \(valid.count) queued message(s) to reconnected TAK client")
+			for msg in valid {
+				await broadcast(msg)
+			}
+		}
+	}
 	
 	/// Ensure bridge is initialized and ready for mesh-to-CoT broadcasting
 	/// Returns true if broadcasting is possible (meshToCotEnabled, server running, clients connected)
 	/// Call this before any mesh-to-CoT broadcast operations
 	func ensureBridgeReadyForMeshToCot() -> Bool {
 		guard meshToCotEnabled, isRunning, !connectedClients.isEmpty else { return false }
-		
-		if bridge == nil {
-			Logger.tak.info("Initializing bridge for mesh-to-CoT broadcast")
-			let accessoryManager = AccessoryManager.shared
-			let newBridge = TAKMeshtasticBridge(
-				accessoryManager: accessoryManager,
-				takServerManager: self
-			)
-			newBridge.context = accessoryManager.context
-			bridge = newBridge
-		}
+		ensureBridge()
 		return true
+	}
+
+	/// Lazily create the TAK bridge if it does not already exist.
+	/// Used by both mesh-to-CoT broadcasts and CoT-to-mesh forwarding so that
+	/// the bridge always exists whenever it is needed, regardless of whether
+	/// AccessoryManager.initializeTAKBridge() has already fired.
+	@discardableResult
+	func ensureBridge() -> TAKMeshtasticBridge {
+		if let bridge { return bridge }
+		Logger.tak.info("Lazily initializing TAK bridge")
+		let accessoryManager = AccessoryManager.shared
+		let newBridge = TAKMeshtasticBridge(
+			accessoryManager: accessoryManager,
+			takServerManager: self
+		)
+		newBridge.context = accessoryManager.context
+		bridge = newBridge
+		return newBridge
 	}
 
 	/// Send a CoT message to a specific client
