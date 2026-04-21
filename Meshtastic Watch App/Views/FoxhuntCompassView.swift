@@ -51,6 +51,16 @@ struct FoxhuntCompassView: View {
 						.stroke(Color.primary.opacity(0.3), lineWidth: 5)
 						.frame(width: dialRadius * 2 + 8, height: dialRadius * 2 + 8)
 
+					// Directional cone behind labels
+					if let bearing = bearingToNode() {
+						DirectionCone(
+							bearing: bearing,
+							heading: locationManager.heading,
+							radius: dialRadius + 4,
+							color: distanceColor
+						)
+					}
+
 					// Tick marks (every 10° for watch readability)
 					ForEach(0..<36, id: \.self) { i in
 						let deg = Double(i) * 10
@@ -78,19 +88,11 @@ struct FoxhuntCompassView: View {
 
 					// Bearing arrow to target
 					if let bearing = bearingToNode() {
-						// Directional cone showing general heading direction
-						DirectionCone(
-							bearing: bearing,
-							heading: locationManager.heading,
-							radius: dialRadius + 4,
-							color: distanceColor
-						)
-
 						Image(systemName: "location.north.fill")
 							.font(.system(size: 26, weight: .bold))
 							.foregroundStyle(distanceColor)
 							.shadow(color: distanceColor.opacity(0.8), radius: 6)
-						.offset(y: -(dialRadius + 28))
+							.offset(y: -(dialRadius + 28))
 							.rotationEffect(.degrees(bearing))
 							.onChange(of: locationManager.heading) {
 								checkAlignment(bearing: bearing, heading: locationManager.heading)
