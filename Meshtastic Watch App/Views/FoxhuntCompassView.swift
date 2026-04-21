@@ -42,13 +42,13 @@ struct FoxhuntCompassView: View {
 					.font(.system(size: 8, weight: .bold))
 					.foregroundStyle(.white.opacity(0.9))
 					.rotationEffect(.degrees(180))
-					.offset(y: -(dialRadius + 6))
+					.offset(y: -(dialRadius + 12))
 
 				// Rotating compass group
 				ZStack {
 					// Outer ring
 					Circle()
-						.stroke(Color.primary.opacity(0.3), lineWidth: 3)
+						.stroke(Color.primary.opacity(0.3), lineWidth: 5)
 						.frame(width: dialRadius * 2 + 8, height: dialRadius * 2 + 8)
 
 					// Tick marks (every 10° for watch readability)
@@ -90,7 +90,7 @@ struct FoxhuntCompassView: View {
 							.font(.system(size: 26, weight: .bold))
 							.foregroundStyle(distanceColor)
 							.shadow(color: distanceColor.opacity(0.8), radius: 6)
-							.offset(y: -(dialRadius + 16))
+						.offset(y: -(dialRadius + 28))
 							.rotationEffect(.degrees(bearing))
 							.onChange(of: locationManager.heading) {
 								checkAlignment(bearing: bearing, heading: locationManager.heading)
@@ -103,10 +103,11 @@ struct FoxhuntCompassView: View {
 				WatchCircleText(
 					text: node.shortName.isEmpty ? "?" : node.shortName,
 					color: WatchCircleText.color(for: node.num),
-					circleSize: 26
+					circleSize: 34
 				)
-				.offset(y: -(dialRadius + 32))
+				.offset(y: -(dialRadius + 64))
 			}
+			.offset(y: 31)
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
 		}
 		.onAppear {

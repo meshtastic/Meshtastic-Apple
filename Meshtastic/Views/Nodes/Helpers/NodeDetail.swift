@@ -486,7 +486,7 @@ struct NodeDetail: View {
 											Label {
 												Text("Foxhunt on your watch")
 											} icon: {
-												Image("custom.foxhunt")
+												Image(systemName: "dot.crosshair")
 											}
 										}
 									}
