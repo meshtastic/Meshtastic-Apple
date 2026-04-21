@@ -97,6 +97,8 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>We use NFC tags to share node contacts</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>

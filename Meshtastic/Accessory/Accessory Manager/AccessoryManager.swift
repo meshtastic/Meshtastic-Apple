@@ -376,7 +376,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	func didReceive(_ event: ConnectionEvent) async {
 		packetsReceived += 1
-		
+
 		switch event {
 		case .data(let fromRadio):
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
@@ -538,19 +538,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					// Broadcast waypoint to TAK clients
 					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
 						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")
-						// Ensure bridge is initialized before calling (not optional chaining, or lazy init won't run)
 						let server = TAKServerManager.shared
-						if server.meshToCotEnabled && server.isRunning && !server.connectedClients.isEmpty {
-							// Force bridge initialization if needed
-							if server.bridge == nil {
-								Logger.tak.info("Initializing bridge on demand")
-								let bridge = TAKMeshtasticBridge(
-									accessoryManager: AccessoryManager.shared,
-									takServerManager: server
-								)
-								bridge.context = AccessoryManager.shared.context
-								server.bridge = bridge
-							}
+						if server.ensureBridgeReadyForMeshToCot() {
 							await server.bridge?.broadcastMeshWaypointToTAK(waypoint: waypoint, from: packet.from)
 						} else {
 							Logger.tak.info("Waypoint broadcast skipped: server not ready or no clients")
@@ -619,7 +608,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .privateApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
 				case .atakForwarder:
-					handleATAKForwarderPacket(packet)
+					Logger.mesh.info("🕸️ MESH PACKET received for ATAK Forwarder (legacy, ignored)")
 				case .simulatorApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
 				case .storeForwardPlusplusApp:

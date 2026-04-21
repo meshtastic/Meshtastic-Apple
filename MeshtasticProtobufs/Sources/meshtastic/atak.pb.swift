@@ -2389,14 +2389,17 @@ public struct Route: Sendable {
 ///
 /// All numeric fields are tight varints so a complete 9-line request fits
 /// in well under 100 bytes of proto on the wire.
-public struct CasevacReport: Sendable {
+public struct CasevacReport: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Line 3: precedence / urgency.
-  public var precedence: CasevacReport.Precedence = .unspecified
+  public var precedence: CasevacReport.Precedence {
+    get {return _storage._precedence}
+    set {_uniqueStorage()._precedence = newValue}
+  }
 
   ///
   /// Line 4: special equipment required, as a bitfield.
@@ -2405,42 +2408,78 @@ public struct CasevacReport: Sendable {
   ///   bit 2: extraction equipment
   ///   bit 3: ventilator
   ///   bit 4: blood
-  public var equipmentFlags: UInt32 = 0
+  public var equipmentFlags: UInt32 {
+    get {return _storage._equipmentFlags}
+    set {_uniqueStorage()._equipmentFlags = newValue}
+  }
 
   ///
   /// Line 5: number of litter (stretcher-bound) patients.
-  public var litterPatients: UInt32 = 0
+  public var litterPatients: UInt32 {
+    get {return _storage._litterPatients}
+    set {_uniqueStorage()._litterPatients = newValue}
+  }
 
   ///
   /// Line 5: number of ambulatory (walking-wounded) patients.
-  public var ambulatoryPatients: UInt32 = 0
+  public var ambulatoryPatients: UInt32 {
+    get {return _storage._ambulatoryPatients}
+    set {_uniqueStorage()._ambulatoryPatients = newValue}
+  }
 
   ///
   /// Line 6: security situation at the PZ.
-  public var security: CasevacReport.Security = .unspecified
+  public var security: CasevacReport.Security {
+    get {return _storage._security}
+    set {_uniqueStorage()._security = newValue}
+  }
 
   ///
   /// Line 7: HLZ marking method.
-  public var hlzMarking: CasevacReport.HlzMarking = .unspecified
+  public var hlzMarking: CasevacReport.HlzMarking {
+    get {return _storage._hlzMarking}
+    set {_uniqueStorage()._hlzMarking = newValue}
+  }
 
   ///
   /// Line 7 supplementary: short free-text describing the zone marker
   /// (e.g. "Green smoke", "VS-17 panel west"). Capped tight in options.
-  public var zoneMarker: String = String()
+  public var zoneMarker: String {
+    get {return _storage._zoneMarker}
+    set {_uniqueStorage()._zoneMarker = newValue}
+  }
 
   /// --- Line 8: patient nationality counts ---
-  public var usMilitary: UInt32 = 0
+  public var usMilitary: UInt32 {
+    get {return _storage._usMilitary}
+    set {_uniqueStorage()._usMilitary = newValue}
+  }
 
-  public var usCivilian: UInt32 = 0
+  public var usCivilian: UInt32 {
+    get {return _storage._usCivilian}
+    set {_uniqueStorage()._usCivilian = newValue}
+  }
 
-  public var nonUsMilitary: UInt32 = 0
+  public var nonUsMilitary: UInt32 {
+    get {return _storage._nonUsMilitary}
+    set {_uniqueStorage()._nonUsMilitary = newValue}
+  }
 
-  public var nonUsCivilian: UInt32 = 0
+  public var nonUsCivilian: UInt32 {
+    get {return _storage._nonUsCivilian}
+    set {_uniqueStorage()._nonUsCivilian = newValue}
+  }
 
   /// enemy prisoner of war
-  public var epw: UInt32 = 0
+  public var epw: UInt32 {
+    get {return _storage._epw}
+    set {_uniqueStorage()._epw = newValue}
+  }
 
-  public var child: UInt32 = 0
+  public var child: UInt32 {
+    get {return _storage._child}
+    set {_uniqueStorage()._child = newValue}
+  }
 
   ///
   /// Line 9: terrain and obstacles at the PZ, as a bitfield.
@@ -2450,12 +2489,159 @@ public struct CasevacReport: Sendable {
   ///   bit 3: trees
   ///   bit 4: wires
   ///   bit 5: other
-  public var terrainFlags: UInt32 = 0
+  public var terrainFlags: UInt32 {
+    get {return _storage._terrainFlags}
+    set {_uniqueStorage()._terrainFlags = newValue}
+  }
 
   ///
   /// Line 2: radio frequency / callsign metadata (e.g. "38.90 Mhz" or
   /// "Victor 6"). Capped tight in options.
-  public var frequency: String = String()
+  public var frequency: String {
+    get {return _storage._frequency}
+    set {_uniqueStorage()._frequency = newValue}
+  }
+
+  ///
+  /// Short title / MEDEVAC identifier (e.g. "EAGLE.15.181230"). Usually the
+  /// same as the envelope callsign but ATAK sometimes carries a distinct
+  /// ops-number here.
+  public var title: String {
+    get {return _storage._title}
+    set {_uniqueStorage()._title = newValue}
+  }
+
+  ///
+  /// Primary medline free-text — the single most clinically important line
+  /// on a MEDLINE form (e.g. "2 urgent litter patients, smoke on approach").
+  /// MUST be preserved under MTU pressure as long as any casevac is sent.
+  public var medlineRemarks: String {
+    get {return _storage._medlineRemarks}
+    set {_uniqueStorage()._medlineRemarks = newValue}
+  }
+
+  ///
+  /// Line 3 (newer ATAK format): patient counts by precedence level.
+  /// Coexists with the enum-style `precedence` field (tag 1) — older ATAK
+  /// emits a single enum, newer ATAK emits these counts, and both can be
+  /// set simultaneously. Senders populate whichever style(s) the source
+  /// XML had; receivers prefer counts when non-zero.
+  public var urgentCount: UInt32 {
+    get {return _storage._urgentCount}
+    set {_uniqueStorage()._urgentCount = newValue}
+  }
+
+  public var urgentSurgicalCount: UInt32 {
+    get {return _storage._urgentSurgicalCount}
+    set {_uniqueStorage()._urgentSurgicalCount = newValue}
+  }
+
+  public var priorityCount: UInt32 {
+    get {return _storage._priorityCount}
+    set {_uniqueStorage()._priorityCount = newValue}
+  }
+
+  public var routineCount: UInt32 {
+    get {return _storage._routineCount}
+    set {_uniqueStorage()._routineCount = newValue}
+  }
+
+  public var convenienceCount: UInt32 {
+    get {return _storage._convenienceCount}
+    set {_uniqueStorage()._convenienceCount = newValue}
+  }
+
+  ///
+  /// Line 4 supplementary: free-text description of non-standard equipment
+  /// (e.g. "Blood warmer"). Pairs with the `equipment_flags` bitfield.
+  public var equipmentDetail: String {
+    get {return _storage._equipmentDetail}
+    set {_uniqueStorage()._equipmentDetail = newValue}
+  }
+
+  ///
+  /// Line 1 override: MGRS grid when distinct from the event anchor point
+  /// (e.g. "34T CQ 12345 67890"). Event lat/lon/hae still carries the
+  /// numeric location; this field preserves the exact MGRS string the
+  /// medic entered.
+  public var zoneProtectedCoord: String {
+    get {return _storage._zoneProtectedCoord}
+    set {_uniqueStorage()._zoneProtectedCoord = newValue}
+  }
+
+  ///
+  /// Line 9 supplementary: slope direction (e.g. "N", "NE", "SSW") when
+  /// `terrain_flags` bit 0 (slope) is set.
+  public var terrainSlopeDir: String {
+    get {return _storage._terrainSlopeDir}
+    set {_uniqueStorage()._terrainSlopeDir = newValue}
+  }
+
+  ///
+  /// Line 9 supplementary: free-text description of "other" terrain hazards
+  /// (e.g. "Loose debris on west edge") when `terrain_flags` bit 5 (other)
+  /// is set. Tier-2 strippable under MTU pressure.
+  public var terrainOtherDetail: String {
+    get {return _storage._terrainOtherDetail}
+    set {_uniqueStorage()._terrainOtherDetail = newValue}
+  }
+
+  ///
+  /// Line 7 supplementary: how the zone is being marked right now
+  /// (e.g. "Orange smoke", "VS-17 panel"). Complements the structured
+  /// `hlz_marking` enum with a specific human-readable description.
+  public var markedBy: String {
+    get {return _storage._markedBy}
+    set {_uniqueStorage()._markedBy = newValue}
+  }
+
+  ///
+  /// Nearby obstacles on the approach (e.g. "Power lines north of HLZ").
+  public var obstacles: String {
+    get {return _storage._obstacles}
+    set {_uniqueStorage()._obstacles = newValue}
+  }
+
+  ///
+  /// Wind direction and speed (e.g. "270 at 12 kts").
+  public var windsAreFrom: String {
+    get {return _storage._windsAreFrom}
+    set {_uniqueStorage()._windsAreFrom = newValue}
+  }
+
+  ///
+  /// Friendly forces posture near the pickup zone
+  /// (e.g. "Squad east of HLZ").
+  public var friendlies: String {
+    get {return _storage._friendlies}
+    set {_uniqueStorage()._friendlies = newValue}
+  }
+
+  ///
+  /// Known or suspected enemy positions near the pickup zone
+  /// (e.g. "Possible enemy on south ridge").
+  public var enemy: String {
+    get {return _storage._enemy}
+    set {_uniqueStorage()._enemy = newValue}
+  }
+
+  ///
+  /// Free-text description of the HLZ itself
+  /// (e.g. "Primary HLZ is soccer field").
+  public var hlzRemarks: String {
+    get {return _storage._hlzRemarks}
+    set {_uniqueStorage()._hlzRemarks = newValue}
+  }
+
+  ///
+  /// Per-patient clinical records. Each entry is one patient's ZMIST card
+  /// (Zap number / Mechanism / Injuries / Signs / Treatment). Repeatable —
+  /// a mass-casualty event can carry 1-6 entries in practice, limited by
+  /// the 237 B LoRa MTU.
+  public var zmist: [ZMistEntry] {
+    get {return _storage._zmist}
+    set {_uniqueStorage()._zmist = newValue}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2628,6 +2814,47 @@ public struct CasevacReport: Sendable {
     ]
 
   }
+
+  public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+///
+/// Per-patient clinical summary record — one entry per patient in a CASEVAC.
+/// Maps directly to ATAK's <zMist> child element inside <zMistsMap>.
+/// All fields are optional free-text; senders populate what they have.
+public struct ZMistEntry: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Patient identifier / sequence label (e.g. "ZMIST-1", "ZMIST-2").
+  public var title: String = String()
+
+  ///
+  /// Zap number — unique patient tracking ID (often a terse code like
+  /// "Gunshot" or a serial).
+  public var z: String = String()
+
+  ///
+  /// Mechanism of injury (e.g. "Penetrating trauma", "Blast injury").
+  public var m: String = String()
+
+  ///
+  /// Injuries observed (e.g. "Left thigh", "Concussion").
+  public var i: String = String()
+
+  ///
+  /// Signs / vital stats (e.g. "Stable", "Priority", "BP 110/70").
+  public var s: String = String()
+
+  ///
+  /// Treatment given (e.g. "Tourniquet 1810Z", "O2 administered").
+  public var t: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
@@ -2881,6 +3108,179 @@ public struct TaskRequest: Sendable {
 }
 
 ///
+/// Weather annotation from <environment> CoT detail element.
+///
+/// Attaches to any TAKPacketV2 regardless of payload_variant — an Aircraft,
+/// PLI, or Marker can all carry observed conditions at the emitting station.
+/// ATAK-CIV ships an XSD for <environment> but no dedicated handler, so the
+/// element round-trips through the generic detail pipeline; this message
+/// promotes it to a first-class structured field.
+///
+/// Target wire cost: ~6-8 bytes compressed with a fully populated instance.
+///
+/// Named `TAKEnvironment` (not just `Environment`) because the bare name
+/// collides with `SwiftUI.Environment` — every SwiftUI view in a consuming
+/// iOS app uses the `@Environment` property wrapper, and importing the
+/// generated proto module would make `Environment` ambiguous in every one
+/// of those files. The `TAK` prefix matches the convention used by the
+/// outer `TAKPacketV2` wrapper and is unambiguous across all target
+/// languages (Swift, Kotlin, Python, TypeScript, C#).
+public struct TAKEnvironment: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Temperature in deci-degrees Celsius. 225 = 22.5°C.
+  /// Range covers -50°C to +50°C (-500 to +500) which spans every realistic
+  /// outdoor TAK deployment. sint32 because negative temps are common in
+  /// cold-weather ops.
+  public var temperatureCX10: Int32 = 0
+
+  ///
+  /// Wind direction in whole degrees, 0-359. "Direction FROM" per
+  /// meteorological convention (matches CoT / ATAK).
+  public var windDirectionDeg: UInt32 = 0
+
+  ///
+  /// Wind speed in cm/s. Matches the unit of TAKPacketV2.speed for
+  /// consistency. 1200 = 12.00 m/s = ~27 mph.
+  public var windSpeedCmS: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
+/// Sensor field-of-view cone from <sensor> CoT detail element.
+///
+/// Encodes the 8 geometry attributes that ATAK-CIV's SensorDetailHandler
+/// reads from the wire; drops the 9 visual-styling attributes that are
+/// receiver-side render hints (fovAlpha, fovRed/Green/Blue, strokeColor,
+/// strokeWeight, displayMagneticReference, hideFov, fovLabels, rangeLines).
+/// The receiving ATAK client restores those from its own defaults, same as
+/// every other CoT carried over Meshtastic today.
+///
+/// Attaches to any TAKPacketV2 — a PLI with a sensor on the operator's head,
+/// an Aircraft with a FLIR turret, a Marker dropped on a UAV.
+/// Target wire cost: ~7-14 bytes compressed (dominated by model string).
+public struct SensorFov: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var type: SensorFov.SensorType = .unspecified
+
+  ///
+  /// Azimuth in whole degrees, 0-359. "Pointing direction" of the cone axis,
+  /// measured clockwise from true north. Whole degrees match ATAK-CIV's
+  /// SensorDetailHandler default (270°) and save varint bytes over centi-deg.
+  public var azimuthDeg: UInt32 = 0
+
+  ///
+  /// Maximum range of the cone in meters. ATAK-CIV default is 100m.
+  public var rangeM: UInt32 = 0
+
+  ///
+  /// Horizontal field of view in whole degrees (cone's angular width).
+  /// ATAK-CIV default is 45°.
+  public var fovHorizontalDeg: UInt32 = 0
+
+  ///
+  /// Vertical field of view in whole degrees. ATAK-CIV default is 45°.
+  /// Optional — a value of 0 means "not set / use horizontal FOV".
+  public var fovVerticalDeg: UInt32 = 0
+
+  ///
+  /// Elevation angle in whole degrees. Positive = up, negative = down.
+  /// Range -90 to +90. sint32 for varint efficiency on small negatives.
+  public var elevationDeg: Int32 = 0
+
+  ///
+  /// Roll (camera tilt) in whole degrees, -180 to +180.
+  /// Optional — use 0 if the sensor doesn't track roll.
+  public var rollDeg: Int32 = 0
+
+  ///
+  /// Free-form device model identifier, e.g. "FLIR-Boson-640", "SEEK".
+  /// Optional — empty string means "unknown model" (ATAK-CIV default).
+  public var model: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// Coarse sensor category, inferred from `model` on parse when the source
+  /// XML doesn't label it. Receivers that render differently per sensor
+  /// class (thermal overlay vs daylight cone) use this.
+  public enum SensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+    case unspecified // = 0
+
+    /// daylight / general optical
+    case camera // = 1
+
+    /// FLIR, thermal imager
+    case thermal // = 2
+
+    /// rangefinder, LRF, designator
+    case laser // = 3
+
+    /// night vision goggles
+    case nvg // = 4
+
+    /// radio/radar direction-finding
+    case rf // = 5
+    case other // = 6
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unspecified
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unspecified
+      case 1: self = .camera
+      case 2: self = .thermal
+      case 3: self = .laser
+      case 4: self = .nvg
+      case 5: self = .rf
+      case 6: self = .other
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unspecified: return 0
+      case .camera: return 1
+      case .thermal: return 2
+      case .laser: return 3
+      case .nvg: return 4
+      case .rf: return 5
+      case .other: return 6
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [SensorFov.SensorType] = [
+      .unspecified,
+      .camera,
+      .thermal,
+      .laser,
+      .nvg,
+      .rf,
+      .other,
+    ]
+
+  }
+
+  public init() {}
+}
+
+///
 /// ATAK v2 packet with expanded CoT field support and zstd dictionary compression.
 /// Sent on ATAK_PLUGIN_V2 port. The wire payload is:
 ///   [1 byte flags][zstd-compressed TAKPacketV2 protobuf]
@@ -3051,6 +3451,41 @@ public struct TAKPacketV2: @unchecked Sendable {
     get {return _storage._cotTypeStr}
     set {_uniqueStorage()._cotTypeStr = newValue}
   }
+
+  ///
+  /// Optional remarks / free-text annotation from the <remarks> element.
+  /// Populated for non-GeoChat payload types (shapes, markers, routes, etc.)
+  /// when the original CoT event carried non-empty remarks text.
+  /// GeoChat messages carry their text in GeoChat.message instead.
+  /// Empty string (proto3 default) means no remarks were present.
+  public var remarks: String {
+    get {return _storage._remarks}
+    set {_uniqueStorage()._remarks = newValue}
+  }
+
+  ///
+  /// Observed weather conditions (temperature, wind). From <environment>.
+  /// Type is `TAKEnvironment`, not `Environment`, to avoid colliding with
+  /// SwiftUI's `@Environment` property wrapper in iOS consumers.
+  public var environment: TAKEnvironment {
+    get {return _storage._environment ?? TAKEnvironment()}
+    set {_uniqueStorage()._environment = newValue}
+  }
+  /// Returns true if `environment` has been explicitly set.
+  public var hasEnvironment: Bool {return _storage._environment != nil}
+  /// Clears the value of `environment`. Subsequent reads from it will return its default value.
+  public mutating func clearEnvironment() {_uniqueStorage()._environment = nil}
+
+  ///
+  /// Sensor field-of-view cone (camera, FLIR, laser, etc.). From <sensor>.
+  public var sensorFov: SensorFov {
+    get {return _storage._sensorFov ?? SensorFov()}
+    set {_uniqueStorage()._sensorFov = newValue}
+  }
+  /// Returns true if `sensorFov` has been explicitly set.
+  public var hasSensorFov: Bool {return _storage._sensorFov != nil}
+  /// Clears the value of `sensorFov`. Subsequent reads from it will return its default value.
+  public mutating func clearSensorFov() {_uniqueStorage()._sensorFov = nil}
 
   ///
   /// The payload of the packet
@@ -4092,99 +4527,289 @@ extension Route.Link: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 
 extension CasevacReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CasevacReport"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}precedence\0\u{3}equipment_flags\0\u{3}litter_patients\0\u{3}ambulatory_patients\0\u{1}security\0\u{3}hlz_marking\0\u{3}zone_marker\0\u{3}us_military\0\u{3}us_civilian\0\u{3}non_us_military\0\u{3}non_us_civilian\0\u{1}epw\0\u{1}child\0\u{3}terrain_flags\0\u{1}frequency\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}precedence\0\u{3}equipment_flags\0\u{3}litter_patients\0\u{3}ambulatory_patients\0\u{1}security\0\u{3}hlz_marking\0\u{3}zone_marker\0\u{3}us_military\0\u{3}us_civilian\0\u{3}non_us_military\0\u{3}non_us_civilian\0\u{1}epw\0\u{1}child\0\u{3}terrain_flags\0\u{1}frequency\0\u{1}title\0\u{3}medline_remarks\0\u{3}urgent_count\0\u{3}urgent_surgical_count\0\u{3}priority_count\0\u{3}routine_count\0\u{3}convenience_count\0\u{3}equipment_detail\0\u{3}zone_protected_coord\0\u{3}terrain_slope_dir\0\u{3}terrain_other_detail\0\u{3}marked_by\0\u{1}obstacles\0\u{3}winds_are_from\0\u{1}friendlies\0\u{1}enemy\0\u{3}hlz_remarks\0\u{1}zmist\0")
+
+  fileprivate class _StorageClass {
+    var _precedence: CasevacReport.Precedence = .unspecified
+    var _equipmentFlags: UInt32 = 0
+    var _litterPatients: UInt32 = 0
+    var _ambulatoryPatients: UInt32 = 0
+    var _security: CasevacReport.Security = .unspecified
+    var _hlzMarking: CasevacReport.HlzMarking = .unspecified
+    var _zoneMarker: String = String()
+    var _usMilitary: UInt32 = 0
+    var _usCivilian: UInt32 = 0
+    var _nonUsMilitary: UInt32 = 0
+    var _nonUsCivilian: UInt32 = 0
+    var _epw: UInt32 = 0
+    var _child: UInt32 = 0
+    var _terrainFlags: UInt32 = 0
+    var _frequency: String = String()
+    var _title: String = String()
+    var _medlineRemarks: String = String()
+    var _urgentCount: UInt32 = 0
+    var _urgentSurgicalCount: UInt32 = 0
+    var _priorityCount: UInt32 = 0
+    var _routineCount: UInt32 = 0
+    var _convenienceCount: UInt32 = 0
+    var _equipmentDetail: String = String()
+    var _zoneProtectedCoord: String = String()
+    var _terrainSlopeDir: String = String()
+    var _terrainOtherDetail: String = String()
+    var _markedBy: String = String()
+    var _obstacles: String = String()
+    var _windsAreFrom: String = String()
+    var _friendlies: String = String()
+    var _enemy: String = String()
+    var _hlzRemarks: String = String()
+    var _zmist: [ZMistEntry] = []
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _precedence = source._precedence
+      _equipmentFlags = source._equipmentFlags
+      _litterPatients = source._litterPatients
+      _ambulatoryPatients = source._ambulatoryPatients
+      _security = source._security
+      _hlzMarking = source._hlzMarking
+      _zoneMarker = source._zoneMarker
+      _usMilitary = source._usMilitary
+      _usCivilian = source._usCivilian
+      _nonUsMilitary = source._nonUsMilitary
+      _nonUsCivilian = source._nonUsCivilian
+      _epw = source._epw
+      _child = source._child
+      _terrainFlags = source._terrainFlags
+      _frequency = source._frequency
+      _title = source._title
+      _medlineRemarks = source._medlineRemarks
+      _urgentCount = source._urgentCount
+      _urgentSurgicalCount = source._urgentSurgicalCount
+      _priorityCount = source._priorityCount
+      _routineCount = source._routineCount
+      _convenienceCount = source._convenienceCount
+      _equipmentDetail = source._equipmentDetail
+      _zoneProtectedCoord = source._zoneProtectedCoord
+      _terrainSlopeDir = source._terrainSlopeDir
+      _terrainOtherDetail = source._terrainOtherDetail
+      _markedBy = source._markedBy
+      _obstacles = source._obstacles
+      _windsAreFrom = source._windsAreFrom
+      _friendlies = source._friendlies
+      _enemy = source._enemy
+      _hlzRemarks = source._hlzRemarks
+      _zmist = source._zmist
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularEnumField(value: &self.precedence) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.equipmentFlags) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.litterPatients) }()
-      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.ambulatoryPatients) }()
-      case 5: try { try decoder.decodeSingularEnumField(value: &self.security) }()
-      case 6: try { try decoder.decodeSingularEnumField(value: &self.hlzMarking) }()
-      case 7: try { try decoder.decodeSingularStringField(value: &self.zoneMarker) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.usMilitary) }()
-      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.usCivilian) }()
-      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.nonUsMilitary) }()
-      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.nonUsCivilian) }()
-      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.epw) }()
-      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.child) }()
-      case 14: try { try decoder.decodeSingularUInt32Field(value: &self.terrainFlags) }()
-      case 15: try { try decoder.decodeSingularStringField(value: &self.frequency) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularEnumField(value: &_storage._precedence) }()
+        case 2: try { try decoder.decodeSingularUInt32Field(value: &_storage._equipmentFlags) }()
+        case 3: try { try decoder.decodeSingularUInt32Field(value: &_storage._litterPatients) }()
+        case 4: try { try decoder.decodeSingularUInt32Field(value: &_storage._ambulatoryPatients) }()
+        case 5: try { try decoder.decodeSingularEnumField(value: &_storage._security) }()
+        case 6: try { try decoder.decodeSingularEnumField(value: &_storage._hlzMarking) }()
+        case 7: try { try decoder.decodeSingularStringField(value: &_storage._zoneMarker) }()
+        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._usMilitary) }()
+        case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._usCivilian) }()
+        case 10: try { try decoder.decodeSingularUInt32Field(value: &_storage._nonUsMilitary) }()
+        case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._nonUsCivilian) }()
+        case 12: try { try decoder.decodeSingularUInt32Field(value: &_storage._epw) }()
+        case 13: try { try decoder.decodeSingularUInt32Field(value: &_storage._child) }()
+        case 14: try { try decoder.decodeSingularUInt32Field(value: &_storage._terrainFlags) }()
+        case 15: try { try decoder.decodeSingularStringField(value: &_storage._frequency) }()
+        case 16: try { try decoder.decodeSingularStringField(value: &_storage._title) }()
+        case 17: try { try decoder.decodeSingularStringField(value: &_storage._medlineRemarks) }()
+        case 18: try { try decoder.decodeSingularUInt32Field(value: &_storage._urgentCount) }()
+        case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._urgentSurgicalCount) }()
+        case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._priorityCount) }()
+        case 21: try { try decoder.decodeSingularUInt32Field(value: &_storage._routineCount) }()
+        case 22: try { try decoder.decodeSingularUInt32Field(value: &_storage._convenienceCount) }()
+        case 23: try { try decoder.decodeSingularStringField(value: &_storage._equipmentDetail) }()
+        case 24: try { try decoder.decodeSingularStringField(value: &_storage._zoneProtectedCoord) }()
+        case 25: try { try decoder.decodeSingularStringField(value: &_storage._terrainSlopeDir) }()
+        case 26: try { try decoder.decodeSingularStringField(value: &_storage._terrainOtherDetail) }()
+        case 27: try { try decoder.decodeSingularStringField(value: &_storage._markedBy) }()
+        case 28: try { try decoder.decodeSingularStringField(value: &_storage._obstacles) }()
+        case 29: try { try decoder.decodeSingularStringField(value: &_storage._windsAreFrom) }()
+        case 30: try { try decoder.decodeSingularStringField(value: &_storage._friendlies) }()
+        case 31: try { try decoder.decodeSingularStringField(value: &_storage._enemy) }()
+        case 32: try { try decoder.decodeSingularStringField(value: &_storage._hlzRemarks) }()
+        case 33: try { try decoder.decodeRepeatedMessageField(value: &_storage._zmist) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.precedence != .unspecified {
-      try visitor.visitSingularEnumField(value: self.precedence, fieldNumber: 1)
-    }
-    if self.equipmentFlags != 0 {
-      try visitor.visitSingularUInt32Field(value: self.equipmentFlags, fieldNumber: 2)
-    }
-    if self.litterPatients != 0 {
-      try visitor.visitSingularUInt32Field(value: self.litterPatients, fieldNumber: 3)
-    }
-    if self.ambulatoryPatients != 0 {
-      try visitor.visitSingularUInt32Field(value: self.ambulatoryPatients, fieldNumber: 4)
-    }
-    if self.security != .unspecified {
-      try visitor.visitSingularEnumField(value: self.security, fieldNumber: 5)
-    }
-    if self.hlzMarking != .unspecified {
-      try visitor.visitSingularEnumField(value: self.hlzMarking, fieldNumber: 6)
-    }
-    if !self.zoneMarker.isEmpty {
-      try visitor.visitSingularStringField(value: self.zoneMarker, fieldNumber: 7)
-    }
-    if self.usMilitary != 0 {
-      try visitor.visitSingularUInt32Field(value: self.usMilitary, fieldNumber: 8)
-    }
-    if self.usCivilian != 0 {
-      try visitor.visitSingularUInt32Field(value: self.usCivilian, fieldNumber: 9)
-    }
-    if self.nonUsMilitary != 0 {
-      try visitor.visitSingularUInt32Field(value: self.nonUsMilitary, fieldNumber: 10)
-    }
-    if self.nonUsCivilian != 0 {
-      try visitor.visitSingularUInt32Field(value: self.nonUsCivilian, fieldNumber: 11)
-    }
-    if self.epw != 0 {
-      try visitor.visitSingularUInt32Field(value: self.epw, fieldNumber: 12)
-    }
-    if self.child != 0 {
-      try visitor.visitSingularUInt32Field(value: self.child, fieldNumber: 13)
-    }
-    if self.terrainFlags != 0 {
-      try visitor.visitSingularUInt32Field(value: self.terrainFlags, fieldNumber: 14)
-    }
-    if !self.frequency.isEmpty {
-      try visitor.visitSingularStringField(value: self.frequency, fieldNumber: 15)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      if _storage._precedence != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._precedence, fieldNumber: 1)
+      }
+      if _storage._equipmentFlags != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._equipmentFlags, fieldNumber: 2)
+      }
+      if _storage._litterPatients != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._litterPatients, fieldNumber: 3)
+      }
+      if _storage._ambulatoryPatients != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._ambulatoryPatients, fieldNumber: 4)
+      }
+      if _storage._security != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._security, fieldNumber: 5)
+      }
+      if _storage._hlzMarking != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._hlzMarking, fieldNumber: 6)
+      }
+      if !_storage._zoneMarker.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._zoneMarker, fieldNumber: 7)
+      }
+      if _storage._usMilitary != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._usMilitary, fieldNumber: 8)
+      }
+      if _storage._usCivilian != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._usCivilian, fieldNumber: 9)
+      }
+      if _storage._nonUsMilitary != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._nonUsMilitary, fieldNumber: 10)
+      }
+      if _storage._nonUsCivilian != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._nonUsCivilian, fieldNumber: 11)
+      }
+      if _storage._epw != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._epw, fieldNumber: 12)
+      }
+      if _storage._child != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._child, fieldNumber: 13)
+      }
+      if _storage._terrainFlags != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._terrainFlags, fieldNumber: 14)
+      }
+      if !_storage._frequency.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._frequency, fieldNumber: 15)
+      }
+      if !_storage._title.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._title, fieldNumber: 16)
+      }
+      if !_storage._medlineRemarks.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._medlineRemarks, fieldNumber: 17)
+      }
+      if _storage._urgentCount != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._urgentCount, fieldNumber: 18)
+      }
+      if _storage._urgentSurgicalCount != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._urgentSurgicalCount, fieldNumber: 19)
+      }
+      if _storage._priorityCount != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._priorityCount, fieldNumber: 20)
+      }
+      if _storage._routineCount != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._routineCount, fieldNumber: 21)
+      }
+      if _storage._convenienceCount != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._convenienceCount, fieldNumber: 22)
+      }
+      if !_storage._equipmentDetail.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._equipmentDetail, fieldNumber: 23)
+      }
+      if !_storage._zoneProtectedCoord.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._zoneProtectedCoord, fieldNumber: 24)
+      }
+      if !_storage._terrainSlopeDir.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._terrainSlopeDir, fieldNumber: 25)
+      }
+      if !_storage._terrainOtherDetail.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._terrainOtherDetail, fieldNumber: 26)
+      }
+      if !_storage._markedBy.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._markedBy, fieldNumber: 27)
+      }
+      if !_storage._obstacles.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._obstacles, fieldNumber: 28)
+      }
+      if !_storage._windsAreFrom.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._windsAreFrom, fieldNumber: 29)
+      }
+      if !_storage._friendlies.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._friendlies, fieldNumber: 30)
+      }
+      if !_storage._enemy.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._enemy, fieldNumber: 31)
+      }
+      if !_storage._hlzRemarks.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._hlzRemarks, fieldNumber: 32)
+      }
+      if !_storage._zmist.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._zmist, fieldNumber: 33)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: CasevacReport, rhs: CasevacReport) -> Bool {
-    if lhs.precedence != rhs.precedence {return false}
-    if lhs.equipmentFlags != rhs.equipmentFlags {return false}
-    if lhs.litterPatients != rhs.litterPatients {return false}
-    if lhs.ambulatoryPatients != rhs.ambulatoryPatients {return false}
-    if lhs.security != rhs.security {return false}
-    if lhs.hlzMarking != rhs.hlzMarking {return false}
-    if lhs.zoneMarker != rhs.zoneMarker {return false}
-    if lhs.usMilitary != rhs.usMilitary {return false}
-    if lhs.usCivilian != rhs.usCivilian {return false}
-    if lhs.nonUsMilitary != rhs.nonUsMilitary {return false}
-    if lhs.nonUsCivilian != rhs.nonUsCivilian {return false}
-    if lhs.epw != rhs.epw {return false}
-    if lhs.child != rhs.child {return false}
-    if lhs.terrainFlags != rhs.terrainFlags {return false}
-    if lhs.frequency != rhs.frequency {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._precedence != rhs_storage._precedence {return false}
+        if _storage._equipmentFlags != rhs_storage._equipmentFlags {return false}
+        if _storage._litterPatients != rhs_storage._litterPatients {return false}
+        if _storage._ambulatoryPatients != rhs_storage._ambulatoryPatients {return false}
+        if _storage._security != rhs_storage._security {return false}
+        if _storage._hlzMarking != rhs_storage._hlzMarking {return false}
+        if _storage._zoneMarker != rhs_storage._zoneMarker {return false}
+        if _storage._usMilitary != rhs_storage._usMilitary {return false}
+        if _storage._usCivilian != rhs_storage._usCivilian {return false}
+        if _storage._nonUsMilitary != rhs_storage._nonUsMilitary {return false}
+        if _storage._nonUsCivilian != rhs_storage._nonUsCivilian {return false}
+        if _storage._epw != rhs_storage._epw {return false}
+        if _storage._child != rhs_storage._child {return false}
+        if _storage._terrainFlags != rhs_storage._terrainFlags {return false}
+        if _storage._frequency != rhs_storage._frequency {return false}
+        if _storage._title != rhs_storage._title {return false}
+        if _storage._medlineRemarks != rhs_storage._medlineRemarks {return false}
+        if _storage._urgentCount != rhs_storage._urgentCount {return false}
+        if _storage._urgentSurgicalCount != rhs_storage._urgentSurgicalCount {return false}
+        if _storage._priorityCount != rhs_storage._priorityCount {return false}
+        if _storage._routineCount != rhs_storage._routineCount {return false}
+        if _storage._convenienceCount != rhs_storage._convenienceCount {return false}
+        if _storage._equipmentDetail != rhs_storage._equipmentDetail {return false}
+        if _storage._zoneProtectedCoord != rhs_storage._zoneProtectedCoord {return false}
+        if _storage._terrainSlopeDir != rhs_storage._terrainSlopeDir {return false}
+        if _storage._terrainOtherDetail != rhs_storage._terrainOtherDetail {return false}
+        if _storage._markedBy != rhs_storage._markedBy {return false}
+        if _storage._obstacles != rhs_storage._obstacles {return false}
+        if _storage._windsAreFrom != rhs_storage._windsAreFrom {return false}
+        if _storage._friendlies != rhs_storage._friendlies {return false}
+        if _storage._enemy != rhs_storage._enemy {return false}
+        if _storage._hlzRemarks != rhs_storage._hlzRemarks {return false}
+        if _storage._zmist != rhs_storage._zmist {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4200,6 +4825,61 @@ extension CasevacReport.HlzMarking: SwiftProtobuf._ProtoNameProviding {
 
 extension CasevacReport.Security: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Security_Unspecified\0\u{1}Security_NoEnemy\0\u{1}Security_PossibleEnemy\0\u{1}Security_EnemyInArea\0\u{1}Security_EnemyInArmedContact\0")
+}
+
+extension ZMistEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ZMistEntry"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}title\0\u{1}z\0\u{1}m\0\u{1}i\0\u{1}s\0\u{1}t\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.title) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.z) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.m) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.i) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.s) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self.t) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.title.isEmpty {
+      try visitor.visitSingularStringField(value: self.title, fieldNumber: 1)
+    }
+    if !self.z.isEmpty {
+      try visitor.visitSingularStringField(value: self.z, fieldNumber: 2)
+    }
+    if !self.m.isEmpty {
+      try visitor.visitSingularStringField(value: self.m, fieldNumber: 3)
+    }
+    if !self.i.isEmpty {
+      try visitor.visitSingularStringField(value: self.i, fieldNumber: 4)
+    }
+    if !self.s.isEmpty {
+      try visitor.visitSingularStringField(value: self.s, fieldNumber: 5)
+    }
+    if !self.t.isEmpty {
+      try visitor.visitSingularStringField(value: self.t, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ZMistEntry, rhs: ZMistEntry) -> Bool {
+    if lhs.title != rhs.title {return false}
+    if lhs.z != rhs.z {return false}
+    if lhs.m != rhs.m {return false}
+    if lhs.i != rhs.i {return false}
+    if lhs.s != rhs.s {return false}
+    if lhs.t != rhs.t {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 extension EmergencyAlert: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -4309,9 +4989,118 @@ extension TaskRequest.Status: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Status_Unspecified\0\u{1}Status_Pending\0\u{1}Status_Acknowledged\0\u{1}Status_InProgress\0\u{1}Status_Completed\0\u{1}Status_Cancelled\0")
 }
 
+extension TAKEnvironment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TAKEnvironment"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}temperature_c_x10\0\u{3}wind_direction_deg\0\u{3}wind_speed_cm_s\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularSInt32Field(value: &self.temperatureCX10) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.windDirectionDeg) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.windSpeedCmS) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.temperatureCX10 != 0 {
+      try visitor.visitSingularSInt32Field(value: self.temperatureCX10, fieldNumber: 1)
+    }
+    if self.windDirectionDeg != 0 {
+      try visitor.visitSingularUInt32Field(value: self.windDirectionDeg, fieldNumber: 2)
+    }
+    if self.windSpeedCmS != 0 {
+      try visitor.visitSingularUInt32Field(value: self.windSpeedCmS, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: TAKEnvironment, rhs: TAKEnvironment) -> Bool {
+    if lhs.temperatureCX10 != rhs.temperatureCX10 {return false}
+    if lhs.windDirectionDeg != rhs.windDirectionDeg {return false}
+    if lhs.windSpeedCmS != rhs.windSpeedCmS {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SensorFov: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SensorFov"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}azimuth_deg\0\u{3}range_m\0\u{3}fov_horizontal_deg\0\u{3}fov_vertical_deg\0\u{3}elevation_deg\0\u{3}roll_deg\0\u{1}model\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.type) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.azimuthDeg) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.rangeM) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.fovHorizontalDeg) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.fovVerticalDeg) }()
+      case 6: try { try decoder.decodeSingularSInt32Field(value: &self.elevationDeg) }()
+      case 7: try { try decoder.decodeSingularSInt32Field(value: &self.rollDeg) }()
+      case 8: try { try decoder.decodeSingularStringField(value: &self.model) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.type != .unspecified {
+      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 1)
+    }
+    if self.azimuthDeg != 0 {
+      try visitor.visitSingularUInt32Field(value: self.azimuthDeg, fieldNumber: 2)
+    }
+    if self.rangeM != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rangeM, fieldNumber: 3)
+    }
+    if self.fovHorizontalDeg != 0 {
+      try visitor.visitSingularUInt32Field(value: self.fovHorizontalDeg, fieldNumber: 4)
+    }
+    if self.fovVerticalDeg != 0 {
+      try visitor.visitSingularUInt32Field(value: self.fovVerticalDeg, fieldNumber: 5)
+    }
+    if self.elevationDeg != 0 {
+      try visitor.visitSingularSInt32Field(value: self.elevationDeg, fieldNumber: 6)
+    }
+    if self.rollDeg != 0 {
+      try visitor.visitSingularSInt32Field(value: self.rollDeg, fieldNumber: 7)
+    }
+    if !self.model.isEmpty {
+      try visitor.visitSingularStringField(value: self.model, fieldNumber: 8)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SensorFov, rhs: SensorFov) -> Bool {
+    if lhs.type != rhs.type {return false}
+    if lhs.azimuthDeg != rhs.azimuthDeg {return false}
+    if lhs.rangeM != rhs.rangeM {return false}
+    if lhs.fovHorizontalDeg != rhs.fovHorizontalDeg {return false}
+    if lhs.fovVerticalDeg != rhs.fovVerticalDeg {return false}
+    if lhs.elevationDeg != rhs.elevationDeg {return false}
+    if lhs.rollDeg != rhs.rollDeg {return false}
+    if lhs.model != rhs.model {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SensorFov.SensorType: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SensorType_Unspecified\0\u{1}SensorType_Camera\0\u{1}SensorType_Thermal\0\u{1}SensorType_Laser\0\u{1}SensorType_Nvg\0\u{1}SensorType_Rf\0\u{1}SensorType_Other\0")
+}
+
 extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TAKPacketV2"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{2}\u{7}pli\0\u{1}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{4}pli\0\u{1}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0")
 
   fileprivate class _StorageClass {
     var _cotTypeID: CotType = .other
@@ -4337,6 +5126,9 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _endpoint: String = String()
     var _phone: String = String()
     var _cotTypeStr: String = String()
+    var _remarks: String = String()
+    var _environment: TAKEnvironment? = nil
+    var _sensorFov: SensorFov? = nil
     var _payloadVariant: TAKPacketV2.OneOf_PayloadVariant?
 
       // This property is used as the initial default value for new instances of the type.
@@ -4371,6 +5163,9 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _endpoint = source._endpoint
       _phone = source._phone
       _cotTypeStr = source._cotTypeStr
+      _remarks = source._remarks
+      _environment = source._environment
+      _sensorFov = source._sensorFov
       _payloadVariant = source._payloadVariant
     }
   }
@@ -4413,6 +5208,9 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 21: try { try decoder.decodeSingularStringField(value: &_storage._endpoint) }()
         case 22: try { try decoder.decodeSingularStringField(value: &_storage._phone) }()
         case 23: try { try decoder.decodeSingularStringField(value: &_storage._cotTypeStr) }()
+        case 24: try { try decoder.decodeSingularStringField(value: &_storage._remarks) }()
+        case 25: try { try decoder.decodeSingularMessageField(value: &_storage._environment) }()
+        case 26: try { try decoder.decodeSingularMessageField(value: &_storage._sensorFov) }()
         case 30: try {
           var v: Bool?
           try decoder.decodeSingularBoolField(value: &v)
@@ -4627,6 +5425,15 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       if !_storage._cotTypeStr.isEmpty {
         try visitor.visitSingularStringField(value: _storage._cotTypeStr, fieldNumber: 23)
       }
+      if !_storage._remarks.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._remarks, fieldNumber: 24)
+      }
+      try { if let v = _storage._environment {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 25)
+      } }()
+      try { if let v = _storage._sensorFov {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 26)
+      } }()
       switch _storage._payloadVariant {
       case .pli?: try {
         guard case .pli(let v)? = _storage._payloadVariant else { preconditionFailure() }
@@ -4706,6 +5513,9 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._endpoint != rhs_storage._endpoint {return false}
         if _storage._phone != rhs_storage._phone {return false}
         if _storage._cotTypeStr != rhs_storage._cotTypeStr {return false}
+        if _storage._remarks != rhs_storage._remarks {return false}
+        if _storage._environment != rhs_storage._environment {return false}
+        if _storage._sensorFov != rhs_storage._sensorFov {return false}
         if _storage._payloadVariant != rhs_storage._payloadVariant {return false}
         return true
       }

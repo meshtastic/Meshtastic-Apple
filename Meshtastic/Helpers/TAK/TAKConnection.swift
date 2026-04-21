@@ -28,8 +28,10 @@ actor TAKConnection {
 	private var protocolNegotiated = false
 	private let serverUID = "Meshtastic-TAK-Server-\(UUID().uuidString.prefix(8))"
 
-	// Keepalive interval (30 seconds)
-	private let keepaliveInterval: UInt64 = 30_000_000_000  // nanoseconds
+	// Keepalive interval — must be well under ATAK's 15-second RX_STALE_SECONDS
+	// threshold (hardcoded in streamingsocketmanagement.cpp). At 15s of silence
+	// ATAK starts pinging; at 25s it tears down the connection.
+	private let keepaliveInterval: UInt64 = 10_000_000_000  // 10 seconds, nanoseconds
 
 	// Client information
 	private(set) var clientInfo: TAKClientInfo?
@@ -219,15 +221,26 @@ actor TAKConnection {
 
 	/// Parse XML data and yield the message event
 	private func parseAndYieldMessage(_ data: Data) {
-		// Log raw XML for debugging
+		// Fast-path: detect keepalive pings before full XML parsing to avoid
+		// both the parse overhead and noisy log lines every few seconds.
+		if let xmlString = String(data: data, encoding: .utf8),
+		   xmlString.contains("t-x-c-t") || xmlString.contains("uid=\"ping\"") {
+			Task { await sendPong() }
+			return
+		}
+
+		// Log raw XML for debugging (keepalives already filtered above)
 		if let xmlString = String(data: data, encoding: .utf8) {
-			Logger.tak.debug("=== Received CoT XML (\(data.count) bytes) ===")
-			Logger.tak.debug("\(xmlString)")
-			Logger.tak.debug("=== End Raw XML ===")
+			// Logger.tak.debug("=== Received CoT XML (\(data.count) bytes) ===")
+			// Logger.tak.debug("\(xmlString)")
+			// Logger.tak.debug("=== End Raw XML ===")
 		}
 
 		do {
-			let cotMessage = try CoTMessage.parseData(data)
+			var cotMessage = try CoTMessage.parseData(data)
+			// Preserve the original XML so the SDK compression path can use it
+			// instead of toXML(), which loses shape geometry (<link point="..."/>).
+			cotMessage.sourceEventXml = String(data: data, encoding: .utf8)
 
 			// Handle TAK Protocol control messages
 			if cotMessage.type.hasPrefix("t-x-takp") {
@@ -236,12 +249,6 @@ actor TAKConnection {
 					await handleProtocolControl(cotMessage)
 				}
 				return  // Don't forward control messages to app
-			}
-
-			// Handle ping/pong messages (don't forward, just acknowledge)
-			if cotMessage.type == "t-x-c-t" || cotMessage.uid == "ping" {
-				Logger.tak.debug("Received ping from client")
-				return
 			}
 
 			// Update client info if we got contact details
@@ -261,7 +268,7 @@ actor TAKConnection {
 			Logger.tak.info("Received CoT message: type=\(cotMessage.type), uid=\(cotMessage.uid)")
 			Logger.tak.debug("  contact: \(cotMessage.contact?.callsign ?? "nil")")
 			Logger.tak.debug("  lat/lon: \(cotMessage.latitude), \(cotMessage.longitude)")
-			continuation?.yield(.message(cotMessage))
+			continuation?.yield(.message(cotMessage, clientInfo))
 
 		} catch {
 			Logger.tak.warning("Failed to parse CoT message: \(error.localizedDescription)")
@@ -360,7 +367,6 @@ actor TAKConnection {
 		let now = ISO8601DateFormatter().string(from: Date())
 		let stale = ISO8601DateFormatter().string(from: Date().addingTimeInterval(120))
 
-		// t-x-c-t is a ping/keepalive type, t-x-d-d is also used for takPong
 		let xml = """
 		<event version="2.0" uid="takPong" type="t-x-d-d" time="\(now)" start="\(now)" stale="\(stale)" how="m-g">
 			<point lat="0" lon="0" hae="0" ce="9999999" le="9999999"/>
@@ -370,16 +376,35 @@ actor TAKConnection {
 
 		do {
 			try await sendRawXML(xml)
-			Logger.tak.debug("Sent keepalive to client")
 		} catch {
-			Logger.tak.warning("Failed to send keepalive: \(error.localizedDescription)")
+			// Only log failures — successful keepalives are silent
+		}
+	}
+
+	/// Respond to ATAK's t-x-c-t ping to reset its RX timeout counter.
+	private func sendPong() async {
+		let now = ISO8601DateFormatter().string(from: Date())
+		let stale = ISO8601DateFormatter().string(from: Date().addingTimeInterval(120))
+
+		let xml = """
+		<event version="2.0" uid="takPong" type="t-x-c-t-r" time="\(now)" start="\(now)" stale="\(stale)" how="m-g">
+			<point lat="0" lon="0" hae="0" ce="9999999" le="9999999"/>
+			<detail/>
+		</event>
+		"""
+
+		do {
+			try await sendRawXML(xml)
+		} catch {
+			// Only log failures — successful pongs are silent
 		}
 	}
 
 	// MARK: - Send Methods
 
-	/// Send raw XML string to the client
-	private func sendRawXML(_ xml: String) async throws {
+	/// Send raw XML string to the client. Public for broadcastRawXml path
+	/// (mesh-originated shapes that must bypass CoTMessage to preserve vertices).
+	func sendRawXML(_ xml: String) async throws {
 		guard isConnected else {
 			throw TAKConnectionError.notConnected
 		}
@@ -406,6 +431,14 @@ actor TAKConnection {
 		}
 
 		let xml = cotMessage.toXML()
+		// Full raw CoT XML being shipped out to the ATAK client, after the
+		// CoTMessage → XML round trip. Paired with the inbound logging in
+		// parseAndYieldMessage(_:) so the full debug trace of a TCP client
+		// session (both directions) is visible in Console without rebuilding.
+		// Logger.tak.debug("=== Sending CoT XML (\(xml.count) chars) ===")
+		// Logger.tak.debug("\(xml)")
+		// Logger.tak.debug("=== End Raw XML ===")
+
 		guard let data = xml.data(using: .utf8) else {
 			throw TAKConnectionError.encodingFailed
 		}
@@ -469,7 +502,7 @@ struct TAKClientInfo: Identifiable, Sendable {
 enum TAKConnectionEvent: Sendable {
 	case connected(TAKClientInfo)
 	case clientInfoUpdated(TAKClientInfo)
-	case message(CoTMessage)
+	case message(CoTMessage, TAKClientInfo?)
 	case disconnected
 	case error(Error)
 }
