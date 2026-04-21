@@ -2295,6 +2295,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
@@ -2327,6 +2328,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
