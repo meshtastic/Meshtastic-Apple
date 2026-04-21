@@ -25,11 +25,6 @@ struct AppLog: View {
 	@State var isEditingFilters = false
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	private static let logFileDateFormatter: DateFormatter = {
-		let f = DateFormatter()
-		f.dateFormat = "yyyy-MM-dd_HHmmss"
-		return f
-	}()
 	private let dateFormatStyle = Date.FormatStyle()
 		.hour(.twoDigits(amPM: .omitted))
 		.minute()
@@ -206,7 +201,11 @@ struct AppLog: View {
 				ToolbarItem(placement: .navigationBarTrailing) {
 					Button(action: {
 						exportString = logToCsvFile(log: logs)
-						exportFilename = "Meshtastic Application Logs \(Self.logFileDateFormatter.string(from: .now))"
+						let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+						let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+						let formatter = DateFormatter()
+						formatter.dateFormat = dateFormatString
+						exportFilename = "Meshtastic Application Logs \(formatter.string(from: .now))"
 						isExporting = true
 					}) {
 						Image(systemName: "square.and.arrow.down")
