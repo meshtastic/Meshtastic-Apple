@@ -189,7 +189,7 @@ extension MeshPackets {
 			// crash when this method is called with a background context.
 			let fetchRequest = MessageEntity.fetchRequest()
 			fetchRequest.predicate = user.messageFetchRequest.predicate
-			let objects = (try? context.fetch(fetchRequest)) ?? []
+			let objects = try context.fetch(fetchRequest)
 			for object in objects {
 				context.delete(object)
 			}
@@ -435,17 +435,31 @@ extension MeshPackets {
 					}
 				}
 				
+				let myInfoEntity = MyInfoEntity(context: context)
+				myInfoEntity.myNodeNum = Int64(packet.from)
+				myInfoEntity.rebootCount = 0
+				newNode.myInfo = myInfoEntity
+				
 				do {
 					try context.save()
 					Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
+					Logger.data.info("💾 [MyInfoEntity] Saved a new myInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("💥 [NodeInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
+					Logger.data.error("💥 [MyInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
 				}
 				
 			} else {
 				// Update an existing node
+				if packet.rxTime > 0 {
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				} else {
+					fetchedNode[0].lastHeard = Date()
+				}
+				fetchedNode[0].snr = packet.rxSnr
+				fetchedNode[0].rssi = packet.rxRssi
+				fetchedNode[0].viaMqtt = packet.viaMqtt
 				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 					fetchedNode[0].channel = Int32(packet.channel)
 				}
@@ -494,6 +508,38 @@ extension MeshPackets {
 								fetchedNode[0].user?.hwDisplayName = dh?.displayName
 							}
 						}
+					}
+				} else if let userMessage = try? User(serializedBytes: packet.decoded.payload), !userMessage.id.isEmpty {
+					// Mesh broadcast sends a User protobuf (not wrapped in NodeInfo)
+					if fetchedNode[0].user == nil {
+						fetchedNode[0].user = UserEntity(context: context)
+					}
+					fetchedNode[0].user?.userId = packet.from.toHex()
+					fetchedNode[0].user?.num = Int64(packet.from)
+					fetchedNode[0].user?.longName = userMessage.longName
+					fetchedNode[0].user?.shortName = userMessage.shortName
+					fetchedNode[0].user?.role = Int32(userMessage.role.rawValue)
+					fetchedNode[0].user?.hwModel = String(describing: userMessage.hwModel).uppercased()
+					fetchedNode[0].user?.hwModelId = Int32(userMessage.hwModel.rawValue)
+					if userMessage.hasIsUnmessagable {
+						fetchedNode[0].user?.unmessagable = userMessage.isUnmessagable
+					} else {
+						let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
+						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
+						fetchedNode[0].user?.unmessagable = containsRole
+					}
+					if !userMessage.publicKey.isEmpty {
+						fetchedNode[0].user?.pkiEncrypted = true
+						fetchedNode[0].user?.publicKey = userMessage.publicKey
+					}
+					Task {
+						Api().loadDeviceHardwareData { (hw) in
+							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
+							fetchedNode[0].user?.hwDisplayName = dh?.displayName
+						}
+					}
+					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+						fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 					}
 				} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)

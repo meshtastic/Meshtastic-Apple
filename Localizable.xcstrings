@@ -59,90 +59,6 @@
       },
       "shouldTranslate" : false
     },
-    " : %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %@"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %@"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %@"
-          }
-        }
-      },
-      "shouldTranslate" : false
-    },
-    " : %d" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %d"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %d"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %d"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %d"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %d"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " : %d"
-          }
-        }
-      },
-      "shouldTranslate" : false
-    },
     " %@" : {
       "localizations" : {
         "da" : {
@@ -23585,9 +23501,6 @@
         }
       }
     },
-    "Foxhunt on your watch" : {
-
-    },
     "Frequency" : {
       "localizations" : {
         "da" : {
@@ -29156,10 +29069,10 @@
         }
       }
     },
-    "Loading TAK config from the node." : {
+    "Loading..." : {
 
     },
-    "Loading..." : {
+    "Loading TAK config from the node." : {
 
     },
     "Local Network Access" : {

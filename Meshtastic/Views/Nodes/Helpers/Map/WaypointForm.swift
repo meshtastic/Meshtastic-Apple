@@ -118,13 +118,18 @@ struct WaypointForm: View {
 							.keyboardType(.emoji)
 							.font(.title)
 							.focused($iconIsFocused)
-							.onChange(of: icon) { _, value in
-								// If a second emoji is entered delete the first one
-								if value.count >= 1 {
-									if value.count > 1 {
-										let index = value.index(value.startIndex, offsetBy: 1)
-										icon = String(value[index])
-									}
+							.onChange(of: icon) { _, _ in
+								// Reject non-emoji input
+								if !icon.isEmpty && !icon.onlyEmojis() {
+									icon = ""
+									return
+								}
+								// If multiple emojis are entered or pasted, keep only the last one
+								if icon.count > 1 {
+									icon = String(icon.suffix(1))
+								}
+								if !icon.isEmpty {
+									iconIsFocused = false
 								}
 							}
 					}
@@ -239,8 +244,8 @@ struct WaypointForm: View {
 							newWaypoint.longitudeI = waypoint.longitudeI
 							// Unicode scalar value for the icon emoji string
 							let unicodeScalers = icon.unicodeScalars
-							// First element as an UInt32
-							let unicode = unicodeScalers[unicodeScalers.startIndex].value
+						// First element as an UInt32 (fall back to 📍 if empty)
+						let unicode = unicodeScalers.first?.value ?? 128205
 							newWaypoint.icon = unicode
 							if locked {
 								if lockedTo == 0 {

@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import CoreLocation
+import UserNotifications
 import Testing
 @testable import Meshtastic
 
@@ -148,34 +150,89 @@ struct OnboardingStringFormatterTests {
 @Suite("DeviceOnboarding navigation")
 struct OnboardingNavigationTests {
 
-	@Test func backgroundActivityAlwaysGoesToLocalNetwork() async {
+	private func nextStep(
+		after step: DeviceOnboarding.SetupGuide?,
+		notificationStatus: UNAuthorizationStatus,
+		criticalAlertSetting: UNNotificationSetting,
+		locationStatus: CLAuthorizationStatus
+	) -> DeviceOnboarding.SetupGuide? {
 		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .backgroundActivity)
-		#expect(view.navigationPath == [.localNetwork])
+		return view.nextStep(
+			after: step,
+			notificationStatus: notificationStatus,
+			criticalAlertSetting: criticalAlertSetting,
+			locationStatus: locationStatus
+		)
 	}
 
-	@Test func localNetworkAlwaysGoesToBluetooth() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .localNetwork)
-		#expect(view.navigationPath == [.bluetooth])
+	@Test func startRoutesToNotificationsWhenNotificationsUnknown() {
+		let step = nextStep(
+			after: nil,
+			notificationStatus: .notDetermined,
+			criticalAlertSetting: .notSupported,
+			locationStatus: .authorizedAlways
+		)
+		#expect(step == .notifications)
 	}
 
-	@Test func bluetoothAlwaysGoesToSiri() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .bluetooth)
-		#expect(view.navigationPath == [.siri])
+	@Test func startRoutesToLocationWhenNotificationsKnownAndLocationDenied() {
+		let step = nextStep(
+			after: nil,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .denied
+		)
+		#expect(step == .location)
 	}
 
-	@Test func navigationPathStartsEmpty() {
-		let view = DeviceOnboarding()
-		#expect(view.navigationPath.isEmpty)
+	@Test func startRoutesToBackgroundActivityWhenLocationAuthorized() {
+		let step = nextStep(
+			after: nil,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .authorizedWhenInUse
+		)
+		#expect(step == .backgroundActivity)
 	}
 
-	@Test func deterministicStepsAppendInOrder() async {
-		let view = DeviceOnboarding()
-		await view.goToNextStep(after: .backgroundActivity)
-		await view.goToNextStep(after: .localNetwork)
-		await view.goToNextStep(after: .bluetooth)
-		#expect(view.navigationPath == [.localNetwork, .bluetooth, .siri])
+	@Test func notificationsRoutesToLocationOrBackgroundActivity() {
+		let denied = nextStep(
+			after: .notifications,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .denied
+		)
+		let authorized = nextStep(
+			after: .notifications,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .authorizedAlways
+		)
+		#expect(denied == .location)
+		#expect(authorized == .backgroundActivity)
+	}
+
+	@Test func locationRoutesToBackgroundActivityOnlyWhenAuthorized() {
+		let authorized = nextStep(
+			after: .location,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .authorizedAlways
+		)
+		let denied = nextStep(
+			after: .location,
+			notificationStatus: .authorized,
+			criticalAlertSetting: .enabled,
+			locationStatus: .denied
+		)
+		#expect(authorized == .backgroundActivity)
+		#expect(denied == nil)
+	}
+
+	@Test func deterministicTailFlowMapping() {
+		#expect(nextStep(after: .backgroundActivity, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .localNetwork)
+		#expect(nextStep(after: .localNetwork, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .bluetooth)
+		#expect(nextStep(after: .bluetooth, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .siri)
+		#expect(nextStep(after: .siri, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == nil)
 	}
 }

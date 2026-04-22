@@ -23,23 +23,15 @@ class Router: ObservableObject {
 
 	/// Computed property that assembles the individual per-tab properties into a `NavigationState`.
 	/// Provided for backward compatibility (e.g. tests) and convenience.
+	/// Use the individual `@Published` properties to mutate navigation state.
 	var navigationState: NavigationState {
-		get {
-			NavigationState(
-				selectedTab: selectedTab,
-				messages: messagesState,
-				nodeListSelectedNodeNum: nodeListSelectedNodeNum,
-				map: mapState,
-				settings: settingsState
-			)
-		}
-		set {
-			selectedTab = newValue.selectedTab
-			messagesState = newValue.messages
-			nodeListSelectedNodeNum = newValue.nodeListSelectedNodeNum
-			mapState = newValue.map
-			settingsState = newValue.settings
-		}
+		NavigationState(
+			selectedTab: selectedTab,
+			messages: messagesState,
+			nodeListSelectedNodeNum: nodeListSelectedNodeNum,
+			map: mapState,
+			settings: settingsState
+		)
 	}
 
 	// MARK: Node Object ID Cache
