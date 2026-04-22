@@ -65,7 +65,7 @@ private struct FirmwareContentView: View {
 	// For Catalyst file picker
 	@State var showFirmwareFilePicker = false
 	@State var showInstallationSheet: FirmwareFile.FirmwareType?
-	@State var locallyChosenFirmwareFile: URL? = nil
+	@State var locallyChosenFirmwareFile: URL?
 	
 	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
 		self.node = node

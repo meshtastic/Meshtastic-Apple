@@ -23,7 +23,7 @@ struct ESP32BLEOTASheet: View {
 	let binFileURL: URL
 
 	// To dismiss the intro sheet when complete.
-	var onUpdateComplete: (() -> Void)? = nil
+	var onUpdateComplete: (() -> Void)?
 
 	@State var peripheral: CBPeripheral?
 	
