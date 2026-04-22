@@ -27,6 +27,7 @@ struct Connect: View {
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
 	@ObservedObject var manualConnections = ManualConnectionList.shared
+	@State private var showWifiProvisioning = false
 	
 	var body: some View {
 		NavigationStack {
@@ -273,25 +274,36 @@ struct Connect: View {
 									DeviceConnectRow(device: device)
 								}
 							}
-							if manualConnections.connectionsList.count > 0 {
-								Section(header: Text("Manual Connections").font(.title)) {
-									ForEach(manualConnections.connectionsList) { device in
-										DeviceConnectRow(device: device)
+						if manualConnections.connectionsList.count > 0 {
+							Section(header: Text("Manual Connections").font(.title)) {
+								ForEach(manualConnections.connectionsList) { device in
+									DeviceConnectRow(device: device)
 #if targetEnvironment(macCatalyst)
-											.contextMenu {
-												Button {
-													manualConnections.remove(device: device)
-												} label: {
-													Label("Delete", systemImage: "trash")
-												}
+										.contextMenu {
+											Button {
+												manualConnections.remove(device: device)
+											} label: {
+												Label("Delete", systemImage: "trash")
 											}
+										}
 #endif
-									}.onDelete { offsets in
-										manualConnections.remove(atOffsets: offsets)
-									}
+								}.onDelete { offsets in
+									manualConnections.remove(atOffsets: offsets)
+								}
 
+							}
+						}
+
+						// ── Wi-Fi Provisioning (iOS 18+, mPWRD-OS / nymea-networkmanager) ──
+						if #available(iOS 18.0, *) {
+							Section(header: Text("Device Setup").font(.title)) {
+								Button {
+									showWifiProvisioning = true
+								} label: {
+									Label("Provision Wi-Fi", systemImage: "wifi.router")
 								}
 							}
+						}
 						}
 						.textCase(nil)
 					}
@@ -364,6 +376,12 @@ struct Connect: View {
 				} catch {
 					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
 				}
+			}
+		}
+		.sheet(isPresented: $showWifiProvisioning) {
+			if #available(iOS 18.0, *) {
+				WifiProvisioningView()
+					.environmentObject(NymeaProvisioningManager.shared)
 			}
 		}
 	}

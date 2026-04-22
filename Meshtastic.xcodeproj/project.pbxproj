@@ -43,6 +43,11 @@
 		2346A7192E2FB9A300CB9239 /* SerialConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A7182E2FB9A300CB9239 /* SerialConnection.swift */; };
 		2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */; };
 		2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */; };
+		234D99E92F96FD3F00D26B89 /* NymeaConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99E42F96FD3F00D26B89 /* NymeaConstants.swift */; };
+		234D99EA2F96FD3F00D26B89 /* NymeaSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99E52F96FD3F00D26B89 /* NymeaSession.swift */; };
+		234D99EB2F96FD3F00D26B89 /* NymeaProvisioningManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99E72F96FD3F00D26B89 /* NymeaProvisioningManager.swift */; };
+		234D99EF2F96FD5A00D26B89 /* WifiProvisioningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99ED2F96FD5A00D26B89 /* WifiProvisioningView.swift */; };
+		234D99F02F96FD5A00D26B89 /* WifiNetworkListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99EC2F96FD5A00D26B89 /* WifiNetworkListView.swift */; };
 		2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */; };
 		2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE142D0A24930086C749 /* MetricsSeriesList.swift */; };
 		2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */; };
@@ -82,7 +87,6 @@
 		25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5BF2C3F6DA6008036E3 /* Router.swift */; };
 		25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5C12C3F6E4B008036E3 /* AppState.swift */; };
 		25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5D02C4375DF008036E3 /* RouterTests.swift */; };
-		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
 		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
 		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
@@ -103,6 +107,7 @@
 		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
 		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
 		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
+		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
 		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
 		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
@@ -379,6 +384,11 @@
 		2346A7182E2FB9A300CB9239 /* SerialConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConnection.swift; sourceTree = "<group>"; };
 		2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialTransport.swift; sourceTree = "<group>"; };
 		2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualConnectionList.swift; sourceTree = "<group>"; };
+		234D99E42F96FD3F00D26B89 /* NymeaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NymeaConstants.swift; sourceTree = "<group>"; };
+		234D99E52F96FD3F00D26B89 /* NymeaSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NymeaSession.swift; sourceTree = "<group>"; };
+		234D99E72F96FD3F00D26B89 /* NymeaProvisioningManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NymeaProvisioningManager.swift; sourceTree = "<group>"; };
+		234D99EC2F96FD5A00D26B89 /* WifiNetworkListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiNetworkListView.swift; sourceTree = "<group>"; };
+		234D99ED2F96FD5A00D26B89 /* WifiProvisioningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiProvisioningView.swift; sourceTree = "<group>"; };
 		2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartSeries.swift; sourceTree = "<group>"; };
 		2373AE142D0A24930086C749 /* MetricsSeriesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsSeriesList.swift; sourceTree = "<group>"; };
 		2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultSeries.swift; sourceTree = "<group>"; };
@@ -412,7 +422,6 @@
 		25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25F5D5D02C4375DF008036E3 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
-		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
 		3D0A8ABAEF1E587683970927 /* EXICodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EXICodec.swift; sourceTree = "<group>"; };
 		3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayManager.swift; sourceTree = "<group>"; };
@@ -434,6 +443,7 @@
 		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
 		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
+		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
 		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
@@ -787,6 +797,33 @@
 				2344A2AE2D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift */,
 			);
 			path = CoreData;
+			sourceTree = "<group>";
+		};
+		234D99E62F96FD3F00D26B89 /* Nymea */ = {
+			isa = PBXGroup;
+			children = (
+				234D99E42F96FD3F00D26B89 /* NymeaConstants.swift */,
+				234D99E52F96FD3F00D26B89 /* NymeaSession.swift */,
+			);
+			path = Nymea;
+			sourceTree = "<group>";
+		};
+		234D99E82F96FD3F00D26B89 /* Provisioning */ = {
+			isa = PBXGroup;
+			children = (
+				234D99E62F96FD3F00D26B89 /* Nymea */,
+				234D99E72F96FD3F00D26B89 /* NymeaProvisioningManager.swift */,
+			);
+			path = Provisioning;
+			sourceTree = "<group>";
+		};
+		234D99EE2F96FD5A00D26B89 /* Provisioning */ = {
+			isa = PBXGroup;
+			children = (
+				234D99EC2F96FD5A00D26B89 /* WifiNetworkListView.swift */,
+				234D99ED2F96FD5A00D26B89 /* WifiProvisioningView.swift */,
+			);
+			path = Provisioning;
 			sourceTree = "<group>";
 		};
 		237AEB8D2E1FE120003B7CE3 /* Accessory */ = {
@@ -1217,6 +1254,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				234D99E82F96FD3F00D26B89 /* Provisioning */,
 				237AEB8D2E1FE120003B7CE3 /* Accessory */,
 				BCB6137F2C6728E700485544 /* AppIntents */,
 				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
@@ -1251,6 +1289,7 @@
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				234D99EE2F96FD5A00D26B89 /* Provisioning */,
 				DD47E3D726F2F21A00029299 /* Connect */,
 				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
 				DD6D5A312CA1176A00ED3032 /* Layouts */,
@@ -1679,6 +1718,9 @@
 				259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */,
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
 				DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */,
+				234D99E92F96FD3F00D26B89 /* NymeaConstants.swift in Sources */,
+				234D99EA2F96FD3F00D26B89 /* NymeaSession.swift in Sources */,
+				234D99EB2F96FD3F00D26B89 /* NymeaProvisioningManager.swift in Sources */,
 				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
 				DD9C700F2E8DE80800106227 /* UserMessageRow.swift in Sources */,
 				DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */,
@@ -1910,6 +1952,8 @@
 				2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */,
 				2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */,
 				2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */,
+				234D99EF2F96FD5A00D26B89 /* WifiProvisioningView.swift in Sources */,
+				234D99F02F96FD5A00D26B89 /* WifiNetworkListView.swift in Sources */,
 				D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */,
 				237AEB8F2E1FE457003B7CE3 /* Transport.swift in Sources */,
 				DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,
