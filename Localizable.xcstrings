@@ -16510,9 +16510,6 @@
         }
       }
     },
-    "Device Setup" : {
-
-    },
     "Device that does not forward packets from other devices." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -41225,9 +41222,6 @@
         }
       }
     },
-    "Provision Wi-Fi" : {
-
-    },
     "Provisioning Failed" : {
 
     },
@@ -61668,6 +61662,9 @@
       }
     },
     "Wi-Fi Provisioning" : {
+
+    },
+    "Wi-Fi Setup" : {
 
     },
     "WiFi" : {

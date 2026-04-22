@@ -94,12 +94,73 @@ struct SignalBarsView: View {
 	}
 }
 
+// MARK: - Copy toast
+
+private struct CopyToast: View {
+	let message: String
+
+	var body: some View {
+		HStack(spacing: 8) {
+			Image(systemName: "checkmark.circle.fill")
+				.foregroundColor(.green)
+			Text(message)
+				.font(.subheadline)
+				.foregroundColor(.primary)
+		}
+		.padding(.horizontal, 16)
+		.padding(.vertical, 10)
+		.background(.regularMaterial, in: Capsule())
+		.shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
+	}
+}
+
+// MARK: - Credential row
+
+private struct CredentialRow: View {
+	let label: String
+	let value: String
+	let onCopy: () -> Void
+
+	var body: some View {
+		HStack {
+			Text(label)
+				.font(.caption)
+				.foregroundColor(.secondary)
+				.frame(width: 80, alignment: .leading)
+			Text(value)
+				.font(.system(.body, design: .monospaced))
+			Spacer()
+			Button(action: onCopy) {
+				Image(systemName: "doc.on.doc")
+					.font(.body)
+			}
+			.tint(.accentColor)
+			.buttonStyle(.borderless)
+		}
+	}
+}
+
 // MARK: - WifiProvisioningView
 
 struct WifiProvisioningView: View {
 
 	@EnvironmentObject private var provisioning: NymeaProvisioningManager
 	@Environment(\.dismiss) private var dismiss
+
+	@State private var toastMessage: String?
+	@State private var noSSHClientNotice = false
+
+	/// If supplied, the sheet skips the idle/scan/picker stages and immediately
+	/// connects to the given device. Used when the user taps a nymea device from
+	/// the Connect list.
+	let preselectedDevice: NymeaDiscoveredDevice?
+
+	private static let defaultSSHUser = "root"
+	private static let defaultSSHPassword = "1234"
+
+	init(preselectedDevice: NymeaDiscoveredDevice? = nil) {
+		self.preselectedDevice = preselectedDevice
+	}
 
 	var body: some View {
 		NavigationStack {
@@ -148,6 +209,11 @@ struct WifiProvisioningView: View {
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
 					cancelOrDoneButton
+				}
+			}
+			.onAppear {
+				if let device = preselectedDevice, provisioning.state == .idle {
+					provisioning.beginProvisioning(with: device)
 				}
 			}
 		}
@@ -241,67 +307,123 @@ struct WifiProvisioningView: View {
 
 	@ViewBuilder
 	private func successView(ipAddress: String) -> some View {
-		VStack(spacing: 0) {
-			Spacer()
+		ZStack(alignment: .bottom) {
+			ScrollView {
+				VStack(spacing: 24) {
+					Image(systemName: "checkmark.circle.fill")
+						.font(.system(size: 72))
+						.symbolRenderingMode(.hierarchical)
+						.foregroundColor(.green)
+						.padding(.top, 24)
 
-			Image(systemName: "checkmark.circle.fill")
-				.font(.system(size: 72))
-				.symbolRenderingMode(.hierarchical)
-				.foregroundColor(.green)
-				.padding(.bottom, 20)
-
-			Text("Device Connected")
-				.font(.title2.bold())
-				.padding(.bottom, 8)
-
-			Text("Your mPWRD-OS device has joined the Wi-Fi network.")
-				.multilineTextAlignment(.center)
-				.font(.body)
-				.foregroundColor(.secondary)
-				.padding(.horizontal, 32)
-				.padding(.bottom, 32)
-
-			// IP address card
-			VStack(alignment: .leading, spacing: 12) {
-				Text("IP Address")
-					.font(.caption)
-					.foregroundColor(.secondary)
-
-				HStack {
-					Text(ipAddress)
-						.font(.system(.title3, design: .monospaced))
-					Spacer()
-					Button {
-						UIPasteboard.general.string = ipAddress
-					} label: {
-						Label("Copy", systemImage: "doc.on.doc")
-							.labelStyle(.iconOnly)
-							.font(.title3)
+					VStack(spacing: 8) {
+						Text("Device Connected")
+							.font(.title2.bold())
+						Text("Your mPWRD-OS device has joined the Wi-Fi network.")
+							.multilineTextAlignment(.center)
+							.font(.body)
+							.foregroundColor(.secondary)
+							.padding(.horizontal, 32)
 					}
-					.tint(.accentColor)
+
+					// IP address card
+					VStack(alignment: .leading, spacing: 8) {
+						Text("IP Address")
+							.font(.caption)
+							.foregroundColor(.secondary)
+						HStack {
+							Text(ipAddress)
+								.font(.system(.title3, design: .monospaced))
+							Spacer()
+							Button {
+								copy(ipAddress, label: "IP address")
+							} label: {
+								Image(systemName: "doc.on.doc")
+									.font(.title3)
+							}
+							.tint(.accentColor)
+							.buttonStyle(.borderless)
+						}
+					}
+					.padding()
+					.background(Color(.systemBackground))
+					.cornerRadius(12)
+					.shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+					.padding(.horizontal, 24)
+
+					// SSH setup card
+					VStack(alignment: .leading, spacing: 16) {
+						VStack(alignment: .leading, spacing: 4) {
+							Text("Complete Device Setup")
+								.font(.headline)
+							Text("Sign in over SSH to change the default username and password.")
+								.font(.caption)
+								.foregroundColor(.secondary)
+						}
+
+						VStack(spacing: 8) {
+							CredentialRow(
+								label: "Username",
+								value: Self.defaultSSHUser
+							) {
+								copy(Self.defaultSSHUser, label: "Username")
+							}
+							Divider()
+							CredentialRow(
+								label: "Password",
+								value: Self.defaultSSHPassword
+							) {
+								copy(Self.defaultSSHPassword, label: "Password")
+							}
+							Divider()
+							HStack {
+								Text("ssh \(Self.defaultSSHUser)@\(ipAddress)")
+									.font(.system(.caption, design: .monospaced))
+									.lineLimit(1)
+									.truncationMode(.middle)
+								Spacer()
+								Button {
+									copy("ssh \(Self.defaultSSHUser)@\(ipAddress)", label: "Command")
+								} label: {
+									Image(systemName: "doc.on.doc")
+										.font(.body)
+								}
+								.tint(.accentColor)
+								.buttonStyle(.borderless)
+							}
+							.padding(8)
+							.background(Color(.secondarySystemBackground))
+							.cornerRadius(6)
+						}
+
+						Button {
+							launchSSH(ipAddress: ipAddress)
+						} label: {
+							Label("Open SSH Client", systemImage: "terminal")
+								.font(.headline)
+								.frame(maxWidth: .infinity)
+								.padding(.vertical, 8)
+						}
+						.buttonStyle(.borderedProminent)
+						.buttonBorderShape(.capsule)
+
+						if noSSHClientNotice {
+							Text("No SSH client found. We'll open the App Store so you can install one.")
+								.font(.caption)
+								.foregroundColor(.secondary)
+								.multilineTextAlignment(.center)
+								.frame(maxWidth: .infinity)
+						}
+					}
+					.padding()
+					.background(Color(.systemBackground))
+					.cornerRadius(12)
+					.shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+					.padding(.horizontal, 24)
+
+					Spacer(minLength: 100)
 				}
-
-				Divider()
-
-				Text("Complete device setup via SSH:")
-					.font(.caption)
-					.foregroundColor(.secondary)
-
-				Text("ssh mpwrd@\(ipAddress)")
-					.font(.system(.caption, design: .monospaced))
-					.padding(8)
-					.frame(maxWidth: .infinity, alignment: .leading)
-					.background(Color(.secondarySystemBackground))
-					.cornerRadius(6)
 			}
-			.padding()
-			.background(Color(.systemBackground))
-			.cornerRadius(12)
-			.shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
-			.padding(.horizontal, 24)
-
-			Spacer()
-			Spacer()
 
 			Button {
 				provisioning.reset()
@@ -316,6 +438,59 @@ struct WifiProvisioningView: View {
 			.buttonBorderShape(.capsule)
 			.padding(.horizontal, 32)
 			.padding(.bottom, 24)
+			.background(
+				LinearGradient(
+					colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+					startPoint: .top,
+					endPoint: .bottom
+				)
+				.allowsHitTesting(false)
+			)
+
+			if let toastMessage {
+				CopyToast(message: toastMessage)
+					.padding(.bottom, 100)
+					.transition(.opacity.combined(with: .move(edge: .bottom)))
+			}
+		}
+		.animation(.easeInOut(duration: 0.2), value: toastMessage)
+		.animation(.easeInOut(duration: 0.2), value: noSSHClientNotice)
+	}
+
+	// MARK: - SSH helpers
+
+	private func sshURL(ip: String, user: String = WifiProvisioningView.defaultSSHUser) -> URL? {
+		URL(string: "ssh://\(user)@\(ip)")
+	}
+
+	private func appStoreSSHSearchURL() -> URL? {
+		URL(string: "itms-apps://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?media=software&term=ssh")
+	}
+
+	private func launchSSH(ipAddress: String) {
+		guard let url = sshURL(ip: ipAddress) else { return }
+		if UIApplication.shared.canOpenURL(url) {
+			noSSHClientNotice = false
+			UIApplication.shared.open(url)
+		} else {
+			noSSHClientNotice = true
+			if let storeURL = appStoreSSHSearchURL() {
+				UIApplication.shared.open(storeURL)
+			}
+		}
+	}
+
+	private func copy(_ value: String, label: String) {
+		UIPasteboard.general.string = value
+		toastMessage = "\(label) copied"
+		UIImpactFeedbackGenerator(style: .light).impactOccurred()
+		Task {
+			try? await Task.sleep(nanoseconds: 1_500_000_000)
+			await MainActor.run {
+				if toastMessage == "\(label) copied" {
+					toastMessage = nil
+				}
+			}
 		}
 	}
 
