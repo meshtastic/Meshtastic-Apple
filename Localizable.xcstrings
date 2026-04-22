@@ -11108,9 +11108,6 @@
         }
       }
     },
-    "Check For Updates" : {
-
-    },
     "CHG" : {
       "localizations" : {
         "da" : {
@@ -16406,6 +16403,7 @@
       }
     },
     "Device Model: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {

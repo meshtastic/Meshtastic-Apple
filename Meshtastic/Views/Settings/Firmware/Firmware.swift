@@ -77,19 +77,23 @@ private struct FirmwareContentView: View {
 		List {
 			// SECTION 1: HERO
 			Section {
-				HStack {
+				Text(hardware.displayName ?? "Unknown")
+					.font(.title)
+					.fixedSize(horizontal: false, vertical: true)
+					.frame(maxWidth: .infinity, alignment: .leading)
+					.padding(.bottom, 2)
+
+				HStack(alignment: .center, spacing: 12) {
 					SupportedHardwareBadge(hwModelId: hardware.hwModel)
-					Text("Device Model: \(hardware.displayName ?? "Unknown")")
-						.font(.largeTitle)
-						.fixedSize(horizontal: false, vertical: true)
-				}
-				
-				VStack {
+						.frame(width: 72)
+						.padding(.leading, 4)
+
 					FirmwareHeroImage(hardware: hardware)
-						.frame(height: 300) // Give List a hint of the height
 						.frame(maxWidth: .infinity)
+						.frame(height: 140)
 				}
-				
+				.padding(.bottom, 2)
+
 				VStack(alignment: .leading) {
 					Text("Platform IO").font(.caption).foregroundColor(.secondary)
 					Text("\(node.myInfo?.pioEnv ?? "Unknown")")
@@ -263,12 +267,14 @@ private struct FirmwareContentView: View {
 			if meshtasticAPI.isLoadingFirmwareList {
 				ProgressView()
 			} else {
-				Button("Check For Updates") {
+				Button {
 					Task.detached {
 						try? await meshtasticAPI.refreshFirmwareAPIData()
 					}
-				}.buttonStyle(.bordered)
-				.controlSize(.small)
+				} label: {
+					Image(systemName: "arrow.clockwise.circle")
+				}
+				.buttonStyle(.bordered)
 			}
 		}.textCase(nil)
 		#else
@@ -278,10 +284,12 @@ private struct FirmwareContentView: View {
 			if meshtasticAPI.isLoadingFirmwareList {
 				ProgressView()
 			} else {
-				Button("Check For Updates") {
+				Button {
 					Task.detached {
 						try? await meshtasticAPI.refreshFirmwareAPIData()
 					}
+				} label: {
+					Image(systemName: "arrow.clockwise.circle")
 				}
 			}
 		}.textCase(nil)
@@ -302,12 +310,10 @@ struct FirmwareHeroImage: View {
 				SVGView(svg: svg)
 					.resizable()
 					.scaledToFit()
-					.frame(width: 300, height: 300)
 					.cornerRadius(5)
 			} else {
 				// Placeholder prevents List jumpiness while loading
 				Color.clear
-					.frame(width: 300, height: 300)
 			}
 		}
 		.task {

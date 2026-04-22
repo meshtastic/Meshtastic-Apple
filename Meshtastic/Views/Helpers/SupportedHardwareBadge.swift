@@ -42,6 +42,7 @@ struct SupportedHardwareBadge: View {
 				Text( device.activelySupported ? "Supported" : "Unsupported")
 					.foregroundStyle(.gray)
 					.font(.caption2)
+					.fixedSize()
 			}
 		} else if meshtasticAPI.isLoadingDeviceList {
 			// Still loading the database from the API
@@ -50,6 +51,7 @@ struct SupportedHardwareBadge: View {
 				Text("Loading")
 					.foregroundStyle(.gray)
 					.font(.caption2)
+					.fixedSize()
 			}
 		} else {
 			// Can't find this hardware in the database
@@ -60,6 +62,7 @@ struct SupportedHardwareBadge: View {
 				Text("Unknown")
 					.foregroundStyle(.gray)
 					.font(.caption2)
+					.fixedSize()
 			}
 		}
 	}

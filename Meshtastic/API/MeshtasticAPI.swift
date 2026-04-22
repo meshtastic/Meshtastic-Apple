@@ -300,7 +300,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			}
 			
 			try? context.save()
-			Logger.services.info("Saving firmware release \(release.id) in database.")
+			Logger.services.info("Saving firmware release \(release.id, privacy: .public) in database.")
 		}
 	}
 	
