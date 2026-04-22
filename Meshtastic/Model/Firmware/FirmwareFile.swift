@@ -57,7 +57,7 @@ extension FirmwareFile {
 		var description: String { return rawValue }
 		
 		case uf2 = ".uf2"
-		case bin = "-update.bin"
+		case bin = ".bin"
 		case otaZip = "-ota.zip"
 	}
 	
@@ -174,11 +174,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			coreName = String(coreName.dropLast(".uf2".count))
 			self.firmwareType = .uf2
 		} else if fileName.hasSuffix(".bin") {
-			if fileName.hasSuffix("-update.bin") {
-				coreName = String(coreName.dropLast("-update.bin".count))
-			} else if fileName.hasSuffix(".bin") {
-				coreName = String(coreName.dropLast(".bin".count))
-			}
+			coreName = String(coreName.dropLast(".bin".count))
 			self.firmwareType = .bin
 		} else {
 			// File does not match supported extensions
