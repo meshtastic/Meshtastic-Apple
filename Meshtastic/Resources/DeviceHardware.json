@@ -1212,7 +1212,7 @@
       "Heltec"
     ],
     "requiresDfu": true,
-    "hasMui": false,
+    "hasMui": true,
     "partitionScheme": "16MB",
     "images": [
       "heltec_v4.svg"
@@ -1237,6 +1237,38 @@
     ]
   },
   {
+    "hwModel": 112,
+    "hwModelSlug": "M5STACK_CARDPUTER_ADV",
+    "platformioTarget": "m5stack-cardputer-adv",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "Cardputer Mesh Kit",
+    "tags": [
+      "M5Stack"
+    ],
+    "images": [
+      "m5stack_cardputer.svg"
+    ],
+    "partitionScheme": "8MB"
+  },
+  {
+    "hwModel": 113,
+    "hwModelSlug": "HELTEC_WIRELESS_TRACKER_V2",
+    "platformioTarget": "heltec-wireless-tracker-v2",
+    "architecture": "esp32-s3",
+    "activelySupported": true,
+    "supportLevel": 1,
+    "displayName": "Heltec Wireless Tracker V2",
+    "tags": [
+      "Heltec"
+    ],
+    "images": [
+      "heltec_wireless_tracker_v2.svg"
+    ],
+    "partitionScheme": "8MB"
+  },
+  {
     "hwModel": 115,
     "hwModelSlug": "THINKNODE_M3",
     "platformioTarget": "thinknode_m3",
@@ -1257,7 +1289,7 @@
     "hwModelSlug": "WISMESH_TAP_V2",
     "platformioTarget": "rak_wismesh_tap_v2",
     "architecture": "esp32-s3",
-    "activelySupported": false,
+    "activelySupported": true,
     "supportLevel": 1,
     "displayName": "RAK WisMesh Tap V2",
     "tags": [
@@ -1290,7 +1322,7 @@
     "hwModelSlug": "THINKNODE_M4",
     "platformioTarget": "thinknode_m4",
     "architecture": "nrf52840",
-    "activelySupported": false,
+    "activelySupported": true,
     "supportLevel": 1,
     "displayName": "ThinkNode M4",
     "tags": [
@@ -1306,7 +1338,7 @@
     "hwModelSlug": "THINKNODE_M6",
     "platformioTarget": "thinknode_m6",
     "architecture": "nrf52840",
-    "activelySupported": false,
+    "activelySupported": true,
     "supportLevel": 1,
     "displayName": "ThinkNode M6",
     "tags": [
@@ -1332,6 +1364,39 @@
     "partitionScheme": "8MB",
     "images": [
       "tbeam-1w.svg"
+    ]
+  },
+  {
+    "hwModel": 123,
+    "hwModelSlug": "T5_S3_EPAPER_PRO",
+    "platformioTarget": "t5-epaper-s3",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "LilyGo T5 E-paper S3 Pro",
+    "tags": [
+      "LilyGo"
+    ],
+    "hasMui": false,
+    "partitionScheme": "8MB",
+    "images": [
+      "t5s3_epaper.svg"
+    ]
+  },
+  {
+    "hwModel": 125,
+    "hwModelSlug": "MINI_EPAPER_S3",
+    "platformioTarget": "mini-epaper-s3",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "LilyGo Mini E-paper S3",
+    "tags": [
+      "LilyGo"
+    ],
+    "hasMui": false,
+    "images": [
+      "mini-epaper-s3.svg"
     ]
   }
 ]

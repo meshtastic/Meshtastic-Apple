@@ -200,7 +200,7 @@ struct ESP32BLEOTASheet: View {
 				}
 				
 				// 6. Set auto-reconnect preference
-				accessoryManager.shouldAutomaticallyConnectToPreferredPeripheral = true
+				accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 				
 				// 7. Start the OTA process
 				await ota.startOTA(binURL: binFileURL, desiredPeripheral: peripheral?.identifier)

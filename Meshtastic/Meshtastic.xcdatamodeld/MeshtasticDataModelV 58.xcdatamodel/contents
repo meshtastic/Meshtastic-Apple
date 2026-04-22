@@ -232,6 +232,7 @@
         <attribute name="minAppVersion" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="myNodeNum" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="peripheralId" optional="YES" attributeType="String"/>
+        <attribute name="pioEnv" optional="YES" attributeType="String"/>
         <attribute name="rebootCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="registered" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="channels" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="ChannelEntity" inverseName="myInfoChannel" inverseEntity="ChannelEntity"/>

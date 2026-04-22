@@ -349,11 +349,6 @@
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
 		E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
 		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
-		43C0CB306098FD005C2D489F /* IntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA63632A10C2DD076FA222BE /* IntentHandler.swift */; };
-		7717E5954788B23527BACF65 /* IntentMessageConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */; };
-		AB4622DCF4B1D4115ED00312 /* SendMessageIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */; };
-		B0E4EEF2D2C41A884A5E949C /* SearchForMessagesIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */; };
-		9BC51D7EF97090D149658843 /* SetMessageAttributeIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -403,9 +398,9 @@
 		0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchForMessagesIntentHandler.swift; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
 		108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityToNodeInfo.swift; sourceTree = "<group>"; };
+		1D5AD8037A0D583C614B0597 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
 		230A983F2EF86A44004D87F1 /* AsyncCentral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncCentral.swift; sourceTree = "<group>"; };
 		230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ESP32BLEOTAViewModel.swift; sourceTree = "<group>"; };
-		1D5AD8037A0D583C614B0597 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
 		230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+Discovery.swift"; sourceTree = "<group>"; };
 		231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEAuthorizationHelper.swift; sourceTree = "<group>"; };
 		23148E2F2EE1CCE500F0DB2C /* MeshtasticAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAPI.swift; sourceTree = "<group>"; };
@@ -512,8 +507,8 @@
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
-		AA0001052F07A4B000600002 /* MeshtasticDataModelV 58.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 58.xcdatamodel"; sourceTree = "<group>"; };
 		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
+		AA0001052F07A4B000600002 /* MeshtasticDataModelV 58.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 58.xcdatamodel"; sourceTree = "<group>"; };
 		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
 		AA000301CPTST000000000001 /* CarPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayTests.swift; sourceTree = "<group>"; };
@@ -801,11 +796,6 @@
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
-		CA63632A10C2DD076FA222BE /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
-		39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentMessageConverters.swift; sourceTree = "<group>"; };
-		5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessageIntentHandler.swift; sourceTree = "<group>"; };
-		0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchForMessagesIntentHandler.swift; sourceTree = "<group>"; };
-		CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMessageAttributeIntentHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -1224,18 +1214,6 @@
 				BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */,
 			);
 			path = AppIntents;
-			sourceTree = "<group>";
-		};
-		D05BD108B673E15AD4B01BC8 /* Intents */ = {
-			isa = PBXGroup;
-			children = (
-				CA63632A10C2DD076FA222BE /* IntentHandler.swift */,
-				39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */,
-				5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */,
-				0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */,
-				CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */,
-			);
-			path = Intents;
 			sourceTree = "<group>";
 		};
 		C37572859BC745C4284A9B42 /* TAK */ = {
@@ -2114,7 +2092,6 @@
 				D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */,
 				DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */,
 				23196A6E2EF1BA9100B1504B /* ESP32WifiOTAViewModel.swift in Sources */,
-				DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */,
 				DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */,

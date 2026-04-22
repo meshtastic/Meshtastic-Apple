@@ -536,10 +536,12 @@ extension MeshPackets {
 						fetchedNode[0].user?.pkiEncrypted = true
 						fetchedNode[0].user?.publicKey = userMessage.publicKey
 					}
-					Task {
-						Api().loadDeviceHardwareData { (hw) in
-							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
-							fetchedNode[0].user?.hwDisplayName = dh?.displayName
+					if let user = fetchedNode.first?.user {
+						let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
+						fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+						let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
+						if let hardwareEntity = fetchedHardware2.first {
+							user.hwDisplayName = hardwareEntity.displayName
 						}
 					}
 					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {

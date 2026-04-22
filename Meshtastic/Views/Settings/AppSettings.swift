@@ -164,7 +164,7 @@ struct AppSettings: View {
 								context.refreshAllObjects()
 							}
 							Task { @MainActor in
-								clearCoreDataDatabase(context: context, includeRoutes: true, includeAppLevelData: true)
+								MeshPackets.shared.clearCoreDataDatabase(context: context, includeRoutes: true, includeAppLevelData: true)
 								clearNotifications()
 								try? await MeshtasticAPI.shared.refreshDevicesAPIData()
 								context.refreshAllObjects()
