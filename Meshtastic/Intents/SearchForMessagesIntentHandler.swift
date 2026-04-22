@@ -37,7 +37,10 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 				var conversationPredicates: [NSPredicate] = []
 				for convId in conversationIds {
 					if convId.hasPrefix("dm-"), let nodeNum = Int64(convId.dropFirst("dm-".count)) {
-						conversationPredicates.append(NSPredicate(format: "fromUser.num == %lld", nodeNum))
+						conversationPredicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: [
+							NSPredicate(format: "fromUser.num == %lld", nodeNum),
+							NSPredicate(format: "toUser.num == %lld", nodeNum)
+						]))
 					} else if convId.hasPrefix("channel-"), let channelIndex = Int32(convId.dropFirst("channel-".count)) {
 						conversationPredicates.append(NSPredicate(format: "channel == %d AND toUser == nil", channelIndex))
 					}

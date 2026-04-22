@@ -121,7 +121,7 @@ struct MessageText: View {
 					.keyboardType(.emoji)
 					.scrollDismissesKeyboard(.immediately)
 					.focused($isTapbackInputFocused)
-					.frame(width: 0, height: 0)
+					.frame(width: 1, height: 1)
 					.opacity(0)
 					.onChange(of: tapbackText) {
 						processTapback()

@@ -479,17 +479,6 @@ struct NodeDetail: View {
 								}
 								if node.hasPositions {
 								#if !targetEnvironment(macCatalyst)
-									if node.latestPosition?.isPreciseLocation == true && WatchSessionManager.shared.isWatchAvailable {
-										Button {
-											WatchSessionManager.shared.sendNodeForFoxhunt(node.num)
-										} label: {
-											Label {
-												Text("Foxhunt on your watch")
-											} icon: {
-												Image(systemName: "dot.crosshair")
-											}
-										}
-									}
 									if node.latestPosition?.isPreciseLocation == true {
 										Button {
 											showingCompassSheet = true

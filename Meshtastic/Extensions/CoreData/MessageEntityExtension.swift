@@ -50,6 +50,8 @@ extension MessageEntity {
 			format: "replyID == %lld AND isEmoji == true",
 			self.messageId
 		)
+		fetchRequest.fetchLimit = 20
+		fetchRequest.returnsObjectsAsFaults = false
 
 		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
 	}
