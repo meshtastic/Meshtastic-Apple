@@ -314,8 +314,10 @@ struct FirmwareHeroImage: View {
 			} else {
 				// Placeholder prevents List jumpiness while loading
 				Color.clear
+					.frame(height: 140)
 			}
 		}
+		.frame(maxWidth: .infinity, maxHeight: 140)
 		.task {
 			// Perform the Core Data relationship traversal off the main layout pass
 			if svg == nil {
