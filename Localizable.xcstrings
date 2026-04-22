@@ -22210,6 +22210,7 @@
       }
     },
     "Firmware" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
