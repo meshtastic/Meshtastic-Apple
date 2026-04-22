@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const BOT_COMMENT_MARKER = '';
+            const BOT_COMMENT_MARKER = '<!-- meshtastic-bug-analyzer -->';
             const MODELS_API_URL = 'https://models.inference.ai.azure.com/chat/completions';
 
             // ── tuneable constants ────────────────────────────────────────────

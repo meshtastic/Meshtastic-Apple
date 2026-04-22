@@ -514,36 +514,60 @@ struct DeviceOnboarding: View {
 		}.accessibilityElement(children: .combine)
 	}
 	// MARK: Navigation
-	func goToNextStep(after step: SetupGuide?) async {
+	func nextStep(
+		after step: SetupGuide?,
+		notificationStatus: UNAuthorizationStatus,
+		criticalAlertSetting: UNNotificationSetting,
+		locationStatus: CLAuthorizationStatus
+	) -> SetupGuide? {
 		switch step {
 		case .none:
-			let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-			let criticalAlert = await UNUserNotificationCenter.current().notificationSettings().criticalAlertSetting
-			if  status == .notDetermined && criticalAlert == .notSupported {
-				navigationPath.append(.notifications)
-			} else {
-				fallthrough
+			if notificationStatus == .notDetermined && criticalAlertSetting == .notSupported {
+				return .notifications
 			}
-		case .notifications:
-			locationStatus = LocationsHandler.shared.manager.authorizationStatus
-			if locationStatus == .notDetermined ||  locationStatus == .restricted || locationStatus == .denied {
-				navigationPath.append(.location)
-			} else {
-				fallthrough
+			if locationStatus == .notDetermined || locationStatus == .restricted || locationStatus == .denied {
+				return .location
 			}
-		case .location:
-			locationStatus = LocationsHandler.shared.manager.authorizationStatus
 			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
-				navigationPath.append(.backgroundActivity)
+				return .backgroundActivity
 			}
+			return nil
+		case .notifications:
+			if locationStatus == .notDetermined || locationStatus == .restricted || locationStatus == .denied {
+				return .location
+			}
+			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
+				return .backgroundActivity
+			}
+			return nil
+		case .location:
+			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
+				return .backgroundActivity
+			}
+			return nil
 		case .backgroundActivity:
-			navigationPath.append(.localNetwork)
+			return .localNetwork
 		case .localNetwork:
-			navigationPath.append(.bluetooth)
-			
+			return .bluetooth
 		case .bluetooth:
-			navigationPath.append(.siri)
+			return .siri
 		case .siri:
+			return nil
+		}
+	}
+
+	func goToNextStep(after step: SetupGuide?) async {
+		let notificationSettings = await UNUserNotificationCenter.current().notificationSettings()
+		locationStatus = LocationsHandler.shared.manager.authorizationStatus
+
+		if let next = nextStep(
+			after: step,
+			notificationStatus: notificationSettings.authorizationStatus,
+			criticalAlertSetting: notificationSettings.criticalAlertSetting,
+			locationStatus: locationStatus
+		) {
+			navigationPath.append(next)
+		} else if step == .siri {
 			dismiss()
 		}
 	}
@@ -628,6 +652,11 @@ struct DeviceOnboarding: View {
 	}
 	
 	func requestSiriPermissions() async {
+		if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+			Logger.services.info("Skipping Siri permission request while running tests")
+			return
+		}
+
 		await withCheckedContinuation { continuation in
 			INPreferences.requestSiriAuthorization { status in
 				switch status {

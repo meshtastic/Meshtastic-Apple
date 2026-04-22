@@ -49,9 +49,19 @@ enum IntentMessageConverters {
 	}
 
 	/// Builds a stable conversation identifier from a message.
-	/// Channel messages use "channel-<N>", direct messages use "dm-<nodeNum>".
+	/// Channel messages use "channel-<N>", direct messages use "dm-<remoteNodeNum>"
+	/// where remoteNodeNum is always the *other* participant (not the local/connected node),
+	/// so incoming and outgoing DMs share the same identifier.
 	static func conversationIdentifier(for message: MessageEntity) -> String {
-		if let toUser = message.toUser {
+		guard message.toUser != nil else {
+			return "channel-\(message.channel)"
+		}
+		let localNum = Int64(UserDefaults.preferredPeripheralNum)
+		if let fromUser = message.fromUser, fromUser.num != localNum {
+			// Incoming DM: remote node is the sender
+			return "dm-\(fromUser.num)"
+		} else if let toUser = message.toUser {
+			// Outgoing DM: remote node is the recipient
 			return "dm-\(toUser.num)"
 		}
 		return "channel-\(message.channel)"

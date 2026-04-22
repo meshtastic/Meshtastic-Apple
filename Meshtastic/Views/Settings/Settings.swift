@@ -9,7 +9,6 @@ import SwiftUI
 import OSLog
 import TipKit
 import MeshtasticProtobufs
-import CoreData
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
@@ -319,16 +318,6 @@ struct Settings: View {
 				}
 			}
 
-			if isTAKModuleSupported() {
-				NavigationLink(value: SettingsNavigationState.takConfig) {
-					Label {
-						Text("TAK")
-					} icon: {
-						Image(systemName: "shield.checkered")
-					}
-				}
-			}
-
 			if !showsAnyModuleConfiguration {
 				Text("This node does not support any configurable modules.")
 					.foregroundColor(.secondary)
@@ -422,15 +411,6 @@ struct Settings: View {
 						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
-					}
-				}
-				if #available(iOS 18, *) {
-					NavigationLink(value: SettingsNavigationState.tools) {
-						Label {
-							Text("Tools")
-						} icon: {
-							Image(systemName: "hammer")
-						}
 					}
 				}
 				NavigationLink(value: SettingsNavigationState.routes) {
@@ -536,7 +516,6 @@ struct Settings: View {
 					developersSection
 #endif
 					firmwareSection
-					takSection
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in

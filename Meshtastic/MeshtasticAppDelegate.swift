@@ -13,6 +13,10 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 
 	var router: Router?
 
+	private var isRunningTests: Bool {
+		ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+	}
+
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
 		Logger.services.info("🚀 [App] Meshtstic Apple App launched!")
 		// Default User Default Values
@@ -26,25 +30,16 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		if locationsHandler.backgroundActivity {
 			locationsHandler.backgroundActivity = true
 		}
-		if Calendar.current.date(byAdding: .day, value: 1, to: UserDefaults.lastDeviceAPIUpdate)! < Date() {
-			// lastUpdate is older than 1 day
-			Task {
-				Logger.services.info("📋 Device list API data is older than one day, updating...")
-				try await MeshtasticAPI.shared.refreshDevicesAPIData()
-				UserDefaults.lastDeviceAPIUpdate = Date()
-			}
-		} else {
-			Logger.services.info("📋 Device list API data update is not needed...")
-		}
-
 		// Initialize TAK Server if enabled
 		Task { @MainActor in
 			TAKServerManager.shared.initializeOnStartup()
 		}
 		// Request Siri authorization so intent donations work and CarPlay messaging is available.
 		#if !targetEnvironment(macCatalyst)
-		INPreferences.requestSiriAuthorization { status in
-			Logger.services.info("Siri authorization status: \(String(describing: status))")
+		if !isRunningTests {
+			INPreferences.requestSiriAuthorization { status in
+				Logger.services.info("Siri authorization status: \(String(describing: status))")
+			}
 		}
 		#endif
 		return true
