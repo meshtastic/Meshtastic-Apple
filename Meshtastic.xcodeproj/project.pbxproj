@@ -335,7 +335,7 @@
 		AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */; };
 		AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */; };
 		AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0009 /* Assets.xcassets */; };
-		AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0013 /* WatchCircleText.swift */; };
 /* End PBXBuildFile section */
 
@@ -781,7 +781,6 @@
 		AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionView.swift; sourceTree = "<group>"; };
 		AA0005WTCH00000000FR0009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Meshtastic Watch App.entitlements"; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0011 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meshtastic Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0005WTCH00000000FR0013 /* WatchCircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCircleText.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1594,7 +1593,6 @@
 				AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */,
 				AA0005WTCH00000000FR0002 /* ContentView.swift */,
 				AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */,
-				AA0005WTCH00000000FR0011 /* Info.plist */,
 				AA0005WTCH00000000FR0009 /* Assets.xcassets */,
 				AA0005WTCH00000000GR0002 /* Managers */,
 				AA0005WTCH00000000GR0003 /* Models */,
@@ -2568,7 +2566,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
@@ -2601,7 +2598,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
