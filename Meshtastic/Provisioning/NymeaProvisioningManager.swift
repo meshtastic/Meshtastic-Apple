@@ -87,10 +87,24 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 
 	@Published private(set) var state: ProvisioningState = .idle
 
+	/// Devices currently visible to the passive (background) scan. Updated whenever a
+	/// scan is running — passive or active — so the Connect view can list nearby
+	/// nymea devices even before the user opens the provisioning sheet.
+	@Published private(set) var discoverable: [NymeaDiscoveredDevice] = []
+
 	// MARK: Scanning
+
+	private enum ScanMode {
+		/// Background scan driven by the Connect view; updates `discoverable` only.
+		case passive
+		/// Active scan during a user-initiated provisioning session; also drives
+		/// `state` transitions (`.scanningForDevices` / `.selectingDevice`).
+		case active
+	}
 
 	private var central: CBCentralManager?
 	private var centralDelegate: NymeaCentralDelegate?
+	private var scanMode: ScanMode = .passive
 	/// Devices seen during the current scan, keyed by peripheral identifier.
 	private var discoveredDevices: [UUID: NymeaDiscoveredDevice] = [:]
 	private var cleanupTask: Task<Void, Never>?
@@ -109,7 +123,55 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 	func startProvisioning() {
 		guard state == .idle else { return }
 		transition(to: .scanningForDevices)
-		startScanning()
+		startScanning(mode: .active)
+	}
+
+	/// Begin a provisioning session against an already-discovered device, skipping
+	/// the in-sheet scan/picker steps. Used when the user taps a nymea device from
+	/// the Connect list.
+	func beginProvisioning(with device: NymeaDiscoveredDevice) {
+		guard state == .idle else { return }
+		// IMPORTANT: claim the target peripheral and transition state BEFORE calling
+		// stopScanning(). stopScanning() releases the CBCentralManager when
+		// `state == .idle && targetPeripheral == nil`, and we need to keep the
+		// central alive to issue the connect() below.
+		scanMode = .active
+		targetPeripheral = device.peripheral
+		transition(to: .connectingBLE)
+		// Tear down the passive discovery scan (without releasing the central).
+		central?.stopScan()
+		cleanupTask?.cancel()
+		cleanupTask = nil
+		discoveredDevices.removeAll()
+		discoverable = []
+		// We need a CBCentralManager to call connect(). Reuse the existing passive
+		// central if present; otherwise stand up a fresh one.
+		if central == nil {
+			let delegate = NymeaCentralDelegate()
+			delegate.manager = self
+			centralDelegate = delegate
+			central = CBCentralManager(delegate: delegate, queue: .main)
+		}
+		// If the central is already powered on we can connect immediately; otherwise
+		// the connection will be issued from centralDidBecomeReady once it's ready.
+		if central?.state == .poweredOn {
+			central?.connect(device.peripheral)
+		}
+	}
+
+	/// Start a passive background scan that publishes discovered nymea devices via
+	/// `discoverable` without altering `state`. No-op while a provisioning session
+	/// is in flight.
+	func startDiscovery() {
+		guard state == .idle else { return }
+		guard central == nil else { return } // already scanning
+		startScanning(mode: .passive)
+	}
+
+	/// Stop the passive background scan. No-op if a provisioning session is active.
+	func stopDiscovery() {
+		guard state == .idle else { return }
+		stopScanning()
 	}
 
 	/// Connect to the user-selected device and begin the provisioning flow.
@@ -153,6 +215,8 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 		nymeaSession = nil
 		central = nil
 		centralDelegate = nil
+		scanMode = .passive
+		discoverable = []
 		transition(to: .idle)
 	}
 
@@ -160,13 +224,19 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 
 	// MARK: - Scanning internals
 
-	private func startScanning() {
-		let delegate = NymeaCentralDelegate()
-		delegate.manager = self
-		centralDelegate = delegate
-		// CBCentralManager dedicated to nymea provisioning — separate from the main
-		// Meshtastic BLETransport instance so the two scans don't interfere.
-		central = CBCentralManager(delegate: delegate, queue: .main)
+	private func startScanning(mode: ScanMode) {
+		scanMode = mode
+		if central == nil {
+			let delegate = NymeaCentralDelegate()
+			delegate.manager = self
+			centralDelegate = delegate
+			// CBCentralManager dedicated to nymea provisioning — separate from the main
+			// Meshtastic BLETransport instance so the two scans don't interfere.
+			central = CBCentralManager(delegate: delegate, queue: .main)
+		} else if central?.state == .poweredOn {
+			// Already powered on; (re)issue the scan with the current mode's options.
+			centralDidBecomeReady(central: central!)
+		}
 		startCleanupTask()
 		// scanForPeripherals is called by the delegate once the manager reaches .poweredOn
 	}
@@ -176,10 +246,24 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 		cleanupTask?.cancel()
 		cleanupTask = nil
 		discoveredDevices.removeAll()
+		discoverable = []
+		// Release the central if no provisioning session is using it. (During an
+		// active session the central is needed for connect/disconnect; cancel()
+		// will tear it down when the session ends.)
+		if state == .idle && targetPeripheral == nil {
+			central = nil
+			centralDelegate = nil
+		}
 	}
 
 	/// Called by `NymeaCentralDelegate` when the CBCentralManager reports `.poweredOn`.
 	func centralDidBecomeReady(central: CBCentralManager) {
+		// If we already have a target peripheral queued (beginProvisioning was called
+		// before the central became ready), connect immediately and skip scanning.
+		if case .connectingBLE = state, let target = targetPeripheral {
+			central.connect(target)
+			return
+		}
 		// Scan for all peripherals rather than filtering by service UUID here.
 		//
 		// The nymea-networkmanager README warns that if `ForceFullName` is set (or the
@@ -188,11 +272,15 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 		// We therefore scan broadly and apply our own filter in didDiscoverPeripheral, accepting
 		// a peripheral if it either advertises a known nymea service UUID *or* its name
 		// contains "mPWRD".
+		//
+		// Active scans request duplicates so RSSI updates live in the picker; passive
+		// background scans omit duplicates to reduce battery impact while idle.
+		let allowDuplicates = (scanMode == .active)
 		central.scanForPeripherals(
 			withServices: nil,
-			options: [CBCentralManagerScanOptionAllowDuplicatesKey: true]
+			options: [CBCentralManagerScanOptionAllowDuplicatesKey: allowDuplicates]
 		)
-		Logger.nymea.debug("🔧 Scanning for nymea devices (broad scan, name/UUID filter applied in callback)…")
+		Logger.nymea.debug("🔧 Scanning for nymea devices (\(self.scanMode == .active ? "active" : "passive"), name/UUID filter applied in callback)…")
 	}
 
 	/// Called by the delegate each time a peripheral is (re-)discovered.
@@ -230,17 +318,21 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 	}
 
 	private func publishDeviceList() {
-		// Only update the state while we're still in a scanning/selecting phase.
+		let sorted = discoveredDevices.values.sorted { $0.rssi > $1.rssi }
+		// Always publish to the passive list so the Connect view sees updates.
+		discoverable = sorted
+		// In an active provisioning session also drive the in-sheet picker state.
 		switch state {
 		case .scanningForDevices, .selectingDevice:
-			let sorted = discoveredDevices.values.sorted { $0.rssi > $1.rssi }
 			transition(to: sorted.isEmpty ? .scanningForDevices : .selectingDevice(sorted))
 		default:
 			break
 		}
 	}
 
-	/// Periodically removes peripherals not seen in the last 20 seconds.
+	/// Periodically removes peripherals not seen recently. Active scans use a tighter
+	/// 20s window for responsive RSSI; passive scans use 30s to tolerate the lower
+	/// duty cycle of `allowDuplicates: false`.
 	private func startCleanupTask() {
 		cleanupTask = Task { [weak self] in
 			while !Task.isCancelled {
@@ -253,8 +345,9 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 	@MainActor
 	private func pruneStaleDevices() {
 		let now = Date()
+		let staleAfter: TimeInterval = (scanMode == .active) ? 20 : 30
 		discoveredDevices = discoveredDevices.filter {
-			now.timeIntervalSince($0.value.lastSeen) < 20
+			now.timeIntervalSince($0.value.lastSeen) < staleAfter
 		}
 		publishDeviceList()
 	}
@@ -297,7 +390,14 @@ final class NymeaProvisioningManager: NSObject, ObservableObject {
 			try await session.scan()
 			try await Task.sleep(nanoseconds: 2_000_000_000) // let scan results settle
 			let networks = try await session.getNetworks()
-			transition(to: .awaitingNetworkSelection(networks.sorted { $0.signal > $1.signal }))
+			// Filter out unnamed networks (we can't show "" usefully) and de-duplicate
+			// by ESSID, keeping the strongest-signal entry for each name. Then sort
+			// strongest-first for display.
+			let filtered = networks.filter { !$0.essid.isEmpty }
+			let deduped = Dictionary(grouping: filtered, by: { $0.essid })
+				.compactMap { $0.value.max(by: { $0.signal < $1.signal }) }
+				.sorted { $0.signal > $1.signal }
+			transition(to: .awaitingNetworkSelection(deduped))
 		} catch {
 			Logger.nymea.error("🔧 Provisioning flow error: \(error.localizedDescription, privacy: .public)")
 			transition(to: .failed(error.localizedDescription))

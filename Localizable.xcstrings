@@ -12134,7 +12134,7 @@
         }
       }
     },
-    "Complete device setup via SSH:" : {
+    "Complete Device Setup" : {
 
     },
     "Config" : {
@@ -16509,9 +16509,6 @@
           }
         }
       }
-    },
-    "Device Setup" : {
-
     },
     "Device that does not forward packets from other devices." : {
       "extractionState" : "stale",
@@ -35120,6 +35117,9 @@
         }
       }
     },
+    "No SSH client found. We'll open the App Store so you can install one." : {
+
+    },
     "Node" : {
       "localizations" : {
         "da" : {
@@ -36993,6 +36993,9 @@
           }
         }
       }
+    },
+    "Open SSH Client" : {
+
     },
     "Optimized for 2 color displays" : {
       "extractionState" : "stale",
@@ -41224,9 +41227,6 @@
           }
         }
       }
-    },
-    "Provision Wi-Fi" : {
-
     },
     "Provisioning Failed" : {
 
@@ -50901,6 +50901,9 @@
         }
       }
     },
+    "Sign in over SSH to change the default username and password." : {
+
+    },
     "Signal %@" : {
       "localizations" : {
         "da" : {
@@ -51772,8 +51775,15 @@
         }
       }
     },
-    "ssh mpwrd@%@" : {
-
+    "ssh %@@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "ssh %1$@@%2$@"
+          }
+        }
+      }
     },
     "SSID" : {
       "localizations" : {
@@ -61668,6 +61678,9 @@
       }
     },
     "Wi-Fi Provisioning" : {
+
+    },
+    "Wi-Fi Setup" : {
 
     },
     "WiFi" : {

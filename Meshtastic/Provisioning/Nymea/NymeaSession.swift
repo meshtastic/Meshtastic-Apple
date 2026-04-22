@@ -107,12 +107,26 @@ actor NymeaSession {
 
 	// MARK: Notification delivery stream (ordered FIFO)
 
+	/// A single notification event captured from CoreBluetooth.
+	///
+	/// We snapshot `characteristic.value` (and its `uuid`) at enqueue time rather
+	/// than holding onto the `CBCharacteristic` reference. CoreBluetooth mutates
+	/// `characteristic.value` in place each time a new notification arrives, so
+	/// queuing the reference and reading `.value` later in `processNotifications()`
+	/// would cause earlier queued items to read the bytes of *later* packets —
+	/// producing duplicated/dropped chunks and garbled JSON frames.
+	private struct NotificationEvent: Sendable {
+		let uuid: CBUUID
+		let value: Data?
+		let error: Error?
+	}
+
 	/// The `nonisolated let` access level is intentional: `AsyncStream.Continuation` is
 	/// `Sendable` and immutable after init, so it is safe to yield from outside the actor's
 	/// isolation domain without going through the executor.  This is the key to guaranteeing
 	/// that BLE notification chunks are processed in arrival order.
-	private nonisolated let notificationContinuation: AsyncStream<(CBCharacteristic, Error?)>.Continuation
-	private let notificationStream: AsyncStream<(CBCharacteristic, Error?)>
+	private nonisolated let notificationContinuation: AsyncStream<NotificationEvent>.Continuation
+	private let notificationStream: AsyncStream<NotificationEvent>
 
 	// MARK: Init
 
@@ -121,7 +135,7 @@ actor NymeaSession {
 
 		// Build the ordered notification channel.  `AsyncStream.init` calls its closure
 		// synchronously, so `notifCont` is guaranteed to be set before the next line.
-		var notifCont: AsyncStream<(CBCharacteristic, Error?)>.Continuation!
+		var notifCont: AsyncStream<NotificationEvent>.Continuation!
 		self.notificationStream = AsyncStream { notifCont = $0 }
 		self.notificationContinuation = notifCont
 
@@ -140,14 +154,24 @@ actor NymeaSession {
 	/// This method is `nonisolated` so the delegate can call it directly from the CoreBluetooth
 	/// callback without hopping to the actor's executor.  Because `notificationContinuation` is
 	/// a `Sendable` `let` constant, no shared mutable state is touched.
+	///
+	/// We snapshot `characteristic.value` here (rather than later in `processNotifications`)
+	/// because CoreBluetooth reuses the same `CBCharacteristic` instance across notifications
+	/// and overwrites its `.value` each time. Queuing only the reference would cause earlier
+	/// items to be re-read with the latest packet's bytes.
 	nonisolated func enqueueNotification(characteristic: CBCharacteristic, error: Error?) {
-		notificationContinuation.yield((characteristic, error))
+		let event = NotificationEvent(
+			uuid: characteristic.uuid,
+			value: characteristic.value,
+			error: error
+		)
+		notificationContinuation.yield(event)
 	}
 
 	/// Drain the notification stream one item at a time, in order.
 	private func processNotifications() async {
-		for await (char, error) in notificationStream {
-			handleCharacteristicUpdate(characteristic: char, error: error)
+		for await event in notificationStream {
+			handleCharacteristicUpdate(uuid: event.uuid, value: event.value, error: event.error)
 		}
 	}
 
@@ -295,10 +319,10 @@ actor NymeaSession {
 		}
 	}
 
-	private func handleCharacteristicUpdate(characteristic: CBCharacteristic, error: Error?) {
-		guard error == nil, let data = characteristic.value else { return }
+	private func handleCharacteristicUpdate(uuid: CBUUID, value: Data?, error: Error?) {
+		guard error == nil, let data = value else { return }
 
-		switch characteristic.uuid {
+		switch uuid {
 		case nymeaCommanderResponseUUID:
 			handleResponseChunk(data)
 
