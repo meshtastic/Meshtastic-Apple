@@ -72,6 +72,8 @@ struct NRFDFUSheet: View {
 					}.disabled([.starting, .uploading].contains(dfuViewModel.state))
 				}
 			}
+			.navigationTitle("Nordic DFU Update")
+			.navigationBarTitleDisplayMode(.inline)
 		}.alert("Update Warning", isPresented: $showWarningAlert) {
 			// Add buttons here
 			Button("I Know What I'm Doing", role: .destructive) { }
@@ -81,8 +83,6 @@ struct NRFDFUSheet: View {
 		} message: {
 			Text(alertMessage)
 		}
-		.navigationTitle("Nordic DFU Update")
-		.navigationBarTitleDisplayMode(.inline)
 		.interactiveDismissDisabled(true)
 	}
 }

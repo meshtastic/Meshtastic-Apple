@@ -315,7 +315,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
 		// 2. DB: Check if we already have this version or a usable cached version
-		let dbStatus: (isUpToDate: Bool, hasData: Bool) = await context.perform {
+		let isUpToDate: Bool = await context.perform {
 			let request = DeviceHardwareImageEntity.fetchRequest()
 			request.predicate = NSPredicate(format: "fileName == %@", imageName)
 			request.fetchLimit = 1
@@ -325,18 +325,18 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				
 				// A: If we have a remote tag, does it match?
 				if let rTag = remoteETag {
-					return (existing.eTag == rTag, true)
+					return existing.eTag == rTag
 				}
 				
 				// B: We are offline (no remote ETag), but we have data. Keep it.
-				return (true, true)
+				return true
 			}
 			
 			// No data in DB
-			return (false, false)
+			return false
 		}
 		
-		if dbStatus.isUpToDate {
+		if isUpToDate {
 			Logger.services.debug("Image \(imageName) is up to date (or cached offline).")
 			return
 		}
@@ -445,10 +445,4 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		])
 		return NSCompoundPredicate(orPredicateWithSubpredicates: [stablePredicate, alphaPredicate])
 	}
-}
-
-// Image Manifest Decoding
-private struct ImageManifest: Codable {
-	let files: [String: [String: String]]
-	let api_hash: String
 }

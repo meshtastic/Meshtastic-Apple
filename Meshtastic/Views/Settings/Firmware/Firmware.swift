@@ -119,6 +119,11 @@ private struct FirmwareContentView: View {
 		}
 		.navigationTitle("Firmware Updates")
 		.navigationBarTitleDisplayMode(.inline)
+		.onChange(of: meshtasticAPI.isLoadingFirmwareList) { _, isLoading in
+			if !isLoading {
+				firmwareList.refresh()
+			}
+		}
 	}
 	
 	// MARK: - Subviews
@@ -133,8 +138,13 @@ private struct FirmwareContentView: View {
 			}
 			if let last = stables.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
-					ScrollView { Text(notes).padding() }
-						.navigationTitle("\(last.versionId)")
+					ScrollView {
+						let processed = notes.replacingOccurrences(of: "\n", with: "\n\n")
+						Text((try? AttributedString(markdown: processed, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly))) ?? AttributedString(processed))
+							.font(.callout)
+							.padding()
+					}
+					.navigationTitle("\(last.versionId)")
 				}
 			}
 		case .alpha:
@@ -144,8 +154,13 @@ private struct FirmwareContentView: View {
 			}
 			if let last = alphas.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
-					ScrollView { Text(notes).padding() }
-						.navigationTitle("\(last.versionId)")
+					ScrollView {
+						let processed = notes.replacingOccurrences(of: "\n", with: "\n\n")
+						Text((try? AttributedString(markdown: processed, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly))) ?? AttributedString(processed))
+							.font(.callout)
+							.padding()
+					}
+					.navigationTitle("\(last.versionId)")
 				}
 			}
 		case .downloaded:
@@ -219,7 +234,7 @@ private struct FirmwareContentView: View {
 						case "uf2":
 							self.showInstallationSheet = .uf2
 						case "zip":
-							self.showInstallationSheet = .bin
+							self.showInstallationSheet = .otaZip
 						default:
 							break
 						}
@@ -324,10 +339,10 @@ struct FirmwareTagView: View {
 	var body: some View {
 		Text(text)
 			.foregroundStyle(color)
-			.padding(.horizontal, 4.0)
+			.padding(.horizontal, 2.0)
 			.padding(.vertical, 1.0)
 			.font(.caption2)
-			.background(RoundedRectangle(cornerRadius: 4.0).stroke(color, lineWidth: 1.2))
+			.background(RoundedRectangle(cornerRadius: 2.0).stroke(color, lineWidth: 1.0))
 
 	}
 }
@@ -346,79 +361,77 @@ private struct FirmwareRow: View {
 	private let minimumESP32OTAVersion = "2.7.18"
 
 	var body: some View {
-		VStack {
-			HStack {
-				switch firmwareFile.firmwareType {
-				case .uf2:
-					Text("UF2").font(.caption2)
-				case .bin:
-					Text("BIN").font(.caption2)
-				case .otaZip:
-					Text("ZIP").font(.caption2)
+		HStack(alignment: .center) {
+			VStack(alignment: .leading, spacing: 4) {
+				HStack(spacing: 4) {
+					switch firmwareFile.firmwareType {
+					case .uf2:
+						Text("UF2").font(.caption2)
+					case .bin:
+						Text("BIN").font(.caption2)
+					case .otaZip:
+						Text("ZIP").font(.caption2)
+					}
+					Text("\(firmwareFile.versionId)")
+						.font(.caption2)
+						.foregroundColor(.secondary)
+					switch firmwareFile.releaseType {
+					case .stable:
+						FirmwareTagView("STABLE", color: Color.green)
+					case .alpha:
+						FirmwareTagView("ALPHA", color: Color.blue)
+					case .unlisted:
+						FirmwareTagView("UNLISTED", color: Color.orange)
+					}
 				}
-
-				Text("\(firmwareFile.versionId)")
-					.font(.caption2)
-					.foregroundColor(.secondary)
-
-				switch firmwareFile.releaseType {
-				case .stable:
-					FirmwareTagView("STABLE", color: Color.green)
-				case .alpha:
-					FirmwareTagView("ALPHA", color: Color.blue)
-				case .unlisted:
-					FirmwareTagView("UNLISTED", color: Color.orange)
-				}
-
 				if firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion) {
 					FirmwareTagView("Requires \(minimumESP32OTAVersion)+", color: .orange)
 				}
-
-				Spacer()
-
-				switch firmwareFile.status {
-				case .downloading:
-					ProgressView()
-
-				case .downloaded:
-					Button {
-						switch firmwareFile.firmwareType {
-						case .uf2:
-							self.showInstallationSheet = .uf2
-						case .bin:
-							self.showInstallationSheet = .bin
-						case .otaZip:
-							self.showInstallationSheet = .otaZip
-						}
-					} label: {
-						HStack(alignment: .firstTextBaseline, spacing: 2.0) {
-							Text("Install")
-								.font(UIDevice.current.userInterfaceIdiom == .phone ? .caption : .body)
-							self.installIcon
-						}
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(UIDevice.current.userInterfaceIdiom == .phone ? .small : .regular)
-					.disabled(firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion))
-					
-				case .notDownloaded:
-					Button {
-						Task {
-							try? await firmwareFile.download()
-						}
-					} label: {
-						Text("Download")
-							.font(UIDevice.current.userInterfaceIdiom == .phone ? .caption : .body)
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(UIDevice.current.userInterfaceIdiom == .phone ? .small : .regular)
-				case .error:
-					Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
-				}
 			}
-		}.alert(isPresented: $unsupporedInstallationMessage) {
+
+			Spacer()
+
+			switch firmwareFile.status {
+			case .downloading:
+				ProgressView()
+
+			case .downloaded:
+				Button {
+					switch firmwareFile.firmwareType {
+					case .uf2:
+						self.showInstallationSheet = .uf2
+					case .bin:
+						self.showInstallationSheet = .bin
+					case .otaZip:
+						self.showInstallationSheet = .otaZip
+					}
+				} label: {
+					HStack(alignment: .firstTextBaseline, spacing: 2.0) {
+						Text("Install")
+						self.installIcon
+					}
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.small)
+				.disabled(firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion))
+
+			case .notDownloaded:
+				Button {
+					Task {
+						try? await firmwareFile.download()
+					}
+				} label: {
+					Text("Download")
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.small)
+			case .error:
+				Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
+			}
+		}
+		.alert(isPresented: $unsupporedInstallationMessage) {
 			Alert(title: Text("Unsupported Installation"),
 				  message: Text("Firmware installation is not supported for this device architecture."),
 				  dismissButton: .default(Text("OK")))

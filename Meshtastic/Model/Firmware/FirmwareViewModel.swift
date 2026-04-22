@@ -41,18 +41,17 @@ class FirmwareViewModel: ObservableObject {
 	init(forHardware: DeviceHardwareEntity) {
 		self.hardware = forHardware
 		Task {
-			do {
-				try await MeshtasticAPI.shared.refreshFirmwareAPIData()
-				refresh()
-			} catch {
-				Logger.services.error("Error refreshing firmware data: \(error)")
-			}
+			refresh()
 		}
 	}
 	
 	func refresh() {
 		var newFirmwareList = [String: FirmwareFile]()
-		
+
+		// Snapshot hardware properties on the calling thread (safe — hardware is owned by viewContext)
+		let hardwarePlatformioTarget = hardware.platformioTarget
+		let hardwareArchitecture = hardware.architecture.flatMap { Architecture(rawValue: $0) }
+
 		// First, loop through all firmware entities and create an entry for those
 		let context = PersistenceController.shared.container.newBackgroundContext()
 		context.performAndWait {
@@ -60,7 +59,7 @@ class FirmwareViewModel: ObservableObject {
 			do {
 				let firmwareReleases = try context.fetch(fetchRequest)
 				for release in firmwareReleases {
-					if let architecture = hardware.architecture.flatMap({ Architecture(rawValue: $0) }) {
+					if let architecture = hardwareArchitecture {
 						for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
 							let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, type: firmwareType)
 							newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
@@ -92,7 +91,7 @@ class FirmwareViewModel: ObservableObject {
 			for url in fileURLs {
 				do {
 					let firmwareFile = try FirmwareFile(localFile: url)
-					if firmwareFile.platformioTarget != hardware.platformioTarget {
+					if firmwareFile.platformioTarget != hardwarePlatformioTarget {
 						// Skip if this is not for the current hardware we are dealing with
 						continue
 					}

@@ -177,7 +177,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			if fileName.hasSuffix("-update.bin") {
 				coreName = String(coreName.dropLast("-update.bin".count))
 			} else if fileName.hasSuffix(".bin") {
-				coreName = String(coreName.dropLast("-.bin".count))
+				coreName = String(coreName.dropLast(".bin".count))
 			}
 			self.firmwareType = .bin
 		} else {
@@ -264,26 +264,25 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		guard let remoteUrl else {
 			throw FirmwareFileError.unknownRemoteURL
 		}
-		Task {
-			do {
-				let (tempLocalUrl, response) = try await URLSession.shared.download(from: remoteUrl)
-				
-				if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-					throw URLError(.badServerResponse)
-				}
-				
-				if FileManager.default.fileExists(atPath: localUrl.path) {
-					try FileManager.default.removeItem(at: localUrl)
-				}
-				
-				try FileManager.default.moveItem(at: tempLocalUrl, to: localUrl)
-				
-				self.status = .downloaded
-				
-			} catch {
-				try? FileManager.default.removeItem(at: localUrl)
-				self.status = .error(error.localizedDescription)
+		do {
+			let (tempLocalUrl, response) = try await URLSession.shared.download(from: remoteUrl)
+
+			if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+				throw URLError(.badServerResponse)
 			}
+
+			if FileManager.default.fileExists(atPath: localUrl.path) {
+				try FileManager.default.removeItem(at: localUrl)
+			}
+
+			try FileManager.default.moveItem(at: tempLocalUrl, to: localUrl)
+
+			self.status = .downloaded
+
+		} catch {
+			try? FileManager.default.removeItem(at: localUrl)
+			self.status = .error(error.localizedDescription)
+			throw error
 		}
 	}
 	

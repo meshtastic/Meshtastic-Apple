@@ -594,10 +594,10 @@ struct Settings: View {
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
-				// If the preferred node changes, then select the newly perferred node
+				// If the preferred node changes, then select the newly preferred node
 				// This should only happen during connect
 				preferredNodeNum = newConnectedNode
-				setSelectedNode(to: newConnectedNode)
+				selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
 			}
 			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
 				// If we are on this screen, haven't iniatialized the selection yet,
