@@ -11,6 +11,9 @@
 		898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */; };
 		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
 		10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */; };
+		AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0001 /* DeviceHardwareImageEntity.swift */; };
+		AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0002 /* DeviceHardwareTagEntity.swift */; };
+		AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0003 /* FirmwareReleaseEntity.swift */; };
 		D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3204EF969484E549C139730 /* MessageEntity.swift */; };
 		85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */; };
 		9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7101240749F24E96835A040A /* NodeInfoEntity.swift */; };
@@ -407,6 +410,9 @@
 		4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigModels.swift; sourceTree = "<group>"; };
 		509A1C42A695463093654617 /* DeviceMetadataEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetadataEntity.swift; sourceTree = "<group>"; };
 		38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchema.swift; sourceTree = "<group>"; };
+		AA00SDRF0001 /* DeviceHardwareImageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareImageEntity.swift; sourceTree = "<group>"; };
+		AA00SDRF0002 /* DeviceHardwareTagEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareTagEntity.swift; sourceTree = "<group>"; };
+		AA00SDRF0003 /* FirmwareReleaseEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareReleaseEntity.swift; sourceTree = "<group>"; };
 		F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
 		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
 		7101240749F24E96835A040A /* NodeInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntity.swift; sourceTree = "<group>"; };
@@ -1589,7 +1595,10 @@
 			children = (
 				45E6EDE744E3446FA1084499 /* ChannelEntity.swift */,
 				4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */,
+				AA00SDRF0001 /* DeviceHardwareImageEntity.swift */,
+				AA00SDRF0002 /* DeviceHardwareTagEntity.swift */,
 				509A1C42A695463093654617 /* DeviceMetadataEntity.swift */,
+				AA00SDRF0003 /* FirmwareReleaseEntity.swift */,
 				38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */,
 				F3204EF969484E549C139730 /* MessageEntity.swift */,
 				DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */,
@@ -2045,6 +2054,9 @@
 				48E682ECE71246C3BFBD6B8F /* ChannelEntity.swift in Sources */,
 				898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */,
 				B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */,
+				AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */,
+				AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */,
+				AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */,
 				10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */,
 				D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */,
 				85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */,

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
@@ -123,11 +124,14 @@ struct PowerConfig: View {
 			}
 		}
 		.onFirstAppear {
-			if let userHwModel = node?.user?.hwModel {
-				let fetchRequest = DeviceHardwareEntity.fetchRequest()
-				fetchRequest.predicate = NSPredicate(format: "hwModel == %d", userHwModel)
-				let fetchedHardware = try? context.fetch(fetchRequest)
-				if let hardwareEntity = fetchedHardware?.first, let archString = hardwareEntity.architecture, let arch = Architecture(rawValue: archString) {
+			if let hwModelId = node?.user?.hwModelId {
+				let hwModelValue = Int64(hwModelId)
+				let descriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.hwModel == hwModelValue }
+				)
+				if let hardwareEntity = try? context.fetch(descriptor).first,
+				   let archString = hardwareEntity.architecture,
+				   let arch = Architecture(rawValue: archString) {
 					architecture = arch
 				}
 			}
@@ -167,22 +171,22 @@ struct PowerConfig: View {
 			}
 		}
 		.onChange(of: shutdownAfterSecs.intValue) { oldShutdownAfterSecs, newShutdownAfterSecs in
-			if oldShutdownAfterSecs != newShutdownAfterSecs && newShutdownAfterSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
+			if oldShutdownAfterSecs != newShutdownAfterSecs && newShutdownAfterSecs != (node?.powerConfig?.minWakeSecs ?? -1) { hasChanges = true }
 		}
 		.onChange(of: adcOverride) {
 			hasChanges = true
 		}
 		.onChange(of: adcMultiplier) { _, newAdcMultiplier in
-			if  newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? -1 { hasChanges = true }
+			if  newAdcMultiplier != (node?.powerConfig?.adcMultiplierOverride ?? -1) { hasChanges = true }
 		}
 		.onChange(of: waitBluetoothSecs) { oldWaitBluetoothSecs, newWaitBluetoothSecs in
-			if oldWaitBluetoothSecs != newWaitBluetoothSecs && newWaitBluetoothSecs != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
+			if oldWaitBluetoothSecs != newWaitBluetoothSecs && newWaitBluetoothSecs != (node?.powerConfig?.waitBluetoothSecs ?? -1) { hasChanges = true }
 		}
 		.onChange(of: lsSecs) { _, newLsSecs in
-			if newLsSecs != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
+			if newLsSecs != (node?.powerConfig?.lsSecs ?? -1) { hasChanges = true }
 		}
 		.onChange(of: minWakeSecs) { _, newMinWakeSecs in
-			if newMinWakeSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
+			if newMinWakeSecs != (node?.powerConfig?.minWakeSecs ?? -1) { hasChanges = true }
 		}
 	}
 

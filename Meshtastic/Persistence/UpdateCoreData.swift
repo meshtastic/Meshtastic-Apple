@@ -96,7 +96,10 @@ extension MeshPackets {
 		descriptor.fetchLimit = 1
 		do {
 			if let node = try modelContext.fetch(descriptor).first {
-				node.telemetries = node.telemetries.filter { $0.metricsType != metricsType }
+				let toDelete = node.telemetries.filter { $0.metricsType == metricsType }
+				for entity in toDelete {
+					modelContext.delete(entity)
+				}
 				try modelContext.save()
 				return true
 			}
@@ -293,10 +296,11 @@ extension MeshPackets {
 							newUser.publicKey = newUserMessage.publicKey
 						}
 						
-						let fetchRequest1 = DeviceHardwareEntity.fetchRequest()
-						fetchRequest1.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
-						let fetchedHardware1 = (try? context.fetch(fetchRequest1)) ?? []
-						if let hardwareEntity = fetchedHardware1.first {
+						let fetchHwModel1 = Int64(newUser.hwModelId)
+						let hwDescriptor1 = FetchDescriptor<DeviceHardwareEntity>(
+							predicate: #Predicate { $0.hwModel == fetchHwModel1 }
+						)
+						if let hardwareEntity = try? modelContext.fetch(hwDescriptor1).first {
 							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newNode.user = newUser
@@ -373,9 +377,7 @@ extension MeshPackets {
 						telemetry.voltage = nodeInfoMessage.deviceMetrics.voltage
 						telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
-						var newTelemetries = [TelemetryEntity]()
-						newTelemetries.append(telemetry)
-						fetchedNode[0].telemetries = newTelemetries
+						fetchedNode[0].telemetries.append(telemetry)
 					}
 					if nodeInfoMessage.hasUser {
 						fetchedNode[0].user?.userId = nodeInfoMessage.num.toHex()
@@ -402,10 +404,11 @@ extension MeshPackets {
 							fetchedNode[0].user?.publicKey = nodeInfoMessage.user.publicKey
 						}
 						if let user = fetchedNode.first?.user {
-							let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
-							fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
-							let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
-							if let hardwareEntity = fetchedHardware2.first {
+							let fetchHwModel2 = Int64(user.hwModelId)
+							let hwDescriptor2 = FetchDescriptor<DeviceHardwareEntity>(
+								predicate: #Predicate { $0.hwModel == fetchHwModel2 }
+							)
+							if let hardwareEntity = try? modelContext.fetch(hwDescriptor2).first {
 								user.hwDisplayName = hardwareEntity.displayName
 							}
 						}

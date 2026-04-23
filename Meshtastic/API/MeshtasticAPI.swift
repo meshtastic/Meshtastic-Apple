@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 import SwiftUI
-import CoreData
+import SwiftData
 
 // These structs are public becase tehy are used elsewhere in the app to represent
 // fields in the Core Data database.
@@ -107,12 +107,12 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// MARK: - Private properties
 	private let fileManager = FileManager.default
 	private let decoder = JSONDecoder()
-	private let container: NSPersistentContainer
+	private let container: ModelContainer
 	
 	@Published var isLoadingDeviceList: Bool = false
 	@Published var isLoadingFirmwareList: Bool = false
 	
-	private init(container: NSPersistentContainer) {
+	private init(container: ModelContainer) {
 		self.container = container
 		Task.detached {
 			try? await self.refreshDevicesAPIData()
@@ -133,37 +133,37 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 		let stableVersions = Set(decodedFirmware.releases.stable.map { $0.id })
 		let alphaVersions = Set(decodedFirmware.releases.alpha.map { $0.id })
-		
-		await withTaskGroup(of: Void.self) { group in
-			
+
+		// All DB work on mainContext so @Query observers see changes
+		await MainActor.run {
+			let context = container.mainContext
+
 			for stableRelease in decodedFirmware.releases.stable {
-				group.addTask {
-					await self.processFirmware(release: stableRelease, releaseType: .stable)
-				}
+				self.processFirmware(release: stableRelease, releaseType: .stable, context: context)
 			}
-			
+
 			for alphaRelease in decodedFirmware.releases.alpha {
-				group.addTask {
-					await self.processFirmware(release: alphaRelease, releaseType: .alpha)
-				}
+				self.processFirmware(release: alphaRelease, releaseType: .alpha, context: context)
 			}
-		}
-		
-		// Anything that's left in stableVersions and alphaVersions is no longer present in the API and should be deleted.
-		let context = container.newBackgroundContext()
-		context.performAndWait {
-			let deleteRequest = FirmwareReleaseEntity.fetchRequest()
-			deleteRequest.predicate = Self.firmwareCompoundPredicate(stableVersions: stableVersions, alphaVersions: alphaVersions)
-			if let objectsToDelete = try? context.fetch(deleteRequest) {
+
+			// Anything that's left in stableVersions and alphaVersions is no longer present in the API and should be deleted.
+			let stableArray = Array(stableVersions)
+			let alphaArray = Array(alphaVersions)
+			let stableRaw = ReleaseType.stable.rawValue
+			let alphaRaw = ReleaseType.alpha.rawValue
+			let deleteDescriptor = FetchDescriptor<FirmwareReleaseEntity>(
+				predicate: #Predicate {
+					($0.releaseType == stableRaw && !stableArray.contains($0.versionId))
+					|| ($0.releaseType == alphaRaw && !alphaArray.contains($0.versionId))
+				}
+			)
+			if let objectsToDelete = try? context.fetch(deleteDescriptor) {
 				for object in objectsToDelete {
-					Logger.services.info("Deleting orphaned firmware release: \(object.versionId ?? "unknown")")
+					Logger.services.info("Deleting orphaned firmware release: \(object.versionId, privacy: .public)")
 					context.delete(object)
 				}
 			}
-		}
-		
-		// Save the deletions if any
-		if context.hasChanges {
+
 			try? context.save()
 		}
 		
@@ -203,23 +203,27 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		// Decode Swift Structs (Safe to do off the DB thread)
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: finalData)
 
-		// PHASE 2: Database (Sync) - Update Devices & Tags
-		let context = container.newBackgroundContext()
-		context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-		
-		// We will perform the bulk update and return a simple list of images we need to check next.
-		// We DO NOT do network calls for images inside this block.
-		try await context.perform {
-			
+		// PHASE 2: Database on mainContext so @Query observers see changes
+		try await MainActor.run {
+			let context = container.mainContext
+
 			// 1. Update Devices and Tags
 			for device in decodedDevices {
-				let fetchRequest = DeviceHardwareEntity.fetchRequest()
-				fetchRequest.predicate = NSPredicate(format: "platformioTarget == %@", device.platformioTarget)
-				fetchRequest.fetchLimit = 1
-				
-				let existing = try? context.fetch(fetchRequest).first
-				let deviceEntity = existing ?? DeviceHardwareEntity(context: context)
-				
+				let target = device.platformioTarget
+				var descriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.platformioTarget == target }
+				)
+				descriptor.fetchLimit = 1
+
+				let existing = try? context.fetch(descriptor).first
+				let deviceEntity: DeviceHardwareEntity
+				if let existing {
+					deviceEntity = existing
+				} else {
+					deviceEntity = DeviceHardwareEntity()
+					context.insert(deviceEntity)
+				}
+
 				// Update Properties
 				deviceEntity.hwModel = Int64(device.hwModel)
 				deviceEntity.hwModelSlug = device.hwModelSlug
@@ -227,29 +231,26 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				deviceEntity.architecture = device.architecture.rawValue
 				deviceEntity.activelySupported = device.activelySupported
 				deviceEntity.displayName = device.displayName
-				
-				// Handle Tags (Helper function is now synchronous)
-				var tags = Set<DeviceHardwareTagEntity>()
+
+				// Handle Tags
+				var tags = [DeviceHardwareTagEntity]()
 				if let tagList = device.tags {
 					for tagString in tagList {
-						// Safe because findOrCreateTag is synchronous and uses `context`
 						if let tagEntity = try? Self.findOrCreateTag(tag: tagString, context: context) {
-							tags.insert(tagEntity)
+							tags.append(tagEntity)
 						}
 					}
 				}
-				deviceEntity.tags = tags as NSSet
+				deviceEntity.tags = tags
 			}
-			
+
 			// 2. Cleanup Orphans
 			Self.deleteOrphanedTags(context: context)
-			
+
 			// 3. Save Device Metadata
-			if context.hasChanges {
-				try context.save()
-			}
+			try context.save()
 		}
-		
+
 		// PHASE 3: Images (Async Mixed)
 		// Now that the devices exist in DB, we process images one by one.
 		// We loop through the *Decoded Structs* (not DB objects) to get URLs.
@@ -263,11 +264,12 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				}
 			}
 		}
-		
-		// Final cleanup of images (Sync)
-		try await context.perform {
+
+		// Final cleanup of images on mainContext
+		await MainActor.run {
+			let context = container.mainContext
 			Self.deleteOrphanedImages(context: context)
-			if context.hasChanges { try context.save() }
+			try? context.save()
 		}
 		
 		await MainActor.run {
@@ -276,75 +278,71 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 	}
 	
-	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType) async {
-		let context = container.newBackgroundContext()
+	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType, context: ModelContext) {
+		let releaseId = release.id
+		var descriptor = FetchDescriptor<FirmwareReleaseEntity>(
+			predicate: #Predicate { $0.versionId == releaseId }
+		)
+		descriptor.fetchLimit = 1
 
-		await context.perform {
-			let fetchRequest = FirmwareReleaseEntity.fetchRequest()
-			fetchRequest.predicate = NSPredicate(format: "versionId == %@", release.id)
-			fetchRequest.fetchLimit = 1
-			
-			let existingRelease = (try? context.fetch(fetchRequest).first) ?? FirmwareReleaseEntity(context: context)
-			existingRelease.versionId = release.id
-			existingRelease.title = release.title
-			existingRelease.releaseNotes = release.releaseNotes
-			existingRelease.pageUrl = release.pageURL
-			existingRelease.releaseType = releaseType.rawValue
-					
-			let cleanString = release.id.hasPrefix("v") ? release.id.dropFirst() : Substring(release.id)
-			let parts = cleanString.split(separator: ".")
-			if parts.count >= 3 {
-				existingRelease.versionMajor = Int32(parts[0]) ?? 0
-				existingRelease.versionMinor = Int32(parts[1]) ?? 0
-				existingRelease.versionPatch = Int32(parts[2]) ?? 0
-			}
-			
-			try? context.save()
-			Logger.services.info("Saving firmware release \(release.id, privacy: .public) in database.")
+		let existingRelease: FirmwareReleaseEntity
+		if let found = try? context.fetch(descriptor).first {
+			existingRelease = found
+		} else {
+			existingRelease = FirmwareReleaseEntity()
+			context.insert(existingRelease)
 		}
+		existingRelease.versionId = release.id
+		existingRelease.title = release.title
+		existingRelease.releaseNotes = release.releaseNotes
+		existingRelease.pageUrl = release.pageURL
+		existingRelease.releaseType = releaseType.rawValue
+
+		let cleanString = release.id.hasPrefix("v") ? release.id.dropFirst() : Substring(release.id)
+		let parts = cleanString.split(separator: ".")
+		if parts.count >= 3 {
+			existingRelease.versionMajor = Int32(parts[0]) ?? 0
+			existingRelease.versionMinor = Int32(parts[1]) ?? 0
+			existingRelease.versionPatch = Int32(parts[2]) ?? 0
+		}
+
+		Logger.services.info("Saving firmware release \(release.id, privacy: .public) in database.")
 	}
 	
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
 	private func processImage(imageName: String, platform: String ) async {
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
-		
+
 		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
 		let remoteETag = try? await url.eTag()
-		
-		let context = container.newBackgroundContext()
-		context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
 		// 2. DB: Check if we already have this version or a usable cached version
-		let isUpToDate: Bool = await context.perform {
-			let request = DeviceHardwareImageEntity.fetchRequest()
-			request.predicate = NSPredicate(format: "fileName == %@", imageName)
-			request.fetchLimit = 1
-			
-			if let existing = try? context.fetch(request).first,
+		let isUpToDate: Bool = await MainActor.run {
+			let context = container.mainContext
+			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
+				predicate: #Predicate { $0.fileName == imageName }
+			)
+			imageDescriptor.fetchLimit = 1
+
+			if let existing = try? context.fetch(imageDescriptor).first,
 			   let data = existing.svgData, !data.isEmpty {
-				
-				// A: If we have a remote tag, does it match?
 				if let rTag = remoteETag {
 					return existing.eTag == rTag
 				}
-				
-				// B: We are offline (no remote ETag), but we have data. Keep it.
 				return true
 			}
-			
-			// No data in DB
 			return false
 		}
-		
+
 		if isUpToDate {
 			Logger.services.debug("Image \(imageName) is up to date (or cached offline).")
 			return
 		}
-		
+
 		// 3. Acquire Data (Network Primary -> Bundle Secondary)
 		var dataToSave: Data?
 		var eTagToSave: String?
-		
+
 		// A: Attempt Network Download (only if we successfully got an ETag previously)
 		if let rTag = remoteETag {
 			if let networkData = try? await url.data(timeout: 5.0) {
@@ -352,49 +350,63 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				eTagToSave = rTag
 			}
 		}
-		
+
 		// B: Fallback to Bundle if Network failed or returned no data
 		if dataToSave == nil {
 			Logger.services.debug("Network unavailable or failed for \(imageName). Checking local bundle.")
-			
+
 			// Look in the 'images' subdirectory
 			if let bundleURL = Bundle.main.url(forResource: imageName, withExtension: nil, subdirectory: "images"),
 			   let bundleData = try? Data(contentsOf: bundleURL) {
-				
+
 				dataToSave = bundleData
 				// We use "bundled" as a placeholder ETag.
 				// Next time the app runs with internet, "bundled" != "real_etag", forcing an update.
 				eTagToSave = "bundled"
 			}
 		}
-		
-		// 4. DB: Save Image and Link to Device
+
+		// 4. DB: Save Image and Link to Device on mainContext
 		guard let finalData = dataToSave, let finalETag = eTagToSave else {
 			Logger.services.error("Could not find image \(imageName) in Network or Bundle.")
 			return
 		}
-		
-		await context.perform {
-			// Find the Device (we must fetch it in THIS context)
-			let deviceReq = DeviceHardwareEntity.fetchRequest()
-			deviceReq.predicate = NSPredicate(format: "platformioTarget == %@", platform)
-			
-			guard let deviceEntity = try? context.fetch(deviceReq).first else { return }
-			
+
+		await MainActor.run {
+			let context = container.mainContext
+
+			// Find the Device
+			var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+				predicate: #Predicate { $0.platformioTarget == platform }
+			)
+			deviceDescriptor.fetchLimit = 1
+			guard let deviceEntity = try? context.fetch(deviceDescriptor).first else { return }
+
 			// Find or Create Image Entity
-			let imageReq = DeviceHardwareImageEntity.fetchRequest()
-			imageReq.predicate = NSPredicate(format: "fileName == %@", imageName)
-			
-			let existingImg = try? context.fetch(imageReq).first
-			let imageEntity = existingImg ?? DeviceHardwareImageEntity(context: context)
-			
+			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
+				predicate: #Predicate { $0.fileName == imageName }
+			)
+			imageDescriptor.fetchLimit = 1
+
+			let existingImg = try? context.fetch(imageDescriptor).first
+			let imageEntity: DeviceHardwareImageEntity
+			if let existingImg {
+				imageEntity = existingImg
+			} else {
+				imageEntity = DeviceHardwareImageEntity()
+				context.insert(imageEntity)
+			}
+
 			imageEntity.fileName = imageName
 			imageEntity.eTag = finalETag
 			imageEntity.svgData = finalData
-			
+
 			// Create Relationship
-			deviceEntity.addToImages(imageEntity)
-						
+			imageEntity.device = deviceEntity
+			if !deviceEntity.images.contains(where: { $0.fileName == imageName }) {
+				deviceEntity.images.append(imageEntity)
+			}
+
 			try? context.save()
 			Logger.services.info("Saving \(imageName) in database. eTag=\(finalETag)")
 		}
@@ -402,47 +414,37 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 	// MARK: - Helpers
 	
-	// Removed @MainActor - this must run on the background context passed in
-	private static func findOrCreateTag(tag: String, context: NSManagedObjectContext) throws -> DeviceHardwareTagEntity {
-		let fetchRequest = DeviceHardwareTagEntity.fetchRequest()
-		fetchRequest.predicate = NSPredicate(format: "tag == %@", tag)
-		fetchRequest.fetchLimit = 1
+	private static func findOrCreateTag(tag: String, context: ModelContext) throws -> DeviceHardwareTagEntity {
+		var descriptor = FetchDescriptor<DeviceHardwareTagEntity>(
+			predicate: #Predicate { $0.tag == tag }
+		)
+		descriptor.fetchLimit = 1
 		
-		if let existingTag = try context.fetch(fetchRequest).first {
+		if let existingTag = try context.fetch(descriptor).first {
 			return existingTag
 		}
 		
-		let newTag = DeviceHardwareTagEntity(context: context)
+		let newTag = DeviceHardwareTagEntity()
 		newTag.tag = tag
+		context.insert(newTag)
 		return newTag
 	}
 	
-	private static func deleteOrphanedTags(context: NSManagedObjectContext) {
-		let req = DeviceHardwareTagEntity.fetchRequest()
-		req.predicate = NSPredicate(format: "devices.@count == 0")
-		if let tags = try? context.fetch(req) {
-			tags.forEach { context.delete($0) }
+	private static func deleteOrphanedTags(context: ModelContext) {
+		let descriptor = FetchDescriptor<DeviceHardwareTagEntity>()
+		if let tags = try? context.fetch(descriptor) {
+			for tag in tags where tag.devices.isEmpty {
+				context.delete(tag)
+			}
 		}
 	}
 	
-	private static func deleteOrphanedImages(context: NSManagedObjectContext) {
-		let req = DeviceHardwareImageEntity.fetchRequest()
-		req.predicate = NSPredicate(format: "device == nil")
-		if let images = try? context.fetch(req) {
+	private static func deleteOrphanedImages(context: ModelContext) {
+		let descriptor = FetchDescriptor<DeviceHardwareImageEntity>(
+			predicate: #Predicate { $0.device == nil }
+		)
+		if let images = try? context.fetch(descriptor) {
 			images.forEach { context.delete($0) }
 		}
-	}
-	
-	// Helper to build compound predicate for firmware deletion (selects orphans)
-	static func firmwareCompoundPredicate(stableVersions: Set<String>, alphaVersions: Set<String>) -> NSPredicate {
-		let stablePredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-			NSPredicate(format: "releaseType == %@", ReleaseType.stable.rawValue),
-			NSPredicate(format: "NOT (versionId IN %@)", stableVersions)
-		])
-		let alphaPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-			NSPredicate(format: "releaseType == %@", ReleaseType.alpha.rawValue),
-			NSPredicate(format: "NOT (versionId IN %@)", alphaVersions)
-		])
-		return NSCompoundPredicate(orPredicateWithSubpredicates: [stablePredicate, alphaPredicate])
 	}
 }

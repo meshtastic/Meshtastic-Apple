@@ -161,12 +161,7 @@ struct AppSettings: View {
 								}
 								await PersistenceController.shared.clearDatabase(includeRoutes: true)
 								clearNotifications()
-							}
-							Task { @MainActor in
-								MeshPackets.shared.clearCoreDataDatabase(context: context, includeRoutes: true, includeAppLevelData: true)
-								clearNotifications()
 								try? await MeshtasticAPI.shared.refreshDevicesAPIData()
-								context.refreshAllObjects()
 							}
 						}
 					}

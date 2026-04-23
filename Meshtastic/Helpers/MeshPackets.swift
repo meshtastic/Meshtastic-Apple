@@ -136,6 +136,9 @@ actor MeshPackets {
 				myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 				myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 				myInfoEntity.deviceId = myInfo.deviceID
+				if !myInfo.pioEnv.isEmpty {
+					myInfoEntity.pioEnv = myInfo.pioEnv
+				}
 				do {
 					try modelContext.save()
 					Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
@@ -149,6 +152,9 @@ actor MeshPackets {
 				fetchedMyInfo[0].peripheralId = peripheralId
 				fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 				fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
+				if !myInfo.pioEnv.isEmpty {
+					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
+				}
 				
 				do {
 					try modelContext.save()
@@ -311,10 +317,11 @@ actor MeshPackets {
 						newUser.shortName = nodeInfo.user.shortName
 						newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 						newUser.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
-						let fetchRequest = DeviceHardwareEntity.fetchRequest()
-						fetchRequest.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
-						let fetchedHardware = (try? context.fetch(fetchRequest)) ?? []
-						if let hardwareEntity = fetchedHardware.first {
+						let hwModelValue = Int64(newUser.hwModelId)
+						let hwDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+							predicate: #Predicate { $0.hwModel == hwModelValue }
+						)
+						if let hardwareEntity = try? modelContext.fetch(hwDescriptor).first {
 							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newUser.isLicensed = nodeInfo.user.isLicensed
@@ -427,10 +434,11 @@ actor MeshPackets {
 							}
 						}
 						if let user = fetchedNode.first?.user {
-							let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
-							fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
-							let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
-							if let hardwareEntity = fetchedHardware2.first {
+							let hwModelValue2 = Int64(user.hwModelId)
+							let hwDescriptor2 = FetchDescriptor<DeviceHardwareEntity>(
+								predicate: #Predicate { $0.hwModel == hwModelValue2 }
+							)
+							if let hardwareEntity = try? modelContext.fetch(hwDescriptor2).first {
 								user.hwDisplayName = hardwareEntity.displayName
 							}
 						}

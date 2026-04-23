@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-import CoreData
+import SwiftData
 
 extension FirmwareFile {
 	enum FirmwareFileError: Error, LocalizedError {
@@ -79,47 +79,23 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	let versionMajor, versionMinor, versionPatch: Int
 	
 	init(firmware: FirmwareReleaseEntity, hardware: DeviceHardwareEntity, type: FirmwareType? = nil) throws {
-		var target: String?
-		var architecture: Architecture?
-		
-		// Thread safe operationt to get the target and architecture
-		// from the given DeviceHardwareEntity
-		if let context = hardware.managedObjectContext {
-			context.performAndWait {
-				target = hardware.platformioTarget
-				architecture = hardware.architecture.flatMap { Architecture(rawValue: $0) }
-			}
-		} else {
-			// Detached, not yet inserted NSManagedObject
-			target = hardware.platformioTarget
-			architecture = hardware.architecture.flatMap { Architecture(rawValue: $0) }
-		}
-		
-		guard let target else { throw FirmwareFileError.unknownTarget }
+		// Get the target and architecture from the given DeviceHardwareEntity
+		guard let target = hardware.platformioTarget else { throw FirmwareFileError.unknownTarget }
 		self.platformioTarget = target
-	
-		guard let architecture else { throw FirmwareFileError.unknownArchitecture }
+
+		guard let architecture = hardware.architecture.flatMap({ Architecture(rawValue: $0) }) else {
+			throw FirmwareFileError.unknownArchitecture
+		}
 		self.architecture = architecture
 		
-		// Thread safe operation to get the versionf`rom the given FirmwareReleaseEntity
-		var version: String?
-		var releaseType: ReleaseType?
-		var releaseNotes: String?
-		if let context = firmware.managedObjectContext {
-			context.performAndWait {
-				version = firmware.versionId
-				releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) }
-				releaseNotes = firmware.releaseNotes
-			}
-		} else {
-			version = firmware.versionId
-			releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) }
-			releaseNotes = firmware.releaseNotes
-		}
+		// Get the version from the given FirmwareReleaseEntity
+		let version = firmware.versionId
+		let releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) }
+		let releaseNotes = firmware.releaseNotes
 		
 		self.releaseNotes = releaseNotes
 		
-		guard let version else { throw FirmwareFileError.unknownVersion }
+		guard !version.isEmpty else { throw FirmwareFileError.unknownVersion }
 		self.versionId = version
 		
 		let cleanString = version.hasPrefix("v") ? version.dropFirst() : Substring(version)
@@ -154,6 +130,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		}
 	}
 	
+	@MainActor
 	init(localFile url: URL) throws {
 		self.localUrl = url
 		
@@ -222,15 +199,13 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		}
 		
 		// Look up the architecture for this file
-		let context = PersistenceController.shared.container.newBackgroundContext()
-		var architecture: Architecture?
-		context.performAndWait {
-			let hardwareFetchRequest = DeviceHardwareEntity.fetchRequest()
-			hardwareFetchRequest.predicate = NSPredicate(format: "platformioTarget == %@", target)
-			hardwareFetchRequest.fetchLimit = 1
-			let hardware = try? context.fetch(hardwareFetchRequest).first
-			architecture = hardware?.architecture.flatMap { Architecture(rawValue: $0) }
-		}
+		let context = PersistenceController.shared.container.mainContext
+		var hardwareDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+			predicate: #Predicate { $0.platformioTarget == target }
+		)
+		hardwareDescriptor.fetchLimit = 1
+		let hardwareResult = try? context.fetch(hardwareDescriptor).first
+		let architecture = hardwareResult?.architecture.flatMap { Architecture(rawValue: $0) }
 		
 		guard let architecture else { throw FirmwareFileError.unknownArchitecture }
 		self.architecture = architecture
@@ -238,14 +213,13 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		// Determine release type
 		var releaseType: ReleaseType = .unlisted
 		var releaseNotes: String?
-		context.performAndWait {
-			let firmwareFetchRequest = FirmwareReleaseEntity.fetchRequest()
-			firmwareFetchRequest.predicate = NSPredicate(format: "versionId == %@", version)
-			firmwareFetchRequest.fetchLimit = 1
-			if let firmware = try? context.fetch(firmwareFetchRequest).first {
-				releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) } ?? .unlisted
-				releaseNotes = firmware.releaseNotes
-			}
+		var firmwareDescriptor = FetchDescriptor<FirmwareReleaseEntity>(
+			predicate: #Predicate { $0.versionId == version }
+		)
+		firmwareDescriptor.fetchLimit = 1
+		if let firmware = try? context.fetch(firmwareDescriptor).first {
+			releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) } ?? .unlisted
+			releaseNotes = firmware.releaseNotes
 		}
 		self.releaseType = releaseType
 		self.releaseNotes = releaseNotes

@@ -15,6 +15,7 @@ final class MyInfoEntity {
 	var minAppVersion: Int32 = 0
 	var myNodeNum: Int64 = 0
 	var peripheralId: String?
+	var pioEnv: String?
 	var rebootCount: Int32 = 0
 	var registered: Bool = false
 

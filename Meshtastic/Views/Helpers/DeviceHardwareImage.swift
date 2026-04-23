@@ -6,37 +6,29 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import SwiftDraw
 
 // 1. THE LOADER (Public API)
-// Responsibilities: Construct the FetchRequest only.
+// Responsibilities: Construct the Query only.
 // It creates no heavy objects and runs no logic in init.
 struct DeviceHardwareImage: View {
 	
-	// We hold the fetch request here
-	@FetchRequest var hardwareResults: FetchedResults<DeviceHardwareEntity>
+	@Query var hardwareResults: [DeviceHardwareEntity]
 	
 	// Init for Integer ID
-	init<T>(hwId: T) where T: BinaryInteger, T: CVarArg {
-		let predicate = NSPredicate(format: "hwModel == %d", hwId)
-		_hardwareResults = FetchRequest(
-			entity: DeviceHardwareEntity.entity(),
-			sortDescriptors: [NSSortDescriptor(key: "hwModelSlug", ascending: true)],
-			predicate: predicate,
-			animation: .default
-		)
+	init<T>(hwId: T) where T: BinaryInteger {
+		let hwModel = Int64(hwId)
+		_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
+			hw.hwModel == hwModel
+		}, sort: [SortDescriptor(\.hwModelSlug)])
 	}
 	
 	// Init for String Target
 	init(platformioTarget: String) {
-		let predicate = NSPredicate(format: "platformioTarget == %@", platformioTarget)
-		_hardwareResults = FetchRequest(
-			entity: DeviceHardwareEntity.entity(),
-			sortDescriptors: [NSSortDescriptor(key: "hwModelSlug", ascending: true)],
-			predicate: predicate,
-			animation: .default
-		)
+		_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
+			hw.platformioTarget == platformioTarget
+		}, sort: [SortDescriptor(\.hwModelSlug)])
 	}
 	
 	var body: some View {
@@ -46,14 +38,14 @@ struct DeviceHardwareImage: View {
 }
 
 // 2. THE PROCESSOR (Internal)
-// Responsibilities: Convert Core Data Entities into a flat array of images.
+// Responsibilities: Convert SwiftData Entities into a flat array of images.
 // This uses .task to step out of the Layout Loop.
 private struct DeviceHardwareImageProcessor: View {
-	let hardware: FetchedResults<DeviceHardwareEntity>
+	let hardware: [DeviceHardwareEntity]
 	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
 	
 	// We buffer the processed images in State.
-	// This prevents the Layout pass from triggering Core Data faults.
+	// This prevents the Layout pass from triggering faults.
 	@State private var sortedImages: [DeviceHardwareImageEntity] = []
 	
 	var body: some View {
@@ -73,11 +65,8 @@ private struct DeviceHardwareImageProcessor: View {
 		var returnImages = [DeviceHardwareImageEntity]()
 		var seenFileNames = Set<String>()
 		
-		// This traversal happens in the background task now
 		for item in hardware {
-			guard let imageList = item.images as? Set<DeviceHardwareImageEntity> else { continue }
-			
-			for image in imageList {
+			for image in item.images {
 				if image.svgData != nil {
 					let name = image.fileName ?? ""
 					if !seenFileNames.contains(name) {

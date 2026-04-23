@@ -27,6 +27,11 @@ enum MeshtasticSchema {
 			TraceRouteHopEntity.self,
 			RouteEntity.self,
 			LocationEntity.self,
+			// Device hardware & firmware entities
+			DeviceHardwareEntity.self,
+			DeviceHardwareImageEntity.self,
+			DeviceHardwareTagEntity.self,
+			FirmwareReleaseEntity.self,
 			// Config entities
 			AmbientLightingConfigEntity.self,
 			BluetoothConfigEntity.self,
