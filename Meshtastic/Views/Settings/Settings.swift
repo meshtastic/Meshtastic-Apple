@@ -353,19 +353,6 @@ struct Settings: View {
 		}
 	}
 
-	var firmwareSection: some View {
-		Section(header: Text("Firmware")) {
-			NavigationLink(value: SettingsNavigationState.firmwareUpdates) {
-				Label {
-					Text("Firmware Updates")
-				} icon: {
-					Image(systemName: "arrow.up.arrow.down.square")
-				}
-			}
-			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
-		}
-	}
-
 	var takSection: some View {
 		Section(header: Text("TAK")) {
 			NavigationLink(value: SettingsNavigationState.tak) {
@@ -422,6 +409,14 @@ struct Settings: View {
 							.foregroundColor(.red)
 					}
 				}
+				NavigationLink(value: SettingsNavigationState.firmwareUpdates) {
+					Label {
+						Text("Firmware Updates")
+					} icon: {
+						Image(systemName: "arrow.up.arrow.down.square")
+					}
+				}
+				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if accessoryManager.isConnected {
@@ -508,7 +503,6 @@ struct Settings: View {
 #if DEBUG
 					developersSection
 #endif
-					firmwareSection
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
@@ -587,10 +581,10 @@ struct Settings: View {
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
-				// If the preferred node changes, then select the newly perferred node
+				// If the preferred node changes, then select the newly preferred node
 				// This should only happen during connect
 				preferredNodeNum = newConnectedNode
-				setSelectedNode(to: newConnectedNode)
+				selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
 			}
 			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
 				// If we are on this screen, haven't iniatialized the selection yet,

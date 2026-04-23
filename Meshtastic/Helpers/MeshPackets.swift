@@ -311,11 +311,11 @@ actor MeshPackets {
 						newUser.shortName = nodeInfo.user.shortName
 						newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 						newUser.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
-						Task {
-							Api().loadDeviceHardwareData { (hw) in
-								let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
-								newUser.hwDisplayName = dh?.displayName
-							}
+						let fetchRequest = DeviceHardwareEntity.fetchRequest()
+						fetchRequest.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
+						let fetchedHardware = (try? context.fetch(fetchRequest)) ?? []
+						if let hardwareEntity = fetchedHardware.first {
+							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newUser.isLicensed = nodeInfo.user.isLicensed
 						newUser.role = Int32(nodeInfo.user.role.rawValue)
@@ -426,22 +426,12 @@ actor MeshPackets {
 								fetchedNode[0].user?.unmessagable = false
 							}
 						}
-						Task {
-							Api().loadDeviceHardwareData { (hw: [DeviceHardware]) in
-								guard !hw.isEmpty,
-									  let firstNode = fetchedNode.first,
-									  let user = firstNode.user else {
-									Logger.data.error("Error: Required DeviceHardware data is missing or array is empty.")
-									return
-								}
-								
-								let dh = hw.first(where: { $0.hwModel == user.hwModelId })
-								
-								if let deviceHardware = dh {
-									firstNode.user?.hwDisplayName = deviceHardware.displayName
-								} else {
-									Logger.data.error("No matching hardware model found for ID: \(user.hwModelId, privacy: .public)")
-								}
+						if let user = fetchedNode.first?.user {
+							let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
+							fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+							let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
+							if let hardwareEntity = fetchedHardware2.first {
+								user.hwDisplayName = hardwareEntity.displayName
 							}
 						}
 					} else {

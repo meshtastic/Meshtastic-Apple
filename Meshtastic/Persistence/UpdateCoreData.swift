@@ -293,11 +293,11 @@ extension MeshPackets {
 							newUser.publicKey = newUserMessage.publicKey
 						}
 						
-						Task {
-							Api().loadDeviceHardwareData { (hw) in
-								let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
-								newUser.hwDisplayName = dh?.displayName
-							}
+						let fetchRequest1 = DeviceHardwareEntity.fetchRequest()
+						fetchRequest1.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
+						let fetchedHardware1 = (try? context.fetch(fetchRequest1)) ?? []
+						if let hardwareEntity = fetchedHardware1.first {
+							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newNode.user = newUser
 						
@@ -401,13 +401,44 @@ extension MeshPackets {
 							fetchedNode[0].user?.pkiEncrypted = true
 							fetchedNode[0].user?.publicKey = nodeInfoMessage.user.publicKey
 						}
-						Task {
-							Api().loadDeviceHardwareData { (hw) in
-								let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
-								fetchedNode[0].user?.hwDisplayName = dh?.displayName
+						if let user = fetchedNode.first?.user {
+							let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
+							fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+							let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
+							if let hardwareEntity = fetchedHardware2.first {
+								user.hwDisplayName = hardwareEntity.displayName
 							}
 						}
 					}
+				} else if let userMessage = try? User(serializedBytes: packet.decoded.payload), !userMessage.id.isEmpty {
+					// Mesh broadcast sends a User protobuf (not wrapped in NodeInfo)
+					if fetchedNode[0].user == nil {
+						let newUser = UserEntity()
+						modelContext.insert(newUser)
+						fetchedNode[0].user = newUser
+					}
+					fetchedNode[0].user?.userId = packet.from.toHex()
+					fetchedNode[0].user?.num = Int64(packet.from)
+					fetchedNode[0].user?.longName = userMessage.longName
+					fetchedNode[0].user?.shortName = userMessage.shortName
+					fetchedNode[0].user?.role = Int32(userMessage.role.rawValue)
+					fetchedNode[0].user?.hwModel = String(describing: userMessage.hwModel).uppercased()
+					fetchedNode[0].user?.hwModelId = Int32(userMessage.hwModel.rawValue)
+					if userMessage.hasIsUnmessagable {
+						fetchedNode[0].user?.unmessagable = userMessage.isUnmessagable
+					} else {
+						let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
+						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
+						fetchedNode[0].user?.unmessagable = containsRole
+					}
+					if !userMessage.publicKey.isEmpty {
+						fetchedNode[0].user?.pkiEncrypted = true
+						fetchedNode[0].user?.publicKey = userMessage.publicKey
+					}
+					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+						fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
+					}
+
 				} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 				}
