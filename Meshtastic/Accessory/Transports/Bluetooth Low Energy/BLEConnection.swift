@@ -177,21 +177,20 @@ actor BLEConnection: Connection {
 					Logger.transport.error("⚠️ [BLE] Failed to decode FromRadio packet due to invalid UTF-8 (\(data.count) bytes), skipping: \(error)")
 				} else {
 					// Other decode errors are likely transport/framing issues.
-					try? await self.disconnect(withError: error, shouldReconnect: true)
-					throw error
+					let decodeError = error
+					do {
+						try await self.disconnect(withError: decodeError, shouldReconnect: true)
+					} catch let disconnectError {
+						Logger.transport.error("⚠️ [BLE] Failed to disconnect after FromRadio decode failure: \(disconnectError)")
+					}
+					throw decodeError
 				}
 			}
 		} while true
 	}
 
 	private func isInvalidUTF8DecodeError(_ error: Error) -> Bool {
-		guard let decodingError = error as? BinaryDecodingError else { return false }
-		switch decodingError {
-		case .invalidUTF8:
-			return true
-		default:
-			return false
-		}
+		(error as? BinaryDecodingError) == .invalidUTF8
 	}
 	
 	func didReceiveLogMessage(_ logMessage: String) {
