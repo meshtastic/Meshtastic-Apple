@@ -13,7 +13,7 @@ struct TapbackResponses: View {
 		if !tapbacks.isEmpty {
 			VStack(alignment: .trailing) {
 				HStack {
-					ForEach( tapbacks ) { (tapback: MessageEntity) in
+					ForEach(tapbacks) { (tapback: MessageEntity) in
 						VStack {
 							let image = tapback.messagePayload!.image(fontSize: 20)
 							Image(uiImage: image!).font(.caption)

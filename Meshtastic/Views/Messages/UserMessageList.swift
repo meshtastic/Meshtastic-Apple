@@ -126,6 +126,7 @@ struct UserMessageList: View {
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused
 			)
+			.fixedSize(horizontal: false, vertical: true)
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {

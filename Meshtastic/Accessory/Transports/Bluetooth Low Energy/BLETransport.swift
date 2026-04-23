@@ -17,7 +17,7 @@ actor BLETransport: Transport {
 	private let kCentralRestoreID = "com.meshtastic.central"
 
 	let type: TransportType = .ble
-	private var centralManager: CBCentralManager
+	private var centralManager: CBCentralManager!
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
@@ -40,10 +40,15 @@ actor BLETransport: Transport {
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
 		self.setupCompleteGate = AsyncGate()
-		centralManager = CBCentralManager(delegate: delegate,
-										  queue: .global(qos: .utility),
-										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
-		)
+		// Only create CBCentralManager immediately if Bluetooth authorization is already
+		// determined. This avoids showing the system permission prompt before the
+		// onboarding Bluetooth screen has a chance to present it in context.
+		if CBCentralManager.authorization != .notDetermined {
+			centralManager = CBCentralManager(delegate: delegate,
+											  queue: .global(qos: .utility),
+											  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+			)
+		}
 		self.delegate.setTransport(self)
 	}
 
@@ -51,11 +56,22 @@ actor BLETransport: Transport {
 		self.discoveredDeviceContinuation = cont
 	}
 
+	private func createCentralManager() {
+		centralManager = CBCentralManager(delegate: delegate,
+										  queue: .global(qos: .utility),
+										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+		)
+	}
+
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			Task {
 				await self.setDiscoveredDeviceContinuation(cont)
-				
+
+				// Create the CBCentralManager now if it was deferred (authorization was .notDetermined at init).
+				if await self.centralManager == nil {
+					await self.createCentralManager()
+				}
 				// This gate is opened when the CBCentralManager is in poweredOn state.
 				// Its probably open already, but just to be sure in case we get here too quickly.
 				try await self.setupCompleteGate.wait()
