@@ -266,6 +266,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
+		self.activeDeviceNum = nil
 		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
