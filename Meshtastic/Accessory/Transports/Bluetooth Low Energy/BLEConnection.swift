@@ -153,18 +153,28 @@ actor BLEConnection: Connection {
 			throw AccessoryError.ioFailed("Not connected")
 		}
 		repeat {
+			let data: Data
 			do {
-				let data = try await read()
-				
-				if data.count == 0 {
-					break
-				}
-				
+				data = try await read()
+			} catch {
+				// Transport-level read error — disconnect and allow reconnect
+				try? await self.disconnect(withError: error, shouldReconnect: true)
+				throw error
+			}
+
+			if data.count == 0 {
+				break
+			}
+
+			do {
 				let decodedInfo = try FromRadio(serializedBytes: data)
 				connectionStreamContinuation?.yield(.data(decodedInfo))
 			} catch {
-				try? await self.disconnect(withError: error, shouldReconnect: true)
-				throw error  // Re-throw to propagate up to the caller for handling
+				// Protobuf decode error (e.g. invalid UTF-8 in a string field).
+				// Skip this packet and continue draining instead of disconnecting,
+				// which would cause an infinite reconnect loop when the device's
+				// node database contains a node with corrupt string data.
+				Logger.transport.error("⚠️ [BLE] Failed to decode FromRadio packet (\(data.count) bytes), skipping: \(error)")
 			}
 		} while true
 	}
