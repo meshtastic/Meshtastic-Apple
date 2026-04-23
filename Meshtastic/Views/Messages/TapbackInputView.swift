@@ -79,6 +79,12 @@ struct TapbackInputView: View {
 	}
 }
 
+#Preview {
+	TapbackInputView(text: .constant(""), isPresented: .constant(true)) { emoji in
+		print("Selected: \(emoji)")
+	}
+}
+
 extension UIView {
 	var firstResponder: UIView? {
 		guard !isFirstResponder else { return self }
@@ -90,4 +96,3 @@ extension UIView {
 		return nil
 	}
 }
-

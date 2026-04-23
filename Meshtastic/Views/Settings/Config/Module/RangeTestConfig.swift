@@ -35,7 +35,6 @@ struct RangeTestConfig: View {
 		return hexLen < 3
 	}
 
-	
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
@@ -142,4 +141,11 @@ struct RangeTestConfig: View {
 		self.sender = UpdateInterval(from: Int(node?.rangeTestConfig?.sender ?? 0))
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return RangeTestConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

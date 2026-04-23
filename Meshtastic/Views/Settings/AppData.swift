@@ -143,3 +143,10 @@ struct AppData: View {
 		}
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return AppData()
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}

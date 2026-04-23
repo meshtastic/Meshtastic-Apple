@@ -20,6 +20,12 @@ struct NodeMapContent: MapContent {
 	@Namespace var mapScope
 	@State var selectedPosition: PositionEntity?
 
+	// Static UIImage caches keyed by node.num.
+	// Node colors are deterministic from node.num (via UIColor(hex:)), so caching by num is correct.
+	// nonisolated(unsafe) is required for static mutable state in Swift 6.
+	private nonisolated(unsafe) static var circleImageCache: [Int64: UIImage] = [:]
+	private nonisolated(unsafe) static var arrowImageCache: [Int64: UIImage] = [:]
+
 	@MapContentBuilder
 	var nodeMap: some MapContent {
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
@@ -160,18 +166,20 @@ struct NodeMapContent: MapContent {
 	}
 
 	private func prerenderHistoryPointCircle(fill: Color, stroke: Color) -> UIImage {
-		// Render to UIImage once so we don't have to do a ton of vector operations and layers when there are thousands of history points.
+		if let cached = NodeMapContent.circleImageCache[node.num] { return cached }
 		let content = Circle()
 			.fill(fill)
 			.strokeBorder(stroke, lineWidth: 2)
 			.frame(width: 12, height: 12)
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
-		return renderer.uiImage!
+		let image = renderer.uiImage!
+		NodeMapContent.circleImageCache[node.num] = image
+		return image
 	}
 
 	private func prerenderHistoryPointArrow(fill: Color, stroke: Color) -> UIImage {
-		// Render to UIImage once so we don't have to do a ton of vector operations and layers when there are thousands of history points.
+		if let cached = NodeMapContent.arrowImageCache[node.num] { return cached }
 		let content = Image(systemName: "location.north.circle")
 			.resizable()
 			.scaledToFit()
@@ -181,6 +189,8 @@ struct NodeMapContent: MapContent {
 			.frame(width: 16, height: 16)
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
-		return renderer.uiImage!
+		let image = renderer.uiImage!
+		NodeMapContent.arrowImageCache[node.num] = image
+		return image
 	}
 }

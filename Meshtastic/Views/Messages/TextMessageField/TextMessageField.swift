@@ -36,6 +36,7 @@ struct TextMessageField: View {
 						}
 					}
 					TextField("Message", text: $typingMessage, axis: .vertical)
+						.frame(minHeight: 36)
 						.padding(10)
 						.background(
 							RoundedRectangle(cornerRadius: 20)

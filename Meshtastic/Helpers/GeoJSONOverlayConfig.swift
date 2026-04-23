@@ -174,10 +174,20 @@ struct GeoJSONStyledFeature: Identifiable {
 	let id = UUID()
 	let feature: GeoJSONFeature
 	let overlayId: String
+	/// MKOverlay pre-computed once at init — avoids repeated JSONSerialization + MKGeoJSONDecoder
+	/// calls on every map render pass.
+	let precomputedOverlay: MKOverlay?
 
-	/// Create MKOverlay from this styled feature
-	func createOverlay() -> MKOverlay? {
-		// Convert feature to standard GeoJSON format for MKGeoJSONDecoder
+	init(feature: GeoJSONFeature, overlayId: String) {
+		self.feature = feature
+		self.overlayId = overlayId
+		// Call the static helper after all stored properties are assigned so `self` is available
+		// for the instance — but we don't actually need self here, so this is safe.
+		self.precomputedOverlay = GeoJSONStyledFeature.makeOverlay(for: feature)
+	}
+
+	/// Builds an MKOverlay from a GeoJSON feature. Static so it can be called from init.
+	private static func makeOverlay(for feature: GeoJSONFeature) -> MKOverlay? {
 		let featureDict: [String: Any] = [
 			"type": feature.type,
 			"geometry": [
@@ -188,30 +198,22 @@ struct GeoJSONStyledFeature: Identifiable {
 		]
 
 		do {
-			// Serialize feature dictionary to JSON data
 			let geojsonData = try JSONSerialization.data(withJSONObject: featureDict)
-			do {
-				// Decode GeoJSON data into MKGeoJSONFeature objects
-				let mkFeatures = try MKGeoJSONDecoder().decode(geojsonData)
-				if let mkFeature = mkFeatures.first as? MKGeoJSONFeature {
-					// Extract geometry and create overlay
-					if let geometry = mkFeature.geometry.first as? MKOverlay {
-						// Successfully created overlay
-						return geometry
-					} else {
-						Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to create overlay - Geometry is not an MKOverlay.")
-					}
-				} else {
-					Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to decode GeoJSON - No valid MKGeoJSONFeature found.")
-				}
-			} catch {
-				Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to decode GeoJSON data: \(error.localizedDescription)")
+			let mkFeatures = try MKGeoJSONDecoder().decode(geojsonData)
+			if let mkFeature = mkFeatures.first as? MKGeoJSONFeature,
+			   let geometry = mkFeature.geometry.first as? MKOverlay {
+				return geometry
+			} else {
+				Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to create overlay - no valid MKOverlay geometry.")
 			}
 		} catch {
-			Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to serialize feature dictionary to JSON: \(error.localizedDescription)")
+			Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to build overlay: \(error.localizedDescription)")
 		}
 		return nil
 	}
+
+	/// Returns the pre-computed overlay. Retained for API compatibility.
+	func createOverlay() -> MKOverlay? { precomputedOverlay }
 
 	/// Get stroke style for this feature
 	var strokeStyle: StrokeStyle {

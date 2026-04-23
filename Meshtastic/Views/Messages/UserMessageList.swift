@@ -57,7 +57,7 @@ struct UserMessageList: View {
 	}
 
 	private func routerIsShowingThisUser() -> Bool {
-		guard appState.router.navigationState.selectedTab == .messages else { return false }
+		guard appState.router.selectedTab == .messages else { return false }
 		return scenePhase == .active
 	}
 
@@ -130,6 +130,7 @@ struct UserMessageList: View {
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused
 			)
+			.fixedSize(horizontal: false, vertical: true)
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
