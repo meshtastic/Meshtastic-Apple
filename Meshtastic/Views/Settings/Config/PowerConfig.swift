@@ -20,8 +20,8 @@ struct PowerConfig: View {
 	@State private var lsSecs = 300
 	@State private var minWakeSecs = 10
 
-	@State private var currentDevice: DeviceHardware?
-
+	@State private var architecture: Architecture?
+	
 	@State private var hasChanges: Bool = false
 	@FocusState private var isFocused: Bool
 
@@ -30,7 +30,7 @@ struct PowerConfig: View {
 			ConfigHeader(title: "Power Config", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
-				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
+				if let architecture, (architecture == .esp32 || architecture == .esp32S3) || (architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
 					Toggle(isOn: $isPowerSaving) {
 						Label("Power Saving", systemImage: "bolt")
 						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
@@ -51,7 +51,7 @@ struct PowerConfig: View {
 			} header: {
 				Text("Power")
 			}
-			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
+			if let architecture, architecture == .esp32 || architecture == .esp32S3 {
 				Section {
 					Toggle(isOn: $adcOverride) {
 						Text("ADC Override")
@@ -123,15 +123,15 @@ struct PowerConfig: View {
 			}
 		}
 		.onFirstAppear {
-			Api().loadDeviceHardwareData { (hw) in
-				for device in hw {
-					let currentHardware = node?.user?.hwModel ?? "UNSET"
-					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
-					if deviceString == currentHardware {
-						currentDevice = device
-					}
+			if let userHwModel = node?.user?.hwModel {
+				let fetchRequest = DeviceHardwareEntity.fetchRequest()
+				fetchRequest.predicate = NSPredicate(format: "hwModel == %d", userHwModel)
+				let fetchedHardware = try? context.fetch(fetchRequest)
+				if let hardwareEntity = fetchedHardware?.first, let archString = hardwareEntity.architecture, let arch = Architecture(rawValue: archString) {
+					architecture = arch
 				}
 			}
+			
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {
 				let connectedNode = getNodeInfo(id: deviceNum, context: context)

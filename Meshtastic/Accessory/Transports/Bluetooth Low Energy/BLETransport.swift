@@ -122,6 +122,13 @@ actor BLETransport: Transport {
 
 	private func stopScanning() {
 		Logger.transport.debug("🛜 [BLE] Stop Scanning: BLE Discovery has been stopped.")
+		guard centralManager != nil else {
+			discoveredPeripherals.removeAll()
+			discoveredDeviceContinuation = nil
+			cleanupTask?.cancel()
+			cleanupTask = nil
+			return
+		}
 		centralManager.stopScan()
 		discoveredPeripherals.removeAll()
 		discoveredDeviceContinuation = nil
@@ -236,6 +243,10 @@ actor BLETransport: Transport {
 					}
 					self.connectContinuation = cont
 					self.connectingPeripheral = peripheral.peripheral
+					guard centralManager != nil else {
+						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
+						return
+					}
 					centralManager.connect(peripheral.peripheral)
 				}
 				self.activeConnection = newConnection
@@ -260,7 +271,6 @@ actor BLETransport: Transport {
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
 					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
-					await self.connectionDidDisconnect(fromPeripheral: peripheral)
 				}
 			}
 		}
@@ -295,7 +305,7 @@ actor BLETransport: Transport {
 			self.connectContinuation = nil
 		} else if let activeConnection = self.activeConnection {
 			// Inform the active connection that there was an error and it should disconnect
-			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Disconnecting the active connection.")
+			Logger.transport.debug("🛜 [BLETransport] Error on active connection. Disconnecting.")
 			Task {
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
 				await self.connectionDidDisconnect(fromPeripheral: peripheral)
