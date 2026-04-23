@@ -2571,6 +2571,7 @@
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
@@ -2603,6 +2604,7 @@
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
