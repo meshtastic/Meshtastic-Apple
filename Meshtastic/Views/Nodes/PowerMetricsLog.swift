@@ -54,8 +54,8 @@ struct PowerMetricsLog: View {
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 
 				let chartData = powerMetrics
-					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
-					.sorted { $0.time! < $1.time! }
+					.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+					.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(powerMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 

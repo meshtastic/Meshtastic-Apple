@@ -44,17 +44,7 @@ class MqttClientProxyManager {
 		let port = defaultServerPort
 		let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 		let prefix = root!
-        // Safely iterate channels and determine if any has downlink enabled
-        var hasAnyDownlinkEnabled = false
-        if let anyChannels = node.myInfo?.channels as? NSOrderedSet {
-            let channelEntities: [ChannelEntity] = anyChannels.array.compactMap { $0 as? ChannelEntity }
-            for channel in channelEntities {
-                if channel.downlinkEnabled == true {
-                    hasAnyDownlinkEnabled = true
-                    break
-                }
-            }
-        }
+		let hasAnyDownlinkEnabled = node.myInfo?.channels.contains { $0.downlinkEnabled } ?? false
 		
 		shouldSubscribe = hasAnyDownlinkEnabled
 		

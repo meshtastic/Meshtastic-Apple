@@ -380,7 +380,10 @@ extension AccessoryManager {
 			connectedHop.name = connectedNode.user?.longName ?? "???"
 			// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 			connectedHop.snr = Float(routingMessage.snrBack.last ?? -128) / 4
-			if let mostRecent = traceRoute?.node?.positions.last, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+			if let mostRecent = traceRoute?.node?.positions.last,
+			   let mostRecentTime = mostRecent.time,
+			   let cutoff = Calendar.current.date(byAdding: .hour, value: -24, to: Date()),
+			   mostRecentTime >= cutoff {
 				connectedHop.altitude = mostRecent.altitude
 				connectedHop.latitudeI = mostRecent.latitudeI
 				connectedHop.longitudeI = mostRecent.longitudeI
@@ -404,7 +407,10 @@ extension AccessoryManager {
 					traceRouteHop.snr = -32
 				}
 				if let hn = hopNode, hn.hasPositions {
-					if let mostRecent = hn.positions.last, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+					if let mostRecent = hn.positions.last,
+					   let mostRecentTime = mostRecent.time,
+					   let cutoff = Calendar.current.date(byAdding: .hour, value: -24, to: Date()),
+					   mostRecentTime >= cutoff {
 						traceRouteHop.altitude = mostRecent.altitude
 						traceRouteHop.latitudeI = mostRecent.latitudeI
 						traceRouteHop.longitudeI = mostRecent.longitudeI
@@ -431,7 +437,10 @@ extension AccessoryManager {
 			// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 			destinationHop.snr = Float(routingMessage.snrTowards.last ?? -128) / 4
 			destinationHop.num = traceRoute?.node?.num ?? 0
-			if let mostRecent = traceRoute?.node?.positions.last, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+			if let mostRecent = traceRoute?.node?.positions.last,
+			   let mostRecentTime = mostRecent.time,
+			   let cutoff = Calendar.current.date(byAdding: .hour, value: -24, to: Date()),
+			   mostRecentTime >= cutoff {
 				destinationHop.altitude = mostRecent.altitude
 				destinationHop.latitudeI = mostRecent.latitudeI
 				destinationHop.longitudeI = mostRecent.longitudeI
@@ -463,7 +472,10 @@ extension AccessoryManager {
 						traceRouteHop.snr = -32
 					}
 					if let hn = hopNode, hn.hasPositions {
-						if let mostRecent = hn.positions.last, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+						if let mostRecent = hn.positions.last,
+						   let mostRecentTime = mostRecent.time,
+						   let cutoff = Calendar.current.date(byAdding: .hour, value: -24, to: Date()),
+						   mostRecentTime >= cutoff {
 							traceRouteHop.altitude = mostRecent.altitude
 							traceRouteHop.latitudeI = mostRecent.latitudeI
 							traceRouteHop.longitudeI = mostRecent.longitudeI

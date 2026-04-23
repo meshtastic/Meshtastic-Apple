@@ -27,36 +27,38 @@ struct PaxCounterLog: View {
 	private func paxChart(chartData: [PaxCounterEntity], maxValue: Int32) -> some View {
 		Chart {
 			ForEach(chartData, id: \.self) { point in
-				Plot {
-					PointMark(
-						x: .value("x", point.time!),
-						y: .value("y", (point.wifi + point.ble))
-					)
-				}
-				.accessibilityLabel("Total PAX")
-				.accessibilityValue("X: \(point.time!), Y: \(point.wifi + point.ble)")
-				.foregroundStyle(paxChartColor)
-				.interpolationMethod(.cardinal)
+				if let pointTime = point.time {
+					Plot {
+						PointMark(
+							x: .value("x", pointTime),
+							y: .value("y", (point.wifi + point.ble))
+						)
+					}
+					.accessibilityLabel("Total PAX")
+					.accessibilityValue("X: \(pointTime), Y: \(point.wifi + point.ble)")
+					.foregroundStyle(paxChartColor)
+					.interpolationMethod(.cardinal)
 
-				Plot {
-					PointMark(
-						x: .value("x", point.time!),
-						y: .value("y", point.wifi)
-					)
-				}
-				.accessibilityLabel("WiFi")
-				.accessibilityValue("X: \(point.time!), Y: \(point.wifi)")
-				.foregroundStyle(wifiChartColor)
+					Plot {
+						PointMark(
+							x: .value("x", pointTime),
+							y: .value("y", point.wifi)
+						)
+					}
+					.accessibilityLabel("WiFi")
+					.accessibilityValue("X: \(pointTime), Y: \(point.wifi)")
+					.foregroundStyle(wifiChartColor)
 
-				Plot {
-					PointMark(
-						x: .value("x", point.time!),
-						y: .value("y", point.ble)
-					)
+					Plot {
+						PointMark(
+							x: .value("x", pointTime),
+							y: .value("y", point.ble)
+						)
+					}
+					.accessibilityLabel("BLE")
+					.accessibilityValue("X: \(pointTime), Y: \(point.ble)")
+					.foregroundStyle(bleChartColor)
 				}
-				.accessibilityLabel("BLE")
-				.accessibilityValue("X: \(point.time!), Y: \(point.ble)")
-				.foregroundStyle(bleChartColor)
 			}
 		}
 		.chartXAxis(content: {
@@ -79,8 +81,8 @@ struct PaxCounterLog: View {
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 				let pax = Array(node.pax.reversed())
 				let chartData = pax
-						.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
-						.sorted { $0.time! < $1.time! }
+						.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+						.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 				let maxValue = (chartData.map { $0.wifi }.max() ?? 0) + (chartData.map { $0.ble }.max() ?? 0) + 5
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(pax.count) Readings Total", systemImage: "chart.xyaxis.line")) {
