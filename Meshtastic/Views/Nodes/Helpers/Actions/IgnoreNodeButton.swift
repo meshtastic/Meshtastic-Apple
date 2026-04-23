@@ -31,7 +31,6 @@ struct IgnoreNodeButton: View {
 						do {
 							try context.save()
 						} catch {
-							context.rollback()
 							Logger.data.error("Save Ignored Node Error")
 						}
 					}

@@ -256,7 +256,6 @@ struct SecurityConfig: View {
 									try context.save()
 									Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
 								} catch {
-									context.rollback()
 									let nsError = error as NSError
 									Logger.data.error("Error Updating Core Data UserEntity: \(nsError, privacy: .public)")
 								}

@@ -381,7 +381,6 @@ extension AccessoryManager {
 							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel)
 						}
 					} catch {
-						context.rollback()
 						let nsError = error as NSError
 						Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError, privacy: .public)")
 						throw error
@@ -627,7 +626,6 @@ extension AccessoryManager {
 				try context.save()
 				Logger.data.info("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum.toHex(), privacy: .public)")
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 			}
@@ -677,7 +675,6 @@ extension AccessoryManager {
 					try context.save()
 					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "Unknown".localized), privacy: .public)")
 				} catch {
-					context.rollback()
 					let nsError = error as NSError
 					Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
 				}
@@ -795,7 +792,6 @@ extension AccessoryManager {
 				context.delete(node)
 				try context.save()
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("🚫 Error deleting node from core data: \(nsError, privacy: .public)")
 			}

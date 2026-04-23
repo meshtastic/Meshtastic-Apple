@@ -196,7 +196,6 @@ struct RouteRecorder: View {
 											try context.save()
 											Logger.data.info("💾 Saved a new route")
 										} catch {
-											context.rollback()
 											let nsError = error as NSError
 											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}
@@ -253,7 +252,6 @@ struct RouteRecorder: View {
 											try context.save()
 											Logger.data.info("💾 Saved a route finish")
 										} catch {
-											context.rollback()
 											let nsError = error as NSError
 											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}
@@ -309,7 +307,6 @@ struct RouteRecorder: View {
 									try context.save()
 									Logger.data.info("💾 Saved a new route location")
 								} catch {
-									context.rollback()
 									let nsError = error as NSError
 									Logger.data.error("Error Saving LocationEntity from the Route Recorder \(nsError, privacy: .public)")
 								}

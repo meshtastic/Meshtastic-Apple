@@ -146,7 +146,6 @@ struct ChannelList: View {
 								do {
 									try context.save()
 								} catch {
-									context.rollback()
 									Logger.data.error("💥 Save Channel Mute Error")
 								}
 							}

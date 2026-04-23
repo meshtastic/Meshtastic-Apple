@@ -223,7 +223,6 @@ struct WaypointForm: View {
 							do {
 								try context.save()
 							} catch {
-								context.rollback()
 							}
 							dismiss() })
 						Button("For everyone", action: {
@@ -258,7 +257,6 @@ struct WaypointForm: View {
 										do {
 											try context.save()
 										} catch {
-											context.rollback()
 										}
 										dismiss()
 									}
@@ -447,7 +445,6 @@ struct WaypointForm: View {
 						do {
 							try context.save()
 						} catch {
-							context.rollback()
 						}
 						dismiss()
 					}
@@ -459,7 +456,6 @@ struct WaypointForm: View {
 					do {
 						try context.save()
 					} catch {
-						context.rollback()
 						Logger.mesh.error("Failed to save context on waypoint deletion: \(error)")
 					}
 				}

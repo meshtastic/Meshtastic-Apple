@@ -17,7 +17,6 @@ struct NodeAlertsButton: View {
 			do {
 				try context.save()
 			} catch {
-				context.rollback()
 				Logger.data.error("Save User Mute Error")
 			}
 		} label: {

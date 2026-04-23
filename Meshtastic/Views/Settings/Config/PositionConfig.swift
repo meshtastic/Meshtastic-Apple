@@ -532,7 +532,6 @@ struct PositionConfig: View {
 			try context.save()
 			Logger.data.info("💾 Updated Position Config with Fixed Position = true")
 		} catch {
-			context.rollback()
 			let nsError = error as NSError
 			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
 		}
@@ -554,7 +553,6 @@ struct PositionConfig: View {
 			try context.save()
 			Logger.data.info("💾 Updated Position Config with Fixed Position = false")
 		} catch {
-			context.rollback()
 			let nsError = error as NSError
 			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
 		}

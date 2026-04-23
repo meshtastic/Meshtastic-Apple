@@ -141,7 +141,6 @@ actor MeshPackets {
 					Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
 					return myInfoEntity.persistentModelID
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
 				}
@@ -156,7 +155,6 @@ actor MeshPackets {
 					Logger.data.info("💾 Updated myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
 					return fetchedMyInfo[0].persistentModelID
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 Error Updating Core Data MyInfoEntity: \(nsError, privacy: .public)")
 				}
@@ -207,7 +205,6 @@ actor MeshPackets {
 					Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
 				}
 			} catch {
-				modelContext.rollback()
 				let nsError = error as NSError
 				Logger.data.error("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 			}
@@ -258,7 +255,6 @@ actor MeshPackets {
 				}
 				Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum.toHex(), privacy: .public)")
 			} catch {
-				modelContext.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 			}
@@ -381,7 +377,6 @@ actor MeshPackets {
 							}
 							return newNode.persistentModelID
 						} catch {
-							modelContext.rollback()
 							let nsError = error as NSError
 							Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError, privacy: .public)")
 						}
@@ -505,7 +500,6 @@ actor MeshPackets {
 							}
 							return fetchedNode[0].persistentModelID
 						} catch {
-							modelContext.rollback()
 							let nsError = error as NSError
 							Logger.data.error("💥 Error Saving Core Data NodeInfoEntity: \(nsError, privacy: .public)")
 						}
@@ -544,7 +538,6 @@ actor MeshPackets {
 								try modelContext.save()
 								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized, privacy: .public)")
 							} catch {
-								modelContext.rollback()
 								let nsError = error as NSError
 								Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
 							}
@@ -713,7 +706,6 @@ actor MeshPackets {
 				try modelContext.save()
 				Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
 			} catch {
-				modelContext.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
 			}
@@ -865,7 +857,6 @@ actor MeshPackets {
 #endif
 					}
 			} catch {
-				modelContext.rollback()
 				let nsError = error as NSError
 				Logger.data.error("💥 Error Saving Telemetry for Node \(packet.from, privacy: .public) Error: \(nsError, privacy: .public)")
 			}
@@ -1022,7 +1013,6 @@ actor MeshPackets {
 						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 					} catch {
-						modelContext.rollback()
 						let nsError = error as NSError
 						Logger.data.error("Failed to save new MessageEntity \(nsError, privacy: .public)")
 					}
@@ -1172,7 +1162,6 @@ actor MeshPackets {
 							manager.schedule()
 						}
 					} catch {
-						modelContext.rollback()
 						let nsError = error as NSError
 						Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 					}
@@ -1187,7 +1176,6 @@ actor MeshPackets {
 								try modelContext.save()
 								Logger.data.info("💾 Deleted a waypoint")
 							} catch {
-								modelContext.rollback()
 								let nsError = error as NSError
 								Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 							}
@@ -1209,7 +1197,6 @@ actor MeshPackets {
 								try modelContext.save()
 								Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
 							} catch {
-								modelContext.rollback()
 								let nsError = error as NSError
 								Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 							}

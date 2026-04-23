@@ -341,11 +341,9 @@ extension MeshPackets {
 						newNode.user = newUser
 					} catch CoreDataError.invalidInput(let message) {
 						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
-						modelContext.rollback()
 						return
 					} catch {
 						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
-						modelContext.rollback()
 						return
 					}
 				}
@@ -354,7 +352,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [NodeInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
 				}
@@ -428,7 +425,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [NodeInfoEntity] Error Saving from NODEINFO_APP \(nsError, privacy: .public)")
 				}
@@ -507,7 +503,6 @@ extension MeshPackets {
 							try modelContext.save()
 							Logger.data.info("💾 [Position] Saved from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 						} catch {
-							modelContext.rollback()
 							let nsError = error as NSError
 							Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
 						}
@@ -553,7 +548,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [BluetoothConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [BluetoothConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -611,7 +605,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [DeviceConfigEntity] Updated Device Config for node number: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [DeviceConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -670,7 +663,6 @@ extension MeshPackets {
 					Logger.data.info("💾 [DisplayConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 					
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [DisplayConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -744,7 +736,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [LoRaConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [LoRaConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -794,7 +785,6 @@ extension MeshPackets {
 					Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
 					
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [NetworkConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -859,7 +849,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [PositionConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [PositionConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -911,7 +900,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [PowerConfigEntity] Updated Power Config for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [PowerConfigEntity] Error Updating Core Data PowerConfigEntity: \(nsError, privacy: .public)")
 				}
@@ -975,7 +963,6 @@ extension MeshPackets {
 					Logger.data.info("💾 [SecurityConfigEntity] Updated Security Config for node: \(nodeNum.toHex(), privacy: .public)")
 					
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [SecurityConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1031,7 +1018,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [AmbientLightingConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [AmbientLightingConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1091,7 +1077,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [CannedMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [CannedMessageConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1147,7 +1132,6 @@ extension MeshPackets {
 					Logger.data.info("💾 [DetectionSensorConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 					
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [DetectionSensorConfigEntity] Error Updating Core Data : \(nsError, privacy: .public)")
 				}
@@ -1219,7 +1203,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [ExternalNotificationConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [ExternalNotificationConfigEntity] Error Updating Core Data : \(nsError, privacy: .public)")
 				}
@@ -1262,7 +1245,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [PaxCounterConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [PaxCounterConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1303,7 +1285,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [RtttlConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [RtttlConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1367,7 +1348,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [MQTTConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [MQTTConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1412,7 +1392,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [RangeTestConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [RangeTestConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1466,7 +1445,6 @@ extension MeshPackets {
 					Logger.data.info("💾 [SerialConfigEntity]Updated Serial Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
 					
-					modelContext.rollback()
 					
 					let nsError = error as NSError
 					Logger.data.error("💥 [SerialConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
@@ -1518,7 +1496,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [StoreForwardConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [StoreForwardConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1576,7 +1553,6 @@ extension MeshPackets {
 					Logger.data.info("💾 [TelemetryConfigEntity] Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 					
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [TelemetryConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -1620,7 +1596,6 @@ extension MeshPackets {
 					try modelContext.save()
 					Logger.data.info("💾 [TAKConfigEntity] Updated TAK Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
-					modelContext.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [TAKConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}

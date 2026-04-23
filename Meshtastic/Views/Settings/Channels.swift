@@ -75,7 +75,6 @@ struct Channels: View {
 			try context.save()
 			Logger.data.info("💾 Normalized duplicate channels for node \(self.node.num, privacy: .public)")
 		} catch {
-			context.rollback()
 			Logger.data.error("Failed normalizing duplicate channels: \(error.localizedDescription, privacy: .public)")
 		}
 	}
@@ -258,7 +257,6 @@ struct Channels: View {
 								try context.save()
 								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
 							} catch {
-								context.rollback()
 								let nsError = error as NSError
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
 							}
@@ -275,7 +273,6 @@ struct Channels: View {
 								try context.save()
 								Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
 							} catch {
-								context.rollback()
 								let nsError = error as NSError
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
 							}

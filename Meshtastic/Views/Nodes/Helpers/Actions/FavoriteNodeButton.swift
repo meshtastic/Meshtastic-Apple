@@ -69,7 +69,6 @@ struct FavoriteNodeButton: View {
 				do {
 					try context.save()
 				} catch {
-					context.rollback()
 					Logger.data.error("Save Node Favorite Error")
 				}
 				Logger.data.debug("Favorited a node")

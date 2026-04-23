@@ -740,7 +740,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					try context.save()
 					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
 				} catch {
-					context.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
 				}

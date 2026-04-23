@@ -227,7 +227,6 @@ struct Routes: View {
 									selectedRoute = nil
 									Logger.data.info("💾 Saved a route")
 								} catch {
-									context.rollback()
 									let nsError = error as NSError
 									Logger.data.error("Error Saving RouteEntity from the Route Editor \(nsError, privacy: .public)")
 								}

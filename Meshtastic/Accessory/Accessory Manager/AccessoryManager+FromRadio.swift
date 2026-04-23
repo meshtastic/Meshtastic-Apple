@@ -35,7 +35,6 @@ extension AccessoryManager {
 					try context.save()
 					Logger.data.info("💾 [TraceRouteEntity] Trace Route Rate Limited")
 				} catch {
-					context.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -289,7 +288,6 @@ extension AccessoryManager {
 					do {
 						try context.save()
 					} catch {
-						context.rollback()
 						Logger.data.error("Save Store and Forward Router Error")
 					}
 				}
@@ -317,7 +315,6 @@ extension AccessoryManager {
 				do {
 					try context.save()
 				} catch {
-					context.rollback()
 					Logger.data.error("Save Store and Forward Router Error")
 				}
 				Logger.mesh.info("\("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
@@ -513,7 +510,6 @@ extension AccessoryManager {
 				try context.save()
 				Logger.data.info("💾 Saved Trace Route")
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
 			}
