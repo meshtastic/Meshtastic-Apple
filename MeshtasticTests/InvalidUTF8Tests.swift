@@ -133,47 +133,104 @@ struct InvalidUTF8Tests {
 	}
 
 	/// Adjusts protobuf varint lengths that enclose the patched region.
-	/// This is a simplified patcher that handles common cases in our test payloads.
+	/// Walk the protobuf wire format deterministically so only real enclosing
+	/// length-delimited fields are updated.
 	private func adjustProtobufLengths(in bytes: [UInt8], patchRange: Range<Int>, sizeDelta: Int) -> [UInt8] {
-		// Re-serialize from scratch with the corrupted name injected is more reliable
-		// than trying to patch varints. Since the sizeDelta is small (±few bytes),
-		// we rebuild by finding length-prefixed fields and adjusting.
-		//
-		// For our test cases, the structure is:
-		//   FromRadio { nodeInfo (field 4, LEN) { user (field 2, LEN) { long_name (field 2, LEN) { bytes } } } }
-		//
-		// We need to adjust 3 length prefixes. Let's walk the bytes and fix them.
+		guard sizeDelta != 0 else { return bytes }
+
 		var result = bytes
-		var i = 0
-		while i < result.count {
-			let (tag, tagLen) = decodeVarint(Array(result[i...]))
-			if tagLen == 0 { break }
-			let wireType = tag & 0x07
-			if wireType == 2 { // length-delimited
-				let (length, lenLen) = decodeVarint(Array(result[(i + tagLen)...]))
-				if lenLen == 0 { break }
-				let fieldStart = i + tagLen + lenLen
-				let fieldEnd = fieldStart + Int(length)
-				// Check if the patch range falls within this field
-				if fieldStart <= patchRange.lowerBound && patchRange.upperBound <= fieldEnd {
-					let newLength = Int(length) + sizeDelta
-					let newLenBytes = encodeVarint(UInt64(newLength))
-					let oldLenBytes = encodeVarint(UInt64(length))
-					if newLenBytes.count == oldLenBytes.count {
-						// Same varint size, just overwrite
-						for j in 0..<newLenBytes.count {
-							result[i + tagLen + j] = newLenBytes[j]
-						}
-					}
-					// If varint size changes, this gets complex — not needed for our tests
-				}
-			}
-			// Move to next field (simplified — just increment)
-			i += 1
-		}
+		adjustProtobufLengths(in: bytes, result: &result, range: 0..<bytes.count, patchRange: patchRange, sizeDelta: sizeDelta)
 		return result
 	}
 
+	private func adjustProtobufLengths(
+		in original: [UInt8],
+		result: inout [UInt8],
+		range: Range<Int>,
+		patchRange: Range<Int>,
+		sizeDelta: Int
+	) {
+		var i = range.lowerBound
+		while i < range.upperBound {
+			let (tag, tagLen) = decodeVarint(at: i, in: original, limit: range.upperBound)
+			guard tagLen > 0 else { return }
+
+			let wireType = tag & 0x07
+			let valueStart = i + tagLen
+
+			switch wireType {
+			case 0: // varint
+				let (_, valueLen) = decodeVarint(at: valueStart, in: original, limit: range.upperBound)
+				guard valueLen > 0 else { return }
+				i = valueStart + valueLen
+
+			case 1: // 64-bit
+				let nextIndex = valueStart + 8
+				guard nextIndex <= range.upperBound else { return }
+				i = nextIndex
+
+			case 2: // length-delimited
+				let (length, lenLen) = decodeVarint(at: valueStart, in: original, limit: range.upperBound)
+				guard lenLen > 0 else { return }
+
+				let fieldStart = valueStart + lenLen
+				let fieldEnd = fieldStart + Int(length)
+				guard fieldEnd <= range.upperBound else { return }
+
+				if fieldStart <= patchRange.lowerBound && patchRange.upperBound <= fieldEnd {
+					let newLength = Int(length) + sizeDelta
+					guard newLength >= 0 else { return }
+
+					let newLenBytes = encodeVarint(UInt64(newLength))
+					if newLenBytes.count == lenLen {
+						let lengthRange = valueStart..<(valueStart + lenLen)
+						result.replaceSubrange(lengthRange, with: newLenBytes)
+					}
+
+					adjustProtobufLengths(
+						in: original,
+						result: &result,
+						range: fieldStart..<fieldEnd,
+						patchRange: patchRange,
+						sizeDelta: sizeDelta
+					)
+				}
+
+				i = fieldEnd
+
+			case 5: // 32-bit
+				let nextIndex = valueStart + 4
+				guard nextIndex <= range.upperBound else { return }
+				i = nextIndex
+
+			default:
+				// Groups are deprecated and not expected in these test payloads.
+				return
+			}
+		}
+	}
+
+	private func decodeVarint(at start: Int, in bytes: [UInt8], limit: Int) -> (UInt64, Int) {
+		guard start >= 0, start < limit, limit <= bytes.count else { return (0, 0) }
+
+		var value: UInt64 = 0
+		var shift: UInt64 = 0
+		var index = start
+
+		while index < limit {
+			let byte = bytes[index]
+			value |= UInt64(byte & 0x7F) << shift
+			if byte & 0x80 == 0 {
+				return (value, index - start + 1)
+			}
+
+			shift += 7
+			if shift >= 64 { return (0, 0) }
+			index += 1
+		}
+
+		return (0, 0)
+	}
 	private func decodeVarint(_ bytes: [UInt8]) -> (UInt64, Int) {
 		var value: UInt64 = 0
 		var shift: UInt64 = 0
