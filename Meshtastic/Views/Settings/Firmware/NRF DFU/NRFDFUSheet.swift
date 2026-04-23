@@ -15,18 +15,6 @@ struct NRFDFUSheet: View {
 	
 	let firmwareToFlash: URL
 	
-	let alertMessage = """
-	You are about to flash new firmware to your device. This process carries risks. Unsuccessful updates may brick the device and require re-flashing the bootloader.
-
-	* Ensure your device is charged.
-	* Connect your device to a stable power supply.
-	* Keep the device close to your phone.
-	* Do not close the app during the update.
-	* Verify you have selected the correct firmware for your hardware.
-
-	Note: This will temporarily disconnect your device during the update.
-	"""
-	
 	var body: some View {
 		NavigationView { // Use a NavigationView for a title bar
 			VStack(spacing: 20.0) {
@@ -75,16 +63,76 @@ struct NRFDFUSheet: View {
 			}
 			.navigationTitle("Nordic DFU Update")
 			.navigationBarTitleDisplayMode(.inline)
-		}.alert("Update Warning", isPresented: $showWarningAlert) {
-			// Add buttons here
-			Button("I Know What I'm Doing", role: .destructive) { }
-			Button("Not Now", role: .cancel) {
-				dismiss()
-			}
-		} message: {
-			Text(alertMessage)
+		}
+		.sheet(isPresented: $showWarningAlert) {
+			UpdateWarningSheet(onDismiss: { dismiss() }, onAccept: { showWarningAlert = false })
 		}
 		.interactiveDismissDisabled(true)
 	}
 }
 
+private struct UpdateWarningSheet: View {
+	let onDismiss: () -> Void
+	let onAccept: () -> Void
+
+	var body: some View {
+		VStack(spacing: 16) {
+			Text("Update Warning")
+				.font(.title.bold())
+				.multilineTextAlignment(.center)
+				.padding(.top, 24)
+
+			Text("You are about to flash new firmware to your device. This process carries risks. Unsuccessful updates may fail and in some cases require re-flashing the bootloader.")
+				.font(.callout)
+				.fixedSize(horizontal: false, vertical: true)
+				.multilineTextAlignment(.center)
+				.padding(.horizontal)
+
+			VStack(alignment: .leading, spacing: 6) {
+				Label("Ensure your device is charged.", systemImage: "battery.75percent")
+				Label("Connect your device to a stable power supply.", systemImage: "powerplug.fill")
+				Label("Keep the device close to your phone.", systemImage: "antenna.radiowaves.left.and.right")
+				Label("Do not close the app during the update.", systemImage: "xmark.app")
+				Label("Verify you have selected the correct firmware.", systemImage: "checkmark.shield")
+			}
+			.font(.caption)
+			.fixedSize(horizontal: false, vertical: true)
+			.foregroundStyle(.secondary)
+			.padding(.horizontal)
+
+			Text("Note: This will temporarily disconnect your device during the update.")
+				.font(.caption)
+				.fixedSize(horizontal: false, vertical: true)
+				.foregroundStyle(.secondary)
+				.multilineTextAlignment(.center)
+				.padding(.horizontal)
+
+			Spacer()
+
+			VStack(spacing: 10) {
+				Button(role: .destructive) {
+					onAccept()
+				} label: {
+					Text("I Know What I'm Doing")
+						.frame(maxWidth: .infinity)
+				}
+				.buttonStyle(.borderedProminent)
+				.tint(.red)
+				.controlSize(.large)
+
+				Button {
+					onDismiss()
+				} label: {
+					Text("Not Now")
+						.frame(maxWidth: .infinity)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.large)
+			}
+			.padding(.horizontal)
+			.padding(.bottom, 24)
+		}
+		.presentationDetents([.large])
+		.interactiveDismissDisabled(true)
+	}
+}
