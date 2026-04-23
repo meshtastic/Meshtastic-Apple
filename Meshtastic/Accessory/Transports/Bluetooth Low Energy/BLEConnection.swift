@@ -9,6 +9,7 @@ import Foundation
 @preconcurrency import CoreBluetooth
 import OSLog
 import MeshtasticProtobufs
+import SwiftProtobuf
 
 let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
@@ -170,13 +171,27 @@ actor BLEConnection: Connection {
 				let decodedInfo = try FromRadio(serializedBytes: data)
 				connectionStreamContinuation?.yield(.data(decodedInfo))
 			} catch {
-				// Protobuf decode error (e.g. invalid UTF-8 in a string field).
-				// Skip this packet and continue draining instead of disconnecting,
-				// which would cause an infinite reconnect loop when the device's
-				// node database contains a node with corrupt string data.
-				Logger.transport.error("⚠️ [BLE] Failed to decode FromRadio packet (\(data.count) bytes), skipping: \(error)")
+				if isInvalidUTF8DecodeError(error) {
+					// Skip known invalid UTF-8 payloads to avoid reconnect loops when
+					// a remote node has corrupt string data in the node database.
+					Logger.transport.error("⚠️ [BLE] Failed to decode FromRadio packet due to invalid UTF-8 (\(data.count) bytes), skipping: \(error)")
+				} else {
+					// Other decode errors are likely transport/framing issues.
+					try? await self.disconnect(withError: error, shouldReconnect: true)
+					throw error
+				}
 			}
 		} while true
+	}
+
+	private func isInvalidUTF8DecodeError(_ error: Error) -> Bool {
+		guard let decodingError = error as? BinaryDecodingError else { return false }
+		switch decodingError {
+		case .invalidUTF8:
+			return true
+		default:
+			return false
+		}
 	}
 	
 	func didReceiveLogMessage(_ logMessage: String) {
