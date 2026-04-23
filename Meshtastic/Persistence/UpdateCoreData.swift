@@ -199,29 +199,32 @@ extension MeshPackets {
 		}
 	}
 	
-	public func clearCoreDataDatabase(includeRoutes: Bool) async {
+	public func clearCoreDataDatabase(includeRoutes: Bool, includeAppLevelData: Bool = false) async {
 		let context = self.backgroundContext
 		await context.perform {
-			self.clearCoreDataDatabase(context: context, includeRoutes: includeRoutes)
+			self.clearCoreDataDatabase(context: context, includeRoutes: includeRoutes, includeAppLevelData: includeAppLevelData)
 		}
 	}
 	
-	nonisolated public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
+	nonisolated public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool, includeAppLevelData: Bool = false) {
 		let persistenceController = PersistenceController.shared.container
 		for i in 0...persistenceController.managedObjectModel.entities.count-1 {
 			
 			let entity = persistenceController.managedObjectModel.entities[i]
 			let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
-			var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 			let entityName = entity.name ?? "UNK"
 			
-			if includeRoutes {
-				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-			} else if !includeRoutes {
-				if !(entityName.contains("RouteEntity") || entityName.contains("LocationEntity")) {
-					deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-				}
+			if !includeRoutes, ["RouteEntity", "LocationEntity"].contains(entityName) {
+				continue
 			}
+			
+			if !includeAppLevelData, ["DeviceHardwareEntity", "DeviceHardwareImageEntity", "DeviceHardwareTagEntity"].contains(entityName) {
+				// These are non-node-specific "app level" data, keep them even when switching nodes
+				continue
+			}
+			
+			// Execute the delete for this entry
+			let deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 			do {
 				try context.executeAndMergeChanges(using: deleteRequest)
 			} catch {
@@ -378,11 +381,11 @@ extension MeshPackets {
 							newUser.publicKey = newUserMessage.publicKey
 						}
 						
-						Task {
-							Api().loadDeviceHardwareData { (hw) in
-								let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
-								newUser.hwDisplayName = dh?.displayName
-							}
+						let fetchRequest1 = DeviceHardwareEntity.fetchRequest()
+						fetchRequest1.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
+						let fetchedHardware1 = (try? context.fetch(fetchRequest1)) ?? []
+						if let hardwareEntity = fetchedHardware1.first {
+							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newNode.user = newUser
 						
@@ -443,11 +446,10 @@ extension MeshPackets {
 				do {
 					try context.save()
 					Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
-					Logger.data.info("💾 [MyInfoEntity] Saved a new myInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("💥 [MyInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
+					Logger.data.error("💥 [NodeInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
 				}
 				
 			} else {
@@ -502,10 +504,12 @@ extension MeshPackets {
 							fetchedNode[0].user?.pkiEncrypted = true
 							fetchedNode[0].user?.publicKey = nodeInfoMessage.user.publicKey
 						}
-						Task {
-							Api().loadDeviceHardwareData { (hw) in
-								let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
-								fetchedNode[0].user?.hwDisplayName = dh?.displayName
+						if let user = fetchedNode.first?.user {
+							let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
+							fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+							let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
+							if let hardwareEntity = fetchedHardware2.first {
+								user.hwDisplayName = hardwareEntity.displayName
 							}
 						}
 					}
@@ -532,10 +536,12 @@ extension MeshPackets {
 						fetchedNode[0].user?.pkiEncrypted = true
 						fetchedNode[0].user?.publicKey = userMessage.publicKey
 					}
-					Task {
-						Api().loadDeviceHardwareData { (hw) in
-							let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
-							fetchedNode[0].user?.hwDisplayName = dh?.displayName
+					if let user = fetchedNode.first?.user {
+						let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
+						fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+						let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
+						if let hardwareEntity = fetchedHardware2.first {
+							user.hwDisplayName = hardwareEntity.displayName
 						}
 					}
 					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
