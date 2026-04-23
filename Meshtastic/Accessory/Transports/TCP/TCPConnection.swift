@@ -173,10 +173,17 @@ actor TCPConnection: Connection {
 	}
 
 	private func getPacketStream() -> AsyncStream<ConnectionEvent> {
-		AsyncStream<ConnectionEvent> { continuation in
+		self.connectionStreamContinuation?.finish()
+		self.connectionStreamContinuation = nil
+		
+		return AsyncStream<ConnectionEvent> { continuation in
 			self.connectionStreamContinuation = continuation
-			continuation.onTermination = { _ in
-				Task { try await self.disconnect(withError: AccessoryError.eventStreamCancelled, shouldReconnect: true) }
+			continuation.onTermination = { [weak self] termination in
+				guard let self else { return }
+				guard case .cancelled = termination else { return }
+				Task {
+					try await self.disconnect(withError: AccessoryError.eventStreamCancelled, shouldReconnect: true)
+				}
 			}
 		}
 	}
