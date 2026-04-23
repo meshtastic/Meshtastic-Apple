@@ -73,7 +73,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	let releaseType: ReleaseType
 	@Published var status: DownloadStatus
 	let firmwareType: FirmwareType
-	let architecure: Architecture
+	let architecture: Architecture
 	let releaseNotes: String?
 	
 	let versionMajor, versionMinor, versionPatch: Int
@@ -99,7 +99,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		self.platformioTarget = target
 	
 		guard let architecture else { throw FirmwareFileError.unknownArchitecture }
-		self.architecure = architecture
+		self.architecture = architecture
 		
 		// Thread safe operation to get the versionf`rom the given FirmwareReleaseEntity
 		var version: String?
@@ -136,8 +136,9 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		self.releaseType = releaseType
 		
 		// Calculate the filename
-		// Regarding the force unwrap: validFilenameSuffixes should always return at least one type
-		let defaultFileType = FirmwareFile.validFilenameSuffixes(forArchitecture: architecture).first!
+		guard let defaultFileType = FirmwareFile.validFilenameSuffixes(forArchitecture: architecture).first else {
+			throw FirmwareFileError.unknownArchitecture
+		}
 		self.firmwareType = type ?? defaultFileType
 		let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
 		let fileName = "firmware-\(target)-\(fileNameVersion)\(firmwareType)"
@@ -232,7 +233,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		}
 		
 		guard let architecture else { throw FirmwareFileError.unknownArchitecture }
-		self.architecure = architecture
+		self.architecture = architecture
 		
 		// Determine release type
 		var releaseType: ReleaseType = .unlisted
@@ -300,7 +301,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			   lhs.platformioTarget == rhs.platformioTarget &&
 			   lhs.releaseType == rhs.releaseType &&
 			   lhs.firmwareType == rhs.firmwareType &&
-			   lhs.architecure == rhs.architecure
+			   lhs.architecture == rhs.architecture
 	}
 
 	func hash(into hasher: inout Hasher) {
@@ -310,7 +311,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		hasher.combine(platformioTarget)
 		hasher.combine(releaseType)
 		hasher.combine(firmwareType)
-		hasher.combine(architecure)
+		hasher.combine(architecture)
 	}
 }
 

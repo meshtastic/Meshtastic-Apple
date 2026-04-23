@@ -118,8 +118,12 @@ struct ESP32OTAIntroSheet: View {
 					}
 				case .ble:
 					VStack(alignment: .leading, spacing: 12) {
-						Label("BLE OTA Updating", systemImage: "wifi")
-							.font(.headline)
+						Label {
+							Text("BLE OTA Updating")
+						} icon: {
+							Image("custom.bluetooth")
+						}
+						.font(.headline)
 
 						HStack(alignment: .top, spacing: 12) {
 							Image(systemName: "lock.shield")

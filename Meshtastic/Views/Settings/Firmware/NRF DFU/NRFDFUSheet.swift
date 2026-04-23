@@ -16,7 +16,7 @@ struct NRFDFUSheet: View {
 	let firmwareToFlash: URL
 	
 	let alertMessage = """
-	You are about to flash new firmware to your device. This process carries risks.  Unsucessful updates may brick the device and require re-flashing the bootloader.
+	You are about to flash new firmware to your device. This process carries risks. Unsuccessful updates may brick the device and require re-flashing the bootloader.
 
 	* Ensure your device is charged.
 	* Connect your device to a stable power supply.
@@ -24,7 +24,7 @@ struct NRFDFUSheet: View {
 	* Do not close the app during the update.
 	* Verify you have selected the correct firmware for your hardware.
 
-	Note: This will temporarily a disconnect your device during the update.
+	Note: This will temporarily disconnect your device during the update.
 	"""
 	
 	var body: some View {
@@ -60,6 +60,7 @@ struct NRFDFUSheet: View {
 					case .uploading, .starting, .success:
 						Text(dfuViewModel.rotatingMessage)
 							.multilineTextAlignment(.center)
+							.padding(.horizontal)
 					case .error(let message):
 						Text("Error: \(message)")
 					}

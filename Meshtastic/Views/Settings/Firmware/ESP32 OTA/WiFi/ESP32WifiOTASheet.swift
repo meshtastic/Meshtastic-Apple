@@ -179,10 +179,9 @@ struct ESP32WifiOTASheet: View {
 					
 					if !alreadyRebooted {
 						// Move heavy file reading/hashing off the Main Actor
-						let (data, sha256Digest) = try await Task.detached(priority: .userInitiated) {
+						let sha256Digest = try await Task.detached(priority: .userInitiated) {
 							let data = try Data(contentsOf: binFileURL)
-							let digest = SHA256.hash(data: data)
-							return (data, Data(digest))
+							return Data(SHA256.hash(data: data))
 						}.value
 						
 						Logger.services.debug("Requesting reboot for OTA with hash: \(sha256Digest as NSData)")

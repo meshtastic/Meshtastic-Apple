@@ -122,9 +122,9 @@ extension AsyncCentral {
 				try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
 				throw BLEError.scanTimeout
 			}
-			self.central.stopScan()
-			let result = try await group.next()! // first to finish
+			let result = try await group.next()!
 			group.cancelAll()
+			self.central.stopScan()
 			return result
 		}
 	}

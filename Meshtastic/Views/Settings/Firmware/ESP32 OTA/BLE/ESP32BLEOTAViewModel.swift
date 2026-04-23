@@ -246,7 +246,7 @@ final class ESP32BLEOTAViewModel: ObservableObject {
 			}
 			
 			// Wait for the first one to complete
-			let result = try await group.next()!
+			guard let result = try await group.next() else { throw BLEOTAFailure.timeout }
 			
 			// Cancel the other task (e.g. if operation finishes, cancel timer)
 			group.cancelAll()

@@ -95,7 +95,8 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		Logger.services.info("[ESP OTA] Sending Command: \(command)")
 		
 		// 3. Send Command
-		try await connection.sendAsync(data: command.data(using: .utf8)!)
+		guard let commandData = command.data(using: .utf8) else { throw OTAError.connectionFailed }
+		try await connection.sendAsync(data: commandData)
 		self.otaState = .preparing
 		
 		// 4. Handshake (Wait for "OK" or "ERASING")
@@ -261,13 +262,9 @@ class ESP32WifiOTAViewModel: ObservableObject {
 							hasResumed.withLock { resumed in
 								if !resumed {
 									resumed = true
-									if let endpoint = newConnection.endpoint as? NWEndpoint {
-										continuation.resume(returning: endpoint)
-										listener.cancel()
-									} else {
-										continuation.resume(throwing: OTAError.discoveryFailed)
-										listener.cancel()
-									}
+									let endpoint = newConnection.endpoint
+									continuation.resume(returning: endpoint)
+									listener.cancel()
 								}
 							}
 						}
@@ -321,7 +318,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 				try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
 				throw OTAError.timeout
 			}
-			let result = try await group.next()!
+			guard let result = try await group.next() else { throw OTAError.timeout }
 			group.cancelAll()
 			return result
 		}
@@ -401,7 +398,6 @@ actor AsyncLineReader {
 
 // MARK: - Extensions & Errors
 enum OTAError: Error, LocalizedError {
-	case encodingFailed
 	case connectionFailed
 	case unexpectedResponse(String)
 	case discoveryFailed
@@ -413,7 +409,6 @@ enum OTAError: Error, LocalizedError {
 		case .connectionFailed: return "Failed to establish connection."
 		case .discoveryFailed: return "Could not discover ESP32."
 		case .unexpectedResponse(let r): return "Error from device: \(r)"
-		default: return "OTA Error"
 		}
 	}
 }

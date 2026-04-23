@@ -361,7 +361,6 @@ private struct FirmwareRow: View {
 
 	@ObservedObject var firmwareFile: FirmwareFile
 
-	@State var unsupporedInstallationMessage: Bool = false
 	@State var showInstallationSheet: FirmwareFile.FirmwareType?
 
 	/// ESP32 OTA (BLE/WiFi) requires the AdminMessage.OTAEvent protocol with otaHash,
@@ -439,11 +438,7 @@ private struct FirmwareRow: View {
 				Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
 			}
 		}
-		.alert(isPresented: $unsupporedInstallationMessage) {
-			Alert(title: Text("Unsupported Installation"),
-				  message: Text("Firmware installation is not supported for this device architecture."),
-				  dismissButton: .default(Text("OK")))
-		}.sheet(item: $showInstallationSheet) { type in
+		.sheet(item: $showInstallationSheet) { type in
 			switch type {
 			case .otaZip:
 				NRFDFUSheet(firmwareToFlash: firmwareFile.localUrl)

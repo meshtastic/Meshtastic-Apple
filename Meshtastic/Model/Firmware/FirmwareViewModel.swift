@@ -48,9 +48,18 @@ class FirmwareViewModel: ObservableObject {
 	func refresh() {
 		var newFirmwareList = [String: FirmwareFile]()
 
-		// Snapshot hardware properties on the calling thread (safe — hardware is owned by viewContext)
-		let hardwarePlatformioTarget = hardware.platformioTarget
-		let hardwareArchitecture = hardware.architecture.flatMap { Architecture(rawValue: $0) }
+		// Snapshot hardware properties safely on the viewContext queue
+		var hardwarePlatformioTarget: String?
+		var hardwareArchitecture: Architecture?
+		if let viewContext = hardware.managedObjectContext {
+			viewContext.performAndWait {
+				hardwarePlatformioTarget = hardware.platformioTarget
+				hardwareArchitecture = hardware.architecture.flatMap { Architecture(rawValue: $0) }
+			}
+		} else {
+			hardwarePlatformioTarget = hardware.platformioTarget
+			hardwareArchitecture = hardware.architecture.flatMap { Architecture(rawValue: $0) }
+		}
 
 		// First, loop through all firmware entities and create an entry for those
 		let context = PersistenceController.shared.container.newBackgroundContext()
