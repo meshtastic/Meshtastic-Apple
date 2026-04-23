@@ -40,6 +40,14 @@ struct MessageContextMenuItems: View {
 			// The context menu needs a moment to dismiss before the focus state can be changed.
 			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 				isShowingTapbackInput = true
+				#if targetEnvironment(macCatalyst)
+				// On Mac Catalyst the iOS emoji keyboard is unavailable;
+				// open the system Character Palette (emoji picker) instead.
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+					let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+					UIApplication.shared.sendAction(selector, to: nil, from: nil, for: nil)
+				}
+				#endif
 			}
 		}
 

@@ -45,7 +45,7 @@ struct MapSettingsForm: View {
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
-						if LocationsHandler.currentLocation != nil {
+					if LocationsHandler.currentPreciseLocation != nil {
 							HStack {
 								Label("Distance", systemImage: "lines.measurement.horizontal")
 								Picker("", selection: $meshMapDistance) {
