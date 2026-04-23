@@ -198,6 +198,22 @@ fileprivate struct FilteredNodeList: View {
 
 	private var nodes: [NodeInfoEntity] {
 		allNodes.filter { filters.matches(node: $0) }
+			.sorted { lhs, rhs in
+				// Favorites first
+				if lhs.favorite != rhs.favorite {
+					return lhs.favorite
+				}
+				// Then by lastHeard descending
+				let lhsHeard = lhs.lastHeard ?? .distantPast
+				let rhsHeard = rhs.lastHeard ?? .distantPast
+				if lhsHeard != rhsHeard {
+					return lhsHeard > rhsHeard
+				}
+				// Then by longName ascending
+				let lhsName = lhs.user?.longName ?? ""
+				let rhsName = rhs.user?.longName ?? ""
+				return lhsName.localizedCaseInsensitiveCompare(rhsName) == .orderedAscending
+			}
 	}
 
 	// The body of the view
