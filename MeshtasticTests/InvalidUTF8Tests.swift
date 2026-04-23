@@ -123,8 +123,9 @@ struct InvalidUTF8Tests {
 
 		let sizeDelta = replace.count - find.count
 		if sizeDelta != 0 {
-			// Walk backwards from the match to update enclosing length-delimited field lengths.
-			// In practice, for a simple single-level patch this updates the immediate parent.
+			// Walk the protobuf wire format forward from the start of the buffer to update
+			// enclosing length-delimited field lengths around the patched region. In practice,
+			// for a simple single-level patch this updates the immediate parent.
 			result = adjustProtobufLengths(in: result, patchRange: range, sizeDelta: sizeDelta)
 		}
 
@@ -228,19 +229,6 @@ struct InvalidUTF8Tests {
 			index += 1
 		}
 
-		return (0, 0)
-	}
-	private func decodeVarint(_ bytes: [UInt8]) -> (UInt64, Int) {
-		var value: UInt64 = 0
-		var shift: UInt64 = 0
-		for (i, byte) in bytes.enumerated() {
-			value |= UInt64(byte & 0x7F) << shift
-			if byte & 0x80 == 0 {
-				return (value, i + 1)
-			}
-			shift += 7
-			if shift >= 64 { return (0, 0) }
-		}
 		return (0, 0)
 	}
 
