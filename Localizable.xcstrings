@@ -11969,7 +11969,6 @@
       }
     },
     "Communicate off-the-grid with your friends and community without cell service." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13779,7 +13778,6 @@
       }
     },
     "Create Your Own Networks" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18462,7 +18460,6 @@
       }
     },
     "Easily set up private mesh networks for secure and reliable communication in remote areas." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29072,10 +29069,10 @@
         }
       }
     },
-    "Loading..." : {
+    "Loading TAK config from the node." : {
 
     },
-    "Loading TAK config from the node." : {
+    "Loading..." : {
 
     },
     "Local Network Access" : {
@@ -52278,7 +52275,6 @@
 
     },
     "Stay Connected Anywhere" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -167,10 +167,10 @@ struct Channels: View {
 						}
 					}
 				}
-				if node.myInfo?.channels?.array.count ?? 0 < 8 {
+				if (node.myInfo?.channels.count ?? 0) < 8 {
 					Button {
-						let channelIndexes = node.myInfo?.channels?.compactMap({(ch) -> Int in
-							return (ch as AnyObject).index
+						let channelIndexes = node.myInfo?.channels.compactMap({ ch -> Int in
+							return Int(ch.index)
 						})
 						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
 						channelKeySize = 16
@@ -185,7 +185,8 @@ struct Channels: View {
 						uplink = false
 						downlink = false
 
-						let newChannel = ChannelEntity(context: context)
+						let newChannel = ChannelEntity()
+						context.insert(newChannel)
 						newChannel.id = channelIndex
 						newChannel.index = channelIndex
 						newChannel.uplinkEnabled = uplink
@@ -316,7 +317,7 @@ struct Channels: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.visible)
 		}
-		.safeAreaInset(edge: .bottom) {
+		.safeAreaInset(edge: .bottom, alignment: .leading) {
 			HStack {
 				Button(action: {
 					withAnimation {
@@ -326,7 +327,9 @@ struct Channels: View {
 					Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
 						.padding(.vertical, 5)
 				}
+				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
 			}
 			.controlSize(.regular)
 			.padding(5)
