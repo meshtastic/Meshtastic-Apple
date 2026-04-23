@@ -8,7 +8,6 @@
 
 import Foundation
 import Testing
-import SwiftProtobuf
 @testable import Meshtastic
 import MeshtasticProtobufs
 
