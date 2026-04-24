@@ -52,6 +52,11 @@
 		2346A7192E2FB9A300CB9239 /* SerialConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A7182E2FB9A300CB9239 /* SerialConnection.swift */; };
 		2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */; };
 		2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */; };
+		234D99E92F96FD3F00D26B89 /* NymeaConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99E42F96FD3F00D26B89 /* NymeaConstants.swift */; };
+		234D99EA2F96FD3F00D26B89 /* NymeaSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99E52F96FD3F00D26B89 /* NymeaSession.swift */; };
+		234D99EB2F96FD3F00D26B89 /* NymeaProvisioningManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99E72F96FD3F00D26B89 /* NymeaProvisioningManager.swift */; };
+		234D99EF2F96FD5A00D26B89 /* WifiProvisioningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99ED2F96FD5A00D26B89 /* WifiProvisioningView.swift */; };
+		234D99F02F96FD5A00D26B89 /* WifiNetworkListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 234D99EC2F96FD5A00D26B89 /* WifiNetworkListView.swift */; };
 		2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */; };
 		2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE142D0A24930086C749 /* MetricsSeriesList.swift */; };
 		2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */; };
@@ -435,6 +440,11 @@
 		2346A7182E2FB9A300CB9239 /* SerialConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConnection.swift; sourceTree = "<group>"; };
 		2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialTransport.swift; sourceTree = "<group>"; };
 		2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualConnectionList.swift; sourceTree = "<group>"; };
+		234D99E42F96FD3F00D26B89 /* NymeaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NymeaConstants.swift; sourceTree = "<group>"; };
+		234D99E52F96FD3F00D26B89 /* NymeaSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NymeaSession.swift; sourceTree = "<group>"; };
+		234D99E72F96FD3F00D26B89 /* NymeaProvisioningManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NymeaProvisioningManager.swift; sourceTree = "<group>"; };
+		234D99EC2F96FD5A00D26B89 /* WifiNetworkListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiNetworkListView.swift; sourceTree = "<group>"; };
+		234D99ED2F96FD5A00D26B89 /* WifiProvisioningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiProvisioningView.swift; sourceTree = "<group>"; };
 		2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsChartSeries.swift; sourceTree = "<group>"; };
 		2373AE142D0A24930086C749 /* MetricsSeriesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsSeriesList.swift; sourceTree = "<group>"; };
 		2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultSeries.swift; sourceTree = "<group>"; };
@@ -991,6 +1001,33 @@
 			path = CoreData;
 			sourceTree = "<group>";
 		};
+		234D99E62F96FD3F00D26B89 /* Nymea */ = {
+			isa = PBXGroup;
+			children = (
+				234D99E42F96FD3F00D26B89 /* NymeaConstants.swift */,
+				234D99E52F96FD3F00D26B89 /* NymeaSession.swift */,
+			);
+			path = Nymea;
+			sourceTree = "<group>";
+		};
+		234D99E82F96FD3F00D26B89 /* Provisioning */ = {
+			isa = PBXGroup;
+			children = (
+				234D99E62F96FD3F00D26B89 /* Nymea */,
+				234D99E72F96FD3F00D26B89 /* NymeaProvisioningManager.swift */,
+			);
+			path = Provisioning;
+			sourceTree = "<group>";
+		};
+		234D99EE2F96FD5A00D26B89 /* Provisioning */ = {
+			isa = PBXGroup;
+			children = (
+				234D99EC2F96FD5A00D26B89 /* WifiNetworkListView.swift */,
+				234D99ED2F96FD5A00D26B89 /* WifiProvisioningView.swift */,
+			);
+			path = Provisioning;
+			sourceTree = "<group>";
+		};
 		237AEB8D2E1FE120003B7CE3 /* Accessory */ = {
 			isa = PBXGroup;
 			children = (
@@ -1522,6 +1559,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				234D99E82F96FD3F00D26B89 /* Provisioning */,
 				237AEB8D2E1FE120003B7CE3 /* Accessory */,
 				23148E2E2EE1CCB100F0DB2C /* API */,
 				AA000201CPLAY000000000005 /* CarPlay */,
@@ -1561,6 +1599,7 @@
 			isa = PBXGroup;
 			children = (
 				23C2BD272EE87CFD00F6A997 /* Debugging */,
+				234D99EE2F96FD5A00D26B89 /* Provisioning */,
 				DD47E3D726F2F21A00029299 /* Connect */,
 				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
 				DD6D5A312CA1176A00ED3032 /* Layouts */,
@@ -2038,6 +2077,9 @@
 				259792272C2F114500AD1659 /* TraceRouteEntityExtension.swift in Sources */,
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
 				DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */,
+				234D99E92F96FD3F00D26B89 /* NymeaConstants.swift in Sources */,
+				234D99EA2F96FD3F00D26B89 /* NymeaSession.swift in Sources */,
+				234D99EB2F96FD3F00D26B89 /* NymeaProvisioningManager.swift in Sources */,
 				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
 				DD9C700F2E8DE80800106227 /* UserMessageRow.swift in Sources */,
 				DDA9515C2BC6631200CEA535 /* TelemetryEnums.swift in Sources */,
@@ -2288,6 +2330,8 @@
 				2344A2AF2D6697A700170A77 /* TelemetryEntity+CoreDataClass.swift in Sources */,
 				2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */,
 				2344A2B02D6697A700170A77 /* TelemetryEntity+CoreDataProperties.swift in Sources */,
+				234D99EF2F96FD5A00D26B89 /* WifiProvisioningView.swift in Sources */,
+				234D99F02F96FD5A00D26B89 /* WifiNetworkListView.swift in Sources */,
 				D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */,
 				237AEB8F2E1FE457003B7CE3 /* Transport.swift in Sources */,
 				DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,
