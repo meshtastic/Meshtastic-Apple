@@ -579,6 +579,7 @@ extension MeshPackets {
 		await context.perform {
 			self.upsertPositionPacket(packet: packet, context: context)
 		}
+		resetContextIfNeeded()
 	}
 	
 	nonisolated func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
@@ -643,6 +644,17 @@ extension MeshPackets {
 						}
 						mutablePositions.add(position)
 						
+						// Prune old positions to prevent unbounded memory growth
+						let maxPositionsPerNode = 500
+						while mutablePositions.count > maxPositionsPerNode {
+							if let oldest = mutablePositions.object(at: 0) as? PositionEntity, !oldest.latest {
+								context.delete(oldest)
+								mutablePositions.removeObject(at: 0)
+							} else {
+								break
+							}
+						}
+
 						fetchedNode[0].channel = Int32(packet.channel)
 						fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 						

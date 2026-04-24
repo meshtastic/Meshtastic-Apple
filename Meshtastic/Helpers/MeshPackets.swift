@@ -65,7 +65,20 @@ actor MeshPackets {
 		ctx.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy // Handle conflicts automatically
 		return ctx
 	}()
-	
+
+	private var savesSinceLastReset = 0
+
+	/// Resets the background context periodically to release accumulated managed objects from memory.
+	/// Call after saves to prevent unbounded growth of the context's registered objects.
+	func resetContextIfNeeded() {
+		savesSinceLastReset += 1
+		if savesSinceLastReset >= 50 {
+			backgroundContext.refreshAllObjects()
+			savesSinceLastReset = 0
+			Logger.data.info("💾 [MeshPackets] Refreshed background context to reclaim memory (\(self.backgroundContext.registeredObjects.count) registered objects)")
+		}
+	}
+
 	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) async {
 		switch config.payloadVariant {
 		case .bluetooth:
@@ -690,9 +703,20 @@ actor MeshPackets {
 							return
 						}
 						mutablePax.add(newPax)
+						// Prune old PAX counter entries to prevent unbounded memory growth
+						let maxPaxEntries = 200
+						while mutablePax.count > maxPaxEntries {
+							if let oldest = mutablePax.object(at: 0) as? PaxCounterEntity {
+								context.delete(oldest)
+								mutablePax.removeObject(at: 0)
+							} else {
+								break
+							}
+						}
 						fetchedNode[0].pax = mutablePax
 						do {
 							try context.save()
+							self.resetContextIfNeeded()
 						} catch {
 							Logger.data.error("Failed to save pax: \(error.localizedDescription, privacy: .public)")
 						}
@@ -857,6 +881,18 @@ actor MeshPackets {
 							return
 						}
 						mutableTelemetries.add(telemetry)
+
+						// Prune old telemetry entries of the same type to prevent unbounded memory growth
+						let maxTelemetryPerType = 500
+						let sameTypeEntries = mutableTelemetries.array.compactMap { $0 as? TelemetryEntity }.filter { $0.metricsType == telemetry.metricsType }
+						if sameTypeEntries.count > maxTelemetryPerType {
+							let entriesToRemove = sameTypeEntries.prefix(sameTypeEntries.count - maxTelemetryPerType)
+							for entry in entriesToRemove {
+								context.delete(entry)
+								mutableTelemetries.remove(entry)
+							}
+						}
+
 						if packet.rxTime > 0 {
 							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
 						} else {
@@ -865,6 +901,7 @@ actor MeshPackets {
 						fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 					}
 					try context.save()
+					self.resetContextIfNeeded()
 					Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) Saved for Node: \(packet.from.toHex(), privacy: .public)")
 					if telemetry.metricsType == 0 {
 						// Connected Device Metrics
@@ -1079,6 +1116,7 @@ actor MeshPackets {
 					var messageSaved = false
 					do {
 						try context.save()
+						self.resetContextIfNeeded()
 						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 					} catch {
