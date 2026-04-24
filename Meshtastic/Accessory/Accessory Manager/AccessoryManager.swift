@@ -77,7 +77,7 @@ enum AccessoryManagerState: Equatable {
 	case idle
 	case discovering
 	case connecting
-	case retrying(attempt: Int)
+	case retrying(attempt: Int, maxAttempts: Int)
 	case retrievingDatabase(nodeCount: Int)
 	case communicating
 	case subscribed
@@ -92,8 +92,8 @@ enum AccessoryManagerState: Equatable {
 			return "Discovering"
 		case .connecting:
 			return "Connecting"
-		case .retrying(let attempt):
-			return "Retrying Connection (\(attempt))"
+		case .retrying(let attempt, let maxAttempts):
+			return "Retrying Connection (\(attempt) of \(maxAttempts))"
 		case .communicating:
 			return "Communicating"
 		case .subscribed:
@@ -152,6 +152,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var connectionSteps: SequentialSteps?
 	
 	// Public due to file separation
+	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
@@ -327,6 +328,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				device[keyPath: key] = value
 				self.activeConnection = (device: device, connection: activeConnection.connection)
+				
+			}
+			// Make sure activeDeviceNum is up to date.
+			if key == \.num, self.activeDeviceNum != device.num {
 				self.activeDeviceNum = device.num
 			}
 		}

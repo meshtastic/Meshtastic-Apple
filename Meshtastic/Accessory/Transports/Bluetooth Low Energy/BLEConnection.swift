@@ -9,6 +9,7 @@ import Foundation
 @preconcurrency import CoreBluetooth
 import OSLog
 import MeshtasticProtobufs
+import SwiftProtobuf
 
 let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
@@ -153,20 +154,43 @@ actor BLEConnection: Connection {
 			throw AccessoryError.ioFailed("Not connected")
 		}
 		repeat {
+			let data: Data
 			do {
-				let data = try await read()
-				
-				if data.count == 0 {
-					break
-				}
-				
+				data = try await read()
+			} catch {
+				// Transport-level read error — disconnect and allow reconnect
+				try? await self.disconnect(withError: error, shouldReconnect: true)
+				throw error
+			}
+
+			if data.count == 0 {
+				break
+			}
+
+			do {
 				let decodedInfo = try FromRadio(serializedBytes: data)
 				connectionStreamContinuation?.yield(.data(decodedInfo))
 			} catch {
-				try? await self.disconnect(withError: error, shouldReconnect: true)
-				throw error  // Re-throw to propagate up to the caller for handling
+				if isInvalidUTF8DecodeError(error) {
+					// Skip known invalid UTF-8 payloads to avoid reconnect loops when
+					// a remote node has corrupt string data in the node database.
+					Logger.transport.error("⚠️ [BLE] Failed to decode FromRadio packet due to invalid UTF-8 (\(data.count) bytes), skipping: \(error)")
+				} else {
+					// Other decode errors are likely transport/framing issues.
+					let decodeError = error
+					do {
+						try await self.disconnect(withError: decodeError, shouldReconnect: true)
+					} catch let disconnectError {
+						Logger.transport.error("⚠️ [BLE] Failed to disconnect after FromRadio decode failure: \(disconnectError)")
+					}
+					throw decodeError
+				}
 			}
 		} while true
+	}
+
+	private func isInvalidUTF8DecodeError(_ error: Error) -> Bool {
+		(error as? BinaryDecodingError) == .invalidUTF8
 	}
 	
 	func didReceiveLogMessage(_ logMessage: String) {
@@ -179,6 +203,18 @@ actor BLEConnection: Connection {
 	
 	func getPacketStream() -> AsyncStream<ConnectionEvent> {
 		AsyncStream<ConnectionEvent> { continuation in
+			// Finish any previous stream so its consumer's `for await` loop terminates cleanly
+			// instead of hanging indefinitely on the abandoned continuation.
+			self.connectionStreamContinuation?.finish()
+			self.connectionStreamContinuation = nil
+			
+			continuation.onTermination = { [weak self] termination in
+				guard let self else { return }
+				guard case .cancelled = termination else { return }
+				Task {
+					try await self.disconnect(withError: AccessoryError.eventStreamCancelled, shouldReconnect: true)
+				}
+			}
 			self.connectionStreamContinuation = continuation
 		}
 	}

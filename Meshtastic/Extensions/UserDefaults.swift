@@ -83,6 +83,8 @@ extension UserDefaults {
 		case purgeStaleNodeDays
 		case manualConnections
 		case testIntEnum
+		case lastDeviceAPIUpdate
+		case lastFirmwareAPIUpdate
 	}
 
 	func reset() {
@@ -214,6 +216,11 @@ extension UserDefaults {
 			}
 		}
 	}
+	@UserDefault(.lastDeviceAPIUpdate, defaultValue: .distantPast)
+	static var lastDeviceAPIUpdate: Date
+
+	@UserDefault(.lastFirmwareAPIUpdate, defaultValue: .distantPast)
+	static var lastFirmwareAPIUpdate: Date
 }
 
 enum TestIntEnum: Int, Decodable {

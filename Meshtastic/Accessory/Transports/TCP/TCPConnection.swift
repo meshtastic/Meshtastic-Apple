@@ -29,6 +29,10 @@ actor TCPConnection: Connection {
 		self.nwHost = NWEndpoint.Host(host)
 		self.nwPort = NWEndpoint.Port(integerLiteral: UInt16(port))
 	}
+	
+	var host: NWEndpoint.Host {
+		return nwHost
+	}
 
 	private func waitForMagicBytes() async throws -> Bool {
 		let startOfFrame: [UInt8] = [0x94, 0xc3]
@@ -173,10 +177,17 @@ actor TCPConnection: Connection {
 	}
 
 	private func getPacketStream() -> AsyncStream<ConnectionEvent> {
-		AsyncStream<ConnectionEvent> { continuation in
+		self.connectionStreamContinuation?.finish()
+		self.connectionStreamContinuation = nil
+		
+		return AsyncStream<ConnectionEvent> { continuation in
 			self.connectionStreamContinuation = continuation
-			continuation.onTermination = { _ in
-				Task { try await self.disconnect(withError: AccessoryError.eventStreamCancelled, shouldReconnect: true) }
+			continuation.onTermination = { [weak self] termination in
+				guard let self else { return }
+				guard case .cancelled = termination else { return }
+				Task {
+					try await self.disconnect(withError: AccessoryError.eventStreamCancelled, shouldReconnect: true)
+				}
 			}
 		}
 	}

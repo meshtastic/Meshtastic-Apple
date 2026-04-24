@@ -273,6 +273,17 @@ import OSLog
 			return nil
 		}
 	}
+	/// Returns the current location only when it is valid and precise enough
+	/// for distance-based filtering (horizontal accuracy ≤ 100 m and not stale).
+	static var currentPreciseLocation: CLLocationCoordinate2D? {
+		guard let location = shared.manager.location else { return nil }
+		// Reject invalid accuracy
+		guard location.horizontalAccuracy >= 0,
+			  location.horizontalAccuracy <= 100 else { return nil }
+		// Reject stale locations (older than 10 minutes)
+		guard location.timestamp.timeIntervalSinceNow > -600 else { return nil }
+		return location.coordinate
+	}
 	/// Estimates the number of satellites in view based on horizontal and vertical accuracy.
 	/// This is a heuristic and not a direct report of satellite count.
 	static var satsInView: Int {
