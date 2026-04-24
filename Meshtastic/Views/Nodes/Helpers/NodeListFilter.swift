@@ -119,7 +119,6 @@ struct NodeListFilter: View {
 						.listRowSeparator(.visible)
 					}
 					Toggle(isOn: $filters.distanceFilter) {
-
 						Label {
 							Text("Distance")
 						} icon: {
@@ -127,18 +126,24 @@ struct NodeListFilter: View {
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+					.disabled(LocationsHandler.currentPreciseLocation == nil)
 					.listRowSeparator(filters.distanceFilter ? .hidden : .visible)
 					if filters.distanceFilter {
-						HStack {
-							Label("Show nodes", systemImage: "lines.measurement.horizontal")
-							Picker("", selection: $filters.maxDistance) {
-								ForEach(MeshMapDistances.allCases) { di in
-									Text(di.description)
-										.tag(di.id)
+						if LocationsHandler.currentPreciseLocation == nil {
+							Text("Requires a precise GPS fix from your phone")
+								.font(.caption)
+								.foregroundStyle(.secondary)
+						} else {
+							HStack {
+								Label("Show nodes", systemImage: "lines.measurement.horizontal")
+								Picker("", selection: $filters.maxDistance) {
+									ForEach(MeshMapDistances.allCases) { di in
+										Text(di.description)
+											.tag(di.id)
+									}
 								}
+								.pickerStyle(DefaultPickerStyle())
 							}
-							.pickerStyle(DefaultPickerStyle())
 						}
 					}
 					VStack(alignment: .leading) {

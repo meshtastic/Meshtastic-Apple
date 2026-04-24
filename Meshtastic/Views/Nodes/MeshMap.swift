@@ -30,6 +30,7 @@ struct MeshMap: View {
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
 	@Namespace var mapScope
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
@@ -64,6 +65,7 @@ struct MeshMap: View {
 							enabledOverlayConfigs: $enabledOverlayConfigs
 						)
 					}
+					.id(meshMapDistance)
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
 					.mapControls {

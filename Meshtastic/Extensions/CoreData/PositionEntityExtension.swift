@@ -21,8 +21,8 @@ extension PositionEntity {
 		let positionPredicate = NSPredicate(format: "nodePosition != nil AND nodePosition.user != nil AND latest == true AND nodePosition.user.shortName != ''")
 		request.predicate = positionPredicate
 
-		// Distance Predicate
-		if let cl = LocationsHandler.currentLocation {
+		// Distance Predicate — only apply when we have a valid, precise phone GPS fix
+		if let cl = LocationsHandler.currentPreciseLocation {
 			
 			let d: Double = UserDefaults.meshMapDistance * 1.1
 			let r: Double = 6371009 // Earth's mean radius in meters
