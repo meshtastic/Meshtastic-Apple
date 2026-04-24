@@ -9,6 +9,7 @@
 //  can read them aloud.
 //
 
+#if os(iOS) && canImport(CarPlay)
 import CoreData
 import Intents
 import OSLog
@@ -140,3 +141,4 @@ enum CarPlayIntentDonation {
 		return "Channel \(index)"
 	}
 }
+#endif

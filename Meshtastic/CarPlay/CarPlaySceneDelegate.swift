@@ -9,6 +9,7 @@
 //  matching the main app's Messages navigation structure.
 //
 
+#if os(iOS) && canImport(CarPlay)
 import CarPlay
 import Combine
 import CoreData
@@ -539,3 +540,4 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	private func endLiveActivity() {}
 #endif
 }
+#endif

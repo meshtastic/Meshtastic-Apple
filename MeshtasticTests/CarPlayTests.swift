@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 4/16/26.
 //
 
+#if os(iOS)
 import CarPlay
 import CoreData
 import Foundation
@@ -174,3 +175,4 @@ extension CarPlayIntentDonation {
 		return interaction
 	}
 }
+#endif

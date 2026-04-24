@@ -8,6 +8,7 @@
 //  Multiple recipients are not supported.
 //
 
+#if os(iOS)
 import CoreData
 import Intents
 import OSLog
@@ -171,3 +172,4 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 		}
 	}
 }
+#endif
