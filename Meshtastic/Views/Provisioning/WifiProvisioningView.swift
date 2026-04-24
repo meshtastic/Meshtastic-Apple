@@ -144,7 +144,7 @@ private struct CredentialRow: View {
 
 struct WifiProvisioningView: View {
 
-	@EnvironmentObject private var provisioning: NymeaProvisioningManager
+	@ObservedObject private var provisioning = NymeaProvisioningManager.shared
 	@Environment(\.dismiss) private var dismiss
 
 	@State private var toastMessage: String?
@@ -482,16 +482,20 @@ struct WifiProvisioningView: View {
 			UIApplication.shared.open(url)
 		} else {
 			noSSHClientNotice = true
+#if !targetEnvironment(macCatalyst)
 			if let storeURL = appStoreSSHSearchURL() {
 				UIApplication.shared.open(storeURL)
 			}
+#endif
 		}
 	}
 
 	private func copy(_ value: String, label: String) {
 		UIPasteboard.general.string = value
 		toastMessage = "\(label) copied"
+#if !targetEnvironment(macCatalyst)
 		UIImpactFeedbackGenerator(style: .light).impactOccurred()
+#endif
 		Task {
 			try? await Task.sleep(nanoseconds: 1_500_000_000)
 			await MainActor.run {

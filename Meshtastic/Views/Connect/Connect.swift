@@ -406,7 +406,6 @@ struct Connect: View {
 			updateNymeaDiscovery()
 		}) { device in
 			WifiProvisioningView(preselectedDevice: device)
-				.environmentObject(NymeaProvisioningManager.shared)
 		}
 		.onAppear { updateNymeaDiscovery() }
 		.onDisappear { nymeaProvisioning.stopDiscovery() }
@@ -684,9 +683,7 @@ struct NymeaDeviceConnectRow: View {
 			Image(systemName: "circle.fill")
 				.foregroundColor(.gray)
 			VStack(alignment: .leading) {
-				Button(action: onSelect) {
-					Text(device.name).font(.callout)
-				}
+				Text(device.name).font(.callout)
 				HStack(alignment: .center) {
 					Image(systemName: "wifi.router")
 						.foregroundColor(.accentColor)

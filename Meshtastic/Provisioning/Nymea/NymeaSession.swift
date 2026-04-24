@@ -281,7 +281,7 @@ actor NymeaSession {
 	/// device notifies a connection-status change.  Subscribe before calling `connectToNetwork`.
 	func wirelessStatusStream() -> AsyncStream<NymeaWirelessConnectionStatus> {
 		AsyncStream { cont in
-			Task { await self.setStatusContinuation(cont) }
+			statusContinuation = cont
 			cont.onTermination = { _ in
 				Task { await self.clearStatusContinuation() }
 			}

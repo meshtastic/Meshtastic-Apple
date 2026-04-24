@@ -51,7 +51,6 @@ private struct NetworkRow: View {
 		.sheet(isPresented: $showPasswordSheet) {
 			PasswordEntrySheet(
 				ssid: network.essid,
-				isHidden: false,
 				onSubmit: { password in
 					showPasswordSheet = false
 					onSelect(network, password)
@@ -66,33 +65,22 @@ private struct NetworkRow: View {
 
 // MARK: - Password Entry Sheet
 
-/// Reusable sheet for entering a Wi-Fi password (or both SSID + password for hidden networks).
+/// Sheet for entering a Wi-Fi password for a known (visible) network.
 struct PasswordEntrySheet: View {
 	let ssid: String
-	let isHidden: Bool
-	/// Called with the entered password (and SSID for hidden networks) when the user taps Join.
+	/// Called with the entered password when the user taps Join.
 	let onSubmit: (String) -> Void
 	let onCancel: () -> Void
 
 	@State private var password = ""
-	@State private var hiddenSSID = ""
 	@FocusState private var passwordFocused: Bool
 
 	var body: some View {
 		NavigationStack {
 			Form {
 				Section {
-					if isHidden {
-						LabeledContent("Network Name") {
-							TextField("SSID", text: $hiddenSSID)
-								.multilineTextAlignment(.trailing)
-								.autocorrectionDisabled()
-								.textInputAutocapitalization(.never)
-						}
-					} else {
-						LabeledContent("Network") {
-							Text(ssid).foregroundColor(.secondary)
-						}
+					LabeledContent("Network") {
+						Text(ssid).foregroundColor(.secondary)
 					}
 
 					LabeledContent("Password") {
@@ -105,7 +93,7 @@ struct PasswordEntrySheet: View {
 						.font(.caption)
 				}
 			}
-			.navigationTitle(isHidden ? "Other Network" : "Enter Password")
+			.navigationTitle("Enter Password")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
@@ -113,11 +101,9 @@ struct PasswordEntrySheet: View {
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button("Join") {
-						// For hidden networks, use hiddenSSID as the identifier conveyed to the callback.
-						// The caller receives the password; WifiNetworkListView passes hiddenSSID separately.
 						onSubmit(password)
 					}
-					.disabled(isHidden ? (hiddenSSID.isEmpty || password.isEmpty) : password.isEmpty)
+					.disabled(password.isEmpty)
 				}
 			}
 			.onAppear { passwordFocused = true }
