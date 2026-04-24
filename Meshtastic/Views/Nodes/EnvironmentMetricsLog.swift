@@ -33,6 +33,7 @@ struct EnvironmentMetricsLog: View {
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
 		request.predicate = NSPredicate(format: "nodeTelemetry == %@ AND metricsType == 1 AND time >= %@", node, oneWeekAgo as NSDate)
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
+		request.fetchBatchSize = 100
 		_chartData = FetchRequest(fetchRequest: request)
 	}
 	

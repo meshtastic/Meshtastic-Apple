@@ -37,6 +37,8 @@ struct ChannelMessageList: View {
 			format: "channel == %ld AND toUser == nil AND isEmoji == false",
 			channel.index
 		)
+		request.fetchBatchSize = 50
+		request.returnsObjectsAsFaults = true
 		_allPrivateMessages = FetchRequest(fetchRequest: request)
 	}
 	

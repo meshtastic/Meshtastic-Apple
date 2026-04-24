@@ -18,6 +18,8 @@ extension PositionEntity {
 		
 		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
+		request.fetchBatchSize = 50
+		request.returnsObjectsAsFaults = true
 		let positionPredicate = NSPredicate(format: "nodePosition != nil AND nodePosition.user != nil AND latest == true AND nodePosition.user.shortName != ''")
 		request.predicate = positionPredicate
 
