@@ -412,7 +412,7 @@ struct WifiProvisioningView: View {
 								.frame(maxWidth: .infinity)
 								.padding(.vertical, 8)
 						}
-						.buttonStyle(.borderedProminent)
+						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 
 						if noSSHClientNotice {
@@ -446,14 +446,6 @@ struct WifiProvisioningView: View {
 			.buttonBorderShape(.capsule)
 			.padding(.horizontal, 32)
 			.padding(.bottom, 24)
-			.background(
-				LinearGradient(
-					colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
-					startPoint: .top,
-					endPoint: .bottom
-				)
-				.allowsHitTesting(false)
-			)
 
 			if let toastMessage {
 				CopyToast(message: toastMessage)
@@ -461,6 +453,7 @@ struct WifiProvisioningView: View {
 					.transition(.opacity.combined(with: .move(edge: .bottom)))
 			}
 		}
+		.background(Color(.systemGroupedBackground))
 		.animation(.easeInOut(duration: 0.2), value: toastMessage)
 		.animation(.easeInOut(duration: 0.2), value: noSSHClientNotice)
 	}
