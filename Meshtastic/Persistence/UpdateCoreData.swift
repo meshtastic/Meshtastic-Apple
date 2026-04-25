@@ -533,9 +533,10 @@ extension MeshPackets {
 						// Prune old positions to prevent unbounded memory growth
 						let maxPositionsPerNode = 500
 						while mutablePositions.count > maxPositionsPerNode {
-							if let oldest = mutablePositions.object(at: 0) as? PositionEntity, !oldest.latest {
-								context.delete(oldest)
-								mutablePositions.removeObject(at: 0)
+							let oldest = mutablePositions[0]
+							if !oldest.latest {
+								modelContext.delete(oldest)
+								mutablePositions.removeFirst()
 							} else {
 								break
 							}

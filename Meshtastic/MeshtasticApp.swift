@@ -236,7 +236,7 @@ struct MeshtasticAppleApp: App {
 
 		WindowGroup("Mesh Map", id: "meshmap-window") {
 			MapWindow()
-				.environment(\.managedObjectContext, persistenceController.container.viewContext)
+				.modelContainer(persistenceController.container)
 				.environmentObject(appState)
 				.environmentObject(accessoryManager)
 				.environmentObject(appState.router)

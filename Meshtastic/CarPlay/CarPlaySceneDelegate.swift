@@ -454,20 +454,17 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// conversation in CarPlay triggers Siri to read them aloud — even for
 	/// messages that arrived before the CarPlay session started.
 	private func donateUnreadMessages() {
-		let bgContext = PersistenceController.shared.container.newBackgroundContext()
-		bgContext.automaticallyMergesChangesFromParent = true
-		bgContext.perform {
-			let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-			fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-				NSPredicate(format: "read == NO"),
-				NSPredicate(format: "admin == NO"),
-				NSPredicate(format: "isEmoji == NO")
-			])
-			fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
-			fetchRequest.fetchLimit = 50
-			fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser", "toUser"]
+		Task { @MainActor in
+			let context = PersistenceController.shared.context
+			var descriptor = FetchDescriptor<MessageEntity>(
+				predicate: #Predicate<MessageEntity> { message in
+					message.read == false && message.admin == false && message.isEmoji == false
+				},
+				sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
+			)
+			descriptor.fetchLimit = 50
 
-			guard let messages = try? bgContext.fetch(fetchRequest) else { return }
+			guard let messages = try? context.fetch(descriptor) else { return }
 			for message in messages {
 				CarPlayIntentDonation.donateReceivedMessage(message)
 			}

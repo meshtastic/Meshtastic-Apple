@@ -105,4 +105,3 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 		return response
 	}
 }
-#endif

@@ -15,6 +15,8 @@ import MapKit
 struct MeshMap: View {
 
 	@Environment(\.modelContext) private var context
+	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+	@Environment(\.openWindow) private var openWindow
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@ObservedObject

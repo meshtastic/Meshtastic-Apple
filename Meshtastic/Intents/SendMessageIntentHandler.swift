@@ -169,4 +169,3 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 		}
 	}
 }
-#endif
