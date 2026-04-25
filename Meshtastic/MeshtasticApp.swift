@@ -229,5 +229,19 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(accessoryManager)
 		.environmentObject(appState.router)
 		.environmentObject(MeshtasticAPI.shared)
+
+		WindowGroup("Mesh Map", id: "meshmap-window") {
+			MapWindow()
+				.environment(\.managedObjectContext, persistenceController.container.viewContext)
+				.environmentObject(appState)
+				.environmentObject(accessoryManager)
+				.environmentObject(appState.router)
+				.environmentObject(MeshtasticAPI.shared)
+		}
+		.defaultSize(width: 900, height: 700)
+		.windowResizability(.automatic)
+		#if os(visionOS)
+		.windowStyle(.plain)
+		#endif
 	}
 }
