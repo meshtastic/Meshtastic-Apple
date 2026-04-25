@@ -22,15 +22,15 @@ struct NodeInfoItem: View {
 			VStack(alignment: .center) {
 				CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
 			}
-			if node.user != nil {
+			if let user = node.user {
 				Divider()
 				VStack {
-					Image(node.user!.hwModel ?? "unset".localized)
+					Image(user.hwModel ?? "unset".localized)
 						.resizable()
 						.aspectRatio(contentMode: .fit)
 						.frame(width: 75, height: 75)
 						.cornerRadius(5)
-					Text(String(node.user!.hwModel ?? "unset".localized))
+					Text(String(user.hwModel ?? "unset".localized))
 						.font(.caption2).fixedSize()
 				}
 			}
