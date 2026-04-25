@@ -15,10 +15,13 @@ import MapKit
 struct MeshMap: View {
 
 	@Environment(\.managedObjectContext) var context
+	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+	@Environment(\.openWindow) private var openWindow
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@ObservedObject
 	var router: Router
+	var showOpenWindowButton: Bool = true
 
 	/// Parameters
 	@State var showUserLocation: Bool = true
@@ -49,7 +52,7 @@ struct MeshMap: View {
 	var body: some View {
 		NavigationStack {
 			ZStack {
-				MapReader { reader in
+			MapReader { reader in
 					Map(
 						position: $position,
 						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
@@ -194,7 +197,14 @@ struct MeshMap: View {
 					.padding(5)
 				}
 			}
-			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
+			.navigationBarItems(leading: MeshtasticLogo(), trailing: HStack {
+				if supportsMultipleWindows && showOpenWindowButton {
+					Button {
+						openWindow(id: "meshmap-window")
+					} label: {
+						Image(systemName: "macwindow.badge.plus")
+					}
+				}
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			})
 			.toolbarBackground(.hidden, for: .navigationBar)

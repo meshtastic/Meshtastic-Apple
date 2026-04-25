@@ -6,6 +6,7 @@
 //  Marks messages as read or unread in Core Data.
 //
 
+#if os(iOS)
 import CoreData
 import Intents
 import OSLog
@@ -85,3 +86,4 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 		)
 	}
 }
+#endif

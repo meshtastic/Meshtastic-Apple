@@ -59,7 +59,8 @@ struct ContentView: View {
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)
-		}.sheet(
+		}
+		.sheet(
 			isPresented: $isShowingDeviceOnboardingFlow,
 			onDismiss: {
 				UserDefaults.firstLaunch = false

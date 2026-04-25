@@ -7,6 +7,7 @@
 //  and returns them as INMessage objects.
 //
 
+#if os(iOS)
 import CoreData
 import Intents
 import OSLog
@@ -131,3 +132,4 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 		return response
 	}
 }
+#endif

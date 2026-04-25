@@ -1127,7 +1127,9 @@ actor MeshPackets {
 					// Send notifications if the message saved properly to core data
 					if messageSaved {
 						// Donate to SiriKit so the message appears in CarPlay Messages
+						#if os(iOS)
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
+						#endif
 
 						if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 							return

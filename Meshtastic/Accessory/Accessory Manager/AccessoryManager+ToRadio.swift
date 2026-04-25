@@ -378,7 +378,9 @@ extension AccessoryManager {
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 						// Donate outgoing message to SiriKit for CarPlay
 						if !isEmoji {
+							#if os(iOS)
 							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel)
+							#endif
 						}
 					} catch {
 						context.rollback()
