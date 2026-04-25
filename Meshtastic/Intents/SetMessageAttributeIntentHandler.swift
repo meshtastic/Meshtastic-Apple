@@ -85,3 +85,4 @@ final class SetMessageAttributeIntentHandler: NSObject, INSetMessageAttributeInt
 		)
 	}
 }
+#endif

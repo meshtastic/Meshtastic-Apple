@@ -30,6 +30,9 @@ struct Connect: View {
 	@State var liveActivityStarted = false
 #endif
 	@ObservedObject var manualConnections = ManualConnectionList.shared
+	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
+	@Environment(\.scenePhase) private var scenePhase
+	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	
 	var body: some View {
 		NavigationStack {
@@ -276,25 +279,38 @@ struct Connect: View {
 									DeviceConnectRow(device: device)
 								}
 							}
-							if manualConnections.connectionsList.count > 0 {
-								Section(header: Text("Manual Connections").font(.title)) {
-									ForEach(manualConnections.connectionsList) { device in
-										DeviceConnectRow(device: device)
+						if manualConnections.connectionsList.count > 0 {
+							Section(header: Text("Manual Connections").font(.title)) {
+								ForEach(manualConnections.connectionsList) { device in
+									DeviceConnectRow(device: device)
 #if targetEnvironment(macCatalyst)
-											.contextMenu {
-												Button {
-													manualConnections.remove(device: device)
-												} label: {
-													Label("Delete", systemImage: "trash")
-												}
+										.contextMenu {
+											Button {
+												manualConnections.remove(device: device)
+											} label: {
+												Label("Delete", systemImage: "trash")
 											}
+										}
 #endif
-									}.onDelete { offsets in
-										manualConnections.remove(atOffsets: offsets)
-									}
+								}.onDelete { offsets in
+									manualConnections.remove(atOffsets: offsets)
+								}
 
+							}
+						}
+
+						// ── Wi-Fi Provisioning (mPWRD-OS / nymea-networkmanager) ──
+						// Devices broadcasting nymea-networkmanager service are picked
+						// up by the passive scan started in .onAppear below.
+						if !nymeaProvisioning.discoverable.isEmpty {
+							Section(header: Text("Wi-Fi Setup").font(.title)) {
+								ForEach(nymeaProvisioning.discoverable) { device in
+								NymeaDeviceConnectRow(device: device) {
+									pendingNymeaDevice = device
+								}
 								}
 							}
+						}
 						}
 						.textCase(nil)
 					}
@@ -387,6 +403,30 @@ struct Connect: View {
 				showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
 			}
 			}
+		}
+		.sheet(item: $pendingNymeaDevice, onDismiss: {
+			updateNymeaDiscovery()
+		}) { device in
+			WifiProvisioningView(preselectedDevice: device)
+		}
+		.onAppear { updateNymeaDiscovery() }
+		.onDisappear { nymeaProvisioning.stopDiscovery() }
+		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
+		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
+		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
+	}
+
+	/// Starts nymea passive discovery only when the Connect view is foreground-visible
+	/// and the app has no primary transport in flight; otherwise stops it.
+	private func updateNymeaDiscovery() {
+		let canScan = scenePhase == .active
+			&& !accessoryManager.isConnected
+			&& !accessoryManager.isConnecting
+			&& pendingNymeaDevice == nil
+		if canScan {
+			nymeaProvisioning.startDiscovery()
+		} else {
+			nymeaProvisioning.stopDiscovery()
 		}
 	}
 #if !targetEnvironment(macCatalyst)
@@ -629,5 +669,44 @@ struct DeviceConnectRow: View {
 					}
 				}
 			}
+	}
+}
+
+// MARK: - Nymea (mPWRD-OS) discovery row
+
+/// A row representing a discovered nymea-networkmanager device that needs Wi-Fi
+/// provisioning. Tapping it begins the provisioning workflow targeted at the device.
+struct NymeaDeviceConnectRow: View {
+	let device: NymeaDiscoveredDevice
+	let onSelect: () -> Void
+
+	var body: some View {
+		HStack {
+			Image(systemName: "circle.fill")
+				.foregroundColor(.gray)
+			VStack(alignment: .leading) {
+				Text(device.name).font(.callout)
+				HStack(alignment: .center) {
+					Image(systemName: "wifi.router")
+						.foregroundColor(.accentColor)
+					Text("Wi-Fi Setup")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}.padding(.top, 3.0)
+			}
+			Spacer()
+			SignalStrengthIndicator(signalStrength: rssiToSignalStrength(device.rssi))
+		}
+		.padding([.bottom, .top])
+		.contentShape(Rectangle())
+		.onTapGesture { onSelect() }
+	}
+
+	private func rssiToSignalStrength(_ rssi: Int) -> BLESignalStrength {
+		switch rssi {
+		case ..<(-80): return .weak
+		case -80 ..< -65: return .normal
+		default: return .strong
+		}
 	}
 }

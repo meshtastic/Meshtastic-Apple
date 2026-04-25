@@ -153,3 +153,4 @@ enum IntentMessageConverters {
 		return "Channel \(index)"
 	}
 }
+#endif

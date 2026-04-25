@@ -203,6 +203,18 @@ actor BLEConnection: Connection {
 	
 	func getPacketStream() -> AsyncStream<ConnectionEvent> {
 		AsyncStream<ConnectionEvent> { continuation in
+			// Finish any previous stream so its consumer's `for await` loop terminates cleanly
+			// instead of hanging indefinitely on the abandoned continuation.
+			self.connectionStreamContinuation?.finish()
+			self.connectionStreamContinuation = nil
+			
+			continuation.onTermination = { [weak self] termination in
+				guard let self else { return }
+				guard case .cancelled = termination else { return }
+				Task {
+					try await self.disconnect(withError: AccessoryError.eventStreamCancelled, shouldReconnect: true)
+				}
+			}
 			self.connectionStreamContinuation = continuation
 		}
 	}

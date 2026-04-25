@@ -276,11 +276,9 @@ fileprivate extension NodeFilterParameters {
 		if isFavorite {
 			if user.userNode?.favorite != true { return false }
 		}
-		// Distance
+		// Distance — only apply when we have a valid, precise phone GPS fix
 		if distanceFilter {
-			if let poi = LocationsHandler.currentLocation,
-			   poi.latitude != LocationsHandler.DefaultLocation.latitude,
-			   poi.longitude != LocationsHandler.DefaultLocation.longitude {
+		if let poi = LocationsHandler.currentPreciseLocation {
 				let d = maxDistance * 1.1
 				let r: Double = 6371009
 				let meanLat = poi.latitude * .pi / 180

@@ -92,9 +92,10 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Get started")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -147,9 +148,10 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure notification permissions")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -212,7 +214,7 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure Location Permissions")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
 			.padding()
 			.capsuleButtonStyle()
@@ -273,6 +275,7 @@ struct DeviceOnboarding: View {
 			}
 			.padding()
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -316,10 +319,11 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure Local Network Access")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
 			.padding()
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -358,10 +362,11 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure Bluetooth Connectivity")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
 			.padding()
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -415,10 +420,11 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure Siri & Shortcuts")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
 			.padding()
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	

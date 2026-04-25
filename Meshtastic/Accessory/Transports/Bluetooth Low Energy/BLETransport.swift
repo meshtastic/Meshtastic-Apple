@@ -272,7 +272,6 @@ actor BLETransport: Transport {
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
 					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
-					await self.connectionDidDisconnect(fromPeripheral: peripheral)
 				}
 			}
 		}

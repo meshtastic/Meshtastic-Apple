@@ -530,6 +530,17 @@ extension MeshPackets {
 						}
 						mutablePositions.append(position)
 						
+						// Prune old positions to prevent unbounded memory growth
+						let maxPositionsPerNode = 500
+						while mutablePositions.count > maxPositionsPerNode {
+							if let oldest = mutablePositions.object(at: 0) as? PositionEntity, !oldest.latest {
+								context.delete(oldest)
+								mutablePositions.removeObject(at: 0)
+							} else {
+								break
+							}
+						}
+
 						fetchedNode[0].channel = Int32(packet.channel)
 						fetchedNode[0].positions = mutablePositions
 						

@@ -19,6 +19,7 @@ struct MeshMap: View {
 
 	@ObservedObject
 	var router: Router
+	var showOpenWindowButton: Bool = true
 
 	/// Parameters
 	@State var showUserLocation: Bool = true
@@ -30,6 +31,7 @@ struct MeshMap: View {
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
 	@Namespace var mapScope
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
@@ -48,7 +50,7 @@ struct MeshMap: View {
 	var body: some View {
 		NavigationStack {
 			ZStack {
-				MapReader { reader in
+			MapReader { reader in
 					Map(
 						position: $position,
 						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
@@ -64,6 +66,7 @@ struct MeshMap: View {
 							enabledOverlayConfigs: $enabledOverlayConfigs
 						)
 					}
+					.id(meshMapDistance)
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
 					.mapControls {
@@ -192,7 +195,14 @@ struct MeshMap: View {
 					.padding(5)
 				}
 			}
-			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
+			.navigationBarItems(leading: MeshtasticLogo(), trailing: HStack {
+				if supportsMultipleWindows && showOpenWindowButton {
+					Button {
+						openWindow(id: "meshmap-window")
+					} label: {
+						Image(systemName: "macwindow.badge.plus")
+					}
+				}
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			})
 			.toolbarBackground(.hidden, for: .navigationBar)

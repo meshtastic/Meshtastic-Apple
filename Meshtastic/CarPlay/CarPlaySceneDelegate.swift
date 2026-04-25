@@ -9,6 +9,7 @@
 //  matching the main app's Messages navigation structure.
 //
 
+#if os(iOS) && canImport(CarPlay)
 import CarPlay
 import Combine
 import Intents
@@ -53,6 +54,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		interfaceController.delegate = self
 
 		buildAndSetRootTemplate(animated: false)
+		donateUnreadMessages()
 
 		// Observe connection state changes and refresh sections (not the whole template tree).
 		// Debounce absorbs reconnect spikes that would otherwise fire multiple expensive refreshes.
@@ -63,6 +65,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			.sink { [weak self] isConnected in
 				self?.refreshSections()
 				if isConnected {
+					self?.donateUnreadMessages()
 					self?.startLiveActivityIfNeeded()
 				}
 			}
@@ -445,6 +448,35 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		}
 	}
 
+	// MARK: - Unread Message Donation
+
+	/// Donate all unread messages as incoming Siri intents so that tapping a
+	/// conversation in CarPlay triggers Siri to read them aloud — even for
+	/// messages that arrived before the CarPlay session started.
+	private func donateUnreadMessages() {
+		let bgContext = PersistenceController.shared.container.newBackgroundContext()
+		bgContext.automaticallyMergesChangesFromParent = true
+		bgContext.perform {
+			let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
+			fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+				NSPredicate(format: "read == NO"),
+				NSPredicate(format: "admin == NO"),
+				NSPredicate(format: "isEmoji == NO")
+			])
+			fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+			fetchRequest.fetchLimit = 50
+			fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser", "toUser"]
+
+			guard let messages = try? bgContext.fetch(fetchRequest) else { return }
+			for message in messages {
+				CarPlayIntentDonation.donateReceivedMessage(message)
+			}
+			if !messages.isEmpty {
+				Logger.services.info("🚗 [CarPlay] Donated \(messages.count) unread message(s) for Siri read-back")
+			}
+		}
+	}
+
 	// MARK: - Live Activity
 
 #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
@@ -510,3 +542,4 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	private func endLiveActivity() {}
 #endif
 }
+#endif

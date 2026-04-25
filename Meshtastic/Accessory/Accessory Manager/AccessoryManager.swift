@@ -538,6 +538,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
 					await MeshPackets.shared.upsertPositionPacket(packet: packet)
+					WatchSessionManager.shared.sendNodesToWatch()
 					// Broadcast position to TAK clients
 					if let position = try? Position(serializedBytes: data.payload) {
 						Logger.tak.debug("Position received, calling broadcast")
@@ -744,6 +745,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				do {
 					try context.save()
 					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+
+					// Push updated node data to the companion Watch app
+					WatchSessionManager.shared.sendNodesToWatch()
 				} catch {
 					let nsError = error as NSError
 					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")

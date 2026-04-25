@@ -7,6 +7,7 @@
 //  CarPlay messaging and Siri voice commands.
 //
 
+#if os(iOS)
 import Intents
 
 final class IntentHandler: INExtension {
@@ -24,3 +25,4 @@ final class IntentHandler: INExtension {
 		}
 	}
 }
+#endif

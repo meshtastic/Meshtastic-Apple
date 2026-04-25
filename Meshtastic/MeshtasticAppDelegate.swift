@@ -5,6 +5,7 @@
 //  Created by Ben on 8/20/23.
 //
 
+#if os(iOS)
 import Intents
 import SwiftUI
 import OSLog
@@ -137,3 +138,4 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		completionHandler()
 	}
 }
+#endif

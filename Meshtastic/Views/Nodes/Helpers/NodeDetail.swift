@@ -491,6 +491,19 @@ struct NodeDetail: View {
 								#endif
 									NavigateToButton(node: node)
 								}
+								#if !targetEnvironment(macCatalyst)
+								if WatchSessionManager.shared.isWatchAvailable {
+									Button {
+										WatchSessionManager.shared.sendNodeForFoxhunt(node.num)
+									} label: {
+										Label {
+											Text("Foxhunt on your watch")
+										} icon: {
+											Image("custom.foxhunt")
+										}
+									}
+								}
+								#endif
 								IgnoreNodeButton(
 									node: node
 								)

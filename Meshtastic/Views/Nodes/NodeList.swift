@@ -383,11 +383,9 @@ fileprivate extension NodeFilterParameters {
 			let hasEnvTelemetry = (node.telemetries ?? []).contains { $0.metricsType == 1 }
 			if !hasEnvTelemetry { return false }
 		}
-		// Distance
+		// Distance filter — only apply when we have a valid, precise phone GPS fix
 		if distanceFilter {
-			if let poi = LocationsHandler.currentLocation,
-			   poi.latitude != LocationsHandler.DefaultLocation.latitude,
-			   poi.longitude != LocationsHandler.DefaultLocation.longitude {
+			if let poi = LocationsHandler.currentPreciseLocation {
 				let d = maxDistance * 1.1
 				let r: Double = 6371009
 				let meanLat = poi.latitude * .pi / 180
