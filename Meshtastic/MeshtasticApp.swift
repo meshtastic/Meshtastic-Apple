@@ -238,8 +238,8 @@ struct MeshtasticAppleApp: App {
 				.environmentObject(appState.router)
 				.environmentObject(MeshtasticAPI.shared)
 		}
-		.defaultSize(width: 900, height: 700)
-		.windowResizability(.automatic)
+		.handlesExternalEvents(matching: [])
+		.windowResizability(.contentMinSize)
 		#if os(visionOS)
 		.windowStyle(.plain)
 		#endif
