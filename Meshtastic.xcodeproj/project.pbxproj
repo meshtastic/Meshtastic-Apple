@@ -204,6 +204,7 @@
 		DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD268D8D2BCC90E2008073AE /* RouteEnums.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD354FD82BD96A0B0061A25F /* IAQScale.swift */; };
+		BD7B1A838F8245A0B6BE56C5 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */; };
 		DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */; };
 		DD3CC24C2C498D6C001BD3A2 /* BatteryCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */; };
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
@@ -355,6 +356,17 @@
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
 		E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
 		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
+		AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */; };
+		AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0002 /* ContentView.swift */; };
+		AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0003 /* MeshNode.swift */; };
+		AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */; };
+		AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */; };
+		AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */; };
+		AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */; };
+		AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */; };
+		AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0009 /* Assets.xcassets */; };
+		AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0013 /* WatchCircleText.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -371,6 +383,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = DDDE59F329AF163D00490C6C;
 			remoteInfo = WidgetsExtension;
+		};
+		AA0005WTCH00000000CX0001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0005WTCH00000000NT0001;
+			remoteInfo = "Meshtastic Watch App";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -393,6 +412,17 @@
 				DDDE5A0329AF163E00490C6C /* WidgetsExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0005WTCH00000000CP0001 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -616,6 +646,7 @@
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD354FD82BD96A0B0061A25F /* IAQScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAQScale.swift; sourceTree = "<group>"; };
 		DD3619132B1EE20700C41C8C /* MeshtasticDataModelV21.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV21.xcdatamodel; sourceTree = "<group>"; };
+		84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
 		DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsHandler.swift; sourceTree = "<group>"; };
 		DD398EBD2B93F640002B4C51 /* MeshtasticDataModelV 29.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 29.xcdatamodel"; sourceTree = "<group>"; };
 		DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryCompact.swift; sourceTree = "<group>"; };
@@ -808,6 +839,18 @@
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWatchApp.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0003 /* MeshNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshNode.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneConnectivityManager.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLocationManager.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxhuntCompassView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyNodesListView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Meshtastic Watch App.entitlements"; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meshtastic Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0005WTCH00000000FR0013 /* WatchCircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCircleText.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -915,6 +958,13 @@
 				DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */,
 				DDDE59F529AF163D00490C6C /* WidgetKit.framework in Frameworks */,
 				25A978BC2C13F90D0003AAE7 /* MeshtasticProtobufs in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0005WTCH00000000FP0001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1543,6 +1593,7 @@
 				DDC2E15626CE248E0042C5E4 /* Meshtastic */,
 				DDDE59F729AF163D00490C6C /* Widgets */,
 				25F5D5C82C4375A8008036E3 /* MeshtasticTests */,
+				AA0005WTCH00000000GR0001 /* Meshtastic Watch App */,
 				DDC2E15526CE248E0042C5E4 /* Products */,
 				DD8EDE9226F97A2B00A5A10B /* Frameworks */,
 			);
@@ -1555,6 +1606,7 @@
 				DDC2E15426CE248E0042C5E4 /* Meshtastic.app */,
 				DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */,
 				25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */,
+				AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1702,6 +1754,7 @@
 				DD1BEF492E0292220090CE24 /* KeychainHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
+				84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */,
 				DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */,
 				6D825E612C34786C008DBEE4 /* CommonRegex.swift */,
 				3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */,
@@ -1822,6 +1875,48 @@
 			path = Widgets;
 			sourceTree = "<group>";
 		};
+		AA0005WTCH00000000GR0001 /* Meshtastic Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */,
+				AA0005WTCH00000000FR0002 /* ContentView.swift */,
+				AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */,
+				AA0005WTCH00000000FR0009 /* Assets.xcassets */,
+				AA0005WTCH00000000GR0002 /* Managers */,
+				AA0005WTCH00000000GR0003 /* Models */,
+				AA0005WTCH00000000GR0004 /* Views */,
+			);
+			path = "Meshtastic Watch App";
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0002 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */,
+				AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0003 /* MeshNode.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */,
+				AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */,
+				AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */,
+				AA0005WTCH00000000FR0013 /* WatchCircleText.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1854,11 +1949,13 @@
 				DDC2E15126CE248E0042C5E4 /* Frameworks */,
 				DDC2E15226CE248E0042C5E4 /* Resources */,
 				DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */,
+				AA0005WTCH00000000CP0001 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
+				AA0005WTCH00000000TD0001 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				236CA20D2EE3036A00A47F96 /* images */,
@@ -1900,6 +1997,23 @@
 			productName = WidgetsExtension;
 			productReference = DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		AA0005WTCH00000000NT0001 /* Meshtastic Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */;
+			buildPhases = (
+				AA0005WTCH00000000SP0001 /* Sources */,
+				AA0005WTCH00000000FP0001 /* Frameworks */,
+				AA0005WTCH00000000RP0001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Meshtastic Watch App";
+			productName = "Meshtastic Watch App";
+			productReference = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -1961,6 +2075,7 @@
 				DDC2E15326CE248E0042C5E4 /* Meshtastic */,
 				DDDE59F329AF163D00490C6C /* WidgetsExtension */,
 				25F5D5C62C4375A8008036E3 /* MeshtasticTests */,
+				AA0005WTCH00000000NT0001 /* Meshtastic Watch App */,
 			);
 		};
 /* End PBXProject section */
@@ -1999,6 +2114,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0005WTCH00000000RP0001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2185,6 +2308,7 @@
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
 				237AEB912E1FE46D003B7CE3 /* AccessoryManager.swift in Sources */,
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
+				BD7B1A838F8245A0B6BE56C5 /* WatchSessionManager.swift in Sources */,
 				DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */,
 				DD6F65792C6EADE60053C113 /* DirectMessagesHelp.swift in Sources */,
 				23148E302EE1CCE500F0DB2C /* MeshtasticAPI.swift in Sources */,
@@ -2386,6 +2510,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA0005WTCH00000000SP0001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */,
+				AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */,
+				AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */,
+				AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */,
+				AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */,
+				AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */,
+				AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */,
+				AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */,
+				AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2399,6 +2539,12 @@
 			platformFilter = ios;
 			target = DDDE59F329AF163D00490C6C /* WidgetsExtension */;
 			targetProxy = DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */;
+		};
+		AA0005WTCH00000000TD0001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = AA0005WTCH00000000NT0001 /* Meshtastic Watch App */;
+			targetProxy = AA0005WTCH00000000CX0001 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2774,6 +2920,74 @@
 			};
 			name = Release;
 		};
+		AA0005WTCH00000000BC0001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.7.11;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		AA0005WTCH00000000BC0002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.7.11;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2809,6 +3023,15 @@
 			buildConfigurations = (
 				DDDE5A0629AF163F00490C6C /* Debug */,
 				DDDE5A0729AF163F00490C6C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0005WTCH00000000BC0001 /* Debug */,
+				AA0005WTCH00000000BC0002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

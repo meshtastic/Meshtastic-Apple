@@ -5,6 +5,7 @@ import CoreData
 import OSLog
 import TipKit
 import MeshtasticProtobufs
+import WatchConnectivity
 import DatadogCore
 import DatadogCrashReporting
 import DatadogRUM
@@ -95,6 +96,9 @@ struct MeshtasticAppleApp: App {
 
 		// Initialize map data manager
 		MapDataManager.shared.initialize()
+
+		// Initialize WatchConnectivity session
+		_ = WatchSessionManager.shared
 #if DEBUG
 		// Show tips in development
 		try? Tips.resetDatastore()
