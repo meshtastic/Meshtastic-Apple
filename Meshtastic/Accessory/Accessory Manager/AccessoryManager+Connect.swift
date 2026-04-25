@@ -218,6 +218,7 @@ extension AccessoryManager {
 			try await connectionStepper?.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
 		} catch AccessoryError.tooManyRetries {
+			self.lastConnectionError = AccessoryError.tooManyRetries
 			try await self.closeConnection()
 			updateState(.discovering)
 		} catch {
