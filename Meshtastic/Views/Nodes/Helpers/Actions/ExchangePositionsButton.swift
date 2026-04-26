@@ -61,3 +61,13 @@ struct ExchangePositionsButton: View {
 		}
     }
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let node = NodeInfoEntity(context: context)
+	node.num = 123456789
+	let connectedNode = NodeInfoEntity(context: context)
+	connectedNode.num = 987654321
+	return ExchangePositionsButton(node: node, connectedNode: connectedNode)
+		.environmentObject(AccessoryManager.shared)
+}

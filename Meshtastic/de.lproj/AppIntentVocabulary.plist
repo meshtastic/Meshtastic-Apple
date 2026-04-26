@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IntentPhrases</key>
+	<array>
+		<dict>
+			<key>IntentName</key>
+			<string>INSendMessageIntent</string>
+			<key>IntentExamples</key>
+			<array>
+				<string>Sende eine Nachricht über Meshtastic</string>
+				<string>Sende eine Meshtastic-Nachricht an Hans</string>
+			</array>
+		</dict>
+		<dict>
+			<key>IntentName</key>
+			<string>INSearchForMessagesIntent</string>
+			<key>IntentExamples</key>
+			<array>
+				<string>Suche Meshtastic-Nachrichten</string>
+				<string>Finde Nachrichten auf Meshtastic</string>
+			</array>
+		</dict>
+		<dict>
+			<key>IntentName</key>
+			<string>INSetMessageAttributeIntent</string>
+			<key>IntentExamples</key>
+			<array>
+				<string>Markiere Meshtastic-Nachricht als gelesen</string>
+				<string>Markiere Meshtastic-Nachrichten als gelesen</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

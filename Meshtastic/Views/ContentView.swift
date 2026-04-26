@@ -17,7 +17,7 @@ struct ContentView: View {
 	}
 
 	var body: some View {
-		TabView(selection: $appState.router.navigationState.selectedTab) {
+		TabView(selection: $appState.router.selectedTab) {
 			Messages(
 				router: appState.router,
 				unreadChannelMessages: $appState.unreadChannelMessages,
@@ -59,7 +59,8 @@ struct ContentView: View {
 					.font(.title)
 			}
 			.tag(NavigationState.Tab.settings)
-		}.sheet(
+		}
+		.sheet(
 			isPresented: $isShowingDeviceOnboardingFlow,
 			onDismiss: {
 				UserDefaults.firstLaunch = false

@@ -12,7 +12,13 @@ struct MessageContextMenuItems: View {
 	@Binding var isShowingDeleteConfirmation: Bool
 	@Binding var isShowingTapbackInput: Bool
 	let onReply: () -> Void
-	@State var relayDisplay: String? = nil
+	let canTranslate: Bool
+	let hasTranslatedText: Bool
+	let isShowingTranslatedText: Bool
+	let onTranslate: () -> Void
+	let onToggleTranslatedText: () -> Void
+	let onClearTranslation: () -> Void
+	@State var relayDisplay: String?
 
 	var body: some View {
 		VStack {
@@ -32,14 +38,45 @@ struct MessageContextMenuItems: View {
 
 		Button("Tapback") {
 			// The context menu needs a moment to dismiss before the focus state can be changed.
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
 				isShowingTapbackInput = true
+				#if targetEnvironment(macCatalyst)
+				// On Mac Catalyst, open the system Character Palette (emoji picker)
+				// by calling orderFrontCharacterPalette: directly on NSApplication.
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+					if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+						let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+						if nsApp.responds(to: selector) {
+							nsApp.perform(selector, with: nil)
+						}
+					}
+				}
+				#endif
 			}
 		}
 
 		Button(action: onReply) {
 			Text("Reply")
 			Image(systemName: "arrowshape.turn.up.left")
+		}
+
+		if canTranslate {
+			Button(action: onTranslate) {
+				Text("Translate")
+				Image(systemName: "translate")
+			}
+		}
+
+		if hasTranslatedText {
+			Button(action: onToggleTranslatedText) {
+				Text(isShowingTranslatedText ? "Show Original" : "Show Translation")
+				Image(systemName: isShowingTranslatedText ? "text.bubble" : "globe")
+			}
+
+			Button(role: .destructive, action: onClearTranslation) {
+				Text("Clear Translation")
+				Image(systemName: "trash")
+			}
 		}
 
 		Button {
@@ -56,7 +93,6 @@ struct MessageContextMenuItems: View {
 			let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 
 			// Compute a relay display string if relayNode is present
-			
 
 			VStack {
 				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))")
@@ -73,7 +109,7 @@ struct MessageContextMenuItems: View {
 			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) && message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
-					Text("RSSI \(String(format: "%.2f", message.rssi)) dBm")
+					Text("RSSI \(String(format: "%d", message.rssi)) dBm")
 				}
 			} else if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) {
 				VStack {

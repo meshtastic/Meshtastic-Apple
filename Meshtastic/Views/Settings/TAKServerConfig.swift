@@ -8,6 +8,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
+import CoreData
 
 enum CertificateImportType {
 	case p12
@@ -15,7 +16,17 @@ enum CertificateImportType {
 }
 
 struct TAKServerConfig: View {
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var accessoryManager: AccessoryManager
+
+	@FetchRequest(
+		sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
+		predicate: NSPredicate(format: "role > 0"),
+		animation: .default
+	) private var channels: FetchedResults<ChannelEntity>
+
 	@StateObject private var takServer = TAKServerManager.shared
+	@Environment(\.dismiss) private var dismiss
 	@State private var showingFileImporter = false
 	@State private var importType: CertificateImportType = .p12
 	@State private var p12Password = ""
@@ -25,17 +36,40 @@ struct TAKServerConfig: View {
 	@State private var showingImportError = false
 	@State private var showingFileExporter = false
 	@State private var dataPackageURL: URL?
+	@State private var showingFixWarning = false
+	@State private var isFixingChannel = false
+	@State private var showShareChannels = false
+	@State private var showShareChannelsAlert = false
+	@State private var connectedNode: NodeInfoEntity?
+	@State private var isWarningExpanded = true
 
 	private let certManager = TAKCertificateManager.shared
 
 	var body: some View {
 		Form {
+			if !takServer.primaryChannelIssues.isEmpty {
+				primaryChannelWarningSection
+			}
 			serverStatusSection
 			serverConfigSection
 			certificatesSection
 			dataPackageSection
 		}
 		.navigationTitle("TAK Server")
+		.onAppear {
+			takServer.checkPrimaryChannelValidity()
+			if let nodeNum = accessoryManager.activeDeviceNum {
+				connectedNode = getNodeInfo(id: nodeNum, context: context)
+			}
+		}
+		.alert("Fix Primary Channel?", isPresented: $showingFixWarning) {
+			Button("Cancel", role: .cancel) {}
+			Button("Fix Channel", role: .destructive) {
+				fixPrimaryChannel()
+			}
+		} message: {
+			Text("This will change your primary channel to:\n• Name: TAK\n• Encryption: New 256-bit AES key\n• LoRa preset: Short Fast (recommended for TAK)\n\nThis is required for TAK Server to work properly. Any existing channel sharing links will become invalid.")
+		}
 		.fileImporter(
 			isPresented: $showingFileImporter,
 			allowedContentTypes: importType == .p12 ? [UTType(filenameExtension: "p12") ?? .pkcs12, .pkcs12] : [UTType(filenameExtension: "pem") ?? .plainText],
@@ -65,6 +99,14 @@ struct TAKServerConfig: View {
 		} message: {
 			Text(importError ?? "Unknown error")
 		}
+		.alert("Channel Fixed!", isPresented: $showShareChannelsAlert) {
+			Button("Share with TAK Buddies") {
+				showShareChannels = true
+			}
+			Button("Later", role: .cancel) {}
+		} message: {
+			Text("Your channel has been configured for TAK. To share the QR code: go to Settings > Share QR Code")
+		}
 		.fileExporter(
 			isPresented: $showingFileExporter,
 			document: dataPackageURL.map { ZipDocument(url: $0) },
@@ -83,6 +125,65 @@ struct TAKServerConfig: View {
 				try? FileManager.default.removeItem(at: sourceURL)
 			}
 			dataPackageURL = nil
+		}
+		.navigationDestination(isPresented: $showShareChannels) {
+			if let node = connectedNode {
+				ShareChannels(node: node)
+			}
+		}
+	}
+
+	// MARK: - Primary Channel Warning Section
+
+	private var primaryChannelWarningSection: some View {
+		Section {
+			DisclosureGroup(isExpanded: $isWarningExpanded) {
+				VStack(alignment: .leading, spacing: 12) {
+					if takServer.readOnlyMode {
+						Text("Your primary channel is using the default settings (no name or default encryption key). TAK Server is running in read-only mode.")
+							.font(.subheadline)
+							.foregroundColor(.secondary)
+					}
+
+					Text("You can fix this yourself by changing your primary channel:")
+						.font(.subheadline)
+
+					VStack(alignment: .leading, spacing: 4) {
+						Label("Set a channel name", systemImage: "1.circle.fill")
+						Label("Use a 256-bit encryption key", systemImage: "2.circle.fill")
+					}
+					.font(.caption)
+					.foregroundColor(.secondary)
+
+					Divider()
+
+					Button {
+						showingFixWarning = true
+					} label: {
+						Label("Auto-Fix Channel", systemImage: "wand.and.stars")
+							.frame(maxWidth: .infinity)
+					}
+					.buttonStyle(.borderedProminent)
+					.controlSize(.large)
+					.disabled(isFixingChannel)
+
+					Text("Or fix it yourself in Channels settings, then return here.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+						.multilineTextAlignment(.center)
+						.frame(maxWidth: .infinity)
+				}
+				.padding(.vertical, 8)
+			} label: {
+				HStack {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.foregroundColor(.orange)
+					Text("TAK Cannot Be Used on Public Channel")
+						.font(.headline)
+				}
+			}
+		} header: {
+			Text("Warning")
 		}
 	}
 
@@ -108,6 +209,19 @@ struct TAKServerConfig: View {
 					Image(systemName: "exclamationmark.triangle.fill")
 						.foregroundColor(.orange)
 					Text(error)
+						.font(.caption)
+						.foregroundColor(.orange)
+				}
+			}
+
+			if let node = connectedNode,
+			   let role = node.user?.role,
+			   let deviceRole = DeviceRoles(rawValue: Int(role)),
+			   deviceRole != .tak && deviceRole != .takTracker {
+				HStack {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.foregroundColor(.orange)
+					Text("Device role is \"\(deviceRole.name)\". Consider setting to TAK or TAK Tracker for optimal operation.")
 						.font(.caption)
 						.foregroundColor(.orange)
 				}
@@ -140,6 +254,37 @@ struct TAKServerConfig: View {
 					.foregroundColor(.secondary)
 			}
 
+			Toggle(isOn: $takServer.userReadOnlyMode) {
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Read-Only Mode")
+					Text("Meshtastic -> TAK works, TAK -> Meshtastic blocked")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.disabled(takServer.readOnlyMode)
+
+			Toggle(isOn: $takServer.meshToCotEnabled) {
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Mesh to CoT Converter")
+					Text("Bridge Meshtastic positions, nodes, waypoints, and messages to TAK/CoT format")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			if !channels.isEmpty {
+				Picker(selection: $takServer.channel) {
+					ForEach(channels, id: \.index) { channel in
+						channelLabel(channel)
+							.tag(Int(channel.index))
+					}
+				} label: {
+					Label("TAK Channel Index", systemImage: "bubble.left.and.bubble.right")
+				}
+			}
+
 			if takServer.isRunning {
 				Button {
 					Task {
@@ -152,7 +297,7 @@ struct TAKServerConfig: View {
 		} header: {
 			Text("Configuration")
 		} footer: {
-			Text("Secure mTLS connection on port 8089. Both server and client certificates are required.")
+			Text("Secure mTLS connection on port 8089. Both server and client certificates are required. TAK Channel Index selects the channel index where TAK messages will be sent.")
 		}
 	}
 
@@ -279,6 +424,19 @@ struct TAKServerConfig: View {
 		}
 	}
 
+	// MARK: - Channel Label
+	@ViewBuilder
+	private func channelLabel(_ channel: ChannelEntity) -> some View {
+		if channel.name?.isEmpty ?? false {
+			if channel.role == 1 {
+				Text(String("PrimaryChannel").camelCaseToWords())
+			} else {
+				Text(String("Channel \(channel.index)").camelCaseToWords())
+			}
+		} else {
+			Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+		}
+	}
 
 	// MARK: - Import Handlers
 
@@ -348,6 +506,23 @@ struct TAKServerConfig: View {
 		case .failure(let error):
 			importError = error.localizedDescription
 			showingImportError = true
+		}
+	}
+
+	private func fixPrimaryChannel() {
+		isFixingChannel = true
+		Task {
+			let success = await takServer.autoFixPrimaryChannel()
+			await MainActor.run {
+				isFixingChannel = false
+				if success {
+					takServer.userReadOnlyMode = false
+					showShareChannelsAlert = true
+				} else {
+					importError = "Failed to fix primary channel. Make sure you are connected to a device."
+					showingImportError = true
+				}
+			}
 		}
 	}
 

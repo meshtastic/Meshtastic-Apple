@@ -18,6 +18,7 @@ extension UserEntity {
 		let fetchRequest = MessageEntity.fetchRequest()
 		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
 		fetchRequest.predicate = messagePredicate
+		fetchRequest.fetchBatchSize = 50
 		return fetchRequest
 	}
 

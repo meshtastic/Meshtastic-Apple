@@ -55,7 +55,7 @@ struct NodeWeatherForecastView: View {
 					areaMarks(seriesKey: "Mask", value: range.lowerBound.timeIntervalSince1970)
 				}
 
-				if range.lowerBound != forecast.entries.first!.date {
+				if range.lowerBound != forecast.entries.first?.date {
 					let date = range.lowerBound
 					RectangleMark(
 						x: .value("Date", date),
@@ -73,7 +73,7 @@ struct NodeWeatherForecastView: View {
 					}
 				}
 
-				if range.upperBound != forecast.entries.last!.date {
+				if range.upperBound != forecast.entries.last?.date {
 					let date = range.upperBound
 					RectangleMark(
 						x: .value("Date", date),
@@ -170,11 +170,11 @@ struct NodeWeatherForecast {
 	var entries: [WeatherEntry]
 
 	var low: Double {
-		return entries.map(\.degrees).min()! - 2
+		return (entries.map(\.degrees).min() ?? 0) - 2
 	}
 
 	var hottestEntry: WeatherEntry {
-		return entries.sorted { $0.degrees > $1.degrees }.first!
+		return entries.sorted { $0.degrees > $1.degrees }.first ?? entries[0]
 	}
 
 	var nightTimeRanges: [Range<Date>] {

@@ -70,7 +70,7 @@ struct AppSettings: View {
 					}
 #endif
 				}
-				Section(header: Text("environment")) {
+				Section(header: Text("Environment")) {
 					VStack(alignment: .leading) {
 						Toggle(isOn: $environmentEnableWeatherKit) {
 							Label("Weather Conditions", systemImage: "cloud.sun")
@@ -97,7 +97,7 @@ struct AppSettings: View {
 						}
 #endif
 					}
-					.onChange(of: usageDataAndCrashReporting) { oldUsageDataAndCrashReporting, newUsageDataAndCrashReporting in
+					.onChange(of: usageDataAndCrashReporting) { _, newUsageDataAndCrashReporting in
 						if !newUsageDataAndCrashReporting {
 							Datadog.set(trackingConsent: .notGranted)
 						}
@@ -161,6 +161,12 @@ struct AppSettings: View {
 								}
 								await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: true)
 								clearNotifications()
+								context.refreshAllObjects()
+							}
+							Task { @MainActor in
+								MeshPackets.shared.clearCoreDataDatabase(context: context, includeRoutes: true, includeAppLevelData: true)
+								clearNotifications()
+								try? await MeshtasticAPI.shared.refreshDevicesAPIData()
 								context.refreshAllObjects()
 							}
 						}

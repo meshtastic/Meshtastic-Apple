@@ -479,18 +479,33 @@ struct NodeDetail: View {
 								}
 								if node.hasPositions {
 								#if !targetEnvironment(macCatalyst)
-									Button {
-										showingCompassSheet = true
-									} label: {
-										Label {
-											Text("Open Compass")
-										} icon: {
-											Image(systemName: "safari")
+									if node.latestPosition?.isPreciseLocation == true {
+										Button {
+											showingCompassSheet = true
+										} label: {
+											Label {
+												Text("Open Compass")
+											} icon: {
+												Image(systemName: "safari")
+											}
 										}
 									}
 								#endif
 									NavigateToButton(node: node)
 								}
+								#if !targetEnvironment(macCatalyst)
+								if WatchSessionManager.shared.isWatchAvailable {
+									Button {
+										WatchSessionManager.shared.sendNodeForFoxhunt(node.num)
+									} label: {
+										Label {
+											Text("Foxhunt on your watch")
+										} icon: {
+											Image("custom.foxhunt")
+										}
+									}
+								}
+								#endif
 								IgnoreNodeButton(
 									node: node
 								)
@@ -576,7 +591,7 @@ struct NodeDetail: View {
 					}
 				}
 				.sheet(isPresented: $showingCompassSheet) {
-					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointName: node.user?.longName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.longName ?? nil, waypointShortName: node.user?.shortName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
 						}
 				.onAppear {
 					scrollView.scrollTo("topOfList", anchor: .top)

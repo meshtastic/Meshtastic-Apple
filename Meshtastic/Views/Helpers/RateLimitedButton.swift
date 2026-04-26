@@ -45,6 +45,16 @@ public struct RateLimitedButton<Content: View>: View {
 	}
 }
 
+#Preview {
+	RateLimitedButton(key: "preview", rateLimit: 30, action: { }) { rateLimitInfo in
+		if let info = rateLimitInfo {
+			Label("\(Int(info.secondsRemaining))s", systemImage: "clock")
+		} else {
+			Label("Send", systemImage: "paperplane")
+		}
+	}
+}
+
 // To store the time an action occured (name by a key) and the time limit
 // Does not persist across app launches
 class RateLimitStorage: ObservableObject {

@@ -234,11 +234,11 @@ struct UserConfig: View {
 			if oldIsUnmessagable != newIsUnmessagable && newIsUnmessagable != node?.user?.unmessagable ?? true { hasChanges = true }
 		}
 		.onChange(of: isLicensed) { _, newIsLicensed in
-			if node != nil && node!.user != nil {
-				if newIsLicensed != node?.user!.isLicensed {
+			if let user = node?.user {
+				if newIsLicensed != user.isLicensed {
 					hasChanges = true
 					if newIsLicensed {
-						if node?.user?.longName?.count ?? 0 > 8 {
+						if user.longName?.count ?? 0 > 8 {
 							longName = ""
 						}
 					}
@@ -252,4 +252,11 @@ struct UserConfig: View {
 			if isLicensed { hasChanges = true }
 		}
 	}
+}
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return UserConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

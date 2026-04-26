@@ -25,8 +25,14 @@ struct Connect: View {
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
+	@State var showSecurityVersionNag = false
+#if !targetEnvironment(macCatalyst)
 	@State var liveActivityStarted = false
+#endif
 	@ObservedObject var manualConnections = ManualConnectionList.shared
+	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
+	@Environment(\.scenePhase) private var scenePhase
+	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	
 	var body: some View {
 		NavigationStack {
@@ -273,25 +279,38 @@ struct Connect: View {
 									DeviceConnectRow(device: device)
 								}
 							}
-							if manualConnections.connectionsList.count > 0 {
-								Section(header: Text("Manual Connections").font(.title)) {
-									ForEach(manualConnections.connectionsList) { device in
-										DeviceConnectRow(device: device)
+						if manualConnections.connectionsList.count > 0 {
+							Section(header: Text("Manual Connections").font(.title)) {
+								ForEach(manualConnections.connectionsList) { device in
+									DeviceConnectRow(device: device)
 #if targetEnvironment(macCatalyst)
-											.contextMenu {
-												Button {
-													manualConnections.remove(device: device)
-												} label: {
-													Label("Delete", systemImage: "trash")
-												}
+										.contextMenu {
+											Button {
+												manualConnections.remove(device: device)
+											} label: {
+												Label("Delete", systemImage: "trash")
 											}
+										}
 #endif
-									}.onDelete { offsets in
-										manualConnections.remove(atOffsets: offsets)
-									}
+								}.onDelete { offsets in
+									manualConnections.remove(atOffsets: offsets)
+								}
 
+							}
+						}
+
+						// ── Wi-Fi Provisioning (mPWRD-OS / nymea-networkmanager) ──
+						// Devices broadcasting nymea-networkmanager service are picked
+						// up by the passive scan started in .onAppear below.
+						if !nymeaProvisioning.discoverable.isEmpty {
+							Section(header: Text("Wi-Fi Setup").font(.title)) {
+								ForEach(nymeaProvisioning.discoverable) { device in
+								NymeaDeviceConnectRow(device: device) {
+									pendingNymeaDevice = device
+								}
 								}
 							}
+						}
 						}
 						.textCase(nil)
 					}
@@ -347,6 +366,16 @@ struct Connect: View {
 		//		.onChange(of: accessoryManager) {
 		//			invalidFirmwareVersion = self.bleManager.invalidVersion
 		//		}
+		.sheet(isPresented: $invalidFirmwareVersion) {
+			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
+		}
+		.sheet(isPresented: $showSecurityVersionNag) {
+			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
+		}
 		.onChange(of: self.accessoryManager.state) { _, state in
 			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
@@ -364,7 +393,38 @@ struct Connect: View {
 				} catch {
 					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
 				}
+			// Check firmware version on connection (only if version is known)
+			if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
+				let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
+				let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
+				invalidFirmwareVersion = !meetsMinimumVersion
+				showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
 			}
+			}
+		}
+		.sheet(item: $pendingNymeaDevice, onDismiss: {
+			updateNymeaDiscovery()
+		}) { device in
+			WifiProvisioningView(preselectedDevice: device)
+		}
+		.onAppear { updateNymeaDiscovery() }
+		.onDisappear { nymeaProvisioning.stopDiscovery() }
+		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
+		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
+		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
+	}
+
+	/// Starts nymea passive discovery only when the Connect view is foreground-visible
+	/// and the app has no primary transport in flight; otherwise stops it.
+	private func updateNymeaDiscovery() {
+		let canScan = scenePhase == .active
+			&& !accessoryManager.isConnected
+			&& !accessoryManager.isConnecting
+			&& pendingNymeaDevice == nil
+		if canScan {
+			nymeaProvisioning.startDiscovery()
+		} else {
+			nymeaProvisioning.stopDiscovery()
 		}
 	}
 #if !targetEnvironment(macCatalyst)
@@ -376,7 +436,7 @@ struct Connect: View {
 		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
 		let mostRecent = localStats?.lastObject as? TelemetryEntity
 		
-		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown")
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
@@ -565,18 +625,18 @@ struct DeviceConnectRow: View {
 				}
 				// Show transport type
 #if !targetEnvironment(macCatalyst)
-				HStack(alignment: .center){
+				HStack(alignment: .center) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
-						VStack (alignment: .leading) {
+						VStack(alignment: .leading) {
 							Text("Last seen device:")
 							Text("\(String(describing: device))")
 						}
 					}
 				}.padding(.top, 3.0)
 #else
-				//Different alignment for Mac
-				HStack(alignment: .firstTextBaseline){
+				// Different alignment for Mac
+				HStack(alignment: .firstTextBaseline) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
 						Text("Last seen device: \(String(describing: device))")
@@ -610,3 +670,41 @@ struct DeviceConnectRow: View {
 	}
 }
 
+// MARK: - Nymea (mPWRD-OS) discovery row
+
+/// A row representing a discovered nymea-networkmanager device that needs Wi-Fi
+/// provisioning. Tapping it begins the provisioning workflow targeted at the device.
+struct NymeaDeviceConnectRow: View {
+	let device: NymeaDiscoveredDevice
+	let onSelect: () -> Void
+
+	var body: some View {
+		HStack {
+			Image(systemName: "circle.fill")
+				.foregroundColor(.gray)
+			VStack(alignment: .leading) {
+				Text(device.name).font(.callout)
+				HStack(alignment: .center) {
+					Image(systemName: "wifi.router")
+						.foregroundColor(.accentColor)
+					Text("Wi-Fi Setup")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}.padding(.top, 3.0)
+			}
+			Spacer()
+			SignalStrengthIndicator(signalStrength: rssiToSignalStrength(device.rssi))
+		}
+		.padding([.bottom, .top])
+		.contentShape(Rectangle())
+		.onTapGesture { onSelect() }
+	}
+
+	private func rssiToSignalStrength(_ rssi: Int) -> BLESignalStrength {
+		switch rssi {
+		case ..<(-80): return .weak
+		case -80 ..< -65: return .normal
+		default: return .strong
+		}
+	}
+}

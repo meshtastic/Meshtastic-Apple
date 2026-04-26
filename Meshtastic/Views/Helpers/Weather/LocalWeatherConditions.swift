@@ -118,3 +118,7 @@ func calculateDewPoint(temp: Float, relativeHumidity: Float, convertToLocale: Bo
 	}
 	return dewPointUnit.converted(to: format).value
 }
+
+#Preview {
+	LocalWeatherConditions(location: CLLocation(latitude: 47.6062, longitude: -122.3321))
+}

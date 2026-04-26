@@ -292,22 +292,20 @@ fileprivate extension NodeFilterParameters {
 			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
-		// Distance
+		// Distance — only apply when we have a valid, precise phone GPS fix
 		if distanceFilter {
-			if let pointOfInterest = LocationsHandler.currentLocation {
-				if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-					let d: Double = maxDistance * 1.1
-					let r: Double = 6371009
-					let meanLatitidue = pointOfInterest.latitude * .pi / 180
-					let deltaLatitude = d / r * 180 / .pi
-					let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
-					let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
-					let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
-					let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
-					let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-					let distancePredicate = NSPredicate(format: "(SUBQUERY(userNode.positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude, minLatitude, maxLatitude)
-					predicates.append(distancePredicate)
-				}
+			if let pointOfInterest = LocationsHandler.currentPreciseLocation {
+				let d: Double = maxDistance * 1.1
+				let r: Double = 6371009
+				let meanLatitidue = pointOfInterest.latitude * .pi / 180
+				let deltaLatitude = d / r * 180 / .pi
+				let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
+				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
+				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
+				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
+				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
+				let distancePredicate = NSPredicate(format: "(SUBQUERY(userNode.positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude, minLatitude, maxLatitude)
+				predicates.append(distancePredicate)
 			}
 		}
 		// Always apply unmessagable and connected node filters

@@ -15,10 +15,13 @@ import MapKit
 struct MeshMap: View {
 
 	@Environment(\.managedObjectContext) var context
+	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+	@Environment(\.openWindow) private var openWindow
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@ObservedObject
 	var router: Router
+	var showOpenWindowButton: Bool = true
 
 	/// Parameters
 	@State var showUserLocation: Bool = true
@@ -30,6 +33,7 @@ struct MeshMap: View {
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
 	@Namespace var mapScope
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
@@ -41,13 +45,16 @@ struct MeshMap: View {
 	@State var selectedWaypointId: String?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
+	@State private var showLegend = false
 	/// Filter
 	@StateObject var filters = NodeFilterParameters()
+	/// Track whether the map pop-out window is already open
+	@State private var isMapWindowOpen = false
 
 	var body: some View {
 		NavigationStack {
 			ZStack {
-				MapReader { reader in
+			MapReader { reader in
 					Map(
 						position: $position,
 						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
@@ -63,6 +70,7 @@ struct MeshMap: View {
 							enabledOverlayConfigs: $enabledOverlayConfigs
 						)
 					}
+					.id(meshMapDistance)
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
 					.mapControls {
@@ -120,17 +128,22 @@ struct MeshMap: View {
 				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
-						.presentationDetents([.large])
+						.padding()
+						.presentationDetents([.large]) // full screen
+						.presentationDragIndicator(.visible)
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
+						.padding()
 						.presentationDetents([.large])
+						.presentationDragIndicator(.visible)
 				}
+
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 				}
-				.onChange(of: router.navigationState) {
-					guard case .map = router.navigationState.selectedTab else { return }
+				.onChange(of: router.mapState) {
+					guard case .map = router.selectedTab else { return }
 					// TODO: handle deep link for waypoints
 				}
 				.onChange(of: selectedMapLayer) { _, newMapLayer in
@@ -153,32 +166,58 @@ struct MeshMap: View {
 						filters: filters
 					)
 				}
+				.sheet(isPresented: $showLegend) {
+					MapLegend(isMeshMap: true)
+						.presentationDetents([.medium, .large])
+						.presentationContentInteraction(.scrolls)
+						.presentationDragIndicator(.visible)
+						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+				}
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
 					HStack {
 						Spacer()
+						Button(action: {
+							withAnimation {
+								showLegend = !showLegend
+							}
+						}) {
+							Image(systemName: showLegend ? "map.fill" : "map")
+						}
+						.accessibilityLabel(showLegend ? "Hide map legend" : "Show map legend")
+						.accessibilityHint(showLegend ? "Hides the map legend." : "Shows the map legend.")
+						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								editingSettings = !editingSettings
 							}
 						}) {
 							Image(systemName: editingSettings ? "info.circle.fill" : "info.circle")
-								.padding(.vertical, 5)
 						}
-						.tint(Color(UIColor.secondarySystemBackground))
-						.foregroundColor(.accentColor)
-						.buttonStyle(.borderedProminent)
+						.glassButtonStyle()
 					}
 					.controlSize(.regular)
 					.padding(5)
 				}
 			}
-			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
+			.navigationBarItems(leading: MeshtasticLogo(), trailing: HStack {
+				if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
+					Button {
+						openWindow(id: "meshmap-window")
+						isMapWindowOpen = true
+					} label: {
+						Image(systemName: "macwindow.badge.plus")
+					}
+				}
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			})
 			.toolbarBackground(.hidden, for: .navigationBar)
 		}
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
+			// Check if the map window scene is already connected
+			isMapWindowOpen = UIApplication.shared.connectedScenes.contains {
+				$0.session.configuration.name == "meshmap-window" && $0.activationState != .unattached
+			}
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
@@ -200,6 +239,12 @@ struct MeshMap: View {
 		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
 			if let deletedFileId = notification.object as? UUID {
 				enabledOverlayConfigs.remove(deletedFileId)
+			}
+		}
+		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { notification in
+			if let scene = notification.object as? UIScene,
+			   scene.session.configuration.name == "meshmap-window" {
+				isMapWindowOpen = false
 			}
 		}
 	}

@@ -156,10 +156,16 @@ extension MeshPackets {
 	
 	nonisolated public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
 		do {
-			let objects = channel.allPrivateMessages
+			// Copied logic from ChannelEntity.allPrivateMessages, which is always on the MainActor
+			// But this code may not be on the MainActor.
+			let fetchRequest = MessageEntity.fetchRequest()
+			fetchRequest.predicate = NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", channel.index)
+			let objects = (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+			
 			for object in objects {
 				context.delete(object)
 			}
+			
 			try context.save()
 		} catch let error as NSError {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
@@ -178,7 +184,12 @@ extension MeshPackets {
 	
 	nonisolated public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
 		do {
-			let objects = user.messageList
+			// Fetch messages using the same context that will perform the deletes.
+			// user.messageList fetches from viewContext, which would cause a context-mismatch
+			// crash when this method is called with a background context.
+			let fetchRequest = MessageEntity.fetchRequest()
+			fetchRequest.predicate = user.messageFetchRequest.predicate
+			let objects = try context.fetch(fetchRequest)
 			for object in objects {
 				context.delete(object)
 			}
@@ -188,29 +199,32 @@ extension MeshPackets {
 		}
 	}
 	
-	public func clearCoreDataDatabase(includeRoutes: Bool) async {
+	public func clearCoreDataDatabase(includeRoutes: Bool, includeAppLevelData: Bool = false) async {
 		let context = self.backgroundContext
 		await context.perform {
-			self.clearCoreDataDatabase(context: context, includeRoutes: includeRoutes)
+			self.clearCoreDataDatabase(context: context, includeRoutes: includeRoutes, includeAppLevelData: includeAppLevelData)
 		}
 	}
 	
-	nonisolated public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
+	nonisolated public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool, includeAppLevelData: Bool = false) {
 		let persistenceController = PersistenceController.shared.container
 		for i in 0...persistenceController.managedObjectModel.entities.count-1 {
 			
 			let entity = persistenceController.managedObjectModel.entities[i]
 			let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
-			var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 			let entityName = entity.name ?? "UNK"
 			
-			if includeRoutes {
-				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-			} else if !includeRoutes {
-				if !(entityName.contains("RouteEntity") || entityName.contains("LocationEntity")) {
-					deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-				}
+			if !includeRoutes, ["RouteEntity", "LocationEntity"].contains(entityName) {
+				continue
 			}
+			
+			if !includeAppLevelData, ["DeviceHardwareEntity", "DeviceHardwareImageEntity", "DeviceHardwareTagEntity"].contains(entityName) {
+				// These are non-node-specific "app level" data, keep them even when switching nodes
+				continue
+			}
+			
+			// Execute the delete for this entry
+			let deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 			do {
 				try context.executeAndMergeChanges(using: deleteRequest)
 			} catch {
@@ -367,11 +381,11 @@ extension MeshPackets {
 							newUser.publicKey = newUserMessage.publicKey
 						}
 						
-						Task {
-							Api().loadDeviceHardwareData { (hw) in
-								let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
-								newUser.hwDisplayName = dh?.displayName
-							}
+						let fetchRequest1 = DeviceHardwareEntity.fetchRequest()
+						fetchRequest1.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
+						let fetchedHardware1 = (try? context.fetch(fetchRequest1)) ?? []
+						if let hardwareEntity = fetchedHardware1.first {
+							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newNode.user = newUser
 						
@@ -428,18 +442,26 @@ extension MeshPackets {
 				myInfoEntity.myNodeNum = Int64(packet.from)
 				myInfoEntity.rebootCount = 0
 				newNode.myInfo = myInfoEntity
+				
 				do {
 					try context.save()
 					Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
-					Logger.data.info("💾 [MyInfoEntity] Saved a new myInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					Logger.data.error("💥 [MyInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
+					Logger.data.error("💥 [NodeInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
 				}
 				
 			} else {
 				// Update an existing node
+				if packet.rxTime > 0 {
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+				} else {
+					fetchedNode[0].lastHeard = Date()
+				}
+				fetchedNode[0].snr = packet.rxSnr
+				fetchedNode[0].rssi = packet.rxRssi
+				fetchedNode[0].viaMqtt = packet.viaMqtt
 				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 					fetchedNode[0].channel = Int32(packet.channel)
 				}
@@ -482,12 +504,48 @@ extension MeshPackets {
 							fetchedNode[0].user?.pkiEncrypted = true
 							fetchedNode[0].user?.publicKey = nodeInfoMessage.user.publicKey
 						}
-						Task {
-							Api().loadDeviceHardwareData { (hw) in
-								let dh = hw.first(where: { $0.hwModel == fetchedNode[0].user?.hwModelId ?? 0 })
-								fetchedNode[0].user?.hwDisplayName = dh?.displayName
+						if let user = fetchedNode.first?.user {
+							let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
+							fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+							let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
+							if let hardwareEntity = fetchedHardware2.first {
+								user.hwDisplayName = hardwareEntity.displayName
 							}
 						}
+					}
+				} else if let userMessage = try? User(serializedBytes: packet.decoded.payload), !userMessage.id.isEmpty {
+					// Mesh broadcast sends a User protobuf (not wrapped in NodeInfo)
+					if fetchedNode[0].user == nil {
+						fetchedNode[0].user = UserEntity(context: context)
+					}
+					fetchedNode[0].user?.userId = packet.from.toHex()
+					fetchedNode[0].user?.num = Int64(packet.from)
+					fetchedNode[0].user?.longName = userMessage.longName
+					fetchedNode[0].user?.shortName = userMessage.shortName
+					fetchedNode[0].user?.role = Int32(userMessage.role.rawValue)
+					fetchedNode[0].user?.hwModel = String(describing: userMessage.hwModel).uppercased()
+					fetchedNode[0].user?.hwModelId = Int32(userMessage.hwModel.rawValue)
+					if userMessage.hasIsUnmessagable {
+						fetchedNode[0].user?.unmessagable = userMessage.isUnmessagable
+					} else {
+						let roles = [-1, 2, 4, 5, 6, 7, 10, 11]
+						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
+						fetchedNode[0].user?.unmessagable = containsRole
+					}
+					if !userMessage.publicKey.isEmpty {
+						fetchedNode[0].user?.pkiEncrypted = true
+						fetchedNode[0].user?.publicKey = userMessage.publicKey
+					}
+					if let user = fetchedNode.first?.user {
+						let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
+						fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+						let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
+						if let hardwareEntity = fetchedHardware2.first {
+							user.hwDisplayName = hardwareEntity.displayName
+						}
+					}
+					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+						fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 					}
 				} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
@@ -521,6 +579,7 @@ extension MeshPackets {
 		await context.perform {
 			self.upsertPositionPacket(packet: packet, context: context)
 		}
+		resetContextIfNeeded()
 	}
 	
 	nonisolated func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
@@ -585,6 +644,17 @@ extension MeshPackets {
 						}
 						mutablePositions.add(position)
 						
+						// Prune old positions to prevent unbounded memory growth
+						let maxPositionsPerNode = 500
+						while mutablePositions.count > maxPositionsPerNode {
+							if let oldest = mutablePositions.object(at: 0) as? PositionEntity, !oldest.latest {
+								context.delete(oldest)
+								mutablePositions.removeObject(at: 0)
+							} else {
+								break
+							}
+						}
+
 						fetchedNode[0].channel = Int32(packet.channel)
 						fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 						
@@ -1783,6 +1853,53 @@ extension MeshPackets {
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("💥 [TelemetryConfigEntity] Fetching node for core data TelemetryConfigEntity failed: \(nsError, privacy: .public)")
+		}
+	}
+
+	func upsertTAKModuleConfigPacket(config: ModuleConfig.TAKConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) async {
+		let context = self.backgroundContext
+		await context.perform {
+			self.upsertTAKModuleConfigPacket(config: config, nodeNum: nodeNum, sessionPasskey: sessionPasskey, context: context)
+		}
+	}
+
+	nonisolated func upsertTAKModuleConfigPacket(config: ModuleConfig.TAKConfig, nodeNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
+
+		let logString = String.localizedStringWithFormat("TAK module config received: %@".localized, String(nodeNum))
+		Logger.data.info("🎯 \(logString, privacy: .public)")
+
+		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		do {
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].takConfig == nil {
+					let newTAKConfig = TAKConfigEntity(context: context)
+					newTAKConfig.team = Int32(config.team.rawValue)
+					newTAKConfig.role = Int32(config.role.rawValue)
+					fetchedNode[0].takConfig = newTAKConfig
+				} else {
+					fetchedNode[0].takConfig?.team = Int32(config.team.rawValue)
+					fetchedNode[0].takConfig?.role = Int32(config.role.rawValue)
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				do {
+					try context.save()
+					Logger.data.info("💾 [TAKConfigEntity] Updated TAK Module Config for node: \(nodeNum.toHex(), privacy: .public)")
+				} catch {
+					context.rollback()
+					let nsError = error as NSError
+					Logger.data.error("💥 [TAKConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
+				}
+			} else {
+				Logger.data.error("💥 [TAKConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save TAK Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [TAKConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
 }

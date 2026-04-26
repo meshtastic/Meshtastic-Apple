@@ -30,9 +30,7 @@ struct RXTXIndicatorWidget: View {
 				}
 			}
 			#if targetEnvironment(macCatalyst)
-				if #available(macOS 26.0, *) {
-					// Don't show popover that crashes on mac 26
-				} else {
+				if #unavailable(macOS 26.0) {
 					self.isPopoverOpen.toggle()
 				}
 			#else
@@ -117,5 +115,14 @@ struct LEDIndicator: View {
 					brightness = 0.0
 				}
 			}
+	}
+}
+
+#Preview {
+	HStack(spacing: 12) {
+		LEDIndicator(flash: .constant(1), color: .green)
+			.frame(width: 10, height: 10)
+		LEDIndicator(flash: .constant(0), color: .red)
+			.frame(width: 10, height: 10)
 	}
 }

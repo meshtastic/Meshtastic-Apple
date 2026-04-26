@@ -45,7 +45,7 @@ struct MapSettingsForm: View {
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
-						if LocationsHandler.currentLocation != nil {
+					if LocationsHandler.currentPreciseLocation != nil {
 							HStack {
 								Label("Distance", systemImage: "lines.measurement.horizontal")
 								Picker("", selection: $meshMapDistance) {
@@ -227,4 +227,14 @@ struct MapSettingsForm: View {
 		}
 
 	}
+}
+
+#Preview {
+	MapSettingsForm(
+		traffic: .constant(false),
+		pointsOfInterest: .constant(true),
+		mapLayer: .constant(.standard),
+		meshMap: .constant(true),
+		enabledOverlayConfigs: .constant(Set<UUID>())
+	)
 }

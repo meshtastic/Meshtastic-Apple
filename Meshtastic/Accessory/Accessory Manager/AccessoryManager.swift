@@ -77,7 +77,7 @@ enum AccessoryManagerState: Equatable {
 	case idle
 	case discovering
 	case connecting
-	case retrying(attempt: Int)
+	case retrying(attempt: Int, maxAttempts: Int)
 	case retrievingDatabase(nodeCount: Int)
 	case communicating
 	case subscribed
@@ -92,8 +92,8 @@ enum AccessoryManagerState: Equatable {
 			return "Discovering"
 		case .connecting:
 			return "Connecting"
-		case .retrying(let attempt):
-			return "Retrying Connection (\(attempt))"
+		case .retrying(let attempt, let maxAttempts):
+			return "Retrying Connection (\(attempt) of \(maxAttempts))"
 		case .communicating:
 			return "Communicating"
 		case .subscribed:
@@ -116,7 +116,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Constants
 	let NONCE_ONLY_CONFIG = 69420
 	let NONCE_ONLY_DB = 69421
-	let minimumVersion = "2.3.15"
+	let minimumVersion = "2.5.18"
+	let securityVersion = "2.6.0"
 
 	// Global Objects
 	// Chicken/Egg problem.  Set in the App object immediately after
@@ -151,6 +152,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var connectionSteps: SequentialSteps?
 	
 	// Public due to file separation
+	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
@@ -265,6 +267,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
+		self.activeDeviceNum = nil
 		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
@@ -288,6 +291,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false
+		
+		// Cancel any existing discovery task so startDiscovery() always creates a fresh one.
+		// Without this, if discovery was still running from before the connection attempt,
+		// startDiscovery() would silently no-op and the device would never reappear in the list.
+		discoveryTask?.cancel()
+		discoveryTask = nil
+		
 		self.startDiscovery()
 	}
 	
@@ -319,6 +329,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				device[keyPath: key] = value
 				self.activeConnection = (device: device, connection: activeConnection.connection)
+				
+			}
+			// Make sure activeDeviceNum is up to date.
+			if key == \.num, self.activeDeviceNum != device.num {
 				self.activeDeviceNum = device.num
 			}
 		}
@@ -512,12 +526,51 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
 					await handleTextMessageAppPacket(packet)
+					// Broadcast text message to TAK clients
+					if let text = String(bytes: data.payload, encoding: .utf8) {
+						Logger.tak.debug("Text message received, calling broadcast")
+						let server = TAKServerManager.shared
+						if server.ensureBridgeReadyForMeshToCot() {
+							await server.bridge?.broadcastMeshTextMessageToTAK(text: text, from: packet.from, channel: packet.channel, to: packet.to)
+						}
+					}
 				case .remoteHardwareApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
 					await MeshPackets.shared.upsertPositionPacket(packet: packet)
+					WatchSessionManager.shared.sendNodesToWatch()
+					// Broadcast position to TAK clients
+					if let position = try? Position(serializedBytes: data.payload) {
+						Logger.tak.debug("Position received, calling broadcast")
+						let server = TAKServerManager.shared
+						if server.ensureBridgeReadyForMeshToCot() {
+							await server.bridge?.broadcastMeshPositionToTAK(position: position, from: packet.from)
+						}
+					}
 				case .waypointApp:
+					Logger.tak.info("WAYPOINT APP CASE REACHED")
 					await MeshPackets.shared.waypointPacket(packet: packet)
+					// Broadcast waypoint to TAK clients
+					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
+						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")
+						// Ensure bridge is initialized before calling (not optional chaining, or lazy init won't run)
+						let server = TAKServerManager.shared
+						if server.meshToCotEnabled && server.isRunning && !server.connectedClients.isEmpty {
+							// Force bridge initialization if needed
+							if server.bridge == nil {
+								Logger.tak.info("Initializing bridge on demand")
+								let bridge = TAKMeshtasticBridge(
+									accessoryManager: AccessoryManager.shared,
+									takServerManager: server
+								)
+								bridge.context = AccessoryManager.shared.context
+								server.bridge = bridge
+							}
+							await server.bridge?.broadcastMeshWaypointToTAK(waypoint: waypoint, from: packet.from)
+						} else {
+							Logger.tak.info("Waypoint broadcast skipped: server not ready or no clients")
+						}
+					}
 				case .nodeinfoApp:
 					guard let connectedNodeNum = self.activeDeviceNum else {
 						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for node info upsert.")
@@ -612,10 +665,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .keyVerificationApp:
 					Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-				case .unknownApp:
-					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .cayenneApp:
 					Logger.mesh.info("🕸️ MESH PACKET received Cayenne App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .groupalarmApp:
+					Logger.mesh.info("🕸️ MESH PACKET received Group Alarm App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .lorawanBridge:
+					Logger.mesh.info("🕸️ MESH PACKET received for LoRaWAN Bridge UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .unknownApp:
+					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
 			}
 
@@ -688,6 +745,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				do {
 					try context.save()
 					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+
+					// Push updated node data to the companion Watch app
+					WatchSessionManager.shared.sendNodesToWatch()
 				} catch {
 					context.rollback()
 					let nsError = error as NSError

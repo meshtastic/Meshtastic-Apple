@@ -16,7 +16,7 @@ actor BLETransport: Transport {
 	private let kCentralRestoreID = "com.meshtastic.central"
 
 	let type: TransportType = .ble
-	private var centralManager: CBCentralManager
+	private var centralManager: CBCentralManager!
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
@@ -39,10 +39,15 @@ actor BLETransport: Transport {
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
 		self.setupCompleteGate = AsyncGate()
-		centralManager = CBCentralManager(delegate: delegate,
-										  queue: .global(qos: .utility),
-										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
-		)
+		// Only create CBCentralManager immediately if Bluetooth authorization is already
+		// determined. This avoids showing the system permission prompt before the
+		// onboarding Bluetooth screen has a chance to present it in context.
+		if CBCentralManager.authorization != .notDetermined {
+			centralManager = CBCentralManager(delegate: delegate,
+											  queue: .global(qos: .utility),
+											  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+			)
+		}
 		self.delegate.setTransport(self)
 	}
 
@@ -50,11 +55,22 @@ actor BLETransport: Transport {
 		self.discoveredDeviceContinuation = cont
 	}
 
+	private func createCentralManager() {
+		centralManager = CBCentralManager(delegate: delegate,
+										  queue: .global(qos: .utility),
+										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+		)
+	}
+
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			Task {
 				await self.setDiscoveredDeviceContinuation(cont)
-				
+
+				// Create the CBCentralManager now if it was deferred (authorization was .notDetermined at init).
+				if await self.centralManager == nil {
+					await self.createCentralManager()
+				}
 				// This gate is opened when the CBCentralManager is in poweredOn state.
 				// Its probably open already, but just to be sure in case we get here too quickly.
 				try await self.setupCompleteGate.wait()
@@ -106,6 +122,13 @@ actor BLETransport: Transport {
 
 	private func stopScanning() {
 		Logger.transport.debug("🛜 [BLE] Stop Scanning: BLE Discovery has been stopped.")
+		guard centralManager != nil else {
+			discoveredPeripherals.removeAll()
+			discoveredDeviceContinuation = nil
+			cleanupTask?.cancel()
+			cleanupTask = nil
+			return
+		}
 		centralManager.stopScan()
 		discoveredPeripherals.removeAll()
 		discoveredDeviceContinuation = nil
@@ -220,6 +243,10 @@ actor BLETransport: Transport {
 					}
 					self.connectContinuation = cont
 					self.connectingPeripheral = peripheral.peripheral
+					guard centralManager != nil else {
+						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
+						return
+					}
 					centralManager.connect(peripheral.peripheral)
 				}
 				self.activeConnection = newConnection
@@ -244,7 +271,6 @@ actor BLETransport: Transport {
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
 					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
-					await self.connectionDidDisconnect(fromPeripheral: peripheral)
 				}
 			}
 		}
@@ -279,7 +305,7 @@ actor BLETransport: Transport {
 			self.connectContinuation = nil
 		} else if let activeConnection = self.activeConnection {
 			// Inform the active connection that there was an error and it should disconnect
-			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Disconnecting the active connection.")
+			Logger.transport.debug("🛜 [BLETransport] Error on active connection. Disconnecting.")
 			Task {
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
 				await self.connectionDidDisconnect(fromPeripheral: peripheral)

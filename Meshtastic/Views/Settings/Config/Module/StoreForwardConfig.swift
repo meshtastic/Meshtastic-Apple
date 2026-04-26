@@ -166,24 +166,24 @@ struct StoreForwardConfig: View {
 			}
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
-			if oldEnabled != newEnabled && newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
+			if oldEnabled != newEnabled && newEnabled != node?.storeForwardConfig?.enabled { hasChanges = true }
 
 			// Note: even if this is the connected node, we don't have to update AccessoryManager.wantStoreAndForwardPackets here, because the node will reboot after we save config changes, and we'll pick up the new value after we reconnect.
 		}
 		.onChange(of: isServer) { oldIsServer, newIsServer in
-			if oldIsServer != newIsServer && newIsServer != node!.storeForwardConfig!.isRouter { hasChanges = true }
+			if oldIsServer != newIsServer && newIsServer != node?.storeForwardConfig?.isRouter { hasChanges = true }
 		}
 		.onChange(of: heartbeat) { oldHeartbeat, newHeartbeat in
 			if oldHeartbeat != newHeartbeat && newHeartbeat != node?.storeForwardConfig?.heartbeat ?? true { hasChanges = true }
 		}
 		.onChange(of: records) { oldRecords, newRecords in
-			if oldRecords != newRecords && newRecords != node!.storeForwardConfig?.records ?? -1 { hasChanges = true }
+			if oldRecords != newRecords && newRecords != node?.storeForwardConfig?.records ?? -1 { hasChanges = true }
 		}
 		.onChange(of: historyReturnMax) { oldHistoryReturnMax, newHistoryReturnMax in
-			if oldHistoryReturnMax != newHistoryReturnMax && newHistoryReturnMax != node!.storeForwardConfig?.historyReturnMax ?? -1 { hasChanges = true }
+			if oldHistoryReturnMax != newHistoryReturnMax && newHistoryReturnMax != node?.storeForwardConfig?.historyReturnMax ?? -1 { hasChanges = true }
 		}
 		.onChange(of: historyReturnWindow) { oldHistoryReturnWindow, newHistoryReturnWindow in
-			if oldHistoryReturnWindow != newHistoryReturnWindow && newHistoryReturnWindow != node!.storeForwardConfig?.historyReturnWindow ?? -1 { hasChanges = true }
+			if oldHistoryReturnWindow != newHistoryReturnWindow && newHistoryReturnWindow != node?.storeForwardConfig?.historyReturnWindow ?? -1 { hasChanges = true }
 		}
 	}
 	
@@ -196,4 +196,11 @@ struct StoreForwardConfig: View {
 		self.historyReturnWindow = Int(node?.storeForwardConfig?.historyReturnWindow ?? 7200)
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return StoreForwardConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

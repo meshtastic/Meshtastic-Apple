@@ -123,3 +123,10 @@ struct PaxCounterConfig: View {
 		paxcounterUpdateInterval = UpdateInterval(from: Int(node?.paxCounterConfig?.updateInterval ?? 1800))
 	}
 }
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return PaxCounterConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
+}

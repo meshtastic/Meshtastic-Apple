@@ -51,6 +51,14 @@ struct AnimatedNodePin: View, Equatable {
 	}
 }
 
+#Preview {
+	VStack(spacing: 20) {
+		AnimatedNodePin(nodeColor: .systemBlue, shortName: "TN", hasDetectionSensorMetrics: false, isOnline: true, calculatedDelay: 0.0)
+		AnimatedNodePin(nodeColor: .systemGreen, shortName: "AB", hasDetectionSensorMetrics: true, isOnline: true, calculatedDelay: 0.2)
+		AnimatedNodePin(nodeColor: .systemRed, shortName: "XY", hasDetectionSensorMetrics: false, isOnline: false, calculatedDelay: 0.0)
+	}
+}
+
 struct PulsingCircle: View {
 	let nodeColor: UIColor
 	let calculatedDelay: Double

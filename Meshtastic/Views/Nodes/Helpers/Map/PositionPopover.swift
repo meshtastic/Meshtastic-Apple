@@ -45,18 +45,23 @@ struct PositionPopover: View {
 				Divider()
 				HStack(alignment: .center) {
 					VStack(alignment: .leading) {
-						Button {
-							detentSelection = .large
-							DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-								navigateToCompass = true
+						if position.isPreciseLocation {
+							Button {
+								detentSelection = .large
+								DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+									navigateToCompass = true
+								}
+							} label: {
+								Label {
+									Text("Open Compass")
+								} icon: {
+									Image(systemName: "safari")
+										.symbolRenderingMode(.hierarchical)
+										.frame(width: 35)
+								}
 							}
-						} label: {
-							HStack {
-								Image(systemName: "safari")
-								Text("Open Compass")
-							}
+							.padding(.bottom, 5)
 						}
-						.padding(.bottom, 5)
 						
 						/// Time
 						Label {
@@ -174,6 +179,7 @@ struct PositionPopover: View {
 										.symbolRenderingMode(.hierarchical)
 										.frame(width: 35)
 								}
+								.padding(.bottom, 5)
 							}
 						}
 						/// Speed
@@ -258,8 +264,14 @@ struct PositionPopover: View {
 			.navigationDestination(isPresented: $navigateToCompass) {
 				CompassView(
 					waypointLocation: position.coordinate,
-					waypointName: position.nodePosition?.user?.longName ?? "Unknown node",
-					color: (position.nodePosition?.user?.num != nil && position.nodePosition?.user?.num != 0) ? Color(UIColor(hex: UInt32(position.nodePosition!.user!.num))) : .orange
+					waypointLongName: position.nodePosition?.user?.longName ?? "Unknown node",
+					waypointShortName: position.nodePosition?.user?.shortName ?? "???",
+					color: {
+					if let num = position.nodePosition?.user?.num, num != 0 {
+						return Color(UIColor(hex: UInt32(num)))
+					}
+					return .orange
+				}()
 				)
 			}
 		}

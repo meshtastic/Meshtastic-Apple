@@ -142,7 +142,7 @@ struct LoRaConfig: View {
 								.tag($0)
 						}
 					}
-					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs.")
+					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. 0 hop broadcast messages will not get ACKs.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
@@ -320,4 +320,11 @@ struct LoRaConfig: View {
 		self.okToMqtt = node?.loRaConfig?.okToMqtt ?? false
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	return LoRaConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }

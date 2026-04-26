@@ -74,7 +74,7 @@ public enum OTAMode: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// This message is handled by the Admin module and is responsible for all settings/channel read/write operations.
 /// This message is used to do settings operations to both remote AND local nodes.
 /// (Prior to 1.2 these operations were done via special ToRadio operations)
-public struct AdminMessage: Sendable {
+public struct AdminMessage: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -83,201 +83,207 @@ public struct AdminMessage: Sendable {
   /// The node generates this key and sends it with any get_x_response packets.
   /// The client MUST include the same key with any set_x commands. Key expires after 300 seconds.
   /// Prevents replay attacks for admin messages.
-  public var sessionPasskey: Data = Data()
+  public var sessionPasskey: Data {
+    get {return _storage._sessionPasskey}
+    set {_uniqueStorage()._sessionPasskey = newValue}
+  }
 
   ///
   /// TODO: REPLACE
-  public var payloadVariant: AdminMessage.OneOf_PayloadVariant? = nil
+  public var payloadVariant: OneOf_PayloadVariant? {
+    get {return _storage._payloadVariant}
+    set {_uniqueStorage()._payloadVariant = newValue}
+  }
 
   ///
   /// Send the specified channel in the response to this message
   /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
   public var getChannelRequest: UInt32 {
     get {
-      if case .getChannelRequest(let v)? = payloadVariant {return v}
+      if case .getChannelRequest(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .getChannelRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getChannelRequest(newValue)}
   }
 
   ///
   /// TODO: REPLACE
   public var getChannelResponse: Channel {
     get {
-      if case .getChannelResponse(let v)? = payloadVariant {return v}
+      if case .getChannelResponse(let v)? = _storage._payloadVariant {return v}
       return Channel()
     }
-    set {payloadVariant = .getChannelResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getChannelResponse(newValue)}
   }
 
   ///
   /// Send the current owner data in the response to this message.
   public var getOwnerRequest: Bool {
     get {
-      if case .getOwnerRequest(let v)? = payloadVariant {return v}
+      if case .getOwnerRequest(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .getOwnerRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getOwnerRequest(newValue)}
   }
 
   ///
   /// TODO: REPLACE
   public var getOwnerResponse: User {
     get {
-      if case .getOwnerResponse(let v)? = payloadVariant {return v}
+      if case .getOwnerResponse(let v)? = _storage._payloadVariant {return v}
       return User()
     }
-    set {payloadVariant = .getOwnerResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getOwnerResponse(newValue)}
   }
 
   ///
   /// Ask for the following config data to be sent
   public var getConfigRequest: AdminMessage.ConfigType {
     get {
-      if case .getConfigRequest(let v)? = payloadVariant {return v}
+      if case .getConfigRequest(let v)? = _storage._payloadVariant {return v}
       return .deviceConfig
     }
-    set {payloadVariant = .getConfigRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getConfigRequest(newValue)}
   }
 
   ///
   /// Send the current Config in the response to this message.
   public var getConfigResponse: Config {
     get {
-      if case .getConfigResponse(let v)? = payloadVariant {return v}
+      if case .getConfigResponse(let v)? = _storage._payloadVariant {return v}
       return Config()
     }
-    set {payloadVariant = .getConfigResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getConfigResponse(newValue)}
   }
 
   ///
   /// Ask for the following config data to be sent
   public var getModuleConfigRequest: AdminMessage.ModuleConfigType {
     get {
-      if case .getModuleConfigRequest(let v)? = payloadVariant {return v}
+      if case .getModuleConfigRequest(let v)? = _storage._payloadVariant {return v}
       return .mqttConfig
     }
-    set {payloadVariant = .getModuleConfigRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getModuleConfigRequest(newValue)}
   }
 
   ///
   /// Send the current Config in the response to this message.
   public var getModuleConfigResponse: ModuleConfig {
     get {
-      if case .getModuleConfigResponse(let v)? = payloadVariant {return v}
+      if case .getModuleConfigResponse(let v)? = _storage._payloadVariant {return v}
       return ModuleConfig()
     }
-    set {payloadVariant = .getModuleConfigResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getModuleConfigResponse(newValue)}
   }
 
   ///
   /// Get the Canned Message Module messages in the response to this message.
   public var getCannedMessageModuleMessagesRequest: Bool {
     get {
-      if case .getCannedMessageModuleMessagesRequest(let v)? = payloadVariant {return v}
+      if case .getCannedMessageModuleMessagesRequest(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .getCannedMessageModuleMessagesRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getCannedMessageModuleMessagesRequest(newValue)}
   }
 
   ///
   /// Get the Canned Message Module messages in the response to this message.
   public var getCannedMessageModuleMessagesResponse: String {
     get {
-      if case .getCannedMessageModuleMessagesResponse(let v)? = payloadVariant {return v}
+      if case .getCannedMessageModuleMessagesResponse(let v)? = _storage._payloadVariant {return v}
       return String()
     }
-    set {payloadVariant = .getCannedMessageModuleMessagesResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getCannedMessageModuleMessagesResponse(newValue)}
   }
 
   ///
   /// Request the node to send device metadata (firmware, protobuf version, etc)
   public var getDeviceMetadataRequest: Bool {
     get {
-      if case .getDeviceMetadataRequest(let v)? = payloadVariant {return v}
+      if case .getDeviceMetadataRequest(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .getDeviceMetadataRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getDeviceMetadataRequest(newValue)}
   }
 
   ///
   /// Device metadata response
   public var getDeviceMetadataResponse: DeviceMetadata {
     get {
-      if case .getDeviceMetadataResponse(let v)? = payloadVariant {return v}
+      if case .getDeviceMetadataResponse(let v)? = _storage._payloadVariant {return v}
       return DeviceMetadata()
     }
-    set {payloadVariant = .getDeviceMetadataResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getDeviceMetadataResponse(newValue)}
   }
 
   ///
   /// Get the Ringtone in the response to this message.
   public var getRingtoneRequest: Bool {
     get {
-      if case .getRingtoneRequest(let v)? = payloadVariant {return v}
+      if case .getRingtoneRequest(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .getRingtoneRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getRingtoneRequest(newValue)}
   }
 
   ///
   /// Get the Ringtone in the response to this message.
   public var getRingtoneResponse: String {
     get {
-      if case .getRingtoneResponse(let v)? = payloadVariant {return v}
+      if case .getRingtoneResponse(let v)? = _storage._payloadVariant {return v}
       return String()
     }
-    set {payloadVariant = .getRingtoneResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getRingtoneResponse(newValue)}
   }
 
   ///
   /// Request the node to send it's connection status
   public var getDeviceConnectionStatusRequest: Bool {
     get {
-      if case .getDeviceConnectionStatusRequest(let v)? = payloadVariant {return v}
+      if case .getDeviceConnectionStatusRequest(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .getDeviceConnectionStatusRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getDeviceConnectionStatusRequest(newValue)}
   }
 
   ///
   /// Device connection status response
   public var getDeviceConnectionStatusResponse: DeviceConnectionStatus {
     get {
-      if case .getDeviceConnectionStatusResponse(let v)? = payloadVariant {return v}
+      if case .getDeviceConnectionStatusResponse(let v)? = _storage._payloadVariant {return v}
       return DeviceConnectionStatus()
     }
-    set {payloadVariant = .getDeviceConnectionStatusResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getDeviceConnectionStatusResponse(newValue)}
   }
 
   ///
   /// Setup a node for licensed amateur (ham) radio operation
   public var setHamMode: HamParameters {
     get {
-      if case .setHamMode(let v)? = payloadVariant {return v}
+      if case .setHamMode(let v)? = _storage._payloadVariant {return v}
       return HamParameters()
     }
-    set {payloadVariant = .setHamMode(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setHamMode(newValue)}
   }
 
   ///
   /// Get the mesh's nodes with their available gpio pins for RemoteHardware module use
   public var getNodeRemoteHardwarePinsRequest: Bool {
     get {
-      if case .getNodeRemoteHardwarePinsRequest(let v)? = payloadVariant {return v}
+      if case .getNodeRemoteHardwarePinsRequest(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .getNodeRemoteHardwarePinsRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getNodeRemoteHardwarePinsRequest(newValue)}
   }
 
   ///
   /// Respond with the mesh's nodes with their available gpio pins for RemoteHardware module use
   public var getNodeRemoteHardwarePinsResponse: NodeRemoteHardwarePinsResponse {
     get {
-      if case .getNodeRemoteHardwarePinsResponse(let v)? = payloadVariant {return v}
+      if case .getNodeRemoteHardwarePinsResponse(let v)? = _storage._payloadVariant {return v}
       return NodeRemoteHardwarePinsResponse()
     }
-    set {payloadVariant = .getNodeRemoteHardwarePinsResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getNodeRemoteHardwarePinsResponse(newValue)}
   }
 
   ///
@@ -285,60 +291,60 @@ public struct AdminMessage: Sendable {
   /// Only implemented on NRF52 currently
   public var enterDfuModeRequest: Bool {
     get {
-      if case .enterDfuModeRequest(let v)? = payloadVariant {return v}
+      if case .enterDfuModeRequest(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .enterDfuModeRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .enterDfuModeRequest(newValue)}
   }
 
   ///
   /// Delete the file by the specified path from the device
   public var deleteFileRequest: String {
     get {
-      if case .deleteFileRequest(let v)? = payloadVariant {return v}
+      if case .deleteFileRequest(let v)? = _storage._payloadVariant {return v}
       return String()
     }
-    set {payloadVariant = .deleteFileRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .deleteFileRequest(newValue)}
   }
 
   ///
   /// Set zero and offset for scale chips
   public var setScale: UInt32 {
     get {
-      if case .setScale(let v)? = payloadVariant {return v}
+      if case .setScale(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .setScale(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setScale(newValue)}
   }
 
   ///
   /// Backup the node's preferences
   public var backupPreferences: AdminMessage.BackupLocation {
     get {
-      if case .backupPreferences(let v)? = payloadVariant {return v}
+      if case .backupPreferences(let v)? = _storage._payloadVariant {return v}
       return .flash
     }
-    set {payloadVariant = .backupPreferences(newValue)}
+    set {_uniqueStorage()._payloadVariant = .backupPreferences(newValue)}
   }
 
   ///
   /// Restore the node's preferences
   public var restorePreferences: AdminMessage.BackupLocation {
     get {
-      if case .restorePreferences(let v)? = payloadVariant {return v}
+      if case .restorePreferences(let v)? = _storage._payloadVariant {return v}
       return .flash
     }
-    set {payloadVariant = .restorePreferences(newValue)}
+    set {_uniqueStorage()._payloadVariant = .restorePreferences(newValue)}
   }
 
   ///
   /// Remove backups of the node's preferences
   public var removeBackupPreferences: AdminMessage.BackupLocation {
     get {
-      if case .removeBackupPreferences(let v)? = payloadVariant {return v}
+      if case .removeBackupPreferences(let v)? = _storage._payloadVariant {return v}
       return .flash
     }
-    set {payloadVariant = .removeBackupPreferences(newValue)}
+    set {_uniqueStorage()._payloadVariant = .removeBackupPreferences(newValue)}
   }
 
   ///
@@ -346,20 +352,20 @@ public struct AdminMessage: Sendable {
   /// This is used to trigger physical input events like button presses, touch events, etc.
   public var sendInputEvent: AdminMessage.InputEvent {
     get {
-      if case .sendInputEvent(let v)? = payloadVariant {return v}
+      if case .sendInputEvent(let v)? = _storage._payloadVariant {return v}
       return AdminMessage.InputEvent()
     }
-    set {payloadVariant = .sendInputEvent(newValue)}
+    set {_uniqueStorage()._payloadVariant = .sendInputEvent(newValue)}
   }
 
   ///
   /// Set the owner for this node
   public var setOwner: User {
     get {
-      if case .setOwner(let v)? = payloadVariant {return v}
+      if case .setOwner(let v)? = _storage._payloadVariant {return v}
       return User()
     }
-    set {payloadVariant = .setOwner(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setOwner(newValue)}
   }
 
   ///
@@ -370,100 +376,100 @@ public struct AdminMessage: Sendable {
   /// If the client sets a particular channel to be primary, the previous channel will be set to SECONDARY automatically.
   public var setChannel: Channel {
     get {
-      if case .setChannel(let v)? = payloadVariant {return v}
+      if case .setChannel(let v)? = _storage._payloadVariant {return v}
       return Channel()
     }
-    set {payloadVariant = .setChannel(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setChannel(newValue)}
   }
 
   ///
   /// Set the current Config
   public var setConfig: Config {
     get {
-      if case .setConfig(let v)? = payloadVariant {return v}
+      if case .setConfig(let v)? = _storage._payloadVariant {return v}
       return Config()
     }
-    set {payloadVariant = .setConfig(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setConfig(newValue)}
   }
 
   ///
   /// Set the current Config
   public var setModuleConfig: ModuleConfig {
     get {
-      if case .setModuleConfig(let v)? = payloadVariant {return v}
+      if case .setModuleConfig(let v)? = _storage._payloadVariant {return v}
       return ModuleConfig()
     }
-    set {payloadVariant = .setModuleConfig(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setModuleConfig(newValue)}
   }
 
   ///
   /// Set the Canned Message Module messages text.
   public var setCannedMessageModuleMessages: String {
     get {
-      if case .setCannedMessageModuleMessages(let v)? = payloadVariant {return v}
+      if case .setCannedMessageModuleMessages(let v)? = _storage._payloadVariant {return v}
       return String()
     }
-    set {payloadVariant = .setCannedMessageModuleMessages(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setCannedMessageModuleMessages(newValue)}
   }
 
   ///
   /// Set the ringtone for ExternalNotification.
   public var setRingtoneMessage: String {
     get {
-      if case .setRingtoneMessage(let v)? = payloadVariant {return v}
+      if case .setRingtoneMessage(let v)? = _storage._payloadVariant {return v}
       return String()
     }
-    set {payloadVariant = .setRingtoneMessage(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setRingtoneMessage(newValue)}
   }
 
   ///
   /// Remove the node by the specified node-num from the NodeDB on the device
   public var removeByNodenum: UInt32 {
     get {
-      if case .removeByNodenum(let v)? = payloadVariant {return v}
+      if case .removeByNodenum(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .removeByNodenum(newValue)}
+    set {_uniqueStorage()._payloadVariant = .removeByNodenum(newValue)}
   }
 
   ///
   /// Set specified node-num to be favorited on the NodeDB on the device
   public var setFavoriteNode: UInt32 {
     get {
-      if case .setFavoriteNode(let v)? = payloadVariant {return v}
+      if case .setFavoriteNode(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .setFavoriteNode(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setFavoriteNode(newValue)}
   }
 
   ///
   /// Set specified node-num to be un-favorited on the NodeDB on the device
   public var removeFavoriteNode: UInt32 {
     get {
-      if case .removeFavoriteNode(let v)? = payloadVariant {return v}
+      if case .removeFavoriteNode(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .removeFavoriteNode(newValue)}
+    set {_uniqueStorage()._payloadVariant = .removeFavoriteNode(newValue)}
   }
 
   ///
   /// Set fixed position data on the node and then set the position.fixed_position = true
   public var setFixedPosition: Position {
     get {
-      if case .setFixedPosition(let v)? = payloadVariant {return v}
+      if case .setFixedPosition(let v)? = _storage._payloadVariant {return v}
       return Position()
     }
-    set {payloadVariant = .setFixedPosition(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setFixedPosition(newValue)}
   }
 
   ///
   /// Clear fixed position coordinates and then set position.fixed_position = false
   public var removeFixedPosition: Bool {
     get {
-      if case .removeFixedPosition(let v)? = payloadVariant {return v}
+      if case .removeFixedPosition(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .removeFixedPosition(newValue)}
+    set {_uniqueStorage()._payloadVariant = .removeFixedPosition(newValue)}
   }
 
   ///
@@ -471,70 +477,70 @@ public struct AdminMessage: Sendable {
   /// Convenience method to set the time on the node (as Net quality) without any other position data
   public var setTimeOnly: UInt32 {
     get {
-      if case .setTimeOnly(let v)? = payloadVariant {return v}
+      if case .setTimeOnly(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .setTimeOnly(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setTimeOnly(newValue)}
   }
 
   ///
   /// Tell the node to send the stored ui data.
   public var getUiConfigRequest: Bool {
     get {
-      if case .getUiConfigRequest(let v)? = payloadVariant {return v}
+      if case .getUiConfigRequest(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .getUiConfigRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getUiConfigRequest(newValue)}
   }
 
   ///
   /// Reply stored device ui data.
   public var getUiConfigResponse: DeviceUIConfig {
     get {
-      if case .getUiConfigResponse(let v)? = payloadVariant {return v}
+      if case .getUiConfigResponse(let v)? = _storage._payloadVariant {return v}
       return DeviceUIConfig()
     }
-    set {payloadVariant = .getUiConfigResponse(newValue)}
+    set {_uniqueStorage()._payloadVariant = .getUiConfigResponse(newValue)}
   }
 
   ///
   /// Tell the node to store UI data persistently.
   public var storeUiConfig: DeviceUIConfig {
     get {
-      if case .storeUiConfig(let v)? = payloadVariant {return v}
+      if case .storeUiConfig(let v)? = _storage._payloadVariant {return v}
       return DeviceUIConfig()
     }
-    set {payloadVariant = .storeUiConfig(newValue)}
+    set {_uniqueStorage()._payloadVariant = .storeUiConfig(newValue)}
   }
 
   ///
   /// Set specified node-num to be ignored on the NodeDB on the device
   public var setIgnoredNode: UInt32 {
     get {
-      if case .setIgnoredNode(let v)? = payloadVariant {return v}
+      if case .setIgnoredNode(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .setIgnoredNode(newValue)}
+    set {_uniqueStorage()._payloadVariant = .setIgnoredNode(newValue)}
   }
 
   ///
   /// Set specified node-num to be un-ignored on the NodeDB on the device
   public var removeIgnoredNode: UInt32 {
     get {
-      if case .removeIgnoredNode(let v)? = payloadVariant {return v}
+      if case .removeIgnoredNode(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .removeIgnoredNode(newValue)}
+    set {_uniqueStorage()._payloadVariant = .removeIgnoredNode(newValue)}
   }
 
   ///
   /// Set specified node-num to be muted
   public var toggleMutedNode: UInt32 {
     get {
-      if case .toggleMutedNode(let v)? = payloadVariant {return v}
+      if case .toggleMutedNode(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .toggleMutedNode(newValue)}
+    set {_uniqueStorage()._payloadVariant = .toggleMutedNode(newValue)}
   }
 
   ///
@@ -542,50 +548,50 @@ public struct AdminMessage: Sendable {
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   public var beginEditSettings: Bool {
     get {
-      if case .beginEditSettings(let v)? = payloadVariant {return v}
+      if case .beginEditSettings(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .beginEditSettings(newValue)}
+    set {_uniqueStorage()._payloadVariant = .beginEditSettings(newValue)}
   }
 
   ///
   /// Commits an open transaction for any edits made to config, module config, owner, and channel settings
   public var commitEditSettings: Bool {
     get {
-      if case .commitEditSettings(let v)? = payloadVariant {return v}
+      if case .commitEditSettings(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .commitEditSettings(newValue)}
+    set {_uniqueStorage()._payloadVariant = .commitEditSettings(newValue)}
   }
 
   ///
   /// Add a contact (User) to the nodedb
   public var addContact: SharedContact {
     get {
-      if case .addContact(let v)? = payloadVariant {return v}
+      if case .addContact(let v)? = _storage._payloadVariant {return v}
       return SharedContact()
     }
-    set {payloadVariant = .addContact(newValue)}
+    set {_uniqueStorage()._payloadVariant = .addContact(newValue)}
   }
 
   ///
   /// Initiate or respond to a key verification request
   public var keyVerification: KeyVerificationAdmin {
     get {
-      if case .keyVerification(let v)? = payloadVariant {return v}
+      if case .keyVerification(let v)? = _storage._payloadVariant {return v}
       return KeyVerificationAdmin()
     }
-    set {payloadVariant = .keyVerification(newValue)}
+    set {_uniqueStorage()._payloadVariant = .keyVerification(newValue)}
   }
 
   ///
   /// Tell the node to factory reset config everything; all device state and configuration will be returned to factory defaults and BLE bonds will be cleared.
   public var factoryResetDevice: Int32 {
     get {
-      if case .factoryResetDevice(let v)? = payloadVariant {return v}
+      if case .factoryResetDevice(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .factoryResetDevice(newValue)}
+    set {_uniqueStorage()._payloadVariant = .factoryResetDevice(newValue)}
   }
 
   ///
@@ -596,10 +602,10 @@ public struct AdminMessage: Sendable {
   /// NOTE: This field was marked as deprecated in the .proto file.
   public var rebootOtaSeconds: Int32 {
     get {
-      if case .rebootOtaSeconds(let v)? = payloadVariant {return v}
+      if case .rebootOtaSeconds(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .rebootOtaSeconds(newValue)}
+    set {_uniqueStorage()._payloadVariant = .rebootOtaSeconds(newValue)}
   }
 
   ///
@@ -607,40 +613,40 @@ public struct AdminMessage: Sendable {
   /// If received the simulator will exit successfully.
   public var exitSimulator: Bool {
     get {
-      if case .exitSimulator(let v)? = payloadVariant {return v}
+      if case .exitSimulator(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .exitSimulator(newValue)}
+    set {_uniqueStorage()._payloadVariant = .exitSimulator(newValue)}
   }
 
   ///
   /// Tell the node to reboot in this many seconds (or <0 to cancel reboot)
   public var rebootSeconds: Int32 {
     get {
-      if case .rebootSeconds(let v)? = payloadVariant {return v}
+      if case .rebootSeconds(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .rebootSeconds(newValue)}
+    set {_uniqueStorage()._payloadVariant = .rebootSeconds(newValue)}
   }
 
   ///
   /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
   public var shutdownSeconds: Int32 {
     get {
-      if case .shutdownSeconds(let v)? = payloadVariant {return v}
+      if case .shutdownSeconds(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .shutdownSeconds(newValue)}
+    set {_uniqueStorage()._payloadVariant = .shutdownSeconds(newValue)}
   }
 
   ///
   /// Tell the node to factory reset config; all device state and configuration will be returned to factory defaults; BLE bonds will be preserved.
   public var factoryResetConfig: Int32 {
     get {
-      if case .factoryResetConfig(let v)? = payloadVariant {return v}
+      if case .factoryResetConfig(let v)? = _storage._payloadVariant {return v}
       return 0
     }
-    set {payloadVariant = .factoryResetConfig(newValue)}
+    set {_uniqueStorage()._payloadVariant = .factoryResetConfig(newValue)}
   }
 
   ///
@@ -648,30 +654,30 @@ public struct AdminMessage: Sendable {
   /// When true, favorites are preserved through reset.
   public var nodedbReset: Bool {
     get {
-      if case .nodedbReset(let v)? = payloadVariant {return v}
+      if case .nodedbReset(let v)? = _storage._payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .nodedbReset(newValue)}
+    set {_uniqueStorage()._payloadVariant = .nodedbReset(newValue)}
   }
 
   ///
   /// Tell the node to reset into the OTA Loader
   public var otaRequest: AdminMessage.OTAEvent {
     get {
-      if case .otaRequest(let v)? = payloadVariant {return v}
+      if case .otaRequest(let v)? = _storage._payloadVariant {return v}
       return AdminMessage.OTAEvent()
     }
-    set {payloadVariant = .otaRequest(newValue)}
+    set {_uniqueStorage()._payloadVariant = .otaRequest(newValue)}
   }
 
   ///
   /// Parameters and sensor configuration
   public var sensorConfig: SensorConfig {
     get {
-      if case .sensorConfig(let v)? = payloadVariant {return v}
+      if case .sensorConfig(let v)? = _storage._payloadVariant {return v}
       return SensorConfig()
     }
-    set {payloadVariant = .sensorConfig(newValue)}
+    set {_uniqueStorage()._payloadVariant = .sensorConfig(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1030,6 +1036,10 @@ public struct AdminMessage: Sendable {
     ///
     /// Traffic management module config
     case trafficmanagementConfig // = 14
+
+    ///
+    /// TAK module config
+    case takConfig // = 15
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -1053,6 +1063,7 @@ public struct AdminMessage: Sendable {
       case 12: self = .paxcounterConfig
       case 13: self = .statusmessageConfig
       case 14: self = .trafficmanagementConfig
+      case 15: self = .takConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -1074,6 +1085,7 @@ public struct AdminMessage: Sendable {
       case .paxcounterConfig: return 12
       case .statusmessageConfig: return 13
       case .trafficmanagementConfig: return 14
+      case .takConfig: return 15
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -1095,6 +1107,7 @@ public struct AdminMessage: Sendable {
       .paxcounterConfig,
       .statusmessageConfig,
       .trafficmanagementConfig,
+      .takConfig,
     ]
 
   }
@@ -1190,6 +1203,8 @@ public struct AdminMessage: Sendable {
   }
 
   public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 ///
@@ -1392,12 +1407,36 @@ public struct SensorConfig: Sendable {
   /// Clears the value of `sen5XConfig`. Subsequent reads from it will return its default value.
   public mutating func clearSen5XConfig() {self._sen5XConfig = nil}
 
+  ///
+  /// SCD30 CO2 Sensor configuration
+  public var scd30Config: SCD30_config {
+    get {return _scd30Config ?? SCD30_config()}
+    set {_scd30Config = newValue}
+  }
+  /// Returns true if `scd30Config` has been explicitly set.
+  public var hasScd30Config: Bool {return self._scd30Config != nil}
+  /// Clears the value of `scd30Config`. Subsequent reads from it will return its default value.
+  public mutating func clearScd30Config() {self._scd30Config = nil}
+
+  ///
+  /// SHTXX temperature and relative humidity sensor configuration
+  public var shtxxConfig: SHTXX_config {
+    get {return _shtxxConfig ?? SHTXX_config()}
+    set {_shtxxConfig = newValue}
+  }
+  /// Returns true if `shtxxConfig` has been explicitly set.
+  public var hasShtxxConfig: Bool {return self._shtxxConfig != nil}
+  /// Clears the value of `shtxxConfig`. Subsequent reads from it will return its default value.
+  public mutating func clearShtxxConfig() {self._shtxxConfig = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _scd4XConfig: SCD4X_config? = nil
   fileprivate var _sen5XConfig: SEN5X_config? = nil
+  fileprivate var _scd30Config: SCD30_config? = nil
+  fileprivate var _shtxxConfig: SHTXX_config? = nil
 }
 
 public struct SCD4X_config: Sendable {
@@ -1530,6 +1569,112 @@ public struct SEN5X_config: Sendable {
   fileprivate var _setOneShotMode: Bool? = nil
 }
 
+public struct SCD30_config: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Set Automatic self-calibration enabled
+  public var setAsc: Bool {
+    get {return _setAsc ?? false}
+    set {_setAsc = newValue}
+  }
+  /// Returns true if `setAsc` has been explicitly set.
+  public var hasSetAsc: Bool {return self._setAsc != nil}
+  /// Clears the value of `setAsc`. Subsequent reads from it will return its default value.
+  public mutating func clearSetAsc() {self._setAsc = nil}
+
+  ///
+  /// Recalibration target CO2 concentration in ppm (FRC or ASC)
+  public var setTargetCo2Conc: UInt32 {
+    get {return _setTargetCo2Conc ?? 0}
+    set {_setTargetCo2Conc = newValue}
+  }
+  /// Returns true if `setTargetCo2Conc` has been explicitly set.
+  public var hasSetTargetCo2Conc: Bool {return self._setTargetCo2Conc != nil}
+  /// Clears the value of `setTargetCo2Conc`. Subsequent reads from it will return its default value.
+  public mutating func clearSetTargetCo2Conc() {self._setTargetCo2Conc = nil}
+
+  ///
+  /// Reference temperature in degC
+  public var setTemperature: Float {
+    get {return _setTemperature ?? 0}
+    set {_setTemperature = newValue}
+  }
+  /// Returns true if `setTemperature` has been explicitly set.
+  public var hasSetTemperature: Bool {return self._setTemperature != nil}
+  /// Clears the value of `setTemperature`. Subsequent reads from it will return its default value.
+  public mutating func clearSetTemperature() {self._setTemperature = nil}
+
+  ///
+  /// Altitude of sensor in meters above sea level. 0 - 3000m (overrides ambient pressure)
+  public var setAltitude: UInt32 {
+    get {return _setAltitude ?? 0}
+    set {_setAltitude = newValue}
+  }
+  /// Returns true if `setAltitude` has been explicitly set.
+  public var hasSetAltitude: Bool {return self._setAltitude != nil}
+  /// Clears the value of `setAltitude`. Subsequent reads from it will return its default value.
+  public mutating func clearSetAltitude() {self._setAltitude = nil}
+
+  ///
+  /// Power mode for sensor (true for low power, false for normal)
+  public var setMeasurementInterval: UInt32 {
+    get {return _setMeasurementInterval ?? 0}
+    set {_setMeasurementInterval = newValue}
+  }
+  /// Returns true if `setMeasurementInterval` has been explicitly set.
+  public var hasSetMeasurementInterval: Bool {return self._setMeasurementInterval != nil}
+  /// Clears the value of `setMeasurementInterval`. Subsequent reads from it will return its default value.
+  public mutating func clearSetMeasurementInterval() {self._setMeasurementInterval = nil}
+
+  ///
+  /// Perform a factory reset of the sensor
+  public var softReset: Bool {
+    get {return _softReset ?? false}
+    set {_softReset = newValue}
+  }
+  /// Returns true if `softReset` has been explicitly set.
+  public var hasSoftReset: Bool {return self._softReset != nil}
+  /// Clears the value of `softReset`. Subsequent reads from it will return its default value.
+  public mutating func clearSoftReset() {self._softReset = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _setAsc: Bool? = nil
+  fileprivate var _setTargetCo2Conc: UInt32? = nil
+  fileprivate var _setTemperature: Float? = nil
+  fileprivate var _setAltitude: UInt32? = nil
+  fileprivate var _setMeasurementInterval: UInt32? = nil
+  fileprivate var _softReset: Bool? = nil
+}
+
+public struct SHTXX_config: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Accuracy mode (0 = low, 1 = medium, 2 = high)
+  public var setAccuracy: UInt32 {
+    get {return _setAccuracy ?? 0}
+    set {_setAccuracy = newValue}
+  }
+  /// Returns true if `setAccuracy` has been explicitly set.
+  public var hasSetAccuracy: Bool {return self._setAccuracy != nil}
+  /// Clears the value of `setAccuracy`. Subsequent reads from it will return its default value.
+  public mutating func clearSetAccuracy() {self._setAccuracy = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _setAccuracy: UInt32? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "meshtastic"
@@ -1542,822 +1687,860 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{4}\u{f}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0")
 
+  fileprivate class _StorageClass {
+    var _sessionPasskey: Data = Data()
+    var _payloadVariant: AdminMessage.OneOf_PayloadVariant?
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _sessionPasskey = source._sessionPasskey
+      _payloadVariant = source._payloadVariant
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getChannelRequest(v)
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try {
+          var v: UInt32?
+          try decoder.decodeSingularUInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getChannelRequest(v)
+          }
+        }()
+        case 2: try {
+          var v: Channel?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .getChannelResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getChannelResponse(v)
+          }
+        }()
+        case 3: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getOwnerRequest(v)
+          }
+        }()
+        case 4: try {
+          var v: User?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .getOwnerResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getOwnerResponse(v)
+          }
+        }()
+        case 5: try {
+          var v: AdminMessage.ConfigType?
+          try decoder.decodeSingularEnumField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getConfigRequest(v)
+          }
+        }()
+        case 6: try {
+          var v: Config?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .getConfigResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getConfigResponse(v)
+          }
+        }()
+        case 7: try {
+          var v: AdminMessage.ModuleConfigType?
+          try decoder.decodeSingularEnumField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getModuleConfigRequest(v)
+          }
+        }()
+        case 8: try {
+          var v: ModuleConfig?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .getModuleConfigResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getModuleConfigResponse(v)
+          }
+        }()
+        case 10: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getCannedMessageModuleMessagesRequest(v)
+          }
+        }()
+        case 11: try {
+          var v: String?
+          try decoder.decodeSingularStringField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getCannedMessageModuleMessagesResponse(v)
+          }
+        }()
+        case 12: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getDeviceMetadataRequest(v)
+          }
+        }()
+        case 13: try {
+          var v: DeviceMetadata?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .getDeviceMetadataResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getDeviceMetadataResponse(v)
+          }
+        }()
+        case 14: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getRingtoneRequest(v)
+          }
+        }()
+        case 15: try {
+          var v: String?
+          try decoder.decodeSingularStringField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getRingtoneResponse(v)
+          }
+        }()
+        case 16: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getDeviceConnectionStatusRequest(v)
+          }
+        }()
+        case 17: try {
+          var v: DeviceConnectionStatus?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .getDeviceConnectionStatusResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getDeviceConnectionStatusResponse(v)
+          }
+        }()
+        case 18: try {
+          var v: HamParameters?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .setHamMode(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setHamMode(v)
+          }
+        }()
+        case 19: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getNodeRemoteHardwarePinsRequest(v)
+          }
+        }()
+        case 20: try {
+          var v: NodeRemoteHardwarePinsResponse?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .getNodeRemoteHardwarePinsResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getNodeRemoteHardwarePinsResponse(v)
+          }
+        }()
+        case 21: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .enterDfuModeRequest(v)
+          }
+        }()
+        case 22: try {
+          var v: String?
+          try decoder.decodeSingularStringField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .deleteFileRequest(v)
+          }
+        }()
+        case 23: try {
+          var v: UInt32?
+          try decoder.decodeSingularUInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setScale(v)
+          }
+        }()
+        case 24: try {
+          var v: AdminMessage.BackupLocation?
+          try decoder.decodeSingularEnumField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .backupPreferences(v)
+          }
+        }()
+        case 25: try {
+          var v: AdminMessage.BackupLocation?
+          try decoder.decodeSingularEnumField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .restorePreferences(v)
+          }
+        }()
+        case 26: try {
+          var v: AdminMessage.BackupLocation?
+          try decoder.decodeSingularEnumField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .removeBackupPreferences(v)
+          }
+        }()
+        case 27: try {
+          var v: AdminMessage.InputEvent?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .sendInputEvent(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .sendInputEvent(v)
+          }
+        }()
+        case 32: try {
+          var v: User?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .setOwner(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setOwner(v)
+          }
+        }()
+        case 33: try {
+          var v: Channel?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .setChannel(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setChannel(v)
+          }
+        }()
+        case 34: try {
+          var v: Config?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .setConfig(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setConfig(v)
+          }
+        }()
+        case 35: try {
+          var v: ModuleConfig?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .setModuleConfig(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setModuleConfig(v)
+          }
+        }()
+        case 36: try {
+          var v: String?
+          try decoder.decodeSingularStringField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setCannedMessageModuleMessages(v)
+          }
+        }()
+        case 37: try {
+          var v: String?
+          try decoder.decodeSingularStringField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setRingtoneMessage(v)
+          }
+        }()
+        case 38: try {
+          var v: UInt32?
+          try decoder.decodeSingularUInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .removeByNodenum(v)
+          }
+        }()
+        case 39: try {
+          var v: UInt32?
+          try decoder.decodeSingularUInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setFavoriteNode(v)
+          }
+        }()
+        case 40: try {
+          var v: UInt32?
+          try decoder.decodeSingularUInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .removeFavoriteNode(v)
+          }
+        }()
+        case 41: try {
+          var v: Position?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .setFixedPosition(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setFixedPosition(v)
+          }
+        }()
+        case 42: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .removeFixedPosition(v)
+          }
+        }()
+        case 43: try {
+          var v: UInt32?
+          try decoder.decodeSingularFixed32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setTimeOnly(v)
+          }
+        }()
+        case 44: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getUiConfigRequest(v)
+          }
+        }()
+        case 45: try {
+          var v: DeviceUIConfig?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .getUiConfigResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getUiConfigResponse(v)
+          }
+        }()
+        case 46: try {
+          var v: DeviceUIConfig?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .storeUiConfig(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .storeUiConfig(v)
+          }
+        }()
+        case 47: try {
+          var v: UInt32?
+          try decoder.decodeSingularUInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setIgnoredNode(v)
+          }
+        }()
+        case 48: try {
+          var v: UInt32?
+          try decoder.decodeSingularUInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .removeIgnoredNode(v)
+          }
+        }()
+        case 49: try {
+          var v: UInt32?
+          try decoder.decodeSingularUInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .toggleMutedNode(v)
+          }
+        }()
+        case 64: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .beginEditSettings(v)
+          }
+        }()
+        case 65: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .commitEditSettings(v)
+          }
+        }()
+        case 66: try {
+          var v: SharedContact?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .addContact(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .addContact(v)
+          }
+        }()
+        case 67: try {
+          var v: KeyVerificationAdmin?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .keyVerification(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .keyVerification(v)
+          }
+        }()
+        case 94: try {
+          var v: Int32?
+          try decoder.decodeSingularInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .factoryResetDevice(v)
+          }
+        }()
+        case 95: try {
+          var v: Int32?
+          try decoder.decodeSingularInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .rebootOtaSeconds(v)
+          }
+        }()
+        case 96: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .exitSimulator(v)
+          }
+        }()
+        case 97: try {
+          var v: Int32?
+          try decoder.decodeSingularInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .rebootSeconds(v)
+          }
+        }()
+        case 98: try {
+          var v: Int32?
+          try decoder.decodeSingularInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .shutdownSeconds(v)
+          }
+        }()
+        case 99: try {
+          var v: Int32?
+          try decoder.decodeSingularInt32Field(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .factoryResetConfig(v)
+          }
+        }()
+        case 100: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .nodedbReset(v)
+          }
+        }()
+        case 101: try { try decoder.decodeSingularBytesField(value: &_storage._sessionPasskey) }()
+        case 102: try {
+          var v: AdminMessage.OTAEvent?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .otaRequest(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .otaRequest(v)
+          }
+        }()
+        case 103: try {
+          var v: SensorConfig?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .sensorConfig(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .sensorConfig(v)
+          }
+        }()
+        default: break
         }
-      }()
-      case 2: try {
-        var v: Channel?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .getChannelResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getChannelResponse(v)
-        }
-      }()
-      case 3: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getOwnerRequest(v)
-        }
-      }()
-      case 4: try {
-        var v: User?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .getOwnerResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getOwnerResponse(v)
-        }
-      }()
-      case 5: try {
-        var v: AdminMessage.ConfigType?
-        try decoder.decodeSingularEnumField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getConfigRequest(v)
-        }
-      }()
-      case 6: try {
-        var v: Config?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .getConfigResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getConfigResponse(v)
-        }
-      }()
-      case 7: try {
-        var v: AdminMessage.ModuleConfigType?
-        try decoder.decodeSingularEnumField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getModuleConfigRequest(v)
-        }
-      }()
-      case 8: try {
-        var v: ModuleConfig?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .getModuleConfigResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getModuleConfigResponse(v)
-        }
-      }()
-      case 10: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getCannedMessageModuleMessagesRequest(v)
-        }
-      }()
-      case 11: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getCannedMessageModuleMessagesResponse(v)
-        }
-      }()
-      case 12: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getDeviceMetadataRequest(v)
-        }
-      }()
-      case 13: try {
-        var v: DeviceMetadata?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .getDeviceMetadataResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getDeviceMetadataResponse(v)
-        }
-      }()
-      case 14: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getRingtoneRequest(v)
-        }
-      }()
-      case 15: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getRingtoneResponse(v)
-        }
-      }()
-      case 16: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getDeviceConnectionStatusRequest(v)
-        }
-      }()
-      case 17: try {
-        var v: DeviceConnectionStatus?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .getDeviceConnectionStatusResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getDeviceConnectionStatusResponse(v)
-        }
-      }()
-      case 18: try {
-        var v: HamParameters?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .setHamMode(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setHamMode(v)
-        }
-      }()
-      case 19: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getNodeRemoteHardwarePinsRequest(v)
-        }
-      }()
-      case 20: try {
-        var v: NodeRemoteHardwarePinsResponse?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .getNodeRemoteHardwarePinsResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getNodeRemoteHardwarePinsResponse(v)
-        }
-      }()
-      case 21: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .enterDfuModeRequest(v)
-        }
-      }()
-      case 22: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .deleteFileRequest(v)
-        }
-      }()
-      case 23: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setScale(v)
-        }
-      }()
-      case 24: try {
-        var v: AdminMessage.BackupLocation?
-        try decoder.decodeSingularEnumField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .backupPreferences(v)
-        }
-      }()
-      case 25: try {
-        var v: AdminMessage.BackupLocation?
-        try decoder.decodeSingularEnumField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .restorePreferences(v)
-        }
-      }()
-      case 26: try {
-        var v: AdminMessage.BackupLocation?
-        try decoder.decodeSingularEnumField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .removeBackupPreferences(v)
-        }
-      }()
-      case 27: try {
-        var v: AdminMessage.InputEvent?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .sendInputEvent(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .sendInputEvent(v)
-        }
-      }()
-      case 32: try {
-        var v: User?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .setOwner(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setOwner(v)
-        }
-      }()
-      case 33: try {
-        var v: Channel?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .setChannel(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setChannel(v)
-        }
-      }()
-      case 34: try {
-        var v: Config?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .setConfig(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setConfig(v)
-        }
-      }()
-      case 35: try {
-        var v: ModuleConfig?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .setModuleConfig(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setModuleConfig(v)
-        }
-      }()
-      case 36: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setCannedMessageModuleMessages(v)
-        }
-      }()
-      case 37: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setRingtoneMessage(v)
-        }
-      }()
-      case 38: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .removeByNodenum(v)
-        }
-      }()
-      case 39: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setFavoriteNode(v)
-        }
-      }()
-      case 40: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .removeFavoriteNode(v)
-        }
-      }()
-      case 41: try {
-        var v: Position?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .setFixedPosition(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setFixedPosition(v)
-        }
-      }()
-      case 42: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .removeFixedPosition(v)
-        }
-      }()
-      case 43: try {
-        var v: UInt32?
-        try decoder.decodeSingularFixed32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setTimeOnly(v)
-        }
-      }()
-      case 44: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getUiConfigRequest(v)
-        }
-      }()
-      case 45: try {
-        var v: DeviceUIConfig?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .getUiConfigResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getUiConfigResponse(v)
-        }
-      }()
-      case 46: try {
-        var v: DeviceUIConfig?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .storeUiConfig(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .storeUiConfig(v)
-        }
-      }()
-      case 47: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .setIgnoredNode(v)
-        }
-      }()
-      case 48: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .removeIgnoredNode(v)
-        }
-      }()
-      case 49: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .toggleMutedNode(v)
-        }
-      }()
-      case 64: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .beginEditSettings(v)
-        }
-      }()
-      case 65: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .commitEditSettings(v)
-        }
-      }()
-      case 66: try {
-        var v: SharedContact?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .addContact(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .addContact(v)
-        }
-      }()
-      case 67: try {
-        var v: KeyVerificationAdmin?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .keyVerification(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .keyVerification(v)
-        }
-      }()
-      case 94: try {
-        var v: Int32?
-        try decoder.decodeSingularInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .factoryResetDevice(v)
-        }
-      }()
-      case 95: try {
-        var v: Int32?
-        try decoder.decodeSingularInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .rebootOtaSeconds(v)
-        }
-      }()
-      case 96: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .exitSimulator(v)
-        }
-      }()
-      case 97: try {
-        var v: Int32?
-        try decoder.decodeSingularInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .rebootSeconds(v)
-        }
-      }()
-      case 98: try {
-        var v: Int32?
-        try decoder.decodeSingularInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .shutdownSeconds(v)
-        }
-      }()
-      case 99: try {
-        var v: Int32?
-        try decoder.decodeSingularInt32Field(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .factoryResetConfig(v)
-        }
-      }()
-      case 100: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .nodedbReset(v)
-        }
-      }()
-      case 101: try { try decoder.decodeSingularBytesField(value: &self.sessionPasskey) }()
-      case 102: try {
-        var v: AdminMessage.OTAEvent?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .otaRequest(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .otaRequest(v)
-        }
-      }()
-      case 103: try {
-        var v: SensorConfig?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .sensorConfig(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .sensorConfig(v)
-        }
-      }()
-      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    switch self.payloadVariant {
-    case .getChannelRequest?: try {
-      guard case .getChannelRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
-    }()
-    case .getChannelResponse?: try {
-      guard case .getChannelResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }()
-    case .getOwnerRequest?: try {
-      guard case .getOwnerRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
-    }()
-    case .getOwnerResponse?: try {
-      guard case .getOwnerResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    }()
-    case .getConfigRequest?: try {
-      guard case .getConfigRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 5)
-    }()
-    case .getConfigResponse?: try {
-      guard case .getConfigResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-    }()
-    case .getModuleConfigRequest?: try {
-      guard case .getModuleConfigRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 7)
-    }()
-    case .getModuleConfigResponse?: try {
-      guard case .getModuleConfigResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-    }()
-    case .getCannedMessageModuleMessagesRequest?: try {
-      guard case .getCannedMessageModuleMessagesRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
-    }()
-    case .getCannedMessageModuleMessagesResponse?: try {
-      guard case .getCannedMessageModuleMessagesResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 11)
-    }()
-    case .getDeviceMetadataRequest?: try {
-      guard case .getDeviceMetadataRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 12)
-    }()
-    case .getDeviceMetadataResponse?: try {
-      guard case .getDeviceMetadataResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
-    }()
-    case .getRingtoneRequest?: try {
-      guard case .getRingtoneRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 14)
-    }()
-    case .getRingtoneResponse?: try {
-      guard case .getRingtoneResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 15)
-    }()
-    case .getDeviceConnectionStatusRequest?: try {
-      guard case .getDeviceConnectionStatusRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 16)
-    }()
-    case .getDeviceConnectionStatusResponse?: try {
-      guard case .getDeviceConnectionStatusResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
-    }()
-    case .setHamMode?: try {
-      guard case .setHamMode(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
-    }()
-    case .getNodeRemoteHardwarePinsRequest?: try {
-      guard case .getNodeRemoteHardwarePinsRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 19)
-    }()
-    case .getNodeRemoteHardwarePinsResponse?: try {
-      guard case .getNodeRemoteHardwarePinsResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
-    }()
-    case .enterDfuModeRequest?: try {
-      guard case .enterDfuModeRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 21)
-    }()
-    case .deleteFileRequest?: try {
-      guard case .deleteFileRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 22)
-    }()
-    case .setScale?: try {
-      guard case .setScale(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 23)
-    }()
-    case .backupPreferences?: try {
-      guard case .backupPreferences(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 24)
-    }()
-    case .restorePreferences?: try {
-      guard case .restorePreferences(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 25)
-    }()
-    case .removeBackupPreferences?: try {
-      guard case .removeBackupPreferences(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 26)
-    }()
-    case .sendInputEvent?: try {
-      guard case .sendInputEvent(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 27)
-    }()
-    case .setOwner?: try {
-      guard case .setOwner(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 32)
-    }()
-    case .setChannel?: try {
-      guard case .setChannel(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 33)
-    }()
-    case .setConfig?: try {
-      guard case .setConfig(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 34)
-    }()
-    case .setModuleConfig?: try {
-      guard case .setModuleConfig(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 35)
-    }()
-    case .setCannedMessageModuleMessages?: try {
-      guard case .setCannedMessageModuleMessages(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 36)
-    }()
-    case .setRingtoneMessage?: try {
-      guard case .setRingtoneMessage(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 37)
-    }()
-    case .removeByNodenum?: try {
-      guard case .removeByNodenum(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 38)
-    }()
-    case .setFavoriteNode?: try {
-      guard case .setFavoriteNode(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 39)
-    }()
-    case .removeFavoriteNode?: try {
-      guard case .removeFavoriteNode(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 40)
-    }()
-    case .setFixedPosition?: try {
-      guard case .setFixedPosition(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 41)
-    }()
-    case .removeFixedPosition?: try {
-      guard case .removeFixedPosition(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 42)
-    }()
-    case .setTimeOnly?: try {
-      guard case .setTimeOnly(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularFixed32Field(value: v, fieldNumber: 43)
-    }()
-    case .getUiConfigRequest?: try {
-      guard case .getUiConfigRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 44)
-    }()
-    case .getUiConfigResponse?: try {
-      guard case .getUiConfigResponse(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 45)
-    }()
-    case .storeUiConfig?: try {
-      guard case .storeUiConfig(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 46)
-    }()
-    case .setIgnoredNode?: try {
-      guard case .setIgnoredNode(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 47)
-    }()
-    case .removeIgnoredNode?: try {
-      guard case .removeIgnoredNode(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 48)
-    }()
-    case .toggleMutedNode?: try {
-      guard case .toggleMutedNode(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 49)
-    }()
-    case .beginEditSettings?: try {
-      guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 64)
-    }()
-    case .commitEditSettings?: try {
-      guard case .commitEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 65)
-    }()
-    case .addContact?: try {
-      guard case .addContact(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 66)
-    }()
-    case .keyVerification?: try {
-      guard case .keyVerification(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 67)
-    }()
-    case .factoryResetDevice?: try {
-      guard case .factoryResetDevice(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 94)
-    }()
-    case .rebootOtaSeconds?: try {
-      guard case .rebootOtaSeconds(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 95)
-    }()
-    case .exitSimulator?: try {
-      guard case .exitSimulator(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 96)
-    }()
-    case .rebootSeconds?: try {
-      guard case .rebootSeconds(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 97)
-    }()
-    case .shutdownSeconds?: try {
-      guard case .shutdownSeconds(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 98)
-    }()
-    case .factoryResetConfig?: try {
-      guard case .factoryResetConfig(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 99)
-    }()
-    case .nodedbReset?: try {
-      guard case .nodedbReset(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 100)
-    }()
-    default: break
-    }
-    if !self.sessionPasskey.isEmpty {
-      try visitor.visitSingularBytesField(value: self.sessionPasskey, fieldNumber: 101)
-    }
-    switch self.payloadVariant {
-    case .otaRequest?: try {
-      guard case .otaRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 102)
-    }()
-    case .sensorConfig?: try {
-      guard case .sensorConfig(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 103)
-    }()
-    default: break
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      switch _storage._payloadVariant {
+      case .getChannelRequest?: try {
+        guard case .getChannelRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
+      }()
+      case .getChannelResponse?: try {
+        guard case .getChannelResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      }()
+      case .getOwnerRequest?: try {
+        guard case .getOwnerRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+      }()
+      case .getOwnerResponse?: try {
+        guard case .getOwnerResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      }()
+      case .getConfigRequest?: try {
+        guard case .getConfigRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 5)
+      }()
+      case .getConfigResponse?: try {
+        guard case .getConfigResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      }()
+      case .getModuleConfigRequest?: try {
+        guard case .getModuleConfigRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 7)
+      }()
+      case .getModuleConfigResponse?: try {
+        guard case .getModuleConfigResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+      }()
+      case .getCannedMessageModuleMessagesRequest?: try {
+        guard case .getCannedMessageModuleMessagesRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
+      }()
+      case .getCannedMessageModuleMessagesResponse?: try {
+        guard case .getCannedMessageModuleMessagesResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularStringField(value: v, fieldNumber: 11)
+      }()
+      case .getDeviceMetadataRequest?: try {
+        guard case .getDeviceMetadataRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 12)
+      }()
+      case .getDeviceMetadataResponse?: try {
+        guard case .getDeviceMetadataResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+      }()
+      case .getRingtoneRequest?: try {
+        guard case .getRingtoneRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 14)
+      }()
+      case .getRingtoneResponse?: try {
+        guard case .getRingtoneResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularStringField(value: v, fieldNumber: 15)
+      }()
+      case .getDeviceConnectionStatusRequest?: try {
+        guard case .getDeviceConnectionStatusRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 16)
+      }()
+      case .getDeviceConnectionStatusResponse?: try {
+        guard case .getDeviceConnectionStatusResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
+      }()
+      case .setHamMode?: try {
+        guard case .setHamMode(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
+      }()
+      case .getNodeRemoteHardwarePinsRequest?: try {
+        guard case .getNodeRemoteHardwarePinsRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 19)
+      }()
+      case .getNodeRemoteHardwarePinsResponse?: try {
+        guard case .getNodeRemoteHardwarePinsResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
+      }()
+      case .enterDfuModeRequest?: try {
+        guard case .enterDfuModeRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 21)
+      }()
+      case .deleteFileRequest?: try {
+        guard case .deleteFileRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularStringField(value: v, fieldNumber: 22)
+      }()
+      case .setScale?: try {
+        guard case .setScale(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 23)
+      }()
+      case .backupPreferences?: try {
+        guard case .backupPreferences(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 24)
+      }()
+      case .restorePreferences?: try {
+        guard case .restorePreferences(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 25)
+      }()
+      case .removeBackupPreferences?: try {
+        guard case .removeBackupPreferences(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 26)
+      }()
+      case .sendInputEvent?: try {
+        guard case .sendInputEvent(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 27)
+      }()
+      case .setOwner?: try {
+        guard case .setOwner(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 32)
+      }()
+      case .setChannel?: try {
+        guard case .setChannel(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 33)
+      }()
+      case .setConfig?: try {
+        guard case .setConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 34)
+      }()
+      case .setModuleConfig?: try {
+        guard case .setModuleConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 35)
+      }()
+      case .setCannedMessageModuleMessages?: try {
+        guard case .setCannedMessageModuleMessages(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularStringField(value: v, fieldNumber: 36)
+      }()
+      case .setRingtoneMessage?: try {
+        guard case .setRingtoneMessage(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularStringField(value: v, fieldNumber: 37)
+      }()
+      case .removeByNodenum?: try {
+        guard case .removeByNodenum(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 38)
+      }()
+      case .setFavoriteNode?: try {
+        guard case .setFavoriteNode(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 39)
+      }()
+      case .removeFavoriteNode?: try {
+        guard case .removeFavoriteNode(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 40)
+      }()
+      case .setFixedPosition?: try {
+        guard case .setFixedPosition(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 41)
+      }()
+      case .removeFixedPosition?: try {
+        guard case .removeFixedPosition(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 42)
+      }()
+      case .setTimeOnly?: try {
+        guard case .setTimeOnly(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularFixed32Field(value: v, fieldNumber: 43)
+      }()
+      case .getUiConfigRequest?: try {
+        guard case .getUiConfigRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 44)
+      }()
+      case .getUiConfigResponse?: try {
+        guard case .getUiConfigResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 45)
+      }()
+      case .storeUiConfig?: try {
+        guard case .storeUiConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 46)
+      }()
+      case .setIgnoredNode?: try {
+        guard case .setIgnoredNode(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 47)
+      }()
+      case .removeIgnoredNode?: try {
+        guard case .removeIgnoredNode(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 48)
+      }()
+      case .toggleMutedNode?: try {
+        guard case .toggleMutedNode(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 49)
+      }()
+      case .beginEditSettings?: try {
+        guard case .beginEditSettings(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 64)
+      }()
+      case .commitEditSettings?: try {
+        guard case .commitEditSettings(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 65)
+      }()
+      case .addContact?: try {
+        guard case .addContact(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 66)
+      }()
+      case .keyVerification?: try {
+        guard case .keyVerification(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 67)
+      }()
+      case .factoryResetDevice?: try {
+        guard case .factoryResetDevice(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 94)
+      }()
+      case .rebootOtaSeconds?: try {
+        guard case .rebootOtaSeconds(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 95)
+      }()
+      case .exitSimulator?: try {
+        guard case .exitSimulator(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 96)
+      }()
+      case .rebootSeconds?: try {
+        guard case .rebootSeconds(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 97)
+      }()
+      case .shutdownSeconds?: try {
+        guard case .shutdownSeconds(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 98)
+      }()
+      case .factoryResetConfig?: try {
+        guard case .factoryResetConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 99)
+      }()
+      case .nodedbReset?: try {
+        guard case .nodedbReset(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 100)
+      }()
+      default: break
+      }
+      if !_storage._sessionPasskey.isEmpty {
+        try visitor.visitSingularBytesField(value: _storage._sessionPasskey, fieldNumber: 101)
+      }
+      switch _storage._payloadVariant {
+      case .otaRequest?: try {
+        guard case .otaRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 102)
+      }()
+      case .sensorConfig?: try {
+        guard case .sensorConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 103)
+      }()
+      default: break
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: AdminMessage, rhs: AdminMessage) -> Bool {
-    if lhs.sessionPasskey != rhs.sessionPasskey {return false}
-    if lhs.payloadVariant != rhs.payloadVariant {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._sessionPasskey != rhs_storage._sessionPasskey {return false}
+        if _storage._payloadVariant != rhs_storage._payloadVariant {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2368,7 +2551,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{1}EXTNOTIF_CONFIG\0\u{1}STOREFORWARD_CONFIG\0\u{1}RANGETEST_CONFIG\0\u{1}TELEMETRY_CONFIG\0\u{1}CANNEDMSG_CONFIG\0\u{1}AUDIO_CONFIG\0\u{1}REMOTEHARDWARE_CONFIG\0\u{1}NEIGHBORINFO_CONFIG\0\u{1}AMBIENTLIGHTING_CONFIG\0\u{1}DETECTIONSENSOR_CONFIG\0\u{1}PAXCOUNTER_CONFIG\0\u{1}STATUSMESSAGE_CONFIG\0\u{1}TRAFFICMANAGEMENT_CONFIG\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{1}EXTNOTIF_CONFIG\0\u{1}STOREFORWARD_CONFIG\0\u{1}RANGETEST_CONFIG\0\u{1}TELEMETRY_CONFIG\0\u{1}CANNEDMSG_CONFIG\0\u{1}AUDIO_CONFIG\0\u{1}REMOTEHARDWARE_CONFIG\0\u{1}NEIGHBORINFO_CONFIG\0\u{1}AMBIENTLIGHTING_CONFIG\0\u{1}DETECTIONSENSOR_CONFIG\0\u{1}PAXCOUNTER_CONFIG\0\u{1}STATUSMESSAGE_CONFIG\0\u{1}TRAFFICMANAGEMENT_CONFIG\0\u{1}TAK_CONFIG\0")
 }
 
 extension AdminMessage.BackupLocation: SwiftProtobuf._ProtoNameProviding {
@@ -2634,7 +2817,7 @@ extension KeyVerificationAdmin.MessageType: SwiftProtobuf._ProtoNameProviding {
 
 extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SensorConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}scd4x_config\0\u{3}sen5x_config\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}scd4x_config\0\u{3}sen5x_config\0\u{3}scd30_config\0\u{3}shtxx_config\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2644,6 +2827,8 @@ extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._scd4XConfig) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._sen5XConfig) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._scd30Config) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._shtxxConfig) }()
       default: break
       }
     }
@@ -2660,12 +2845,20 @@ extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try { if let v = self._sen5XConfig {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._scd30Config {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._shtxxConfig {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SensorConfig, rhs: SensorConfig) -> Bool {
     if lhs._scd4XConfig != rhs._scd4XConfig {return false}
     if lhs._sen5XConfig != rhs._sen5XConfig {return false}
+    if lhs._scd30Config != rhs._scd30Config {return false}
+    if lhs._shtxxConfig != rhs._shtxxConfig {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2769,6 +2962,99 @@ extension SEN5X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   public static func ==(lhs: SEN5X_config, rhs: SEN5X_config) -> Bool {
     if lhs._setTemperature != rhs._setTemperature {return false}
     if lhs._setOneShotMode != rhs._setOneShotMode {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SCD30_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SCD30_config"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_asc\0\u{3}set_target_co2_conc\0\u{3}set_temperature\0\u{3}set_altitude\0\u{3}set_measurement_interval\0\u{3}soft_reset\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self._setAsc) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._setTargetCo2Conc) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self._setTemperature) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._setAltitude) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._setMeasurementInterval) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self._softReset) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._setAsc {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._setTargetCo2Conc {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._setTemperature {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._setAltitude {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._setMeasurementInterval {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._softReset {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 6)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SCD30_config, rhs: SCD30_config) -> Bool {
+    if lhs._setAsc != rhs._setAsc {return false}
+    if lhs._setTargetCo2Conc != rhs._setTargetCo2Conc {return false}
+    if lhs._setTemperature != rhs._setTemperature {return false}
+    if lhs._setAltitude != rhs._setAltitude {return false}
+    if lhs._setMeasurementInterval != rhs._setMeasurementInterval {return false}
+    if lhs._softReset != rhs._softReset {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SHTXX_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SHTXX_config"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_accuracy\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self._setAccuracy) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._setAccuracy {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SHTXX_config, rhs: SHTXX_config) -> Bool {
+    if lhs._setAccuracy != rhs._setAccuracy {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

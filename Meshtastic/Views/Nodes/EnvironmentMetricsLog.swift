@@ -33,6 +33,7 @@ struct EnvironmentMetricsLog: View {
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
 		request.predicate = NSPredicate(format: "nodeTelemetry == %@ AND metricsType == 1 AND time >= %@", node, oneWeekAgo as NSDate)
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
+		request.fetchBatchSize = 100
 		_chartData = FetchRequest(fetchRequest: request)
 	}
 	
@@ -185,4 +186,17 @@ struct EnvironmentMetricsLog: View {
 		let upper = range.upperBound + margin
 		return lower...upper
 	}
+}
+
+#Preview {
+	let context = PersistenceController.preview.container.viewContext
+	let node = NodeInfoEntity(context: context)
+	node.num = 123456789
+	let user = UserEntity(context: context)
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	return EnvironmentMetricsLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.environment(\.managedObjectContext, context)
 }
