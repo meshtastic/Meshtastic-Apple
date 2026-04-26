@@ -18,10 +18,10 @@ struct SetupGuideTests {
 
 	@Test func allCasesExist() {
 		let cases: [DeviceOnboarding.SetupGuide] = [
-			.notifications, .location, .backgroundActivity,
+			.notifications, .location,
 			.localNetwork, .bluetooth, .siri
 		]
-		#expect(cases.count == 6)
+		#expect(cases.count == 5)
 	}
 
 	@Test func isHashable() {
@@ -35,12 +35,12 @@ struct SetupGuideTests {
 	@Test func equality() {
 		#expect(DeviceOnboarding.SetupGuide.bluetooth == .bluetooth)
 		#expect(DeviceOnboarding.SetupGuide.notifications != .siri)
-		#expect(DeviceOnboarding.SetupGuide.location != .backgroundActivity)
+		#expect(DeviceOnboarding.SetupGuide.location != .localNetwork)
 	}
 
 	@Test func allCasesAreUnique() {
 		let cases: [DeviceOnboarding.SetupGuide] = [
-			.notifications, .location, .backgroundActivity,
+			.notifications, .location,
 			.localNetwork, .bluetooth, .siri
 		]
 		let unique = Set(cases)
@@ -185,17 +185,17 @@ struct OnboardingNavigationTests {
 		#expect(step == .location)
 	}
 
-	@Test func startRoutesToBackgroundActivityWhenLocationAuthorized() {
+	@Test func startRoutesToBluetoothWhenLocationAuthorized() {
 		let step = nextStep(
 			after: nil,
 			notificationStatus: .authorized,
 			criticalAlertSetting: .enabled,
 			locationStatus: .authorizedWhenInUse
 		)
-		#expect(step == .backgroundActivity)
+		#expect(step == .bluetooth)
 	}
 
-	@Test func notificationsRoutesToLocationOrBackgroundActivity() {
+	@Test func notificationsRoutesToLocationOrBluetooth() {
 		let denied = nextStep(
 			after: .notifications,
 			notificationStatus: .authorized,
@@ -209,10 +209,10 @@ struct OnboardingNavigationTests {
 			locationStatus: .authorizedAlways
 		)
 		#expect(denied == .location)
-		#expect(authorized == .backgroundActivity)
+		#expect(authorized == .bluetooth)
 	}
 
-	@Test func locationRoutesToBackgroundActivityOnlyWhenAuthorized() {
+	@Test func locationRoutesToBluetooth() {
 		let authorized = nextStep(
 			after: .location,
 			notificationStatus: .authorized,
@@ -225,14 +225,13 @@ struct OnboardingNavigationTests {
 			criticalAlertSetting: .enabled,
 			locationStatus: .denied
 		)
-		#expect(authorized == .backgroundActivity)
-		#expect(denied == nil)
+		#expect(authorized == .bluetooth)
+		#expect(denied == .bluetooth)
 	}
 
 	@Test func deterministicTailFlowMapping() {
-		#expect(nextStep(after: .backgroundActivity, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .localNetwork)
-		#expect(nextStep(after: .localNetwork, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .bluetooth)
-		#expect(nextStep(after: .bluetooth, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .siri)
+		#expect(nextStep(after: .bluetooth, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .localNetwork)
+		#expect(nextStep(after: .localNetwork, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == .siri)
 		#expect(nextStep(after: .siri, notificationStatus: .authorized, criticalAlertSetting: .enabled, locationStatus: .authorizedAlways) == nil)
 	}
 }
