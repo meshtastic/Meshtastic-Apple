@@ -120,7 +120,6 @@ struct NodeList: View {
 		} detail: {
 			if let node = selectedNode {
 				NodeDetail(
-					connectedNode: connectedNode,
 					node: node
 				)
 			} else {

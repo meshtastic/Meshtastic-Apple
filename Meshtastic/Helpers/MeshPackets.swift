@@ -70,12 +70,15 @@ actor MeshPackets {
 
 	/// Resets the background context periodically to release accumulated managed objects from memory.
 	/// Call after saves to prevent unbounded growth of the context's registered objects.
+	/// Uses `reset()` instead of `refreshAllObjects()` to fully unregister objects from the context,
+	/// since `refreshAllObjects()` only re-faults objects but leaves them in the registeredObjects set.
 	func resetContextIfNeeded() {
 		savesSinceLastReset += 1
 		if savesSinceLastReset >= 50 {
-			backgroundContext.refreshAllObjects()
+			let registeredCount = backgroundContext.registeredObjects.count
+			backgroundContext.reset()
 			savesSinceLastReset = 0
-			Logger.data.info("💾 [MeshPackets] Refreshed background context to reclaim memory (\(self.backgroundContext.registeredObjects.count) registered objects)")
+			Logger.data.info("💾 [MeshPackets] Reset background context to reclaim memory (was \(registeredCount) registered objects)")
 		}
 	}
 
