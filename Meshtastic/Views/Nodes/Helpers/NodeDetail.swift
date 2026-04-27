@@ -24,7 +24,6 @@ struct NodeDetail: View {
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
-	var connectedNode: NodeInfoEntity?
 	@Bindable	var node: NodeInfoEntity
 	@State private var environmentSectionHeight: CGFloat = 0
 

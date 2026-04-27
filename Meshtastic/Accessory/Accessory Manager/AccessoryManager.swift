@@ -178,18 +178,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		self.state = .uninitialized
 		self.mqttManager.delegate = self
 
-		// Listen for system memory warnings to proactively release Core Data object data
+		// Listen for system memory warnings to proactively save pending changes
 		NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
 			guard let self else { return }
-			self.context.refreshAllObjects()
-			Logger.data.warning("⚠️ [AccessoryManager] Memory warning — refreshed viewContext (\(self.context.registeredObjects.count) registered objects)")
-			Task {
-				let bgContext = await MeshPackets.shared.backgroundContext
-				await bgContext.perform {
-					bgContext.refreshAllObjects()
-					Logger.data.warning("⚠️ [MeshPackets] Memory warning — refreshed backgroundContext (\(bgContext.registeredObjects.count) registered objects)")
-				}
-			}
+			try? self.context.save()
+			Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
 		}
 	}
 
@@ -303,11 +296,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		await wantDatabaseGate.cancelAll()
 		await wantDatabaseGate.reset()
 
-		// Re-fault all registered objects on the viewContext to release their in-memory data.
-		// Objects stay registered but their property storage is freed, which prevents unbounded
-		// memory growth across disconnect/reconnect cycles on long-running sessions.
-		context.refreshAllObjects()
-		Logger.data.info("💾 [AccessoryManager] Refreshed viewContext on disconnect (\(self.context.registeredObjects.count) registered objects)")
+		// Save any pending changes and let SwiftData manage object lifecycle on disconnect.
+		try? context.save()
+		Logger.data.info("💾 [AccessoryManager] Saved context on disconnect")
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false

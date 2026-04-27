@@ -22,6 +22,7 @@ struct ChannelMessageList: View {
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageToHighlight: Int64 = 0
+	@State private var needsReadSync: Bool = false
 	@Query private var allPrivateMessages: [MessageEntity]
 	
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
