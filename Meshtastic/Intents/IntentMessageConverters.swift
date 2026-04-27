@@ -6,6 +6,7 @@
 //  used by the CarPlay messaging intent handlers.
 //
 
+#if os(iOS)
 import CoreData
 import Intents
 
@@ -156,3 +157,4 @@ enum IntentMessageConverters {
 		return "Channel \(index)"
 	}
 }
+#endif

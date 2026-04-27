@@ -5,6 +5,7 @@
 //  Created by Ben on 8/20/23.
 //
 
+#if os(iOS)
 import Intents
 import SwiftUI
 import OSLog
@@ -35,8 +36,9 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			TAKServerManager.shared.initializeOnStartup()
 		}
 		// Request Siri authorization so intent donations work and CarPlay messaging is available.
+		// Skip on first launch — the onboarding Siri screen handles the prompt.
 		#if !targetEnvironment(macCatalyst)
-		if !isRunningTests {
+		if !isRunningTests && !UserDefaults.firstLaunch {
 			INPreferences.requestSiriAuthorization { status in
 				Logger.services.info("Siri authorization status: \(String(describing: status))")
 			}
@@ -143,3 +145,4 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		completionHandler()
 	}
 }
+#endif

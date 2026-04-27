@@ -77,7 +77,7 @@ enum AccessoryManagerState: Equatable {
 	case idle
 	case discovering
 	case connecting
-	case retrying(attempt: Int)
+	case retrying(attempt: Int, maxAttempts: Int)
 	case retrievingDatabase(nodeCount: Int)
 	case communicating
 	case subscribed
@@ -92,8 +92,8 @@ enum AccessoryManagerState: Equatable {
 			return "Discovering"
 		case .connecting:
 			return "Connecting"
-		case .retrying(let attempt):
-			return "Retrying Connection (\(attempt))"
+		case .retrying(let attempt, let maxAttempts):
+			return "Retrying Connection (\(attempt) of \(maxAttempts))"
 		case .communicating:
 			return "Communicating"
 		case .subscribed:
@@ -152,6 +152,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var connectionSteps: SequentialSteps?
 	
 	// Public due to file separation
+	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
@@ -171,11 +172,25 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	var heartbeatTimer: ResettableTimer?
 	var heartbeatResponseTimer: ResettableTimer?
-	
+
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
 		self.state = .uninitialized
 		self.mqttManager.delegate = self
+
+		// Listen for system memory warnings to proactively release Core Data object data
+		NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
+			guard let self else { return }
+			self.context.refreshAllObjects()
+			Logger.data.warning("⚠️ [AccessoryManager] Memory warning — refreshed viewContext (\(self.context.registeredObjects.count) registered objects)")
+			Task {
+				let bgContext = await MeshPackets.shared.backgroundContext
+				await bgContext.perform {
+					bgContext.refreshAllObjects()
+					Logger.data.warning("⚠️ [MeshPackets] Memory warning — refreshed backgroundContext (\(bgContext.registeredObjects.count) registered objects)")
+				}
+			}
+		}
 	}
 
 	func transportForType(_ type: TransportType) -> Transport? {
@@ -266,6 +281,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
+		self.activeDeviceNum = nil
 		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
@@ -286,6 +302,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		
 		await wantDatabaseGate.cancelAll()
 		await wantDatabaseGate.reset()
+
+		// Re-fault all registered objects on the viewContext to release their in-memory data.
+		// Objects stay registered but their property storage is freed, which prevents unbounded
+		// memory growth across disconnect/reconnect cycles on long-running sessions.
+		context.refreshAllObjects()
+		Logger.data.info("💾 [AccessoryManager] Refreshed viewContext on disconnect (\(self.context.registeredObjects.count) registered objects)")
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false
@@ -327,6 +349,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				device[keyPath: key] = value
 				self.activeConnection = (device: device, connection: activeConnection.connection)
+				
+			}
+			// Make sure activeDeviceNum is up to date.
+			if key == \.num, self.activeDeviceNum != device.num {
 				self.activeDeviceNum = device.num
 			}
 		}
@@ -532,6 +558,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
 					await MeshPackets.shared.upsertPositionPacket(packet: packet)
+					WatchSessionManager.shared.sendNodesToWatch()
 					// Broadcast position to TAK clients
 					if let position = try? Position(serializedBytes: data.payload) {
 						Logger.tak.debug("Position received, calling broadcast")
@@ -738,6 +765,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				do {
 					try context.save()
 					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+
+					// Push updated node data to the companion Watch app
+					WatchSessionManager.shared.sendNodesToWatch()
 				} catch {
 					context.rollback()
 					let nsError = error as NSError

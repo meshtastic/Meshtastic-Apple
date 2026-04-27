@@ -9,9 +9,8 @@ struct DeviceOnboarding: View {
 	enum SetupGuide: Hashable {
 		case notifications
 		case location
-		case backgroundActivity
-		case localNetwork
 		case bluetooth
+		case localNetwork
 		case siri
 	}
 	
@@ -41,21 +40,6 @@ struct DeviceOnboarding: View {
 						.padding(.top)
 					VStack(alignment: .leading, spacing: 16) {
 						makeRow(
-							icon: "antenna.radiowaves.left.and.right",
-							title: String(localized: "Stay Connected Anywhere"),
-							subtitle: String(localized: "Communicate off-the-grid with your friends and community without cell service.")
-						)
-						makeRow(
-							icon: "point.3.connected.trianglepath.dotted",
-							title: String(localized: "Create Your Own Networks"),
-							subtitle: String(localized: "Easily set up private mesh networks for secure and reliable communication in remote areas.")
-						)
-						makeRow(
-							icon: "location",
-							title: String(localized: "Track and Share Locations"),
-							subtitle: String(localized: "Share your location in real-time and keep your group coordinated with integrated GPS features.")
-						)
-						makeRow(
 							icon: "person.2.shield",
 							title: String(localized: "User Privacy"),
 							subtitle: String(localized: "Meshtastic does not collect any personal information. We do anonymously collect usage and crash data to improve the app.")
@@ -64,6 +48,11 @@ struct DeviceOnboarding: View {
 							icon: "bell.badge",
 							title: String(localized: "Message Notifications"),
 							subtitle: String(localized: "Receive notifications for incoming messages and critical alerts even when the app is in the background.")
+						)
+						makeRow(
+							icon: "location",
+							title: String(localized: "Track and Share Locations"),
+							subtitle: String(localized: "Share your location in real-time and keep your group coordinated with integrated GPS features.")
 						)
 						makeRow(
 							icon: "custom.bluetooth",
@@ -92,9 +81,10 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Get started")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -107,6 +97,7 @@ struct DeviceOnboarding: View {
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
 				}
+				.padding(.horizontal)
 				Spacer()
 				VStack(alignment: .leading, spacing: 16) {
 					Text("Send Notifications")
@@ -147,9 +138,10 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure notification permissions")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -162,6 +154,7 @@ struct DeviceOnboarding: View {
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
 				}
+				.padding(.horizontal)
 				VStack(alignment: .leading, spacing: 16) {
 					Text(createLocationString())
 						.font(.body.bold())
@@ -188,6 +181,22 @@ struct DeviceOnboarding: View {
 						UserDefaults.enableSmartPosition = true
 					}
 					makeRow(
+						icon: "location.fill",
+						title: String(localized: "Continuous Location Updates"),
+						subtitle: String(localized: "Keep the mesh map updated and send your position to the mesh even while using other apps.")
+					)
+					Toggle(isOn: $locationsHandler.backgroundActivity) {
+						Label {
+							Text("Enable Background Activity")
+						} icon: {
+							Image(systemName: "location.circle.fill")
+						}
+					}
+					.fixedSize()
+					.scaleEffect(0.85)
+					.padding(.leading, 52)
+					.tint(.accentColor)
+					makeRow(
 						icon: "lines.measurement.horizontal",
 						title: String(localized: "Distance Measurements"),
 						subtitle: String(localized: "Display the distance between your phone and other Meshtastic nodes with positions.")
@@ -209,70 +218,14 @@ struct DeviceOnboarding: View {
 			Button {
 				Task {
 					await requestLocationPermissions()
+					await goToNextStep(after: .location)
 				}
 			} label: {
 				Text("Configure Location Permissions")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
-			.padding()
 			.capsuleButtonStyle()
-		}
-	}
-	
-	var backgroundActivityView: some View {
-		VStack {
-			ScrollView(.vertical) {
-				VStack {
-					Text("Background Activity")
-						.font(.largeTitle.bold())
-						.multilineTextAlignment(.center)
-						.fixedSize(horizontal: false, vertical: true)
-				}
-				VStack(alignment: .leading, spacing: 16) {
-					Text(createBackgroundActivityString())
-						.font(.body.bold())
-						.multilineTextAlignment(.center)
-						.fixedSize(horizontal: false, vertical: true)
-					makeRow(
-						icon: "location.fill",
-						title: String(localized: "Continuous Location Updates"),
-						subtitle: String(localized: "Keep the mesh map updated and send your position to the mesh even while using other apps.")
-					)
-					makeRow(
-						icon: "antenna.radiowaves.left.and.right",
-						title: String(localized: "Background Mesh Tracking"),
-						subtitle: String(localized: "Receive position updates from other nodes and maintain an accurate picture of the mesh while in the background.")
-					)
-					makeRow(
-						icon: "battery.100.bolt",
-						title: String(localized: "Battery Usage"),
-						subtitle: String(localized: "Enabling background activity may increase battery usage. You can toggle this at any time in the app settings.")
-					)
-					Toggle(isOn: $locationsHandler.backgroundActivity) {
-						Label {
-							Text("Enable Background Activity")
-						} icon: {
-							Image(systemName: "location.circle")
-						}
-					}
-					.fixedSize()
-					.scaleEffect(0.85)
-					.padding(.leading, 52)
-					.tint(.accentColor)
-				}
-				.padding()
-			}
-			Spacer()
-			Button {
-				Task {
-					await goToNextStep(after: .backgroundActivity)
-				}
-			} label: {
-				Text("Continue")
-					.frame(maxWidth: .infinity)
-			}
-			.padding()
-			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -285,6 +238,7 @@ struct DeviceOnboarding: View {
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
 				}
+				.padding(.horizontal)
 				VStack(alignment: .leading, spacing: 16) {
 					Text(createLocalNetworkString())
 						.font(.body.bold())
@@ -316,10 +270,10 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure Local Network Access")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
-			.padding()
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -332,6 +286,7 @@ struct DeviceOnboarding: View {
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
 				}
+				.padding(.horizontal)
 				VStack(alignment: .leading, spacing: 16) {
 					Text(createBluetoothString())
 						.font(.body.bold())
@@ -358,10 +313,10 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure Bluetooth Connectivity")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
-			.padding()
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -374,6 +329,7 @@ struct DeviceOnboarding: View {
 						.multilineTextAlignment(.center)
 						.fixedSize(horizontal: false, vertical: true)
 				}
+				.padding(.horizontal)
 				VStack(alignment: .leading, spacing: 16) {
 					Text(createSiriString())
 						.font(.body.bold())
@@ -415,10 +371,10 @@ struct DeviceOnboarding: View {
 				}
 			} label: {
 				Text("Configure Siri & Shortcuts")
-					.frame(maxWidth: .infinity)
+					.frame(maxWidth: 400)
 			}
-			.padding()
 			.capsuleButtonStyle()
+			.padding(.bottom)
 		}
 	}
 	
@@ -431,8 +387,6 @@ struct DeviceOnboarding: View {
 						notificationView
 					case .location:
 						locationView
-					case .backgroundActivity:
-						backgroundActivityView
 					case .bluetooth:
 						bluetoothView
 					case .localNetwork:
@@ -529,7 +483,7 @@ struct DeviceOnboarding: View {
 				return .location
 			}
 			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
-				return .backgroundActivity
+				return .bluetooth
 			}
 			return nil
 		case .notifications:
@@ -537,19 +491,14 @@ struct DeviceOnboarding: View {
 				return .location
 			}
 			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
-				return .backgroundActivity
+				return .bluetooth
 			}
 			return nil
 		case .location:
-			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
-				return .backgroundActivity
-			}
-			return nil
-		case .backgroundActivity:
-			return .localNetwork
-		case .localNetwork:
 			return .bluetooth
 		case .bluetooth:
+			return .localNetwork
+		case .localNetwork:
 			return .siri
 		case .siri:
 			return nil

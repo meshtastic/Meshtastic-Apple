@@ -99,8 +99,7 @@ struct ChannelList: View {
 
 				if hasMessages {
 					HStack(alignment: .top) {
-						Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-							// .font(.system(size: 16))
+						Text(mostRecent?.messagePayload ?? " ")
 							.font(.footnote)
 							.foregroundColor(.secondary)
 					}
@@ -135,7 +134,8 @@ struct ChannelList: View {
 										do {
 											Task {
 												do {
-													_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
+													guard let user = node.user else { return }
+														_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: user, toUser: user)
 													Task { @MainActor in
 														do {
 															context.refresh(channel, mergeChanges: true)
@@ -161,7 +161,9 @@ struct ChannelList: View {
 								) {
 									Button(role: .destructive) {
 										Task {
-											await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
+											if let channelToDelete = channelToDeleteMessages {
+												await MeshPackets.shared.deleteChannelMessages(channel: channelToDelete)
+											}
 											await MainActor.run {
 												context.refresh(channel, mergeChanges: true)
 												context.refresh(myInfo, mergeChanges: true)

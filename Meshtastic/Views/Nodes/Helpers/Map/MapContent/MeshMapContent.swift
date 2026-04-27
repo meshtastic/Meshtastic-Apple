@@ -39,7 +39,7 @@ struct MeshMapContent: MapContent {
 	// Map overlays
 	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
 	@Binding var enabledOverlayConfigs: Set<UUID>
-	
+
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .none)
 	var positions: FetchedResults<PositionEntity>
 	

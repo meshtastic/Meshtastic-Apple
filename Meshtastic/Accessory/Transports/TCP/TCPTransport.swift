@@ -98,6 +98,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 							name: name,
 							transportType: .tcp,
 							identifier: "\(host):\(port)")
+		Logger.transport.debug("TCP found: \(name) \(host):\(port)")
 		continuation?.yield(.deviceFound(device))
 	}
 

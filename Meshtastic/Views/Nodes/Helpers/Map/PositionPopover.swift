@@ -266,7 +266,12 @@ struct PositionPopover: View {
 					waypointLocation: position.coordinate,
 					waypointLongName: position.nodePosition?.user?.longName ?? "Unknown node",
 					waypointShortName: position.nodePosition?.user?.shortName ?? "???",
-					color: (position.nodePosition?.user?.num != nil && position.nodePosition?.user?.num != 0) ? Color(UIColor(hex: UInt32(position.nodePosition!.user!.num))) : .orange
+					color: {
+					if let num = position.nodePosition?.user?.num, num != 0 {
+						return Color(UIColor(hex: UInt32(num)))
+					}
+					return .orange
+				}()
 				)
 			}
 		}

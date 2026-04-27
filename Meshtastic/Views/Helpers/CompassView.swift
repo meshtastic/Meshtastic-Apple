@@ -106,7 +106,6 @@ struct CompassView: View {
 						.rotationEffect(.degrees(180))
 						.padding(.bottom, 4)
 
-
 					// Rotating compass dial
 					ZStack {
 						// Outer bezel ring

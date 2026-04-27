@@ -162,7 +162,7 @@ fileprivate struct FilteredUserList: View {
 
 						if hasMessages {
 							HStack(alignment: .top) {
-								Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+									Text(mostRecent?.messagePayload ?? " ")
 									.font(.footnote)
 									.foregroundColor(.secondary)
 							}
@@ -175,16 +175,17 @@ fileprivate struct FilteredUserList: View {
 				}
 				.contextMenu {
 					Button {
-						if node != nil && !(user.userNode?.favorite ?? false) {
-							user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+						guard let userNode = user.userNode, let node else { return }
+						if !(userNode.favorite) {
+							userNode.favorite = true
 							Task {
-								try await accessoryManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+								try await accessoryManager.setFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
 								Logger.data.info("Favorited a node")
 							}
 						} else {
-							user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+							userNode.favorite = false
 							Task {
-								try await accessoryManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+								try await accessoryManager.removeFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
 								Logger.data.info("Unfavorited a node")
 							}
 						}
@@ -225,8 +226,12 @@ fileprivate struct FilteredUserList: View {
 				) {
 					Button(role: .destructive) {
 						Task {
-							await MeshPackets.shared.deleteUserMessages(user: userToDeleteMessages!)
-							context.refresh(node!.user!, mergeChanges: true)
+							if let userToDelete = userToDeleteMessages {
+								await MeshPackets.shared.deleteUserMessages(user: userToDelete)
+							}
+							if let nodeUser = node?.user {
+								context.refresh(nodeUser, mergeChanges: true)
+							}
 						}
 					} label: {
 						Text("Delete")
@@ -292,22 +297,20 @@ fileprivate extension NodeFilterParameters {
 			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
 			predicates.append(isFavoritePredicate)
 		}
-		// Distance
+		// Distance — only apply when we have a valid, precise phone GPS fix
 		if distanceFilter {
-			if let pointOfInterest = LocationsHandler.currentLocation {
-				if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-					let d: Double = maxDistance * 1.1
-					let r: Double = 6371009
-					let meanLatitidue = pointOfInterest.latitude * .pi / 180
-					let deltaLatitude = d / r * 180 / .pi
-					let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
-					let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
-					let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
-					let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
-					let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-					let distancePredicate = NSPredicate(format: "(SUBQUERY(userNode.positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude, minLatitude, maxLatitude)
-					predicates.append(distancePredicate)
-				}
+			if let pointOfInterest = LocationsHandler.currentPreciseLocation {
+				let d: Double = maxDistance * 1.1
+				let r: Double = 6371009
+				let meanLatitidue = pointOfInterest.latitude * .pi / 180
+				let deltaLatitude = d / r * 180 / .pi
+				let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
+				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
+				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
+				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
+				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
+				let distancePredicate = NSPredicate(format: "(SUBQUERY(userNode.positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude, minLatitude, maxLatitude)
+				predicates.append(distancePredicate)
 			}
 		}
 		// Always apply unmessagable and connected node filters

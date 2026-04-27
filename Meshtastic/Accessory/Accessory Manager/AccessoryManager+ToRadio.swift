@@ -378,7 +378,9 @@ extension AccessoryManager {
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 						// Donate outgoing message to SiriKit for CarPlay
 						if !isEmoji {
+							#if os(iOS)
 							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel)
+							#endif
 						}
 					} catch {
 						context.rollback()
@@ -520,6 +522,32 @@ extension AccessoryManager {
 				let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
 				try await send(toRadio, debugDescription: logString)
 				await MeshPackets.shared.channelPacket(channel: chan, fromNum: self.activeDeviceNum ?? 0)
+			}
+			if !addChannels {
+				// Save the LoRa Config and the device will reboot
+				var adminPacket = AdminMessage()
+				adminPacket.setConfig.lora = channelSet.loraConfig
+				adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
+				var meshPacket: MeshPacket = MeshPacket()
+				meshPacket.to = UInt32(deviceNum)
+				meshPacket.from	= UInt32(deviceNum)
+				meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+				meshPacket.priority =  MeshPacket.Priority.reliable
+				meshPacket.wantAck = true
+				meshPacket.channel = 0
+				var dataMessage = DataMessage()
+				guard let adminData: Data = try? adminPacket.serializedData() else {
+					throw AccessoryError.ioFailed("sendReboot: Unable to serialize Admin packet")
+				}
+				dataMessage.payload = adminData
+				dataMessage.portnum = PortNum.adminApp
+				meshPacket.decoded = dataMessage
+				var toRadio: ToRadio!
+				toRadio = ToRadio()
+				toRadio.packet = meshPacket
+				
+				let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
+				try await send(toRadio, debugDescription: logString)
 			}
 			if !addChannels {
 				// Save the LoRa Config and the device will reboot
@@ -837,7 +865,7 @@ extension AccessoryManager {
 			throw AccessoryError.ioFailed("removeNode: Unable to serialize admin packet")
 		}
 
-		let messageDescription = "🛎️ [Device Metadata] Requested for node \(toUser?.longName ?? "#\(toUserNum)") by \(fromUser?.longName ?? "#\(fromUser)")"
+		let messageDescription = "🛎️ [Device Metadata] Requested for node \(toUser?.longName ?? "#\(toUserNum)") by \(fromUser?.longName ?? "#\(fromUserNum)")"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 		return Int64(meshPacket.id)
 	}
@@ -1448,9 +1476,18 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity) async throws {
+	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, mode: OTAMode, otaHash: Data) async throws {
 		var adminPacket = AdminMessage()
-		adminPacket.rebootOtaSeconds = 5
+		var otaRequest = AdminMessage.OTAEvent()
+		
+		guard otaHash.count == 32 else {
+			throw AccessoryError.ioFailed("sendRebootOta: Unable to serialize admin packet")
+		}
+
+		otaRequest.otaHash = otaHash
+		otaRequest.rebootOtaMode = mode
+		adminPacket.otaRequest = otaRequest
+		
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}

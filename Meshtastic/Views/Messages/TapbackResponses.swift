@@ -15,8 +15,9 @@ struct TapbackResponses: View {
 				HStack {
 					ForEach(tapbacks) { (tapback: MessageEntity) in
 						VStack {
-							let image = tapback.messagePayload!.image(fontSize: 20)
-							Image(uiImage: image!).font(.caption)
+							if let payload = tapback.messagePayload, let image = payload.image(fontSize: 20) {
+								Image(uiImage: image).font(.caption)
+							}
 							Text("\(tapback.fromUser?.shortName ?? "?")")
 								.font(.caption2)
 								.foregroundColor(.gray)

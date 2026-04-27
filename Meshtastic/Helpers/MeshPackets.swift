@@ -65,7 +65,23 @@ actor MeshPackets {
 		ctx.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy // Handle conflicts automatically
 		return ctx
 	}()
-	
+
+	private var savesSinceLastReset = 0
+
+	/// Resets the background context periodically to release accumulated managed objects from memory.
+	/// Call after saves to prevent unbounded growth of the context's registered objects.
+	/// Uses `reset()` instead of `refreshAllObjects()` to fully unregister objects from the context,
+	/// since `refreshAllObjects()` only re-faults objects but leaves them in the registeredObjects set.
+	func resetContextIfNeeded() {
+		savesSinceLastReset += 1
+		if savesSinceLastReset >= 50 {
+			let registeredCount = backgroundContext.registeredObjects.count
+			backgroundContext.reset()
+			savesSinceLastReset = 0
+			Logger.data.info("💾 [MeshPackets] Reset background context to reclaim memory (was \(registeredCount) registered objects)")
+		}
+	}
+
 	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) async {
 		switch config.payloadVariant {
 		case .bluetooth:
@@ -141,6 +157,8 @@ actor MeshPackets {
 					myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 					myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
 					myInfoEntity.deviceId = myInfo.deviceID
+					myInfoEntity.pioEnv = myInfo.pioEnv
+
 					do {
 						try context.save()
 						Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
@@ -155,6 +173,7 @@ actor MeshPackets {
 					fetchedMyInfo[0].peripheralId = peripheralId
 					fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 					fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
+					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
 					
 					do {
 						try context.save()
@@ -341,11 +360,11 @@ actor MeshPackets {
 						newUser.shortName = nodeInfo.user.shortName
 						newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 						newUser.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
-						Task {
-							Api().loadDeviceHardwareData { (hw) in
-								let dh = hw.first(where: { $0.hwModel == newUser.hwModelId })
-								newUser.hwDisplayName = dh?.displayName
-							}
+						let fetchRequest = DeviceHardwareEntity.fetchRequest()
+						fetchRequest.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
+						let fetchedHardware = (try? context.fetch(fetchRequest)) ?? []
+						if let hardwareEntity = fetchedHardware.first {
+							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newUser.isLicensed = nodeInfo.user.isLicensed
 						newUser.role = Int32(nodeInfo.user.role.rawValue)
@@ -456,22 +475,12 @@ actor MeshPackets {
 								fetchedNode[0].user?.unmessagable = false
 							}
 						}
-						Task {
-							Api().loadDeviceHardwareData { (hw: [DeviceHardware]) in
-								guard !hw.isEmpty,
-									  let firstNode = fetchedNode.first,
-									  let user = firstNode.user else {
-									Logger.data.error("Error: Required DeviceHardware data is missing or array is empty.")
-									return
-								}
-								
-								let dh = hw.first(where: { $0.hwModel == user.hwModelId })
-								
-								if let deviceHardware = dh {
-									firstNode.user?.hwDisplayName = deviceHardware.displayName
-								} else {
-									Logger.data.error("No matching hardware model found for ID: \(user.hwModelId, privacy: .public)")
-								}
+						if let user = fetchedNode.first?.user {
+							let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
+							fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
+							let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
+							if let hardwareEntity = fetchedHardware2.first {
+								user.hwDisplayName = hardwareEntity.displayName
 							}
 						}
 					} else {
@@ -697,9 +706,20 @@ actor MeshPackets {
 							return
 						}
 						mutablePax.add(newPax)
+						// Prune old PAX counter entries to prevent unbounded memory growth
+						let maxPaxEntries = 200
+						while mutablePax.count > maxPaxEntries {
+							if let oldest = mutablePax.object(at: 0) as? PaxCounterEntity {
+								context.delete(oldest)
+								mutablePax.removeObject(at: 0)
+							} else {
+								break
+							}
+						}
 						fetchedNode[0].pax = mutablePax
 						do {
 							try context.save()
+							self.resetContextIfNeeded()
 						} catch {
 							Logger.data.error("Failed to save pax: \(error.localizedDescription, privacy: .public)")
 						}
@@ -864,6 +884,18 @@ actor MeshPackets {
 							return
 						}
 						mutableTelemetries.add(telemetry)
+
+						// Prune old telemetry entries of the same type to prevent unbounded memory growth
+						let maxTelemetryPerType = 500
+						let sameTypeEntries = mutableTelemetries.array.compactMap { $0 as? TelemetryEntity }.filter { $0.metricsType == telemetry.metricsType }
+						if sameTypeEntries.count > maxTelemetryPerType {
+							let entriesToRemove = sameTypeEntries.prefix(sameTypeEntries.count - maxTelemetryPerType)
+							for entry in entriesToRemove {
+								context.delete(entry)
+								mutableTelemetries.remove(entry)
+							}
+						}
+
 						if packet.rxTime > 0 {
 							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
 						} else {
@@ -872,6 +904,7 @@ actor MeshPackets {
 						fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 					}
 					try context.save()
+					self.resetContextIfNeeded()
 					Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) Saved for Node: \(packet.from.toHex(), privacy: .public)")
 					if telemetry.metricsType == 0 {
 						// Connected Device Metrics
@@ -1086,6 +1119,7 @@ actor MeshPackets {
 					var messageSaved = false
 					do {
 						try context.save()
+						self.resetContextIfNeeded()
 						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 					} catch {
@@ -1096,7 +1130,9 @@ actor MeshPackets {
 					// Send notifications if the message saved properly to core data
 					if messageSaved {
 						// Donate to SiriKit so the message appears in CarPlay Messages
+						#if os(iOS)
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
+						#endif
 
 						if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
 							return

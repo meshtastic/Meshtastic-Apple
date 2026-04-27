@@ -5,6 +5,7 @@ import CoreData
 import OSLog
 import TipKit
 import MeshtasticProtobufs
+import WatchConnectivity
 import DatadogCore
 import DatadogCrashReporting
 import DatadogRUM
@@ -15,7 +16,9 @@ import DatadogSessionReplay
 @main
 struct MeshtasticAppleApp: App {
 
+#if os(iOS)
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) private var appDelegate
+#endif
 	@StateObject var appState: AppState
 	private let persistenceController: PersistenceController
 	private let accessoryManager: AccessoryManager
@@ -87,10 +90,15 @@ struct MeshtasticAppleApp: App {
 
 		self.persistenceController = persistenceController
 		// Wire up router
+#if os(iOS)
 		self.appDelegate.router = appState.router
+#endif
 
 		// Initialize map data manager
 		MapDataManager.shared.initialize()
+
+		// Initialize WatchConnectivity session
+		_ = WatchSessionManager.shared
 #if DEBUG
 		// Show tips in development
 		try? Tips.resetDatastore()
@@ -223,5 +231,21 @@ struct MeshtasticAppleApp: App {
 		.environment(\.managedObjectContext, persistenceController.container.viewContext)
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
+		.environmentObject(appState.router)
+		.environmentObject(MeshtasticAPI.shared)
+
+		WindowGroup("Mesh Map", id: "meshmap-window") {
+			MapWindow()
+				.environment(\.managedObjectContext, persistenceController.container.viewContext)
+				.environmentObject(appState)
+				.environmentObject(accessoryManager)
+				.environmentObject(appState.router)
+				.environmentObject(MeshtasticAPI.shared)
+		}
+		.handlesExternalEvents(matching: [])
+		.windowResizability(.contentMinSize)
+		#if os(visionOS)
+		.windowStyle(.plain)
+		#endif
 	}
 }
