@@ -350,6 +350,13 @@ struct Settings: View {
 					}
 				}
 			}
+			NavigationLink(value: SettingsNavigationState.localMeshDiscovery) {
+				Label {
+					Text("Local Mesh Discovery")
+				} icon: {
+					Image(systemName: "antenna.radiowaves.left.and.right")
+				}
+			}
 		}
 	}
 
@@ -578,6 +585,8 @@ struct Settings: View {
 					TAKServerConfig()
 				case .takConfig:
 					TAKModuleConfig(node: nodes.first(where: { $0.num == selectedNode }))
+				case .localMeshDiscovery:
+					DiscoveryScanView()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

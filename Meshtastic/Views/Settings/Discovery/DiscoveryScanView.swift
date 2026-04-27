@@ -1,0 +1,228 @@
+// MARK: DiscoveryScanView
+//
+//  DiscoveryScanView.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 2026.
+//
+
+import MapKit
+import MeshtasticProtobufs
+import OSLog
+import SwiftData
+import SwiftUI
+
+struct DiscoveryScanView: View {
+	@Environment(\.modelContext) private var context
+	@EnvironmentObject var accessoryManager: AccessoryManager
+
+	@State private var selectedPresets: Set<ModemPresets> = []
+	@State private var dwellMinutes: Int = 15
+	@State private var showHistory = false
+
+	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
+	private var nodes: [NodeInfoEntity]
+
+	private var engine: DiscoveryScanEngine {
+		accessoryManager.discoveryEngine
+	}
+
+	private var connectedNode: NodeInfoEntity? {
+		let nodeNum = UserDefaults.preferredPeripheralNum
+		return nodes.first(where: { $0.num == Int64(nodeNum) })
+	}
+
+	private var availablePresets: [ModemPresets] {
+		// FR-002: All standard modem presets are available on all hardware.
+		// The LORA_24 region code is a region, not a modem preset. If 2.4GHz
+		// region-specific scanning is needed, it would require a region change
+		// rather than a modem preset change. Standard modem presets work on both
+		// sub-GHz and 2.4GHz hardware.
+		ModemPresets.allCases
+	}
+
+	var body: some View {
+		List {
+			if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
+				scanProgressSection
+			}
+
+			if engine.currentState == .idle {
+				presetPickerSection
+				dwellConfigSection
+			}
+
+			scanControlSection
+
+			if engine.currentState == .complete, let session = engine.session {
+				NavigationLink {
+					DiscoverySummaryView(session: session)
+				} label: {
+					Label("View Summary", systemImage: "chart.bar.doc.horizontal")
+				}
+			}
+
+			if let session = engine.session, engine.isScanning || engine.currentState == .complete {
+				Section(header: Text("Discovery Map")) {
+					DiscoveryMapView(
+						discoveredNodes: session.discoveredNodes,
+						userLatitude: session.userLatitude,
+						userLongitude: session.userLongitude,
+						isScanning: engine.currentState == .dwell
+					)
+					.frame(height: 300)
+					.listRowInsets(EdgeInsets())
+				}
+			}
+
+			if let errorMessage = engine.errorMessage {
+				Section {
+					Label(errorMessage, systemImage: "exclamationmark.triangle")
+						.foregroundStyle(.red)
+				}
+			}
+		}
+		.navigationTitle("Local Mesh Discovery")
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				NavigationLink {
+					DiscoveryHistoryView()
+				} label: {
+					Image(systemName: "clock.arrow.circlepath")
+				}
+			}
+		}
+		.onAppear {
+			engine.configure(accessoryManager: accessoryManager, modelContext: context)
+			engine.checkForInterruptedSessions(context: context)
+		}
+	}
+
+	// MARK: - Preset Picker
+
+	private var presetPickerSection: some View {
+		Section(header: Text("Modem Presets")) {
+			ForEach(availablePresets) { preset in
+				Button {
+					if selectedPresets.contains(preset) {
+						selectedPresets.remove(preset)
+					} else {
+						selectedPresets.insert(preset)
+					}
+				} label: {
+					HStack {
+						Text(preset.description)
+						Spacer()
+						if selectedPresets.contains(preset) {
+							Image(systemName: "checkmark")
+								.foregroundStyle(.blue)
+						}
+					}
+				}
+				.foregroundStyle(.primary)
+			}
+		}
+	}
+
+	// MARK: - Dwell Configuration
+
+	private var dwellConfigSection: some View {
+		Section(header: Text("Dwell Time Per Preset")) {
+			Stepper("\(dwellMinutes) minutes", value: $dwellMinutes, in: 15...180, step: 15)
+		}
+	}
+
+	// MARK: - Scan Progress
+
+	private var scanProgressSection: some View {
+		Section(header: Text("Scan Progress")) {
+			if let activePreset = engine.activePreset {
+				HStack {
+					Text("Active Preset")
+					Spacer()
+					Text(activePreset.description)
+						.foregroundStyle(.secondary)
+				}
+			}
+
+			HStack {
+				Text("State")
+				Spacer()
+				Text(stateDescription)
+					.foregroundStyle(.secondary)
+			}
+
+			if engine.currentState == .dwell {
+				HStack {
+					Text("Time Remaining")
+					Spacer()
+					Text(formatDuration(engine.dwellTimeRemaining))
+						.monospacedDigit()
+						.foregroundStyle(.secondary)
+				}
+				ProgressView(value: 1.0 - (engine.dwellTimeRemaining / engine.dwellDuration))
+			}
+
+			if let session = engine.session {
+				HStack {
+					Text("Nodes Discovered")
+					Spacer()
+					Text("\(session.discoveredNodes.count)")
+						.foregroundStyle(.secondary)
+				}
+			}
+		}
+	}
+
+	// MARK: - Scan Control
+
+	private var scanControlSection: some View {
+		Section {
+			if engine.currentState == .idle {
+				Button {
+					engine.selectedPresets = Array(selectedPresets)
+					engine.dwellDuration = TimeInterval(dwellMinutes * 60)
+					Task { await engine.startScan() }
+				} label: {
+					Label("Start Scan", systemImage: "play.fill")
+				}
+				.disabled(selectedPresets.isEmpty || !accessoryManager.isConnected)
+			} else if engine.isScanning {
+				Button(role: .destructive) {
+					Task { await engine.stopScan() }
+				} label: {
+					Label("Stop Scan", systemImage: "stop.fill")
+				}
+			} else if engine.currentState == .complete {
+				Button {
+					selectedPresets = []
+					engine.session = nil
+					engine.currentState = .idle
+				} label: {
+					Label("New Scan", systemImage: "arrow.counterclockwise")
+				}
+			}
+		}
+	}
+
+	// MARK: - Helpers
+
+	private var stateDescription: String {
+		switch engine.currentState {
+		case .idle: return "Ready"
+		case .shifting: return "Changing Preset..."
+		case .reconnecting: return "Reconnecting..."
+		case .dwell: return "Collecting Data"
+		case .analysis: return "Analyzing..."
+		case .complete: return "Complete"
+		case .paused: return "Paused — Waiting for Connection"
+		case .restoring: return "Restoring Home Preset..."
+		}
+	}
+
+	private func formatDuration(_ seconds: TimeInterval) -> String {
+		let mins = Int(seconds) / 60
+		let secs = Int(seconds) % 60
+		return String(format: "%d:%02d", mins, secs)
+	}
+}

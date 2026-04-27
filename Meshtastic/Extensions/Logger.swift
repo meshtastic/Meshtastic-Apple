@@ -39,6 +39,9 @@ extension Logger {
 	/// All logs related to TAK server and CoT messages
 	static let tak = Logger(subsystem: subsystem, category: "🎯 TAK")
 
+	/// All logs related to Local Mesh Discovery scans
+	static let discovery = Logger(subsystem: subsystem, category: "📡 Discovery")
+
 	/// Fetch from the logstore
 	static public func fetch(predicateFormat: String) async throws -> [OSLogEntryLog] {
 

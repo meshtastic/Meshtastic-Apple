@@ -428,6 +428,17 @@
 		AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0009 /* Assets.xcassets */; };
 		AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0013 /* WatchCircleText.swift */; };
+		86CCA3EEDD7E1036893B2663 /* DiscoverySessionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9C39534FE860C7FCF5B9A2 /* DiscoverySessionEntity.swift */; };
+		82F6BD3326F1BFEAF0F16723 /* DiscoveryPresetResultEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF19C19E9E7EE08A3462338E /* DiscoveryPresetResultEntity.swift */; };
+		84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */; };
+		EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */; };
+		C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
+		D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */; };
+		C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */; };
+		BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */; };
+		0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */; };
+		C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
+		1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -971,6 +982,17 @@
 		AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Meshtastic Watch App.entitlements"; sourceTree = "<group>"; };
 		AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meshtastic Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0005WTCH00000000FR0013 /* WatchCircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCircleText.swift; sourceTree = "<group>"; };
+		4B9C39534FE860C7FCF5B9A2 /* DiscoverySessionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySessionEntity.swift; sourceTree = "<group>"; };
+		AF19C19E9E7EE08A3462338E /* DiscoveryPresetResultEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryPresetResultEntity.swift; sourceTree = "<group>"; };
+		BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredNodeEntity.swift; sourceTree = "<group>"; };
+		FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
+		F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanView.swift; sourceTree = "<group>"; };
+		4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryMapView.swift; sourceTree = "<group>"; };
+		F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySummaryView.swift; sourceTree = "<group>"; };
+		41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryHistoryView.swift; sourceTree = "<group>"; };
+		4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarSweepView.swift; sourceTree = "<group>"; };
+		AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngineTests.swift; sourceTree = "<group>"; };
+		64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryModelTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -1408,6 +1430,8 @@
 				DD000005ENUMTST000000000 /* EnumTests.swift */,
 				DD000006GEOTST0000000000 /* GeoExtensionTests.swift */,
 				DD000007LORATST000000000 /* LoraDeviceEnumTests.swift */,
+				AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */,
+				64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */,
 				DD000008APPSTST000000000 /* AppSettingsEnumTests.swift */,
 				DD000009INTVTST000000000 /* IntervalEnumTests.swift */,
 				DD00000AEXTNTST000000000 /* ExtensionTests.swift */,
@@ -1588,6 +1612,7 @@
 				ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */,
 				0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */,
 				1D5AD8037A0D583C614B0597 /* Tools.swift */,
+				71084780865585DCE48BD08F /* Discovery */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1787,6 +1812,7 @@
 				D05BD108B673E15AD4B01BC8 /* Intents */,
 				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
 				25F5D5BC2C3F6D7B008036E3 /* Router */,
+				5EC3D356BFF0031F67B3499A /* Services */,
 				DD7709392AA1ABA1007A8BF0 /* Tips */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
 				DD8ED9C6289CE4A100B3B0AB /* Enums */,
@@ -1838,6 +1864,9 @@
 				4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */,
 				AA00SDRF0001 /* DeviceHardwareImageEntity.swift */,
 				AA00SDRF0002 /* DeviceHardwareTagEntity.swift */,
+				BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */,
+				AF19C19E9E7EE08A3462338E /* DiscoveryPresetResultEntity.swift */,
+				4B9C39534FE860C7FCF5B9A2 /* DiscoverySessionEntity.swift */,
 				509A1C42A695463093654617 /* DeviceMetadataEntity.swift */,
 				AA00SDRF0003 /* FirmwareReleaseEntity.swift */,
 				38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */,
@@ -2094,6 +2123,26 @@
 				AA0005WTCH00000000FR0013 /* WatchCircleText.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		71084780865585DCE48BD08F /* Discovery */ = {
+			isa = PBXGroup;
+			children = (
+				F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */,
+				4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */,
+				F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */,
+				41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */,
+				4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */,
+			);
+			path = Discovery;
+			sourceTree = "<group>";
+		};
+		5EC3D356BFF0031F67B3499A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2356,6 +2405,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */,
+				1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */,
 				AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
 				DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
 				25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
@@ -2413,6 +2464,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				86CCA3EEDD7E1036893B2663 /* DiscoverySessionEntity.swift in Sources */,
+				82F6BD3326F1BFEAF0F16723 /* DiscoveryPresetResultEntity.swift in Sources */,
+				84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */,
+				EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */,
+				C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */,
+				D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */,
+				C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */,
+				BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */,
+				0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */,
 				48E682ECE71246C3BFBD6B8F /* ChannelEntity.swift in Sources */,
 				898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */,
 				B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */,
