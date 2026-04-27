@@ -27,6 +27,13 @@ struct NodeDetail: View {
 	var connectedNode: NodeInfoEntity?
 	@Bindable	var node: NodeInfoEntity
 	@State private var environmentSectionHeight: CGFloat = 0
+
+	/// The currently BLE-connected (or remotely administered) node, derived reactively
+	/// from accessoryManager.activeDeviceNum so it stays current if the connection changes.
+	private var connectedNode: NodeInfoEntity? {
+		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		return getNodeInfo(id: num, context: context)
+	}
 	@State var showingCompassSheet = false
 	
 	var body: some View {
@@ -36,10 +43,6 @@ struct NodeDetail: View {
 					.frame(height: 0) // Ensure it has no height
 					.id("topOfList")
 				List {
-					let connectedNode = getNodeInfo(
-						id: accessoryManager.activeDeviceNum ?? -1,
-						context: context
-					)
 					Section("Hardware") {
 						
 						NodeInfoItem(node: node)
@@ -120,7 +123,6 @@ struct NodeDetail: View {
 								.textSelection(.enabled)
 						}
 						.accessibilityElement(children: .combine)
-						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
 						if let user = node.user, user.keyMatch {
 							let publicKey = node.num == connectedNode?.num
 							? node.securityConfig?.publicKey?.base64EncodedString() ?? ""

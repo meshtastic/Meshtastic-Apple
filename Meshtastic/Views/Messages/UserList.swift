@@ -160,7 +160,7 @@ fileprivate struct FilteredUserList: View {
 
 						if hasMessages {
 							HStack(alignment: .top) {
-								Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+									Text(mostRecent?.messagePayload ?? " ")
 									.font(.footnote)
 									.foregroundColor(.secondary)
 							}
@@ -173,16 +173,17 @@ fileprivate struct FilteredUserList: View {
 				}
 				.contextMenu {
 					Button {
-						if node != nil && !(user.userNode?.favorite ?? false) {
-							user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+						guard let userNode = user.userNode, let node else { return }
+						if !(userNode.favorite) {
+							userNode.favorite = true
 							Task {
-								try await accessoryManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+								try await accessoryManager.setFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
 								Logger.data.info("Favorited a node")
 							}
 						} else {
-							user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+							userNode.favorite = false
 							Task {
-								try await accessoryManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+								try await accessoryManager.removeFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
 								Logger.data.info("Unfavorited a node")
 							}
 						}
@@ -220,7 +221,9 @@ fileprivate struct FilteredUserList: View {
 				) {
 					Button(role: .destructive) {
 						Task {
-							await MeshPackets.shared.deleteUserMessages(user: userToDeleteMessages!)
+							if let userToDelete = userToDeleteMessages {
+								await MeshPackets.shared.deleteUserMessages(user: userToDelete)
+							}
 						}
 					} label: {
 						Text("Delete")

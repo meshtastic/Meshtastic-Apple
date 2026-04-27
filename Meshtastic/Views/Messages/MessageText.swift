@@ -122,7 +122,8 @@ struct MessageText: View {
 					.scrollDismissesKeyboard(.immediately)
 					.focused($isTapbackInputFocused)
 					.frame(width: 1, height: 1)
-					.opacity(0)
+					.opacity(0.01)
+					.allowsHitTesting(false)
 					.onChange(of: tapbackText) {
 						processTapback()
 					}

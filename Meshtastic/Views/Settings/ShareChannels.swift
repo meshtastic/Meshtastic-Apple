@@ -85,14 +85,14 @@ struct ShareChannels: View {
 									Toggle("Channel 0 Included", isOn: $includeChannel0)
 										.toggleStyle(.switch)
 										.labelsHidden()
-									Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
+									Text(((channel.name?.isEmpty ?? true ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
 									ChannelLock(channel: channel)
 								} else if channel.index == 1 && channel.role > 0 {
 									Toggle("Channel 1 Included", isOn: $includeChannel1)
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+											Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -105,7 +105,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -118,7 +118,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -131,7 +131,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -144,7 +144,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -157,7 +157,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -170,7 +170,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)

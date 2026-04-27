@@ -107,8 +107,7 @@ struct ChannelList: View {
 
 				if hasMessages {
 					HStack(alignment: .top) {
-						Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-							// .font(.system(size: 16))
+						Text(mostRecent?.messagePayload ?? " ")
 							.font(.footnote)
 							.foregroundColor(.secondary)
 					}

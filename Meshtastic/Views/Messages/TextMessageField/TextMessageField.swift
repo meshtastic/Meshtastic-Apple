@@ -74,6 +74,19 @@ struct TextMessageField: View {
 					if #available(iOS 26.0, macOS 26.0, *) {
 						HStack {
 							Spacer()
+							#if targetEnvironment(macCatalyst)
+							Button {
+								if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+									let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+									if nsApp.responds(to: selector) {
+										nsApp.perform(selector, with: nil)
+									}
+								}
+							} label: {
+								Image(systemName: "face.smiling")
+							}
+							Spacer()
+							#endif
 							AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
 							Spacer()
 							RequestPositionButton(action: requestPosition)
@@ -90,6 +103,19 @@ struct TextMessageField: View {
 						Divider()
 						HStack {
 							Spacer()
+							#if targetEnvironment(macCatalyst)
+							Button {
+								if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+									let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+									if nsApp.responds(to: selector) {
+										nsApp.perform(selector, with: nil)
+									}
+								}
+							} label: {
+								Image(systemName: "face.smiling")
+							}
+							Spacer()
+							#endif
 							AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
 							Spacer()
 							RequestPositionButton(action: requestPosition)

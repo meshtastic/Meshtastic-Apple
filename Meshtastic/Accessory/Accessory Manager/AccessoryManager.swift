@@ -172,11 +172,25 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	var heartbeatTimer: ResettableTimer?
 	var heartbeatResponseTimer: ResettableTimer?
-	
+
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
 		self.state = .uninitialized
 		self.mqttManager.delegate = self
+
+		// Listen for system memory warnings to proactively release Core Data object data
+		NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
+			guard let self else { return }
+			self.context.refreshAllObjects()
+			Logger.data.warning("⚠️ [AccessoryManager] Memory warning — refreshed viewContext (\(self.context.registeredObjects.count) registered objects)")
+			Task {
+				let bgContext = await MeshPackets.shared.backgroundContext
+				await bgContext.perform {
+					bgContext.refreshAllObjects()
+					Logger.data.warning("⚠️ [MeshPackets] Memory warning — refreshed backgroundContext (\(bgContext.registeredObjects.count) registered objects)")
+				}
+			}
+		}
 	}
 
 	func transportForType(_ type: TransportType) -> Transport? {
@@ -267,6 +281,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
+		self.activeDeviceNum = nil
 		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
@@ -287,6 +302,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		
 		await wantDatabaseGate.cancelAll()
 		await wantDatabaseGate.reset()
+
+		// Re-fault all registered objects on the viewContext to release their in-memory data.
+		// Objects stay registered but their property storage is freed, which prevents unbounded
+		// memory growth across disconnect/reconnect cycles on long-running sessions.
+		context.refreshAllObjects()
+		Logger.data.info("💾 [AccessoryManager] Refreshed viewContext on disconnect (\(self.context.registeredObjects.count) registered objects)")
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false

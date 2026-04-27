@@ -91,16 +91,10 @@ struct ChannelMessageList: View {
 							  onInteractionComplete: handleInteractionComplete
 						  )
 						  .onAppear {
-							  // Only mark as read if the app is in the foreground
 							  if !message.read && UIApplication.shared.applicationState == .active {
 								  message.read = true
 								  LocalNotificationManager().cancelNotificationForMessageId(message.messageId)
-								  // Race condition, sometimes the app doesn't update unread count if we run this too early
-								  // So, run it in the main queue after everything saves and stabilizes
-								  DispatchQueue.main.async {
-									  markMessagesAsRead()
-									  scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-								  }
+								  needsReadSync = true
 							  }
 						  }
 
@@ -114,6 +108,14 @@ struct ChannelMessageList: View {
 			.defaultScrollAnchorTopAlignment()
 			.defaultScrollAnchorBottomSizeChanges()
 			.scrollDismissesKeyboard(.immediately)
+			.task(id: needsReadSync) {
+				guard needsReadSync else { return }
+				// Brief delay so multiple .onAppear calls can batch before saving
+				try? await Task.sleep(for: .milliseconds(250))
+				guard !Task.isCancelled else { return }
+				needsReadSync = false
+				markMessagesAsRead()
+			}
 			.onChange(of: messageFieldFocused) {
 				if messageFieldFocused {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {

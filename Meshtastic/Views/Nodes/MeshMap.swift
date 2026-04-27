@@ -48,6 +48,8 @@ struct MeshMap: View {
 	@State private var showLegend = false
 	/// Filter
 	@StateObject var filters = NodeFilterParameters()
+	/// Track whether the map pop-out window is already open
+	@State private var isMapWindowOpen = false
 
 	var body: some View {
 		NavigationStack {
@@ -198,9 +200,10 @@ struct MeshMap: View {
 				}
 			}
 			.navigationBarItems(leading: MeshtasticLogo(), trailing: HStack {
-				if supportsMultipleWindows && showOpenWindowButton {
+				if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
 					Button {
 						openWindow(id: "meshmap-window")
+						isMapWindowOpen = true
 					} label: {
 						Image(systemName: "macwindow.badge.plus")
 					}
@@ -211,6 +214,10 @@ struct MeshMap: View {
 		}
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
+			// Check if the map window scene is already connected
+			isMapWindowOpen = UIApplication.shared.connectedScenes.contains {
+				$0.session.configuration.name == "meshmap-window" && $0.activationState != .unattached
+			}
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
@@ -232,6 +239,12 @@ struct MeshMap: View {
 		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
 			if let deletedFileId = notification.object as? UUID {
 				enabledOverlayConfigs.remove(deletedFileId)
+			}
+		}
+		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { notification in
+			if let scene = notification.object as? UIScene,
+			   scene.session.configuration.name == "meshmap-window" {
+				isMapWindowOpen = false
 			}
 		}
 	}
