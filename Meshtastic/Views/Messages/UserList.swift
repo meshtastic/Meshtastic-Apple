@@ -94,9 +94,6 @@ fileprivate struct FilteredUserList: View {
 	}
 
 	var body: some View {
-		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
-		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
-
 		List(users, selection: $userSelection) { user in
 			let mostRecent = user.mostRecentMessage
 			let hasMessages = mostRecent != nil
@@ -149,11 +146,11 @@ fileprivate struct FilteredUserList: View {
 										.font(.footnote)
 										.foregroundColor(.secondary)
 								} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-									Text(lastMessageTime.formattedDate(format: dateFormatString))
-										.font(.footnote)
-										.foregroundColor(.secondary)
-								} else if lastMessageDay < (currentDay - 1800) {
-									Text(lastMessageTime.formattedDate(format: dateFormatString))
+Text(lastMessageTime.formatted(date: .numeric, time: .omitted))
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									} else if lastMessageDay < (currentDay - 1800) {
+										Text(lastMessageTime.formatted(date: .numeric, time: .omitted))
 										.font(.footnote)
 										.foregroundColor(.secondary)
 								}

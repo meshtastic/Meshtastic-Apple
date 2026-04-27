@@ -338,14 +338,8 @@ extension MetricsColumnList {
 				abbreviatedName: "Time",
 				minWidth: 140.0, maxWidth: 2000.0,
 				tableBody: { _, time in
-					let localeDateFormat = DateFormatter.dateFormat(
-						fromTemplate: "yyMMddjmma", options: 0,
-						locale: Locale.current)
-					let dateFormatString =
-						(localeDateFormat ?? "MM/dd/YY j:mma")
-						.replacingOccurrences(of: ",", with: "")
-					Text(
-						time?.formattedDate(format: dateFormatString)
+						Text(
+							time?.formatted(date: .numeric, time: .shortened)
 							?? "Unknown Age".localized
 					)
 				})

@@ -56,19 +56,6 @@ struct DateExtensionDetailedTests {
 		#expect(date.lastHeard == "Unknown Age")
 	}
 
-	@Test func formattedDate_valid() {
-		let date = Date(timeIntervalSince1970: 1000000)
-		let result = date.formattedDate(format: "yyyy")
-		#expect(!result.isEmpty)
-		#expect(result != "Unknown Age")
-	}
-
-	@Test func formattedDate_epochZero() {
-		let date = Date(timeIntervalSince1970: 0)
-		let result = date.formattedDate(format: "yyyy-MM-dd")
-		#expect(result == "Unknown Age")
-	}
-
 	@Test func relativeTimeOfDay_morning() {
 		var cal = Calendar.current
 		cal.timeZone = TimeZone.current

@@ -25,8 +25,6 @@ struct PositionLog: View {
 	var body: some View {
 		VStack {
 			if node.hasPositions {
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 				if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
 					// Add a table for mac and ipad
 					let positions = node.positions?.reversed() as? [PositionEntity] ?? []
@@ -60,7 +58,7 @@ struct PositionLog: View {
 							Text("\(String(format: "%.2f", position.snr)) dB")
 						}
 						TableColumn("Time Stamp") { position in
-							Text(position.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+							Text(position.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -105,7 +103,7 @@ struct PositionLog: View {
 											.font(.caption2)
 										Text(altitude.formatted())
 											.font(.caption2)
-										Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+									Text(mappin.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 											.font(.caption2)
 									}
 								}
