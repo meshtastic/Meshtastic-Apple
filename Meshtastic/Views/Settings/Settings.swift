@@ -350,6 +350,7 @@ struct Settings: View {
 					}
 				}
 			}
+			//#if targetEnvironment(macCatalyst)
 			NavigationLink(value: SettingsNavigationState.localMeshDiscovery) {
 				Label {
 					Text("Local Mesh Discovery")
@@ -357,6 +358,7 @@ struct Settings: View {
 					Image(systemName: "antenna.radiowaves.left.and.right")
 				}
 			}
+			//#endif
 		}
 	}
 

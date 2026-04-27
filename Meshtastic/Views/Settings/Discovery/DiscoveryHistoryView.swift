@@ -78,7 +78,11 @@ struct DiscoveryHistoryView: View {
 					userLongitude: session.userLongitude,
 					isScanning: false
 				)
-				.frame(height: 300)
+				#if targetEnvironment(macCatalyst)
+				.frame(height: 600)
+				#else
+				.frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 450 : 300)
+				#endif
 				.listRowInsets(EdgeInsets())
 			}
 

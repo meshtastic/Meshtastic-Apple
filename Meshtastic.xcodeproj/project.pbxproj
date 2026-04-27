@@ -7,27 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		48E682ECE71246C3BFBD6B8F /* ChannelEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E6EDE744E3446FA1084499 /* ChannelEntity.swift */; };
-		898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */; };
-		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
-		10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */; };
-		AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0001 /* DeviceHardwareImageEntity.swift */; };
-		AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0002 /* DeviceHardwareTagEntity.swift */; };
-		AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0003 /* FirmwareReleaseEntity.swift */; };
-		D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3204EF969484E549C139730 /* MessageEntity.swift */; };
-		85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */; };
-		9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7101240749F24E96835A040A /* NodeInfoEntity.swift */; };
-		D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
-		93FFCD83202042FB85B47CFD /* RouteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */; };
-		5D3AFC6F08ED4C909C830C55 /* TelemetryEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31483AF5F5354D3481698E32 /* TelemetryEntity.swift */; };
-		7B1684B5E1AF4137829C03B8 /* TraceRouteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */; };
-		70A5B362F7EC4F14A99A8C39 /* UserEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 918722D2C1474B2D99ED01DC /* UserEntity.swift */; };
-		E340A7CA75194A49AB8763C7 /* WaypointEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */; };
-		AA000401SIRI000000000002 /* AppIntentVocabulary.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA000401SIRI000000000001 /* AppIntentVocabulary.plist */; };
-		AA000301CPTST000000000002 /* CarPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000301CPTST000000000001 /* CarPlayTests.swift */; };
-		AA000201CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
-		AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */; };
-		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
+		0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
@@ -36,6 +16,8 @@
 		108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */; };
 		10D109F22E2047D600536CE6 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F12E2047D600536CE6 /* DatadogSessionReplay */; };
 		10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 10D109F32E2047D600536CE6 /* DatadogTrace */; };
+		10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */; };
+		1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */; };
 		230A98402EF86A44004D87F1 /* AsyncCentral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230A983F2EF86A44004D87F1 /* AsyncCentral.swift */; };
 		230A98422EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift */; };
 		230BC3972E31071E0046BF2A /* AccessoryManager+Discovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */; };
@@ -129,8 +111,104 @@
 		25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5BF2C3F6DA6008036E3 /* Router.swift */; };
 		25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5C12C3F6E4B008036E3 /* AppState.swift */; };
 		25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5D02C4375DF008036E3 /* RouterTests.swift */; };
+		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
+		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
+		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
+		3D3417C82E29D38A006A988B /* GeoJSONOverlayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */; };
+		3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D12E2DC260006A988B /* MapDataManager.swift */; };
+		3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D32E2DC293006A988B /* MapDataFiles.swift */; };
+		43C0CB306098FD005C2D489F /* IntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA63632A10C2DD076FA222BE /* IntentHandler.swift */; };
+		48E682ECE71246C3BFBD6B8F /* ChannelEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E6EDE744E3446FA1084499 /* ChannelEntity.swift */; };
+		5D3AFC6F08ED4C909C830C55 /* TelemetryEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31483AF5F5354D3481698E32 /* TelemetryEntity.swift */; };
+		655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F203877F307073096C89179 /* FountainCodec.swift */; };
+		6C95257E7B3E55D4FED5694C /* MapWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B990EE65E4D5CABBA4DD8DC2 /* MapWindow.swift */; };
+		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
+		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
+		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
+		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
+		70A5B362F7EC4F14A99A8C39 /* UserEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 918722D2C1474B2D99ED01DC /* UserEntity.swift */; };
+		7717E5954788B23527BACF65 /* IntentMessageConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */; };
+		7B1684B5E1AF4137829C03B8 /* TraceRouteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */; };
+		7CCBCA0251DAB58FD9D63D06 /* GenericCoTHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */; };
+		82F6BD3326F1BFEAF0F16723 /* DiscoveryPresetResultEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF19C19E9E7EE08A3462338E /* DiscoveryPresetResultEntity.swift */; };
+		8398407DBA32EE7CFC16A385 /* TAKDataPackageGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */; };
+		84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */; };
+		85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */; };
+		86CCA3EEDD7E1036893B2663 /* DiscoverySessionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9C39534FE860C7FCF5B9A2 /* DiscoverySessionEntity.swift */; };
+		898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */; };
+		8A8F2D8A3769D24BAB88B4A1 /* CoTMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */; };
+		8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */; };
+		8D3F8A412D44C2A6009EAAA4 /* PowerMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */; };
+		8E587743574CE17703E892C6 /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 518D504DED9874EBF9D76578 /* Certificates */; };
+		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
+		93FFCD83202042FB85B47CFD /* RouteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */; };
+		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
+		9BC51D7EF97090D149658843 /* SetMessageAttributeIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */; };
+		9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7101240749F24E96835A040A /* NodeInfoEntity.swift */; };
+		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
 		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
-		DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */; };
+		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
+		AA000201CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
+		AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */; };
+		AA000301CPTST000000000002 /* CarPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000301CPTST000000000001 /* CarPlayTests.swift */; };
+		AA000401SIRI000000000002 /* AppIntentVocabulary.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA000401SIRI000000000001 /* AppIntentVocabulary.plist */; };
+		AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */; };
+		AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0002 /* ContentView.swift */; };
+		AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0003 /* MeshNode.swift */; };
+		AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */; };
+		AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */; };
+		AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */; };
+		AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */; };
+		AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */; };
+		AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0009 /* Assets.xcassets */; };
+		AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0013 /* WatchCircleText.swift */; };
+		AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0001 /* DeviceHardwareImageEntity.swift */; };
+		AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0002 /* DeviceHardwareTagEntity.swift */; };
+		AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0003 /* FirmwareReleaseEntity.swift */; };
+		AB4622DCF4B1D4115ED00312 /* SendMessageIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */; };
+		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
+		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
+		B0E4EEF2D2C41A884A5E949C /* SearchForMessagesIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */; };
+		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
+		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
+		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
+		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
+		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
+		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
+		BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */; };
+		BCA9A82C2EC802CF00166292 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA9A82B2EC802CF00166292 /* CompassView.swift */; };
+		BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */; };
+		BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613802C67290800485544 /* SendWaypointIntent.swift */; };
+		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
+		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
+		BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613862C69A0FB00485544 /* AppIntentErrors.swift */; };
+		BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */; };
+		BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */; };
+		BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
+		BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */; };
+		BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */; };
+		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
+		BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */; };
+		BD7B1A838F8245A0B6BE56C5 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */; };
+		C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */; };
+		C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
+		C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
+		D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
+		D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */; };
+		D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3204EF969484E549C139730 /* MessageEntity.swift */; };
+		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
+		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
+		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
+		D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D82B81509C0066FBC8 /* TapbackResponses.swift */; };
+		D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D92B81509D0066FBC8 /* TapbackInputView.swift */; };
+		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
+		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
+		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
+		D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
+		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
+		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
+		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
 		DD000001NODNAVTST00000001 /* NodeNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */; };
 		DD000002STREXTTST00000001 /* StringExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000002STREXTTST00000000 /* StringExtensionTests.swift */; };
 		DD000003NUMEXTTST00000001 /* NumericExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000003NUMEXTTST00000000 /* NumericExtensionTests.swift */; };
@@ -175,62 +253,8 @@
 		DD00002AINTREMTST00000001 /* IntentAndRemainingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */; };
 		DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */; };
 		DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */; };
-		DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */; };
 		DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */; };
-		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
-		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
-		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
-		3D3417C82E29D38A006A988B /* GeoJSONOverlayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */; };
-		3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D12E2DC260006A988B /* MapDataManager.swift */; };
-		3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D32E2DC293006A988B /* MapDataFiles.swift */; };
-		655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F203877F307073096C89179 /* FountainCodec.swift */; };
-		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
-		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
-		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
-		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
-		7CCBCA0251DAB58FD9D63D06 /* GenericCoTHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */; };
-		8398407DBA32EE7CFC16A385 /* TAKDataPackageGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */; };
-		8A8F2D8A3769D24BAB88B4A1 /* CoTMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */; };
-		8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */; };
-		8D3F8A412D44C2A6009EAAA4 /* PowerMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */; };
-		8E587743574CE17703E892C6 /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 518D504DED9874EBF9D76578 /* Certificates */; };
-		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
-		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
-		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
-		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
-		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
-		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
-		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
-		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
-		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
-		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
-		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
-		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
-		BCA9A82C2EC802CF00166292 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA9A82B2EC802CF00166292 /* CompassView.swift */; };
-		BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */; };
-		BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613802C67290800485544 /* SendWaypointIntent.swift */; };
-		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
-		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
-		BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613862C69A0FB00485544 /* AppIntentErrors.swift */; };
-		BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */; };
-		BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */; };
-		BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
-		BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */; };
-		BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */; };
-		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
-		BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */; };
-		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
-		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
-		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
-		D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D82B81509C0066FBC8 /* TapbackResponses.swift */; };
-		D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D92B81509D0066FBC8 /* TapbackInputView.swift */; };
-		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
-		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
-		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
-		D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
-		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
-		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
-		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
+		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD09240001E7FAD600E70001 /* MapLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD09240002E7FAD600E70001 /* MapLegend.swift */; };
@@ -261,11 +285,9 @@
 		DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD268D8D2BCC90E2008073AE /* RouteEnums.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD354FD82BD96A0B0061A25F /* IAQScale.swift */; };
-		BD7B1A838F8245A0B6BE56C5 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */; };
 		DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */; };
 		DD3CC24C2C498D6C001BD3A2 /* BatteryCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */; };
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
-		DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */; };
 		DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */; };
 		DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */; };
 		DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */; };
@@ -277,6 +299,7 @@
 		DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */; };
 		DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */; };
 		DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */; };
+		DD4756AB2E9F1A0000029299 /* SecurityVersionNag.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
 		DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
@@ -302,7 +325,6 @@
 		DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD798B062915928D005217CD /* ChannelMessageList.swift */; };
 		DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FE272476C700F4AB02 /* LogDocument.swift */; };
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
-		DD4756AB2E9F1A0000029299 /* SecurityVersionNag.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */; };
 		DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D409287F04F100BAEB7A /* InvalidVersion.swift */; };
 		DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */; };
 		DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */; };
@@ -324,6 +346,7 @@
 		DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* IntervalEnums.swift */; };
 		DD9C700D2E8D5A9500106227 /* ChannelMessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C700C2E8D5A8900106227 /* ChannelMessageRow.swift */; };
 		DD9C700F2E8DE80800106227 /* UserMessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C700E2E8DE7FF00106227 /* UserMessageRow.swift */; };
+		DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */; };
 		DD9C70112E916EBD00106227 /* UpdateIntervalPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */; };
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
@@ -336,7 +359,6 @@
 		DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAB580C2B0DAA9E00147258 /* Routes.swift */; };
 		DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */; };
 		DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */; };
-		6C95257E7B3E55D4FED5694C /* MapWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B990EE65E4D5CABBA4DD8DC2 /* MapWindow.swift */; };
 		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
 		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
 		DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */; };
@@ -410,35 +432,10 @@
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
 		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
+		E340A7CA75194A49AB8763C7 /* WaypointEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */; };
 		E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
-		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
-		43C0CB306098FD005C2D489F /* IntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA63632A10C2DD076FA222BE /* IntentHandler.swift */; };
-		7717E5954788B23527BACF65 /* IntentMessageConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */; };
-		AB4622DCF4B1D4115ED00312 /* SendMessageIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */; };
-		B0E4EEF2D2C41A884A5E949C /* SearchForMessagesIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */; };
-		9BC51D7EF97090D149658843 /* SetMessageAttributeIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */; };
-		AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */; };
-		AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0002 /* ContentView.swift */; };
-		AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0003 /* MeshNode.swift */; };
-		AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */; };
-		AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */; };
-		AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */; };
-		AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */; };
-		AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */; };
-		AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0009 /* Assets.xcassets */; };
-		AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0013 /* WatchCircleText.swift */; };
-		86CCA3EEDD7E1036893B2663 /* DiscoverySessionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9C39534FE860C7FCF5B9A2 /* DiscoverySessionEntity.swift */; };
-		82F6BD3326F1BFEAF0F16723 /* DiscoveryPresetResultEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF19C19E9E7EE08A3462338E /* DiscoveryPresetResultEntity.swift */; };
-		84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */; };
 		EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */; };
-		C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
-		D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */; };
-		C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */; };
-		BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */; };
-		0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */; };
-		C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
-		1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */; };
+		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -449,19 +446,19 @@
 			remoteGlobalIDString = DDC2E15326CE248E0042C5E4;
 			remoteInfo = Meshtastic;
 		};
-		DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DDDE59F329AF163D00490C6C;
-			remoteInfo = WidgetsExtension;
-		};
 		AA0005WTCH00000000CX0001 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = AA0005WTCH00000000NT0001;
 			remoteInfo = "Meshtastic Watch App";
+		};
+		DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DDDE59F329AF163D00490C6C;
+			remoteInfo = WidgetsExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -475,17 +472,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				DDDE5A0329AF163E00490C6C /* WidgetsExtension.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		AA0005WTCH00000000CP0001 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -497,46 +483,24 @@
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DDDE5A0329AF163E00490C6C /* WidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		45E6EDE744E3446FA1084499 /* ChannelEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEntity.swift; sourceTree = "<group>"; };
-		4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigModels.swift; sourceTree = "<group>"; };
-		509A1C42A695463093654617 /* DeviceMetadataEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetadataEntity.swift; sourceTree = "<group>"; };
-		38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchema.swift; sourceTree = "<group>"; };
-		AA00SDRF0001 /* DeviceHardwareImageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareImageEntity.swift; sourceTree = "<group>"; };
-		AA00SDRF0002 /* DeviceHardwareTagEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareTagEntity.swift; sourceTree = "<group>"; };
-		AA00SDRF0003 /* FirmwareReleaseEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareReleaseEntity.swift; sourceTree = "<group>"; };
-		F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
-		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
-		7101240749F24E96835A040A /* NodeInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntity.swift; sourceTree = "<group>"; };
-		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
-		DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteModels.swift; sourceTree = "<group>"; };
-		31483AF5F5354D3481698E32 /* TelemetryEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEntity.swift; sourceTree = "<group>"; };
-		D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteModels.swift; sourceTree = "<group>"; };
-		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
-		E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntity.swift; sourceTree = "<group>"; };
-		AA000401SIRI000000000010 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000011 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = de; path = de.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000012 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = es; path = es.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000013 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = fr; path = fr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000014 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = it; path = it.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000015 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000016 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = da; path = da.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000017 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = pl; path = pl.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000018 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ru; path = ru.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000019 /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000020 /* sr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = sr; path = sr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000021 /* se */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = se; path = se.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000022 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = zh-Hans; path = zh-Hans.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000401SIRI000000000023 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = zh-Hant-TW; path = zh-Hant-TW.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		AA000301CPTST000000000001 /* CarPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayTests.swift; sourceTree = "<group>"; };
-		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
-		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
-		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
+		0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchForMessagesIntentHandler.swift; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
 		108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityToNodeInfo.swift; sourceTree = "<group>"; };
 		1D5AD8037A0D583C614B0597 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
@@ -625,8 +589,118 @@
 		25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25F5D5D02C4375DF008036E3 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
+		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
+		31483AF5F5354D3481698E32 /* TelemetryEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEntity.swift; sourceTree = "<group>"; };
+		38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchema.swift; sourceTree = "<group>"; };
+		39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentMessageConverters.swift; sourceTree = "<group>"; };
+		3D0A8ABAEF1E587683970927 /* EXICodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EXICodec.swift; sourceTree = "<group>"; };
+		3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayManager.swift; sourceTree = "<group>"; };
+		3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayConfig.swift; sourceTree = "<group>"; };
+		3D3417D12E2DC260006A988B /* MapDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataManager.swift; sourceTree = "<group>"; };
+		3D3417D32E2DC293006A988B /* MapDataFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataFiles.swift; sourceTree = "<group>"; };
+		3F203877F307073096C89179 /* FountainCodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FountainCodec.swift; sourceTree = "<group>"; };
+		41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryHistoryView.swift; sourceTree = "<group>"; };
+		45E6EDE744E3446FA1084499 /* ChannelEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEntity.swift; sourceTree = "<group>"; };
+		4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTMessage.swift; sourceTree = "<group>"; };
+		4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigModels.swift; sourceTree = "<group>"; };
+		4B9C39534FE860C7FCF5B9A2 /* DiscoverySessionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySessionEntity.swift; sourceTree = "<group>"; };
+		4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryMapView.swift; sourceTree = "<group>"; };
+		4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarSweepView.swift; sourceTree = "<group>"; };
+		509A1C42A695463093654617 /* DeviceMetadataEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetadataEntity.swift; sourceTree = "<group>"; };
+		518D504DED9874EBF9D76578 /* Certificates */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = Certificates; sourceTree = "<group>"; };
+		5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessageIntentHandler.swift; sourceTree = "<group>"; };
+		64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryModelTests.swift; sourceTree = "<group>"; };
+		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
+		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
+		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
+		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
+		7101240749F24E96835A040A /* NodeInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntity.swift; sourceTree = "<group>"; };
+		748E4806582595DE80D455CD /* CoTXMLParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTXMLParser.swift; sourceTree = "<group>"; };
+		7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GenericCoTHandler.swift; sourceTree = "<group>"; };
+		82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+TAK.swift"; sourceTree = "<group>"; };
+		84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
+		87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKMeshtasticBridge.swift; sourceTree = "<group>"; };
+		8D3F8A3D2D44B137009EAAA4 /* MeshtasticDataModelV 49.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 49.xcdatamodel"; sourceTree = "<group>"; };
+		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
+		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
+		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
+		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
+		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
-		DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceOnboardingTests.swift; sourceTree = "<group>"; };
+		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
+		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
+		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
+		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
+		AA000301CPTST000000000001 /* CarPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayTests.swift; sourceTree = "<group>"; };
+		AA000401SIRI000000000010 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000011 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = de; path = de.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000012 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = es; path = es.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000013 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = fr; path = fr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000014 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = it; path = it.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000015 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000016 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = da; path = da.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000017 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = pl; path = pl.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000018 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ru; path = ru.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000019 /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000020 /* sr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = sr; path = sr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000021 /* se */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = se; path = se.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000022 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hans"; path = "zh-Hans.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
+		AA000401SIRI000000000023 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWatchApp.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0003 /* MeshNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshNode.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneConnectivityManager.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLocationManager.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxhuntCompassView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyNodesListView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Meshtastic Watch App.entitlements"; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meshtastic Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0005WTCH00000000FR0013 /* WatchCircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCircleText.swift; sourceTree = "<group>"; };
+		AA00SDRF0001 /* DeviceHardwareImageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareImageEntity.swift; sourceTree = "<group>"; };
+		AA00SDRF0002 /* DeviceHardwareTagEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareTagEntity.swift; sourceTree = "<group>"; };
+		AA00SDRF0003 /* FirmwareReleaseEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareReleaseEntity.swift; sourceTree = "<group>"; };
+		AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngineTests.swift; sourceTree = "<group>"; };
+		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
+		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
+		AF19C19E9E7EE08A3462338E /* DiscoveryPresetResultEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryPresetResultEntity.swift; sourceTree = "<group>"; };
+		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
+		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
+		B990EE65E4D5CABBA4DD8DC2 /* MapWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapWindow.swift; sourceTree = "<group>"; };
+		BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddContactIntent.swift; sourceTree = "<group>"; };
+		BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelSettingsIntent.swift; sourceTree = "<group>"; };
+		BCA9A82B2EC802CF00166292 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
+		BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNodeIntent.swift; sourceTree = "<group>"; };
+		BCB613802C67290800485544 /* SendWaypointIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendWaypointIntent.swift; sourceTree = "<group>"; };
+		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
+		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
+		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
+		BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactURLHandler.swift; sourceTree = "<group>"; };
+		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
+		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
+		BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShutDownNodeIntent.swift; sourceTree = "<group>"; };
+		BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestartNodeIntent.swift; sourceTree = "<group>"; };
+		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
+		BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactoryResetNodeIntent.swift; sourceTree = "<group>"; };
+		BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredNodeEntity.swift; sourceTree = "<group>"; };
+		CA63632A10C2DD076FA222BE /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
+		CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMessageAttributeIntentHandler.swift; sourceTree = "<group>"; };
+		D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteModels.swift; sourceTree = "<group>"; };
+		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
+		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
+		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
+		D93068D82B81509C0066FBC8 /* TapbackResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackResponses.swift; sourceTree = "<group>"; };
+		D93068D92B81509D0066FBC8 /* TapbackInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackInputView.swift; sourceTree = "<group>"; };
+		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
+		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
+		D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
+		D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
+		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
+		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
+		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
+		DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteModels.swift; sourceTree = "<group>"; };
+		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
 		DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeNavigationTests.swift; sourceTree = "<group>"; };
 		DD000002STREXTTST00000000 /* StringExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensionTests.swift; sourceTree = "<group>"; };
 		DD000003NUMEXTTST00000000 /* NumericExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericExtensionTests.swift; sourceTree = "<group>"; };
@@ -671,62 +745,7 @@
 		DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentAndRemainingTests.swift; sourceTree = "<group>"; };
 		DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPacketsAndTelemetryTests.swift; sourceTree = "<group>"; };
 		DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecPipelineTests.swift; sourceTree = "<group>"; };
-		DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecPipelineTests.swift; sourceTree = "<group>"; };
 		DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewSnapshotTests.swift; sourceTree = "<group>"; };
-		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
-		3D0A8ABAEF1E587683970927 /* EXICodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EXICodec.swift; sourceTree = "<group>"; };
-		3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayManager.swift; sourceTree = "<group>"; };
-		3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayConfig.swift; sourceTree = "<group>"; };
-		3D3417D12E2DC260006A988B /* MapDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataManager.swift; sourceTree = "<group>"; };
-		3D3417D32E2DC293006A988B /* MapDataFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataFiles.swift; sourceTree = "<group>"; };
-		3F203877F307073096C89179 /* FountainCodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FountainCodec.swift; sourceTree = "<group>"; };
-		4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTMessage.swift; sourceTree = "<group>"; };
-		518D504DED9874EBF9D76578 /* Certificates */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = Certificates; sourceTree = "<group>"; };
-		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
-		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
-		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
-		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
-		748E4806582595DE80D455CD /* CoTXMLParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTXMLParser.swift; sourceTree = "<group>"; };
-		7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GenericCoTHandler.swift; sourceTree = "<group>"; };
-		82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+TAK.swift"; sourceTree = "<group>"; };
-		87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKMeshtasticBridge.swift; sourceTree = "<group>"; };
-		8D3F8A3D2D44B137009EAAA4 /* MeshtasticDataModelV 49.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 49.xcdatamodel"; sourceTree = "<group>"; };
-		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
-		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
-		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
-		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
-		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
-		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
-		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
-		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
-		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
-		BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddContactIntent.swift; sourceTree = "<group>"; };
-		BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelSettingsIntent.swift; sourceTree = "<group>"; };
-		BCA9A82B2EC802CF00166292 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
-		BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNodeIntent.swift; sourceTree = "<group>"; };
-		BCB613802C67290800485544 /* SendWaypointIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendWaypointIntent.swift; sourceTree = "<group>"; };
-		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
-		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
-		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
-		BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactURLHandler.swift; sourceTree = "<group>"; };
-		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
-		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
-		BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShutDownNodeIntent.swift; sourceTree = "<group>"; };
-		BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestartNodeIntent.swift; sourceTree = "<group>"; };
-		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
-		BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactoryResetNodeIntent.swift; sourceTree = "<group>"; };
-		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
-		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
-		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
-		D93068D82B81509C0066FBC8 /* TapbackResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackResponses.swift; sourceTree = "<group>"; };
-		D93068D92B81509D0066FBC8 /* TapbackInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackInputView.swift; sourceTree = "<group>"; };
-		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
-		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
-		D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
-		D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
-		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
-		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
-		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 55.xcdatamodel"; sourceTree = "<group>"; };
@@ -773,7 +792,6 @@
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD354FD82BD96A0B0061A25F /* IAQScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAQScale.swift; sourceTree = "<group>"; };
 		DD3619132B1EE20700C41C8C /* MeshtasticDataModelV21.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV21.xcdatamodel; sourceTree = "<group>"; };
-		84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
 		DD3619142B1EF9F900C41C8C /* LocationsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsHandler.swift; sourceTree = "<group>"; };
 		DD398EBD2B93F640002B4C51 /* MeshtasticDataModelV 29.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 29.xcdatamodel"; sourceTree = "<group>"; };
 		DD3CC24B2C498D6C001BD3A2 /* BatteryCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryCompact.swift; sourceTree = "<group>"; };
@@ -794,6 +812,7 @@
 		DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLESignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointForm.swift; sourceTree = "<group>"; };
+		DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityVersionNag.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
 		DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientLightingConfig.swift; sourceTree = "<group>"; };
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
@@ -829,7 +848,6 @@
 		DD7E235F2C7AA3E50078ACDF /* MeshtasticDataModelV 43.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 43.xcdatamodel"; sourceTree = "<group>"; };
 		DD8169FE272476C700F4AB02 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
-		DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityVersionNag.swift; sourceTree = "<group>"; };
 		DD86D409287F04F100BAEB7A /* InvalidVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvalidVersion.swift; sourceTree = "<group>"; };
 		DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelQRCode.swift; sourceTree = "<group>"; };
 		DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CsvDocument.swift; sourceTree = "<group>"; };
@@ -856,6 +874,7 @@
 		DD9C700C2E8D5A8900106227 /* ChannelMessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageRow.swift; sourceTree = "<group>"; };
 		DD9C700E2E8DE7FF00106227 /* UserMessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageRow.swift; sourceTree = "<group>"; };
 		DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateIntervalPicker.swift; sourceTree = "<group>"; };
+		DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceOnboardingTests.swift; sourceTree = "<group>"; };
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA28B1B2D32C89200EF726F /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
@@ -869,7 +888,6 @@
 		DDAB580C2B0DAA9E00147258 /* Routes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Routes.swift; sourceTree = "<group>"; };
 		DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEntityExtension.swift; sourceTree = "<group>"; };
 		DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMap.swift; sourceTree = "<group>"; };
-		B990EE65E4D5CABBA4DD8DC2 /* MapWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapWindow.swift; sourceTree = "<group>"; };
 		DDB234392B5CA9B000DA6FB1 /* MeshtasticDataModelV 24.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 24.xcdatamodel"; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
@@ -965,34 +983,11 @@
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
-		CA63632A10C2DD076FA222BE /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
-		39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentMessageConverters.swift; sourceTree = "<group>"; };
-		5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessageIntentHandler.swift; sourceTree = "<group>"; };
-		0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchForMessagesIntentHandler.swift; sourceTree = "<group>"; };
-		CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMessageAttributeIntentHandler.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWatchApp.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0003 /* MeshNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshNode.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneConnectivityManager.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLocationManager.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxhuntCompassView.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyNodesListView.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionView.swift; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Meshtastic Watch App.entitlements"; sourceTree = "<group>"; };
-		AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meshtastic Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA0005WTCH00000000FR0013 /* WatchCircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCircleText.swift; sourceTree = "<group>"; };
-		4B9C39534FE860C7FCF5B9A2 /* DiscoverySessionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySessionEntity.swift; sourceTree = "<group>"; };
-		AF19C19E9E7EE08A3462338E /* DiscoveryPresetResultEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryPresetResultEntity.swift; sourceTree = "<group>"; };
-		BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredNodeEntity.swift; sourceTree = "<group>"; };
-		FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
-		F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanView.swift; sourceTree = "<group>"; };
-		4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryMapView.swift; sourceTree = "<group>"; };
+		E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntity.swift; sourceTree = "<group>"; };
 		F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySummaryView.swift; sourceTree = "<group>"; };
-		41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryHistoryView.swift; sourceTree = "<group>"; };
-		4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarSweepView.swift; sourceTree = "<group>"; };
-		AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngineTests.swift; sourceTree = "<group>"; };
-		64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryModelTests.swift; sourceTree = "<group>"; };
+		F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
+		F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanView.swift; sourceTree = "<group>"; };
+		FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -1077,6 +1072,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA0005WTCH00000000FP0001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDC2E15126CE248E0042C5E4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1104,25 +1106,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AA0005WTCH00000000FP0001 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AA000201CPLAY000000000005 /* CarPlay */ = {
-			isa = PBXGroup;
-			children = (
-				AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */,
-				AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */,
-			);
-			path = CarPlay;
-			sourceTree = "<group>";
-		};
 		23148E2E2EE1CCB100F0DB2C /* API */ = {
 			isa = PBXGroup;
 			children = (
@@ -1132,12 +1118,12 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		2315D19E2EECB42D00E0FAE7 /* U2F Mass Storage */ = {
+		2315D19E2EECB42D00E0FAE7 /* UF2 Mass Storage */ = {
 			isa = PBXGroup;
 			children = (
 				2315D19F2EECB44800E0FAE7 /* UF2MassStorageView.swift */,
 			);
-			path = "U2F Mass Storage";
+			path = "UF2 Mass Storage";
 			sourceTree = "<group>";
 		};
 		2315D1A32EED94D700E0FAE7 /* Firmware */ = {
@@ -1194,13 +1180,6 @@
 				233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */,
 			);
 			path = "Compact Widgets";
-			sourceTree = "<group>";
-		};
-		2344A2AC2D66978000170A77 /* CoreData */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = CoreData;
 			sourceTree = "<group>";
 		};
 		234D99E62F96FD3F00D26B89 /* Nymea */ = {
@@ -1272,7 +1251,7 @@
 			isa = PBXGroup;
 			children = (
 				DDD6EEAE29BC024700383354 /* Firmware.swift */,
-				2315D19E2EECB42D00E0FAE7 /* U2F Mass Storage */,
+				2315D19E2EECB42D00E0FAE7 /* UF2 Mass Storage */,
 				23C2BE322EEC3F7800F6A997 /* ESP32 OTA */,
 				23C2BE2F2EEB821400F6A997 /* NRF DFU */,
 				23196C712EF42D4300B1504B /* Helpers */,
@@ -1469,10 +1448,80 @@
 				DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */,
 				DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */,
 				DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */,
-				DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */,
 				DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */,
 			);
 			path = MeshtasticTests;
+			sourceTree = "<group>";
+		};
+		5EC3D356BFF0031F67B3499A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		71084780865585DCE48BD08F /* Discovery */ = {
+			isa = PBXGroup;
+			children = (
+				F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */,
+				4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */,
+				F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */,
+				41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */,
+				4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */,
+			);
+			path = Discovery;
+			sourceTree = "<group>";
+		};
+		AA000201CPLAY000000000005 /* CarPlay */ = {
+			isa = PBXGroup;
+			children = (
+				AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */,
+				AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */,
+			);
+			path = CarPlay;
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0001 /* Meshtastic Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */,
+				AA0005WTCH00000000FR0002 /* ContentView.swift */,
+				AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */,
+				AA0005WTCH00000000FR0009 /* Assets.xcassets */,
+				AA0005WTCH00000000GR0002 /* Managers */,
+				AA0005WTCH00000000GR0003 /* Models */,
+				AA0005WTCH00000000GR0004 /* Views */,
+			);
+			path = "Meshtastic Watch App";
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0002 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */,
+				AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0003 /* MeshNode.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */,
+				AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */,
+				AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */,
+				AA0005WTCH00000000FR0013 /* WatchCircleText.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		BCB6137F2C6728E700485544 /* AppIntents */ = {
@@ -1494,18 +1543,6 @@
 			path = AppIntents;
 			sourceTree = "<group>";
 		};
-		D05BD108B673E15AD4B01BC8 /* Intents */ = {
-			isa = PBXGroup;
-			children = (
-				CA63632A10C2DD076FA222BE /* IntentHandler.swift */,
-				39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */,
-				5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */,
-				0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */,
-				CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */,
-			);
-			path = Intents;
-			sourceTree = "<group>";
-		};
 		C37572859BC745C4284A9B42 /* TAK */ = {
 			isa = PBXGroup;
 			children = (
@@ -1521,6 +1558,18 @@
 				7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */,
 			);
 			path = TAK;
+			sourceTree = "<group>";
+		};
+		D05BD108B673E15AD4B01BC8 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				CA63632A10C2DD076FA222BE /* IntentHandler.swift */,
+				39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */,
+				5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */,
+				0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */,
+				CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */,
+			);
+			path = Intents;
 			sourceTree = "<group>";
 		};
 		D9C9839E2B79D0C600BDBE6A /* TextMessageField */ = {
@@ -1583,7 +1632,7 @@
 			children = (
 				DD836AE626F6B38600ABCC23 /* Connect.swift */,
 				DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */,
-				DD86D409287F04F100BAEB7A /* InvalidVersion.swift */
+				DD86D409287F04F100BAEB7A /* InvalidVersion.swift */,
 			);
 			path = Connect;
 			sourceTree = "<group>";
@@ -2083,68 +2132,6 @@
 			path = Widgets;
 			sourceTree = "<group>";
 		};
-		AA0005WTCH00000000GR0001 /* Meshtastic Watch App */ = {
-			isa = PBXGroup;
-			children = (
-				AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */,
-				AA0005WTCH00000000FR0002 /* ContentView.swift */,
-				AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */,
-				AA0005WTCH00000000FR0009 /* Assets.xcassets */,
-				AA0005WTCH00000000GR0002 /* Managers */,
-				AA0005WTCH00000000GR0003 /* Models */,
-				AA0005WTCH00000000GR0004 /* Views */,
-			);
-			path = "Meshtastic Watch App";
-			sourceTree = "<group>";
-		};
-		AA0005WTCH00000000GR0002 /* Managers */ = {
-			isa = PBXGroup;
-			children = (
-				AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */,
-				AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */,
-			);
-			path = Managers;
-			sourceTree = "<group>";
-		};
-		AA0005WTCH00000000GR0003 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				AA0005WTCH00000000FR0003 /* MeshNode.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		AA0005WTCH00000000GR0004 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */,
-				AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */,
-				AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */,
-				AA0005WTCH00000000FR0013 /* WatchCircleText.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		71084780865585DCE48BD08F /* Discovery */ = {
-			isa = PBXGroup;
-			children = (
-				F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */,
-				4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */,
-				F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */,
-				41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */,
-				4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */,
-			);
-			path = Discovery;
-			sourceTree = "<group>";
-		};
-		5EC3D356BFF0031F67B3499A /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -2168,6 +2155,23 @@
 			productName = MeshtasticTests;
 			productReference = 25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AA0005WTCH00000000NT0001 /* Meshtastic Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */;
+			buildPhases = (
+				AA0005WTCH00000000SP0001 /* Sources */,
+				AA0005WTCH00000000FP0001 /* Frameworks */,
+				AA0005WTCH00000000RP0001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Meshtastic Watch App";
+			productName = "Meshtastic Watch App";
+			productReference = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */;
+			productType = "com.apple.product-type.application";
 		};
 		DDC2E15326CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXNativeTarget;
@@ -2229,23 +2233,6 @@
 			productReference = DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		AA0005WTCH00000000NT0001 /* Meshtastic Watch App */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */;
-			buildPhases = (
-				AA0005WTCH00000000SP0001 /* Sources */,
-				AA0005WTCH00000000FP0001 /* Frameworks */,
-				AA0005WTCH00000000RP0001 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "Meshtastic Watch App";
-			productName = "Meshtastic Watch App";
-			productReference = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */;
-			productType = "com.apple.product-type.application";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2287,8 +2274,8 @@
 				ru,
 				se,
 				sr,
-				zh-Hans,
-				zh-Hant-TW,
+				"zh-Hans",
+				"zh-Hant-TW",
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
@@ -2320,6 +2307,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA0005WTCH00000000RP0001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDC2E15226CE248E0042C5E4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2346,14 +2341,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AA0005WTCH00000000RP0001 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2457,6 +2444,22 @@
 				DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */,
 				DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */,
 				DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0005WTCH00000000SP0001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */,
+				AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */,
+				AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */,
+				AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */,
+				AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */,
+				AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */,
+				AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */,
+				AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */,
+				AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2811,22 +2814,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AA0005WTCH00000000SP0001 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */,
-				AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */,
-				AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */,
-				AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */,
-				AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */,
-				AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */,
-				AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */,
-				AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */,
-				AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2835,17 +2822,17 @@
 			target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
 			targetProxy = 25F5D5CB2C4375A8008036E3 /* PBXContainerItemProxy */;
 		};
-		DDDE5A0229AF163E00490C6C /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			platformFilter = ios;
-			target = DDDE59F329AF163D00490C6C /* WidgetsExtension */;
-			targetProxy = DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */;
-		};
 		AA0005WTCH00000000TD0001 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			platformFilter = ios;
 			target = AA0005WTCH00000000NT0001 /* Meshtastic Watch App */;
 			targetProxy = AA0005WTCH00000000CX0001 /* PBXContainerItemProxy */;
+		};
+		DDDE5A0229AF163E00490C6C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = DDDE59F329AF163D00490C6C /* WidgetsExtension */;
+			targetProxy = DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2921,6 +2908,74 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Meshtastic";
+			};
+			name = Release;
+		};
+		AA0005WTCH00000000BC0001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.7.11;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		AA0005WTCH00000000BC0002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.7.11;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Release;
 		};
@@ -3225,74 +3280,6 @@
 			};
 			name = Release;
 		};
-		AA0005WTCH00000000BC0001 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
-				INFOPLIST_KEY_CFBundleIconName = AppIcon;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
-				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 2.7.11;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "watchos watchsimulator";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
-			};
-			name = Debug;
-		};
-		AA0005WTCH00000000BC0002 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
-				INFOPLIST_KEY_CFBundleIconName = AppIcon;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
-				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 2.7.11;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "watchos watchsimulator";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -3301,6 +3288,15 @@
 			buildConfigurations = (
 				25F5D5CD2C4375A8008036E3 /* Debug */,
 				25F5D5CE2C4375A8008036E3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0005WTCH00000000BC0001 /* Debug */,
+				AA0005WTCH00000000BC0002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3328,15 +3324,6 @@
 			buildConfigurations = (
 				DDDE5A0629AF163F00490C6C /* Debug */,
 				DDDE5A0729AF163F00490C6C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AA0005WTCH00000000BC0001 /* Debug */,
-				AA0005WTCH00000000BC0002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3384,20 +3371,20 @@
 				minimumVersion = 1.26.0;
 			};
 		};
-		DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/emqx/CocoaMQTT";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
 		DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.17.0;
+			};
+		};
+		DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/emqx/CocoaMQTT";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -3451,15 +3438,15 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MeshtasticProtobufs;
 		};
-		DD0D3D212A55CEB10066DB71 /* CocoaMQTT */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
-			productName = CocoaMQTT;
-		};
 		DD00003B000SNAP00000000 /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
+		};
+		DD0D3D212A55CEB10066DB71 /* CocoaMQTT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
+			productName = CocoaMQTT;
 		};
 /* End XCSwiftPackageProductDependency section */
 
@@ -3467,7 +3454,6 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				AA0001052F07A4B000600002 /* MeshtasticDataModelV 58.xcdatamodel */,
 				AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */,
 				DD7D46262F833B520028AC1A /* MeshtasticDataModelV 56.xcdatamodel */,
 				DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */,
@@ -3526,7 +3512,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = AA0001052F07A4B000600002 /* MeshtasticDataModelV 58.xcdatamodel */;
+			currentVersion = DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

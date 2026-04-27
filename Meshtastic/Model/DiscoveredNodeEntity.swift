@@ -23,6 +23,7 @@ final class DiscoveredNodeEntity {
 	var rssi: Int = 0
 	var messageCount: Int = 0
 	var sensorPacketCount: Int = 0
+	var isInfrastructure: Bool = false
 	var presetName: String = ""
 
 	var session: DiscoverySessionEntity?
