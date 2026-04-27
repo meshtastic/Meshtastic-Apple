@@ -27,6 +27,7 @@ extension AccessoryManager {
 		
 		// Clear any errors from last time
 		lastConnectionError = nil
+		activeDeviceNum = nil
 		packetsSent = 0
 		packetsReceived = 0
 		expectedNodeDBSize = nil

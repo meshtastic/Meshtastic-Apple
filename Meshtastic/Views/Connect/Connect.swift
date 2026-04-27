@@ -45,7 +45,7 @@ struct Connect: View {
 							VStack(alignment: .leading) {
 								HStack {
 									VStack(alignment: .center) {
-										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
+										CircleText(text: (node?.user?.shortName ?? connectedDevice.shortName)?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? Int64(connectedDevice.num ?? 0)))), circleSize: 90)
 											.padding(.trailing, 5)
 										if node?.latestDeviceMetrics != nil {
 											BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
@@ -54,14 +54,12 @@ struct Connect: View {
 									}
 									.padding(.trailing)
 									VStack(alignment: .leading) {
-										if node != nil {
-											HStack {
-												Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
-												if connectedDevice.wasRestored {
-													Circle()
-														.fill(Color.gray)
-														.frame(width: 8, height: 8)
-												}
+										HStack {
+											Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
+											if connectedDevice.wasRestored {
+												Circle()
+													.fill(Color.gray)
+													.frame(width: 8, height: 8)
 											}
 										}
 										Text("Connection Name").font(.callout)+Text(": \(connectedDevice.name.addingVariationSelectors)")
@@ -74,10 +72,8 @@ struct Connect: View {
 											Spacer()
 										}
 										.padding(0)
-										if node != nil {
-											Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
-												.font(.callout).foregroundColor(Color.gray)
-										}
+										Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? connectedDevice.firmwareVersion ?? "Unknown".localized)")
+											.font(.callout).foregroundColor(Color.gray)
 										switch accessoryManager.state {
 										case .subscribed:
 											Text("Subscribed").font(.callout)
@@ -360,32 +356,52 @@ struct Connect: View {
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-		.onChange(of: self.accessoryManager.state) { _, state in
-			
-			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
-				
-				let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", deviceNum)
-				
-				do {
-					node = try context.fetch(fetchNodeInfoRequest).first
-					if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
-						isUnsetRegion = true
-					} else {
-						isUnsetRegion = false
-					}
-				} catch {
-					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
-				}
-			// Check firmware version on connection (only if version is known)
-			if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
-				let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
-				let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
-				invalidFirmwareVersion = !meetsMinimumVersion
-				showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
-			}
+		.onChange(of: self.accessoryManager.activeDeviceNum) { _, deviceNum in
+			if let deviceNum {
+				refreshNode(for: deviceNum)
+			} else {
+				clearNode()
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)) { _ in
+			// Re-trigger fetch if node is nil but activeDeviceNum exists (e.g., after manual connection DB wipe)
+			if node == nil, let deviceNum = accessoryManager.activeDeviceNum {
+				refreshNode(for: deviceNum)
+			}
+		}
+		.onChange(of: self.accessoryManager.state) { _, state in
+			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
+				refreshNode(for: deviceNum)
+			}
+		}
+	}
+	
+	private func refreshNode(for deviceNum: Int64) {
+		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", deviceNum)
+		do {
+			node = try context.fetch(fetchNodeInfoRequest).first
+			if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
+				isUnsetRegion = true
+			} else {
+				isUnsetRegion = false
+			}
+		} catch {
+			Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
+		}
+
+		// Check firmware version on connection (only if version is known)
+		if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
+			let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
+			let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
+			invalidFirmwareVersion = !meetsMinimumVersion
+			showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
+		}
+	}
+	
+	private func clearNode() {
+		node = nil
+		isUnsetRegion = false
 	}
 #if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
