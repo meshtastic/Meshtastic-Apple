@@ -122,3 +122,10 @@ The app registers the `meshtastic:///` URL scheme. Use `Router.route(url:)` to h
 ## CI
 
 CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modify CI scripts without understanding the Xcode Cloud build environment.
+
+## Active Technologies
+- Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+) (001-local-mesh-discovery)
+- SwiftData (`ModelContainer` / `ModelContext`) (001-local-mesh-discovery)
+
+## Recent Changes
+- 001-local-mesh-discovery: Added Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+)
