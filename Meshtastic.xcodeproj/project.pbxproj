@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
@@ -156,6 +157,7 @@
 		DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */; };
 		DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */; };
 		DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */; };
+		DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */; };
 		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
 		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
 		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
@@ -613,6 +615,7 @@
 		DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPacketsAndTelemetryTests.swift; sourceTree = "<group>"; };
 		DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecPipelineTests.swift; sourceTree = "<group>"; };
 		DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecPipelineTests.swift; sourceTree = "<group>"; };
+		DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewSnapshotTests.swift; sourceTree = "<group>"; };
 		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
 		39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentMessageConverters.swift; sourceTree = "<group>"; };
 		3D0A8ABAEF1E587683970927 /* EXICodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EXICodec.swift; sourceTree = "<group>"; };
@@ -1021,6 +1024,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1408,6 +1412,7 @@
 				DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */,
 				DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */,
 				DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */,
+				DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -2069,6 +2074,9 @@
 				25F5D5CC2C4375A8008036E3 /* PBXTargetDependency */,
 			);
 			name = MeshtasticTests;
+			packageProductDependencies = (
+				DD00003B000SNAP00000000 /* SnapshotTesting */,
+			);
 			productName = MeshtasticTests;
 			productReference = 25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -2202,6 +2210,7 @@
 				102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
 				2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
 				2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */,
+				DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
@@ -2357,6 +2366,7 @@
 				DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */,
 				DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */,
 				DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */,
+				DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3267,6 +3277,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -3322,6 +3340,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
 			productName = CocoaMQTT;
+		};
+		DD00003B000SNAP00000000 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
 
