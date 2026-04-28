@@ -330,6 +330,7 @@
 		DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */; };
 		DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */; };
 		DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */; };
+		AA10D0012D00000000000001 /* DiscoverySummaryPDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10D0002D00000000000001 /* DiscoverySummaryPDF.swift */; };
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */; };
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
@@ -854,6 +855,7 @@
 		DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelQRCode.swift; sourceTree = "<group>"; };
 		DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CsvDocument.swift; sourceTree = "<group>"; };
 		DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteCsvFile.swift; sourceTree = "<group>"; };
+		AA10D0002D00000000000001 /* DiscoverySummaryPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySummaryPDF.swift; sourceTree = "<group>"; };
 		DD8EBF42285058FA00426DCA /* DisplayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingError.swift; sourceTree = "<group>"; };
@@ -1762,6 +1764,7 @@
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
 				DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */,
 				DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */,
+				AA10D0002D00000000000001 /* DiscoverySummaryPDF.swift */,
 			);
 			path = Export;
 			sourceTree = "<group>";
@@ -2711,6 +2714,7 @@
 				DD6F65762C6EA5490053C113 /* AckErrors.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
+				AA10D0012D00000000000001 /* DiscoverySummaryPDF.swift in Sources */,
 				23A1AFB72E42BD2500E46C96 /* RXTXIndicatorView.swift in Sources */,
 				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,

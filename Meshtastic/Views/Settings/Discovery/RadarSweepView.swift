@@ -30,7 +30,8 @@ struct RadarSweepView: View {
 
 				Canvas { context, size in
 					let center = CGPoint(x: size.width / 2, y: size.height / 2)
-					let radius = min(size.width, size.height) / 2
+					let inset: CGFloat = 24
+					let radius = min(size.width, size.height) / 2 - inset
 
 					// Outer ring
 					var outerRing = Path()

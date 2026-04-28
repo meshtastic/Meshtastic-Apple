@@ -20,6 +20,9 @@ struct DiscoverySummaryView: View {
 	@State private var isGeneratingAI: Bool = false
 	@State private var generatingPresets: Set<String> = []
 	@State private var presetSummaries: [String: String] = [:]
+	@State private var isExportingPDF: Bool = false
+	@State private var isGeneratingPDF: Bool = false
+	@State private var pdfDocument: PDFDocument?
 
 	var body: some View {
 		List {
@@ -30,6 +33,38 @@ struct DiscoverySummaryView: View {
 		}
 		.listSectionSpacing(.compact)
 		.navigationTitle("Scan Summary")
+		.toolbar {
+			ToolbarItem(placement: .primaryAction) {
+				if isGeneratingPDF {
+					ProgressView()
+				} else {
+					Button {
+						Task {
+							isGeneratingPDF = true
+							let data = await DiscoverySummaryPDF.generate(session: session)
+							pdfDocument = PDFDocument(data: data)
+							isGeneratingPDF = false
+							isExportingPDF = true
+						}
+					} label: {
+						Image(systemName: "square.and.arrow.up")
+					}
+				}
+			}
+		}
+		.fileExporter(
+			isPresented: $isExportingPDF,
+			document: pdfDocument,
+			contentType: .pdf,
+			defaultFilename: "Meshtastic Scan \(session.timestamp.formatted(.iso8601.year().month().day().dateSeparator(.dash)))"
+		) { result in
+			switch result {
+			case .success:
+				Logger.services.info("Discovery scan PDF export succeeded.")
+			case .failure(let error):
+				Logger.services.error("Discovery scan PDF export failed: \(error.localizedDescription, privacy: .public)")
+			}
+		}
 		.task {
 			loadCachedPresetSummaries()
 			await generateAIRecommendation()
@@ -504,9 +539,10 @@ struct DiscoverySummaryView: View {
 	}
 
 	private func formatDistance(_ meters: Double) -> String {
-		if meters >= 1000 {
-			return String(format: "%.1f km", meters / 1000)
-		}
-		return String(format: "%.0f m", meters)
+		let measurement = Measurement(value: meters, unit: UnitLength.meters)
+		let formatter = MeasurementFormatter()
+		formatter.unitOptions = .naturalScale
+		formatter.numberFormatter.maximumFractionDigits = 1
+		return formatter.string(from: measurement)
 	}
 }

@@ -24,9 +24,7 @@ struct DiscoveryScanView: View {
 	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
 	private var nodes: [NodeInfoEntity]
 
-	private var engine: DiscoveryScanEngine {
-		accessoryManager.discoveryEngine
-	}
+	@State private var engine: DiscoveryScanEngine?
 
 	private var connectedNode: NodeInfoEntity? {
 		let nodeNum = UserDefaults.preferredPeripheralNum
@@ -34,11 +32,6 @@ struct DiscoveryScanView: View {
 	}
 
 	private var availablePresets: [ModemPresets] {
-		// FR-002: All standard modem presets are available on all hardware.
-		// The LORA_24 region code is a region, not a modem preset. If 2.4GHz
-		// region-specific scanning is needed, it would require a region change
-		// rather than a modem preset change. Standard modem presets work on both
-		// sub-GHz and 2.4GHz hardware.
 		ModemPresets.allCases
 	}
 
@@ -48,46 +41,48 @@ struct DiscoveryScanView: View {
 		List {
 			TipView(discoveryScanTip)
 
-			if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
-				scanProgressSection
-			}
-
-			if engine.currentState == .idle {
-				presetPickerSection
-				dwellConfigSection
-			}
-
-			scanControlSection
-
-			if engine.currentState == .complete, let session = engine.session {
-				NavigationLink {
-					DiscoverySummaryView(session: session)
-				} label: {
-					Label("View Summary", systemImage: "chart.bar.doc.horizontal")
+			if let engine {
+				if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
+					scanProgressSection(engine)
 				}
-			}
 
-			if let session = engine.session, engine.isScanning || engine.currentState == .complete {
-				Section(header: Text("Discovery Map")) {
-					DiscoveryMapView(
-						discoveredNodes: session.discoveredNodes,
-						userLatitude: session.userLatitude,
-						userLongitude: session.userLongitude,
-						isScanning: engine.currentState == .dwell
-					)
-					#if targetEnvironment(macCatalyst)
-					.frame(minHeight: 500, maxHeight: 700)
-					#else
-					.frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 450 : 300)
-					#endif
-					.listRowInsets(EdgeInsets())
+				if engine.currentState == .idle {
+					presetPickerSection
+					dwellConfigSection
 				}
-			}
 
-			if let errorMessage = engine.errorMessage {
-				Section {
-					Label(errorMessage, systemImage: "exclamationmark.triangle")
-						.foregroundStyle(.red)
+				scanControlSection(engine)
+
+				if engine.currentState == .complete, let session = engine.session {
+					NavigationLink {
+						DiscoverySummaryView(session: session)
+					} label: {
+						Label("View Summary", systemImage: "chart.bar.doc.horizontal")
+					}
+				}
+
+				if let session = engine.session, engine.isScanning || engine.currentState == .complete {
+					Section(header: Text("Discovery Map")) {
+						DiscoveryMapView(
+							discoveredNodes: session.discoveredNodes,
+							userLatitude: session.userLatitude,
+							userLongitude: session.userLongitude,
+							isScanning: engine.currentState == .dwell
+						)
+						#if targetEnvironment(macCatalyst)
+						.frame(minHeight: 500, maxHeight: 700)
+						#else
+						.frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 450 : 300)
+						#endif
+						.listRowInsets(EdgeInsets())
+					}
+				}
+
+				if let errorMessage = engine.errorMessage {
+					Section {
+						Label(errorMessage, systemImage: "exclamationmark.triangle")
+							.foregroundStyle(.red)
+					}
 				}
 			}
 		}
@@ -102,12 +97,13 @@ struct DiscoveryScanView: View {
 			}
 		}
 		.onAppear {
-			engine.configure(accessoryManager: accessoryManager, modelContext: context)
-			engine.checkForInterruptedSessions(context: context)
+			if engine == nil {
+				engine = accessoryManager.discoveryEngine
+			}
+			engine?.configure(accessoryManager: accessoryManager, modelContext: context)
+			engine?.checkForInterruptedSessions(context: context)
 		}
 	}
-
-	// MARK: - Preset Picker
 
 	private var presetPickerSection: some View {
 		Section(header: Text("Modem Presets")) {
@@ -153,7 +149,7 @@ struct DiscoveryScanView: View {
 
 	// MARK: - Scan Progress
 
-	private var scanProgressSection: some View {
+	private func scanProgressSection(_ engine: DiscoveryScanEngine) -> some View {
 		Section(header: Text("Scan Progress")) {
 			if let activePreset = engine.activePreset {
 				HStack {
@@ -167,7 +163,7 @@ struct DiscoveryScanView: View {
 			HStack {
 				Text("State")
 				Spacer()
-				Text(stateDescription)
+				Text(stateDescription(engine))
 					.foregroundStyle(.secondary)
 			}
 
@@ -195,7 +191,7 @@ struct DiscoveryScanView: View {
 
 	// MARK: - Scan Control
 
-	private var scanControlSection: some View {
+	private func scanControlSection(_ engine: DiscoveryScanEngine) -> some View {
 		Section {
 			if engine.currentState == .idle {
 				Button {
@@ -226,7 +222,7 @@ struct DiscoveryScanView: View {
 
 	// MARK: - Helpers
 
-	private var stateDescription: String {
+	private func stateDescription(_ engine: DiscoveryScanEngine) -> String {
 		switch engine.currentState {
 		case .idle: return "Ready"
 		case .shifting: return "Changing Preset..."
