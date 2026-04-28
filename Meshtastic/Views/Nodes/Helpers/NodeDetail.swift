@@ -217,7 +217,7 @@ struct NodeDetail: View {
 									Text(text)
 										.textSelection(.enabled)
 								} else {
-									Text(firstHeard.formatted())
+									Text(firstHeard.formatted(date: .numeric, time: .shortened))
 										.textSelection(.enabled)
 								}
 							}
@@ -236,12 +236,12 @@ struct NodeDetail: View {
 								}
 								Spacer()
 								if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
-									if lastHeard.formatted() != "Unknown Age".localized {
+									if lastHeard.formatted(date: .numeric, time: .shortened) != "Unknown Age".localized {
 										Text(text)
 											.textSelection(.enabled)
 									}
 								} else {
-									Text(lastHeard.formatted())
+									Text(lastHeard.formatted(date: .numeric, time: .shortened))
 										.textSelection(.enabled)
 								}
 							}

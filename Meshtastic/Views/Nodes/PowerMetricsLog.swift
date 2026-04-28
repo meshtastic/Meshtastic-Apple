@@ -115,14 +115,11 @@ struct PowerMetricsLog: View {
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
 				}
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
-
 				if idiom == .phone {
 					Table(powerMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Timestamp") { m in
 							HStack {
-								Text(m.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+								Text(m.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 								Spacer()
 								HStack {
 									VStack {
@@ -213,7 +210,7 @@ struct PowerMetricsLog: View {
 						}
 						.width(min: 75)
 						TableColumn("Timestamp") { dm in
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+							Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 

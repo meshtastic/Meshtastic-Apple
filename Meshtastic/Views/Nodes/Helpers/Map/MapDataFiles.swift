@@ -201,7 +201,7 @@ struct MapDataFileRow: View {
 						.font(.caption2)
 						.foregroundColor(.secondary)
 					Spacer()
-					Text(file.uploadDate.formatted())
+					Text(file.uploadDate.formatted(date: .numeric, time: .shortened))
 						.font(.caption2)
 						.foregroundColor(.secondary)
 				}

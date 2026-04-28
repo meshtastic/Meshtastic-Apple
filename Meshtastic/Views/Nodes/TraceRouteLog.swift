@@ -37,7 +37,7 @@ struct TraceRouteLog: View {
 				VStack {
 					List(node.traceRoutes?.reversed() as? [TraceRouteEntity] ?? [], id: \.self, selection: $selectedRoute) { route in
 						Label {
-							let routeTime = route.time?.formatted() ?? "Unknown".localized
+							let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
 							if route.response && route.hopsTowards == route.hopsBack {
 								let hopString = String(localized: "\(route.hopsTowards) Hops")
 								Text("\(routeTime) - \(hopString)")

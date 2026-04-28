@@ -33,9 +33,6 @@ struct ChannelList: View {
 		myInfo: MyInfoEntity,
 		channel: ChannelEntity
 	) -> some View {
-		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
-		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
-
 		NavigationLink(value: channel) {
 			let mostRecent = channel.mostRecentPrivateMessage
 			let hasMessages = mostRecent != nil
@@ -83,11 +80,11 @@ struct ChannelList: View {
 								.font(.footnote)
 								.foregroundColor(.secondary)
 						} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-							Text(lastMessageTime.formattedDate(format: dateFormatString))
+							Text(lastMessageTime.formatted(date: .numeric, time: .omitted))
 								.font(.footnote)
 								.foregroundColor(.secondary)
 						} else if lastMessageDay < (currentDay - 1800) {
-							Text(lastMessageTime.formattedDate(format: dateFormatString))
+							Text(lastMessageTime.formatted(date: .numeric, time: .omitted))
 								.font(.footnote)
 								.foregroundColor(.secondary)
 						}

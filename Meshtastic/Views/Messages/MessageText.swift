@@ -8,18 +8,6 @@ import Translation
 
 struct MessageText: View {
 	static let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
-	static let localeDateFormat = DateFormatter.dateFormat(
-		fromTemplate: "yyMMddjmmssa",
-		options: 0,
-		locale: Locale.current
-	)
-	static let localeTimeFormat = DateFormatter.dateFormat(
-		fromTemplate: "jmmssa",
-		options: 0,
-		locale: Locale.current
-	)
-	static let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
-	static let timeFormatString = (localeTimeFormat ?? "j:mm:ss:a")
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	

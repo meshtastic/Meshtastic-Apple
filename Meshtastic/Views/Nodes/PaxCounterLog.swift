@@ -84,8 +84,6 @@ struct PaxCounterLog: View {
 					}
 					.frame(minHeight: 250)
 				}
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 				if UIScreen.main.bounds.size.width > 768 && (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
 					// Add a table for mac and ipad
 					Table(pax) {
@@ -105,7 +103,7 @@ struct PaxCounterLog: View {
 							Text(components)
 						}
 						TableColumn("Timestamp") { pc in
-							Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+							Text(pc.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -149,7 +147,7 @@ struct PaxCounterLog: View {
 									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 									Text(components)
 										.font(.caption)
-									Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+									Text(pc.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 										.font(.caption)
 								}
 							}
