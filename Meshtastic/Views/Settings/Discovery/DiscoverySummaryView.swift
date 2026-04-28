@@ -76,59 +76,83 @@ struct DiscoverySummaryView: View {
 		}
 	}
 
+	@ViewBuilder
 	private func presetCard(_ result: DiscoveryPresetResultEntity) -> some View {
-		VStack(alignment: .leading, spacing: 6) {
+		let isMac = UIDevice.current.userInterfaceIdiom == .mac || UIDevice.current.userInterfaceIdiom == .pad
+		let rowFont: Font = isMac ? .body : .caption
+		let headerFont: Font = isMac ? .title3 : .headline
+		let valueFont: Font = isMac ? .callout : .subheadline
+
+		VStack(alignment: .leading, spacing: 8) {
 			HStack {
 				Text(result.presetName)
-					.font(.headline)
+					.font(headerFont)
 				Spacer()
-				Text("\(result.uniqueNodesFound) nodes")
-					.font(.subheadline)
-					.foregroundStyle(result.uniqueNodesFound > 0 ? .green : .secondary)
+				VStack(alignment: .trailing) {
+					Text("\(result.uniqueNodesFound) nodes")
+						.font(valueFont)
+						.foregroundStyle(result.uniqueNodesFound > 0 ? .green : .secondary)
+					HStack(spacing: 4) {
+						Image(systemName: "point.3.connected.trianglepath.dotted")
+							.foregroundStyle(.purple)
+						Text("\(result.meshNeighborCount) Mesh")
+							.foregroundStyle(.secondary)
+					}
+					.font(rowFont)
+				}
 			}
 
-			HStack {
-				Label("\(result.directNeighborCount)", systemImage: "antenna.radiowaves.left.and.right")
-					.foregroundStyle(.blue)
-				Text("Direct")
-					.foregroundStyle(.secondary)
+			HStack(alignment: .top, spacing: 16) {
+				VStack(alignment: .leading, spacing: 6) {
+					HStack(spacing: 6) {
+						Image(systemName: "antenna.radiowaves.left.and.right")
+							.foregroundStyle(.blue)
+						Text("Direct")
+						Text("\(result.directNeighborCount)")
+							.foregroundStyle(.primary)
+					}
+					HStack(spacing: 6) {
+						Image(systemName: "bubble.left")
+							.foregroundStyle(.blue)
+						Text("Messages")
+						Text("\(result.messageCount)")
+							.foregroundStyle(.primary)
+					}
+					HStack(spacing: 6) {
+						Image(systemName: "chart.bar.fill")
+							.foregroundStyle(result.averageChannelUtilization < 25 ? .green : (result.averageChannelUtilization > 50 ? .red : .orange))
+						Text("Ch Util")
+						Text(result.averageChannelUtilization > 0 ? "\(String(format: "%.1f", result.averageChannelUtilization))%" : "—")
+							.foregroundStyle(.primary)
+					}
+				}
 				Spacer()
-				Label("\(result.meshNeighborCount)", systemImage: "point.3.connected.trianglepath.dotted")
-					.foregroundStyle(.purple)
-				Text("Mesh")
-					.foregroundStyle(.secondary)
-				Spacer()
-				Label("\(result.infrastructureNodeCount)", systemImage: "server.rack")
-					.foregroundStyle(.teal)
-				Text("Infra")
-					.foregroundStyle(.secondary)
+				VStack(alignment: .leading, spacing: 6) {
+					HStack(spacing: 6) {
+						Image(systemName: "server.rack")
+							.foregroundStyle(.teal)
+						Text("Infrastructure")
+						Text("\(result.infrastructureNodeCount)")
+							.foregroundStyle(.primary)
+					}
+					HStack(spacing: 6) {
+						Image(systemName: "thermometer.medium")
+							.foregroundStyle(.orange)
+						Text("Sensor")
+						Text("\(result.sensorPacketCount)")
+							.foregroundStyle(.primary)
+					}
+					HStack(spacing: 6) {
+						Image(systemName: "clock.arrow.circlepath")
+							.foregroundStyle(result.averageAirtimeRate > 10 ? .red : (result.averageAirtimeRate > 5 ? .orange : .green))
+						Text("Airtime")
+						Text(result.averageAirtimeRate > 0 ? "\(String(format: "%.2f", result.averageAirtimeRate))%" : "—")
+							.foregroundStyle(.primary)
+					}
+				}
 			}
-			.font(.caption)
-
-			HStack {
-				Image(systemName: "bubble.left")
-					.foregroundStyle(.blue)
-				Text("Messages \(result.messageCount)")
-				Spacer()
-				Image(systemName: "thermometer.medium")
-					.foregroundStyle(.orange)
-				Text("Sensor \(result.sensorPacketCount)")
-			}
-			.font(.caption)
+			.font(rowFont)
 			.foregroundStyle(.secondary)
-
-			HStack {
-				Label(result.averageChannelUtilization > 0 ? "\(String(format: "%.1f", result.averageChannelUtilization))%" : "—", systemImage: "chart.bar.fill")
-					.foregroundStyle(result.averageChannelUtilization < 25 ? .green : (result.averageChannelUtilization > 50 ? .red : .orange))
-				Text("Ch Util")
-					.foregroundStyle(.secondary)
-				Spacer()
-				Label(result.averageAirtimeRate > 0 ? "\(String(format: "%.2f", result.averageAirtimeRate))%" : "—", systemImage: "clock.arrow.circlepath")
-					.foregroundStyle(result.averageAirtimeRate > 10 ? .red : (result.averageAirtimeRate > 5 ? .orange : .green))
-				Text("Airtime")
-					.foregroundStyle(.secondary)
-			}
-			.font(.caption)
 
 			// Per-preset AI summary for presets with more than 1 node
 			if result.uniqueNodesFound > 1 {
@@ -137,12 +161,12 @@ struct DiscoverySummaryView: View {
 						ProgressView()
 							.controlSize(.small)
 						Text("Analyzing...")
-							.font(.caption)
+							.font(rowFont)
 							.foregroundStyle(.secondary)
 					}
 				} else if let summary = presetSummaries[result.presetName], !summary.isEmpty {
 					Text(summary)
-						.font(.caption)
+						.font(rowFont)
 						.foregroundStyle(.secondary)
 						.padding(.top, 2)
 				}
