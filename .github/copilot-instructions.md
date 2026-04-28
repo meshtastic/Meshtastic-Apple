@@ -11,8 +11,8 @@ Meshtastic-Apple is a SwiftUI client for iOS, iPadOS, and macOS (via Mac Catalys
 - `Meshtastic/MeshtasticAppDelegate.swift` — `UIApplicationDelegate` for SiriKit intent handling (CarPlay messaging via `INSendMessageIntent` etc.).
 
 ### State & Navigation
-- `Router` (`Meshtastic/Router/Router.swift`) is a `@MainActor` `ObservableObject` that drives tab/deep-link routing via per-tab `@Published` navigation properties.
-- `NavigationState` and the per-tab enums (`MessagesNavigationState`, `MapNavigationState`, `SettingsNavigationState`) live in `Meshtastic/Router/NavigationState.swift`. `Router.navigationState` is a computed compatibility view, not the mutable source of truth, so do not introduce new bindings or ownership assumptions based on `router.navigationState`.
+- `Router` (`Meshtastic/Router/Router.swift`) is a `@MainActor` `ObservableObject` that owns a `NavigationState` struct and drives tab/deep-link routing.
+- `NavigationState` and the per-tab enums (`MessagesNavigationState`, `MapNavigationState`, `SettingsNavigationState`) live in `Meshtastic/Router/NavigationState.swift`.
 - Deep links use the `meshtastic:///` URL scheme (see README for the full table). `Router.route(url:)` dispatches them.
 - `AppState` wraps `Router` and is passed as an `@EnvironmentObject` throughout the view hierarchy.
 

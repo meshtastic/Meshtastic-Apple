@@ -4,20 +4,22 @@
 //
 //  Copyright (c) Garth Vander Houwen 1/13/23.
 //
-import CoreData
+@preconcurrency import SwiftData
 import CoreLocation
 import MapKit
 import SwiftUI
 
 extension WaypointEntity {
 
-	static func allWaypointssFetchRequest() -> NSFetchRequest<WaypointEntity> {
-		let request: NSFetchRequest<WaypointEntity> = WaypointEntity.fetchRequest()
-		request.fetchLimit = 50
-		request.returnsDistinctResults = true
-		request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: false)]
-		request.predicate = NSPredicate(format: "expire == nil || expire >= %@", Date() as NSDate)
-		return request
+	@MainActor
+	static func allWaypointsFetchDescriptor() -> FetchDescriptor<WaypointEntity> {
+		let now = Date()
+		return FetchDescriptor<WaypointEntity>(
+			predicate: #Predicate<WaypointEntity> { wp in
+				wp.expire == nil || wp.expire! >= now
+			},
+			sortBy: [SortDescriptor(\.name, order: .reverse)]
+		)
 	}
 
 	var latitude: Double? {
@@ -54,26 +56,38 @@ extension WaypointEntity {
 	}
 }
 
-extension WaypointEntity: MKAnnotation {
+extension WaypointEntity {
 	@MainActor
-	public var coordinate: CLLocationCoordinate2D {
+	var mapCoordinate: CLLocationCoordinate2D {
 		get {
 			waypointCoordinate ?? LocationsHandler.DefaultLocation
 		}
-		set {
-			latitudeI = Int32(newValue.latitude * 1e7)
-			longitudeI = Int32(newValue.longitude * 1e7)
-		}
 	}
 
-	public var title: String? {
+	var mapTitle: String? {
 		name ?? "Dropped Pin"
 	}
 
-	public var subtitle: String? {
+	var mapSubtitle: String? {
 		(longDescription ?? "") +
-		String(expire != nil ? "\n⌛ Expires \(String(describing: expire?.formatted(date: .numeric, time: .shortened)))" : "") +
-		String(locked > 0 ? "\n🔒 Locked" : "")
+		String(expire != nil ? "\n⌛ Expires \(String(describing: expire?.formatted()))" : "") +
+		String(locked ? "\n🔒 Locked" : "")
+	}
+}
+
+class WaypointAnnotation: NSObject, MKAnnotation {
+	let waypointEntity: WaypointEntity
+	@objc dynamic var coordinate: CLLocationCoordinate2D
+	var title: String?
+	var subtitle: String?
+
+	@MainActor
+	init(waypoint: WaypointEntity) {
+		self.waypointEntity = waypoint
+		self.coordinate = waypoint.mapCoordinate
+		self.title = waypoint.mapTitle
+		self.subtitle = waypoint.mapSubtitle
+		super.init()
 	}
 }
 

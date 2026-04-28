@@ -21,7 +21,7 @@ struct ESP32OTAIntroSheet: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) var dismiss
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) var context
 
 	let binFileURL: URL
 

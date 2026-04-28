@@ -7,7 +7,7 @@
 
 import Foundation
 import WatchConnectivity
-import CoreData
+import SwiftData
 import os
 
 /// Manages the WatchConnectivity session on the iOS side, sending mesh node
@@ -64,67 +64,60 @@ final class WatchSessionManager: NSObject, ObservableObject {
 		logger.info("Sent foxhunt target \(nodeNum) to Watch")
 	}
 
-	/// Fetch nodes from Core Data and push them to the Watch via application context.
+	/// Fetch nodes from SwiftData and push them to the Watch via application context.
 	func sendNodesToWatch() {
 		guard let session, session.activationState == .activated, session.isPaired, session.isWatchAppInstalled else {
 			return
 		}
 
-		let context = PersistenceController.shared.container.viewContext
-		context.perform { [weak self] in
-			guard let self else { return }
-			let nodes = self.fetchNodesForWatch(context: context)
+		Task { @MainActor in
+			let nodes = fetchNodesForWatch()
 			guard !nodes.isEmpty else { return }
 
 			do {
 				let data = try JSONEncoder().encode(nodes)
 				try session.updateApplicationContext(["nodes": data])
-				self.logger.info("Sent \(nodes.count) nodes to Watch via applicationContext")
+				logger.info("Sent \(nodes.count) nodes to Watch via applicationContext")
 			} catch {
-				self.logger.error("Failed to send nodes to Watch: \(error.localizedDescription, privacy: .public)")
+				logger.error("Failed to send nodes to Watch: \(error.localizedDescription, privacy: .public)")
 			}
 		}
 	}
 
-	// MARK: - Core Data → Watch Node Serialization
+	// MARK: - SwiftData → Watch Node Serialization
 
-	private func fetchNodesForWatch(context: NSManagedObjectContext) -> [WatchNode] {
-		let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "NodeInfoEntity")
-		fetchRequest.predicate = NSPredicate(format: "user != nil")
+	@MainActor
+	private func fetchNodesForWatch() -> [WatchNode] {
+		let context = PersistenceController.shared.context
+		let descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.user != nil }
+		)
 
 		do {
-			let results = try context.fetch(fetchRequest)
+			let results = try context.fetch(descriptor)
 			return results.compactMap { nodeInfo -> WatchNode? in
-				guard let user = nodeInfo.value(forKey: "user") as? NSManagedObject else { return nil }
+				guard let user = nodeInfo.user else { return nil }
 
-				let num = nodeInfo.value(forKey: "num") as? Int64 ?? 0
-				let longName = user.value(forKey: "longName") as? String ?? "Unknown"
-				let shortName = user.value(forKey: "shortName") as? String ?? "?"
-				let snr = nodeInfo.value(forKey: "snr") as? Float
-				let lastHeard = nodeInfo.value(forKey: "lastHeard") as? Date
+				let num = nodeInfo.num
+				let longName = user.longName ?? "Unknown"
+				let shortName = user.shortName ?? "?"
+				let snr: Float? = nodeInfo.snr != 0 ? nodeInfo.snr : nil
+				let lastHeard = nodeInfo.lastHeard
 
-				// Get the latest position from the ordered set
 				var latitude: Double?
 				var longitude: Double?
 				var altitude: Int32?
 				var lastPositionTime: Date?
 
-				if let positions = nodeInfo.value(forKey: "positions") as? NSOrderedSet {
-					// Find the position marked as latest, or use the last one
-					let posArray = positions.array as? [NSManagedObject] ?? []
-					let latestPosition = posArray.first(where: {
-						($0.value(forKey: "latest") as? Bool) == true
-					}) ?? posArray.last
-
-					if let pos = latestPosition {
-						let latI = pos.value(forKey: "latitudeI") as? Int32 ?? 0
-						let lonI = pos.value(forKey: "longitudeI") as? Int32 ?? 0
-						if latI != 0, lonI != 0 {
-							latitude = Double(latI) / 1e7
-							longitude = Double(lonI) / 1e7
-							altitude = pos.value(forKey: "altitude") as? Int32
-							lastPositionTime = pos.value(forKey: "time") as? Date
-						}
+				let latestPosition = nodeInfo.positions.first(where: { $0.latest }) ?? nodeInfo.positions.last
+				if let pos = latestPosition {
+					let latI = pos.latitudeI
+					let lonI = pos.longitudeI
+					if latI != 0, lonI != 0 {
+						latitude = Double(latI) / 1e7
+						longitude = Double(lonI) / 1e7
+						altitude = pos.altitude
+						lastPositionTime = pos.time
 					}
 				}
 

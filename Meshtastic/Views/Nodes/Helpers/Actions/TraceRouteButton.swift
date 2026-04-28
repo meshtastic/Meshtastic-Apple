@@ -44,14 +44,16 @@ struct TraceRouteButton: View {
     }
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	node.user = user
-	return TraceRouteButton(node: node)
+	TraceRouteButton(node: node)
 		.environmentObject(AccessoryManager.shared)
 }
+*/

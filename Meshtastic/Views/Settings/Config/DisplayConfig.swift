@@ -11,7 +11,7 @@ import SwiftUI
 
 struct DisplayConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -237,8 +237,7 @@ struct DisplayConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return DisplayConfig(node: nil)
+	DisplayConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

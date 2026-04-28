@@ -1,9 +1,9 @@
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 
 struct MessageContextMenuItems: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	let message: MessageEntity
@@ -109,7 +109,7 @@ struct MessageContextMenuItems: View {
 			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) && message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
-					Text("RSSI \(String(format: "%d", message.rssi)) dBm")
+					Text("RSSI \(message.rssi) dBm")
 				}
 			} else if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) {
 				VStack {
@@ -160,7 +160,7 @@ struct MessageContextMenuItems: View {
 }
 
 private extension MessageDestination {
-	var managedObject: NSManagedObject {
+	var persistentModel: any PersistentModel {
 		switch self {
 		case let .user(user): return user
 		case let .channel(channel): return channel

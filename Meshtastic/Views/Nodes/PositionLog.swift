@@ -8,7 +8,7 @@ import SwiftUI
 import OSLog
 
 struct PositionLog: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
 	@Environment(\.horizontalSizeClass) var horizontalSizeClass: UserInterfaceSizeClass?
@@ -18,7 +18,7 @@ struct PositionLog: View {
 	}
 	@State var isExporting = false
 	@State var exportString = ""
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State private var isPresentingClearLogConfirm = false
 	@State private var sortOrder = [KeyPathComparator(\PositionEntity.time)]
 
@@ -27,7 +27,7 @@ struct PositionLog: View {
 			if node.hasPositions {
 				if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
 					// Add a table for mac and ipad
-					let positions = node.positions?.reversed() as? [PositionEntity] ?? []
+					let positions = node.positions.reversed()
 					Table(positions, sortOrder: $sortOrder) {
 						TableColumn("Latitude") { position in
 							Text(String(format: "%.5f", position.latitude ?? 0))
@@ -91,8 +91,7 @@ struct PositionLog: View {
 									.font(.caption2)
 									.fontWeight(.bold)
 							}
-							if let positions = node.positions?.reversed() as? [PositionEntity] {
-								ForEach(positions, id: \.self) { (mappin: PositionEntity) in
+							ForEach(node.positions.reversed(), id: \.self) { (mappin: PositionEntity) in
 									let altitude = Measurement(value: Double(mappin.altitude), unit: UnitLength.meters)
 									GridRow {
 										Text(String(format: "%.5f", mappin.latitude ?? 0))
@@ -107,7 +106,6 @@ struct PositionLog: View {
 											.font(.caption2)
 									}
 								}
-							}
 						}
 					}
 					.padding(.leading)
@@ -139,7 +137,7 @@ struct PositionLog: View {
 						}
 					}
 					Button {
-						exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
+						exportString = positionToCsvFile(positions: node.positions)
 						isExporting = true
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
@@ -170,7 +168,7 @@ struct PositionLog: View {
 				ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 			}
 		}
-		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")
+		.navigationTitle("Position Log \(node.positions.count) Points")
 		.navigationBarItems(
 			trailing:
 				ZStack {
@@ -180,15 +178,17 @@ struct PositionLog: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	node.user = user
-	return PositionLog(node: node)
+	PositionLog(node: node)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }
+*/

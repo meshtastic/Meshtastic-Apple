@@ -19,12 +19,12 @@ struct NodeDetail: View {
 	var modemPreset: ModemPresets = ModemPresets(
 		rawValue: UserDefaults.modemPreset
 	) ?? ModemPresets.longFast
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
-	@ObservedObject	var node: NodeInfoEntity
+	@Bindable	var node: NodeInfoEntity
 	@State private var environmentSectionHeight: CGFloat = 0
 
 	/// The currently BLE-connected (or remotely administered) node, derived reactively
@@ -71,7 +71,7 @@ struct NodeDetail: View {
 								}
 								.accessibilityElement(children: .combine)
 							}
-							if node.telemetries?.count ?? 0 > 0 {
+							if node.telemetries.count > 0 {
 								Spacer()
 								BatteryGauge(node: node)
 							}
@@ -135,9 +135,7 @@ struct NodeDetail: View {
 								}
 								Spacer()
 								Button(action: {
-									context.perform {
-										UIPasteboard.general.string = publicKey
-									}
+									UIPasteboard.general.string = publicKey
 								}) {
 									HStack {
 										Image(systemName: "key.horizontal.fill")
@@ -186,7 +184,7 @@ struct NodeDetail: View {
 							}
 							.accessibilityElement(children: .combine)
 						}
-						if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
+						if let dm = node.telemetries.filter({ $0.metricsType == 0 }).last, let uptimeSeconds = dm.uptimeSeconds {
 							HStack {
 								Label {
 									Text("\("Uptime".localized)")
@@ -217,7 +215,7 @@ struct NodeDetail: View {
 									Text(text)
 										.textSelection(.enabled)
 								} else {
-									Text(firstHeard.formatted(date: .numeric, time: .shortened))
+									Text(firstHeard.formatted())
 										.textSelection(.enabled)
 								}
 							}
@@ -236,12 +234,12 @@ struct NodeDetail: View {
 								}
 								Spacer()
 								if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
-									if lastHeard.formatted(date: .numeric, time: .shortened) != "Unknown Age".localized {
+									if lastHeard.formatted() != "Unknown Age".localized {
 										Text(text)
 											.textSelection(.enabled)
 									}
 								} else {
-									Text(lastHeard.formatted(date: .numeric, time: .shortened))
+									Text(lastHeard.formatted())
 										.textSelection(.enabled)
 								}
 							}
@@ -402,7 +400,7 @@ struct NodeDetail: View {
 									.symbolRenderingMode(.multicolor)
 							}
 						}
-						.disabled(node.traceRoutes?.count ?? 0 == 0)
+						.disabled(node.traceRoutes.count == 0)
 						NavigationLink {
 							PowerMetricsLog(node: node)
 						} label: {

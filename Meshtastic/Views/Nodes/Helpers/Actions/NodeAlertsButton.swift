@@ -1,24 +1,22 @@
-import CoreData
+import SwiftData
 import OSLog
 import SwiftUI
 
 struct NodeAlertsButton: View {
-	var context: NSManagedObjectContext
+	var context: ModelContext
 
-	@ObservedObject
+	@Bindable
 	var node: NodeInfoEntity
 
-	@ObservedObject
+	@Bindable
 	var user: UserEntity
 
 	var body: some View {
 		Button {
 			user.mute = !user.mute
-			context.refresh(node, mergeChanges: true)
 			do {
 				try context.save()
 			} catch {
-				context.rollback()
 				Logger.data.error("Save User Mute Error")
 			}
 		} label: {
@@ -32,13 +30,15 @@ struct NodeAlertsButton: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	node.user = user
-	return NodeAlertsButton(context: context, node: node, user: user)
+	NodeAlertsButton(context: context, node: node, user: user)
 }
+*/

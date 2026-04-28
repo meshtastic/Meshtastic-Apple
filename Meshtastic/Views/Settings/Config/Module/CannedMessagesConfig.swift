@@ -9,7 +9,7 @@ import OSLog
 import SwiftUI
 
 struct CannedMessagesConfig: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
@@ -357,8 +357,7 @@ struct CannedMessagesConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return CannedMessagesConfig(node: nil)
+	CannedMessagesConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

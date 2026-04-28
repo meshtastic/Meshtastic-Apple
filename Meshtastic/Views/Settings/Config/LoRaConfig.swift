@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
@@ -24,7 +24,7 @@ struct LoRaConfig: View {
 		return formatter
 	}()
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	@FocusState var focusedField: Field?
@@ -323,8 +323,7 @@ struct LoRaConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return LoRaConfig(node: nil)
+	LoRaConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

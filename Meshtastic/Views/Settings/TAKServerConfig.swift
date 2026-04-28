@@ -8,7 +8,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
-import CoreData
+import SwiftData
 
 enum CertificateImportType {
 	case p12
@@ -16,14 +16,12 @@ enum CertificateImportType {
 }
 
 struct TAKServerConfig: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
-		predicate: NSPredicate(format: "role > 0"),
-		animation: .default
-	) private var channels: FetchedResults<ChannelEntity>
+	@Query(filter: #Predicate<ChannelEntity> { $0.role > 0 },
+		   sort: \ChannelEntity.index)
+	private var channels: [ChannelEntity]
 
 	@StateObject private var takServer = TAKServerManager.shared
 	@Environment(\.dismiss) private var dismiss

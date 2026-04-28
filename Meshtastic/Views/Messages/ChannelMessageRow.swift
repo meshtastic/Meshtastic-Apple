@@ -1,4 +1,4 @@
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import SwiftUI
 
@@ -6,9 +6,9 @@ struct ChannelMessageRow: View {
 	@EnvironmentObject var appState: AppState
 	
 	// Core Data object observed for changes (like Tapbacks being received)
-	@ObservedObject var message: MessageEntity
+	@Bindable var message: MessageEntity
 	
-	let allMessages: FetchedResults<MessageEntity> // The full list for reply lookup
+	let allMessages: [MessageEntity] // The full list for reply lookup
 	let previousMessage: MessageEntity?
 	let preferredPeripheralNum: Int
 	let channel: ChannelEntity
@@ -24,7 +24,7 @@ struct ChannelMessageRow: View {
 	}
 	
 	init(message: MessageEntity,
-	     allMessages: FetchedResults<MessageEntity>,
+	     allMessages: [MessageEntity],
 	     previousMessage: MessageEntity?,
 	     preferredPeripheralNum: Int,
 	     channel: ChannelEntity,
@@ -34,7 +34,7 @@ struct ChannelMessageRow: View {
 	     scrollView: ScrollViewProxy,
 	     onInteractionComplete: @escaping () -> Void) {
 		// Initialize ObservedObject with the concrete instance
-		self._message = ObservedObject(initialValue: message)
+		self.message = message
 		self.allMessages = allMessages
 		self.previousMessage = previousMessage
 		self.preferredPeripheralNum = preferredPeripheralNum

@@ -8,7 +8,7 @@ import CoreImage.CIFilterBuiltins
 #if canImport(UIKit)
 import UIKit
 #endif
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 

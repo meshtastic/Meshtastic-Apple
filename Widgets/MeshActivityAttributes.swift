@@ -36,23 +36,6 @@ struct MeshActivityAttributes: ActivityAttributes {
 	var nodeNum: Int
 	var name: String
 	var shortName: String
-
-	enum CodingKeys: String, CodingKey {
-		case nodeNum, name, shortName
-	}
-
-	init(nodeNum: Int, name: String, shortName: String) {
-		self.nodeNum = nodeNum
-		self.name = name
-		self.shortName = shortName
-	}
-
-	init(from decoder: Decoder) throws {
-		let container = try decoder.container(keyedBy: CodingKeys.self)
-		nodeNum = try container.decode(Int.self, forKey: .nodeNum)
-		name = try container.decode(String.self, forKey: .name)
-		shortName = try container.decodeIfPresent(String.self, forKey: .shortName) ?? "?"
-	}
 }
 #endif
 #endif

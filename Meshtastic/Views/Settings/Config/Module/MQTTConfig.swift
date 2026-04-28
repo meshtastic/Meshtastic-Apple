@@ -11,7 +11,7 @@ import SwiftUI
 
 struct MQTTConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
@@ -466,8 +466,7 @@ struct MQTTConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return MQTTConfig(node: nil)
+	MQTTConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

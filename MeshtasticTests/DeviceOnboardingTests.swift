@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import CoreLocation
-import UserNotifications
 import Testing
 @testable import Meshtastic
 
@@ -150,41 +148,35 @@ struct OnboardingStringFormatterTests {
 @Suite("DeviceOnboarding navigation")
 struct OnboardingNavigationTests {
 
-	private func nextStep(
-		after step: DeviceOnboarding.SetupGuide?,
-		notificationStatus: UNAuthorizationStatus,
-		criticalAlertSetting: UNNotificationSetting,
-		locationStatus: CLAuthorizationStatus
-	) -> DeviceOnboarding.SetupGuide? {
+	@Test func backgroundActivityAlwaysGoesToLocalNetwork() async {
 		let view = DeviceOnboarding()
-		return view.nextStep(
-			after: step,
-			notificationStatus: notificationStatus,
-			criticalAlertSetting: criticalAlertSetting,
-			locationStatus: locationStatus
-		)
+		await view.goToNextStep(after: .backgroundActivity)
+		#expect(view.navigationPath == [.localNetwork])
 	}
 
-	@Test func startRoutesToNotificationsWhenNotificationsUnknown() {
-		let step = nextStep(
-			after: nil,
-			notificationStatus: .notDetermined,
-			criticalAlertSetting: .notSupported,
-			locationStatus: .authorizedAlways
-		)
-		#expect(step == .notifications)
+	@Test func localNetworkAlwaysGoesToBluetooth() async {
+		let view = DeviceOnboarding()
+		await view.goToNextStep(after: .localNetwork)
+		#expect(view.navigationPath == [.bluetooth])
 	}
 
-	@Test func startRoutesToLocationWhenNotificationsKnownAndLocationDenied() {
-		let step = nextStep(
-			after: nil,
-			notificationStatus: .authorized,
-			criticalAlertSetting: .enabled,
-			locationStatus: .denied
-		)
-		#expect(step == .location)
+	@Test func bluetoothAlwaysGoesToSiri() async {
+		let view = DeviceOnboarding()
+		await view.goToNextStep(after: .bluetooth)
+		#expect(view.navigationPath == [.siri])
 	}
 
+	@Test func navigationPathStartsEmpty() {
+		let view = DeviceOnboarding()
+		#expect(view.navigationPath.isEmpty)
+	}
+
+	@Test func deterministicStepsAppendInOrder() async {
+		let view = DeviceOnboarding()
+		await view.goToNextStep(after: .backgroundActivity)
+		await view.goToNextStep(after: .localNetwork)
+		await view.goToNextStep(after: .bluetooth)
+		#expect(view.navigationPath == [.localNetwork, .bluetooth, .siri])
 	@Test func startRoutesToBluetoothWhenLocationAuthorized() {
 		let step = nextStep(
 			after: nil,

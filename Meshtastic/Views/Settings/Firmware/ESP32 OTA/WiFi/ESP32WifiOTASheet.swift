@@ -12,7 +12,7 @@ import CryptoKit
 struct ESP32WifiOTASheet: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) var dismiss
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) var context
 	@StateObject var ota = ESP32WifiOTAViewModel()
 	
 	// The file we're updating, and the place we're updating it to

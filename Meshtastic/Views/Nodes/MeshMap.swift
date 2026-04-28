@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import CoreLocation
 import Foundation
 import OSLog
@@ -14,7 +14,7 @@ import MapKit
 
 struct MeshMap: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
 	@Environment(\.openWindow) private var openWindow
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -108,7 +108,7 @@ struct MeshMap: View {
 									centerMapAt(coordinate: coordinate)
 
 									newWaypointCoord = coordinate
-									editingWaypoint = WaypointEntity(context: context)
+									editingWaypoint = WaypointEntity()
 									editingWaypoint!.name = "Waypoint Pin"
 									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
 									editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)

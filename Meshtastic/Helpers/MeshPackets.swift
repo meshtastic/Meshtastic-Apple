@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CoreData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import SwiftUI
 import RegexBuilder
@@ -55,51 +55,31 @@ func generateMessageMarkdown (message: String) -> String {
 	return message
 }
 
+@ModelActor
 actor MeshPackets {
-	static let shared = MeshPackets()
-
-	// Create an actor-level background context
-	// We keep this alive so sequential writes happen on the same context (efficient)
-	lazy var backgroundContext: NSManagedObjectContext = {
-		let ctx = PersistenceController.shared.container.newBackgroundContext()
-		ctx.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy // Handle conflicts automatically
-		return ctx
+	static let shared: MeshPackets = {
+		let container = MainActor.assumeIsolated { PersistenceController.shared.container }
+		return MeshPackets(modelContainer: container)
 	}()
-
-	private var savesSinceLastReset = 0
-
-	/// Resets the background context periodically to release accumulated managed objects from memory.
-	/// Call after saves to prevent unbounded growth of the context's registered objects.
-	/// Uses `reset()` instead of `refreshAllObjects()` to fully unregister objects from the context,
-	/// since `refreshAllObjects()` only re-faults objects but leaves them in the registeredObjects set.
-	func resetContextIfNeeded() {
-		savesSinceLastReset += 1
-		if savesSinceLastReset >= 50 {
-			let registeredCount = backgroundContext.registeredObjects.count
-			backgroundContext.reset()
-			savesSinceLastReset = 0
-			Logger.data.info("💾 [MeshPackets] Reset background context to reclaim memory (was \(registeredCount) registered objects)")
-		}
-	}
-
-	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) async {
+	
+	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) {
 		switch config.payloadVariant {
 		case .bluetooth:
-			await self.upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum)
+			upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum)
 		case .device:
-			await self.upsertDeviceConfigPacket(config: config.device, nodeNum: nodeNum)
+			upsertDeviceConfigPacket(config: config.device, nodeNum: nodeNum)
 		case .display:
-			await self.upsertDisplayConfigPacket(config: config.display, nodeNum: nodeNum)
+			upsertDisplayConfigPacket(config: config.display, nodeNum: nodeNum)
 		case .lora:
-			await self.upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum)
+			upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum)
 		case .network:
-			await self.upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum)
+			upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum)
 		case .position:
-			await self.upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum)
+			upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum)
 		case .power:
-			await self.upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum)
+			upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum)
 		case .security:
-			await self.upsertSecurityConfigPacket(config: config.security, nodeNum: nodeNum)
+			upsertSecurityConfigPacket(config: config.security, nodeNum: nodeNum)
 		default:
 #if DEBUG
 			Logger.services.error("⁉️ Unknown Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
@@ -107,30 +87,30 @@ actor MeshPackets {
 		}
 	}
 	
-	func moduleConfig (config: ModuleConfig, nodeNum: Int64, nodeLongName: String) async {
+	func moduleConfig (config: ModuleConfig, nodeNum: Int64, nodeLongName: String) {
 		switch config.payloadVariant {
 		case .ambientLighting:
-			await self.upsertAmbientLightingModuleConfigPacket(config: config.ambientLighting, nodeNum: nodeNum)
+			upsertAmbientLightingModuleConfigPacket(config: config.ambientLighting, nodeNum: nodeNum)
 		case .cannedMessage:
-			await self.upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum)
+			upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum)
 		case .detectionSensor:
-			await self.upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum)
+			upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum)
 		case .externalNotification:
-			await self.upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum)
+			upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum)
 		case .mqtt:
-			await self.upsertMqttModuleConfigPacket(config: config.mqtt, nodeNum: nodeNum)
+			upsertMqttModuleConfigPacket(config: config.mqtt, nodeNum: nodeNum)
 		case .paxcounter:
-			await self.upsertPaxCounterModuleConfigPacket(config: config.paxcounter, nodeNum: nodeNum)
+			upsertPaxCounterModuleConfigPacket(config: config.paxcounter, nodeNum: nodeNum)
 		case .rangeTest:
-			await self.upsertRangeTestModuleConfigPacket(config: config.rangeTest, nodeNum: nodeNum)
+			upsertRangeTestModuleConfigPacket(config: config.rangeTest, nodeNum: nodeNum)
 		case .serial:
-			await self.upsertSerialModuleConfigPacket(config: config.serial, nodeNum: nodeNum)
+			upsertSerialModuleConfigPacket(config: config.serial, nodeNum: nodeNum)
 		case .telemetry:
-			await self.upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum)
+			upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum)
 		case .storeForward:
-			await self.upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum)
+			upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum)
 		case .tak:
-			await self.upsertTAKModuleConfigPacket(config: config.tak, nodeNum: nodeNum)
+			upsertTAKModuleConfigPacket(config: config.tak, nodeNum: nodeNum)
 		default:
 #if DEBUG
 			Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
@@ -138,79 +118,78 @@ actor MeshPackets {
 		}
 	}
 	
-	func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String) async -> NSManagedObjectID? {
-		let context = self.backgroundContext
-		return await context.perform {
-			let logString = String.localizedStringWithFormat("MyInfo received: %@".localized, String(myInfo.myNodeNum))
-			Logger.mesh.info("ℹ️ \(logString, privacy: .public)")
-			
-			let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
-			
-			do {
-				let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-				// Not Found Insert
-				if fetchedMyInfo.isEmpty {
-					
-					let myInfoEntity = MyInfoEntity(context: context)
-					myInfoEntity.peripheralId = peripheralId
-					myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
-					myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
-					myInfoEntity.deviceId = myInfo.deviceID
+	func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String) -> PersistentIdentifier? {
+		let logString = String.localizedStringWithFormat("MyInfo received: %@".localized, String(myInfo.myNodeNum))
+		Logger.mesh.info("ℹ️ \(logString, privacy: .public)")
+		
+		let myNodeNum = Int64(myInfo.myNodeNum)
+		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myNodeNum })
+		
+		do {
+			let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
+			// Not Found Insert
+			if fetchedMyInfo.isEmpty {
+				
+				let myInfoEntity = MyInfoEntity()
+				modelContext.insert(myInfoEntity)
+				myInfoEntity.peripheralId = peripheralId
+				myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
+				myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
+				myInfoEntity.deviceId = myInfo.deviceID
+				if !myInfo.pioEnv.isEmpty {
 					myInfoEntity.pioEnv = myInfo.pioEnv
-
-					do {
-						try context.save()
-						Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
-						return myInfoEntity.objectID
-					} catch {
-						context.rollback()
-						let nsError = error as NSError
-						Logger.data.error("💥 Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
-					}
-				} else {
-					
-					fetchedMyInfo[0].peripheralId = peripheralId
-					fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
-					fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
-					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
-					
-					do {
-						try context.save()
-						Logger.data.info("💾 Updated myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
-						return fetchedMyInfo[0].objectID
-					} catch {
-						context.rollback()
-						let nsError = error as NSError
-						Logger.data.error("💥 Error Updating Core Data MyInfoEntity: \(nsError, privacy: .public)")
-					}
 				}
-			} catch {
-				Logger.data.error("💥 Fetch MyInfo Error")
+				do {
+					try modelContext.save()
+					Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+					return myInfoEntity.persistentModelID
+				} catch {
+					let nsError = error as NSError
+					Logger.data.error("💥 Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
+				}
+			} else {
+				
+				fetchedMyInfo[0].peripheralId = peripheralId
+				fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
+				fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
+				if !myInfo.pioEnv.isEmpty {
+					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
+				}
+				
+				do {
+					try modelContext.save()
+					Logger.data.info("💾 Updated myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+					return fetchedMyInfo[0].persistentModelID
+				} catch {
+					let nsError = error as NSError
+					Logger.data.error("💥 Error Updating Core Data MyInfoEntity: \(nsError, privacy: .public)")
+				}
 			}
-			return nil
+		} catch {
+			Logger.data.error("💥 Fetch MyInfo Error")
 		}
+		return nil
 	}
 	
-	func channelPacket (channel: Channel, fromNum: Int64) async {
-		let context = self.backgroundContext
-		await context.perform {
-			self.channelPacket(channel: channel, fromNum: fromNum, context: context)
-		}
-	}
-	
-	nonisolated private func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectContext) {
+	func channelPacket (channel: Channel, fromNum: Int64) {
 		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 			let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
 			Logger.mesh.info("🎛️ \(logString, privacy: .public)")
 			
-			let fetchedMyInfoRequest = MyInfoEntity.fetchRequest()
-			fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
+			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
 			
 			do {
-				let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest)
+				let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
 				if fetchedMyInfo.count == 1 {
-					let newChannel = ChannelEntity(context: context)
+					let existing = fetchedMyInfo[0].channels.first(where: { $0.index == Int32(channel.index) })
+					let newChannel: ChannelEntity
+					if let existing {
+						newChannel = existing
+					} else {
+						newChannel = ChannelEntity()
+						modelContext.insert(newChannel)
+						fetchedMyInfo[0].channels.append(newChannel)
+					}
 					newChannel.id = Int32(channel.index)
 					newChannel.index = Int32(channel.index)
 					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
@@ -222,19 +201,8 @@ actor MeshPackets {
 						newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
 						newChannel.mute = channel.settings.moduleSettings.isMuted
 					}
-					guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
-						return
-					}
-					if let oldChannel = mutableChannels.first(where: {($0 as AnyObject).index == newChannel.index }) as? ChannelEntity {
-						let index = mutableChannels.index(of: oldChannel as Any)
-						mutableChannels.replaceObject(at: index, with: newChannel)
-					} else {
-						mutableChannels.add(newChannel)
-					}
-					fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-					context.refresh(newChannel, mergeChanges: true)
 					do {
-						try context.save()
+						try modelContext.save()
 					} catch {
 						Logger.data.error("💥 Failed to save channel: \(error.localizedDescription, privacy: .public)")
 					}
@@ -243,31 +211,23 @@ actor MeshPackets {
 					Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
 				}
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 			}
 		}
 	}
 	
-	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) async {
-		let context = self.backgroundContext
-		await context.perform {
-			self.deviceMetadataPacket(metadata: metadata, fromNum: fromNum, sessionPasskey: sessionPasskey, context: context)
-		}
-	}
-	
-	nonisolated private func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data(), context: NSManagedObjectContext) {
+	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) {
 		if metadata.isInitialized {
 			let logString = String.localizedStringWithFormat("Device Metadata received from: %@".localized, fromNum.toHex())
 			Logger.mesh.info("🏷️ \(logString, privacy: .public)")
 			
-			let fetchedNodeRequest = NodeInfoEntity.fetchRequest()
-			fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
+			let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == fromNum })
 			
 			do {
-				let fetchedNode = try context.fetch(fetchedNodeRequest)
-				let newMetadata = DeviceMetadataEntity(context: context)
+				let fetchedNode = try modelContext.fetch(fetchDescriptor)
+				let newMetadata = DeviceMetadataEntity()
+				modelContext.insert(newMetadata)
 				newMetadata.time = Date()
 				newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
 				newMetadata.canShutdown = metadata.canShutdown
@@ -284,48 +244,45 @@ actor MeshPackets {
 				newMetadata.firmwareVersion = String(version)
 				if fetchedNode.count > 0 {
 					fetchedNode[0].metadata = newMetadata
+					if sessionPasskey?.count != 0 {
+						fetchedNode[0].sessionPasskey = sessionPasskey
+						fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+					}
 				} else {
-					
 					if fromNum > 0 {
-						let newNode = createNodeInfo(num: Int64(fromNum), context: context)
+						let newNode = createNodeInfo(num: Int64(fromNum), context: modelContext)
 						newNode.metadata = newMetadata
 					}
 				}
-				if sessionPasskey?.count != 0 {
-					fetchedNode[0].sessionPasskey = sessionPasskey
-					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
-				}
 				do {
-					try context.save()
+					try modelContext.save()
 				} catch {
 					Logger.data.error("💥 Failed to save device metadata: \(error.localizedDescription, privacy: .public)")
 				}
 				Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum.toHex(), privacy: .public)")
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Saving MyInfo Channel from ADMIN_APP \(nsError, privacy: .public)")
 			}
 		}
 	}
 	
-	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false) async -> NSManagedObjectID? {
-		let context = self.backgroundContext
-		return await context.perform { () -> NSManagedObjectID? in
-			let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
-			Logger.mesh.info("📟 \(logString, privacy: .public)")
-			
-			guard nodeInfo.num > 0 else { return nil }
-			
-			let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-			fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
-			
-			do {
-				let fetchedNode = try context.fetch(fetchNodeInfoRequest)
-				// Not Found Insert
-				if fetchedNode.isEmpty && nodeInfo.num > 0 {
-					
-					let newNode = NodeInfoEntity(context: context)
+	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false) -> PersistentIdentifier? {
+		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
+		Logger.mesh.info("📟 \(logString, privacy: .public)")
+		
+		guard nodeInfo.num > 0 else { return nil }
+		
+		let nodeNum = Int64(nodeInfo.num)
+		let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
+		
+		do {
+			let fetchedNode = try modelContext.fetch(fetchDescriptor)
+			// Not Found Insert
+			if fetchedNode.isEmpty && nodeInfo.num > 0 {
+				
+				let newNode = NodeInfoEntity()
+					modelContext.insert(newNode)
 					newNode.id = Int64(nodeInfo.num)
 					newNode.num = Int64(nodeInfo.num)
 					newNode.channel = Int32(nodeInfo.channel)
@@ -334,14 +291,13 @@ actor MeshPackets {
 					newNode.hopsAway = Int32(nodeInfo.hopsAway)
 					
 					if nodeInfo.hasDeviceMetrics {
-						let telemetry = TelemetryEntity(context: context)
+						let telemetry = TelemetryEntity()
+						modelContext.insert(telemetry)
 						telemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
 						telemetry.voltage = nodeInfo.deviceMetrics.voltage
 						telemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-						var newTelemetries = [TelemetryEntity]()
-						newTelemetries.append(telemetry)
-						newNode.telemetries? = NSOrderedSet(array: newTelemetries)
+						newNode.telemetries.append(telemetry)
 					}
 					if nodeInfo.lastHeard > 0 {
 						newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
@@ -353,17 +309,19 @@ actor MeshPackets {
 					newNode.snr = nodeInfo.snr
 					if nodeInfo.hasUser {
 						
-						let newUser = UserEntity(context: context)
+						let newUser = UserEntity()
+						modelContext.insert(newUser)
 						newUser.userId = nodeInfo.num.toHex()
 						newUser.num = Int64(nodeInfo.num)
 						newUser.longName = nodeInfo.user.longName
 						newUser.shortName = nodeInfo.user.shortName
 						newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 						newUser.hwModelId = Int32(nodeInfo.user.hwModel.rawValue)
-						let fetchRequest = DeviceHardwareEntity.fetchRequest()
-						fetchRequest.predicate = NSPredicate(format: "hwModel == %d", newUser.hwModelId)
-						let fetchedHardware = (try? context.fetch(fetchRequest)) ?? []
-						if let hardwareEntity = fetchedHardware.first {
+						let hwModelValue = Int64(newUser.hwModelId)
+						let hwDescriptor = FetchDescriptor<DeviceHardwareEntity>(
+							predicate: #Predicate { $0.hwModel == hwModelValue }
+						)
+						if let hardwareEntity = try? modelContext.fetch(hwDescriptor).first {
 							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newUser.isLicensed = nodeInfo.user.isLicensed
@@ -386,7 +344,7 @@ actor MeshPackets {
 						newNode.user = newUser
 					} else if nodeInfo.num > Constants.minimumNodeNum {
 						do {
-							let newUser = try createUser(num: Int64(nodeInfo.num), context: context)
+							let newUser = try createUser(num: Int64(nodeInfo.num), context: modelContext)
 							newNode.user = newUser
 						} catch CoreDataError.invalidInput(let message) {
 							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
@@ -396,7 +354,8 @@ actor MeshPackets {
 					}
 					
 					if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
-						let position = PositionEntity(context: context)
+						let position = PositionEntity()
+						modelContext.insert(position)
 						position.latest = true
 						position.seqNo = Int32(nodeInfo.position.seqNumber)
 						position.latitudeI = nodeInfo.position.latitudeI
@@ -406,28 +365,25 @@ actor MeshPackets {
 						position.speed = Int32(nodeInfo.position.groundSpeed)
 						position.heading = Int32(nodeInfo.position.groundTrack)
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-						var newPostions = [PositionEntity]()
-						newPostions.append(position)
-						newNode.positions? = NSOrderedSet(array: newPostions)
+						newNode.positions.append(position)
 					}
 					
 					// Look for a MyInfo
-					let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(nodeInfo.num))
+					let myInfoNodeNum = Int64(nodeInfo.num)
+					let fetchMyInfoDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myInfoNodeNum })
 					
 					do {
-						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+						let fetchedMyInfo = try modelContext.fetch(fetchMyInfoDescriptor)
 						if fetchedMyInfo.count > 0 {
 							newNode.myInfo = fetchedMyInfo[0]
 						}
 						do {
 							if !deferSave {
-								try context.save()
+								try modelContext.save()
 								Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
 							}
-							return newNode.objectID
+							return newNode.persistentModelID
 						} catch {
-							context.rollback()
 							let nsError = error as NSError
 							Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError, privacy: .public)")
 						}
@@ -447,7 +403,9 @@ actor MeshPackets {
 					
 					if nodeInfo.hasUser {
 						if fetchedNode[0].user == nil {
-							fetchedNode[0].user = UserEntity(context: context)
+							let newUserEntity = UserEntity()
+							modelContext.insert(newUserEntity)
+							fetchedNode[0].user = newUserEntity
 						}
 						// Set the public key for a user if it is empty, don't update
 						if fetchedNode[0].user?.publicKey == nil && !nodeInfo.user.publicKey.isEmpty {
@@ -476,17 +434,18 @@ actor MeshPackets {
 							}
 						}
 						if let user = fetchedNode.first?.user {
-							let fetchRequest2 = DeviceHardwareEntity.fetchRequest()
-							fetchRequest2.predicate = NSPredicate(format: "hwModel == %d", user.hwModelId)
-							let fetchedHardware2 = (try? context.fetch(fetchRequest2)) ?? []
-							if let hardwareEntity = fetchedHardware2.first {
+							let hwModelValue2 = Int64(user.hwModelId)
+							let hwDescriptor2 = FetchDescriptor<DeviceHardwareEntity>(
+								predicate: #Predicate { $0.hwModel == hwModelValue2 }
+							)
+							if let hardwareEntity = try? modelContext.fetch(hwDescriptor2).first {
 								user.hwDisplayName = hardwareEntity.displayName
 							}
 						}
 					} else {
 						if fetchedNode[0].user == nil && nodeInfo.num > Constants.minimumNodeNum {
 							do {
-								let newUser = try createUser(num: Int64(nodeInfo.num), context: context)
+								let newUser = try createUser(num: Int64(nodeInfo.num), context: modelContext)
 								fetchedNode[0].user = newUser
 							} catch CoreDataError.invalidInput(let message) {
 								Logger.data.error("Error Creating a new Core Data UserEntity on an existing node (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
@@ -498,53 +457,47 @@ actor MeshPackets {
 					
 					if nodeInfo.hasDeviceMetrics {
 						
-						let newTelemetry = TelemetryEntity(context: context)
+						let newTelemetry = TelemetryEntity()
+						modelContext.insert(newTelemetry)
 						newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
 						newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
 						newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-						guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
-							return nil
-						}
-						mutableTelemetries.add(newTelemetry)
-						fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
+						fetchedNode[0].telemetries.append(newTelemetry)
 					}
 					
 					if nodeInfo.hasPosition {
 						
 						if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
 							
-							let position = PositionEntity(context: context)
+							let position = PositionEntity()
+							modelContext.insert(position)
 							position.latitudeI = nodeInfo.position.latitudeI
 							position.longitudeI = nodeInfo.position.longitudeI
 							position.altitude = nodeInfo.position.altitude
 							position.satsInView = Int32(nodeInfo.position.satsInView)
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-							guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
-								return nil
-							}
-							fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+							fetchedNode[0].positions.append(position)
 						}
 						
 					}
 					
 					// Look for a MyInfo
-					let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(nodeInfo.num))
+					let myInfoNodeNum2 = Int64(nodeInfo.num)
+					let fetchMyInfoDescriptor2 = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myInfoNodeNum2 })
 					
 					do {
-						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+						let fetchedMyInfo = try modelContext.fetch(fetchMyInfoDescriptor2)
 						if fetchedMyInfo.count > 0 {
 							fetchedNode[0].myInfo = fetchedMyInfo[0]
 						}
 						do {
 							if !deferSave {
-								try context.save()
+								try modelContext.save()
 								Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
 							}
-							return fetchedNode[0].objectID
+							return fetchedNode[0].persistentModelID
 						} catch {
-							context.rollback()
 							let nsError = error as NSError
 							Logger.data.error("💥 Error Saving Core Data NodeInfoEntity: \(nsError, privacy: .public)")
 						}
@@ -552,268 +505,223 @@ actor MeshPackets {
 						Logger.data.error("💥 Fetch MyInfo Error")
 					}
 				}
-			} catch {
-				Logger.data.error("💥 Fetch NodeInfoEntity Error")
+		} catch {
+			Logger.data.error("💥 Fetch NodeInfoEntity Error")
+		}
+		return nil
+	}
+	
+	func adminAppPacket (packet: MeshPacket) {
+		if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
+			
+			if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
+				
+				if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
+					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
+					Logger.mesh.info("🥫 \(logString, privacy: .public)")
+					
+					let packetFrom = Int64(packet.from)
+					let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
+					
+					do {
+						let fetchedNode = try modelContext.fetch(fetchDescriptor)
+						if fetchedNode.count == 1 {
+							let messages =  String(cmmc.textFormatString())
+								.replacingOccurrences(of: "11: ", with: "")
+								.replacingOccurrences(of: "\"", with: "")
+								.trimmingCharacters(in: .whitespacesAndNewlines)
+								.components(separatedBy: "\n").first ?? ""
+							fetchedNode[0].cannedMessageConfig?.messages = messages
+							do {
+								try modelContext.save()
+								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized, privacy: .public)")
+							} catch {
+								let nsError = error as NSError
+								Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
+							}
+						}
+					} catch {
+						Logger.data.error("💥 Error Deserializing ADMIN_APP packet.")
+					}
+				}
+			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
+				channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from))
+			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
+				deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
+				let config = adminMessage.getConfigResponse
+				if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
+					upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
+					upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
+					self.upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
+					self.upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
+					self.upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
+					self.upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
+					self.upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
+					self.upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey)
+				}
+			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
+				let moduleConfig = adminMessage.getModuleConfigResponse
+				if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.ambientLighting(moduleConfig.ambientLighting) {
+					self.upsertAmbientLightingModuleConfigPacket(config: moduleConfig.ambientLighting, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfig.cannedMessage) {
+					self.upsertCannedMessagesModuleConfigPacket(config: moduleConfig.cannedMessage, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(moduleConfig.detectionSensor) {
+					self.upsertDetectionSensorModuleConfigPacket(config: moduleConfig.detectionSensor, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(moduleConfig.externalNotification) {
+					self.upsertExternalNotificationModuleConfigPacket(config: moduleConfig.externalNotification, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(moduleConfig.mqtt) {
+					self.upsertMqttModuleConfigPacket(config: moduleConfig.mqtt, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(moduleConfig.rangeTest) {
+					self.upsertRangeTestModuleConfigPacket(config: moduleConfig.rangeTest, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(moduleConfig.serial) {
+					self.upsertSerialModuleConfigPacket(config: moduleConfig.serial, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.storeForward(moduleConfig.storeForward) {
+					self.upsertStoreForwardModuleConfigPacket(config: moduleConfig.storeForward, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
+					self.upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.tak(moduleConfig.tak) {
+					self.upsertTAKModuleConfigPacket(config: moduleConfig.tak, nodeNum: Int64(packet.from))
+				}
+			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
+				if let rt = try? RTTTLConfig(serializedBytes: packet.decoded.payload) {
+					self.upsertRtttlConfigPacket(ringtone: rt.ringtone, nodeNum: Int64(packet.from))
+				}
+			} else {
+				Logger.mesh.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
-			return nil
+			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
+			self.adminResponseAck(packet: packet)
 		}
 	}
 	
-	func adminAppPacket (packet: MeshPacket) async {
-		let context = self.backgroundContext
-		await context.perform {
-			if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
+	private func adminResponseAck (packet: MeshPacket) {
+		let requestID = Int64(packet.decoded.requestID)
+		let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
+		do {
+			let fetchedMessage = try modelContext.fetch(fetchDescriptor)
+			if fetchedMessage.count > 0 {
+				fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
+				fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
+				fetchedMessage[0].receivedACK = true
+				fetchedMessage[0].realACK = true
+				fetchedMessage[0].relayNode = Int64(packet.relayNode)
+				fetchedMessage[0].ackSNR = packet.rxSnr
+	
+				do {
+					try modelContext.save()
+				} catch {
+					Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription, privacy: .public)")
+				}
+			}
+		} catch {
+			Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+	
+	func paxCounterPacket (packet: MeshPacket) {
+		let logString = String.localizedStringWithFormat("PAX Counter message received from: %@".localized, String(packet.from))
+		Logger.mesh.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
+		
+		let packetFrom = Int64(packet.from)
+		let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
+		
+		do {
+			let fetchedNode = try modelContext.fetch(fetchDescriptor)
+			
+			if let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) {
 				
-				if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
-					
-					if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
-						let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
-						Logger.mesh.info("🥫 \(logString, privacy: .public)")
-						
-						let fetchNodeRequest = NodeInfoEntity.fetchRequest()
-						fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-						
-						do {
-							let fetchedNode = try context.fetch(fetchNodeRequest)
-							if fetchedNode.count == 1 {
-								let messages =  String(cmmc.textFormatString())
-									.replacingOccurrences(of: "11: ", with: "")
-									.replacingOccurrences(of: "\"", with: "")
-									.trimmingCharacters(in: .whitespacesAndNewlines)
-									.components(separatedBy: "\n").first ?? ""
-								fetchedNode[0].cannedMessageConfig?.messages = messages
-								do {
-									try context.save()
-									Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized, privacy: .public)")
-								} catch {
-									context.rollback()
-									let nsError = error as NSError
-									Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
-								}
-							}
-						} catch {
-							Logger.data.error("💥 Error Deserializing ADMIN_APP packet.")
-						}
-					}
-				} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
-					self.channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
-				} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
-					self.deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-				} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
-					let config = adminMessage.getConfigResponse
-					if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
-						MeshPackets.shared.upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-					} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-						MeshPackets.shared.upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-					} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
-						self.upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-					} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-						self.upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-					} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-						self.upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-					} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-						self.upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-					} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
-						self.upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-					} else if config.payloadVariant == Config.OneOf_PayloadVariant.security(config.security) {
-						self.upsertSecurityConfigPacket(config: config.security, nodeNum: Int64(packet.from), sessionPasskey: adminMessage.sessionPasskey, context: context)
-					}
-				} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
-					let moduleConfig = adminMessage.getModuleConfigResponse
-					if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.ambientLighting(moduleConfig.ambientLighting) {
-						self.upsertAmbientLightingModuleConfigPacket(config: moduleConfig.ambientLighting, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfig.cannedMessage) {
-						self.upsertCannedMessagesModuleConfigPacket(config: moduleConfig.cannedMessage, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(moduleConfig.detectionSensor) {
-						self.upsertDetectionSensorModuleConfigPacket(config: moduleConfig.detectionSensor, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(moduleConfig.externalNotification) {
-						self.upsertExternalNotificationModuleConfigPacket(config: moduleConfig.externalNotification, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(moduleConfig.mqtt) {
-						self.upsertMqttModuleConfigPacket(config: moduleConfig.mqtt, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(moduleConfig.rangeTest) {
-						self.upsertRangeTestModuleConfigPacket(config: moduleConfig.rangeTest, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(moduleConfig.serial) {
-						self.upsertSerialModuleConfigPacket(config: moduleConfig.serial, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.storeForward(moduleConfig.storeForward) {
-						self.upsertStoreForwardModuleConfigPacket(config: moduleConfig.storeForward, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
-						self.upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
-					} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.tak(moduleConfig.tak) {
-						self.upsertTAKModuleConfigPacket(config: moduleConfig.tak, nodeNum: Int64(packet.from), context: context)
-					}
-				} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
-					if let rt = try? RTTTLConfig(serializedBytes: packet.decoded.payload) {
-						self.upsertRtttlConfigPacket(ringtone: rt.ringtone, nodeNum: Int64(packet.from), context: context)
+				let newPax = PaxCounterEntity()
+				modelContext.insert(newPax)
+				newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
+				newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
+				newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
+				newPax.time = Date()
+				
+				if fetchedNode.count > 0 {
+					fetchedNode[0].pax.append(newPax)
+					do {
+						try modelContext.save()
+					} catch {
+						Logger.data.error("Failed to save pax: \(error.localizedDescription, privacy: .public)")
 					}
 				} else {
-					Logger.mesh.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.data.info("Node Info Not Found")
 				}
-				// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
-				self.adminResponseAck(packet: packet, context: context)
 			}
+		} catch {
+			
 		}
 	}
 	
-	nonisolated private func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
-			let fetchedAdminMessageRequest = MessageEntity.fetchRequest()
-			fetchedAdminMessageRequest.predicate = NSPredicate(format: "messageId == %lld", packet.decoded.requestID)
+	func routingPacket (packet: MeshPacket, connectedNodeNum: Int64) {
+		if let routingMessage = try? Routing(serializedBytes: packet.decoded.payload) {
+			
+			let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
+			
+			let routingErrorString = routingError?.display ?? "Unknown".localized
+			let logString = String.localizedStringWithFormat("Routing received for RequestID: %@ Ack Status: %@".localized, String(packet.decoded.requestID), routingErrorString)
+			Logger.mesh.info("🕸️ \(logString, privacy: .public)")
+			
+			let requestID = Int64(packet.decoded.requestID)
+			let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
+			
 			do {
-				let fetchedMessage = try context.fetch(fetchedAdminMessageRequest)
+				let fetchedMessage = try modelContext.fetch(fetchDescriptor)
 				if fetchedMessage.count > 0 {
-					fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
-					fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
-					fetchedMessage[0].receivedACK = true
-					fetchedMessage[0].realACK = true
+					if fetchedMessage[0].toUser != nil {
+						// Real ACK from DM Recipient
+						if packet.to != packet.from {
+							fetchedMessage[0].realACK = true
+						}
+					}
 					fetchedMessage[0].relayNode = Int64(packet.relayNode)
+					fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
+					if routingMessage.errorReason == Routing.Error.none {
+						fetchedMessage[0].receivedACK = true
+						fetchedMessage[0].relays += 1
+					}
+					
 					fetchedMessage[0].ackSNR = packet.rxSnr
-					if fetchedMessage[0].fromUser != nil {
-						fetchedMessage[0].fromUser?.objectWillChange.send()
-					}
-					do {
-						try context.save()
-					} catch {
-						Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription, privacy: .public)")
-					}
-				}
-			} catch {
-				Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription, privacy: .public)")
-			}
-		
-	}
-	
-	func paxCounterPacket (packet: MeshPacket) async {
-		let context = self.backgroundContext
-		await context.perform {
-			let logString = String.localizedStringWithFormat("PAX Counter message received from: %@".localized, String(packet.from))
-			Logger.mesh.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
-			
-			let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-			fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-			
-			do {
-				let fetchedNode = try context.fetch(fetchNodeInfoRequest)
-				
-				if let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) {
-					
-					let newPax = PaxCounterEntity(context: context)
-					newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
-					newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
-					newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
-					newPax.time = Date()
-					
-					if fetchedNode.count > 0 {
-						guard let mutablePax = fetchedNode[0].pax!.mutableCopy() as? NSMutableOrderedSet else {
-							return
-						}
-						mutablePax.add(newPax)
-						// Prune old PAX counter entries to prevent unbounded memory growth
-						let maxPaxEntries = 200
-						while mutablePax.count > maxPaxEntries {
-							if let oldest = mutablePax.object(at: 0) as? PaxCounterEntity {
-								context.delete(oldest)
-								mutablePax.removeObject(at: 0)
-							} else {
-								break
-							}
-						}
-						fetchedNode[0].pax = mutablePax
-						do {
-							try context.save()
-							self.resetContextIfNeeded()
-						} catch {
-							Logger.data.error("Failed to save pax: \(error.localizedDescription, privacy: .public)")
-						}
+					if packet.rxTime > 0 {
+						fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
 					} else {
-						Logger.data.info("Node Info Not Found")
+						fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 					}
-				}
-			} catch {
-				
-			}
-		}
-	}
+					
 	
-	func routingPacket (packet: MeshPacket, connectedNodeNum: Int64) async {
-		let context = self.backgroundContext
-		await context.perform {
-			if let routingMessage = try? Routing(serializedBytes: packet.decoded.payload) {
-				
-				let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
-				
-				let routingErrorString = routingError?.display ?? "Unknown".localized
-				let logString = String.localizedStringWithFormat("Routing received for RequestID: %@ Ack Status: %@".localized, String(packet.decoded.requestID), routingErrorString)
-				Logger.mesh.info("🕸️ \(logString, privacy: .public)")
-				
-				let fetchMessageRequest = MessageEntity.fetchRequest()
-				fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
-				
-				do {
-					let fetchedMessage = try context.fetch(fetchMessageRequest)
-					if fetchedMessage.count > 0 {
-						if fetchedMessage[0].toUser != nil {
-							// Real ACK from DM Recipient
-							if packet.to != packet.from {
-								fetchedMessage[0].realACK = true
-							}
-						}
-						fetchedMessage[0].relayNode = Int64(packet.relayNode)
-						fetchedMessage[0].ackError = Int32(routingMessage.errorReason.rawValue)
-						if routingMessage.errorReason == Routing.Error.none {
-							fetchedMessage[0].receivedACK = true
-							fetchedMessage[0].relays += 1
-						}
-						
-						fetchedMessage[0].ackSNR = packet.rxSnr
-						if packet.rxTime > 0 {
-							fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
-						} else {
-							fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
-						}
-						
-						if fetchedMessage[0].toUser != nil {
-							fetchedMessage[0].toUser!.objectWillChange.send()
-						} else {
-							let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
-							do {
-								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
-								if fetchedMyInfo.count > 0 {
-									
-									for ch in fetchedMyInfo[0].channels!.array as? [ChannelEntity] ?? [] where ch.index == packet.channel {
-										ch.objectWillChange.send()
-									}
-								}
-							} catch { }
-						}
-						
-					} else {
-						return
-					}
-					try context.save()
-					Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					Logger.data.error("Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
-				}
-			}
-		}
-	}
-	
-	func telemetryPacket(packet: MeshPacket, connectedNode: Int64) async {
-		let context = self.backgroundContext
-		
-		await context.perform {
-			if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
-				if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
-					/// Other unhandled telemetry packets
+					
+				} else {
 					return
 				}
-				let telemetry = TelemetryEntity(context: context)
-				let fetchNodeTelemetryRequest = NodeInfoEntity.fetchRequest()
-				fetchNodeTelemetryRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-				do {
-					let fetchedNode = try context.fetch(fetchNodeTelemetryRequest)
+				try modelContext.save()
+				Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
+			} catch {
+				let nsError = error as NSError
+				Logger.data.error("Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
+			}
+		}
+	}
+	
+	func telemetryPacket(packet: MeshPacket, connectedNode: Int64) {
+		if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
+			if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
+				/// Other unhandled telemetry packets
+				return
+			}
+			let telemetry = TelemetryEntity()
+			modelContext.insert(telemetry)
+			let packetFrom = Int64(packet.from)
+			let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
+			do {
+				let fetchedNode = try modelContext.fetch(fetchDescriptor)
 					if fetchedNode.count == 1 {
 						/// Currently only Device Metrics and Environment Telemetry are supported in the app
 						if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
@@ -880,31 +788,14 @@ actor MeshPackets {
 						telemetry.snr = packet.rxSnr
 						telemetry.rssi = packet.rxRssi
 						telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: telemetryMessage.time)))
-						guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
-							return
-						}
-						mutableTelemetries.add(telemetry)
-
-						// Prune old telemetry entries of the same type to prevent unbounded memory growth
-						let maxTelemetryPerType = 500
-						let sameTypeEntries = mutableTelemetries.array.compactMap { $0 as? TelemetryEntity }.filter { $0.metricsType == telemetry.metricsType }
-						if sameTypeEntries.count > maxTelemetryPerType {
-							let entriesToRemove = sameTypeEntries.prefix(sameTypeEntries.count - maxTelemetryPerType)
-							for entry in entriesToRemove {
-								context.delete(entry)
-								mutableTelemetries.remove(entry)
-							}
-						}
-
+						fetchedNode[0].telemetries.append(telemetry)
 						if packet.rxTime > 0 {
 							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
 						} else {
 							fetchedNode[0].lastHeard = Date()
 						}
-						fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 					}
-					try context.save()
-					self.resetContextIfNeeded()
+					try modelContext.save()
 					Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) Saved for Node: \(packet.from.toHex(), privacy: .public)")
 					if telemetry.metricsType == 0 {
 						// Connected Device Metrics
@@ -963,14 +854,12 @@ actor MeshPackets {
 #endif
 #endif
 					}
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					Logger.data.error("💥 Error Saving Telemetry for Node \(packet.from, privacy: .public) Error: \(nsError, privacy: .public)")
-				}
-			} else {
-				Logger.data.error("💥 Error Fetching NodeInfoEntity for Node \(packet.from.toHex(), privacy: .public)")
+			} catch {
+				let nsError = error as NSError
+				Logger.data.error("💥 Error Saving Telemetry for Node \(packet.from, privacy: .public) Error: \(nsError, privacy: .public)")
 			}
+		} else {
+			Logger.data.error("💥 Error Fetching NodeInfoEntity for Node \(packet.from.toHex(), privacy: .public)")
 		}
 	}
 	
@@ -982,9 +871,7 @@ actor MeshPackets {
 		storeForward: Bool = false,
 		appState: AppState?
 	) async {
-		let context = self.backgroundContext
-		await context.perform {
-			var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
+		var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
 			let rangeRef = Reference(Int.self)
 			let rangeTestRegex = Regex {
 				"seq "
@@ -1011,11 +898,13 @@ actor MeshPackets {
 			
 			if messageText?.count ?? 0 > 0 {
 				Logger.mesh.info("💬 \("Message received from the text message app.".localized, privacy: .public)")
-				let messageUsers = UserEntity.fetchRequest()
-				messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
+				let toNum = Int64(packet.to)
+				let fromNum = Int64(packet.from)
+				let fetchDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == toNum || $0.num == fromNum })
 				do {
-					let fetchedUsers = try context.fetch(messageUsers)
-					let newMessage = MessageEntity(context: context)
+					let fetchedUsers = try modelContext.fetch(fetchDescriptor)
+					let newMessage = MessageEntity()
+					modelContext.insert(newMessage)
 					newMessage.messageId = Int64(packet.id)
 					if packet.rxTime > 0 {
 						newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
@@ -1048,7 +937,7 @@ actor MeshPackets {
 							newMessage.toUser = nil
 						} else {
 							do {
-								let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: context)
+								let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: modelContext)
 								newMessage.toUser = newUser
 							} catch CoreDataError.invalidInput(let message) {
 								Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
@@ -1086,15 +975,15 @@ actor MeshPackets {
 					} else {
 						/// Make a new from user if they are unknown
 						do {
-							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: context)
+							let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: modelContext)
 							// Reuse an existing NodeInfoEntity if present to avoid creating duplicates
-							let fetchExistingNodeRequest = NodeInfoEntity.fetchRequest()
-							fetchExistingNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-							let existingNodes = try context.fetch(fetchExistingNodeRequest)
+							let existingNodeFetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == fromNum })
+							let existingNodes = try modelContext.fetch(existingNodeFetchDescriptor)
 							if let existingNode = existingNodes.first {
 								existingNode.user = newUser
 							} else {
-								let newNode = NodeInfoEntity(context: context)
+								let newNode = NodeInfoEntity()
+								modelContext.insert(newNode)
 								newNode.id = Int64(newUser.num)
 								newNode.num = Int64(newUser.num)
 								newNode.user = newUser
@@ -1118,12 +1007,10 @@ actor MeshPackets {
 					}
 					var messageSaved = false
 					do {
-						try context.save()
-						self.resetContextIfNeeded()
+						try modelContext.save()
 						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 					} catch {
-						context.rollback()
 						let nsError = error as NSError
 						Logger.data.error("Failed to save new MessageEntity \(nsError, privacy: .public)")
 					}
@@ -1140,7 +1027,7 @@ actor MeshPackets {
 						if newMessage.fromUser != nil && newMessage.toUser != nil {
 							// Set Unread Message Indicators
 							if packet.to == connectedNode {
-								let unreadCount = newMessage.toUser?.unreadMessages(context: context, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+								let unreadCount = await newMessage.toUser?.unreadMessages(context: modelContext, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 								Task { @MainActor in
 									appState?.unreadDirectMessages = unreadCount
 								}
@@ -1169,17 +1056,14 @@ actor MeshPackets {
 								}
 							}
 						} else if newMessage.fromUser != nil && newMessage.toUser == nil {
-							let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
+							let myInfoFetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == connectedNode })
 							do {
-								let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
+								let fetchedMyInfo = try modelContext.fetch(myInfoFetchDescriptor)
 								if !fetchedMyInfo.isEmpty {
+									let ctx = modelContext
 									Task {@MainActor in
-										appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages(context: context)
-										for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
-											if channel.index == newMessage.channel {
-												context.refresh(channel, mergeChanges: true)
-											}
+										appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages(context: ctx)
+										for channel in fetchedMyInfo[0].channels {
 											if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false {
 												// Create an iOS Notification for the received channel message
 												let manager = LocalNotificationManager()
@@ -1208,126 +1092,120 @@ actor MeshPackets {
 							}
 						}
 					}
-				} catch {
-					Logger.data.error("Fetch Message To and From Users Error")
-				}
+			} catch {
+				Logger.data.error("Fetch Message To and From Users Error")
 			}
 		}
 	}
 	
-	func waypointPacket (packet: MeshPacket) async {
-		let context = self.backgroundContext
-		await context.perform {
-			let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))
-			Logger.mesh.info("📍 \(logString, privacy: .public)")
-			
-			do {
-				if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {
-					// Fetch waypoint by waypointMessage.id, not packet.id
-					let fetchWaypointRequest = WaypointEntity.fetchRequest()
-					fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(waypointMessage.id))
+	func waypointPacket (packet: MeshPacket) {
+		let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))
+		Logger.mesh.info("📍 \(logString, privacy: .public)")
+		
+		do {
+			if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {
+				// Fetch waypoint by waypointMessage.id, not packet.id
+				let waypointId = Int64(waypointMessage.id)
+				let fetchWaypointDescriptor = FetchDescriptor<WaypointEntity>(predicate: #Predicate { $0.id == waypointId })
 
-					let fetchedWaypoint = try context.fetch(fetchWaypointRequest)
-					// Fetch the node info to get the short name
-					var nodeShortName: String = "?"
-					let fetchNodeRequest = NodeInfoEntity.fetchRequest()
-					fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+				let fetchedWaypoint = try modelContext.fetch(fetchWaypointDescriptor)
+				// Fetch the node info to get the short name
+				var nodeShortName: String = "?"
+				let packetFrom = Int64(packet.from)
+				let fetchNodeDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
+				do {
+					let fetchedNode = try modelContext.fetch(fetchNodeDescriptor)
+					if let node = fetchedNode.first, let user = node.user {
+						nodeShortName = user.shortName ?? node.user?.userId ?? String(packet.from.toHex())
+					}
+				} catch {
+					Logger.data.error("Failed to fetch NodeInfoEntity for node \(packet.from.toHex(), privacy: .public): \(error)")
+				}
+				if fetchedWaypoint.isEmpty {
+					// Create a new waypoint
+					let waypoint = WaypointEntity()
+					modelContext.insert(waypoint)
+					waypoint.id = Int64(waypointMessage.id) // Use waypointMessage.id
+					waypoint.name = waypointMessage.name
+					waypoint.longDescription = waypointMessage.description_p
+					waypoint.latitudeI = waypointMessage.latitudeI
+					waypoint.longitudeI = waypointMessage.longitudeI
+					waypoint.icon = Int64(waypointMessage.icon)
+					waypoint.locked = waypointMessage.lockedTo != 0
+					waypoint.createdBy = Int64(packet.from)
+					if waypointMessage.expire >= 1 {
+						waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
+					} else {
+						waypoint.expire = nil
+					}
+					waypoint.created = Date()
 					do {
-						let fetchedNode = try context.fetch(fetchNodeRequest)
-						if let node = fetchedNode.first, let user = node.user {
-							nodeShortName = user.shortName ?? node.user?.userId ?? String(packet.from.toHex())
+						try modelContext.save()
+						Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id, privacy: .public)")
+						
+						Task { @MainActor in
+							let manager = LocalNotificationManager()
+							let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+							let latitude = Double(waypoint.latitudeI) / 1e7
+							let longitude = Double(waypoint.longitudeI) / 1e7
+							manager.notifications = [
+								Notification(
+									id: ("notification.id.\(waypoint.id)"),
+									title: "New Waypoint From \(nodeShortName)",
+									subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
+									content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
+									target: "map",
+									path: "meshtastic:///map?waypointid=\(waypoint.id)"
+								)
+							]
+							Logger.data.debug("meshtastic:///map?waypointid=\(waypoint.id, privacy: .public)")
+							manager.schedule()
 						}
 					} catch {
-						Logger.data.error("Failed to fetch NodeInfoEntity for node \(packet.from.toHex(), privacy: .public): \(error)")
+						let nsError = error as NSError
+						Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 					}
-					if fetchedWaypoint.isEmpty {
-						// Create a new waypoint
-						let waypoint = WaypointEntity(context: context)
-						waypoint.id = Int64(waypointMessage.id) // Use waypointMessage.id
-						waypoint.name = waypointMessage.name
-						waypoint.longDescription = waypointMessage.description_p
-						waypoint.latitudeI = waypointMessage.latitudeI
-						waypoint.longitudeI = waypointMessage.longitudeI
-						waypoint.icon = Int64(waypointMessage.icon)
-						waypoint.locked = Int64(waypointMessage.lockedTo)
-						waypoint.createdBy = Int64(packet.from)
-						if waypointMessage.expire >= 1 {
-							waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
-						} else {
-							waypoint.expire = nil
-						}
-						waypoint.created = Date()
-						do {
-							try context.save()
-							Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id, privacy: .public)")
-							
-							Task { @MainActor in
-								let manager = LocalNotificationManager()
-								let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
-								let latitude = Double(waypoint.latitudeI) / 1e7
-								let longitude = Double(waypoint.longitudeI) / 1e7
-								manager.notifications = [
-									Notification(
-										id: ("notification.id.\(waypoint.id)"),
-										title: "New Waypoint From \(nodeShortName)",
-										subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
-										content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
-										target: "map",
-										path: "meshtastic:///map?waypointid=\(waypoint.id)"
-									)
-								]
-								Logger.data.debug("meshtastic:///map?waypointid=\(waypoint.id, privacy: .public)")
-								manager.schedule()
+				} else {
+					// Update existing waypoint
+					let existingWaypoint = fetchedWaypoint[0]
+					if !existingWaypoint.locked {
+						let currentTime = Int64(Date().timeIntervalSince1970)
+						if waypointMessage.expire > 0 && waypointMessage.expire <= currentTime {
+							modelContext.delete(existingWaypoint)
+							do {
+								try modelContext.save()
+								Logger.data.info("💾 Deleted a waypoint")
+							} catch {
+								let nsError = error as NSError
+								Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 							}
-						} catch {
-							context.rollback()
-							let nsError = error as NSError
-							Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
-						}
-					} else {
-						// Update existing waypoint
-						let existingWaypoint = fetchedWaypoint[0]
-						if existingWaypoint.locked == 0 || existingWaypoint.locked == packet.from {
-							let currentTime = Int64(Date().timeIntervalSince1970)
-							if waypointMessage.expire > 0 && waypointMessage.expire <= currentTime {
-								context.delete(existingWaypoint)
-								do {
-									try context.save()
-									Logger.data.info("💾 Deleted a waypoint")
-								} catch {
-									context.rollback()
-									let nsError = error as NSError
-									Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
-								}
+						} else {
+							existingWaypoint.name = waypointMessage.name
+							existingWaypoint.longDescription = waypointMessage.description_p
+							existingWaypoint.latitudeI = waypointMessage.latitudeI
+							existingWaypoint.longitudeI = waypointMessage.longitudeI
+							existingWaypoint.icon = Int64(waypointMessage.icon)
+							existingWaypoint.locked = waypointMessage.lockedTo != 0
+							existingWaypoint.lastUpdatedBy = Int64(packet.from)
+							if waypointMessage.expire >= 1 {
+								existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
 							} else {
-								existingWaypoint.name = waypointMessage.name
-								existingWaypoint.longDescription = waypointMessage.description_p
-								existingWaypoint.latitudeI = waypointMessage.latitudeI
-								existingWaypoint.longitudeI = waypointMessage.longitudeI
-								existingWaypoint.icon = Int64(waypointMessage.icon)
-								existingWaypoint.locked = Int64(waypointMessage.lockedTo)
-								existingWaypoint.lastUpdatedBy = Int64(packet.from)
-								if waypointMessage.expire >= 1 {
-									existingWaypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
-								} else {
-									existingWaypoint.expire = nil
-								}
-								existingWaypoint.lastUpdated = Date()
-								do {
-									try context.save()
-									Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
-								} catch {
-									context.rollback()
-									let nsError = error as NSError
-									Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
-								}
+								existingWaypoint.expire = nil
+							}
+							existingWaypoint.lastUpdated = Date()
+							do {
+								try modelContext.save()
+								Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
+							} catch {
+								let nsError = error as NSError
+								Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 							}
 						}
 					}
 				}
-			} catch {
-				Logger.mesh.error("Error Deserializing WAYPOINT_APP packet.")
 			}
+		} catch {
+			Logger.mesh.error("Error Deserializing WAYPOINT_APP packet.")
 		}
 	}
 }

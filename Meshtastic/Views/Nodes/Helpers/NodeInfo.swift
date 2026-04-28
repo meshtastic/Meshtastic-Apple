@@ -11,7 +11,7 @@ import MapKit
 
 struct NodeInfoItem: View {
 
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 
 	var body: some View {
 
@@ -48,10 +48,10 @@ struct NodeInfoItem: View {
 						.font(.caption2)
 				}
 			}
-			let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-			if deviceMetrics?.count ?? 0 >= 1 {
+			let deviceMetrics = node.telemetries.filter { $0.metricsType == 0 }
+			if deviceMetrics.count >= 1 {
 				Divider()
-				let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+				let mostRecent = deviceMetrics.last
 				VStack(alignment: .center) {
 					BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
 					if mostRecent?.voltage ?? 0 > 0 {

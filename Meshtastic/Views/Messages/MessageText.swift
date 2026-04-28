@@ -8,7 +8,7 @@ import Translation
 
 struct MessageText: View {
 	static let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	
 	let message: MessageEntity
@@ -273,10 +273,10 @@ struct MessageText: View {
 				)
 				await MainActor.run {
 					switch tapBackDestination {
-					case let .channel(channel):
-						context.refresh(channel, mergeChanges: true)
-					case let .user(user):
-						context.refresh(user, mergeChanges: true)
+					case .channel:
+						break
+					case .user:
+						break
 					}
 				}
 			} catch {

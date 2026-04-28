@@ -12,9 +12,9 @@
 #if os(iOS) && canImport(CarPlay)
 import CarPlay
 import Combine
-import CoreData
 import Intents
 import OSLog
+import SwiftData
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -30,7 +30,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	// during this CarPlay session so we don't re-donate on every refresh.
 	private var donatedConversationIds = Set<String>()
 
-	private lazy var context: NSManagedObjectContext = PersistenceController.shared.container.viewContext
+	private lazy var context: ModelContext = PersistenceController.shared.context
 
 	/// Returns a human-readable "last heard" string.
 	/// `now` is passed in so all rows in a single render share one `Date()` allocation.
@@ -180,13 +180,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	// MARK: - Data Fetching
 
 	private func fetchFavoriteContactItems() -> [CPMessageListItem] {
-		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-		request.predicate = NSPredicate(format: "favorite == YES AND num != %lld", AccessoryManager.shared.activeDeviceNum ?? 0)
-		request.sortDescriptors = [NSSortDescriptor(key: "lastHeard", ascending: false)]
-		request.relationshipKeyPathsForPrefetching = ["user"]
-
 		do {
-			let nodes = try context.fetch(request)
+			let descriptor = FetchDescriptor<NodeInfoEntity>(
+				sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
+			)
+			let activeNum = AccessoryManager.shared.activeDeviceNum ?? 0
+			let nodes = try context.fetch(descriptor).filter { $0.favorite && $0.num != activeNum }
 			let nodeNums = nodes.compactMap { $0.user != nil ? $0.num : nil as Int64? }
 			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
 			let now = Date()
@@ -228,12 +227,13 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	private func fetchChannelItems() -> [CPMessageListItem] {
 		guard let connectedNum = AccessoryManager.shared.activeDeviceNum,
 			  let connectedNode = getNodeInfo(id: connectedNum, context: context),
-			  let myInfo = connectedNode.myInfo,
-			  let channels = myInfo.channels?.array as? [ChannelEntity] else {
+			  let myInfo = connectedNode.myInfo else {
 			return []
 		}
 
-		let activeChannels = channels.filter { $0.role > 0 }
+		let activeChannels = myInfo.channels
+			.filter { $0.role > 0 }
+			.sorted { $0.index < $1.index }
 		let channelIndices = activeChannels.map { $0.index }
 		let unreadCounts = fetchUnreadCountsForChannels(channelIndices: channelIndices)
 
@@ -270,35 +270,37 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	}
 
 	private func fetchDirectMessageItems() -> [CPMessageListItem] {
-		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
-		let connectedNum = AccessoryManager.shared.activeDeviceNum ?? 0
-
-		// Match the app's UserList: exclude self, ignored, favorites (shown above).
-		// Use `lastMessage != nil` instead of the expensive `@count` aggregate predicate
-		// to find nodes that have exchanged at least one message.
-		let notSelf = NSPredicate(format: "userNode.num != %lld", connectedNum)
-		let notIgnored = NSPredicate(format: "userNode.ignored == NO")
-		let notFavorite = NSPredicate(format: "userNode.favorite == NO")
-		let hasMessagesOrMessagable = NSCompoundPredicate(type: .or, subpredicates: [
-			NSPredicate(format: "unmessagable == NO"),
-			NSPredicate(format: "lastMessage != nil")
-		])
-		request.predicate = NSCompoundPredicate(type: .and, subpredicates: [notSelf, notIgnored, notFavorite, hasMessagesOrMessagable])
-		request.sortDescriptors = [
-			NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
-			NSSortDescriptor(key: "lastMessage", ascending: false),
-			NSSortDescriptor(key: "longName", ascending: true)
-		]
-		request.fetchLimit = 24 // CarPlay limits list items
-		request.relationshipKeyPathsForPrefetching = ["userNode"]
-
 		do {
-			let users = try context.fetch(request)
+			let users = try context.fetch(FetchDescriptor<UserEntity>())
+			let connectedNum = AccessoryManager.shared.activeDeviceNum ?? 0
+			let filteredUsers = users
+				.filter { user in
+					guard let node = user.userNode else { return false }
+					let notSelf = node.num != connectedNum
+					let notIgnored = !node.ignored
+					let notFavorite = !node.favorite
+					let hasMessagesOrMessagable = !user.unmessagable || user.lastMessage != nil
+					return notSelf && notIgnored && notFavorite && hasMessagesOrMessagable
+				}
+				.sorted { lhs, rhs in
+					let lhsHeard = lhs.userNode?.lastHeard ?? .distantPast
+					let rhsHeard = rhs.userNode?.lastHeard ?? .distantPast
+					if lhsHeard != rhsHeard {
+						return lhsHeard > rhsHeard
+					}
+					let lhsLastMessage = lhs.lastMessage ?? .distantPast
+					let rhsLastMessage = rhs.lastMessage ?? .distantPast
+					if lhsLastMessage != rhsLastMessage {
+						return lhsLastMessage > rhsLastMessage
+					}
+					return (lhs.longName ?? lhs.shortName ?? "") < (rhs.longName ?? rhs.shortName ?? "")
+				}
+				.prefix(24)
 			let nodeNums = users.compactMap { $0.userNode?.num }
 			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
 			let now = Date()
 
-			return users.compactMap { user -> CPMessageListItem? in
+			return filteredUsers.compactMap { user -> CPMessageListItem? in
 				guard let node = user.userNode else { return nil }
 				let name = user.longName ?? user.shortName ?? "Unknown"
 				let nodeNum = node.num
@@ -340,18 +342,17 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// while staying compatible with Core Data's relationship keypath restrictions.
 	private func fetchUnreadCountsForDMs(nodeNums: [Int64]) -> [Int64: Int] {
 		guard !nodeNums.isEmpty else { return [:] }
+		let nodeNumSet = Set(nodeNums)
 
-		let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-			NSPredicate(format: "read == NO"),
-			NSPredicate(format: "fromUser.num IN %@", nodeNums)
-		])
-		fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser"]
-
-		let results = (try? context.fetch(fetchRequest)) ?? []
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate { message in
+				message.read == false
+			}
+		)
+		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int64: Int]()
 		for message in results {
-			if let num = message.fromUser?.num {
+			if let num = message.fromUser?.num, nodeNumSet.contains(num) {
 				counts[num, default: 0] += 1
 			}
 		}
@@ -362,18 +363,19 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// then groups the results in-memory.
 	private func fetchUnreadCountsForChannels(channelIndices: [Int32]) -> [Int32: Int] {
 		guard !channelIndices.isEmpty else { return [:] }
+		let channelSet = Set(channelIndices)
 
-		let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-			NSPredicate(format: "read == NO"),
-			NSPredicate(format: "toUser == nil"),
-			NSPredicate(format: "channel IN %@", channelIndices)
-		])
-
-		let results = (try? context.fetch(fetchRequest)) ?? []
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate { message in
+				message.read == false && message.toUser == nil
+			}
+		)
+		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int32: Int]()
 		for message in results {
-			counts[message.channel, default: 0] += 1
+			if channelSet.contains(message.channel) {
+				counts[message.channel, default: 0] += 1
+			}
 		}
 		return counts
 	}
@@ -452,20 +454,17 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// conversation in CarPlay triggers Siri to read them aloud — even for
 	/// messages that arrived before the CarPlay session started.
 	private func donateUnreadMessages() {
-		let bgContext = PersistenceController.shared.container.newBackgroundContext()
-		bgContext.automaticallyMergesChangesFromParent = true
-		bgContext.perform {
-			let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-			fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-				NSPredicate(format: "read == NO"),
-				NSPredicate(format: "admin == NO"),
-				NSPredicate(format: "isEmoji == NO")
-			])
-			fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
-			fetchRequest.fetchLimit = 50
-			fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser", "toUser"]
+		Task { @MainActor in
+			let context = PersistenceController.shared.context
+			var descriptor = FetchDescriptor<MessageEntity>(
+				predicate: #Predicate<MessageEntity> { message in
+					message.read == false && message.admin == false && message.isEmoji == false
+				},
+				sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
+			)
+			descriptor.fetchLimit = 50
 
-			guard let messages = try? bgContext.fetch(fetchRequest) else { return }
+			guard let messages = try? context.fetch(descriptor) else { return }
 			for message in messages {
 				CarPlayIntentDonation.donateReceivedMessage(message)
 			}
@@ -496,8 +495,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		let nodeShortName = connectedNode?.user?.shortName ?? "?"
 
 		// Fetch latest local stats telemetry
-		let localStats = connectedNode?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
-		let mostRecent = localStats?.lastObject as? TelemetryEntity
+		let localStats = connectedNode?.telemetries.filter { $0.metricsType == 4 }
+		let mostRecent = localStats?.last
 
 		let timerSeconds = 900 // 15 minute local stats interval
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))

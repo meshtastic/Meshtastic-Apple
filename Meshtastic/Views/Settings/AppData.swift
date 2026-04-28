@@ -7,12 +7,12 @@
 
 import SwiftUI
 import OSLog
-import CoreData
+import SwiftData
 import Foundation
 
 struct AppData: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var files = [URL]()
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
@@ -145,8 +145,7 @@ struct AppData: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return AppData()
+	AppData()
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

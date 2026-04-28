@@ -6,9 +6,8 @@
 //  used by the CarPlay messaging intent handlers.
 //
 
-#if os(iOS)
-import CoreData
 import Intents
+import SwiftData
 
 enum IntentMessageConverters {
 	static let meshtasticDomain = "@meshtastic.local"
@@ -50,59 +49,56 @@ enum IntentMessageConverters {
 	}
 
 	/// Builds a stable conversation identifier from a message.
-	/// Channel messages use "channel-<N>", direct messages use "dm-<remoteNodeNum>"
-	/// where remoteNodeNum is always the *other* participant (not the local/connected node),
-	/// so incoming and outgoing DMs share the same identifier.
+	/// Channel messages use "channel-<N>", direct messages use "dm-<nodeNum>".
 	static func conversationIdentifier(for message: MessageEntity) -> String {
-		guard message.toUser != nil else {
-			return "channel-\(message.channel)"
-		}
-		let localNum = Int64(UserDefaults.preferredPeripheralNum)
-		if let fromUser = message.fromUser, fromUser.num != localNum {
-			// Incoming DM: remote node is the sender
-			return "dm-\(fromUser.num)"
-		} else if let toUser = message.toUser {
-			// Outgoing DM: remote node is the recipient
+		if let toUser = message.toUser {
 			return "dm-\(toUser.num)"
 		}
 		return "channel-\(message.channel)"
 	}
 
 	/// Searches for `UserEntity` objects whose name matches the given search term.
-	static func findUsers(matching searchTerm: String, in context: NSManagedObjectContext) -> [UserEntity] {
+	static func findUsers(matching searchTerm: String, in context: ModelContext) -> [UserEntity] {
 		if let nodeNum = directMessageNodeNum(from: searchTerm) {
-			let fetchRequest: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
-			fetchRequest.fetchLimit = 1
-			fetchRequest.predicate = NSPredicate(format: "num == %lld", nodeNum)
-			return (try? context.fetch(fetchRequest)) ?? []
+			let descriptor = FetchDescriptor<UserEntity>(
+				predicate: #Predicate<UserEntity> { user in
+					user.num == nodeNum
+				}
+			)
+			return (try? context.fetch(descriptor)) ?? []
 		}
 
-		let fetchRequest: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
-		fetchRequest.predicate = NSPredicate(
-			format: "longName CONTAINS[cd] %@ OR shortName CONTAINS[cd] %@ OR userId CONTAINS[cd] %@",
-			searchTerm, searchTerm, searchTerm
-		)
-		return (try? context.fetch(fetchRequest)) ?? []
+		let normalized = searchTerm.lowercased()
+		let users = (try? context.fetch(FetchDescriptor<UserEntity>())) ?? []
+		return users.filter { user in
+			(user.longName?.lowercased().contains(normalized) ?? false)
+				|| (user.shortName?.lowercased().contains(normalized) ?? false)
+				|| (user.userId?.lowercased().contains(normalized) ?? false)
+		}
 	}
 
 	/// Looks up a `ChannelEntity` by matching name.
-	static func findChannels(matching name: String, in context: NSManagedObjectContext) -> [ChannelEntity] {
+	static func findChannels(matching name: String, in context: ModelContext) -> [ChannelEntity] {
 		if let explicitIndex = channelIndex(fromHandleOrName: name) {
-			let fetchRequest: NSFetchRequest<ChannelEntity> = ChannelEntity.fetchRequest()
-			fetchRequest.fetchLimit = 1
-			fetchRequest.predicate = NSPredicate(format: "index == %d", explicitIndex)
-			return (try? context.fetch(fetchRequest)) ?? []
+			let explicitIndex32 = Int32(explicitIndex)
+			let descriptor = FetchDescriptor<ChannelEntity>(
+				predicate: #Predicate<ChannelEntity> { channel in
+					channel.index == explicitIndex32
+				}
+			)
+			return (try? context.fetch(descriptor)) ?? []
 		}
 
-		let fetchRequest: NSFetchRequest<ChannelEntity> = ChannelEntity.fetchRequest()
-		fetchRequest.predicate = NSPredicate(
-			format: "name != nil AND name != '' AND name CONTAINS[cd] %@", name
-		)
-		return (try? context.fetch(fetchRequest)) ?? []
+		let normalized = name.lowercased()
+		let channels = (try? context.fetch(FetchDescriptor<ChannelEntity>())) ?? []
+		return channels.filter { channel in
+			guard let channelName = channel.name, !channelName.isEmpty else { return false }
+			return channelName.lowercased().contains(normalized)
+		}
 	}
 
 	/// Resolves a channel index from a spoken group name, defaulting to the primary channel.
-	static func channelIndex(for name: String, in context: NSManagedObjectContext) -> Int {
+	static func channelIndex(for name: String, in context: ModelContext) -> Int {
 		if let explicitIndex = channelIndex(fromHandleOrName: name) {
 			return explicitIndex
 		}
@@ -157,4 +153,3 @@ enum IntentMessageConverters {
 		return "Channel \(index)"
 	}
 }
-#endif

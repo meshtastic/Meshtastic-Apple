@@ -1,7 +1,7 @@
 // Copyright (C) 2022 Garth Vander Houwen
 
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import TipKit
 import MeshtasticProtobufs
@@ -210,12 +210,12 @@ struct MeshtasticAppleApp: App {
 				SessionReplay.stopRecording()
 				accessoryManager.appDidEnterBackground()
 				do {
-					try persistenceController.container.viewContext.save()
-					Logger.services.info("💾 [App] Saved CoreData ViewContext when the app went to the background.")
+					try persistenceController.container.mainContext.save()
+					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
 
 				} catch {
 
-					Logger.services.error("💥 [App] Failed to save viewContext when the app goes to the background.")
+					Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
 				}
 			case .inactive:
 				Logger.services.info("🎬 [App] Scene is inactive")
@@ -228,7 +228,7 @@ struct MeshtasticAppleApp: App {
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}
 		}
-		.environment(\.managedObjectContext, persistenceController.container.viewContext)
+		.modelContainer(persistenceController.container)
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
 		.environmentObject(appState.router)
@@ -236,7 +236,7 @@ struct MeshtasticAppleApp: App {
 
 		WindowGroup("Mesh Map", id: "meshmap-window") {
 			MapWindow()
-				.environment(\.managedObjectContext, persistenceController.container.viewContext)
+				.modelContainer(persistenceController.container)
 				.environmentObject(appState)
 				.environmentObject(accessoryManager)
 				.environmentObject(appState.router)

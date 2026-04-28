@@ -88,7 +88,7 @@ struct NodeListItem: View {
 		return desc
 	}
 	
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -109,7 +109,7 @@ struct NodeListItem: View {
 	}
 	
 	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.positions?.lastObject as? PositionEntity else {
+		guard let lastPostion = node.positions.last else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
@@ -172,7 +172,7 @@ struct NodeListItem: View {
 									text: "Store & Forward".localized)
 					}
 					
-					if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
+					if node.positions.count > 0 && connectedNode != node.num {
 						HStack {
 							if let (lastPostion, myCoord) = locationData {
 								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
@@ -298,9 +298,8 @@ struct IconAndText: View {
 		IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill", text: "foo")
 		IconAndText(systemName: "antenna.radiowaves.left.and.right.circle", text: "bar")
 		NodeListItem(node: {
-			let context = PersistenceController.preview.container.viewContext
-			let nodeInfo = NodeInfoEntity(context: context)
-			let user = UserEntity(context: context)
+			let nodeInfo = NodeInfoEntity()
+			let user = UserEntity()
 			user.longName = "Test User"
 			user.shortName = "TU"
 			nodeInfo.user = user

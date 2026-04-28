@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 import CryptoKit
@@ -15,7 +15,7 @@ import CryptoKit
 struct SecurityConfig: View {
 	
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -256,7 +256,6 @@ struct SecurityConfig: View {
 									try context.save()
 									Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
 								} catch {
-									context.rollback()
 									let nsError = error as NSError
 									Logger.data.error("Error Updating Core Data UserEntity: \(nsError, privacy: .public)")
 								}
@@ -430,8 +429,7 @@ struct SecurityConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return SecurityConfig(node: nil)
+	SecurityConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

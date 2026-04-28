@@ -9,7 +9,7 @@ import SwiftUI
 import OSLog
 
 struct RtttlConfig: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -116,8 +116,7 @@ struct RtttlConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return RtttlConfig(node: nil)
+	RtttlConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

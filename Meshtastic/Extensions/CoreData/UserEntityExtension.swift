@@ -6,65 +6,39 @@
 //
 
 import Foundation
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 
 extension UserEntity {
-	var messagePredicate: NSPredicate {
-		return NSPredicate(format: "((toUser == %@) OR (fromUser == %@)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10", self, self)
-	}
-
-	var messageFetchRequest: NSFetchRequest<MessageEntity> {
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = messagePredicate
-		fetchRequest.fetchBatchSize = 50
-		return fetchRequest
-	}
-
+	@MainActor
 	var messageList: [MessageEntity] {
-		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = messageFetchRequest
-
-		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+		let context = PersistenceController.shared.context
+		let messages = (self.sentMessages ?? []) + (self.receivedMessages ?? [])
+		return messages.filter { msg in
+			msg.toUser != nil && msg.fromUser != nil && !msg.isEmoji && !msg.admin && msg.portNum != 10
+		}.sorted { $0.messageTimestamp < $1.messageTimestamp }
 	}
 
+	@MainActor
 	var mostRecentMessage: MessageEntity? {
-		// Most contacts will have no DMs history, so we can return early.
-		guard self.lastMessage != nil else { return nil; }
-
-		// Most recent DM for this user (descending, limit 1)
-		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = messageFetchRequest
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
-		fetchRequest.fetchLimit = 1
-
-		return (try? context.fetch(fetchRequest))?.first
+		guard self.lastMessage != nil else { return nil }
+		return messageList.last
 	}
 
+	@MainActor
 	var sensorMessageList: [MessageEntity] {
-		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = NSPredicate(format: "(fromUser == %@) AND portNum = 10", self)
-
-		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+		return (self.sentMessages ?? []).filter { $0.portNum == 10 }
+			.sorted { $0.messageTimestamp < $1.messageTimestamp }
 	}
 
-	func unreadMessages(context: NSManagedObjectContext, skipLastMessageCheck: Bool = false) -> Int {
-		// Most contacts will have no DMs history, so we can return early.
-		// (For our own node, set skipLastMessageCheck=true, because we don't update lastMessage on our own connected node.)
-		guard self.lastMessage != nil || skipLastMessageCheck else { return 0; }
-
-		let fetchRequest = messageFetchRequest
-		fetchRequest.sortDescriptors = [] // sort is irrelevant.
-		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
-
-		return (try? context.count(for: fetchRequest)) ?? 0
+	@MainActor
+	func unreadMessages(context: ModelContext, skipLastMessageCheck: Bool = false) -> Int {
+		guard self.lastMessage != nil || skipLastMessageCheck else { return 0 }
+		return messageList.filter { !$0.read }.count
 	}
 
-	// Backwards-compatible property (uses viewContext)
-	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.container.viewContext) }
+	@MainActor
+	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.context) }
 
 	/// SVG Images for Vendors who are signed project backers
 	var hardwareImage: String? {
@@ -160,26 +134,22 @@ extension UserEntity {
 	}
 }
 
-public func createUser(num: Int64, context: NSManagedObjectContext) throws -> UserEntity {
+func createUser(num: Int64, context: ModelContext) throws -> UserEntity {
 	// Validate Input
 	guard num >= 0 else {
 		throw CoreDataError.invalidInput(message: "User number cannot be negative.")
 	}
 
-	var newUser: UserEntity! // Use an implicitly unwrapped optional, but ensure it's assigned
-
-	context.performAndWait {
-		newUser = UserEntity(context: context)
-		newUser.num = num
-		let userId = num.toHex()
-		newUser.userId = userId
-		let last4 = String(userId.suffix(4))
-		newUser.longName = "Meshtastic \(last4)"
-		newUser.shortName = last4
-		newUser.hwModel = "UNSET"
-		newUser.unmessagable = false
-	}
-
+	let newUser = UserEntity()
+	newUser.num = num
+	let userId = num.toHex()
+	newUser.userId = userId
+	let last4 = String(userId.suffix(4))
+	newUser.longName = "Meshtastic \(last4)"
+	newUser.shortName = last4
+	newUser.hwModel = "UNSET"
+	newUser.unmessagable = false
+	context.insert(newUser)
 	return newUser
 }
 

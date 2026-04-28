@@ -12,9 +12,9 @@ import OSLog
 
 struct PowerMetricsLog: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
@@ -27,8 +27,7 @@ struct PowerMetricsLog: View {
 	@State private var channelSelection = 0
 
 	var powerMetrics: [TelemetryEntity] {
-		let telemetries = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 2"))
-		return (telemetries?.reversed() as? [TelemetryEntity]) ?? []
+		return node.telemetries.filter { $0.metricsType == 2 }.reversed()
 	}
 
 	var minMax: (min: Double, max: Double) {
@@ -55,8 +54,8 @@ struct PowerMetricsLog: View {
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 
 				let chartData = powerMetrics
-					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
-					.sorted { $0.time! < $1.time! }
+					.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+					.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(powerMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 
@@ -295,15 +294,17 @@ struct PowerMetricsLog: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	node.user = user
-	return PowerMetricsLog(node: node)
+	PowerMetricsLog(node: node)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }
+*/

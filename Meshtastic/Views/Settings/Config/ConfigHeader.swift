@@ -1,5 +1,5 @@
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct ConfigHeader<T>: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager

@@ -8,7 +8,7 @@ import SwiftUI
 
 struct ChannelLock: View {
 
-	@ObservedObject var channel: ChannelEntity
+	@Bindable var channel: ChannelEntity
 	var body: some View {
 		/// Unencrypted - using no key at all or a known 1 byte key
 		if channel.psk?.hexDescription.count ?? 0 < 3 {
@@ -33,14 +33,16 @@ struct ChannelLock: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let encryptedChannel = ChannelEntity(context: context)
+	let encryptedChannel = ChannelEntity()
 	encryptedChannel.psk = Data([0x01, 0x02, 0x03, 0x04])
-	let unencryptedChannel = ChannelEntity(context: context)
+	let unencryptedChannel = ChannelEntity()
 	unencryptedChannel.psk = Data()
-	return HStack(spacing: 16) {
+	HStack(spacing: 16) {
 		ChannelLock(channel: encryptedChannel)
 		ChannelLock(channel: unencryptedChannel)
 	}
 }
+*/

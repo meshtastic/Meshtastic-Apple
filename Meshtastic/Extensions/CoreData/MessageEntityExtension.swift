@@ -5,7 +5,7 @@
 //  Created by Ben on 8/22/23.
 //
 
-import CoreData
+import SwiftData
 import CoreLocation
 import Foundation
 import MapKit
@@ -40,20 +40,17 @@ extension MessageEntity {
 		return re?.canRetry ?? false
 	}
 
+	@MainActor
 	var tapbacks: [MessageEntity] {
-		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [
-			NSSortDescriptor(key: "messageTimestamp", ascending: true)
-		]
-		fetchRequest.predicate = NSPredicate(
-			format: "replyID == %lld AND isEmoji == true",
-			self.messageId
+		let context = PersistenceController.shared.context
+		let msgId = self.messageId
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { msg in
+				msg.replyID == msgId && msg.isEmoji == true
+			},
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
 		)
-		fetchRequest.fetchLimit = 20
-		fetchRequest.returnsObjectsAsFaults = false
-
-		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+		return (try? context.fetch(descriptor)) ?? []
 	}
 
 	func displayTimestamp(aboveMessage: MessageEntity?) -> Bool {
@@ -63,43 +60,38 @@ extension MessageEntity {
 		return false  // First message will have no timestamp
 	}
 
+	@MainActor
 	func relayDisplay() -> String? {
 
 		guard self.relayNode != 0 else { return nil }
-		let context = PersistenceController.shared.container.viewContext
+		let context = PersistenceController.shared.context
 
 		let relaySuffix = Int64(self.relayNode & 0xFF)
-		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
-		request.predicate = NSPredicate(
-			format: "(num & 0xFF) == %lld",
-			relaySuffix
-		)
+		let descriptor = FetchDescriptor<UserEntity>()
 
-		do {
-			let users = try context.fetch(request)
-
-			// If exactly one match is found, return its name
-			if users.count == 1, let name = users.first?.longName, !name.isEmpty {
-				return "\(name)"
-			}
-
-			// If no exact match, find the node with the smallest hopsAway
-			if let closestNode = users.min(by: { lhs, rhs in
-				guard let lhsHops = lhs.userNode?.hopsAway,
-					let rhsHops = rhs.userNode?.hopsAway
-				else {
-					return false
-				}
-				return lhsHops < rhsHops
-			}), let name = closestNode.longName, !name.isEmpty {
-				return "\(name)"
-			}
-
-			// Fallback to hex node number if no matches
-			return String(format: "Node 0x%02X", UInt32(self.relayNode & 0xFF))
-
-		} catch {
+		guard let users = try? context.fetch(descriptor) else {
 			return String(format: "Node 0x%02X", UInt32(self.relayNode & 0xFF))
 		}
+		let matchingUsers = users.filter { ($0.num & 0xFF) == relaySuffix }
+
+		// If exactly one match is found, return its name
+		if matchingUsers.count == 1, let name = matchingUsers.first?.longName, !name.isEmpty {
+			return "\(name)"
+		}
+
+		// If no exact match, find the node with the smallest hopsAway
+		if let closestNode = matchingUsers.min(by: { lhs, rhs in
+			guard let lhsHops = lhs.userNode?.hopsAway,
+				let rhsHops = rhs.userNode?.hopsAway
+			else {
+				return false
+			}
+			return lhsHops < rhsHops
+		}), let name = closestNode.longName, !name.isEmpty {
+			return "\(name)"
+		}
+
+		// Fallback to hex node number if no matches
+		return String(format: "Node 0x%02X", UInt32(self.relayNode & 0xFF))
 	}
 }

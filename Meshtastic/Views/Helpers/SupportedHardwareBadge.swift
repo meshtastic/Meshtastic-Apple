@@ -6,31 +6,24 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SupportedHardwareBadge: View {
 	
-	@Environment(\.managedObjectContext) var context
-	@FetchRequest var hardware: FetchedResults<DeviceHardwareEntity>
+	@Query var hardware: [DeviceHardwareEntity]
 	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
 	
-	init<T>(hwModelId: T) where T: BinaryInteger, T: CVarArg {
-		let predicate = NSPredicate(format: "hwModel == %d", hwModelId)
-		_hardware = FetchRequest(
-			entity: DeviceHardwareEntity.entity(),
-			sortDescriptors: [NSSortDescriptor(key: "hwModelSlug", ascending: true)],
-			predicate: predicate,
-			animation: .default
-		)
+	init<T>(hwModelId: T) where T: BinaryInteger {
+		let hwModel = Int64(hwModelId)
+		_hardware = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
+			hw.hwModel == hwModel
+		}, sort: [SortDescriptor(\.hwModelSlug)])
 	}
 	
 	init(platformioTarget: String) {
-		let predicate = NSPredicate(format: "platformioTarget == %@", platformioTarget)
-		_hardware = FetchRequest(
-			entity: DeviceHardwareEntity.entity(),
-			sortDescriptors: [NSSortDescriptor(key: "hwModelSlug", ascending: true)],
-			predicate: predicate,
-			animation: .default
-		)
+		_hardware = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
+			hw.platformioTarget == platformioTarget
+		}, sort: [SortDescriptor(\.hwModelSlug)])
 	}
 	
 	var body: some View {

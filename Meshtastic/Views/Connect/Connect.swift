@@ -7,7 +7,7 @@
 
 import SwiftUI
 import MapKit
-import CoreData
+import SwiftData
 import CoreLocation
 import CoreBluetooth
 import OSLog
@@ -18,7 +18,7 @@ import ActivityKit
 
 struct Connect: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.colorScheme) private var colorScheme
 	@State var router: Router
@@ -380,8 +380,10 @@ struct Connect: View {
 			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
 				
-				let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", deviceNum)
+				var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(
+					predicate: #Predicate<NodeInfoEntity> { $0.num == deviceNum }
+				)
+				fetchNodeInfoRequest.fetchLimit = 1
 				
 				do {
 					node = try context.fetch(fetchNodeInfoRequest).first
@@ -433,8 +435,8 @@ struct Connect: View {
 		liveActivityStarted = true
 		// 15 Minutes Local Stats Interval
 		let timerSeconds = 900
-		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
-		let mostRecent = localStats?.lastObject as? TelemetryEntity
+		let localStats = node?.telemetries.filter { $0.metricsType == 4 }
+		let mostRecent = localStats?.last
 		
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		
@@ -505,7 +507,7 @@ struct TransportIcon: View {
 struct ManualConnectionMenu: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 
 	private struct IterableTransport: Identifiable {
 		let id: UUID
@@ -578,7 +580,7 @@ struct ManualConnectionMenu: View {
 						if accessoryManager.allowDisconnect {
 							try await accessoryManager.disconnect()
 						}
-						await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+						await PersistenceController.shared.clearDatabase(includeRoutes: false)
 						clearNotifications()
 						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
 						
@@ -592,7 +594,7 @@ struct ManualConnectionMenu: View {
 }
 
 struct DeviceConnectRow: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var presentingSwitchPreferredPeripheral = false
 	let device: Device
@@ -659,7 +661,7 @@ struct DeviceConnectRow: View {
 						if accessoryManager.allowDisconnect {
 							try await accessoryManager.disconnect()
 						}
-						await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+						await PersistenceController.shared.clearDatabase(includeRoutes: false)
 						clearNotifications()
 						
 						try await accessoryManager.connect(to: device)

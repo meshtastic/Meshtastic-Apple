@@ -7,34 +7,27 @@
 import SwiftUI
 import Charts
 import OSLog
-import CoreData
+import SwiftData
 
 struct EnvironmentMetricsLog: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 
 	@StateObject var columnList = MetricsColumnList.environmentDefaultColumns
 	@StateObject var seriesList = MetricsSeriesList.environmentDefaultChartSeries
 
 	@State var isEditingColumnConfiguration = false
 	
-	@FetchRequest private var chartData: FetchedResults<TelemetryEntity>
-	
-	init(node: NodeInfoEntity) {
-		self.node = node
-		
-		// Build fetch request:
-		let request: NSFetchRequest<TelemetryEntity> = TelemetryEntity.fetchRequest()
+	private var chartData: [TelemetryEntity] {
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
-		request.predicate = NSPredicate(format: "nodeTelemetry == %@ AND metricsType == 1 AND time >= %@", node, oneWeekAgo as NSDate)
-		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
-		request.fetchBatchSize = 100
-		_chartData = FetchRequest(fetchRequest: request)
+		return (node.telemetries ?? [])
+			.filter { $0.metricsType == 1 && ($0.time ?? Date.distantPast) >= oneWeekAgo }
+			.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
 	}
 	
 	var body: some View {
@@ -188,15 +181,17 @@ struct EnvironmentMetricsLog: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	node.user = user
-	return EnvironmentMetricsLog(node: node)
+	EnvironmentMetricsLog(node: node)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }
+*/

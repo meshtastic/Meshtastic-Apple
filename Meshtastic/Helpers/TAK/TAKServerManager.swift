@@ -10,7 +10,7 @@ import Network
 import OSLog
 import Combine
 import SwiftUI
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 
 enum TAKServerError: LocalizedError {
@@ -140,17 +140,16 @@ final class TAKServerManager: ObservableObject {
 	/// Check the primary channel for validity
 	/// Returns true if the primary channel is valid for TAK server operation
 	func checkPrimaryChannelValidity() {
-		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = MyInfoEntity.fetchRequest()
+		let context = PersistenceController.shared.context
+		let descriptor = FetchDescriptor<MyInfoEntity>()
 		
 		var issues: [PrimaryChannelIssue] = []
 		var isValid = true
 		
 		do {
-			let myInfos = try context.fetch(fetchRequest)
+			let myInfos = try context.fetch(descriptor)
 			guard let myInfo = myInfos.first,
-				  let channels = myInfo.channels?.array as? [ChannelEntity],
-				  let primaryChannel = channels.first(where: { $0.index == 0 || $0.role == 1 }) else {
+				  let primaryChannel = myInfo.channels.first(where: { $0.index == 0 || $0.role == 1 }) else {
 				issues.append(PrimaryChannelIssue(
 					title: "No Primary Channel",
 					description: "No primary channel found on device",
@@ -584,7 +583,7 @@ final class TAKServerManager: ObservableObject {
 
 		Logger.tak.info("Auto-fixing primary channel for TAK compatibility")
 
-		let context = PersistenceController.shared.container.viewContext
+		let context = PersistenceController.shared.context
 
 		guard let connectedNodeNum = accessoryManager.activeDeviceNum else {
 			Logger.tak.error("Cannot fix channel: No active device number")
@@ -597,13 +596,12 @@ final class TAKServerManager: ObservableObject {
 			return false
 		}
 
-		let fetchRequest = MyInfoEntity.fetchRequest()
+		let descriptor = FetchDescriptor<MyInfoEntity>()
 
 		do {
-			let myInfos = try context.fetch(fetchRequest)
+			let myInfos = try context.fetch(descriptor)
 			guard let myInfo = myInfos.first,
-				  let channels = myInfo.channels?.array as? [ChannelEntity],
-				  let primaryChannel = channels.first(where: { $0.index == 0 || $0.role == 1 }) else {
+				  let primaryChannel = myInfo.channels.first(where: { $0.index == 0 || $0.role == 1 }) else {
 				Logger.tak.error("Cannot fix channel: No primary channel found")
 				return false
 			}
@@ -619,12 +617,9 @@ final class TAKServerManager: ObservableObject {
 			primaryChannel.role = 1
 			primaryChannel.index = 0
 
-			if let mutableChannels = myInfo.channels?.mutableCopy() as? NSMutableOrderedSet {
-				if mutableChannels.contains(primaryChannel) {
-					mutableChannels.remove(primaryChannel)
-					mutableChannels.insert(primaryChannel, at: 0)
-					myInfo.channels = mutableChannels.copy() as? NSOrderedSet
-				}
+			if let idx = myInfo.channels.firstIndex(of: primaryChannel), idx != 0 {
+				myInfo.channels.remove(at: idx)
+				myInfo.channels.insert(primaryChannel, at: 0)
 			}
 
 			try context.save()

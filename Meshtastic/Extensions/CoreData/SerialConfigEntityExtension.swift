@@ -1,12 +1,9 @@
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 
 extension SerialConfigEntity {
-	convenience init(
-		context: NSManagedObjectContext,
-		config: ModuleConfig.SerialConfig
-	) {
-		self.init(context: context)
+	convenience init(config: ModuleConfig.SerialConfig) {
+		self.init()
 		self.enabled = config.enabled
 		self.echo = config.echo
 		self.rxd = Int32(config.rxd)

@@ -8,6 +8,7 @@
 import Foundation
 import MeshtasticProtobufs
 import OSLog
+@preconcurrency import SwiftData
 
 extension AccessoryManager {
 
@@ -280,8 +281,7 @@ extension AccessoryManager {
 			return
 		}
 
-			let messageUsers = UserEntity.fetchRequest()
-			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
+			let messageUsers = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == fromUserNum || $0.num == toUserNum })
 
 			do {
 				let fetchedUsers = try context.fetch(messageUsers)
@@ -290,7 +290,8 @@ extension AccessoryManager {
 					Logger.data.error("🚫 Message Users Not Found, Fail")
 					throw AccessoryError.ioFailed("🚫 Message Users Not Found, Fail")
 				} else if fetchedUsers.count >= 1 {
-					let newMessage = MessageEntity(context: context)
+					let newMessage = MessageEntity()
+					context.insert(newMessage)
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
@@ -340,7 +341,6 @@ extension AccessoryManager {
 									let contactString = try contact.serializedData().base64EncodedString()
 									try? await am.addContactFromURL(base64UrlString: contactString)
 									try context.save()
-									user.objectWillChange.send()
 								} catch {
 									Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
 								}
@@ -383,7 +383,6 @@ extension AccessoryManager {
 							#endif
 						}
 					} catch {
-						context.rollback()
 						let nsError = error as NSError
 						Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError, privacy: .public)")
 						throw error
@@ -459,8 +458,7 @@ extension AccessoryManager {
 			var i: Int32 = 0
 
 			if addChannels {
-				let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(deviceNum))
+				let fetchMyInfoRequest = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
 
 				let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 				if fetchedMyInfo.count != 1 {
@@ -469,7 +467,7 @@ extension AccessoryManager {
 				
 				// We are trying to add a channel so lets get the last index
 				myInfo = fetchedMyInfo[0]
-				i = Int32(myInfo.channels?.count ?? -1)
+				i = Int32(myInfo.channels.count)
 				
 				// Bail out if the index is negative or bigger than our max of 8
 				if i < 0 || i > 8 {
@@ -480,12 +478,8 @@ extension AccessoryManager {
 			for cs in channelSet.settings {
 
 				if addChannels {
-					guard let mutableChannels = myInfo.channels?.mutableCopy() as? NSMutableOrderedSet else {
-						throw AccessoryError.appError("No channels or channel")
-					}
-					
-					// Bail out if there are no channels or if the same channel name already exists
-					if mutableChannels.first(where: { ($0 as AnyObject).name == cs.name }) is ChannelEntity {
+					// Bail out if the same channel name already exists
+					if myInfo.channels.first(where: { $0.name == cs.name }) != nil {
 						throw AccessoryError.appError("Channel already exists")
 					}
 				}
@@ -647,9 +641,9 @@ extension AccessoryManager {
 				wayPointEntity.expire = nil
 			}
 			if waypoint.lockedTo > 0 {
-				wayPointEntity.locked = Int64(waypoint.lockedTo)
+				wayPointEntity.locked = true
 			} else {
-				wayPointEntity.locked = 0
+				wayPointEntity.locked = false
 			}
 			if wayPointEntity.created == nil {
 				wayPointEntity.created = Date()
@@ -660,7 +654,6 @@ extension AccessoryManager {
 				try context.save()
 				Logger.data.info("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum.toHex(), privacy: .public)")
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 			}
@@ -695,14 +688,11 @@ extension AccessoryManager {
 		let logString = String.localizedStringWithFormat("Sent a TraceRoute Packet from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
 		try await send(toRadio, debugDescription: logString)
 
-			let traceRoute = TraceRouteEntity(context: context)
-			let nodes = NodeInfoEntity.fetchRequest()
+			let traceRoute = TraceRouteEntity()
+			context.insert(traceRoute)
+			traceRoute.sent = true
 			// TODO: Not sure what's going on here. We always have a fromNodeNum
-			// if let connectedNum = fromNodeNum {
-			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, fromNodeNum])
-			// } else {
-			//	nodes.predicate = NSPredicate(format: "num == %@", destNum)
-			// }
+			let nodes = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == destNum || $0.num == fromNodeNum })
 			do {
 				let fetchedNodes = try context.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
@@ -713,7 +703,6 @@ extension AccessoryManager {
 					try context.save()
 					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "Unknown".localized), privacy: .public)")
 				} catch {
-					context.rollback()
 					let nsError = error as NSError
 					Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
 				}
@@ -831,7 +820,6 @@ extension AccessoryManager {
 				context.delete(node)
 				try context.save()
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("🚫 Error deleting node from core data: \(nsError, privacy: .public)")
 			}

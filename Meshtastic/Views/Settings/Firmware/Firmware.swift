@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import StoreKit
 import OSLog
 import SwiftDraw
@@ -14,31 +15,31 @@ import UniformTypeIdentifiers
 // 1. THE WRAPPER
 // This handles the fetching safely. It does not run logic in init.
 struct Firmware: View {
-	let node: NodeInfoEntity
-	
-	// Use SwiftUI's native FetchRequest mechanism
-	@FetchRequest var hardwareResults: FetchedResults<DeviceHardwareEntity>
-	
-	init?(node: NodeInfoEntity?) {
-		guard let node = node, let pioEnv = node.myInfo?.pioEnv else { return nil }
+	let node: NodeInfoEntity?
+
+	@Query var hardwareResults: [DeviceHardwareEntity]
+
+	init(node: NodeInfoEntity?) {
 		self.node = node
-		
-		let predicate = NSPredicate(format: "platformioTarget == %@", pioEnv)
-		_hardwareResults = FetchRequest(
-			entity: DeviceHardwareEntity.entity(),
-			sortDescriptors: [],
-			predicate: predicate,
-			animation: .default
-		)
+
+		if let pioEnv = node?.myInfo?.pioEnv {
+			_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
+				hw.platformioTarget == pioEnv
+			})
+		} else {
+			// Return all results; body will handle the missing-pioEnv case
+			_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { _ in false })
+		}
 	}
-	
+
 	var body: some View {
-		if let hardware = hardwareResults.first {
+		if let node, node.myInfo?.pioEnv != nil, let hardware = hardwareResults.first {
 			FirmwareContentView(node: node, hardware: hardware)
 		} else {
-			// Fallback content
 			List {
-				Text("Hardware not found for \(node.myInfo?.pioEnv ?? "unknown")")
+				ContentUnavailableView("Firmware Updates",
+					systemImage: "arrow.triangle.2.circlepath",
+					description: Text("Please reconnect to your device to load firmware information."))
 			}
 		}
 	}
@@ -327,7 +328,7 @@ struct FirmwareHeroImage: View {
 	}
 	
 	private func getSVG() -> SVG? {
-		let images = hardware.images as? Set<DeviceHardwareImageEntity> ?? []
+		let images = hardware.images
 		if let image = images.first,
 		   let data = image.svgData,
 		   let svg = SVG(data: data) {

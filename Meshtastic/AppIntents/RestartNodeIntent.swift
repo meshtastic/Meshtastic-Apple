@@ -19,8 +19,9 @@ struct RestartNodeIntent: AppIntent {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 		// Safely unwrap the connectedNode using if let
+		let context = await MainActor.run { PersistenceController.shared.context }
 		if let connectedPeripheralNum = await AccessoryManager.shared.activeDeviceNum,
-		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: PersistenceController.shared.container.viewContext),
+		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user {
 

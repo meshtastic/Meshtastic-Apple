@@ -1,10 +1,10 @@
-import CoreData
+import SwiftData
 import OSLog
 import SwiftUI
 
 struct DeleteNodeButton: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	var connectedNode: NodeInfoEntity
@@ -65,13 +65,15 @@ struct DeleteNodeButton: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let connectedNode = NodeInfoEntity(context: context)
+	let connectedNode = NodeInfoEntity()
 	connectedNode.num = 987654321
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	return DeleteNodeButton(connectedNode: connectedNode, node: node)
+	DeleteNodeButton(connectedNode: connectedNode, node: node)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }
+*/

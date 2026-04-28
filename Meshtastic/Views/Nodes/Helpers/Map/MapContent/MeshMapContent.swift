@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import MapKit
 import CoreLocation
 import OSLog
@@ -39,16 +40,17 @@ struct MeshMapContent: MapContent {
 	// Map overlays
 	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
 	@Binding var enabledOverlayConfigs: Set<UUID>
+	
+	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true },
+		   sort: \PositionEntity.time, order: .reverse)
+	var positions: [PositionEntity]
 
-	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .none)
-	var positions: FetchedResults<PositionEntity>
-	
-	@FetchRequest(fetchRequest: WaypointEntity.allWaypointssFetchRequest(), animation: .none)
-	var waypoints: FetchedResults<WaypointEntity>
-	
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
-				  predicate: NSPredicate(format: "enabled == true", ""), animation: .none)
-	private var routes: FetchedResults<RouteEntity>
+	@Query(sort: \WaypointEntity.name, order: .reverse)
+	var waypoints: [WaypointEntity]
+
+	@Query(filter: #Predicate<RouteEntity> { $0.enabled == true },
+		   sort: \RouteEntity.name)
+	private var routes: [RouteEntity]
 
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
@@ -57,10 +59,10 @@ struct MeshMapContent: MapContent {
 			if (!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true) {
 				let coordinateForNodePin: CLLocationCoordinate2D = if position.isPreciseLocation {
 					// Precise location: place node pin at actual location.
-					position.coordinate
+					position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 				} else {
 					// Imprecise location: fuzz slightly so overlapping nodes are visible and clickable at highest zoom levels.
-					position.fuzzedCoordinate
+					position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
 				}
 				if 12...15 ~= position.precisionBits || position.precisionBits == 32 {
 					
@@ -131,7 +133,8 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var routeAnnotations: some MapContent {
 		ForEach(routes) { route in
-			if let routeLocations = route.locations, let locations = Array(routeLocations) as? [LocationEntity] {
+			if !route.locations.isEmpty {
+				let locations = route.locations
 				let routeCoords = locations.compactMap {(loc) -> CLLocationCoordinate2D in
 					return loc.locationCoordinate ?? LocationsHandler.DefaultLocation
 				}
@@ -167,7 +170,7 @@ struct MeshMapContent: MapContent {
 	var waypointAnnotations: some MapContent {
 		if waypoints.count > 0, showWaypoints, let waypoints = Array(waypoints) as? [WaypointEntity] {
 			ForEach(waypoints, id: \.self) { waypoint in
-				Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
+				Annotation(waypoint.name ?? "?", coordinate: waypoint.mapCoordinate) {
 					LazyVStack {
 						ZStack {
 							CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)

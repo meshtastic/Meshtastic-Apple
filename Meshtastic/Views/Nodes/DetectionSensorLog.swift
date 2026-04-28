@@ -6,20 +6,21 @@
 //
 
 import SwiftUI
+import SwiftData
 import Charts
 import MeshtasticProtobufs
 import OSLog
 
 struct DetectionSensorLog: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
-	@ObservedObject var node: NodeInfoEntity
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "messageTimestamp", ascending: false)],
-				  predicate: NSPredicate(format: "portNum == %d", Int32(PortNum.detectionSensorApp.rawValue)), animation: .none)
-	private var detections: FetchedResults<MessageEntity>
+	@Bindable var node: NodeInfoEntity
+	@Query(filter: #Predicate<MessageEntity> { $0.portNum == 10 },
+		   sort: \MessageEntity.messageTimestamp, order: .reverse)
+	private var detections: [MessageEntity]
 
 	var body: some View {
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
@@ -140,15 +141,17 @@ struct DetectionSensorLog: View {
 	}
 }
 
+// TODO: Fix preview for SwiftData
+/*
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	let node = NodeInfoEntity(context: context)
+	let node = NodeInfoEntity()
 	node.num = 123456789
-	let user = UserEntity(context: context)
+	let user = UserEntity()
 	user.longName = "Test Node"
 	user.shortName = "TN"
 	node.user = user
-	return DetectionSensorLog(node: node)
+	DetectionSensorLog(node: node)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }
+*/

@@ -5,49 +5,50 @@
 //  Copyright(c) Garth Vander Houwen 11/7/22.
 //
 import Foundation
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 
 extension ChannelEntity {
-	var messagePredicate: NSPredicate {
-		return NSPredicate(format: "channel == %ld AND toUser == nil AND isEmoji == false", self.index)
-	}
-
-	var messageFetchRequest: NSFetchRequest<MessageEntity> {
-		let fetchRequest = MessageEntity.fetchRequest()
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: true)]
-		fetchRequest.predicate = messagePredicate
-		fetchRequest.fetchBatchSize = 50
-		return fetchRequest
-	}
-
+	@MainActor
 	var allPrivateMessages: [MessageEntity] {
-		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = messageFetchRequest
-
-		return (try? context.fetch(fetchRequest)) ?? [MessageEntity]()
+		let context = PersistenceController.shared.context
+		let channelIndex = self.index
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { msg in
+				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+			},
+			sortBy: [SortDescriptor(\.messageTimestamp, order: .forward)]
+		)
+		return (try? context.fetch(descriptor)) ?? []
 	}
 
+	@MainActor
 	var mostRecentPrivateMessage: MessageEntity? {
-		// Most recent channel message (descending, limit 1)
-		let context = PersistenceController.shared.container.viewContext
-		let fetchRequest = messageFetchRequest
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
-		fetchRequest.fetchLimit = 1
-
-		return (try? context.fetch(fetchRequest))?.first
+		let context = PersistenceController.shared.context
+		let channelIndex = self.index
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { msg in
+				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+			},
+			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? context.fetch(descriptor).first
 	}
 
-	func unreadMessages(context: NSManagedObjectContext) -> Int {
-		let fetchRequest = messageFetchRequest
-		fetchRequest.sortDescriptors = [] // sort is irrelevant.
-		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fetchRequest.predicate!, NSPredicate(format: "read == false")])
-
-		return (try? context.count(for: fetchRequest)) ?? 0
+	@MainActor
+	func unreadMessages(context: ModelContext) -> Int {
+		let channelIndex = self.index
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { msg in
+				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false && msg.read == false
+			}
+		)
+		return (try? context.fetchCount(descriptor)) ?? 0
 	}
 
-	// Backwards-compatible property (uses viewContext)
-	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.container.viewContext) }
+	@MainActor
+	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.context) }
 
 	var protoBuf: Channel {
 		var channel = Channel()

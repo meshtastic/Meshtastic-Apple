@@ -10,7 +10,7 @@ import OSLog
 import SwiftUI
 
 struct BluetoothConfig: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
@@ -149,8 +149,7 @@ struct BluetoothConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return BluetoothConfig(node: nil)
+	BluetoothConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

@@ -236,23 +236,17 @@ struct MapLegend: View {
 	}
 
 	private var routeStartSymbol: some View {
-		ZStack {
-			Circle()
-				.fill(Color.green)
-			Circle()
-				.strokeBorder(Color.white, lineWidth: 2)
-		}
-		.frame(width: 15, height: 15)
+		Circle()
+			.fill(Color.green)
+			.strokeBorder(Color.white, lineWidth: 2)
+			.frame(width: 15, height: 15)
 	}
 
 	private var routeEndSymbol: some View {
-		ZStack {
-			Circle()
-				.fill(Color.black)
-			Circle()
-				.strokeBorder(Color.white, lineWidth: 2)
-		}
-		.frame(width: 15, height: 15)
+		Circle()
+			.fill(Color.black)
+			.strokeBorder(Color.white, lineWidth: 2)
+			.frame(width: 15, height: 15)
 	}
 
 	private var routeLineSymbol: some View {

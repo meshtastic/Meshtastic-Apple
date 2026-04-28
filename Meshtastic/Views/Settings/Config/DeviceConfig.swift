@@ -11,7 +11,7 @@ import SwiftUI
 
 struct DeviceConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -175,7 +175,7 @@ struct DeviceConfig: View {
 										try await accessoryManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!)
 										try await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
-										await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+										await PersistenceController.shared.clearDatabase(includeRoutes: false)
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("NodeDB Reset Failed")
@@ -200,7 +200,7 @@ struct DeviceConfig: View {
 										try await accessoryManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!)
 										try await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
-										await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+										await PersistenceController.shared.clearDatabase(includeRoutes: false)
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("Factory Reset Failed")
@@ -213,7 +213,7 @@ struct DeviceConfig: View {
 										try await accessoryManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!, resetDevice: true)
 										try? await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
-										await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+										await PersistenceController.shared.clearDatabase(includeRoutes: false)
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("Factory Reset Failed")
@@ -347,8 +347,7 @@ struct DeviceConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return DeviceConfig(node: nil)
+	DeviceConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

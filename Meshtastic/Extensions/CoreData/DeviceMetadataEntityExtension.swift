@@ -1,13 +1,10 @@
 import Foundation
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 
 extension DeviceMetadataEntity {
-	convenience init(
-		context: NSManagedObjectContext,
-		metadata: DeviceMetadata
-	) {
-		self.init(context: context)
+	convenience init(metadata: DeviceMetadata) {
+		self.init()
 		self.time = Date()
 		self.deviceStateVersion = Int32(metadata.deviceStateVersion)
 		self.canShutdown = metadata.canShutdown

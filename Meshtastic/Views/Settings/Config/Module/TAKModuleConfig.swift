@@ -2,12 +2,12 @@
 //  TAKModuleConfig.swift
 //  Meshtastic
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import MeshtasticProtobufs
 
 struct TAKModuleConfig: View {
-	@Environment(\.managedObjectContext) private var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
@@ -262,8 +262,7 @@ struct TAKModuleConfig: View {
 }
 
 #Preview {
-	let context = PersistenceController.preview.container.viewContext
-	return TAKModuleConfig(node: nil)
+	TAKModuleConfig(node: nil)
 		.environmentObject(AccessoryManager.shared)
-		.environment(\.managedObjectContext, context)
+		.modelContainer(PersistenceController.preview.container)
 }

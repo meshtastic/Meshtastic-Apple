@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 @preconcurrency import CoreBluetooth
 import SwiftUI
 import OSLog
@@ -350,7 +351,7 @@ actor BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
-	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) {
+	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
 		/// GVH - To test this you need to simulate the app getting killed in the background by the OS you can do this by stopping  the debugger while the app is connected to a device in the background
 		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
 		/// look in the logs for the messages below.
@@ -374,20 +375,27 @@ actor BLETransport: Transport {
 		
 		// Get the device name
 		if let nodeNum {
-			let fetchMyInfoRequest = NodeInfoEntity.fetchRequest()
-			fetchMyInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-			do {
-				let fetchedMyInfo = try PersistenceController.shared.container.viewContext.fetch(fetchMyInfoRequest)
-				if fetchedMyInfo.count > 0 {
-					if let longName = fetchedMyInfo[0].user?.longName {
-						device.longName = longName
+			let nodeNumVal = Int64(nodeNum)
+			let descriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate { $0.num == nodeNumVal }
+			)
+			let names: (String?, String?) = await MainActor.run {
+				do {
+					let context = PersistenceController.shared.context
+					let fetchedNodes = try context.fetch(descriptor)
+					if let first = fetchedNodes.first {
+						return (first.user?.longName, first.user?.shortName)
 					}
-					if let shortName = fetchedMyInfo[0].user?.shortName {
-						device.shortName = shortName
-					}
+				} catch {
+					// No-op
 				}
-			} catch {
-				// No-op
+				return (nil, nil)
+			}
+			if let longName = names.0 {
+				device.longName = longName
+			}
+			if let shortName = names.1 {
+				device.shortName = shortName
 			}
 		}
 		

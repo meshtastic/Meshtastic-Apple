@@ -11,9 +11,8 @@ import MapKit
 
 struct NodeInfoItem: View {
 
-	@ObservedObject var node: NodeInfoEntity
-	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
-	
+	@Bindable var node: NodeInfoEntity
+
 	var body: some View {
 		if let user = node.user {
 		ViewThatFits(in: .horizontal) {
