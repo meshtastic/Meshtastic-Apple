@@ -11,7 +11,7 @@ extension Date {
 
 	var lastHeard: String {
 		if self.timeIntervalSince1970 > 0 && self < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
-			formatted()
+			formatted(date: .numeric, time: .shortened)
 		} else {
 			"Unknown Age".localized
 		}
