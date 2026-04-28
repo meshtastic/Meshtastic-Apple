@@ -30,6 +30,14 @@ struct DiscoveryHistoryView: View {
 					} label: {
 						sessionRow(session)
 					}
+					.contextMenu {
+						Button(role: .destructive) {
+							context.delete(session)
+							try? context.save()
+						} label: {
+							Label("Delete", systemImage: "trash")
+						}
+					}
 				}
 				.onDelete(perform: deleteSessions)
 			}

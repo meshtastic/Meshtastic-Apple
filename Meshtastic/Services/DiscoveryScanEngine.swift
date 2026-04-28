@@ -731,6 +731,17 @@ extension DiscoveryScanEngine {
 			result.averageAirtimeRate = Double(airtime)
 		}
 
+		// Raw local stats (mirrors live activity data)
+		result.numPacketsTx = Int(latest.numPacketsTx)
+		result.numPacketsRx = Int(latest.numPacketsRx)
+		result.numPacketsRxBad = Int(latest.numPacketsRxBad)
+		result.numRxDupe = Int(latest.numRxDupe)
+		result.numTxRelay = Int(latest.numTxRelay)
+		result.numTxRelayCanceled = Int(latest.numTxRelayCanceled)
+		if let uptime = latest.uptimeSeconds {
+			result.uptimeSeconds = Int(uptime)
+		}
+
 		// Packet success/failure rates
 		let totalTx = Int(latest.numPacketsTx)
 		let totalRx = Int(latest.numPacketsRx)

@@ -320,6 +320,7 @@
 		DD74ED0D2DC6A0C90059AC10 /* DeviceOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD74ED0C2DC6A0B80059AC10 /* DeviceOnboarding.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */; };
+		AA11223344556677AABB0001 /* DiscoveryTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11223344556677AABB0002 /* DiscoveryTips.swift */; };
 		DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */; };
 		DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093E2AA1B146007A8BF0 /* UIColor.swift */; };
 		DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD798B062915928D005217CD /* ChannelMessageList.swift */; };
@@ -840,6 +841,7 @@
 		DD74ED0C2DC6A0B80059AC10 /* DeviceOnboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceOnboarding.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTips.swift; sourceTree = "<group>"; };
+		AA11223344556677AABB0002 /* DiscoveryTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryTips.swift; sourceTree = "<group>"; };
 		DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelTips.swift; sourceTree = "<group>"; };
 		DD77093E2AA1B146007A8BF0 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		DD798B062915928D005217CD /* ChannelMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageList.swift; sourceTree = "<group>"; };
@@ -1748,6 +1750,7 @@
 				DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */,
 				DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */,
 				DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */,
+				AA11223344556677AABB0002 /* DiscoveryTips.swift */,
 				DDC1B8192AB5377B00C71E39 /* MessagesTips.swift */,
 			);
 			path = Tips;
@@ -2564,6 +2567,7 @@
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */,
 				DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */,
+				AA11223344556677AABB0001 /* DiscoveryTips.swift in Sources */,
 				23C2BE272EE9F4BD00F6A997 /* DeviceHardwareEntity.swift in Sources */,
 				D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */,
 				DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */,

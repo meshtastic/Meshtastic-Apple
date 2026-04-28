@@ -25,6 +25,17 @@ final class DiscoveryPresetResultEntity {
 	var packetFailureRate: Double = 0.0
 	var aiSummaryText: String = ""
 
+	// Raw local stats (mirrors live activity data)
+	var numPacketsTx: Int = 0
+	var numPacketsRx: Int = 0
+	var numPacketsRxBad: Int = 0
+	var numRxDupe: Int = 0
+	var numTxRelay: Int = 0
+	var numTxRelayCanceled: Int = 0
+	var numOnlineNodes: Int = 0
+	var numTotalNodes: Int = 0
+	var uptimeSeconds: Int = 0
+
 	var session: DiscoverySessionEntity?
 
 	@Relationship(deleteRule: .nullify, inverse: \DiscoveredNodeEntity.presetResult)

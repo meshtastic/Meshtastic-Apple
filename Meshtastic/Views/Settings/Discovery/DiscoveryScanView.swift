@@ -11,6 +11,7 @@ import MeshtasticProtobufs
 import OSLog
 import SwiftData
 import SwiftUI
+import TipKit
 
 struct DiscoveryScanView: View {
 	@Environment(\.modelContext) private var context
@@ -41,8 +42,12 @@ struct DiscoveryScanView: View {
 		ModemPresets.allCases
 	}
 
+	private let discoveryScanTip = DiscoveryScanTip()
+
 	var body: some View {
 		List {
+			TipView(discoveryScanTip)
+
 			if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
 				scanProgressSection
 			}

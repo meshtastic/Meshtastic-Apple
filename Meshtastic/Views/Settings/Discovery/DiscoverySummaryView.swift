@@ -28,6 +28,7 @@ struct DiscoverySummaryView: View {
 			rfHealthSection
 			aiRecommendationSection
 		}
+		.listSectionSpacing(.compact)
 		.navigationTitle("Scan Summary")
 		.task {
 			loadCachedPresetSummaries()
@@ -179,29 +180,88 @@ struct DiscoverySummaryView: View {
 
 	private var rfHealthSection: some View {
 		Section(header: Text("RF Health")) {
-			let hasRFData = session.presetResults.contains { $0.packetSuccessRate > 0 || $0.packetFailureRate > 0 }
+			let hasRFData = session.presetResults.contains {
+				$0.packetSuccessRate > 0 || $0.packetFailureRate > 0
+				|| $0.numPacketsTx > 0 || $0.numPacketsRx > 0
+				|| $0.averageChannelUtilization > 0 || $0.averageAirtimeRate > 0
+			}
 			if hasRFData {
-				ForEach(session.presetResults.filter { $0.packetSuccessRate > 0 || $0.packetFailureRate > 0 }, id: \.presetName) { result in
-					VStack(alignment: .leading, spacing: 4) {
-						Text(result.presetName)
-							.font(.subheadline)
-							.fontWeight(.medium)
-						HStack {
-							Label(String(format: "%.1f%% success", result.packetSuccessRate * 100), systemImage: "checkmark.circle")
-								.foregroundStyle(.green)
-								.font(.caption)
-							Spacer()
-							Label(String(format: "%.1f%% failure", result.packetFailureRate * 100), systemImage: "xmark.circle")
-								.foregroundStyle(.red)
-								.font(.caption)
-						}
-					}
+				ForEach(session.presetResults.filter {
+					$0.packetSuccessRate > 0 || $0.packetFailureRate > 0
+					|| $0.numPacketsTx > 0 || $0.numPacketsRx > 0
+					|| $0.averageChannelUtilization > 0 || $0.averageAirtimeRate > 0
+				}, id: \.presetName) { result in
+					rfHealthCard(result)
 				}
 			} else {
 				Text("No LocalStats data collected")
 					.foregroundStyle(.secondary)
 			}
 		}
+	}
+
+	@ViewBuilder
+	private func rfHealthCard(_ result: DiscoveryPresetResultEntity) -> some View {
+		let errorRate = result.numPacketsRx > 0
+			? (Double(result.numPacketsRxBad) / Double(result.numPacketsRx)) * 100
+			: 0.0
+
+		VStack(alignment: .leading, spacing: 6) {
+			Text(result.presetName)
+				.font(.subheadline)
+				.fontWeight(.medium)
+
+			HStack(alignment: .top, spacing: 16) {
+				// Left column
+				VStack(alignment: .leading, spacing: 4) {
+					Label(String(format: "%.1f%%", result.averageChannelUtilization), systemImage: "chart.bar.fill")
+						.foregroundStyle(result.averageChannelUtilization < 25 ? .green : (result.averageChannelUtilization > 50 ? .red : .orange))
+					Label(String(format: "%.1f%%", result.averageAirtimeRate), systemImage: "clock.arrow.circlepath")
+						.foregroundStyle(result.averageAirtimeRate > 10 ? .red : (result.averageAirtimeRate > 5 ? .orange : .green))
+					Label("\(result.numPacketsTx) sent", systemImage: "arrow.up.circle")
+						.foregroundStyle(.blue)
+					Label("\(result.numPacketsRx) received", systemImage: "arrow.down.circle")
+						.foregroundStyle(.blue)
+				}
+
+				Spacer()
+
+				// Right column
+				VStack(alignment: .leading, spacing: 4) {
+					Label(String(format: "%.1f%% errors", errorRate), systemImage: "xmark.circle")
+						.foregroundStyle(errorRate > 10 ? .red : (errorRate > 5 ? .orange : .green))
+					Label("\(result.numTxRelay) relayed", systemImage: "arrow.triangle.swap")
+						.foregroundStyle(.purple)
+					Label("\(result.numTxRelayCanceled) relay canceled", systemImage: "arrow.triangle.pull")
+						.foregroundStyle(.orange)
+					Label("\(result.numRxDupe) duplicate", systemImage: "doc.on.doc")
+						.foregroundStyle(.secondary)
+				}
+			}
+			.font(.caption)
+
+			// Footer: nodes + uptime
+			HStack(spacing: 8) {
+				if result.numTotalNodes > 0 {
+					Label("\(result.numOnlineNodes)/\(result.numTotalNodes) nodes online", systemImage: "person.2")
+						.foregroundStyle(.secondary)
+				}
+				Spacer()
+				if result.uptimeSeconds > 0 {
+					Label(uptimeString(result.uptimeSeconds), systemImage: "clock")
+						.foregroundStyle(.secondary)
+				}
+			}
+			.font(.caption2)
+		}
+		.padding(.vertical, 2)
+	}
+
+	private func uptimeString(_ seconds: Int) -> String {
+		if seconds >= 3600 {
+			return "\(seconds / 3600)h \((seconds % 3600) / 60)m"
+		}
+		return "\(seconds / 60)m \(seconds % 60)s"
 	}
 
 	// MARK: - AI Recommendation (T031)
@@ -211,7 +271,7 @@ struct DiscoverySummaryView: View {
 			if isGeneratingAI {
 				HStack {
 					ProgressView()
-					Text("Generating AI recommendation...")
+					Text("Generating local AI recommendation...")
 						.foregroundStyle(.secondary)
 				}
 			} else if !aiSummary.isEmpty {
@@ -347,7 +407,6 @@ struct DiscoverySummaryView: View {
 	private func buildAIPrompt() -> String {
 		var prompt = "Analyze this Meshtastic mesh radio discovery scan and recommend the best modem preset. Be concise (3-4 sentences).\n\n"
 
-		// Preset reference data from meshtastic.org
 		prompt += "LoRa Preset Reference:\n"
 		prompt += "  LongFast: 250kHz BW, SF11, 1.07kbps, 153dB link budget. Default. Good range but high airtime per packet.\n"
 		prompt += "  LongModerate: 125kHz BW, SF11, 0.34kbps, 155.5dB link budget. Maximum range, very slow.\n"
