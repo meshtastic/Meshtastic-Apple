@@ -378,7 +378,7 @@ struct WaypointForm: View {
 					.padding(.bottom)
 					/// Created
 					Label {
-						Text("Created: \(waypoint.created?.formatted() ?? "?")")
+						Text("Created: \(waypoint.created?.formatted(date: .numeric, time: .shortened) ?? "?")")
 							.foregroundColor(.primary)
 					} icon: {
 						Image(systemName: "clock.badge.checkmark")
@@ -388,7 +388,7 @@ struct WaypointForm: View {
 					/// Updated
 					if waypoint.lastUpdated != nil {
 						Label {
-							Text("Updated: \(waypoint.lastUpdated?.formatted() ?? "?")")
+							Text("Updated: \(waypoint.lastUpdated?.formatted(date: .numeric, time: .shortened) ?? "?")")
 								.foregroundColor(.primary)
 						} icon: {
 							Image(systemName: "clock.arrow.circlepath")
@@ -399,7 +399,7 @@ struct WaypointForm: View {
 					/// Expires
 					if waypoint.expire != nil {
 						Label {
-							Text("Expires: \(waypoint.expire?.formatted() ?? "?")")
+							Text("Expires: \(waypoint.expire?.formatted(date: .numeric, time: .shortened) ?? "?")")
 								.foregroundColor(.primary)
 						} icon: {
 							Image(systemName: "hourglass.bottomhalf.filled")

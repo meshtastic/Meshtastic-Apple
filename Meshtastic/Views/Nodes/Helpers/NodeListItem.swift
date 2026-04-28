@@ -156,7 +156,7 @@ struct NodeListItem: View {
 					if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 						IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 									imageColor: node.isOnline ? .green : .orange,
-									text: node.lastHeard?.formatted() ?? "Unknown Age".localized)
+							text: node.lastHeard?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 					}
 					let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 					IconAndText(systemName: role?.systemName ?? "figure",

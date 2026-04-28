@@ -63,8 +63,6 @@ struct DetectionSensorLog: View {
 				}
 				.frame(minHeight: 250)
 			}
-			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
 				Table(detections) {
@@ -73,7 +71,7 @@ struct DetectionSensorLog: View {
 					}
 
 					TableColumn("Timestamp") { d in
-						Text(d.timestamp.formattedDate(format: dateFormatString))
+						Text(d.timestamp.formatted(date: .numeric, time: .shortened))
 					}
 					.width(min: 180)
 				}
@@ -96,7 +94,7 @@ struct DetectionSensorLog: View {
 							GridRow {
 								Text(d.messagePayload ?? "Detected")
 									.font(.caption)
-								Text(d.timestamp.formattedDate(format: dateFormatString))
+								Text(d.timestamp.formatted(date: .numeric, time: .shortened))
 									.font(.caption)
 							}
 						}
