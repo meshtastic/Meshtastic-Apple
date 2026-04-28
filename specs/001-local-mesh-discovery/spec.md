@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-local-mesh-discovery`
 **Created**: 2026-04-27
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "Local Mesh Discovery — a high-fidelity diagnostic and community-mapping tool that cycles through modem presets to audit the local RF environment"
 
 ## User Scenarios & Testing *(mandatory)*
@@ -152,7 +152,7 @@ flowchart TD
 
 - **FR-001**: The system MUST present a multi-select list of modem presets (LongFast, LongSlow, LongModerate, LongTurbo, MedSlow, MedFast, ShortSlow, ShortFast, ShortTurbo) for the user to include in a scan.
 - **FR-002**: The LORA_24 preset MUST only appear in the preset list when the connected hardware has a "2.4GHz" tag in the device hardware database.
-- **FR-003**: The system MUST allow the user to configure a dwell time per preset in 15-minute increments with a minimum of 15 minutes and a maximum of 180 minutes (3 hours, aligned with the NodeInfo broadcast interval).
+- **FR-003**: The system MUST allow the user to configure a dwell time per preset via a picker with options: 1, 5, 15, 30, 45, 60, 90, 120, and 180 minutes. The default is 15 minutes.
 - **FR-004**: The system MUST send an `AdminMessage` with `setConfig.lora` to change the radio's modem preset when transitioning between scan presets.
 - **FR-005**: The system MUST detect whether a config change causes a radio reboot and, if so, automatically reconnect via BLE and resume the dwell timer.
 - **FR-006**: During each dwell window the system MUST ingest and associate the following packet types with the active scan preset: Position, NodeInfo, NeighborInfo, DeviceMetrics, EnvironmentMetrics, text messages (`TEXT_MESSAGE_APP`), and LocalStats.
@@ -167,11 +167,18 @@ flowchart TD
 - **FR-015**: The system MUST allow the user to stop a scan at any time, save partial results, and restore the radio's original ("home") modem preset.
 - **FR-016**: The system MUST provide a Session History view listing all past discovery sessions with the ability to view details or delete sessions.
 - **FR-017**: Discovery sessions MUST be retained indefinitely in SwiftData. The only removal mechanism is explicit user deletion via the Session History view.
+- **FR-018**: The system MUST provide a PDF export of the scan summary report via a toolbar share button. The PDF MUST include: a branded header banner with logo and session date, session overview metrics, a map snapshot (via `MKMapSnapshotter`) showing discovered nodes and user position, per-preset result cards with stat grids, RF health metrics, and the AI recommendation.
+- **FR-019**: The system MUST display all distances using locale-aware formatting via `MeasurementFormatter` with `.naturalScale` (auto-converts meters to km/mi based on device locale).
+- **FR-020**: The system MUST display the dwell time per preset in the scan summary view (preset card header) and in the session overview (total dwell time summed across all presets). Dwell duration is formatted as `Xm` or `Xh Ym`.
+- **FR-021**: The system MUST generate per-preset AI summaries (1–2 sentence analysis) for each preset with more than one discovered node, using the on-device Foundation Model when available.
+- **FR-022**: The Discovery Map MUST auto-zoom to fit all discovered nodes and the user's position with 1.6× padding and a minimum span of 0.005° to prevent over-zoom. The map MUST animate smoothly (0.8s ease-in-out) when new nodes are discovered.
+- **FR-023**: The system MUST record the user's latitude and longitude on the `DiscoverySessionEntity` at scan start for use in map rendering and distance calculations.
+- **FR-024**: The system MUST store raw `LocalStats` fields on `DiscoveryPresetResultEntity` (numPacketsTx, numPacketsRx, numPacketsRxBad, numRxDupe, numTxRelay, numTxRelayCanceled, numOnlineNodes, numTotalNodes, uptimeSeconds) for detailed RF health reporting.
 
 ### Key Entities
 
-- **DiscoverySession**: A single scan run. Attributes: timestamp, presets scanned (list), total unique nodes found (deduplicated by node number across all presets), average channel utilization, total text messages counted, total sensor packets counted, furthest node distance, completion status (complete / stopped / interrupted), AI summary text, home preset (original preset to restore).
-- **DiscoveryPresetResult**: Per-preset data within a session. Attributes: preset name, dwell duration, unique nodes found, direct neighbor count, mesh neighbor count, message count, sensor packet count, average channel utilization, average airtime rate, packet success rate, packet failure rate.
+- **DiscoverySession**: A single scan run. Attributes: timestamp, presets scanned (list), total unique nodes found (deduplicated by node number across all presets), average channel utilization, total text messages counted, total sensor packets counted, furthest node distance, completion status (complete / stopped / interrupted), AI summary text, home preset (original preset to restore), user latitude, user longitude.
+- **DiscoveryPresetResult**: Per-preset data within a session. Attributes: preset name, dwell duration (seconds), unique nodes found, direct neighbor count, mesh neighbor count, infrastructure node count, message count, sensor packet count, average channel utilization, average airtime rate, packet success rate, packet failure rate, AI summary text, raw LocalStats fields (numPacketsTx, numPacketsRx, numPacketsRxBad, numRxDupe, numTxRelay, numTxRelayCanceled, numOnlineNodes, numTotalNodes, uptimeSeconds).
 - **DiscoveredNode**: A node observed during a session. Attributes: node number, short name, long name, neighbor type (direct / mesh), latitude, longitude, distance from user, hop count, SNR, RSSI, message count, sensor packet count, preset on which discovered.
 
 ## Success Criteria *(mandatory)*

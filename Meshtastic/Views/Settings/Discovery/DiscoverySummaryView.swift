@@ -78,6 +78,10 @@ struct DiscoverySummaryView: View {
 		Section(header: Text("Session Overview")) {
 			LabeledContent("Date", value: session.timestamp.formatted(date: .abbreviated, time: .shortened))
 			LabeledContent("Presets Scanned", value: session.presetsScanned.replacingOccurrences(of: ",", with: ", "))
+			let totalDwell = session.presetResults.reduce(0) { $0 + $1.dwellDurationSeconds }
+			if totalDwell > 0 {
+				LabeledContent("Total Dwell Time", value: formatDwellDuration(totalDwell))
+			}
 			LabeledContent("Total Unique Nodes", value: "\(session.totalUniqueNodes)")
 			LabeledContent("Text Messages", value: "\(session.totalTextMessages)")
 			LabeledContent("Sensor Packets", value: "\(session.totalSensorPackets)")
@@ -135,6 +139,15 @@ struct DiscoverySummaryView: View {
 							.foregroundStyle(.secondary)
 					}
 					.font(rowFont)
+					if result.dwellDurationSeconds > 0 {
+						HStack(spacing: 4) {
+							Image(systemName: "timer")
+								.foregroundStyle(.secondary)
+							Text(formatDwellDuration(result.dwellDurationSeconds))
+								.foregroundStyle(.secondary)
+						}
+						.font(rowFont)
+					}
 				}
 			}
 
@@ -536,6 +549,15 @@ struct DiscoverySummaryView: View {
 		Label(status.capitalized, systemImage: icon)
 			.foregroundStyle(color)
 			.font(.callout)
+	}
+
+	private func formatDwellDuration(_ seconds: Int) -> String {
+		if seconds >= 3600 {
+			let hours = seconds / 3600
+			let mins = (seconds % 3600) / 60
+			return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
+		}
+		return "\(seconds / 60)m"
 	}
 
 	private func formatDistance(_ meters: Double) -> String {

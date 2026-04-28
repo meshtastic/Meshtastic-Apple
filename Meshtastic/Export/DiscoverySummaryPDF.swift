@@ -201,6 +201,10 @@ enum DiscoverySummaryPDF {
 
 			drawSectionHeading("Session Overview")
 			drawRow("Presets Scanned", session.presetsScanned.replacingOccurrences(of: ",", with: ", "))
+			let totalDwell = session.presetResults.reduce(0) { $0 + $1.dwellDurationSeconds }
+			if totalDwell > 0 {
+				drawRow("Total Dwell Time", formatDwellDuration(totalDwell))
+			}
 			drawRow("Total Unique Nodes", "\(session.totalUniqueNodes)")
 			drawRow("Text Messages", "\(session.totalTextMessages)")
 			drawRow("Sensor Packets", "\(session.totalSensorPackets)")
@@ -270,6 +274,9 @@ enum DiscoverySummaryPDF {
 				drawStatPair("Sensor Pkts", "\(result.sensorPacketCount)", x: col1)
 				drawStatPair("Ch Util", result.averageChannelUtilization > 0 ? String(format: "%.1f%%", result.averageChannelUtilization) : "—", x: col2)
 				drawStatPair("Airtime", result.averageAirtimeRate > 0 ? String(format: "%.2f%%", result.averageAirtimeRate) : "—", x: col3)
+				if result.dwellDurationSeconds > 0 {
+					drawStatPair("Dwell Time", formatDwellDuration(result.dwellDurationSeconds), x: col4)
+				}
 				y += 26
 
 				// Per-preset AI summary
@@ -292,13 +299,18 @@ enum DiscoverySummaryPDF {
 			// MARK: RF Health
 
 			let hasRFData = session.presetResults.contains {
-				$0.numPacketsTx > 0 || $0.numPacketsRx > 0 || $0.packetSuccessRate > 0
+				$0.packetSuccessRate > 0 || $0.packetFailureRate > 0
+				|| $0.numPacketsTx > 0 || $0.numPacketsRx > 0
+				|| $0.averageChannelUtilization > 0 || $0.averageAirtimeRate > 0
 			}
 
 			if hasRFData {
 				drawSectionHeading("RF Health")
 
-				for result in session.presetResults where result.numPacketsTx > 0 || result.numPacketsRx > 0 {
+				for result in session.presetResults where
+					result.packetSuccessRate > 0 || result.packetFailureRate > 0
+					|| result.numPacketsTx > 0 || result.numPacketsRx > 0
+					|| result.averageChannelUtilization > 0 || result.averageAirtimeRate > 0 {
 					checkPage(needed: 80)
 
 					let presetAttrs: [NSAttributedString.Key: Any] = [.font: presetTitleFont, .foregroundColor: black]
@@ -453,5 +465,14 @@ enum DiscoverySummaryPDF {
 			return "\(seconds / 3600)h \((seconds % 3600) / 60)m"
 		}
 		return "\(seconds / 60)m \(seconds % 60)s"
+	}
+
+	private static func formatDwellDuration(_ seconds: Int) -> String {
+		if seconds >= 3600 {
+			let hours = seconds / 3600
+			let mins = (seconds % 3600) / 60
+			return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
+		}
+		return "\(seconds / 60)m"
 	}
 }

@@ -41,7 +41,7 @@ struct RadarSweepView: View {
 						width: radius * 2,
 						height: radius * 2
 					))
-context.stroke(outerRing, with: .color(.green.opacity(0.35)), lineWidth: 4)
+context.stroke(outerRing, with: .color(.green.opacity(0.35)), lineWidth: 6)
 
 					// Expanding pulse rings — staggered, radiate outward and fade
 					for i in 0..<pulseRingCount {
@@ -66,12 +66,12 @@ context.stroke(outerRing, with: .color(.green.opacity(0.35)), lineWidth: 4)
 					var hLine = Path()
 					hLine.move(to: CGPoint(x: center.x - radius, y: center.y))
 					hLine.addLine(to: CGPoint(x: center.x + radius, y: center.y))
-context.stroke(hLine, with: .color(.green.opacity(0.04)), lineWidth: 1.5)
+context.stroke(hLine, with: .color(.green.opacity(0.12)), lineWidth: 5)
 
 					var vLine = Path()
 					vLine.move(to: CGPoint(x: center.x, y: center.y - radius))
 					vLine.addLine(to: CGPoint(x: center.x, y: center.y + radius))
-context.stroke(vLine, with: .color(.green.opacity(0.04)), lineWidth: 1.5)
+context.stroke(vLine, with: .color(.green.opacity(0.12)), lineWidth: 5)
 
 					// Sweep cone — 60° trailing fade
 					let sweepAngle = Angle.degrees(rotation)

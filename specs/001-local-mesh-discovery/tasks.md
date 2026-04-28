@@ -163,6 +163,57 @@
 
 ---
 
+## Phase 9: Post-Implementation Polish & Enhancements
+
+**Purpose**: Map UX improvements, locale-aware formatting, PDF export, dwell time display, per-preset AI summaries
+
+### Map Polish (US2)
+
+- [X] T049 [US2] Implement auto-zoom with 1.6× padding in `DiscoveryMapView` — compute `fittedRegion` from all node positions + user position with min span clamp of 0.005° to prevent over-zoom (FR-022)
+- [X] T050 [US2] Add animated re-frame on node discovery in `DiscoveryMapView` — `.onChange(of: nodesWithPosition.count)` triggers 0.8s ease-in-out animation to updated `fittedRegion` (FR-022)
+- [X] T051 [US2] Improve node annotations in `DiscoveryMapView` — use `CircleText` with color derived from node number (deterministic hash), display short name or hex suffix, show role icon below annotation
+- [X] T052 [US2] Add platform-responsive map sizing in `DiscoveryScanView` — macOS Catalyst 500–700pt, iPad 450pt, iPhone 300pt via `#if targetEnvironment(macCatalyst)` and `UIDevice.current.userInterfaceIdiom`
+
+### Locale-Aware Distance Formatting (US3)
+
+- [X] T053 [US3] Replace raw meter values with `MeasurementFormatter` in `DiscoverySummaryView` — use `Measurement<UnitLength>` with `.naturalScale` for automatic m→km/mi conversion based on device locale (FR-019)
+
+### Dwell Time Picker Update (US1)
+
+- [X] T054 [US1] Update dwell time picker in `DiscoveryScanView` from 15-min-increment stepper to `Picker` with options: 1, 5, 15, 30, 45, 60, 90, 120, 180 minutes; default 15 min (FR-003)
+
+### Dwell Time Display (US3)
+
+- [X] T055 [US3] Add total dwell time row to `sessionOverviewSection` in `DiscoverySummaryView` — sum `session.presetResults.reduce(0) { $0 + $1.dwellDurationSeconds }`, display with `formatDwellDuration()` helper (FR-020)
+- [X] T056 [US3] Add per-preset dwell time badge to preset card header in `DiscoverySummaryView` — show timer icon + formatted duration when `result.dwellDurationSeconds > 0` (FR-020)
+
+### Per-Preset AI Summaries (US3)
+
+- [X] T057 [US3] Implement per-preset Foundation Model summaries in `DiscoverySummaryView` — for each preset with `uniqueNodesFound > 1`, generate 1–2 sentence analysis via `buildPresetPrompt(_:)` with preset-specific context; cache in `presetSummaries` dictionary; show loading state with `ProgressView` (FR-021)
+
+### PDF Export (US3)
+
+- [X] T058 [US3] Create `PDFDocument` `FileDocument` struct in `Meshtastic/Export/DiscoverySummaryPDF.swift` — wraps `pdfData: Data`, conforms to `UTType.pdf` (FR-018)
+- [X] T059 [US3] Implement `DiscoverySummaryPDF.generate(session:)` async PDF generator — `UIGraphicsPDFRenderer` with US Letter (612×792pt), 48pt margins, multi-page support with automatic page breaks (FR-018)
+- [X] T060 [US3] Implement PDF header banner — green background bar with "logo-white" asset at 32pt height (100:55 aspect ratio), title "Meshtastic Discovery Scan Report", subtitle with session timestamp (FR-018)
+- [X] T061 [US3] Implement PDF Session Overview section — presets scanned, total dwell time, unique nodes, messages, sensors, furthest distance (locale-aware), channel utilization, status (FR-018, FR-019, FR-020)
+- [X] T062 [US3] Implement `snapshotMap(session:)` async map capture — `MKMapSnapshotter` at 1032×560 (2×), `.mutedStandard` style, green node dots + orange user dot, 1.6× padding, 0.005° min span, rounded-rect with border (FR-018)
+- [X] T063 [US3] Implement PDF Per-Preset Results section — 4-column stat grid (Direct, Mesh, Infrastructure, Messages; Sensors, Ch Util, Airtime, Dwell Time), per-preset AI summary text, subtle dividers (FR-018, FR-020)
+- [X] T064 [US3] Implement PDF RF Health section — per-preset LocalStats with 4-column stats (Ch Util, Airtime, Packets Tx/Rx; Error Rate, Relayed, Relay Canceled, Duplicates), node online ratio + uptime footer (FR-018, FR-024)
+- [X] T065 [US3] Implement PDF AI Recommendation section — render `session.aiSummaryText` as body copy when available (FR-018)
+- [X] T066 [US3] Implement PDF page footers — "Meshtastic Discovery Scan Report" left, "Page N" right, separator line, 8.5pt caption font (FR-018)
+- [X] T067 [US3] Add PDF export toolbar button to `DiscoverySummaryView` — async generation with `ProgressView` spinner, `.fileExporter` with default filename "Meshtastic Scan YYYY-MM-DD" (FR-018)
+- [X] T068 [US3] Add locale-aware distance formatting to PDF — `formatDistance()` using `MeasurementFormatter` with `.naturalScale` (FR-019)
+- [X] T069 [US3] Add dwell time to PDF Session Overview and Per-Preset stat grid — `formatDwellDuration()` helper matching view formatting (FR-020)
+
+### Model Additions
+
+- [X] T070 [P] Add `userLatitude: Double` and `userLongitude: Double` to `DiscoverySessionEntity` for map rendering and distance calculations (FR-023)
+- [X] T071 [P] Add `dwellDurationSeconds: Int` to `DiscoveryPresetResultEntity` — set by scan engine on preset shift (FR-020)
+- [X] T072 [P] Add raw LocalStats fields to `DiscoveryPresetResultEntity` — `numPacketsTx`, `numPacketsRx`, `numPacketsRxBad`, `numRxDupe`, `numTxRelay`, `numTxRelayCanceled`, `numOnlineNodes`, `numTotalNodes`, `uptimeSeconds` (FR-024)
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -175,6 +226,7 @@
 - **User Story 4 (Phase 6)**: Depends on Phase 2 + Phase 3 (needs persisted sessions)
 - **User Story 5 (Phase 7)**: Depends on Phase 2 only (just preset picker gating)
 - **Polish (Phase 8)**: Depends on all desired stories being complete
+- **Post-Implementation Polish (Phase 9)**: Depends on Phase 8 — map UX, formatting, PDF export, dwell display
 
 ### User Story Dependencies
 
