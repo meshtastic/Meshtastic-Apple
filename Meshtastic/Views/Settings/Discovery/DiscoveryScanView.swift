@@ -134,8 +134,6 @@ struct DiscoveryScanView: View {
 	private var dwellConfigSection: some View {
 		Section(header: Text("Dwell Time Per Preset")) {
 			Picker("Dwell Duration", selection: $dwellMinutes) {
-				Text("1 min").tag(1)
-				Text("5 min").tag(5)
 				Text("15 min").tag(15)
 				Text("30 min").tag(30)
 				Text("45 min").tag(45)
