@@ -21,6 +21,7 @@ struct AppLog: View {
 	@State private var levels: Set<Int> =  []
 	@State var isExporting = false
 	@State var exportString = ""
+	@State var exportFilename = "Meshtastic Application Logs"
 	@State var isEditingFilters = false
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
@@ -171,7 +172,7 @@ struct AppLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("Meshtastic Application Logs"),
+			defaultFilename: exportFilename,
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -200,6 +201,11 @@ struct AppLog: View {
 				ToolbarItem(placement: .navigationBarTrailing) {
 					Button(action: {
 						exportString = logToCsvFile(log: logs)
+						let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+						let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+						let formatter = DateFormatter()
+						formatter.dateFormat = dateFormatString
+						exportFilename = "Meshtastic Application Logs \(formatter.string(from: .now))"
 						isExporting = true
 					}) {
 						Image(systemName: "square.and.arrow.down")
