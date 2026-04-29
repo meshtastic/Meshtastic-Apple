@@ -201,6 +201,9 @@ enum DiscoverySummaryPDF {
 
 			drawSectionHeading("Session Overview")
 			drawRow("Presets Scanned", session.presetsScanned.replacingOccurrences(of: ",", with: ", "))
+			for result in session.presetResults where result.dwellDurationSeconds > 0 {
+				drawRow("\(result.presetName) Dwell", formatDwellDuration(result.dwellDurationSeconds))
+			}
 			let totalDwell = session.presetResults.reduce(0) { $0 + $1.dwellDurationSeconds }
 			if totalDwell > 0 {
 				drawRow("Total Dwell Time", formatDwellDuration(totalDwell))
@@ -274,9 +277,6 @@ enum DiscoverySummaryPDF {
 				drawStatPair("Sensor Pkts", "\(result.sensorPacketCount)", x: col1)
 				drawStatPair("Ch Util", result.averageChannelUtilization > 0 ? String(format: "%.1f%%", result.averageChannelUtilization) : "—", x: col2)
 				drawStatPair("Airtime", result.averageAirtimeRate > 0 ? String(format: "%.2f%%", result.averageAirtimeRate) : "—", x: col3)
-				if result.dwellDurationSeconds > 0 {
-					drawStatPair("Dwell Time", formatDwellDuration(result.dwellDurationSeconds), x: col4)
-				}
 				y += 26
 
 				// Per-preset AI summary

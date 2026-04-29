@@ -78,6 +78,11 @@ struct DiscoverySummaryView: View {
 		Section(header: Text("Session Overview")) {
 			LabeledContent("Date", value: session.timestamp.formatted(date: .abbreviated, time: .shortened))
 			LabeledContent("Presets Scanned", value: session.presetsScanned.replacingOccurrences(of: ",", with: ", "))
+			ForEach(session.presetResults, id: \.presetName) { result in
+				if result.dwellDurationSeconds > 0 {
+					LabeledContent("\(result.presetName) Dwell", value: formatDwellDuration(result.dwellDurationSeconds))
+				}
+			}
 			let totalDwell = session.presetResults.reduce(0) { $0 + $1.dwellDurationSeconds }
 			if totalDwell > 0 {
 				LabeledContent("Total Dwell Time", value: formatDwellDuration(totalDwell))
@@ -139,15 +144,6 @@ struct DiscoverySummaryView: View {
 							.foregroundStyle(.secondary)
 					}
 					.font(rowFont)
-					if result.dwellDurationSeconds > 0 {
-						HStack(spacing: 4) {
-							Image(systemName: "timer")
-								.foregroundStyle(.secondary)
-							Text(formatDwellDuration(result.dwellDurationSeconds))
-								.foregroundStyle(.secondary)
-						}
-						.font(rowFont)
-					}
 				}
 			}
 

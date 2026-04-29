@@ -350,15 +350,6 @@ struct Settings: View {
 					}
 				}
 			}
-			//#if targetEnvironment(macCatalyst)
-			NavigationLink(value: SettingsNavigationState.localMeshDiscovery) {
-				Label {
-					Text("Local Mesh Discovery")
-				} icon: {
-					Image(systemName: "antenna.radiowaves.left.and.right")
-				}
-			}
-			//#endif
 		}
 	}
 
@@ -400,6 +391,13 @@ struct Settings: View {
 						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
+					}
+				}
+				NavigationLink(value: SettingsNavigationState.localMeshDiscovery) {
+					Label {
+						Text("Local Mesh Discovery")
+					} icon: {
+						Image(systemName: "antenna.radiowaves.left.and.right")
 					}
 				}
 				NavigationLink(value: SettingsNavigationState.routes) {
