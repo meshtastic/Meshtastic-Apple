@@ -2,7 +2,7 @@ name: Bug Report Analyzer
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, labeled, edited]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -37,8 +37,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const BOT_ANALYSIS_MARKER  = '<!-- meshtastic-bug-analyzer-analysis -->';
-            const BOT_NEEDS_INFO_MARKER = '<!-- meshtastic-bug-analyzer-needs-info -->';
+            const BOT_ANALYSIS_MARKER           = '<!-- meshtastic-bug-analyzer-analysis -->';
+            const BOT_INCOMPLETE_ANALYSIS_MARKER = '<!-- meshtastic-bug-analyzer-incomplete -->';
+            const BOT_NEEDS_INFO_MARKER          = '<!-- meshtastic-bug-analyzer-needs-info -->';
             const MODELS_API_URL = 'https://models.inference.ai.azure.com/chat/completions';
 
             // ── tuneable constants ────────────────────────────────────────────
@@ -133,17 +134,22 @@ jobs:
             const body  = issue.body  || '';
             const title = issue.title || '';
 
-            // Skip if we have already left an analysis comment on this issue.
+            // Check for existing analysis comments.
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo:  context.repo.repo,
               issue_number: issue.number,
               per_page: 100,
             });
-            if (comments.some(c => c.body.includes(BOT_ANALYSIS_MARKER))) {
-              core.info('Already analyzed this issue – skipping.');
+            const existingAnalysis = comments.find(c => c.body.includes(BOT_ANALYSIS_MARKER));
+            const isIncompleteAnalysis = existingAnalysis && existingAnalysis.body.includes(BOT_INCOMPLETE_ANALYSIS_MARKER);
+
+            // Skip only when a complete (non-incomplete) analysis already exists.
+            if (existingAnalysis && !isIncompleteAnalysis) {
+              core.info('Complete analysis already posted for this issue – skipping.');
               return;
             }
+            // If there is an incomplete analysis we will replace it after re-running.
 
             // ── parse template fields ─────────────────────────────────────────
 
@@ -178,7 +184,10 @@ jobs:
               );
 
             if (missing.length > 0) {
-              const commentBody = `${BOT_NEEDS_INFO_MARKER}
+              // Post (or skip if already present) the needs-more-info comment.
+              const needsInfoAlreadyPosted = comments.some(c => c.body.includes(BOT_NEEDS_INFO_MARKER));
+              if (!needsInfoAlreadyPosted) {
+                const commentBody = `${BOT_NEEDS_INFO_MARKER}
             ## 🤖 Additional Information Needed
 
             Thank you for filing this bug report! To help us isolate the root cause we need a bit more detail:
@@ -193,14 +202,15 @@ jobs:
 
             Please update the issue with the missing information and we'll take another look. Thank you! 🙏`;
 
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                issue_number: issue.number,
-                body: commentBody,
-              });
-              core.info('Posted "needs more info" comment.');
-              return;
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: issue.number,
+                  body: commentBody,
+                });
+                core.info('Posted "needs more info" comment.');
+              }
+              // Fall through to AI analysis below (with incomplete-data warning).
             }
 
             // ── code analysis ─────────────────────────────────────────────────
@@ -302,23 +312,37 @@ jobs:
 
               const analysis = await callModelsAPI(SYSTEM_MESSAGE, analysisPrompt);
 
-              const commentBody = `${BOT_ANALYSIS_MARKER}
+              const incompleteWarning = missing.length > 0
+                ? `> [!WARNING]\n> **⚠️ This analysis is based on incomplete information.** The following fields are missing or too brief: ${missing.map(m => m.replace(/^- \*\*|\*\*.*/g, '')).join(', ')}. The findings below may be inaccurate or misleading. This comment will be updated automatically once the issue is filled in.\n\n`
+                : '';
+
+              const commentBody = `${BOT_ANALYSIS_MARKER}${missing.length > 0 ? `\n${BOT_INCOMPLETE_ANALYSIS_MARKER}` : ''}
             ## 🤖 Automated Bug Report Analysis
 
-            Thank you for the detailed report! Here is an automated analysis to help the maintainers investigate:
+            ${incompleteWarning}Thank you for the ${missing.length > 0 ? 'report' : 'detailed report'}! Here is an automated analysis to help the maintainers investigate:
 
             ${analysis}
 
             ---
             *This analysis was generated automatically from the issue description and the repository source. A human maintainer will review and follow up shortly.*`;
 
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                issue_number: issue.number,
-                body: commentBody,
-              });
-              core.info('Posted analysis comment.');
+              if (existingAnalysis) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  comment_id: existingAnalysis.id,
+                  body: commentBody,
+                });
+                core.info('Updated existing (incomplete) analysis comment.');
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: issue.number,
+                  body: commentBody,
+                });
+                core.info('Posted analysis comment.');
+              }
 
             } catch (error) {
               core.warning(`AI analysis failed (${error.message}). Posting fallback acknowledgement.`);
@@ -333,10 +357,19 @@ jobs:
             - Whether this is a regression (last known-good firmware version)
             - A minimal set of steps that consistently reproduce the issue`;
 
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                issue_number: issue.number,
-                body: fallback,
-              });
+              if (existingAnalysis) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  comment_id: existingAnalysis.id,
+                  body: fallback,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: issue.number,
+                  body: fallback,
+                });
+              }
             }
