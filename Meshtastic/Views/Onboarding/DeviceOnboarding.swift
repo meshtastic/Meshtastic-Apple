@@ -583,13 +583,37 @@ struct DeviceOnboarding: View {
 	}
 	
 	func requestLocationPermissions() async {
+		let currentStatus = LocationsHandler.shared.manager.authorizationStatus
+		let locationServicesEnabled = CLLocationManager.locationServicesEnabled()
+
+		// On Mac Catalyst, if location services are disabled or already denied/restricted,
+		// the system won't show a permission prompt. Open System Settings instead.
+		#if targetEnvironment(macCatalyst)
+		if !locationServicesEnabled || currentStatus == .denied || currentStatus == .restricted {
+			Logger.services.info("Location services disabled or denied on Mac, opening System Settings")
+			if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices") {
+				await UIApplication.shared.open(url)
+			}
+			locationStatus = currentStatus
+			return
+		}
+		#endif
+
+		if !locationServicesEnabled || currentStatus == .denied || currentStatus == .restricted {
+			Logger.services.info("Location services not available, opening app settings")
+			if let url = URL(string: UIApplication.openSettingsURLString) {
+				await UIApplication.shared.open(url)
+			}
+			locationStatus = currentStatus
+			return
+		}
+
 		locationStatus = await LocationsHandler.shared.requestLocationAlwaysPermissions()
 		if locationStatus != .notDetermined {
 			Logger.services.info("Location permissions are enabled")
 		} else {
 			Logger.services.info("Location permissions denied")
 		}
-		await goToNextStep(after: .location)
 	}
 	
 	func requestLocalNetworkPermissions() async {
@@ -606,6 +630,10 @@ struct DeviceOnboarding: View {
 			return
 		}
 
+		#if targetEnvironment(macCatalyst)
+		// Siri authorization prompt is not available on Mac Catalyst
+		Logger.services.info("Siri permissions not available on Mac Catalyst")
+		#else
 		await withCheckedContinuation { continuation in
 			INPreferences.requestSiriAuthorization { status in
 				switch status {
@@ -619,6 +647,7 @@ struct DeviceOnboarding: View {
 				continuation.resume()
 			}
 		}
+		#endif
 	}
 
 }
