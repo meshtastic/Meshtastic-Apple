@@ -932,7 +932,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Canales?"
+            "value" : "¿%@ Canales?"
           }
         },
         "it" : {
@@ -13451,7 +13451,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Coordenar"
+            "value" : "Coordenada"
           }
         },
         "it" : {
@@ -16822,7 +16822,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "directo"
+            "value" : "Directo"
           }
         },
         "it" : {
@@ -17152,7 +17152,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Discapacitado"
+            "value" : "Deshabilitado"
           }
         },
         "fr" : {
@@ -18060,7 +18060,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "hecho"
+            "value" : "Hecho"
           }
         },
         "ja" : {
@@ -18159,7 +18159,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "abajo"
+            "value" : "Abajo"
           }
         },
         "fr" : {
@@ -18591,7 +18591,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "eco"
+            "value" : "Eco"
           }
         },
         "fr" : {
@@ -18796,7 +18796,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elev. Ganar"
+            "value" : "Elev. ganada"
           }
         },
         "it" : {
@@ -18842,7 +18842,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "emojis"
+            "value" : "Emoji"
           }
         },
         "it" : {
@@ -18894,7 +18894,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "vacio"
+            "value" : "Vacío"
           }
         },
         "it" : {
@@ -19604,7 +19604,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "cifrado"
+            "value" : "Cifrado"
           }
         },
         "fr" : {
@@ -20571,7 +20571,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "tarde"
+            "value" : "Tarde"
           }
         },
         "it" : {
@@ -20686,7 +20686,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "exclamación"
+            "value" : "Exclamación"
           }
         },
         "fr" : {
@@ -21481,7 +21481,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Feria"
+            "value" : "Aceptable"
           }
         },
         "it" : {
@@ -22022,7 +22022,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "encontrar un contacto"
+            "value" : "Encontrar un contacto"
           }
         },
         "it" : {
@@ -22130,7 +22130,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "terminar"
+            "value" : "Terminar"
           }
         },
         "fr" : {
@@ -22207,7 +22207,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "terminar"
+            "value" : "Terminar"
           }
         },
         "ru" : {
@@ -23270,7 +23270,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "para mi"
+            "value" : "Para mí"
           }
         },
         "it" : {
@@ -24242,7 +24242,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "empezar"
+            "value" : "Empezar"
           }
         },
         "ru" : {
@@ -24352,7 +24352,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "bueno"
+            "value" : "Bueno"
           }
         },
         "it" : {
@@ -24680,7 +24680,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GPS Y GPIO"
+            "value" : "GPS EN GPIO"
           }
         },
         "it" : {
@@ -25021,7 +25021,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ferretería"
+            "value" : "Hardware"
           }
         },
         "it" : {
@@ -25123,7 +25123,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "rumbo"
+            "value" : "Rumbo"
           }
         },
         "it" : {
@@ -25228,7 +25228,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "escuchado"
+            "value" : "Escuchado"
           }
         },
         "fr" : {
@@ -25311,7 +25311,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "corazón"
+            "value" : "Corazón"
           }
         },
         "fr" : {
@@ -25704,7 +25704,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "salta lejos"
+            "value" : "Saltos de distancia"
           }
         },
         "it" : {
@@ -25756,7 +25756,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salta lejos %d"
+            "value" : "%d saltos de distancia"
           }
         },
         "it" : {
@@ -25809,7 +25809,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saltos lejos:"
+            "value" : "Saltos de distancia:"
           }
         },
         "it" : {
@@ -25861,7 +25861,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salta lejos: %d"
+            "value" : "Saltos de distancia: %d"
           }
         },
         "it" : {
@@ -26463,7 +26463,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "tararear"
+            "value" : "Tararear"
           }
         },
         "it" : {
@@ -27373,7 +27373,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ignorado"
+            "value" : "Ignorado"
           }
         },
         "it" : {
@@ -27609,7 +27609,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "incluir"
+            "value" : "Incluir"
           }
         },
         "fr" : {
@@ -28348,7 +28348,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "clave"
+            "value" : "Clave"
           }
         },
         "it" : {
@@ -29368,7 +29368,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "bloqueado"
+            "value" : "Bloqueado"
           }
         },
         "it" : {
@@ -30036,7 +30036,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "lora"
+            "value" : "LoRa"
           }
         },
         "fr" : {
@@ -30795,7 +30795,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "manuales"
+            "value" : "Manual"
           }
         },
         "ru" : {
@@ -31626,7 +31626,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Meshtástico"
+            "value" : "Meshtastic"
           }
         },
         "ru" : {
@@ -32367,7 +32367,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "mediodía"
+            "value" : "Mediodía"
           }
         },
         "it" : {
@@ -32697,7 +32697,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "modelo"
+            "value" : "Modelo"
           }
         },
         "it" : {
@@ -32750,7 +32750,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "moderado"
+            "value" : "Moderado"
           }
         },
         "it" : {
@@ -32891,7 +32891,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "mañana"
+            "value" : "Mañana"
           }
         },
         "it" : {
@@ -35199,7 +35199,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sin métricas de energía"
+            "value" : "Sin métricas de potencia"
           }
         },
         "it" : {
@@ -39516,7 +39516,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "caca"
+            "value" : "Caca"
           }
         },
         "fr" : {
@@ -40269,7 +40269,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "poder"
+            "value" : "Potencia"
           }
         },
         "he" : {
@@ -40345,7 +40345,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuración de energía"
+            "value" : "Configuración de potencia"
           }
         },
         "he" : {
@@ -40416,7 +40416,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuración de energía recibida: %@"
+            "value" : "Configuración de potencia recibida: %@"
           }
         },
         "it" : {
@@ -40469,7 +40469,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Métricas de energía"
+            "value" : "Métricas de potencia"
           }
         },
         "it" : {
@@ -40515,7 +40515,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registro de métricas de energía"
+            "value" : "Registro de métricas de potencia"
           }
         },
         "it" : {
@@ -40608,7 +40608,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opciones de energía"
+            "value" : "Opciones de potencia"
           }
         },
         "it" : {
@@ -40724,7 +40724,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pantalla de energía"
+            "value" : "Pantalla de potencia"
           }
         },
         "it" : {
@@ -40792,7 +40792,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desarrollado"
+            "value" : "Impulsado"
           }
         },
         "it" : {
@@ -41775,7 +41775,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PCD"
+            "value" : "PWD"
           }
         },
         "it" : {
@@ -42268,6 +42268,9 @@
         }
       }
     },
+    "Range test configuration has not been received from the radio. Try reconnecting to the device." : {
+
+    },
     "Range Test module config received: %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -42350,6 +42353,9 @@
           }
         }
       }
+    },
+    "Range test requires an encrypted private channel. The primary channel on this node is using a default or empty key." : {
+
     },
     "Read and reply to Meshtastic channel and direct messages directly from your car's display using CarPlay." : {
       "comment" : "A description of how to use CarPlay with Meshtastic.",
@@ -43596,7 +43602,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "repetidor"
+            "value" : "Repetidor"
           }
         },
         "it" : {
@@ -44252,7 +44258,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Currículum"
+            "value" : "Reanudar"
           }
         },
         "fr" : {
@@ -46177,7 +46183,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "sábados"
+            "value" : "Sats"
           }
         },
         "it" : {
@@ -46787,7 +46793,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "segundo"
+            "value" : "Segundo"
           }
         },
         "it" : {
@@ -47612,7 +47618,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "enviar"
+            "value" : "Enviar"
           }
         },
         "it" : {
@@ -48449,7 +48455,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "sensores"
+            "value" : "Sensor"
           }
         },
         "it" : {
@@ -49731,7 +49737,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "conjunto"
+            "value" : "Establecer"
           }
         },
         "it" : {
@@ -51645,7 +51651,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "esquiar"
+            "value" : "Esquiar"
           }
         },
         "it" : {
@@ -53122,7 +53128,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "mesa"
+            "value" : "Tabla"
           }
         },
         "it" : {
@@ -53533,7 +53539,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Telemetria"
+            "value" : "Telemetría"
           }
         },
         "fr" : {
@@ -56250,7 +56256,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "tiempo"
+            "value" : "Tiempo"
           }
         },
         "it" : {
@@ -56815,7 +56821,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "totales"
+            "value" : "Total"
           }
         },
         "it" : {
@@ -58729,7 +58735,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "inmensable"
+            "value" : "Sin mensajería"
           }
         },
         "ja" : {
@@ -58926,7 +58932,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "arriba"
+            "value" : "Arriba"
           }
         },
         "fr" : {
@@ -59002,7 +59008,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "arriba abajo 1"
+            "value" : "Arriba Abajo 1"
           }
         },
         "it" : {
@@ -59652,7 +59658,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "tiempo de actividad"
+            "value" : "Tiempo de actividad"
           }
         },
         "it" : {
@@ -60912,7 +60918,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "muy poco saludable"
+            "value" : "Muy poco saludable"
           }
         },
         "it" : {
@@ -60964,7 +60970,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vía Lora"
+            "value" : "Vía LoRa"
           }
         },
         "it" : {
@@ -61016,7 +61022,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vía Mqtt"
+            "value" : "Vía MQTT"
           }
         },
         "it" : {
@@ -61074,7 +61080,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "voltaje"
+            "value" : "Voltaje"
           }
         },
         "fr" : {
@@ -61202,7 +61208,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "esperando"
+            "value" : "Esperando"
           }
         },
         "fr" : {
@@ -62424,7 +62430,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "viento"
+            "value" : "Viento"
           }
         },
         "it" : {

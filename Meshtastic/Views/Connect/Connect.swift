@@ -421,6 +421,7 @@ struct Connect: View {
 			&& !accessoryManager.isConnected
 			&& !accessoryManager.isConnecting
 			&& pendingNymeaDevice == nil
+			&& !UserDefaults.firstLaunch
 		if canScan {
 			nymeaProvisioning.startDiscovery()
 		} else {

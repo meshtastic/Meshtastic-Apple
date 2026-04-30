@@ -15,6 +15,7 @@ import Combine
 import CoreData
 import Intents
 import OSLog
+import UserNotifications
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -204,18 +205,34 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 					unread: hasUnread
 				)
 
-				let item = CPMessageListItem(
-					fullName: name,
-					phoneOrEmailAddress: "\(node.num)@meshtastic.local",
-					leadingConfiguration: leadingConfig,
-					trailingConfiguration: nil,
-					detailText: hasUnread ? "\(unreadCount) unread" : nil,
-					trailingText: lastHeardText(node.lastHeard, now: now)
-				)
-				item.conversationIdentifier = convId
+				let item: CPMessageListItem
+				if hasUnread {
+					// Use conversationIdentifier init WITHOUT phoneOrEmailAddress so Siri
+					// enters the read flow. Apple docs: "If the item has a phone number or
+					// email address, Siri launches the message compose flow."
+					item = CPMessageListItem(
+						conversationIdentifier: convId,
+						text: name,
+						leadingConfiguration: leadingConfig,
+						trailingConfiguration: nil,
+						detailText: "\(unreadCount) unread",
+						trailingText: lastHeardText(node.lastHeard, now: now)
+					)
+					donateLatestIncomingDM(nodeNum: node.num, conversationId: convId, name: name)
+				} else {
+					// Use fullName init WITH phoneOrEmailAddress so Siri enters compose flow.
+					item = CPMessageListItem(
+						fullName: name,
+						phoneOrEmailAddress: "\(node.num)@meshtastic.local",
+						leadingConfiguration: leadingConfig,
+						trailingConfiguration: nil,
+						detailText: nil,
+						trailingText: lastHeardText(node.lastHeard, now: now)
+					)
+					item.conversationIdentifier = convId
+					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: name)
+				}
 				item.userInfo = node.num
-
-				donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: name)
 
 				return item
 			}
@@ -252,18 +269,32 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				unread: hasUnread
 			)
 
-			let item = CPMessageListItem(
-				conversationIdentifier: convId,
-				text: name,
-				leadingConfiguration: leadingConfig,
-				trailingConfiguration: nil,
-				detailText: hasUnread ? "\(unreadCount) unread" : (channel.index == 0 ? "Primary" : "Ch \(channel.index)"),
-				trailingText: nil
-			)
-			item.phoneOrEmailAddress = "\(convId)@meshtastic.local"
+			let item: CPMessageListItem
+			if hasUnread {
+				// Do NOT set phoneOrEmailAddress — its presence forces Siri into compose flow.
+				// With only conversationIdentifier + unread indicator, Siri enters read flow.
+				item = CPMessageListItem(
+					conversationIdentifier: convId,
+					text: name,
+					leadingConfiguration: leadingConfig,
+					trailingConfiguration: nil,
+					detailText: "\(unreadCount) unread",
+					trailingText: nil
+				)
+				donateLatestIncomingChannelMessage(channelIndex: Int32(channelIndex), conversationId: convId, channelName: name)
+			} else {
+				item = CPMessageListItem(
+					conversationIdentifier: convId,
+					text: name,
+					leadingConfiguration: leadingConfig,
+					trailingConfiguration: nil,
+					detailText: channel.index == 0 ? "Primary" : "Ch \(channel.index)",
+					trailingText: nil
+				)
+				item.phoneOrEmailAddress = "\(convId)@meshtastic.local"
+				donateChannelIntentIfNeeded(conversationId: convId, channelIndex: channelIndex, channelName: name)
+			}
 			item.userInfo = channelIndex
-
-			donateChannelIntentIfNeeded(conversationId: convId, channelIndex: channelIndex, channelName: name)
 
 			return item
 		}
@@ -312,18 +343,33 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 					unread: hasUnread
 				)
 
-				let item = CPMessageListItem(
-					fullName: name,
-					phoneOrEmailAddress: "\(nodeNum)@meshtastic.local",
-					leadingConfiguration: leadingConfig,
-					trailingConfiguration: nil,
-					detailText: hasUnread ? "\(unreadCount) unread" : nil,
-					trailingText: lastHeardText(node.lastHeard, now: now)
-				)
-				item.conversationIdentifier = convId
+				let item: CPMessageListItem
+				if hasUnread {
+					// Use conversationIdentifier init WITHOUT phoneOrEmailAddress so Siri
+					// enters the read flow.
+					item = CPMessageListItem(
+						conversationIdentifier: convId,
+						text: name,
+						leadingConfiguration: leadingConfig,
+						trailingConfiguration: nil,
+						detailText: "\(unreadCount) unread",
+						trailingText: lastHeardText(node.lastHeard, now: now)
+					)
+					donateLatestIncomingDM(nodeNum: nodeNum, conversationId: convId, name: name)
+				} else {
+					// Use fullName init WITH phoneOrEmailAddress so Siri enters compose flow.
+					item = CPMessageListItem(
+						fullName: name,
+						phoneOrEmailAddress: "\(nodeNum)@meshtastic.local",
+						leadingConfiguration: leadingConfig,
+						trailingConfiguration: nil,
+						detailText: nil,
+						trailingText: lastHeardText(node.lastHeard, now: now)
+					)
+					item.conversationIdentifier = convId
+					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: name)
+				}
 				item.userInfo = nodeNum
-
-				donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: name)
 
 				return item
 			}
@@ -446,9 +492,129 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		}
 	}
 
+	// MARK: - Incoming Intent Donation (Synchronous)
+
+	/// Posts a Communication Notification for the most recent unread channel message.
+	/// This is required for CarPlay to offer read-back instead of compose when tapped.
+	private func donateLatestIncomingChannelMessage(channelIndex: Int32, conversationId: String, channelName: String) {
+		guard donatedConversationIds.insert(conversationId).inserted else { return }
+
+		let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+			NSPredicate(format: "read == NO"),
+			NSPredicate(format: "admin == NO"),
+			NSPredicate(format: "isEmoji == NO"),
+			NSPredicate(format: "toUser == nil"),
+			NSPredicate(format: "channel == %d", channelIndex)
+		])
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+		fetchRequest.fetchLimit = 1
+		fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser"]
+
+		guard let message = (try? context.fetch(fetchRequest))?.first,
+			  let fromUser = message.fromUser else { return }
+
+		postCommunicationNotification(
+			message: message,
+			fromUser: fromUser,
+			conversationId: conversationId,
+			channelName: channelName
+		)
+	}
+
+	/// Posts a Communication Notification for the most recent unread DM.
+	private func donateLatestIncomingDM(nodeNum: Int64, conversationId: String, name: String) {
+		guard donatedConversationIds.insert(conversationId).inserted else { return }
+
+		let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
+		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+			NSPredicate(format: "read == NO"),
+			NSPredicate(format: "admin == NO"),
+			NSPredicate(format: "isEmoji == NO"),
+			NSPredicate(format: "fromUser.num == %lld", nodeNum)
+		])
+		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
+		fetchRequest.fetchLimit = 1
+		fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser"]
+
+		guard let message = (try? context.fetch(fetchRequest))?.first,
+			  let fromUser = message.fromUser else { return }
+
+		postCommunicationNotification(
+			message: message,
+			fromUser: fromUser,
+			conversationId: conversationId,
+			channelName: nil
+		)
+	}
+
+	/// Posts a Communication Notification for a message so CarPlay/Siri can read it aloud.
+	/// Communication Notifications are the mechanism iOS uses to determine whether to
+	/// offer read-back vs compose when a conversation is tapped in CarPlay.
+	private func postCommunicationNotification(message: MessageEntity, fromUser: UserEntity, conversationId: String, channelName: String?) {
+		let sender = IntentMessageConverters.inPerson(from: fromUser)
+		let me = CarPlayIntentDonation.mePerson()
+
+		let intent: INSendMessageIntent
+		if let channelName {
+			let groupName = INSpeakableString(spokenPhrase: channelName)
+			intent = INSendMessageIntent(
+				recipients: [me],
+				outgoingMessageType: .outgoingMessageText,
+				content: message.messagePayload,
+				speakableGroupName: groupName,
+				conversationIdentifier: conversationId,
+				serviceName: "Meshtastic",
+				sender: sender,
+				attachments: nil
+			)
+		} else {
+			intent = INSendMessageIntent(
+				recipients: [me],
+				outgoingMessageType: .outgoingMessageText,
+				content: message.messagePayload,
+				speakableGroupName: nil,
+				conversationIdentifier: conversationId,
+				serviceName: "Meshtastic",
+				sender: sender,
+				attachments: nil
+			)
+		}
+
+		// Donate the interaction
+		let interaction = INInteraction(intent: intent, response: nil)
+		interaction.direction = .incoming
+		interaction.donate(completion: nil)
+
+		// Post a Communication Notification — this is what CarPlay checks for read-back
+		let content = UNMutableNotificationContent()
+		content.body = message.messagePayload ?? "New message"
+		content.sound = nil // Silent — we don't want to alert the user again
+		content.threadIdentifier = conversationId
+		content.userInfo["carplay_repost"] = true
+		content.userInfo["messageId"] = message.messageId
+
+		if let updatedContent = try? content.updating(from: intent) {
+			let request = UNNotificationRequest(
+				identifier: "carplay.read.\(conversationId).\(message.messageId)",
+				content: updatedContent,
+				trigger: nil // Deliver immediately
+			)
+			UNUserNotificationCenter.current().add(request) { error in
+				if let error {
+					Logger.services.error("🚗 [CarPlay] Failed to post communication notification: \(error.localizedDescription, privacy: .public)")
+				} else {
+					Logger.services.info("🚗 [CarPlay] Posted communication notification for \(conversationId, privacy: .public)")
+				}
+			}
+		} else {
+			Logger.services.error("🚗 [CarPlay] content.updating(from:) failed for \(conversationId, privacy: .public) — check com.apple.developer.usernotifications.communication entitlement")
+		}
+	}
+
 	// MARK: - Unread Message Donation
 
-	/// Donate all unread messages as incoming Siri intents so that tapping a
+	/// Posts Communication Notifications for all unread messages so that tapping a
 	/// conversation in CarPlay triggers Siri to read them aloud — even for
 	/// messages that arrived before the CarPlay session started.
 	private func donateUnreadMessages() {
@@ -467,10 +633,68 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 			guard let messages = try? bgContext.fetch(fetchRequest) else { return }
 			for message in messages {
-				CarPlayIntentDonation.donateReceivedMessage(message)
+				guard let fromUser = message.fromUser else { continue }
+
+				let sender = IntentMessageConverters.inPerson(from: fromUser)
+				let me = CarPlayIntentDonation.mePerson()
+
+				let conversationId: String
+				let intent: INSendMessageIntent
+
+				if message.toUser != nil {
+					// DM
+					conversationId = "dm-\(fromUser.num)"
+					intent = INSendMessageIntent(
+						recipients: [me],
+						outgoingMessageType: .outgoingMessageText,
+						content: message.messagePayload,
+						speakableGroupName: nil,
+						conversationIdentifier: conversationId,
+						serviceName: "Meshtastic",
+						sender: sender,
+						attachments: nil
+					)
+				} else {
+					// Channel message
+					conversationId = "channel-\(message.channel)"
+					let channelName = CarPlayIntentDonation.channelDisplayName(for: message.channel)
+					let groupName = INSpeakableString(spokenPhrase: channelName)
+					intent = INSendMessageIntent(
+						recipients: [me],
+						outgoingMessageType: .outgoingMessageText,
+						content: message.messagePayload,
+						speakableGroupName: groupName,
+						conversationIdentifier: conversationId,
+						serviceName: "Meshtastic",
+						sender: sender,
+						attachments: nil
+					)
+				}
+
+				// Donate the interaction
+				let interaction = INInteraction(intent: intent, response: nil)
+				interaction.direction = .incoming
+				interaction.donate(completion: nil)
+
+				// Post Communication Notification
+				let content = UNMutableNotificationContent()
+				content.body = message.messagePayload ?? "New message"
+				content.sound = nil
+				content.threadIdentifier = conversationId
+				content.userInfo["carplay_repost"] = true
+				content.userInfo["messageId"] = message.messageId
+
+				if let updatedContent = try? content.updating(from: intent) {
+					let request = UNNotificationRequest(
+						identifier: "carplay.read.\(conversationId).\(message.messageId)",
+						content: updatedContent,
+						trigger: nil
+					)
+					UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+				}
 			}
 			if !messages.isEmpty {
-				Logger.services.info("🚗 [CarPlay] Donated \(messages.count) unread message(s) for Siri read-back")
+				Logger.services.info("🚗 [CarPlay] Posted \(messages.count) communication notification(s) for Siri read-back")
 			}
 		}
 	}

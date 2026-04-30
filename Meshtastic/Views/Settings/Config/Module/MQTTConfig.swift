@@ -286,7 +286,6 @@ struct MQTTConfig: View {
 			.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
 				if newProxyToClientEnabled {
 					jsonEnabled = false
-					tlsEnabled = false
 				}
 				if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 			}

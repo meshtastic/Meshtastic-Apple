@@ -114,7 +114,6 @@ struct UserMessageList: View {
 					}
 				}
 				.defaultScrollAnchor(.bottom)
-				.defaultScrollAnchorTopAlignment()
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
 				.onChange(of: messageFieldFocused) {
