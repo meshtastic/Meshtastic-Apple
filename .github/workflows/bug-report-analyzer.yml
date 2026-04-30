@@ -45,6 +45,8 @@ jobs:
             // ── tuneable constants ────────────────────────────────────────────
             // Minimum character count for a field to be considered non-blank.
             const MIN_FIELD_LENGTH = 10;
+            // Firmware versions can be short (e.g. "2.7.20") – use a lower threshold.
+            const MIN_VERSION_LENGTH = 3;
             // Steps-to-reproduce needs more detail than a one-liner to be useful.
             const MIN_STEPS_LENGTH = 30;
             // Cap how many tokens the model may return per response.
@@ -73,7 +75,7 @@ jobs:
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  model: 'gpt-5.4',
+                  model: 'gpt-4o',
                   messages: [
                     { role: 'system', content: systemMessage },
                     { role: 'user',   content: userMessage   },
@@ -162,7 +164,7 @@ jobs:
             // ── completeness check ────────────────────────────────────────────
 
             const missing = [];
-            if (isBlank(firmwareVersion))
+            if (!firmwareVersion || firmwareVersion.length < MIN_VERSION_LENGTH)
               missing.push(
                 '- **Firmware Version** – please provide the exact version string ' +
                 '(e.g. `2.3.14.abcdef1`). You can find it under *Settings → Firmware* ' +
