@@ -188,7 +188,7 @@ jobs:
             ### Helpful extras (if applicable)
             - iOS / iPadOS version and device model
             - Whether this is a **regression** – did it work in an earlier version?
-            - Console logs or a crash report from the app's [Debug Log](https://meshtastic.org/docs/software/apple/ios-debug/) feature
+            - Console logs or a crash report from the app's [Debug Log](https://meshtastic.org/docs/configuration/radio/security/#debug-log) feature
             - Screenshots or a screen recording if the issue is visual
 
             Please update the issue with the missing information and we'll take another look. Thank you! 🙏`;
@@ -329,7 +329,7 @@ jobs:
             Thank you for this detailed bug report! A maintainer will review it and investigate the root cause.
 
             If you can provide any of the following it will speed up the investigation:
-            - Device logs from the <a href="https://meshtastic.org/docs/software/apple/ios-debug/">Debug Log</a> feature
+            - Device logs from the <a href="https://meshtastic.org/docs/configuration/radio/security/#debug-log">Debug Log</a> feature
             - Whether this is a regression (last known-good firmware version)
             - A minimal set of steps that consistently reproduce the issue`;
 
