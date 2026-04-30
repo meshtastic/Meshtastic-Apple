@@ -37,7 +37,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const BOT_COMMENT_MARKER = '<!-- meshtastic-bug-analyzer -->';
+            const BOT_ANALYSIS_MARKER  = '<!-- meshtastic-bug-analyzer-analysis -->';
+            const BOT_NEEDS_INFO_MARKER = '<!-- meshtastic-bug-analyzer-needs-info -->';
             const MODELS_API_URL = 'https://models.inference.ai.azure.com/chat/completions';
 
             // ── tuneable constants ────────────────────────────────────────────
@@ -139,7 +140,7 @@ jobs:
               issue_number: issue.number,
               per_page: 100,
             });
-            if (comments.some(c => c.body.includes(BOT_COMMENT_MARKER))) {
+            if (comments.some(c => c.body.includes(BOT_ANALYSIS_MARKER))) {
               core.info('Already analyzed this issue – skipping.');
               return;
             }
@@ -177,7 +178,7 @@ jobs:
               );
 
             if (missing.length > 0) {
-              const commentBody = `${BOT_COMMENT_MARKER}
+              const commentBody = `${BOT_NEEDS_INFO_MARKER}
             ## 🤖 Additional Information Needed
 
             Thank you for filing this bug report! To help us isolate the root cause we need a bit more detail:
@@ -301,7 +302,7 @@ jobs:
 
               const analysis = await callModelsAPI(SYSTEM_MESSAGE, analysisPrompt);
 
-              const commentBody = `${BOT_COMMENT_MARKER}
+              const commentBody = `${BOT_ANALYSIS_MARKER}
             ## 🤖 Automated Bug Report Analysis
 
             Thank you for the detailed report! Here is an automated analysis to help the maintainers investigate:
@@ -322,7 +323,7 @@ jobs:
             } catch (error) {
               core.warning(`AI analysis failed (${error.message}). Posting fallback acknowledgement.`);
 
-              const fallback = `${BOT_COMMENT_MARKER}
+              const fallback = `${BOT_ANALYSIS_MARKER}
             ## 🤖 Bug Report Received
 
             Thank you for this detailed bug report! A maintainer will review it and investigate the root cause.
