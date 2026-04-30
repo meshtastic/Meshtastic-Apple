@@ -28,8 +28,8 @@ Meshtastic-Apple is a SwiftUI client for iOS, iPadOS, and macOS (via Mac Catalys
 - Transport protocols are in `Meshtastic/Accessory/Transports/`.
 
 ### Persistence
-- Core Data is the sole persistence layer. Use `PersistenceController.shared` for the container; prefer `viewContext` for reads and a background context for writes.
-- The model lives in `Meshtastic/Meshtastic.xcdatamodeld` (55+ versioned migrations — always add a new model version for schema changes).
+- SwiftData is the sole persistence layer. `PersistenceController.shared` owns the `ModelContainer`; use `@Environment(\.modelContext)` or `@Query` in views, and the `MeshPackets` `@ModelActor` for background writes.
+- Model types are defined with `@Model` in `Meshtastic/Model/`. Schema evolution uses `VersionedSchema` and `SchemaMigrationPlan` in `Meshtastic/Model/MeshtasticSchema.swift`.
 - Query helpers: `QueryCoreData.swift` (`getNodeInfo`, etc.); update helpers: `UpdateCoreData.swift`.
 
 ### Protobufs
@@ -42,7 +42,7 @@ Meshtastic-Apple is a SwiftUI client for iOS, iPadOS, and macOS (via Mac Catalys
 - **Swift only.** No Objective-C.
 - **SwiftUI** for all UI. Do not use UIKit directly unless unavoidable (e.g., `UIApplicationDelegateAdaptor`).
 - **SF Symbols** for all icons — never embed image assets for icons.
-- **Core Data** for all persistence — do not introduce SQLite, Realm, or other persistence libraries.
+- **SwiftData** for all persistence — do not introduce SQLite, Realm, Core Data, or other persistence libraries.
 - **OSLog / `Logger`** for all logging — never use `print()`. The project's SwiftLint config enforces this with a custom `disable_print` rule. Use the typed loggers defined in `Meshtastic/Extensions/Logger.swift`:
   - `Logger.admin`, `Logger.data`, `Logger.mesh`, `Logger.mqtt`, `Logger.radio`, `Logger.services`, `Logger.statistics`, `Logger.transport`, `Logger.tak`
 
@@ -78,10 +78,18 @@ Meshtastic-Apple is a SwiftUI client for iOS, iPadOS, and macOS (via Mac Catalys
 ## Testing
 
 - Test target: `MeshtasticTests/`.
-- Use **Swift Testing** (`import Testing`, `@Suite`, `@Test`, `#expect`, `#require`) for new tests. XCTest is used in some legacy test files.
+- Use **Swift Testing** (`import Testing`, `@Suite`, `@Test`, `#expect`, `#require`) for all new tests. Do not use XCTest for new test files.
 - Tests are run via Xcode — there is no Makefile or CLI test runner.
 - Ensure all existing tests pass before submitting a PR.
 - Write tests for new features and bug fixes.
+
+### Snapshot Tests
+- SwiftUI view snapshot tests live in `MeshtasticTests/SwiftUIViewSnapshotTests.swift`.
+- Use the custom `renderImage` helper (not swift-snapshot-testing's API) — it uses `UIHostingController` + `drawHierarchy(in:afterScreenUpdates: true)` with safe-area inset negation via `additionalSafeAreaInsets`.
+- Reference PNGs are saved to `MeshtasticTests/__Snapshots__/SwiftUIViewSnapshotTests/`. On first run they are recorded; on subsequent runs they are compared pixel-by-pixel using `CGImage` dimensions.
+- For views that use `ScrollView` or don't have intrinsic height, pass an explicit `height:` parameter to `renderImage`.
+- Each `@Suite` groups tests for one view component. Name suites `<ViewName>SnapshotTests`.
+- Compare snapshots using `cgImage.width`/`cgImage.height` (pixel dimensions), not `UIImage.size` (which is scale-dependent).
 
 ## Git & PR Workflow
 
@@ -105,12 +113,19 @@ The app registers the `meshtastic:///` URL scheme. Use `Router.route(url:)` to h
 2. Run `./scripts/gen_protos.sh`.
 3. Build, test, and commit the generated changes.
 
-## Core Data Schema Changes
+## SwiftData Schema Changes
 
-1. Create a new model version in `Meshtastic.xcdatamodeld`.
-2. Set it as the current version.
-3. Add a migration policy if required (lightweight migration is preferred when possible).
+1. Add or modify `@Model` types in `Meshtastic/Model/`.
+2. Add a new `VersionedSchema` conformance and update the `SchemaMigrationPlan` in `MeshtasticSchema.swift`.
+3. Provide a `MigrationStage` (lightweight or custom) for the version transition.
 
 ## CI
 
 CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modify CI scripts without understanding the Xcode Cloud build environment.
+
+## Active Technologies
+- Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+) (001-local-mesh-discovery)
+- SwiftData (`ModelContainer` / `ModelContext`) (001-local-mesh-discovery)
+
+## Recent Changes
+- 001-local-mesh-discovery: Added Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+)

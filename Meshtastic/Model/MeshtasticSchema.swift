@@ -53,6 +53,10 @@ enum MeshtasticSchema {
 			StoreForwardConfigEntity.self,
 			TAKConfigEntity.self,
 			TelemetryConfigEntity.self,
+			// Discovery entities
+			DiscoverySessionEntity.self,
+			DiscoveryPresetResultEntity.self,
+			DiscoveredNodeEntity.self,
 		]
 	}
 }

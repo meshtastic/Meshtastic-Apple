@@ -21,6 +21,9 @@ class Router: ObservableObject {
 	@Published
 	var settingsState: SettingsNavigationState?
 
+	@Published
+	var discoveryShowHistory: Bool = false
+
 	/// Computed property that assembles the individual per-tab properties into a `NavigationState`.
 	/// Provided for backward compatibility (e.g. tests) and convenience.
 	var navigationState: NavigationState {
@@ -181,14 +184,19 @@ class Router: ObservableObject {
 	}
 
 	private func routeSettings(_ components: URLComponents) {
-		let settingFromPath = components.path
+		let segments = components.path
 			.split(separator: "/")
 			.dropFirst()
-			.first
-			.flatMap(String.init)
+			.map(String.init)
+
+		let settingFromPath = segments.first
 			.flatMap(SettingsNavigationState.init(rawValue:))
 
 		selectedTab = .settings
 		settingsState = settingFromPath
+
+		if settingFromPath == .localMeshDiscovery && segments.count > 1 && segments[1] == "history" {
+			discoveryShowHistory = true
+		}
 	}
 }

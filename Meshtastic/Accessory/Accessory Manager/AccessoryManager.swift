@@ -140,6 +140,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	var activeConnection: (device: Device, connection: any Connection)?
 
+	/// Reference to the active discovery scan engine, if any
+	var discoveryScanEngine: DiscoveryScanEngine?
+
+	/// Shared discovery scan engine that persists across navigation
+	let discoveryEngine = DiscoveryScanEngine()
+
 	let transports: [any Transport]
 
 	// Config
@@ -535,6 +541,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 			// Dispatch based on packet contents.
 			if case let .decoded(data) = packet.payloadVariant {
+				// Forward packets to discovery scan engine if active
+				if let engine = discoveryScanEngine, engine.isScanning {
+					engine.handleMeshPacket(packet, portNum: data.portnum)
+				}
+
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
 					await handleTextMessageAppPacket(packet)
@@ -659,7 +670,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					handleTraceRouteApp(packet)
 				case .neighborinfoApp:
 					if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
-						Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+						if let engine = discoveryScanEngine, engine.isScanning {
+							engine.handleNeighborInfo(neighborInfo, packet: decodedInfo.packet)
+						} else {
+							Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+						}
 					}
 				case .paxcounterApp:
 					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet)

@@ -421,3 +421,132 @@ struct LoRaSignalStrengthMeterSnapshotTests {
 		await assertViewSnapshot(of: LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: false), width: 100, named: "nonCompactBad")
 	}
 }
+
+// MARK: - RadarSweepView Snapshot Tests
+
+@Suite("RadarSweepView Snapshots")
+struct RadarSweepViewSnapshotTests {
+
+	@Test("Radar sweep active")
+	func radarActive() async {
+		await assertViewSnapshot(of: RadarSweepView(isActive: true), width: 200, height: 200, named: "radarActive")
+	}
+
+	@Test("Radar sweep inactive")
+	func radarInactive() async {
+		await assertViewSnapshot(of: RadarSweepView(isActive: false), width: 200, height: 200, named: "radarInactive")
+	}
+}
+
+// MARK: - DiscoveryMapView Snapshot Tests
+
+@Suite("DiscoveryMapView Snapshots")
+struct DiscoveryMapViewSnapshotTests {
+
+	@Test("Map with mock nodes")
+	func mapWithNodes() async {
+		let directNode = DiscoveredNodeEntity()
+		directNode.nodeNum = 1
+		directNode.shortName = "N1"
+		directNode.neighborType = "direct"
+		directNode.latitude = 37.7750
+		directNode.longitude = -122.4194
+
+		let meshNode = DiscoveredNodeEntity()
+		meshNode.nodeNum = 2
+		meshNode.shortName = "N2"
+		meshNode.neighborType = "mesh"
+		meshNode.latitude = 37.7800
+		meshNode.longitude = -122.4100
+
+		await assertViewSnapshot(
+			of: DiscoveryMapView(
+				discoveredNodes: [directNode, meshNode],
+				userLatitude: 37.7749,
+				userLongitude: -122.4194,
+				isScanning: false
+			),
+			width: 375,
+			height: 300,
+			named: "mapWithNodes"
+		)
+	}
+
+	@Test("Empty map")
+	func emptyMap() async {
+		await assertViewSnapshot(
+			of: DiscoveryMapView(
+				discoveredNodes: [],
+				userLatitude: 37.7749,
+				userLongitude: -122.4194,
+				isScanning: false
+			),
+			width: 375,
+			height: 300,
+			named: "emptyMap"
+		)
+	}
+}
+
+// MARK: - DiscoverySummaryView Snapshot Tests
+
+@Suite("DiscoverySummaryView Snapshots")
+struct DiscoverySummaryViewSnapshotTests {
+
+	@Test("Summary with two presets")
+	func summaryTwoPresets() async {
+		let session = DiscoverySessionEntity()
+		session.presetsScanned = "LongFast,ShortFast"
+		session.totalUniqueNodes = 8
+		session.totalTextMessages = 12
+		session.totalSensorPackets = 5
+		session.completionStatus = "complete"
+
+		let preset1 = DiscoveryPresetResultEntity()
+		preset1.presetName = "LongFast"
+		preset1.uniqueNodesFound = 5
+		preset1.directNeighborCount = 3
+		preset1.meshNeighborCount = 2
+		preset1.messageCount = 8
+		preset1.sensorPacketCount = 3
+		preset1.averageChannelUtilization = 12.5
+		preset1.session = session
+
+		let preset2 = DiscoveryPresetResultEntity()
+		preset2.presetName = "ShortFast"
+		preset2.uniqueNodesFound = 6
+		preset2.directNeighborCount = 4
+		preset2.meshNeighborCount = 2
+		preset2.messageCount = 4
+		preset2.sensorPacketCount = 2
+		preset2.averageChannelUtilization = 8.2
+		preset2.session = session
+
+		session.presetResults = [preset1, preset2]
+
+		await assertViewSnapshot(
+			of: NavigationStack { DiscoverySummaryView(session: session) },
+			width: 375,
+			height: 800,
+			named: "summaryTwoPresets"
+		)
+	}
+}
+
+// MARK: - DiscoveryHistoryView Snapshot Tests
+
+@Suite("DiscoveryHistoryView Snapshots")
+struct DiscoveryHistoryViewSnapshotTests {
+
+	@Test("History view renders")
+	func historyViewRenders() async {
+		// DiscoveryHistoryView uses @Query so we can only test it renders without crash
+		// in a minimal context. Full snapshot with data requires a ModelContainer.
+		await assertViewSnapshot(
+			of: NavigationStack { DiscoveryHistoryView() },
+			width: 375,
+			height: 400,
+			named: "historyEmpty"
+		)
+	}
+}
