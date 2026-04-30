@@ -215,7 +215,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				item.conversationIdentifier = convId
 				item.userInfo = node.num
 
-				donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: name)
+				// Only donate the outgoing (compose) intent when there are no unread messages.
+				// When there ARE unread messages the incoming donations from donateUnreadMessages()
+				// must be the most-recent interaction so Siri reads them aloud on tap.
+				if !hasUnread {
+					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: name)
+				}
 
 				return item
 			}
@@ -263,7 +268,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			item.phoneOrEmailAddress = "\(convId)@meshtastic.local"
 			item.userInfo = channelIndex
 
-			donateChannelIntentIfNeeded(conversationId: convId, channelIndex: channelIndex, channelName: name)
+			// Only donate the outgoing (compose) intent when there are no unread messages.
+			// When there ARE unread messages the incoming donations from donateUnreadMessages()
+			// must be the most-recent interaction so Siri reads them aloud on tap.
+			if !hasUnread {
+				donateChannelIntentIfNeeded(conversationId: convId, channelIndex: channelIndex, channelName: name)
+			}
 
 			return item
 		}
@@ -323,7 +333,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				item.conversationIdentifier = convId
 				item.userInfo = nodeNum
 
-				donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: name)
+				// Only donate the outgoing (compose) intent when there are no unread messages.
+				// When there ARE unread messages the incoming donations from donateUnreadMessages()
+				// must be the most-recent interaction so Siri reads them aloud on tap.
+				if !hasUnread {
+					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: name)
+				}
 
 				return item
 			}
