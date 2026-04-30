@@ -112,7 +112,6 @@ struct ChannelMessageList: View {
 				}
 			}
 			.defaultScrollAnchor(.bottom)
-			.defaultScrollAnchorTopAlignment()
 			.defaultScrollAnchorBottomSizeChanges()
 			.scrollDismissesKeyboard(.immediately)
 			.task(id: needsReadSync) {

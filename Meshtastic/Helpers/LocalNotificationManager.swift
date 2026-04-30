@@ -1,5 +1,8 @@
 import Foundation
 import SwiftUI
+#if os(iOS)
+import Intents
+#endif
 import OSLog
 
 @MainActor
@@ -74,8 +77,23 @@ class LocalNotificationManager {
 			if notification.critical {
 				content.sound = UNNotificationSound.defaultCritical
 			}
+
+			// If a sender intent is provided, update the content to create a Communication Notification.
+			// This is required for CarPlay/Siri to offer reading messages aloud instead of composing.
+			var finalContent: UNNotificationContent = content
+			#if os(iOS)
+			if let senderIntent = notification.senderIntent {
+				let interaction = INInteraction(intent: senderIntent, response: nil)
+				interaction.direction = .incoming
+				interaction.donate(completion: nil)
+				if let updatedContent = try? content.updating(from: senderIntent) {
+					finalContent = updatedContent
+				}
+			}
+			#endif
+
 			let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-            let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger)
+            let request = UNNotificationRequest(identifier: notification.id, content: finalContent, trigger: trigger)
 
             UNUserNotificationCenter.current().add(request) { error in
 				if let error {
@@ -119,6 +137,9 @@ struct Notification {
 	var channel: Int32?
 	var userNum: Int64?
 	var critical: Bool = false
+	#if os(iOS)
+	var senderIntent: INSendMessageIntent?
+	#endif
 }
 
 public func clearNotifications() {

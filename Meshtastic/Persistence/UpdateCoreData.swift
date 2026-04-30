@@ -563,6 +563,15 @@ extension MeshPackets {
 				do {
 					try context.save()
 					Logger.data.info("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+					// Refresh the NodeInfoEntity on the viewContext so SwiftUI observes
+					// changes to related UserEntity fields (longName, shortName, etc.)
+					let objectID = fetchedNode[0].objectID
+					DispatchQueue.main.async {
+						let viewContext = PersistenceController.shared.container.viewContext
+						if let viewNode = try? viewContext.existingObject(with: objectID) {
+							viewContext.refresh(viewNode, mergeChanges: true)
+						}
+					}
 				} catch {
 					context.rollback()
 					let nsError = error as NSError

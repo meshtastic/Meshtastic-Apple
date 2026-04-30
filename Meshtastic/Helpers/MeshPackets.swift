@@ -541,6 +541,15 @@ actor MeshPackets {
 							if !deferSave {
 								try context.save()
 								Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+								// Refresh the NodeInfoEntity on the viewContext so SwiftUI observes
+								// changes to related UserEntity fields (longName, shortName, etc.)
+								let objectID = fetchedNode[0].objectID
+								DispatchQueue.main.async {
+									let viewContext = PersistenceController.shared.container.viewContext
+									if let viewNode = try? viewContext.existingObject(with: objectID) {
+										viewContext.refresh(viewNode, mergeChanges: true)
+									}
+								}
 							}
 							return fetchedNode[0].objectID
 						} catch {
@@ -1149,20 +1158,22 @@ actor MeshPackets {
 								// Create an iOS Notification for the received DM message
 								Task {@MainActor in
 									let manager = LocalNotificationManager()
-									manager.notifications = [
-										Notification(
-											id: ("notification.id.\(newMessage.messageId)"),
-											title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-											content: messageText!,
-											target: "messages",
-											path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
-											messageId: newMessage.messageId,
-											channel: newMessage.channel,
-											userNum: Int64(packet.from),
-											critical: critical
-										)
-									]
+									var dmNotification = Notification(
+										id: ("notification.id.\(newMessage.messageId)"),
+										title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+										subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+										content: messageText!,
+										target: "messages",
+										path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
+										messageId: newMessage.messageId,
+										channel: newMessage.channel,
+										userNum: Int64(packet.from),
+										critical: critical
+									)
+									#if os(iOS)
+									dmNotification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: newMessage)
+									#endif
+									manager.notifications = [dmNotification]
 									manager.schedule()
 									
 									Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
@@ -1183,20 +1194,22 @@ actor MeshPackets {
 											if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false {
 												// Create an iOS Notification for the received channel message
 												let manager = LocalNotificationManager()
-												manager.notifications = [
-													Notification(
-														id: ("notification.id.\(newMessage.messageId)"),
-														title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-														subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-														content: messageText!,
-														target: "messages",
-														path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
-														messageId: newMessage.messageId,
-														channel: newMessage.channel,
-														userNum: Int64(newMessage.fromUser?.userId ?? "0"),
-														critical: critical
-													)
-												]
+												var chNotification = Notification(
+													id: ("notification.id.\(newMessage.messageId)"),
+													title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+													subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+													content: messageText!,
+													target: "messages",
+													path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
+													messageId: newMessage.messageId,
+													channel: newMessage.channel,
+													userNum: Int64(newMessage.fromUser?.userId ?? "0"),
+													critical: critical
+												)
+												#if os(iOS)
+												chNotification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: newMessage)
+												#endif
+												manager.notifications = [chNotification]
 												manager.schedule()
 												Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
 											}

@@ -42268,6 +42268,9 @@
         }
       }
     },
+    "Range test configuration has not been received from the radio. Try reconnecting to the device." : {
+
+    },
     "Range Test module config received: %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -42350,6 +42353,9 @@
           }
         }
       }
+    },
+    "Range test requires an encrypted private channel. The primary channel on this node is using a default or empty key." : {
+
     },
     "Read and reply to Meshtastic channel and direct messages directly from your car's display using CarPlay." : {
       "comment" : "A description of how to use CarPlay with Meshtastic.",
