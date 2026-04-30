@@ -8,51 +8,16 @@
 import Foundation
 import SwiftData
 
-/// All model types in the Meshtastic schema
+/// All model types in the Meshtastic schema.
+/// This provides a convenience accessor for the current schema version's models.
 enum MeshtasticSchema {
+	/// The current (latest) versioned schema.
+	static var current: any VersionedSchema.Type {
+		MeshtasticSchemaV1.self
+	}
+
+	/// All model types from the current schema version.
 	static var allModels: [any PersistentModel.Type] {
-		[
-			// Core entities
-			NodeInfoEntity.self,
-			UserEntity.self,
-			MyInfoEntity.self,
-			MessageEntity.self,
-			ChannelEntity.self,
-			PositionEntity.self,
-			WaypointEntity.self,
-			DeviceMetadataEntity.self,
-			TelemetryEntity.self,
-			PaxCounterEntity.self,
-			TraceRouteEntity.self,
-			TraceRouteHopEntity.self,
-			RouteEntity.self,
-			LocationEntity.self,
-			// Device hardware & firmware entities
-			DeviceHardwareEntity.self,
-			DeviceHardwareImageEntity.self,
-			DeviceHardwareTagEntity.self,
-			FirmwareReleaseEntity.self,
-			// Config entities
-			AmbientLightingConfigEntity.self,
-			BluetoothConfigEntity.self,
-			CannedMessageConfigEntity.self,
-			DetectionSensorConfigEntity.self,
-			DeviceConfigEntity.self,
-			DisplayConfigEntity.self,
-			ExternalNotificationConfigEntity.self,
-			LoRaConfigEntity.self,
-			MQTTConfigEntity.self,
-			NetworkConfigEntity.self,
-			PaxCounterConfigEntity.self,
-			PositionConfigEntity.self,
-			PowerConfigEntity.self,
-			RangeTestConfigEntity.self,
-			RTTTLConfigEntity.self,
-			SecurityConfigEntity.self,
-			SerialConfigEntity.self,
-			StoreForwardConfigEntity.self,
-			TAKConfigEntity.self,
-			TelemetryConfigEntity.self,
-		]
+		MeshtasticSchemaV1.models
 	}
 }

@@ -36,7 +36,42 @@ The last two major operating system versions are supported on iOS, iPadOS and ma
 
 - Use SwiftUI
 - Use SFSymbols for icons
-- Use Core Data for persistence
+- Use SwiftData for persistence
+
+## SwiftData Schema Versioning
+
+The app uses SwiftData with `VersionedSchema` and `SchemaMigrationPlan` for database versioning. Schema files live in `Meshtastic/Model/Schema/`.
+
+### Adding a New Schema Version
+
+1. Create `Meshtastic/Model/Schema/MeshtasticSchemaV2.swift` with the updated models:
+```swift
+enum MeshtasticSchemaV2: VersionedSchema {
+    static var versionIdentifier = Schema.Version(2, 0, 0)
+    static var models: [any PersistentModel.Type] { ... }
+}
+```
+2. Append `MeshtasticSchemaV2.self` to `MeshtasticMigrationPlan.schemas` (newest last).
+3. Add a migration stage to `MeshtasticMigrationPlan.stages`:
+```swift
+// Lightweight (SwiftData infers changes automatically)
+static let migrateV1toV2 = MigrationStage.lightweight(
+    fromVersion: MeshtasticSchemaV1.self,
+    toVersion: MeshtasticSchemaV2.self
+)
+
+// Custom (when you need to transform data)
+static let migrateV1toV2 = MigrationStage.custom(
+    fromVersion: MeshtasticSchemaV1.self,
+    toVersion: MeshtasticSchemaV2.self,
+    willMigrate: { context in },
+    didMigrate: { context in
+        // Transform data, populate new fields, etc.
+        try context.save()
+    }
+)
+```
+4. Update `MeshtasticSchema.current` to point to the new version.
 
 ## Updating Protobufs:
 

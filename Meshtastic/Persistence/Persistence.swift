@@ -31,7 +31,7 @@ class PersistenceController {
 	}
 
 	init(inMemory: Bool = false) {
-		let schema = Schema(MeshtasticSchema.allModels)
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 
 		let config = ModelConfiguration(
 			"Meshtastic",
@@ -41,7 +41,11 @@ class PersistenceController {
 		)
 
 		do {
-			container = try ModelContainer(for: schema, configurations: config)
+			container = try ModelContainer(
+				for: schema,
+				migrationPlan: MeshtasticMigrationPlan.self,
+				configurations: config
+			)
 			container.mainContext.autosaveEnabled = true
 			Logger.data.info("💾 SwiftData store initialized successfully")
 		} catch {

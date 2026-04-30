@@ -11,6 +11,8 @@
 		898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */; };
 		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
 		10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */; };
+			6467579F9E9E4B0EAA009615 /* MeshtasticSchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */; };
+			74BEA4429B3945AEBA11E977 /* MeshtasticMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */; };
 		AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0001 /* DeviceHardwareImageEntity.swift */; };
 		AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0002 /* DeviceHardwareTagEntity.swift */; };
 		AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0003 /* FirmwareReleaseEntity.swift */; };
@@ -493,6 +495,8 @@
 		4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigModels.swift; sourceTree = "<group>"; };
 		509A1C42A695463093654617 /* DeviceMetadataEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetadataEntity.swift; sourceTree = "<group>"; };
 		38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchema.swift; sourceTree = "<group>"; };
+			05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchemaV1.swift; sourceTree = "<group>"; };
+			1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticMigrationPlan.swift; sourceTree = "<group>"; };
 		AA00SDRF0001 /* DeviceHardwareImageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareImageEntity.swift; sourceTree = "<group>"; };
 		AA00SDRF0002 /* DeviceHardwareTagEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareTagEntity.swift; sourceTree = "<group>"; };
 		AA00SDRF0003 /* FirmwareReleaseEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareReleaseEntity.swift; sourceTree = "<group>"; };
@@ -1127,6 +1131,15 @@
 			path = Firmware;
 			sourceTree = "<group>";
 		};
+			D952A49BD44F4EB19722C716 /* Schema */ = {
+				isa = PBXGroup;
+				children = (
+					05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */,
+					1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */,
+				);
+				path = Schema;
+				sourceTree = "<group>";
+			};
 		23196C712EF42D4300B1504B /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -1852,6 +1865,7 @@
 				E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */,
 				2315D1A32EED94D700E0FAE7 /* Firmware */,
 				231B3F1E2D0879BC0069A07D /* Metrics Visualization */,
+					D952A49BD44F4EB19722C716 /* Schema */,
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 			);
 			path = Model;
@@ -2420,6 +2434,8 @@
 				AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */,
 				AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */,
 				10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */,
+					6467579F9E9E4B0EAA009615 /* MeshtasticSchemaV1.swift in Sources */,
+					74BEA4429B3945AEBA11E977 /* MeshtasticMigrationPlan.swift in Sources */,
 				D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */,
 				85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */,
 				9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */,
