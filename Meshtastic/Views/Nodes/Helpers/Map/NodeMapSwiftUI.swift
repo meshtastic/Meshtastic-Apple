@@ -238,6 +238,20 @@ struct NodeMapSwiftUI: View {
 		}
 	}
 
+	/// Returns a camera distance that ensures the precision circle is fully visible.
+	/// For precise positions (precisionBits == 32 or 0), returns the default distance.
+	/// For imprecise positions, scales the precision radius so the circle fits comfortably.
+	private func cameraDistanceForPrecision(_ position: PositionEntity?) -> Double {
+		guard let position,
+			  12...24 ~= position.precisionBits,
+			  let pp = PositionPrecision(rawValue: Int(position.precisionBits)) else {
+			return distance
+		}
+		// Camera distance needs to be roughly 4× the circle diameter to show it with padding
+		let needed = pp.precisionMeters * 10.0
+		return max(distance, needed)
+	}
+
 	private func handleNodeChange() {
 		isLookingAround = false
 		isShowingAltitude = false
@@ -245,7 +259,8 @@ struct NodeMapSwiftUI: View {
 		if node.positions?.count ?? 0 > 1 {
 			position = .automatic
 		} else if let mrCoord = newMostRecent?.coordinate {
-			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
+			let cameraDistance = cameraDistanceForPrecision(newMostRecent)
+			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: cameraDistance, heading: 0, pitch: 0))
 		}
 		if let newMostRecent {
 			Task {
@@ -261,7 +276,8 @@ struct NodeMapSwiftUI: View {
 		if node.positions?.count ?? 0 > 1 {
 			position = .automatic
 		} else if let mrCoord = mostRecent?.coordinate {
-			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
+			let cameraDistance = cameraDistanceForPrecision(mostRecent)
+			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: cameraDistance, heading: 0, pitch: 0))
 		}
 		if scene == nil, let mrCoord = mostRecent?.coordinate {
 			Task {
