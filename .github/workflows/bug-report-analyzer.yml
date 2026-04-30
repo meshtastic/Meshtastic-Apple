@@ -50,24 +50,74 @@ jobs:
             // Steps-to-reproduce needs more detail than a one-liner to be useful.
             const MIN_STEPS_LENGTH = 30;
             // Cap how many tokens the model may return per response.
-            const MAX_RESPONSE_TOKENS = 1200;
+            const MAX_RESPONSE_TOKENS = 2500;
             // Low temperature → deterministic, factual answers (not creative).
             const MODEL_TEMPERATURE = 0.2;
             // How deep to recurse when scanning the repo for Swift files.
-            const MAX_SEARCH_DEPTH = 4;
+            const MAX_SEARCH_DEPTH = 6;
             // Max number of file paths sent to the model for relevance ranking.
-            const MAX_FILES_TO_LIST = 300;
-            // Max number of files whose contents are actually read and included.
-            const MAX_FILES_TO_READ = 5;
+            const MAX_FILES_TO_LIST = 400;
+            // Max number of files whose full top-of-file content is included.
+            const MAX_FILES_TO_READ = 8;
             // Ask the model to return a slightly larger set so that if some paths
             // don't exist we still have MAX_FILES_TO_READ valid candidates to read.
-            const FILE_SELECTION_BUFFER = 3;
-            // Max lines read from each source file to stay within token budget.
-            const MAX_LINES_PER_FILE = 250;
+            const FILE_SELECTION_BUFFER = 4;
+            // Max lines read from the top of each source file.
+            // Many important functions begin well past line 250, so we read more
+            // and also supplement with targeted symbol extraction below.
+            const MAX_LINES_PER_FILE = 400;
+            // Max symbols the model may request for targeted extraction.
+            const MAX_SYMBOLS_TO_EXTRACT = 12;
+            // Lines of context to include before and after each symbol match.
+            const SYMBOL_CONTEXT_BEFORE = 5;
+            const SYMBOL_CONTEXT_AFTER  = 80;
+
+            // ── codebase architecture note sent with every AI call ────────────
+            // This gives the model enough context to reason about the project
+            // without reading every file from scratch each time.
+            const ARCH_NOTE = `
+            ## Meshtastic-Apple codebase overview (for context)
+
+            - **Language / UI**: Swift only, SwiftUI for all UI, iOS/iPadOS/macOS Catalyst.
+            - **Entry point**: \`Meshtastic/MeshtasticApp.swift\` – initialises \`AppState\`,
+              \`Router\`, \`AccessoryManager\`, \`PersistenceController\`.
+            - **Connectivity**: \`AccessoryManager\` (split across \`AccessoryManager+*.swift\`
+              extension files). BLE/TCP/serial transports in \`Meshtastic/Accessory/Transports/\`.
+              Incoming radio packets are dispatched in \`AccessoryManager+FromRadio.swift\`.
+            - **Persistence**: Core Data only. \`PersistenceController.shared\` holds the
+              \`NSPersistentContainer\`.
+              - \`viewContext\` has \`automaticallyMergesChangesFromParent = true\` and uses
+                \`NSMergeByPropertyObjectTrumpMergePolicy\`.
+              - Background writes go through the \`MeshPackets\` actor
+                (\`Meshtastic/Helpers/MeshPackets.swift\`), which owns a single long-lived
+                \`backgroundContext\` (also \`NSMergeByPropertyObjectTrumpMergePolicy\`).
+                \`resetContextIfNeeded()\` calls \`backgroundContext.reset()\` every 50 saves
+                to reclaim memory.
+              - \`UpdateCoreData.swift\` contains additional upsert helpers that use a
+                separate \`self.backgroundContext\` reference.
+            - **Key packet handlers**:
+              - \`MeshPackets.nodeInfoPacket(nodeInfo:channel:deferSave:)\` –
+                insert/update \`NodeInfoEntity\` + \`UserEntity\` from a \`NodeInfo\` proto
+                received during database sync.
+              - \`UpdateCoreData.upsertNodeInfoPacket(packet:)\` –
+                insert/update from a live \`NODEINFO_APP\` \`MeshPacket\` broadcast.
+            - **Node list UI**:
+              - \`NodeList.swift\` / \`FilteredNodeList\` – uses \`@FetchRequest\` over
+                \`NodeInfoEntity\`, sorted by \`user.longName\`.
+                \`request.relationshipKeyPathsForPrefetching = ["user"]\` (prefetch, not
+                change-tracking).
+              - \`NodeListItem.swift\` – \`@ObservedObject var node: NodeInfoEntity\`
+                (will re-render when the \`NodeInfoEntity\` managed object is updated in
+                the \`viewContext\`; changes to the related \`UserEntity\` propagate only if
+                the \`NodeInfoEntity\` itself is also dirtied).
+            - **Logging**: \`OSLog / Logger\` (never \`print\`). Typed loggers in
+              \`Meshtastic/Extensions/Logger.swift\`.
+            - **Testing**: \`MeshtasticTests/\` – Swift Testing framework.
+            `;
 
             // ── helpers ──────────────────────────────────────────────────────
 
-            async function callModelsAPI(systemMessage, userMessage) {
+            async function callModelsAPI(systemMessage, userMessage, maxTokens) {
               const response = await fetch(MODELS_API_URL, {
                 method: 'POST',
                 headers: {
@@ -80,7 +130,7 @@ jobs:
                     { role: 'system', content: systemMessage },
                     { role: 'user',   content: userMessage   },
                   ],
-                  max_tokens: MAX_RESPONSE_TOKENS,
+                  max_tokens: maxTokens || MAX_RESPONSE_TOKENS,
                   temperature: MODEL_TEMPERATURE,
                 }),
               });
@@ -220,14 +270,18 @@ jobs:
             const SYSTEM_MESSAGE =
               'You are an expert iOS/macOS Swift developer helping to triage bug ' +
               'reports for the Meshtastic Apple app – a SwiftUI mesh-radio ' +
-              'communication app that uses Bluetooth LE and a Core Data stack. ' +
-              'Be concise, specific, and reference real code paths when possible.';
+              'communication app that uses Bluetooth LE, SwiftUI, and a Core Data ' +
+              'stack with background contexts. Be precise, specific, and always ' +
+              'reference real file paths, type names, and line numbers when available. ' +
+              'When you identify suspicious code quote the exact lines.\n\n' +
+              ARCH_NOTE;
 
             try {
               const fs   = require('fs');
               const path = require('path');
 
-              // Collect all Swift source file paths (max depth 4, skip generated dirs).
+              // ── Phase 1: collect all Swift file paths ──────────────────────
+
               const SKIP_DIRS = new Set([
                 'node_modules', '.git', 'DerivedData', 'build',
                 'MeshtasticProtobufs',
@@ -251,81 +305,192 @@ jobs:
                 return results;
               }
 
-              const root      = process.cwd();
-              const allFiles  = collectSwiftFiles(root, 0);
-              const fileList  = allFiles
+              const root     = process.cwd();
+              const allFiles = collectSwiftFiles(root, 0);
+              const fileList = allFiles
                 .map(f => path.relative(root, f))
                 .slice(0, MAX_FILES_TO_LIST)
                 .join('\n');
 
-              // Ask the model which files are most relevant.
-              const fileSelectionPrompt =
+              // ── Phase 2: ask the model for relevant files AND search symbols ─
+              //
+              // We request two things in one call to save quota:
+              //  • "files"   – relative file paths to read in full (top N lines)
+              //  • "symbols" – Swift function/class/struct/variable names to extract
+              //                from the codebase using targeted grep-style search.
+              //                These can appear in ANY file, not just the listed ones.
+
+              const selectionPrompt =
                 `Bug title: ${title}\n` +
-                `Steps to reproduce: ${stepsToReproduce}\n` +
-                `Expected: ${expectedBehavior}\n` +
-                `Current: ${currentBehavior}\n` +
+                `Steps to reproduce: ${stepsToReproduce || '(not provided)'}\n` +
+                `Expected: ${expectedBehavior || '(not provided)'}\n` +
+                `Current: ${currentBehavior || '(not provided)'}\n` +
                 (additionalComments ? `Additional: ${additionalComments}\n` : '') +
                 `\nAvailable Swift source files:\n${fileList}\n\n` +
-                'Return ONLY a JSON array (no markdown, no explanation) of the ' +
-                `${MAX_FILES_TO_READ}–${MAX_FILES_TO_READ + FILE_SELECTION_BUFFER} ` +
-                'file paths most likely to contain the bug.';
+                'Return ONLY valid JSON (no markdown, no explanation) with exactly ' +
+                'two keys:\n' +
+                `  "files":   array of ${MAX_FILES_TO_READ}–${MAX_FILES_TO_READ + FILE_SELECTION_BUFFER} ` +
+                'relative file paths most likely to contain the bug.\n' +
+                `  "symbols": array of up to ${MAX_SYMBOLS_TO_EXTRACT} Swift ` +
+                'function names, class names, struct names, or variable names that ' +
+                'are most likely involved in the bug. These will be searched across ' +
+                'ALL Swift files to extract the surrounding implementation, so prefer ' +
+                'specific leaf-function names over broad type names.\n' +
+                'Example: {"files":["Meshtastic/Foo.swift"],"symbols":["upsertNodeInfoPacket","automaticallyMergesChangesFromParent"]}';
 
               let relevantFiles = [];
+              let searchSymbols = [];
               try {
-                const raw = await callModelsAPI(SYSTEM_MESSAGE, fileSelectionPrompt);
-                // Strip potential markdown fences before parsing.
+                const raw = await callModelsAPI(SYSTEM_MESSAGE, selectionPrompt, 600);
                 const cleaned = raw.replace(/```[a-z]*\n?/g, '').trim();
-                relevantFiles = JSON.parse(cleaned);
+                const parsed = JSON.parse(cleaned);
+                if (Array.isArray(parsed.files))   relevantFiles = parsed.files;
+                if (Array.isArray(parsed.symbols)) searchSymbols = parsed.symbols;
               } catch (e) {
-                core.warning(`File selection failed: ${e.message}`);
+                core.warning(`File/symbol selection failed: ${e.message}`);
               }
 
-              // Read up to MAX_FILES_TO_READ files, capping each at MAX_LINES_PER_FILE lines to stay within token budget.
+              // ── Phase 3a: read top N lines from each relevant file ──────────
+
               let codeContext = '';
+              const readFiles = new Set();
               for (const relPath of relevantFiles.slice(0, MAX_FILES_TO_READ)) {
                 const absPath = path.join(root, relPath);
                 if (!fs.existsSync(absPath)) continue;
                 try {
-                  const content = fs.readFileSync(absPath, 'utf8');
-                  const snippet = content.split('\n').slice(0, MAX_LINES_PER_FILE).join('\n');
-                  codeContext += `\n\n### ${relPath}\n\`\`\`swift\n${snippet}\n\`\`\``;
+                  const lines   = fs.readFileSync(absPath, 'utf8').split('\n');
+                  const snippet = lines.slice(0, MAX_LINES_PER_FILE).join('\n');
+                  const note    = lines.length > MAX_LINES_PER_FILE
+                    ? `  ← first ${MAX_LINES_PER_FILE} of ${lines.length} lines`
+                    : `  ← ${lines.length} lines (complete)`;
+                  codeContext += `\n\n### ${relPath}${note}\n\`\`\`swift\n${snippet}\n\`\`\``;
+                  readFiles.add(relPath);
                 } catch (_) {}
               }
 
-              const analysisPrompt =
-                `Bug title: ${title}\n` +
-                `Firmware Version: ${firmwareVersion}\n` +
-                `Steps to reproduce: ${stepsToReproduce}\n` +
-                `Expected: ${expectedBehavior}\n` +
-                `Current: ${currentBehavior}\n` +
-                (additionalComments ? `Additional: ${additionalComments}\n` : '') +
-                (codeContext
-                  ? `\nRelevant source code:${codeContext}\n`
-                  : '\n(No source files matched – reason from code structure)\n') +
-                '\nPlease provide:\n' +
-                '1. **Likely root cause** – a concise hypothesis with references to ' +
-                'specific files, types, or functions.\n' +
-                '2. **Relevant code areas** – file paths and line ranges worth ' +
-                'investigating.\n' +
-                '3. **Clarifying questions** – any details that would confirm or rule ' +
-                'out the hypothesis.\n' +
-                '4. **Suggested investigation steps** – what a developer should do ' +
-                'next.\n';
+              // ── Phase 3b: targeted symbol extraction ───────────────────────
+              //
+              // For each symbol the model flagged, search every Swift file for
+              // lines that define or prominently reference it, then emit a
+              // context window around each match.  This surfaces the actual
+              // function body even when it lives deep in a large file.
 
-              const analysis = await callModelsAPI(SYSTEM_MESSAGE, analysisPrompt);
+              function extractSymbolContext(symbol) {
+                // Matches Swift declaration patterns and prominent call sites.
+                // We cast a wide net: func, class, struct, enum, extension, var,
+                // let, typealias, and protocol declarations, plus any line that
+                // contains the symbol as a word (not just a substring).
+                const declRe = new RegExp(
+                  `(?:func|class|struct|enum|extension|var|let|typealias|protocol)\\s+${escapeRegExp(symbol)}\\b`,
+                  'i'
+                );
+                const callRe = new RegExp(`\\b${escapeRegExp(symbol)}\\b`);
+
+                const matches = [];
+                for (const absPath of allFiles) {
+                  const relPath = path.relative(root, absPath);
+                  let lines;
+                  try { lines = fs.readFileSync(absPath, 'utf8').split('\n'); }
+                  catch (_) { continue; }
+
+                  for (let i = 0; i < lines.length; i++) {
+                    if (!declRe.test(lines[i])) continue;
+                    const start = Math.max(0, i - SYMBOL_CONTEXT_BEFORE);
+                    const end   = Math.min(lines.length, i + SYMBOL_CONTEXT_AFTER + 1);
+                    const snippet = lines.slice(start, end)
+                      .map((l, idx) => `${start + idx + 1}: ${l}`)
+                      .join('\n');
+                    matches.push({ relPath, lineNum: i + 1, snippet });
+                    // One declaration match per file is usually enough.
+                    break;
+                  }
+                }
+                return matches;
+              }
+
+              function escapeRegExp(s) {
+                return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              }
+
+              let symbolContext = '';
+              const symbolsExtracted = [];
+              for (const sym of searchSymbols.slice(0, MAX_SYMBOLS_TO_EXTRACT)) {
+                const hits = extractSymbolContext(sym);
+                if (hits.length === 0) continue;
+                symbolsExtracted.push(sym);
+                for (const { relPath, lineNum, snippet } of hits) {
+                  symbolContext +=
+                    `\n\n### Symbol \`${sym}\` – ${relPath}:${lineNum}\n` +
+                    `\`\`\`swift\n${snippet}\n\`\`\``;
+                }
+              }
+
+              if (symbolsExtracted.length > 0) {
+                core.info(`Extracted ${symbolsExtracted.length} symbols: ${symbolsExtracted.join(', ')}`);
+              }
+
+              // ── Phase 4: full analysis ─────────────────────────────────────
+
+              const analysisPrompt =
+                `## Bug report\n` +
+                `**Title**: ${title}\n` +
+                `**Firmware Version**: ${firmwareVersion || '(not provided)'}\n` +
+                `**Steps to reproduce**: ${stepsToReproduce || '(not provided)'}\n` +
+                `**Expected**: ${expectedBehavior || '(not provided)'}\n` +
+                `**Current**: ${currentBehavior || '(not provided)'}\n` +
+                (additionalComments ? `**Additional**: ${additionalComments}\n` : '') +
+                (codeContext
+                  ? `\n## Relevant source files (top of file)\n${codeContext}`
+                  : '') +
+                (symbolContext
+                  ? `\n## Targeted symbol extractions\n${symbolContext}`
+                  : '\n*(No symbol extractions available)*') +
+                '\n\n## Your task\n' +
+                'Perform a thorough analysis of this bug. You have been given the real ' +
+                'source code above. Base every claim on what you can see in that code.\n\n' +
+                'Structure your response with these exact headings:\n\n' +
+                '### 1. Root Cause Hypothesis\n' +
+                'A precise, evidence-based explanation of why the bug occurs. ' +
+                'Reference specific files, types, and function names.\n\n' +
+                '### 2. Suspect Code\n' +
+                'List every specific code location you consider suspicious or ' +
+                'incorrect. For each one:\n' +
+                '- **File**: relative path\n' +
+                '- **Line(s)**: line number(s)\n' +
+                '- **Snippet**: the exact lines (quoted verbatim from the code above)\n' +
+                '- **Why it is suspect**: concise technical explanation\n\n' +
+                '### 3. Supporting Evidence\n' +
+                'Other code areas that corroborate the hypothesis (file + line + brief note).\n\n' +
+                '### 4. Clarifying Questions\n' +
+                'Up to 3 questions whose answers would confirm or rule out the hypothesis.\n\n' +
+                '### 5. Suggested Fix Direction\n' +
+                'A short description of what a developer should change to fix the bug, ' +
+                'without writing the full implementation.';
+
+              const analysis = await callModelsAPI(SYSTEM_MESSAGE, analysisPrompt, MAX_RESPONSE_TOKENS);
 
               const incompleteWarning = missing.length > 0
                 ? `> [!WARNING]\n> **⚠️ This analysis is based on incomplete information.** The following fields are missing or too brief: ${missing.map(m => m.replace(/^- \*\*|\*\*.*/g, '')).join(', ')}. The findings below may be inaccurate or misleading. This comment will be updated automatically once the issue is filled in.\n\n`
                 : '';
 
+              const filesRead    = [...readFiles].map(f => `\`${f}\``).join(', ') || '*(none)*';
+              const symsSearched = symbolsExtracted.map(s => `\`${s}\``).join(', ') || '*(none)*';
+
               const commentBody = `${BOT_ANALYSIS_MARKER}${missing.length > 0 ? `\n${BOT_INCOMPLETE_ANALYSIS_MARKER}` : ''}
             ## 🤖 Automated Bug Report Analysis
 
-            ${incompleteWarning}Thank you for the ${missing.length > 0 ? 'report' : 'detailed report'}! Here is an automated analysis to help the maintainers investigate:
+            ${incompleteWarning}Thank you for the ${missing.length > 0 ? 'report' : 'detailed report'}! Here is an automated deep analysis to help the maintainers investigate:
 
             ${analysis}
 
             ---
+            <details>
+            <summary>Analysis metadata</summary>
+
+            **Files read (top ${MAX_LINES_PER_FILE} lines each):** ${filesRead}
+            **Symbols extracted from full codebase:** ${symsSearched}
+            </details>
+
             *This analysis was generated automatically from the issue description and the repository source. A human maintainer will review and follow up shortly.*`;
 
               if (existingAnalysis) {
