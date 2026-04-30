@@ -17,6 +17,15 @@ extension Date {
 		}
 	}
 
+	func formattedDate(format: String) -> String {
+		guard self.timeIntervalSince1970 > 0 else {
+			return "Unknown Age".localized
+		}
+		let formatter = DateFormatter()
+		formatter.dateFormat = format
+		return formatter.string(from: self)
+	}
+
 	func relativeTimeOfDay() -> String {
 		let hour = Calendar.current.component(.hour, from: self)
 
