@@ -20,6 +20,7 @@ struct DiscoveryScanView: View {
 	@State private var selectedPresets: Set<ModemPresets> = []
 	@State private var dwellMinutes: Int = 15
 	@State private var showHistory = false
+	@State private var showDefaultKeyAlert = false
 
 	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
 	private var nodes: [NodeInfoEntity]
@@ -29,6 +30,13 @@ struct DiscoveryScanView: View {
 	private var connectedNode: NodeInfoEntity? {
 		let nodeNum = UserDefaults.preferredPeripheralNum
 		return nodes.first(where: { $0.num == Int64(nodeNum) })
+	}
+
+	private var primaryChannelUsesDefaultKey: Bool {
+		guard let channels = connectedNode?.myInfo?.channels else { return true }
+		guard let primaryChannel = channels.first(where: { $0.role == 1 }) else { return true }
+		let defaultKey = Data([0x01])
+		return primaryChannel.psk == nil || primaryChannel.psk == defaultKey || primaryChannel.psk?.isEmpty == true
 	}
 
 	private var availablePresets: [ModemPresets] {
@@ -47,6 +55,12 @@ struct DiscoveryScanView: View {
 				}
 
 				if engine.currentState == .idle {
+					if !primaryChannelUsesDefaultKey {
+						Section {
+							Label("The primary channel must use the default key to perform a discovery scan.", systemImage: "exclamationmark.triangle.fill")
+								.foregroundStyle(.orange)
+						}
+					}
 					presetPickerSection
 					dwellConfigSection
 				}
@@ -102,6 +116,14 @@ struct DiscoveryScanView: View {
 			}
 			engine?.configure(accessoryManager: accessoryManager, modelContext: context)
 			engine?.checkForInterruptedSessions(context: context)
+			if !primaryChannelUsesDefaultKey {
+				showDefaultKeyAlert = true
+			}
+		}
+		.alert("Default Key Required", isPresented: $showDefaultKeyAlert) {
+			Button("OK", role: .cancel) { }
+		} message: {
+			Text("Local Mesh Discovery requires the primary channel to use the default key. Please reset your primary channel key to the default before scanning.")
 		}
 	}
 
@@ -199,7 +221,7 @@ struct DiscoveryScanView: View {
 				} label: {
 					Label("Start Scan", systemImage: "play.fill")
 				}
-				.disabled(selectedPresets.isEmpty || !accessoryManager.isConnected)
+				.disabled(selectedPresets.isEmpty || !accessoryManager.isConnected || !primaryChannelUsesDefaultKey)
 			} else if engine.isScanning {
 				Button(role: .destructive) {
 					Task { await engine.stopScan() }
