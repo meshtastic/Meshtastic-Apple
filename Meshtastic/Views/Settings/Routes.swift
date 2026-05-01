@@ -120,7 +120,7 @@ struct Routes: View {
 								.padding(.top)
 								.foregroundStyle(.primary)
 
-							Text("\(route.date?.formatted() ?? "Unknown Time")")
+							Text("\(route.date?.formatted(date: .numeric, time: .shortened) ?? "Unknown Time")")
 								.padding(.bottom)
 								.font(.callout)
 								.foregroundColor(.gray)

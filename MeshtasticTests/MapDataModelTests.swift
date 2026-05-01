@@ -172,23 +172,23 @@ struct MapDataErrorTests {
 	}
 }
 
-// MARK: - CoreDataError Tests
+// MARK: - PersistenceError Tests
 
-@Suite("CoreDataError Descriptions")
-struct CoreDataErrorDescriptionTests {
+@Suite("PersistenceError Descriptions")
+struct PersistenceErrorDescriptionTests {
 
 	@Test func invalidInput_description() {
-		let err = CoreDataError.invalidInput(message: "test message")
+		let err = PersistenceError.invalidInput(message: "test message")
 		#expect(err.errorDescription?.contains("test message") == true)
 	}
 
 	@Test func saveFailed_description() {
-		let err = CoreDataError.saveFailed(message: "save error")
+		let err = PersistenceError.saveFailed(message: "save error")
 		#expect(err.errorDescription?.contains("save error") == true)
 	}
 
 	@Test func entityCreationFailed_description() {
-		let err = CoreDataError.entityCreationFailed(message: "creation failed")
+		let err = PersistenceError.entityCreationFailed(message: "creation failed")
 		#expect(err.errorDescription?.contains("creation failed") == true)
 	}
 }

@@ -59,7 +59,7 @@ struct AppData: View {
 				VStack(alignment: .leading ) {
 					if file.pathExtension.contains("sqlite") {
 						Label {
-							Text("Node Core Data Backup \(file.pathComponents[(idiom == .phone || idiom == .pad) ? 9 : 10])/\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
+							Text("Node Core Data Backup \(file.pathComponents[(idiom == .phone || idiom == .pad) ? 9 : 10])/\(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
 								.swipeActions {
 									Button(role: .destructive) {
 										do {
@@ -79,7 +79,7 @@ struct AppData: View {
 						}
 					} else {
 						Label {
-							Text("\(file.lastPathComponent) - \(file.creationDate?.formatted() ?? "") - \(file.fileSizeString)")
+							Text("\(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
 								.swipeActions {
 									Button(role: .destructive) {
 										do {

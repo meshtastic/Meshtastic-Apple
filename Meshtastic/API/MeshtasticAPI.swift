@@ -95,8 +95,12 @@ extension MeshtasticAPI {
 
 class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// Singleton Access
-	static let shared = {
-		MeshtasticAPI(container: PersistenceController.shared.container)
+	static let shared: MeshtasticAPI = {
+		let isTest = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+		if isTest {
+			return MeshtasticAPI(container: nil)
+		}
+		return MeshtasticAPI(container: PersistenceController.shared.container)
 	}()
 	
 	// MARK: - Constants
@@ -107,13 +111,14 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// MARK: - Private properties
 	private let fileManager = FileManager.default
 	private let decoder = JSONDecoder()
-	private let container: ModelContainer
+	private let container: ModelContainer?
 	
 	@Published var isLoadingDeviceList: Bool = false
 	@Published var isLoadingFirmwareList: Bool = false
 	
-	private init(container: ModelContainer) {
+	private init(container: ModelContainer?) {
 		self.container = container
+		guard container != nil else { return }
 		Task.detached {
 			try? await self.refreshDevicesAPIData()
 			try? await self.refreshFirmwareAPIData()
@@ -136,7 +141,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 		// All DB work on mainContext so @Query observers see changes
 		await MainActor.run {
-			let context = container.mainContext
+			let context = container!.mainContext
 
 			for stableRelease in decodedFirmware.releases.stable {
 				self.processFirmware(release: stableRelease, releaseType: .stable, context: context)
@@ -205,7 +210,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 		// PHASE 2: Database on mainContext so @Query observers see changes
 		try await MainActor.run {
-			let context = container.mainContext
+			let context = container!.mainContext
 
 			// 1. Update Devices and Tags
 			for device in decodedDevices {
@@ -267,7 +272,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 		// Final cleanup of images on mainContext
 		await MainActor.run {
-			let context = container.mainContext
+			let context = container!.mainContext
 			Self.deleteOrphanedImages(context: context)
 			try? context.save()
 		}
@@ -318,7 +323,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 
 		// 2. DB: Check if we already have this version or a usable cached version
 		let isUpToDate: Bool = await MainActor.run {
-			let context = container.mainContext
+			let context = container!.mainContext
 			var imageDescriptor = FetchDescriptor<DeviceHardwareImageEntity>(
 				predicate: #Predicate { $0.fileName == imageName }
 			)
@@ -373,7 +378,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		}
 
 		await MainActor.run {
-			let context = container.mainContext
+			let context = container!.mainContext
 
 			// Find the Device
 			var deviceDescriptor = FetchDescriptor<DeviceHardwareEntity>(

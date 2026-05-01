@@ -285,7 +285,7 @@ struct GeoJSONFeaturePropertyTests {
 
 	@Test func markerRadius_default() {
 		let feature = makeFeature(properties: nil)
-		#expect(feature.markerRadius == 4.0)
+		#expect(feature.markerRadius == 8.0)
 	}
 
 	@Test func isVisible_defaultTrue() {

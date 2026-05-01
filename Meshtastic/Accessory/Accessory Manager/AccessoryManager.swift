@@ -123,7 +123,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Chicken/Egg problem.  Set in the App object immediately after
 	// AppState and AccessoryManager are created
 	var appState: AppState!
-	let context = PersistenceController.shared.context
+	lazy var context = PersistenceController.shared.context
 	let mqttManager = MqttClientProxyManager.shared
 
 	// Published Stuff
@@ -185,10 +185,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		self.mqttManager.delegate = self
 
 		// Listen for system memory warnings to proactively save pending changes
-		NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
-			guard let self else { return }
-			try? self.context.save()
-			Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
+		if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
+			NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
+				guard let self else { return }
+				try? self.context.save()
+				Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
+			}
 		}
 	}
 

@@ -50,32 +50,29 @@ extension View {
 	/// Standard capsule-shaped prominent button styling.
 	@ViewBuilder
 	func capsuleButtonStyle() -> some View {
-		if #available(iOS 26.0, macOS 26.0, *) {
-			self
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.buttonStyle(.borderedProminent)
-				.glassEffect(in: .capsule)
-		} else {
-			self
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.buttonStyle(.borderedProminent)
-		}
+		self
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding(.horizontal)
+			.buttonStyle(.borderedProminent)
 	}
 
 	@ViewBuilder
 	func glassButtonStyle() -> some View {
 		if #available(iOS 26.0, macOS 26.0, *) {
-			self.buttonStyle(.glass)
+			glassButtonStyleOS26()
 		} else {
 			self
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
 		}
+	}
+
+	@available(iOS 26.0, macOS 26.0, *)
+	@ViewBuilder
+	private func glassButtonStyleOS26() -> some View {
+		self.buttonStyle(.glass)
 	}
 }
 

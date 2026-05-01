@@ -8,6 +8,29 @@
 
 /* Begin PBXBuildFile section */
 		0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */; };
+		48E682ECE71246C3BFBD6B8F /* ChannelEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E6EDE744E3446FA1084499 /* ChannelEntity.swift */; };
+		898C6C4E60B640B3A285AF25 /* ConfigModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */; };
+		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
+		10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */; };
+			6467579F9E9E4B0EAA009615 /* MeshtasticSchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */; };
+			74BEA4429B3945AEBA11E977 /* MeshtasticMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */; };
+		AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0001 /* DeviceHardwareImageEntity.swift */; };
+		AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0002 /* DeviceHardwareTagEntity.swift */; };
+		AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0003 /* FirmwareReleaseEntity.swift */; };
+		D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3204EF969484E549C139730 /* MessageEntity.swift */; };
+		85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */; };
+		9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7101240749F24E96835A040A /* NodeInfoEntity.swift */; };
+		D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
+		93FFCD83202042FB85B47CFD /* RouteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */; };
+		5D3AFC6F08ED4C909C830C55 /* TelemetryEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31483AF5F5354D3481698E32 /* TelemetryEntity.swift */; };
+		7B1684B5E1AF4137829C03B8 /* TraceRouteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */; };
+		70A5B362F7EC4F14A99A8C39 /* UserEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 918722D2C1474B2D99ED01DC /* UserEntity.swift */; };
+		E340A7CA75194A49AB8763C7 /* WaypointEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */; };
+		AA000401SIRI000000000002 /* AppIntentVocabulary.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA000401SIRI000000000001 /* AppIntentVocabulary.plist */; };
+		AA000301CPTST000000000002 /* CarPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000301CPTST000000000001 /* CarPlayTests.swift */; };
+		AA000201CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
+		AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */; };
+		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
 		102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAE2E172F41003D191E /* DatadogLogs */; };
@@ -229,7 +252,6 @@
 		DD000012COTEXTTST0000001 /* CoTExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000012COTEXTTST0000000 /* CoTExtensionTests.swift */; };
 		DD000013FWAPITST00000001 /* FirmwareAndAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000013FWAPITST00000000 /* FirmwareAndAPITests.swift */; };
 		DD000014RTRDLTST00000001 /* RouterDeepLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000014RTRDLTST00000000 /* RouterDeepLinkTests.swift */; };
-		DD000015FNTCDTST00000001 /* FountainCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000015FNTCDTST00000000 /* FountainCodecTests.swift */; };
 		DD000016NAVSTATST00000001 /* NavigationStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000016NAVSTATST00000000 /* NavigationStateTests.swift */; };
 		DD000017MTRVZTST00000001 /* MetricsVisualizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000017MTRVZTST00000000 /* MetricsVisualizationTests.swift */; };
 		DD000018RTMISCTST0000001 /* RoutingAndMiscTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000018RTMISCTST0000000 /* RoutingAndMiscTests.swift */; };
@@ -237,7 +259,7 @@
 		DD00001AASYNCCTST0000001 /* AsyncConcurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001AASYNCCTST0000000 /* AsyncConcurrencyTests.swift */; };
 		DD00001BINTCVRTST0000001 /* IntentConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */; };
 		DD00001CMAPDATTST0000001 /* MapDataModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */; };
-		DD00001DCDENTTST00000001 /* CoreDataEntityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */; };
+		DD00001DCDENTTST00000001 /* EntityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001DCDENTTST00000000 /* EntityTests.swift */; };
 		DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */; };
 		DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */; };
 		DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */; };
@@ -248,13 +270,66 @@
 		DD000025COTMSGDTL0000001 /* CoTMessageDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000025COTMSGDTL0000000 /* CoTMessageDetailedTests.swift */; };
 		DD000026STREXTDTL0000001 /* StringExtensionDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000026STREXTDTL0000000 /* StringExtensionDetailedTests.swift */; };
 		DD000027REMEUTLTST000001 /* RemainingEnumAndUtilTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000027REMEUTLTST000000 /* RemainingEnumAndUtilTests.swift */; };
-		DD000028FNTCDDTLTST00001 /* FountainCodecDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000028FNTCDDTLTST00000 /* FountainCodecDetailedTests.swift */; };
 		DD000029APSTFWTST0000001 /* AppSettingsAndFirmwareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */; };
 		DD00002AINTREMTST00000001 /* IntentAndRemainingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */; };
 		DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */; };
-		DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */; };
 		DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */; };
-		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
+		DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */; };
+		DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */; };
+		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
+		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
+		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
+		3D3417C82E29D38A006A988B /* GeoJSONOverlayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */; };
+		3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D12E2DC260006A988B /* MapDataManager.swift */; };
+		3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417D32E2DC293006A988B /* MapDataFiles.swift */; };
+		655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F203877F307073096C89179 /* FountainCodec.swift */; };
+		6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D825E612C34786C008DBEE4 /* CommonRegex.swift */; };
+		6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */; };
+		6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */; };
+		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
+		7CCBCA0251DAB58FD9D63D06 /* GenericCoTHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */; };
+		8398407DBA32EE7CFC16A385 /* TAKDataPackageGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */; };
+		8A8F2D8A3769D24BAB88B4A1 /* CoTMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */; };
+		8D3F8A3F2D44BB02009EAAA4 /* PowerMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */; };
+		8D3F8A412D44C2A6009EAAA4 /* PowerMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */; };
+		8E587743574CE17703E892C6 /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 518D504DED9874EBF9D76578 /* Certificates */; };
+		8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748E4806582595DE80D455CD /* CoTXMLParser.swift */; };
+		9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
+		A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
+		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
+		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
+		ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */; };
+		ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */; };
+		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
+		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
+		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
+		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
+		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
+		BCA9A82C2EC802CF00166292 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA9A82B2EC802CF00166292 /* CompassView.swift */; };
+		BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */; };
+		BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613802C67290800485544 /* SendWaypointIntent.swift */; };
+		BCB613832C672A2600485544 /* MessageChannelIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613822C672A2600485544 /* MessageChannelIntent.swift */; };
+		BCB613852C68703800485544 /* NodePositionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613842C68703800485544 /* NodePositionIntent.swift */; };
+		BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB613862C69A0FB00485544 /* AppIntentErrors.swift */; };
+		BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */; };
+		BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */; };
+		BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
+		BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */; };
+		BCE2D3C52C7AE369008E6199 /* RestartNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */; };
+		BCE2D3C72C7B0D0A008E6199 /* ShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */; };
+		BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */; };
+		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
+		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
+		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
+		D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D82B81509C0066FBC8 /* TapbackResponses.swift */; };
+		D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D92B81509D0066FBC8 /* TapbackInputView.swift */; };
+		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
+		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
+		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
+		D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
+		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
+		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
+		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD09240001E7FAD600E70001 /* MapLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD09240002E7FAD600E70001 /* MapLegend.swift */; };
@@ -499,6 +574,41 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		45E6EDE744E3446FA1084499 /* ChannelEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEntity.swift; sourceTree = "<group>"; };
+		4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigModels.swift; sourceTree = "<group>"; };
+		509A1C42A695463093654617 /* DeviceMetadataEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetadataEntity.swift; sourceTree = "<group>"; };
+		38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchema.swift; sourceTree = "<group>"; };
+			05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchemaV1.swift; sourceTree = "<group>"; };
+			1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticMigrationPlan.swift; sourceTree = "<group>"; };
+		AA00SDRF0001 /* DeviceHardwareImageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareImageEntity.swift; sourceTree = "<group>"; };
+		AA00SDRF0002 /* DeviceHardwareTagEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareTagEntity.swift; sourceTree = "<group>"; };
+		AA00SDRF0003 /* FirmwareReleaseEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareReleaseEntity.swift; sourceTree = "<group>"; };
+		F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
+		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
+		7101240749F24E96835A040A /* NodeInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntity.swift; sourceTree = "<group>"; };
+		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
+		DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteModels.swift; sourceTree = "<group>"; };
+		31483AF5F5354D3481698E32 /* TelemetryEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEntity.swift; sourceTree = "<group>"; };
+		D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteModels.swift; sourceTree = "<group>"; };
+		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
+		E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntity.swift; sourceTree = "<group>"; };
+		AA000401SIRI000000000010 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000011 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = de; path = de.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000012 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = es; path = es.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000013 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = fr; path = fr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000014 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = it; path = it.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000015 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000016 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = da; path = da.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000017 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = pl; path = pl.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000018 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ru; path = ru.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000019 /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000020 /* sr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = sr; path = sr.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000021 /* se */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = se; path = se.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000022 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = zh-Hans; path = zh-Hans.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000401SIRI000000000023 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = zh-Hant-TW; path = zh-Hant-TW.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+		AA000301CPTST000000000001 /* CarPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayTests.swift; sourceTree = "<group>"; };
+		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
+		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
@@ -723,7 +833,6 @@
 		DD000012COTEXTTST0000000 /* CoTExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoTExtensionTests.swift; sourceTree = "<group>"; };
 		DD000013FWAPITST00000000 /* FirmwareAndAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareAndAPITests.swift; sourceTree = "<group>"; };
 		DD000014RTRDLTST00000000 /* RouterDeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterDeepLinkTests.swift; sourceTree = "<group>"; };
-		DD000015FNTCDTST00000000 /* FountainCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecTests.swift; sourceTree = "<group>"; };
 		DD000016NAVSTATST00000000 /* NavigationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStateTests.swift; sourceTree = "<group>"; };
 		DD000017MTRVZTST00000000 /* MetricsVisualizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsVisualizationTests.swift; sourceTree = "<group>"; };
 		DD000018RTMISCTST0000000 /* RoutingAndMiscTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingAndMiscTests.swift; sourceTree = "<group>"; };
@@ -731,7 +840,7 @@
 		DD00001AASYNCCTST0000000 /* AsyncConcurrencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncConcurrencyTests.swift; sourceTree = "<group>"; };
 		DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentConverterTests.swift; sourceTree = "<group>"; };
 		DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataModelTests.swift; sourceTree = "<group>"; };
-		DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataEntityTests.swift; sourceTree = "<group>"; };
+		DD00001DCDENTTST00000000 /* EntityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityTests.swift; sourceTree = "<group>"; };
 		DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLExtensionDetailedTests.swift; sourceTree = "<group>"; };
 		DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareViewModelErrorTests.swift; sourceTree = "<group>"; };
 		DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKBridgeDetailedTests.swift; sourceTree = "<group>"; };
@@ -742,12 +851,66 @@
 		DD000025COTMSGDTL0000000 /* CoTMessageDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoTMessageDetailedTests.swift; sourceTree = "<group>"; };
 		DD000026STREXTDTL0000000 /* StringExtensionDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensionDetailedTests.swift; sourceTree = "<group>"; };
 		DD000027REMEUTLTST000000 /* RemainingEnumAndUtilTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainingEnumAndUtilTests.swift; sourceTree = "<group>"; };
-		DD000028FNTCDDTLTST00000 /* FountainCodecDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecDetailedTests.swift; sourceTree = "<group>"; };
 		DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsAndFirmwareTests.swift; sourceTree = "<group>"; };
 		DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentAndRemainingTests.swift; sourceTree = "<group>"; };
 		DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPacketsAndTelemetryTests.swift; sourceTree = "<group>"; };
-		DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecPipelineTests.swift; sourceTree = "<group>"; };
 		DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewSnapshotTests.swift; sourceTree = "<group>"; };
+		DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataMigrationTests.swift; sourceTree = "<group>"; };
+		DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTestContainer.swift; sourceTree = "<group>"; };
+		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
+		3D0A8ABAEF1E587683970927 /* EXICodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EXICodec.swift; sourceTree = "<group>"; };
+		3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayManager.swift; sourceTree = "<group>"; };
+		3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayConfig.swift; sourceTree = "<group>"; };
+		3D3417D12E2DC260006A988B /* MapDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataManager.swift; sourceTree = "<group>"; };
+		3D3417D32E2DC293006A988B /* MapDataFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataFiles.swift; sourceTree = "<group>"; };
+		3F203877F307073096C89179 /* FountainCodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FountainCodec.swift; sourceTree = "<group>"; };
+		4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTMessage.swift; sourceTree = "<group>"; };
+		518D504DED9874EBF9D76578 /* Certificates */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = Certificates; sourceTree = "<group>"; };
+		6D825E612C34786C008DBEE4 /* CommonRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonRegex.swift; sourceTree = "<group>"; };
+		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
+		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
+		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
+		748E4806582595DE80D455CD /* CoTXMLParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTXMLParser.swift; sourceTree = "<group>"; };
+		7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GenericCoTHandler.swift; sourceTree = "<group>"; };
+		82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+TAK.swift"; sourceTree = "<group>"; };
+		87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKMeshtasticBridge.swift; sourceTree = "<group>"; };
+		8D3F8A3D2D44B137009EAAA4 /* MeshtasticDataModelV 49.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 49.xcdatamodel"; sourceTree = "<group>"; };
+		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
+		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
+		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
+		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
+		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
+		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
+		ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPicker.swift; sourceTree = "<group>"; };
+		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
+		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
+		BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddContactIntent.swift; sourceTree = "<group>"; };
+		BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelSettingsIntent.swift; sourceTree = "<group>"; };
+		BCA9A82B2EC802CF00166292 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
+		BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNodeIntent.swift; sourceTree = "<group>"; };
+		BCB613802C67290800485544 /* SendWaypointIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendWaypointIntent.swift; sourceTree = "<group>"; };
+		BCB613822C672A2600485544 /* MessageChannelIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageChannelIntent.swift; sourceTree = "<group>"; };
+		BCB613842C68703800485544 /* NodePositionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodePositionIntent.swift; sourceTree = "<group>"; };
+		BCB613862C69A0FB00485544 /* AppIntentErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentErrors.swift; sourceTree = "<group>"; };
+		BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactURLHandler.swift; sourceTree = "<group>"; };
+		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
+		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
+		BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShutDownNodeIntent.swift; sourceTree = "<group>"; };
+		BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestartNodeIntent.swift; sourceTree = "<group>"; };
+		BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsProvider.swift; sourceTree = "<group>"; };
+		BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactoryResetNodeIntent.swift; sourceTree = "<group>"; };
+		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
+		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
+		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
+		D93068D82B81509C0066FBC8 /* TapbackResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackResponses.swift; sourceTree = "<group>"; };
+		D93068D92B81509D0066FBC8 /* TapbackInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackInputView.swift; sourceTree = "<group>"; };
+		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
+		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
+		D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
+		D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
+		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
+		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
+		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 55.xcdatamodel"; sourceTree = "<group>"; };
@@ -1139,6 +1302,15 @@
 			path = Firmware;
 			sourceTree = "<group>";
 		};
+			D952A49BD44F4EB19722C716 /* Schema */ = {
+				isa = PBXGroup;
+				children = (
+					05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */,
+					1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */,
+				);
+				path = Schema;
+				sourceTree = "<group>";
+			};
 		23196C712EF42D4300B1504B /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -1428,7 +1600,6 @@
 				DD000012COTEXTTST0000000 /* CoTExtensionTests.swift */,
 				DD000013FWAPITST00000000 /* FirmwareAndAPITests.swift */,
 				DD000014RTRDLTST00000000 /* RouterDeepLinkTests.swift */,
-				DD000015FNTCDTST00000000 /* FountainCodecTests.swift */,
 				DD000016NAVSTATST00000000 /* NavigationStateTests.swift */,
 				DD000017MTRVZTST00000000 /* MetricsVisualizationTests.swift */,
 				DD000018RTMISCTST0000000 /* RoutingAndMiscTests.swift */,
@@ -1436,7 +1607,7 @@
 				DD00001AASYNCCTST0000000 /* AsyncConcurrencyTests.swift */,
 				DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */,
 				DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */,
-				DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */,
+				DD00001DCDENTTST00000000 /* EntityTests.swift */,
 				DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */,
 				DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */,
 				DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */,
@@ -1447,12 +1618,12 @@
 				DD000025COTMSGDTL0000000 /* CoTMessageDetailedTests.swift */,
 				DD000026STREXTDTL0000000 /* StringExtensionDetailedTests.swift */,
 				DD000027REMEUTLTST000000 /* RemainingEnumAndUtilTests.swift */,
-				DD000028FNTCDDTLTST00000 /* FountainCodecDetailedTests.swift */,
 				DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */,
 				DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */,
 				DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */,
-				DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */,
 				DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */,
+				DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */,
+				DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -1936,6 +2107,7 @@
 				E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */,
 				2315D1A32EED94D700E0FAE7 /* Firmware */,
 				231B3F1E2D0879BC0069A07D /* Metrics Visualization */,
+					D952A49BD44F4EB19722C716 /* Schema */,
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 			);
 			path = Model;
@@ -2424,7 +2596,6 @@
 				DD000012COTEXTTST0000001 /* CoTExtensionTests.swift in Sources */,
 				DD000013FWAPITST00000001 /* FirmwareAndAPITests.swift in Sources */,
 				DD000014RTRDLTST00000001 /* RouterDeepLinkTests.swift in Sources */,
-				DD000015FNTCDTST00000001 /* FountainCodecTests.swift in Sources */,
 				DD000016NAVSTATST00000001 /* NavigationStateTests.swift in Sources */,
 				DD000017MTRVZTST00000001 /* MetricsVisualizationTests.swift in Sources */,
 				DD000018RTMISCTST0000001 /* RoutingAndMiscTests.swift in Sources */,
@@ -2432,7 +2603,7 @@
 				DD00001AASYNCCTST0000001 /* AsyncConcurrencyTests.swift in Sources */,
 				DD00001BINTCVRTST0000001 /* IntentConverterTests.swift in Sources */,
 				DD00001CMAPDATTST0000001 /* MapDataModelTests.swift in Sources */,
-				DD00001DCDENTTST00000001 /* CoreDataEntityTests.swift in Sources */,
+				DD00001DCDENTTST00000001 /* EntityTests.swift in Sources */,
 				DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */,
 				DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */,
 				DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */,
@@ -2443,13 +2614,12 @@
 				DD000025COTMSGDTL0000001 /* CoTMessageDetailedTests.swift in Sources */,
 				DD000026STREXTDTL0000001 /* StringExtensionDetailedTests.swift in Sources */,
 				DD000027REMEUTLTST000001 /* RemainingEnumAndUtilTests.swift in Sources */,
-				DD000028FNTCDDTLTST00001 /* FountainCodecDetailedTests.swift in Sources */,
 				DD000029APSTFWTST0000001 /* AppSettingsAndFirmwareTests.swift in Sources */,
 				DD00002AINTREMTST00000001 /* IntentAndRemainingTests.swift in Sources */,
 				DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */,
-				DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */,
-				DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */,
 				DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */,
+				DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */,
+				DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2489,6 +2659,8 @@
 				AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */,
 				AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */,
 				10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */,
+					6467579F9E9E4B0EAA009615 /* MeshtasticSchemaV1.swift in Sources */,
+					74BEA4429B3945AEBA11E977 /* MeshtasticMigrationPlan.swift in Sources */,
 				D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */,
 				85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */,
 				9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */,

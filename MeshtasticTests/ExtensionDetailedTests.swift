@@ -69,6 +69,7 @@ struct DateExtensionDetailedTests {
 		#expect(result == "Unknown Age")
 	}
 
+
 	@Test func relativeTimeOfDay_morning() {
 		var cal = Calendar.current
 		cal.timeZone = TimeZone.current
@@ -245,7 +246,8 @@ struct CLLocationCoordinate2DExtensionTests {
 			CLLocationCoordinate2D(latitude: 0, longitude: 1)
 		]
 		let hull = points.getConvexHull()
-		#expect(hull.count == 3)
+		// Convex hull closes the polygon by repeating the first point
+		#expect(hull.count == 4)
 	}
 
 	@Test func convexHull_squareWithInterior() {
@@ -257,7 +259,8 @@ struct CLLocationCoordinate2DExtensionTests {
 			CLLocationCoordinate2D(latitude: 1, longitude: 1) // interior point
 		]
 		let hull = points.getConvexHull()
-		#expect(hull.count == 4)
+		// Convex hull closes the polygon by repeating the first point
+		#expect(hull.count == 5)
 	}
 
 	@Test func convexHull_emptyArray() {

@@ -103,14 +103,12 @@ struct DeviceMetricsLog: View {
 					}
 					.frame(minHeight: 240)
 				}
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
 				if idiom == .phone {
 					/// Single Cell Compact display for phones
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
 							HStack {
-								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+								Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 									.font(.caption)
 									.fontWeight(.semibold)
 								Spacer()
@@ -177,7 +175,7 @@ struct DeviceMetricsLog: View {
 						}
 						.width(min: 100)
 						TableColumn("Timestamp") { dm in
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+							Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}

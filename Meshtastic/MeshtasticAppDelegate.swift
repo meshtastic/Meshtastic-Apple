@@ -15,6 +15,9 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 	var router: Router?
 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+		guard NSClassFromString("XCTestCase") == nil && ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
+			return true
+		}
 		Logger.services.info("🚀 [App] Meshtstic Apple App launched!")
 		// Default User Default Values
 		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])

@@ -409,7 +409,7 @@ struct EXICodecExtendedTests {
 	}
 
 	@Test func decompress_invalidData_returnsNil() {
-		let garbage = Data([0x00, 0x01, 0x02, 0x03])
+		let garbage = Data([0xFF, 0xFE, 0xFD, 0xFC])
 		let result = EXICodec.shared.decompress(garbage)
 		#expect(result == nil)
 	}

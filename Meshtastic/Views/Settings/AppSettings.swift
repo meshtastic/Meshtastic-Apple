@@ -163,6 +163,11 @@ struct AppSettings: View {
 								clearNotifications()
 								try? await MeshtasticAPI.shared.refreshDevicesAPIData()
 							}
+							Task { @MainActor in
+								await MeshPackets.shared.clearDatabase(includeRoutes: true)
+								clearNotifications()
+								try? await MeshtasticAPI.shared.refreshDevicesAPIData()
+							}
 						}
 					}
 					Button {

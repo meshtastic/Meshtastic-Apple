@@ -244,7 +244,7 @@ struct IntervalConfigurationDetailedTests {
 struct FixedUpdateIntervalsEnumTests {
 
 	@Test func allCases_count() {
-		#expect(FixedUpdateIntervals.allCases.count == 25)
+		#expect(FixedUpdateIntervals.allCases.count == 26)
 	}
 
 	@Test func never_isMaxInt() {

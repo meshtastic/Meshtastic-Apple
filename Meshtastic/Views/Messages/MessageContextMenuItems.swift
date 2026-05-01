@@ -95,7 +95,7 @@ struct MessageContextMenuItems: View {
 			// Compute a relay display string if relayNode is present
 
 			VStack {
-				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))")
+				Text("\(messageDate.formatted(date: .numeric, time: .standard))")
 					.foregroundColor(.gray)
 			}
 
@@ -134,7 +134,7 @@ struct MessageContextMenuItems: View {
 
 			if isCurrentUser {
 				if let sixMonthsAgo, ackDate >= sixMonthsAgo {
-					Text("Ack Time: \(ackDate.formattedDate(format: MessageText.timeFormatString))")
+					Text("Ack Time: \(ackDate.formatted(date: .omitted, time: .standard))")
 						.foregroundColor(.gray)
 				}
 			}

@@ -137,7 +137,7 @@ extension UserEntity {
 func createUser(num: Int64, context: ModelContext) throws -> UserEntity {
 	// Validate Input
 	guard num >= 0 else {
-		throw CoreDataError.invalidInput(message: "User number cannot be negative.")
+		throw PersistenceError.invalidInput(message: "User number cannot be negative.")
 	}
 
 	let newUser = UserEntity()
@@ -153,19 +153,19 @@ func createUser(num: Int64, context: ModelContext) throws -> UserEntity {
 	return newUser
 }
 
-enum CoreDataError: Error, LocalizedError {
+enum PersistenceError: Error, LocalizedError {
 	case invalidInput(message: String)
 	case saveFailed(message: String)
-	case entityCreationFailed(message: String) // In case UserEntity(context:) fails for some reason
+	case entityCreationFailed(message: String)
 
 	var errorDescription: String? {
 		switch self {
 		case .invalidInput(let message):
-			return "Core Data Input Error: \(message)"
+			return "Persistence Input Error: \(message)"
 		case .saveFailed(let message):
-			return "Core Data Save Error: \(message)"
+			return "Persistence Save Error: \(message)"
 		case .entityCreationFailed(let message):
-			return "Core Data Entity Creation Error: \(message)"
+			return "Persistence Entity Creation Error: \(message)"
 		}
 	}
 }
