@@ -6,15 +6,13 @@ final class ChannelEntityTests: XCTestCase {
     var modelContainer: ModelContainer!
     var context: ModelContext!
 
-    override func setUp() {
+    @MainActor override func setUp() {
         super.setUp()
-        let schema = Schema([ChannelEntity.self])
-        modelContainer = try! ModelContainer(for: schema, configurations: [])
+        modelContainer = sharedModelContainer
         context = ModelContext(modelContainer)
     }
 
     override func tearDown() {
-        modelContainer = nil
         context = nil
         super.tearDown()
     }

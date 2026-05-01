@@ -153,7 +153,9 @@ final class CoTXMLParser: NSObject, XMLParserDelegate {
 			buildCoTMessage()
 		}
 
-		elementStack.removeLast()
+		if !elementStack.isEmpty {
+			elementStack.removeLast()
+		}
 		currentElement = elementStack.last ?? ""
 	}
 

@@ -346,10 +346,10 @@ actor MeshPackets {
 						do {
 							let newUser = try createUser(num: Int64(nodeInfo.num), context: modelContext)
 							newNode.user = newUser
-						} catch CoreDataError.invalidInput(let message) {
-							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch PersistenceError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new UserEntity (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
 						} catch {
-							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+							Logger.data.error("Error Creating a new UserEntity from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 						}
 					}
 					
@@ -447,10 +447,10 @@ actor MeshPackets {
 							do {
 								let newUser = try createUser(num: Int64(nodeInfo.num), context: modelContext)
 								fetchedNode[0].user = newUser
-							} catch CoreDataError.invalidInput(let message) {
-								Logger.data.error("Error Creating a new Core Data UserEntity on an existing node (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
+							} catch PersistenceError.invalidInput(let message) {
+								Logger.data.error("Error Creating a new UserEntity on an existing node (Invalid Input) from node number: \(nodeInfo.num, privacy: .public) Error:  \(message, privacy: .public)")
 							} catch {
-								Logger.data.error("Error Creating a new Core Data UserEntity on an existing node from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+								Logger.data.error("Error Creating a new UserEntity on an existing node from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 							}
 						}
 					}
@@ -939,10 +939,10 @@ actor MeshPackets {
 							do {
 								let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: modelContext)
 								newMessage.toUser = newUser
-							} catch CoreDataError.invalidInput(let message) {
-								Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
+							} catch PersistenceError.invalidInput(let message) {
+								Logger.data.error("Error Creating a new UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
 							} catch {
-								Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+								Logger.data.error("Error Creating a new UserEntity from node number: \(packet.to, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 							}
 						}
 					}
@@ -989,10 +989,10 @@ actor MeshPackets {
 								newNode.user = newUser
 							}
 							newMessage.fromUser = newUser
-						} catch CoreDataError.invalidInput(let message) {
-							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch PersistenceError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
 						} catch {
-							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+							Logger.data.error("Error Creating a new UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 						}
 					}
 					if packet.rxTime > 0 {

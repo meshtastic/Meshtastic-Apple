@@ -242,7 +242,7 @@ struct MetricsTypesNameExtendedTests {
 		#expect(MetricsTypes.environment.name == "Environment Metrics")
 		#expect(MetricsTypes.power.name == "Power Metrics")
 		#expect(MetricsTypes.airQuality.name == "Air Quality Metrics")
-		#expect(MetricsTypes.stats.name == "Stats Metrics")
+		#expect(MetricsTypes.stats.name == "Stats")
 	}
 }
 

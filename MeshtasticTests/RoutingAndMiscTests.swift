@@ -109,7 +109,7 @@ struct RoutingErrorDetailedTests {
 	}
 
 	@Test func initFromRawValue() {
-		#expect(RoutingError(rawValue: 0) == .none)
+		#expect(RoutingError(rawValue: 0) == .some(.none))
 		#expect(RoutingError(rawValue: 1) == .noRoute)
 		#expect(RoutingError(rawValue: 999) == nil)
 	}

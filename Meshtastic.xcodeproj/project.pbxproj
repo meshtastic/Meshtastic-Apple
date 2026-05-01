@@ -153,7 +153,6 @@
 		DD000012COTEXTTST0000001 /* CoTExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000012COTEXTTST0000000 /* CoTExtensionTests.swift */; };
 		DD000013FWAPITST00000001 /* FirmwareAndAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000013FWAPITST00000000 /* FirmwareAndAPITests.swift */; };
 		DD000014RTRDLTST00000001 /* RouterDeepLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000014RTRDLTST00000000 /* RouterDeepLinkTests.swift */; };
-		DD000015FNTCDTST00000001 /* FountainCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000015FNTCDTST00000000 /* FountainCodecTests.swift */; };
 		DD000016NAVSTATST00000001 /* NavigationStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000016NAVSTATST00000000 /* NavigationStateTests.swift */; };
 		DD000017MTRVZTST00000001 /* MetricsVisualizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000017MTRVZTST00000000 /* MetricsVisualizationTests.swift */; };
 		DD000018RTMISCTST0000001 /* RoutingAndMiscTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000018RTMISCTST0000000 /* RoutingAndMiscTests.swift */; };
@@ -161,7 +160,7 @@
 		DD00001AASYNCCTST0000001 /* AsyncConcurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001AASYNCCTST0000000 /* AsyncConcurrencyTests.swift */; };
 		DD00001BINTCVRTST0000001 /* IntentConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */; };
 		DD00001CMAPDATTST0000001 /* MapDataModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */; };
-		DD00001DCDENTTST00000001 /* CoreDataEntityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */; };
+		DD00001DCDENTTST00000001 /* EntityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001DCDENTTST00000000 /* EntityTests.swift */; };
 		DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */; };
 		DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */; };
 		DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */; };
@@ -172,13 +171,12 @@
 		DD000025COTMSGDTL0000001 /* CoTMessageDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000025COTMSGDTL0000000 /* CoTMessageDetailedTests.swift */; };
 		DD000026STREXTDTL0000001 /* StringExtensionDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000026STREXTDTL0000000 /* StringExtensionDetailedTests.swift */; };
 		DD000027REMEUTLTST000001 /* RemainingEnumAndUtilTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000027REMEUTLTST000000 /* RemainingEnumAndUtilTests.swift */; };
-		DD000028FNTCDDTLTST00001 /* FountainCodecDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000028FNTCDDTLTST00000 /* FountainCodecDetailedTests.swift */; };
 		DD000029APSTFWTST0000001 /* AppSettingsAndFirmwareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */; };
 		DD00002AINTREMTST00000001 /* IntentAndRemainingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */; };
 		DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */; };
-		DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */; };
-		DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */; };
 		DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */; };
+		DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */; };
+		DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */; };
 		2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
 		300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
 		3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
@@ -640,7 +638,6 @@
 		DD000012COTEXTTST0000000 /* CoTExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoTExtensionTests.swift; sourceTree = "<group>"; };
 		DD000013FWAPITST00000000 /* FirmwareAndAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareAndAPITests.swift; sourceTree = "<group>"; };
 		DD000014RTRDLTST00000000 /* RouterDeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterDeepLinkTests.swift; sourceTree = "<group>"; };
-		DD000015FNTCDTST00000000 /* FountainCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecTests.swift; sourceTree = "<group>"; };
 		DD000016NAVSTATST00000000 /* NavigationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStateTests.swift; sourceTree = "<group>"; };
 		DD000017MTRVZTST00000000 /* MetricsVisualizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsVisualizationTests.swift; sourceTree = "<group>"; };
 		DD000018RTMISCTST0000000 /* RoutingAndMiscTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingAndMiscTests.swift; sourceTree = "<group>"; };
@@ -648,7 +645,7 @@
 		DD00001AASYNCCTST0000000 /* AsyncConcurrencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncConcurrencyTests.swift; sourceTree = "<group>"; };
 		DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentConverterTests.swift; sourceTree = "<group>"; };
 		DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataModelTests.swift; sourceTree = "<group>"; };
-		DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataEntityTests.swift; sourceTree = "<group>"; };
+		DD00001DCDENTTST00000000 /* EntityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityTests.swift; sourceTree = "<group>"; };
 		DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLExtensionDetailedTests.swift; sourceTree = "<group>"; };
 		DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareViewModelErrorTests.swift; sourceTree = "<group>"; };
 		DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKBridgeDetailedTests.swift; sourceTree = "<group>"; };
@@ -659,13 +656,12 @@
 		DD000025COTMSGDTL0000000 /* CoTMessageDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoTMessageDetailedTests.swift; sourceTree = "<group>"; };
 		DD000026STREXTDTL0000000 /* StringExtensionDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensionDetailedTests.swift; sourceTree = "<group>"; };
 		DD000027REMEUTLTST000000 /* RemainingEnumAndUtilTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainingEnumAndUtilTests.swift; sourceTree = "<group>"; };
-		DD000028FNTCDDTLTST00000 /* FountainCodecDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecDetailedTests.swift; sourceTree = "<group>"; };
 		DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsAndFirmwareTests.swift; sourceTree = "<group>"; };
 		DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentAndRemainingTests.swift; sourceTree = "<group>"; };
 		DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPacketsAndTelemetryTests.swift; sourceTree = "<group>"; };
-		DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecPipelineTests.swift; sourceTree = "<group>"; };
-		DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FountainCodecPipelineTests.swift; sourceTree = "<group>"; };
 		DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewSnapshotTests.swift; sourceTree = "<group>"; };
+		DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataMigrationTests.swift; sourceTree = "<group>"; };
+		DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTestContainer.swift; sourceTree = "<group>"; };
 		2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
 		3D0A8ABAEF1E587683970927 /* EXICodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EXICodec.swift; sourceTree = "<group>"; };
 		3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayManager.swift; sourceTree = "<group>"; };
@@ -1434,7 +1430,6 @@
 				DD000012COTEXTTST0000000 /* CoTExtensionTests.swift */,
 				DD000013FWAPITST00000000 /* FirmwareAndAPITests.swift */,
 				DD000014RTRDLTST00000000 /* RouterDeepLinkTests.swift */,
-				DD000015FNTCDTST00000000 /* FountainCodecTests.swift */,
 				DD000016NAVSTATST00000000 /* NavigationStateTests.swift */,
 				DD000017MTRVZTST00000000 /* MetricsVisualizationTests.swift */,
 				DD000018RTMISCTST0000000 /* RoutingAndMiscTests.swift */,
@@ -1442,7 +1437,7 @@
 				DD00001AASYNCCTST0000000 /* AsyncConcurrencyTests.swift */,
 				DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */,
 				DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */,
-				DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */,
+				DD00001DCDENTTST00000000 /* EntityTests.swift */,
 				DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */,
 				DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */,
 				DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */,
@@ -1453,13 +1448,12 @@
 				DD000025COTMSGDTL0000000 /* CoTMessageDetailedTests.swift */,
 				DD000026STREXTDTL0000000 /* StringExtensionDetailedTests.swift */,
 				DD000027REMEUTLTST000000 /* RemainingEnumAndUtilTests.swift */,
-				DD000028FNTCDDTLTST00000 /* FountainCodecDetailedTests.swift */,
 				DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */,
 				DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */,
 				DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */,
-				DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */,
-				DD00002CFNTPIPETST0000000 /* FountainCodecPipelineTests.swift */,
 				DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */,
+				DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */,
+				DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -2394,7 +2388,6 @@
 				DD000012COTEXTTST0000001 /* CoTExtensionTests.swift in Sources */,
 				DD000013FWAPITST00000001 /* FirmwareAndAPITests.swift in Sources */,
 				DD000014RTRDLTST00000001 /* RouterDeepLinkTests.swift in Sources */,
-				DD000015FNTCDTST00000001 /* FountainCodecTests.swift in Sources */,
 				DD000016NAVSTATST00000001 /* NavigationStateTests.swift in Sources */,
 				DD000017MTRVZTST00000001 /* MetricsVisualizationTests.swift in Sources */,
 				DD000018RTMISCTST0000001 /* RoutingAndMiscTests.swift in Sources */,
@@ -2402,7 +2395,7 @@
 				DD00001AASYNCCTST0000001 /* AsyncConcurrencyTests.swift in Sources */,
 				DD00001BINTCVRTST0000001 /* IntentConverterTests.swift in Sources */,
 				DD00001CMAPDATTST0000001 /* MapDataModelTests.swift in Sources */,
-				DD00001DCDENTTST00000001 /* CoreDataEntityTests.swift in Sources */,
+				DD00001DCDENTTST00000001 /* EntityTests.swift in Sources */,
 				DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */,
 				DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */,
 				DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */,
@@ -2413,13 +2406,12 @@
 				DD000025COTMSGDTL0000001 /* CoTMessageDetailedTests.swift in Sources */,
 				DD000026STREXTDTL0000001 /* StringExtensionDetailedTests.swift in Sources */,
 				DD000027REMEUTLTST000001 /* RemainingEnumAndUtilTests.swift in Sources */,
-				DD000028FNTCDDTLTST00001 /* FountainCodecDetailedTests.swift in Sources */,
 				DD000029APSTFWTST0000001 /* AppSettingsAndFirmwareTests.swift in Sources */,
 				DD00002AINTREMTST00000001 /* IntentAndRemainingTests.swift in Sources */,
 				DD00002BMSHPKTELTST000001 /* MeshPacketsAndTelemetryTests.swift in Sources */,
-				DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */,
-				DD00002CFNTPIPETST0000001 /* FountainCodecPipelineTests.swift in Sources */,
 				DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */,
+				DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */,
+				DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

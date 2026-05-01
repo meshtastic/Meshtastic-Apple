@@ -8,20 +8,15 @@ import SwiftData
 
 // MARK: - In-Memory Persistence Helper
 
+/// Shared test container that stays alive for the entire test process
+@MainActor
+final class TestContainerProvider {
+	static let shared: ModelContainer = sharedModelContainer
+}
+
 @MainActor
 private func makeTestContainer() throws -> ModelContainer {
-	let schema = Schema(versionedSchema: MeshtasticSchema.current)
-	let config = ModelConfiguration(
-		"MeshtasticEntityTest",
-		schema: schema,
-		isStoredInMemoryOnly: true,
-		allowsSave: true
-	)
-	return try ModelContainer(
-		for: schema,
-		migrationPlan: MeshtasticMigrationPlan.self,
-		configurations: config
-	)
+	return sharedModelContainer
 }
 
 // MARK: - createUser Tests
@@ -100,15 +95,14 @@ struct CreateNodeInfoTests {
 
 // MARK: - UserEntity.hardwareImage Tests
 
-@Suite("UserEntity hardwareImage")
+@Suite("UserEntity hardwareImage", .serialized)
 struct UserEntityHardwareImageTests {
 
 	@MainActor
 	private func makeUser(hwModel: String?) throws -> UserEntity {
-		let container = try makeTestContainer()
-		let context = container.mainContext
+		let context = TestContainerProvider.shared.mainContext
 		let user = UserEntity()
-		user.num = 1
+		user.num = Int64.random(in: 1...Int64.max)
 		user.hwModel = hwModel
 		context.insert(user)
 		return user
@@ -347,13 +341,12 @@ struct UserEntityHardwareImageTests {
 
 // MARK: - PositionEntity Computed Properties Tests
 
-@Suite("PositionEntity Computed Properties")
+@Suite("PositionEntity Computed Properties", .serialized)
 struct PositionEntityComputedTests {
 
 	@MainActor
 	private func makePosition(latI: Int32 = 0, lonI: Int32 = 0, precisionBits: Int32 = 32) throws -> PositionEntity {
-		let container = try makeTestContainer()
-		let context = container.mainContext
+		let context = TestContainerProvider.shared.mainContext
 		let pos = PositionEntity()
 		pos.latitudeI = latI
 		pos.longitudeI = lonI
@@ -445,13 +438,12 @@ struct PositionEntityComputedTests {
 
 // MARK: - MessageEntity Computed Properties Tests
 
-@Suite("MessageEntity Computed Properties")
+@Suite("MessageEntity Computed Properties", .serialized)
 struct MessageEntityComputedTests {
 
 	@MainActor
 	private func makeMessage() throws -> (ModelContext, MessageEntity) {
-		let container = try makeTestContainer()
-		let context = container.mainContext
+		let context = TestContainerProvider.shared.mainContext
 		let msg = MessageEntity()
 		context.insert(msg)
 		return (context, msg)

@@ -248,7 +248,7 @@ struct NodeNavigationTests {
 
 	@Test func cachedNodeInfoReturnNilForUnknownNode() async {
 		let router = await Router()
-		let context = PersistenceController.preview.container.viewContext
+		let context = await sharedModelContainer.mainContext
 		let result = await router.cachedNodeInfo(id: 999999, context: context)
 		#expect(result == nil)
 	}

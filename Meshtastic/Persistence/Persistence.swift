@@ -11,10 +11,13 @@ import OSLog
 @MainActor
 class PersistenceController {
 
-	static let shared = PersistenceController()
+	static let shared: PersistenceController = {
+		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+		return PersistenceController(inMemory: isTestEnvironment)
+	}()
 
 	static var preview: PersistenceController = {
-		let result = PersistenceController(inMemory: true)
+		let result = PersistenceController(inMemory: true, storeName: "MeshtasticPreview")
 		let context = result.container.mainContext
 		for _ in 0..<10 {
 			let newItem = NodeInfoEntity()
@@ -30,23 +33,31 @@ class PersistenceController {
 		container.mainContext
 	}
 
-	init(inMemory: Bool = false) {
+	init(inMemory: Bool = false, storeName: String = "Meshtastic") {
+		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 
 		let config = ModelConfiguration(
-			"Meshtastic",
+			storeName,
 			schema: schema,
 			isStoredInMemoryOnly: inMemory,
 			allowsSave: true
 		)
 
 		do {
-			container = try ModelContainer(
-				for: schema,
-				migrationPlan: MeshtasticMigrationPlan.self,
-				configurations: config
-			)
-			container.mainContext.autosaveEnabled = true
+			if inMemory {
+				container = try ModelContainer(
+					for: schema,
+					configurations: config
+				)
+			} else {
+				container = try ModelContainer(
+					for: schema,
+					migrationPlan: MeshtasticMigrationPlan.self,
+					configurations: config
+				)
+			}
+			container.mainContext.autosaveEnabled = !isTestEnvironment
 			Logger.data.info("💾 SwiftData store initialized successfully")
 		} catch {
 			Logger.data.error("SwiftData Error: \(error.localizedDescription, privacy: .public). Attempting to recreate database.")

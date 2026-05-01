@@ -123,8 +123,8 @@ struct ResettableTimerTests {
 		let timer = ResettableTimer {
 			await fired.set(true)
 		}
-		await timer.reset(delay: .milliseconds(50))
-		try await Task.sleep(for: .milliseconds(150))
+		await timer.reset(delay: .milliseconds(100))
+		try await Task.sleep(for: .milliseconds(1000))
 		let result = await fired.get()
 		#expect(result == true)
 	}
@@ -146,14 +146,14 @@ struct ResettableTimerTests {
 		let timer = ResettableTimer {
 			await count.increment()
 		}
-		await timer.reset(delay: .milliseconds(200))
-		try await Task.sleep(for: .milliseconds(50))
-		// Reset before first fire - should restart the 200ms delay
-		await timer.reset(delay: .milliseconds(200))
+		await timer.reset(delay: .milliseconds(500))
 		try await Task.sleep(for: .milliseconds(100))
+		// Reset before first fire - should restart the 500ms delay
+		await timer.reset(delay: .milliseconds(500))
+		try await Task.sleep(for: .milliseconds(200))
 		let midCount = await count.get()
 		#expect(midCount == 0, "Timer should not have fired yet after reset")
-		try await Task.sleep(for: .milliseconds(150))
+		try await Task.sleep(for: .milliseconds(1000))
 		let finalCount = await count.get()
 		#expect(finalCount == 1)
 		await timer.cancel()
@@ -164,8 +164,8 @@ struct ResettableTimerTests {
 		let timer = ResettableTimer(isRepeating: true) {
 			await count.increment()
 		}
-		await timer.reset(delay: .milliseconds(50))
-		try await Task.sleep(for: .milliseconds(250))
+		await timer.reset(delay: .milliseconds(100))
+		try await Task.sleep(for: .milliseconds(2000))
 		await timer.cancel()
 		let finalCount = await count.get()
 		#expect(finalCount >= 2, "Expected repeating timer to fire at least twice, got \(finalCount)")

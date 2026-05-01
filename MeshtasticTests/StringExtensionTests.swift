@@ -26,7 +26,8 @@ struct StringBase64Tests {
 		// Length 2 needs 2 padding chars
 		#expect("ab".base64urlToBase64().hasSuffix("=="))
 		// Length 3 needs 1 padding char
-		#expect("abc".base64urlToBase64().hasSuffix("=="))
+		#expect("abc".base64urlToBase64().hasSuffix("="))
+		#expect("abc".base64urlToBase64() == "abc=")
 		// Length 4 needs no padding
 		#expect(!("abcd".base64urlToBase64().hasSuffix("=")))
 	}

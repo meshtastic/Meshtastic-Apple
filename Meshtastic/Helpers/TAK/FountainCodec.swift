@@ -536,7 +536,6 @@ final class FountainCodec {
 	/// Sample degree from Robust Soliton distribution using provided RNG
 	/// Matches Android's sampleDegree algorithm exactly
 	// swiftlint:disable:next identifier_name
-	// swiftlint:disable:next identifier_name
 	private func sampleRobustSolitonDegree(_ rng: inout JavaRandom, K: Int) -> Int {
 		let cdf = buildRobustSolitonCDF(K: K)
 		let u = rng.nextDouble()

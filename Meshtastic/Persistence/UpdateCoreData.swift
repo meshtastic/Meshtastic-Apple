@@ -262,10 +262,10 @@ extension MeshPackets {
 							do {
 								let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: modelContext)
 								newNode.user = newUser
-							} catch CoreDataError.invalidInput(let message) {
-								Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+							} catch PersistenceError.invalidInput(let message) {
+								Logger.data.error("Error Creating a new UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
 							} catch {
-								Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+								Logger.data.error("Error Creating a new UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 							}
 						}
 					} else {
@@ -331,10 +331,10 @@ extension MeshPackets {
 								newNode.user?.publicKey = packet.publicKey
 							}
 							newNode.user = newUser
-						} catch CoreDataError.invalidInput(let message) {
-							Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+						} catch PersistenceError.invalidInput(let message) {
+							Logger.data.error("Error Creating a new UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
 						} catch {
-							Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+							Logger.data.error("Error Creating a new UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 						}
 					}
 				}
@@ -343,11 +343,11 @@ extension MeshPackets {
 					do {
 						let newUser = try createUser(num: Int64(packet.from), context: modelContext)
 						newNode.user = newUser
-					} catch CoreDataError.invalidInput(let message) {
-						Logger.data.error("Error Creating a new Core Data UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch PersistenceError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new UserEntity (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
 						return
 					} catch {
-						Logger.data.error("Error Creating a new Core Data UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+						Logger.data.error("Error Creating a new UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 						return
 					}
 				}
@@ -449,10 +449,10 @@ extension MeshPackets {
 					do {
 						let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.from), context: modelContext)
 						fetchedNode[0].user = newUser
-					} catch CoreDataError.invalidInput(let message) {
-						Logger.data.error("Error Creating a new Core Data UserEntity on an existing node (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
+					} catch PersistenceError.invalidInput(let message) {
+						Logger.data.error("Error Creating a new UserEntity on an existing node (Invalid Input) from node number: \(packet.from, privacy: .public) Error:  \(message, privacy: .public)")
 					} catch {
-						Logger.data.error("Error Creating a new Core Data UserEntity on an existing node from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
+						Logger.data.error("Error Creating a new UserEntity on an existing node from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 					}
 				}
 				do {
