@@ -522,15 +522,6 @@ struct DeviceOnboarding: View {
 	}
 	
 	// MARK: Formatting
-	func createBackgroundActivityString() -> AttributedString {
-		var fullText = AttributedString("Meshtastic can track your location in the background to keep the mesh map updated and send your position to the mesh even when the app is not in the foreground. You can update this setting at any time from settings.")
-		if let range = fullText.range(of: "settings") {
-			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
-			fullText[range].foregroundColor = .blue
-		}
-		return fullText
-	}
-	
 	func createLocationString() -> AttributedString {
 		var fullText = AttributedString(localized: "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from settings.")
 		if let range = fullText.range(of: String(localized: "settings")) {

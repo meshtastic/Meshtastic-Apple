@@ -64,23 +64,6 @@ struct OnboardingStringFormatterTests {
 		return string[range].link
 	}
 
-	@Test func backgroundActivityStringContainsText() {
-		let string = view.createBackgroundActivityString()
-		#expect(string.description.contains("background"))
-		#expect(string.description.contains("settings"))
-	}
-
-	@Test func backgroundActivityStringHasSettingsLink() {
-		let string = view.createBackgroundActivityString()
-		#expect(hasSettingsLink(string))
-	}
-
-	@Test func backgroundActivitySettingsLinkIsAppSettings() {
-		let string = view.createBackgroundActivityString()
-		let url = settingsLinkURL(string)
-		#expect(url?.scheme == "app-settings" || url?.absoluteString.contains("settings") == true)
-	}
-
 	@Test func locationStringContainsText() {
 		let string = view.createLocationString()
 		#expect(string.description.contains("location"))
@@ -131,7 +114,6 @@ struct OnboardingStringFormatterTests {
 
 	@Test func allStringsHaveSettingsLinks() {
 		let strings = [
-			view.createBackgroundActivityString(),
 			view.createLocationString(),
 			view.createLocalNetworkString(),
 			view.createBluetoothString(),
