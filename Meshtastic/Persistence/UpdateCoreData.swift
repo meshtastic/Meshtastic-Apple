@@ -143,11 +143,23 @@ extension MeshPackets {
 	}
 	
 	public func clearDatabase(includeRoutes: Bool) {
+		// Delete entities that are on the inverse side of many-to-many
+		// relationships first to avoid constraint trigger violations.
+		do {
+			try modelContext.delete(model: DeviceHardwareTagEntity.self)
+			try modelContext.delete(model: DeviceHardwareImageEntity.self)
+		} catch {
+			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+		}
+
 		let allModels: [any PersistentModel.Type] = MeshtasticSchema.allModels
 		for modelType in allModels {
 			let typeName = String(describing: modelType)
 			if !includeRoutes && (typeName.contains("Route") || typeName.contains("Location")) {
 				continue
+			}
+			if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
+				continue // already deleted above
 			}
 			do {
 				try modelContext.delete(model: modelType)

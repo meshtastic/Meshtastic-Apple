@@ -79,9 +79,17 @@ class PersistenceController {
 	@MainActor
 	public func clearDatabase(includeRoutes: Bool = true) {
 		do {
+			// Delete entities that are on the inverse side of many-to-many
+			// relationships first to avoid constraint trigger violations.
+			try container.mainContext.delete(model: DeviceHardwareTagEntity.self)
+			try container.mainContext.delete(model: DeviceHardwareImageEntity.self)
+
 			for modelType in MeshtasticSchema.allModels {
 				if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
 					continue
+				}
+				if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
+					continue // already deleted above
 				}
 				try container.mainContext.delete(model: modelType)
 			}
