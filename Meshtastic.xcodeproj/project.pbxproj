@@ -350,7 +350,10 @@
 		DD1BEF4A2E0292320090CE24 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF492E0292220090CE24 /* KeychainHelper.swift */; };
 		DD1BEF4C2E030D310090CE24 /* KeyBackupStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */; };
 		DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */; };
+		DD1BEF542E0A00010090CE24 /* HelpItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF532E0A00010090CE24 /* HelpItem.swift */; };
+		DD1BEF562E0A00020090CE24 /* NodeListHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF552E0A00020090CE24 /* NodeListHelp.swift */; };
 		DD1BEF502E0528AA0090CE24 /* PersistantTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */; };
+		DD1BEF5A2E0A00040090CE24 /* PersistentTipStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF592E0A00040090CE24 /* PersistentTipStyle.swift */; };
 		DD1BEF522E08E9B80090CE24 /* ChannelLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
@@ -438,6 +441,7 @@
 		DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */; };
 		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
 		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
+		DD1BEF582E0A00030090CE24 /* FirmwareEditionEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF572E0A00030090CE24 /* FirmwareEditionEnum.swift */; };
 		DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */; };
 		DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */; };
 		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
@@ -939,7 +943,10 @@
 		DD1BEF492E0292220090CE24 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBackupStatus.swift; sourceTree = "<group>"; };
 		DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsHelp.swift; sourceTree = "<group>"; };
+		DD1BEF532E0A00010090CE24 /* HelpItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpItem.swift; sourceTree = "<group>"; };
+		DD1BEF552E0A00020090CE24 /* NodeListHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListHelp.swift; sourceTree = "<group>"; };
 		DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistantTips.swift; sourceTree = "<group>"; };
+		DD1BEF592E0A00040090CE24 /* PersistentTipStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentTipStyle.swift; sourceTree = "<group>"; };
 		DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelLock.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
@@ -1058,6 +1065,7 @@
 		DDB234392B5CA9B000DA6FB1 /* MeshtasticDataModelV 24.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 24.xcdatamodel"; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
+		DD1BEF572E0A00030090CE24 /* FirmwareEditionEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareEditionEnum.swift; sourceTree = "<group>"; };
 		DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceText.swift; sourceTree = "<group>"; };
 		DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
@@ -1904,7 +1912,9 @@
 				DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */,
 				DD6F65752C6EA5490053C113 /* AckErrors.swift */,
 				DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */,
+				DD1BEF532E0A00010090CE24 /* HelpItem.swift */,
 				DD6F657A2C6EC2900053C113 /* LockLegend.swift */,
+				DD1BEF552E0A00020090CE24 /* NodeListHelp.swift */,
 			);
 			path = Help;
 			sourceTree = "<group>";
@@ -1921,6 +1931,7 @@
 			isa = PBXGroup;
 			children = (
 				DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */,
+				DD1BEF592E0A00040090CE24 /* PersistentTipStyle.swift */,
 				DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */,
 				DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */,
 				AA11223344556677AABB0002 /* DiscoveryTips.swift */,
@@ -1953,6 +1964,7 @@
 				DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */,
 				DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */,
 				DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */,
+				DD1BEF572E0A00030090CE24 /* FirmwareEditionEnum.swift */,
 				DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */,
 				DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */,
 				DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */,
@@ -2759,6 +2771,7 @@
 				2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */,
 				DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */,
 				DD1BEF502E0528AA0090CE24 /* PersistantTips.swift in Sources */,
+				DD1BEF5A2E0A00040090CE24 /* PersistentTipStyle.swift in Sources */,
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
 				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
 				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
@@ -2798,6 +2811,8 @@
 				BD7B1A838F8245A0B6BE56C5 /* WatchSessionManager.swift in Sources */,
 				DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */,
 				DD6F65792C6EADE60053C113 /* DirectMessagesHelp.swift in Sources */,
+				DD1BEF542E0A00010090CE24 /* HelpItem.swift in Sources */,
+				DD1BEF562E0A00020090CE24 /* NodeListHelp.swift in Sources */,
 				23148E302EE1CCE500F0DB2C /* MeshtasticAPI.swift in Sources */,
 				23C2BD292EE87D0300F6A997 /* CoreDataBrowser.swift in Sources */,
 				233E99B62D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift in Sources */,
@@ -2844,6 +2859,7 @@
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
 				DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */,
+				DD1BEF582E0A00030090CE24 /* FirmwareEditionEnum.swift in Sources */,
 				DD1BD0EE2C603C91008C0C70 /* CustomFormatters.swift in Sources */,
 				DD0BE3102CB9FDC4000BA445 /* DetectionSensorEnums.swift in Sources */,
 				23AB0E662EE35E0200AFA09D /* Image.swift in Sources */,

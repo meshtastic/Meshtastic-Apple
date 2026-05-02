@@ -27,6 +27,7 @@ struct NodeList: View {
 	@State private var shareContactNode: NodeInfoEntity?
 	@StateObject var filters = NodeFilterParameters()
 	@State var isEditingFilters = false
+	@State private var showingHelp = false
 	@State private var filteredNodeCount: Int = 0
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
@@ -39,86 +40,7 @@ struct NodeList: View {
 
 	var body: some View {
 		NavigationSplitView {
-			FilteredNodeList(
-				router: router,
-				withFilters: filters,
-				selectedNode: $selectedNode,
-				connectedNode: connectedNode,
-				isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
-				deleteNodeId: $deleteNodeId,
-				shareContactNode: $shareContactNode,
-				filteredNodeCount: $filteredNodeCount
-			)
-			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(
-					filters: filters
-				)
-			}
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
-				HStack {
-					Button(action: {
-						withAnimation {
-							isEditingFilters = !isEditingFilters
-						}
-					}) {
-						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-							.padding(.vertical, 5)
-					}
-					.tint(Color(UIColor.secondarySystemBackground))
-					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)
-				}
-				.controlSize(.regular)
-				.padding(5)
-			}
-			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
-			.autocorrectionDisabled(true)
-			.scrollDismissesKeyboard(.immediately)
-			.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(filteredNodeCount)))
-			.listStyle(.plain)
-			.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
-				Button("OK") { }.keyboardShortcut(.defaultAction)
-			} message: {
-				Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
-			}
-			.alert("Position Exchange Failed", isPresented: $isPresentingPositionFailedAlert) {
-				Button("OK") { }.keyboardShortcut(.defaultAction)
-			} message: {
-				Text("Failed to get a valid position to exchange")
-			}
-			.alert("Trace Route Sent", isPresented: $isPresentingTraceRouteSentAlert) {
-				Button("OK") { }.keyboardShortcut(.defaultAction)
-			} message: {
-				Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
-			}
-			.confirmationDialog("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
-				Button("Delete Node", role: .destructive) {
-					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
-					if connectedNode != nil {
-						if let node = deleteNode {
-							Task {
-								do {
-									try await accessoryManager.removeNode(node: node, connectedNodeNum: Int64(accessoryManager.activeDeviceNum ?? -1))
-								} catch {
-									Logger.data.error("Failed to delete node \(node.user?.longName ?? "Unknown".localized, privacy: .public)")
-								}
-							}
-						}
-					}
-				}
-			}
-			.sheet(item: $shareContactNode) { selectedNode in
-				ShareContactQRDialog(node: selectedNode.toProto())
-			}
-			.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
-			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?",
-					phoneOnly: true
-				)
-			}
-			.accessibilityElement(children: .contain))
+			nodeListSidebar
 		} detail: {
 			if let node = selectedNode {
 				NodeDetail(
@@ -151,6 +73,106 @@ struct NodeList: View {
 				router.nodeListSelectedNodeNum = nil
 			}
 		}
+	}
+
+	@ViewBuilder
+	private var nodeListSidebar: some View {
+		FilteredNodeList(
+			router: router,
+			withFilters: filters,
+			selectedNode: $selectedNode,
+			connectedNode: connectedNode,
+			isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
+			deleteNodeId: $deleteNodeId,
+			shareContactNode: $shareContactNode,
+			filteredNodeCount: $filteredNodeCount
+		)
+		.sheet(isPresented: $isEditingFilters) {
+			NodeListFilter(
+				filters: filters
+			)
+		}
+		.sheet(isPresented: $showingHelp) {
+			NodeListHelp()
+		}
+		.safeAreaInset(edge: .bottom, alignment: .leading) {
+			HStack {
+				Button(action: {
+					withAnimation {
+						showingHelp = !showingHelp
+					}
+				}) {
+					Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+				Spacer()
+				Button(action: {
+					withAnimation {
+						isEditingFilters = !isEditingFilters
+					}
+				}) {
+					Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+			}
+			.controlSize(.regular)
+			.padding(5)
+		}
+		.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
+		.autocorrectionDisabled(true)
+		.scrollDismissesKeyboard(.immediately)
+		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(filteredNodeCount)))
+		.listStyle(.plain)
+		.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
+			Button("OK") { }.keyboardShortcut(.defaultAction)
+		} message: {
+			Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
+		}
+		.alert("Position Exchange Failed", isPresented: $isPresentingPositionFailedAlert) {
+			Button("OK") { }.keyboardShortcut(.defaultAction)
+		} message: {
+			Text("Failed to get a valid position to exchange")
+		}
+		.alert("Trace Route Sent", isPresented: $isPresentingTraceRouteSentAlert) {
+			Button("OK") { }.keyboardShortcut(.defaultAction)
+		} message: {
+			Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
+		}
+		.confirmationDialog("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
+			Button("Delete Node", role: .destructive) {
+				let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+				if connectedNode != nil {
+					if let node = deleteNode {
+						let connectedNum = accessoryManager.activeDeviceNum ?? -1
+						Task {
+							do {
+								try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNum)
+							} catch {
+								Logger.data.error("Failed to delete node \(node.user?.longName ?? "Unknown".localized, privacy: .public)")
+							}
+						}
+					}
+				}
+			}
+		}
+		.sheet(item: $shareContactNode) { selectedNode in
+			ShareContactQRDialog(manuallyVerified: false, node: selectedNode.toProto())
+		}
+		.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
+		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
+			ConnectedDevice(
+				deviceConnected: accessoryManager.isConnected,
+				name: accessoryManager.activeConnection?.device.shortName ?? "?",
+				phoneOnly: true
+			)
+		}
+		.accessibilityElement(children: .contain))
 	}
 
 }
