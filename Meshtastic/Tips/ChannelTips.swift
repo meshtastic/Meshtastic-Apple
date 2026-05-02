@@ -13,13 +13,17 @@
 		return "tip.channels.share"
 	}
 	var title: Text {
-		Text("Sharing Meshtastic Channels")
+		Text("Share Channels")
 	}
 	var message: Text? {
-		Text("A Meshtastic QR code contains the LoRa config and channel values needed for radios to communicate. You can share a complete channel configuration using the Replace Channels option, if you choose Add Channels your shared channels will be added to the channels on the receiving radio.")
+		Text("A QR code contains the LoRa config and channels needed for radios to communicate. Use Replace Channels to overwrite or Add Channels to append to existing channels.")
 	}
 	var image: Image? {
 		Image(systemName: "qrcode")
+	}
+	var options: [TipOption] {
+		Tips.IgnoresDisplayFrequency(true)
+		Tips.MaxDisplayCount(3)
 	}
  }
 
@@ -32,10 +36,14 @@ struct CreateChannelsTip: Tip {
 	   Text("Manage Channels")
    }
    var message: Text? {
-	   Text("Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/tips/)")
+	   Text("The primary channel handles broadcast traffic. Add secondary channels for separate messaging groups, each secured by their own key. [Learn more](https://meshtastic.org/docs/configuration/tips/)")
    }
    var image: Image? {
-	   Image(systemName: "fibrechannel")
+	   Image(systemName: "lock.shield")
+   }
+   var options: [TipOption] {
+	   Tips.IgnoresDisplayFrequency(true)
+	   Tips.MaxDisplayCount(3)
    }
 }
 
@@ -51,6 +59,10 @@ struct AdminChannelTip: Tip {
 	   Text("Select a node from the drop down to manage connected or remote devices.")
    }
    var image: Image? {
-	   Image(systemName: "fibrechannel")
+	   Image(systemName: "gearshape.arrow.triangle.2.circlepath")
+   }
+   var options: [TipOption] {
+	   Tips.IgnoresDisplayFrequency(true)
+	   Tips.MaxDisplayCount(3)
    }
 }

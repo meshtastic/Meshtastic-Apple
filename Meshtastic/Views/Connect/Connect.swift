@@ -42,7 +42,7 @@ struct Connect: View {
 						if let connectedDevice = accessoryManager.activeConnection?.device,
 						   accessoryManager.isConnected || accessoryManager.isConnecting {
 							TipView(ConnectionTip(), arrowEdge: .bottom)
-								.tipViewStyle(PersistentTip())
+										.tipViewStyle(PersistentTipStyle())
 								.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 								.listRowSeparator(.hidden)
 							VStack(alignment: .leading) {
@@ -80,6 +80,11 @@ struct Connect: View {
 										if node != nil {
 											Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
+										}
+										if accessoryManager.firmwareEdition.isEvent {
+											Text(accessoryManager.firmwareEdition.name)
+												.font(.callout)
+												.foregroundColor(.orange)
 										}
 										switch accessoryManager.state {
 										case .subscribed:
@@ -377,6 +382,10 @@ struct Connect: View {
 				.presentationDragIndicator(.automatic)
 		}
 		.onChange(of: self.accessoryManager.state) { _, state in
+			// Clear stale node data when not subscribed to prevent showing previous connection's info
+			if state != .subscribed {
+				node = nil
+			}
 			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
 				
@@ -423,6 +432,7 @@ struct Connect: View {
 			&& !accessoryManager.isConnected
 			&& !accessoryManager.isConnecting
 			&& pendingNymeaDevice == nil
+			&& !UserDefaults.firstLaunch
 		if canScan {
 			nymeaProvisioning.startDiscovery()
 		} else {

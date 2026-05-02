@@ -121,6 +121,49 @@ enum CarPlayIntentDonation {
 
 	// MARK: - Helpers
 
+	/// Builds an INSendMessageIntent for a received message, suitable for use with
+	/// Communication Notifications (`UNMutableNotificationContent.updating(from:)`).
+	/// Returns nil if the message has no sender.
+	static func incomingMessageIntent(from message: MessageEntity) -> INSendMessageIntent? {
+		guard let fromUser = message.fromUser else { return nil }
+
+		let sender = IntentMessageConverters.inPerson(from: fromUser)
+		let me = mePerson()
+
+		if message.toUser != nil {
+			// Direct message
+			return INSendMessageIntent(
+				recipients: [me],
+				outgoingMessageType: .outgoingMessageText,
+				content: message.messagePayload,
+				speakableGroupName: nil,
+				conversationIdentifier: "dm-\(fromUser.num)",
+				serviceName: "Meshtastic",
+				sender: sender,
+				attachments: nil
+			)
+		} else {
+			// Channel message
+			let channelName = channelDisplayName(for: message.channel)
+			let groupName = INSpeakableString(spokenPhrase: channelName)
+			let intent = INSendMessageIntent(
+				recipients: [me],
+				outgoingMessageType: .outgoingMessageText,
+				content: message.messagePayload,
+				speakableGroupName: groupName,
+				conversationIdentifier: "channel-\(message.channel)",
+				serviceName: "Meshtastic",
+				sender: sender,
+				attachments: nil
+			)
+			intent.setImage(
+				INImage(named: "antenna.radiowaves.left.and.right"),
+				forParameterNamed: \.speakableGroupName
+			)
+			return intent
+		}
+	}
+
 	static func mePerson() -> INPerson {
 		let meHandle = INPersonHandle(value: "me", type: .unknown)
 		return INPerson(

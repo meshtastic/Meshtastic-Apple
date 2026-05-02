@@ -8,58 +8,51 @@
 import SwiftUI
 
 struct DirectMessagesHelp: View {
-	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.dismiss) private var dismiss
 
 	var body: some View {
-		ScrollView {
-			Label("Direct Message Help", systemImage: "questionmark.circle")
-				.font(.title)
-				.padding(.vertical)
-			VStack(alignment: .leading) {
-				HStack {
-					Image(systemName: "star.fill")
-						.foregroundColor(.yellow)
-						.padding(.bottom)
-					Text("Favorites and nodes with recent messages show up at the top of the contact list.")
-						.fixedSize(horizontal: false, vertical: true)
-						.padding(.bottom)
+		NavigationStack {
+			List {
+				Section {
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "star.fill")
+								.font(.title3)
+								.foregroundColor(.yellow)
+						),
+						title: String(localized: "Favorites"),
+						subtitle: String(localized: "Favorites and nodes with recent messages show up at the top of the contact list.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "hand.tap")
+								.font(.title3)
+								.foregroundColor(.primary)
+						),
+						title: String(localized: "Long Press Actions"),
+						subtitle: String(localized: "Long press to favorite or mute the contact or delete a conversation.")
+					)
+				} header: {
+					Text("Contacts")
 				}
-				HStack {
-					Image(systemName: "hand.tap")
-						.padding(.bottom)
-					Text("Long press to favorite or mute the contact or delete a conversation.")
-						.fixedSize(horizontal: false, vertical: true)
-						.padding(.bottom)
-				}
+				LockLegend()
+				AckErrors()
 			}
-			if idiom == .phone {
-				VStack(alignment: .leading) {
-					LockLegend()
-					AckErrors()
-				}
-			} else {
-				HStack(alignment: .top) {
-					LockLegend()
-					AckErrors()
-						.padding(.trailing)
-				}
-			}
+			.navigationTitle("Direct Messages Help")
+			.navigationBarTitleDisplayMode(.inline)
 #if targetEnvironment(macCatalyst)
-		Spacer()
-		Button {
-			dismiss()
-		} label: {
-			Label("Close", systemImage: "xmark")
-		}
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding(.bottom)
+			Spacer()
+			Button {
+				dismiss()
+			} label: {
+				Label("Close", systemImage: "xmark")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding(.bottom)
 #endif
 		}
-		.frame(minHeight: 0, maxHeight: .infinity, alignment: .leading)
-		.padding()
 		.presentationDetents([.large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
@@ -69,8 +62,6 @@ struct DirectMessagesHelp: View {
 
 struct DirectMessagesHelpPreviews: PreviewProvider {
 	static var previews: some View {
-		VStack {
-			AckErrors()
-		}
+		DirectMessagesHelp()
 	}
 }
