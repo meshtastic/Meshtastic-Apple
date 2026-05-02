@@ -493,7 +493,7 @@ struct Settings: View {
 									}
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
-									.tipViewStyle(PersistentTip())
+											.tipViewStyle(PersistentTipStyle())
 									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 									.listRowSeparator(.hidden)
 							} else {
@@ -599,6 +599,16 @@ struct Settings: View {
 				if isConnectedNow, self.selectedNode == 0 {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
 					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
+				}
+			}
+			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
+				if newDevice == nil {
+					selectedNode = 0
+					preferredNodeNum = 0
+				} else if oldDevice != newDevice {
+					// Physical connection changed — any prior remote admin session is invalid
+					preferredNodeNum = Int(newDevice!)
+					selectedNode = Int(newDevice!)
 				}
 			}
 			.onAppear {

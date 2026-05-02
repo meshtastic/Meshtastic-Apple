@@ -27,6 +27,7 @@ struct NodeList: View {
 	@State private var shareContactNode: NodeInfoEntity?
 	@StateObject var filters = NodeFilterParameters()
 	@State var isEditingFilters = false
+	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	var connectedNode: NodeInfoEntity? {
@@ -52,8 +53,23 @@ struct NodeList: View {
 					filters: filters
 				)
 			}
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+			.sheet(isPresented: $showingHelp) {
+				NodeListHelp()
+			}
+			.safeAreaInset(edge: .bottom) {
 				HStack {
+					Button(action: {
+						withAnimation {
+							showingHelp = !showingHelp
+						}
+					}) {
+						Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+					Spacer()
 					Button(action: {
 						withAnimation {
 							isEditingFilters = !isEditingFilters
@@ -106,7 +122,7 @@ struct NodeList: View {
 				}
 			}
 			.sheet(item: $shareContactNode) { selectedNode in
-				ShareContactQRDialog(node: selectedNode.toProto())
+				ShareContactQRDialog(manuallyVerified: selectedNode.num == accessoryManager.activeDeviceNum, node: selectedNode.toProto())
 			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
 			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
@@ -255,7 +271,7 @@ fileprivate struct FilteredNodeList: View {
 	) -> some View {
 		if let user = node.user {
 			NodeAlertsButton(context: context, node: node, user: user)
-			if !user.unmessagable && user.num == UserDefaults.preferredPeripheralNum {
+			if !user.unmessagable {
 				Button(action: {
 					shareContactNode = node
 				}) {

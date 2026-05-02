@@ -42,7 +42,7 @@ struct Connect: View {
 						if let connectedDevice = accessoryManager.activeConnection?.device,
 						   accessoryManager.isConnected || accessoryManager.isConnecting {
 							TipView(ConnectionTip(), arrowEdge: .bottom)
-								.tipViewStyle(PersistentTip())
+										.tipViewStyle(PersistentTipStyle())
 								.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 								.listRowSeparator(.hidden)
 							VStack(alignment: .leading) {
@@ -382,6 +382,10 @@ struct Connect: View {
 				.presentationDragIndicator(.automatic)
 		}
 		.onChange(of: self.accessoryManager.state) { _, state in
+			// Clear stale node data when not subscribed to prevent showing previous connection's info
+			if state != .subscribed {
+				node = nil
+			}
 			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
 				

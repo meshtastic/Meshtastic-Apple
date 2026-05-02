@@ -254,7 +254,7 @@
 		DD1BEF4A2E0292320090CE24 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF492E0292220090CE24 /* KeychainHelper.swift */; };
 		DD1BEF4C2E030D310090CE24 /* KeyBackupStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */; };
 		DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */; };
-		DD1BEF502E0528AA0090CE24 /* PersistantTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */; };
+		6AC10554C1BCC1DF509C85EE /* NodeListHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A96594950B87789C0BB96DB /* NodeListHelp.swift */; };
 		DD1BEF522E08E9B80090CE24 /* ChannelLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
@@ -296,6 +296,7 @@
 		DD6F65762C6EA5490053C113 /* AckErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65752C6EA5490053C113 /* AckErrors.swift */; };
 		DD6F65792C6EADE60053C113 /* DirectMessagesHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */; };
 		DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F657A2C6EC2900053C113 /* LockLegend.swift */; };
+		DD6F657D2C6EC2910053C113 /* HelpItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F657C2C6EC2910053C113 /* HelpItem.swift */; };
 		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
 		DD74ED0D2DC6A0C90059AC10 /* DeviceOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD74ED0C2DC6A0B80059AC10 /* DeviceOnboarding.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
@@ -357,6 +358,7 @@
 		DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4112A9EE5DD00230ECE /* UserList.swift */; };
 		DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4132A9EE5F000230ECE /* ChannelList.swift */; };
 		DDC1B81A2AB5377B00C71E39 /* MessagesTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC1B8192AB5377B00C71E39 /* MessagesTips.swift */; };
+		DDC1B81B2AB5377B00C71E39 /* PersistentTipStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC1B81C2AB5377B00C71E39 /* PersistentTipStyle.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -736,7 +738,7 @@
 		DD1BEF492E0292220090CE24 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBackupStatus.swift; sourceTree = "<group>"; };
 		DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsHelp.swift; sourceTree = "<group>"; };
-		DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistantTips.swift; sourceTree = "<group>"; };
+		8A96594950B87789C0BB96DB /* NodeListHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListHelp.swift; sourceTree = "<group>"; };
 		DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelLock.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
@@ -798,6 +800,7 @@
 		DD6F65752C6EA5490053C113 /* AckErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AckErrors.swift; sourceTree = "<group>"; };
 		DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectMessagesHelp.swift; sourceTree = "<group>"; };
 		DD6F657A2C6EC2900053C113 /* LockLegend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockLegend.swift; sourceTree = "<group>"; };
+		DD6F657C2C6EC2910053C113 /* HelpItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpItem.swift; sourceTree = "<group>"; };
 		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
 		DD74ED0C2DC6A0B80059AC10 /* DeviceOnboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceOnboarding.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
@@ -872,6 +875,7 @@
 		DDB8F4132A9EE5F000230ECE /* ChannelList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelList.swift; sourceTree = "<group>"; };
 		DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV8.xcdatamodel; sourceTree = "<group>"; };
 		DDC1B8192AB5377B00C71E39 /* MessagesTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesTips.swift; sourceTree = "<group>"; };
+		DDC1B81C2AB5377B00C71E39 /* PersistentTipStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentTipStyle.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
@@ -1675,7 +1679,9 @@
 				DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */,
 				DD6F65752C6EA5490053C113 /* AckErrors.swift */,
 				DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */,
+				DD6F657C2C6EC2910053C113 /* HelpItem.swift */,
 				DD6F657A2C6EC2900053C113 /* LockLegend.swift */,
+				8A96594950B87789C0BB96DB /* NodeListHelp.swift */,
 			);
 			path = Help;
 			sourceTree = "<group>";
@@ -1691,10 +1697,10 @@
 		DD7709392AA1ABA1007A8BF0 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
-				DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */,
 				DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */,
 				DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */,
 				DDC1B8192AB5377B00C71E39 /* MessagesTips.swift */,
+				DDC1B81C2AB5377B00C71E39 /* PersistentTipStyle.swift */,
 			);
 			path = Tips;
 			sourceTree = "<group>";
@@ -2471,6 +2477,7 @@
 				DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */,
 				23196A6E2EF1BA9100B1504B /* ESP32WifiOTAViewModel.swift in Sources */,
 				DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */,
+				6AC10554C1BCC1DF509C85EE /* NodeListHelp.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */,
 				23C873E32EF9B58C00BFEA7B /* OTAEnums.swift in Sources */,
@@ -2481,7 +2488,6 @@
 				25F5D5BE2C3F6D87008036E3 /* NavigationState.swift in Sources */,
 				2373AE152D0A24930086C749 /* MetricsSeriesList.swift in Sources */,
 				DD354FD92BD96A0B0061A25F /* IAQScale.swift in Sources */,
-				DD1BEF502E0528AA0090CE24 /* PersistantTips.swift in Sources */,
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
 				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
 				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
@@ -2590,6 +2596,7 @@
 				108FFECB2DD3F43C00BFAA81 /* ShareContactQRDialog.swift in Sources */,
 				233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */,
 				DDC1B81A2AB5377B00C71E39 /* MessagesTips.swift in Sources */,
+				DDC1B81B2AB5377B00C71E39 /* PersistentTipStyle.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,
 				DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */,
@@ -2653,6 +2660,7 @@
 				25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
 				DD6F657B2C6EC2900053C113 /* LockLegend.swift in Sources */,
+				DD6F657D2C6EC2910053C113 /* HelpItem.swift in Sources */,
 				23196C702EF42D3D00B1504B /* CircularProgressView.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				DDAB580D2B0DAA9E00147258 /* Routes.swift in Sources */,

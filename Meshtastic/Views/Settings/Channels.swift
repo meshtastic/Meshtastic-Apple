@@ -301,7 +301,9 @@ struct Channels: View {
 					Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
 						.padding(.vertical, 5)
 				}
+				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
 			}
 			.controlSize(.regular)
 			.padding(5)
