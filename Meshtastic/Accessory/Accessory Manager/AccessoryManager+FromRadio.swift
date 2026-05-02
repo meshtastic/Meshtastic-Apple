@@ -94,8 +94,31 @@ extension AccessoryManager {
 		}
 		tryClearExistingChannels()
 
+		// Auto-disable new-node notifications for event firmware editions
+		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)
+		firmwareEdition = FirmwareEditions(from: myNodeInfo.firmwareEdition)
+
 		// Initialize TAK bridge for TAK integration
 		initializeTAKBridge()
+	}
+
+	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),
+	/// auto-disable new-node notifications on first connection.
+	/// Reconnecting to vanilla firmware re-enables and resets the flag.
+	private func applyEventFirmwareNotificationDefaults(_ edition: FirmwareEdition) {
+		if edition != .vanilla {
+			if !UserDefaults.nodeNotificationsAutoDisabledForEvent {
+				UserDefaults.newNodeNotifications = false
+				UserDefaults.nodeNotificationsAutoDisabledForEvent = true
+				Logger.services.info("Event firmware detected (\(String(describing: edition))), auto-disabled new node notifications")
+			}
+		} else {
+			if UserDefaults.nodeNotificationsAutoDisabledForEvent {
+				UserDefaults.newNodeNotifications = true
+				UserDefaults.nodeNotificationsAutoDisabledForEvent = false
+				Logger.services.info("Vanilla firmware detected, re-enabled new node notifications")
+			}
+		}
 	}
 
 	func handleNodeInfo(_ nodeInfo: NodeInfo) async {

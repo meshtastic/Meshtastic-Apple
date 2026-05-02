@@ -218,6 +218,7 @@
 		DD00001DCDENTTST00000001 /* CoreDataEntityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */; };
 		DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */; };
 		DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */; };
+		DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */; };
 		DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */; };
 		DD000021ENMCMPTST0000001 /* EnumComprehensiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000021ENMCMPTST0000000 /* EnumComprehensiveTests.swift */; };
 		DD000022GEOJSNCFG0000001 /* GeoJSONOverlayConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000022GEOJSNCFG0000000 /* GeoJSONOverlayConfigTests.swift */; };
@@ -342,6 +343,7 @@
 		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
 		DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */; };
 		DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */; };
+		DD000031FWEDTENUM0000001 /* FirmwareEditionEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */; };
 		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
 		DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */; };
 		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
@@ -691,6 +693,7 @@
 		DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataEntityTests.swift; sourceTree = "<group>"; };
 		DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLExtensionDetailedTests.swift; sourceTree = "<group>"; };
 		DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareViewModelErrorTests.swift; sourceTree = "<group>"; };
+		DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFirmwareNotificationTests.swift; sourceTree = "<group>"; };
 		DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKBridgeDetailedTests.swift; sourceTree = "<group>"; };
 		DD000021ENMCMPTST0000000 /* EnumComprehensiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnumComprehensiveTests.swift; sourceTree = "<group>"; };
 		DD000022GEOJSNCFG0000000 /* GeoJSONOverlayConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoJSONOverlayConfigTests.swift; sourceTree = "<group>"; };
@@ -852,6 +855,7 @@
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
 		DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceText.swift; sourceTree = "<group>"; };
 		DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEnums.swift; sourceTree = "<group>"; };
+		DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareEditionEnum.swift; sourceTree = "<group>"; };
 		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
@@ -1396,6 +1400,7 @@
 				DD00001DCDENTTST00000000 /* CoreDataEntityTests.swift */,
 				DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */,
 				DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */,
+				DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */,
 				DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */,
 				DD000021ENMCMPTST0000000 /* EnumComprehensiveTests.swift */,
 				DD000022GEOJSNCFG0000000 /* GeoJSONOverlayConfigTests.swift */,
@@ -1715,6 +1720,7 @@
 				DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */,
 				DD0BE30F2CB9FDC4000BA445 /* DetectionSensorEnums.swift */,
 				DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */,
+				DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */,
 				DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */,
 				DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */,
 				DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */,
@@ -2349,6 +2355,7 @@
 				DD00001DCDENTTST00000001 /* CoreDataEntityTests.swift in Sources */,
 				DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */,
 				DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */,
+				DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */,
 				DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */,
 				DD000021ENMCMPTST0000001 /* EnumComprehensiveTests.swift in Sources */,
 				DD000022GEOJSNCFG0000001 /* GeoJSONOverlayConfigTests.swift in Sources */,
@@ -2573,6 +2580,7 @@
 				23AD54692E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift in Sources */,
 				233E99BA2D849C7000CC3A77 /* PressureCompactWidget.swift in Sources */,
 				DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */,
+				DD000031FWEDTENUM0000001 /* FirmwareEditionEnum.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
 				251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */,

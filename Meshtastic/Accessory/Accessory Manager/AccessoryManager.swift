@@ -137,6 +137,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var isConnected: Bool = false
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
+	@Published var firmwareEdition: FirmwareEditions = .vanilla
 
 	var activeConnection: (device: Device, connection: any Connection)?
 
@@ -385,6 +386,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .uninitialized, .idle, .discovering:
 			self.isConnected = false
 			self.isConnecting = false
+			self.firmwareEdition = .vanilla
 		case .connecting, .communicating, .retrying:
 			self.isConnected = false
 			self.isConnecting = true

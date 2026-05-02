@@ -81,6 +81,11 @@ struct Connect: View {
 											Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 										}
+										if accessoryManager.firmwareEdition.isEvent {
+											Text(accessoryManager.firmwareEdition.name)
+												.font(.callout)
+												.foregroundColor(.orange)
+										}
 										switch accessoryManager.state {
 										case .subscribed:
 											Text("Subscribed").font(.callout)
