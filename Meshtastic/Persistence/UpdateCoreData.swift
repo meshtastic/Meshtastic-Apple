@@ -184,6 +184,10 @@ extension MeshPackets {
 		guard packet.from > 0 else { return }
 		guard packet.from != activeDeviceNum else { return }
 		
+		// Skip routing packets with no rxTime — these are locally-generated implicit ACKs
+		// that don't represent actual RF contact with the remote node.
+		let isImplicitAck = packet.decoded.portnum == .routingApp && packet.rxTime == 0
+		
 		let num = Int64(packet.from)
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate<NodeInfoEntity> { $0.num == num }
@@ -195,12 +199,14 @@ extension MeshPackets {
 				node.id = Int64(packet.from)
 				node.num = Int64(packet.from)
 				
-				if packet.rxTime > 0 {
-					node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-					Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard from rxTime=\(packet.rxTime)")
-				} else {
-					node.lastHeard = Date()
-					Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
+				if !isImplicitAck {
+					if packet.rxTime > 0 {
+						node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+						Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard from rxTime=\(packet.rxTime)")
+					} else {
+						node.lastHeard = Date()
+						Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
+					}
 				}
 				
 				node.snr = packet.rxSnr
@@ -470,6 +476,15 @@ extension MeshPackets {
 				do {
 					try modelContext.save()
 					Logger.data.info("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+					// Refresh the NodeInfoEntity on the viewContext so SwiftUI observes
+					// changes to related UserEntity fields (longName, shortName, etc.)
+					let objectID = fetchedNode[0].objectID
+					DispatchQueue.main.async {
+						let viewContext = PersistenceController.shared.container.viewContext
+						if let viewNode = try? viewContext.existingObject(with: objectID) {
+							viewContext.refresh(viewNode, mergeChanges: true)
+						}
+					}
 				} catch {
 					let nsError = error as NSError
 					Logger.data.error("💥 [NodeInfoEntity] Error Saving from NODEINFO_APP \(nsError, privacy: .public)")

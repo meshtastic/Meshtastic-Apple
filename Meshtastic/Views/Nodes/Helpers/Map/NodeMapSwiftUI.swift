@@ -256,6 +256,7 @@ struct NodeMapSwiftUI: View {
 		let newMostRecent = node.positions.last
 		if node.positions.count > 1 {
 			position = .automatic
+
 		} else if let mrCoord = newMostRecent?.nodeCoordinate {
 			let cameraDistance = cameraDistanceForPrecision(newMostRecent)
 			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: cameraDistance, heading: 0, pitch: 0))
@@ -273,6 +274,7 @@ struct NodeMapSwiftUI: View {
 		let mostRecent = node.positions.last
 		if node.positions.count > 1 {
 			position = .automatic
+
 		} else if let mrCoord = mostRecent?.nodeCoordinate {
 			let cameraDistance = cameraDistanceForPrecision(mostRecent)
 			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: cameraDistance, heading: 0, pitch: 0))
