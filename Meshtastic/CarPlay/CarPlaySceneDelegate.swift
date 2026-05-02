@@ -16,7 +16,6 @@ import Intents
 import OSLog
 import SwiftData
 import UserNotifications
->>>>>>> origin/main
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -502,19 +501,19 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	private func donateLatestIncomingChannelMessage(channelIndex: Int32, conversationId: String, channelName: String) {
 		guard donatedConversationIds.insert(conversationId).inserted else { return }
 
-		let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-			NSPredicate(format: "read == NO"),
-			NSPredicate(format: "admin == NO"),
-			NSPredicate(format: "isEmoji == NO"),
-			NSPredicate(format: "toUser == nil"),
-			NSPredicate(format: "channel == %d", channelIndex)
-		])
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
-		fetchRequest.fetchLimit = 1
-		fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser"]
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate { message in
+				message.read == false &&
+				message.admin == false &&
+				message.isEmoji == false &&
+				message.toUser == nil &&
+				message.channel == channelIndex
+			},
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
 
-		guard let message = (try? context.fetch(fetchRequest))?.first,
+		guard let message = (try? context.fetch(descriptor))?.first,
 			  let fromUser = message.fromUser else { return }
 
 		postCommunicationNotification(
@@ -529,18 +528,18 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	private func donateLatestIncomingDM(nodeNum: Int64, conversationId: String, name: String) {
 		guard donatedConversationIds.insert(conversationId).inserted else { return }
 
-		let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-		fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-			NSPredicate(format: "read == NO"),
-			NSPredicate(format: "admin == NO"),
-			NSPredicate(format: "isEmoji == NO"),
-			NSPredicate(format: "fromUser.num == %lld", nodeNum)
-		])
-		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageTimestamp", ascending: false)]
-		fetchRequest.fetchLimit = 1
-		fetchRequest.relationshipKeyPathsForPrefetching = ["fromUser"]
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate { message in
+				message.read == false &&
+				message.admin == false &&
+				message.isEmoji == false &&
+				message.fromUser?.num == nodeNum
+			},
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
 
-		guard let message = (try? context.fetch(fetchRequest))?.first,
+		guard let message = (try? context.fetch(descriptor))?.first,
 			  let fromUser = message.fromUser else { return }
 
 		postCommunicationNotification(
