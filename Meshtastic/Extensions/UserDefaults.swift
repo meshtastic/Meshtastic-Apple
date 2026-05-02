@@ -68,6 +68,7 @@ extension UserDefaults {
 		case detectionSensorRole
 		case enableSmartPosition
 		case newNodeNotifications
+		case nodeNotificationsAutoDisabledForEvent
 		case lowBatteryNotifications
 		case channelMessageNotifications
 		case modemPreset
@@ -147,6 +148,9 @@ extension UserDefaults {
 
 	@UserDefault(.newNodeNotifications, defaultValue: true)
 	static var newNodeNotifications: Bool
+
+	@UserDefault(.nodeNotificationsAutoDisabledForEvent, defaultValue: false)
+	static var nodeNotificationsAutoDisabledForEvent: Bool
 
 	@UserDefault(.lowBatteryNotifications, defaultValue: true)
 	static var lowBatteryNotifications: Bool

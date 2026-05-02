@@ -64,7 +64,7 @@ struct Messages: View {
 				}
 				Spacer()
 				TipView(MessagesTip(), arrowEdge: .top)
-					.tipViewStyle(PersistentTip())
+					.tipViewStyle(PersistentTipStyle())
 					.listRowSeparator(.hidden)
 				Spacer()
 					.listRowSeparator(.hidden)

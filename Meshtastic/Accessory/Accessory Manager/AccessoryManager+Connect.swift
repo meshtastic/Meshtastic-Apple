@@ -25,8 +25,9 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed("No transport for type")
 		}
 		
-		// Clear any errors from last time
+		// Clear any errors and stale state from last connection
 		lastConnectionError = nil
+		self.activeDeviceNum = nil
 		packetsSent = 0
 		packetsReceived = 0
 		expectedNodeDBSize = nil

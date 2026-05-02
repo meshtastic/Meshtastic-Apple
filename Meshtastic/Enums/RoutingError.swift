@@ -68,6 +68,44 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return "Rate Limit Exceeded".localized
 		}
 	}
+	var description: String {
+		switch self {
+		case .none:
+			return "Message was successfully delivered to the recipient.".localized
+		case .noRoute:
+			return "No route to the destination node was found in the mesh.".localized
+		case .gotNak:
+			return "A node in the path explicitly rejected the packet.".localized
+		case .timeout:
+			return "No acknowledgment was received within the expected time window.".localized
+		case .noInterface:
+			return "The radio interface needed to send the packet is unavailable.".localized
+		case .maxRetransmit:
+			return "The packet was retransmitted the maximum number of times without acknowledgment.".localized
+		case .noChannel:
+			return "The channel required for this message is not configured on the device.".localized
+		case .tooLarge:
+			return "The message exceeds the maximum packet size and cannot be sent.".localized
+		case .noResponse:
+			return "The destination node did not respond to the request.".localized
+		case .dutyCycleLimit:
+			return "The regional duty cycle limit has been reached; transmissions are temporarily paused.".localized
+		case .badRequest:
+			return "The request was malformed or contained invalid parameters.".localized
+		case .notAuthorized:
+			return "The requesting node is not authorized to perform this action.".localized
+		case .pkiFailed:
+			return "Public key encryption failed; the message could not be encrypted for the recipient.".localized
+		case .pkiUnknownPubkey:
+			return "The recipient's public key is not known; direct message encryption is not possible.".localized
+		case .adminBadSessionKey:
+			return "The admin session key is invalid or has expired.".localized
+		case .adminPublicKeyUnauthorized:
+			return "The admin public key is not in the authorized list on the remote node.".localized
+		case .rateLimitExceeded:
+			return "Too many requests were sent in a short period; wait before retrying.".localized
+		}
+	}
 	var color: Color {
 		if self == .none {
 			return Color.secondary
