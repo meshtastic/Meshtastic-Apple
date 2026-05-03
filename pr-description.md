@@ -1,27 +1,60 @@
 ## What changed?
 
-Adds **Local Mesh Discovery** (Settings → Developers) — a diagnostic tool that cycles through LoRa modem presets to audit the local RF environment and recommend optimal configuration.
+Adds **Local Mesh Discovery** (Settings → Local Mesh Discovery) — an automated multi-preset RF scanner that cycles through LoRa modem presets to audit the local mesh environment and recommend optimal radio configuration using on-device AI.
 
-- **Scan Engine** (`DiscoveryScanEngine`): State machine (Idle → Shifting → Dwell → Analysis → Complete) that sends `AdminMessage setConfig.lora` per preset, handles radio reboot + BLE reconnect, and routes incoming packets to per-preset counters. 2-Packet Rule requires ≥2 DeviceMetrics to compute Δ airtime rate.
-- **Data Model** (3 new SwiftData `@Model` types): `DiscoverySessionEntity`, `DiscoveryPresetResultEntity`, `DiscoveredNodeEntity` — session aggregates, per-preset metrics with raw LocalStats, per-node observations with neighbor type/SNR/RSSI/icon classification.
-- **Views**: `DiscoveryScanView` (preset multi-select, dwell picker, scan controls), `DiscoveryMapView` (MapKit auto-zoom, color-coded annotations, topology polylines, radar sweep overlay), `DiscoverySummaryView` (stat cards, RF health, FoundationModels recommendation, PDF export), `DiscoveryHistoryView` (session list with detail + delete).
-- **PDF Export**: `DiscoverySummaryPDF` via `UIGraphicsPDFRenderer` + `MKMapSnapshotter`.
-- **Other**: `Logger.discovery` category, NeighborInfo packet forwarding in `AccessoryManager+FromRadio`, deep link `meshtastic:///settings/localMeshDiscovery`, LORA_24 gated to 2.4 GHz-capable hardware.
+### Scan Engine (`DiscoveryScanEngine`)
+
+`@MainActor @Observable` state machine with states: `idle` → `shifting` → `reconnecting` → `dwell` → `analysis` → `complete` (plus `paused` and `restoring`).
+
+- Sends `AdminMessage setConfig.lora` to switch the connected radio to each selected preset
+- Handles radio reboot + BLE reconnect automatically (60-second timeout)
+- Collects packets per-preset during configurable dwell windows (default 15 min)
+- 2-Packet Rule: requires ≥2 DeviceMetrics to compute Δ airtime rate
+- Graceful stop: halts mid-scan, saves partial results, restores the user's home preset
+- Alerts and disables scan start when primary channel uses the default key (#1706)
+
+### Data Model (3 new SwiftData `@Model` types)
+
+- **`DiscoverySessionEntity`** — session-level aggregates: timestamp, presets scanned, total unique nodes, average channel utilization, message/sensor counts, furthest distance, AI summary, user location, completion status
+- **`DiscoveryPresetResultEntity`** — per-preset metrics: node counts (direct/mesh/infrastructure), message/sensor counts, channel utilization, airtime rate, packet success/failure rates, raw LocalStats fields (TX/RX/bad/dupe/relay/relay-canceled/online/total/uptime)
+- **`DiscoveredNodeEntity`** — per-node observations: short/long name, neighbor type (direct vs. mesh), position, distance, hop count, SNR/RSSI, message/sensor counts, infrastructure flag, computed `iconName` (social → `person.2.fill`, sensor → `thermometer.medium`)
+
+### Views
+
+| View | Description |
+|------|-------------|
+| `DiscoveryScanView` | Preset multi-select (auto-filters LORA_24 for non-2.4 GHz hardware), dwell time picker, Start/Stop scan controls, live map + timer during dwell, `DiscoveryScanTip` explainer |
+| `DiscoveryMapView` | MapKit with auto-zoom region fitting, color-coded annotations (green = direct 1-hop, blue = mesh/NeighborInfo), topology polylines to user position, `RadarSweepView` overlay during active scan |
+| `RadarSweepView` | Animated rotating sweep + expanding pulse rings (15s rotation, 3 rings) |
+| `DiscoverySummaryView` | Per-preset stat cards, RF health section (packet success/failure), FoundationModels AI recommendation (iOS 26+; fallback to structured table), PDF export |
+| `DiscoveryHistoryView` | Reverse-chronological session list with detail drill-down and swipe-to-delete |
+
+### PDF Export (`DiscoverySummaryPDF`)
+
+- `UIGraphicsPDFRenderer` + `MKMapSnapshotter` for map image
+- `FileDocument` conformance for share sheet integration
+- Includes session metadata, per-preset metrics, and map snapshot
+
+### Integration Points
+
+- **Navigation**: `SettingsNavigationState.localMeshDiscovery` case, `NavigationLink` in Settings view
+- **Tips**: `DiscoveryScanTip` (TipKit) explains the feature on first use
+- **FoundationModels**: `LanguageModelSession` (iOS 26+) generates natural-language preset recommendations; gated with `#if canImport(FoundationModels)`
+- **2.4 GHz Gating**: LORA_24 preset hidden for hardware without SX1280/SX1281 support
 
 ## Why did it change?
 
-No existing way to understand activity across different LoRa presets in a given area. This automates the manual preset-switching workflow and uses on-device AI (FoundationModels, iOS 26+; fallback to structured table) to recommend the optimal preset for a location.
+There was no existing way to understand mesh activity across different LoRa presets in a given area. Users had to manually switch presets, wait, observe, and compare — a tedious process. This feature automates that workflow and uses on-device AI (FoundationModels, iOS 26+; no internet required) to surface which preset is optimal for a location based on node count, channel utilization, and traffic patterns.
 
 ## How is this tested?
 
-- `DiscoveryScanEngineTests` — state machine transitions, dwell timer, reconnect logic
-- `DiscoveryModelTests` — entity relationships, computed properties (icon classification)
-- `DiscoverySnapshotTests` — SwiftUI view rendering via `renderImage` helper
-- Manual: single-preset scan with 15 min dwell against live radio, verified node collection and map rendering
+- **`DiscoveryScanEngineTests`** (Swift Testing) — initial state, `isScanning` property, default dwell duration, state transitions
+- **`DiscoveryModelTests`** (Swift Testing) — entity relationships, computed properties (icon classification based on message vs. sensor counts)
+- **Manual testing**: single-preset scan with 15-minute dwell against a live radio, verified node collection, map rendering, BLE reconnect after preset change, PDF export, and session persistence across app restart
 
 ## Screenshots/Videos (when applicable)
 
-<!-- TODO: attach screenshots of scan config, discovery map, and summary report -->
+<!-- Attach screenshots of: scan config screen, discovery map with nodes, summary report with AI recommendation -->
 
 ## Checklist
 
