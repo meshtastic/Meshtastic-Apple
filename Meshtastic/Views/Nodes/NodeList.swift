@@ -51,6 +51,7 @@ struct NodeList: View {
 				ContentUnavailableView("Select a Node", systemImage: "flipphone")
 			}
 		}
+		.navigationTitle("Meshtastic")
 		.onChange(of: router.nodeListSelectedNodeNum) { _, newNum in
 			// Debounce rapid route changes — only process the last selection after a short delay
 			nodeSelectionTask?.cancel()
@@ -129,6 +130,7 @@ struct NodeList: View {
 		.autocorrectionDisabled(true)
 		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(filteredNodeCount)))
+		.toolbarTitleDisplayMode(.inline)
 		.listStyle(.plain)
 		.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)

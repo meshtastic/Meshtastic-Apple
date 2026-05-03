@@ -48,6 +48,8 @@ struct DiscoveryScanView: View {
 	var body: some View {
 		List {
 			TipView(discoveryScanTip)
+				.listRowBackground(Color.clear)
+				.listRowInsets(EdgeInsets())
 
 			if let engine {
 				if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
