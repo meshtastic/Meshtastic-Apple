@@ -158,6 +158,14 @@
 		AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0009 /* Assets.xcassets */; };
 		AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0013 /* WatchCircleText.swift */; };
+		AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */; };
+		AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0002 /* ContentView.swift */; };
+		AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0003 /* MeshNode.swift */; };
+		AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */; };
+		AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */; };
+		AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */; };
+		AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */; };
+		AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */; };
 		AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0001 /* DeviceHardwareImageEntity.swift */; };
 		AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0002 /* DeviceHardwareTagEntity.swift */; };
 		AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0003 /* FirmwareReleaseEntity.swift */; };
@@ -407,6 +415,7 @@
 		DDDB444829F8A9C900EE2349 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444729F8A9C900EE2349 /* String.swift */; };
 		DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */; };
 		DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444B29F8AAA600EE2349 /* Color.swift */; };
+		AA000001303050030000B001 /* Color+Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002303050030000B001 /* Color+Brand.swift */; };
 		DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444D29F8AB0E00EE2349 /* Int.swift */; };
 		DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444F29F8AC9C00EE2349 /* UIImage.swift */; };
 		DDDB445229F8ACF900EE2349 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445129F8ACF900EE2349 /* Date.swift */; };
@@ -960,6 +969,7 @@
 		DDDB444729F8A9C900EE2349 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLLocationCoordinate2D.swift; sourceTree = "<group>"; };
 		DDDB444B29F8AAA600EE2349 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		AA000002303050030000B001 /* Color+Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Brand.swift"; sourceTree = "<group>"; };
 		DDDB444D29F8AB0E00EE2349 /* Int.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Int.swift; sourceTree = "<group>"; };
 		DDDB444F29F8AC9C00EE2349 /* UIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImage.swift; sourceTree = "<group>"; };
 		DDDB445129F8ACF900EE2349 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
@@ -2113,6 +2123,7 @@
 				DD1BD0EA2C601795008C0C70 /* CLLocation.swift */,
 				DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */,
 				DDDB444B29F8AAA600EE2349 /* Color.swift */,
+				AA000002303050030000B001 /* Color+Brand.swift */,
 				25C49D8F2C471AEA0024FBD1 /* Constants.swift */,
 				DDDB445329F8AD1600EE2349 /* Data.swift */,
 				DDDB445129F8ACF900EE2349 /* Date.swift */,
@@ -2480,6 +2491,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */,
+				AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */,
+				AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */,
+				AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */,
+				AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */,
+				AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */,
+				AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */,
+				AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */,
 				AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2560,6 +2579,7 @@
 				6D825E622C34786C008DBEE4 /* CommonRegex.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
+				AA000001303050030000B001 /* Color+Brand.swift in Sources */,
 				DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */,
 				3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */,
 				DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
