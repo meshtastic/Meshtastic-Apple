@@ -29,7 +29,6 @@ struct NodeList: View {
 	@State var isEditingFilters = false
 	@State private var showingHelp = false
 	@State private var filteredNodeCount: Int = 0
-	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	var connectedNode: NodeInfoEntity? {
