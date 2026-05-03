@@ -13126,10 +13126,18 @@
         }
       }
     },
-    "Connection Attempt %@ of 10" : {
-
+    "Connection Attempt %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Connection Attempt %1$lld of %2$lld"
+          }
+        }
+      }
     },
     "Connection Attempt %lld of 10" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -57117,6 +57125,9 @@
           }
         }
       }
+    },
+    "TLS is required for the public Meshtastic MQTT server." : {
+
     },
     "To comply with privacy laws like CCPA and GDPR, we avoid sharing exact location data. Instead, we use anonymized or approximate (imprecise) location information to protect your privacy." : {
       "localizations" : {

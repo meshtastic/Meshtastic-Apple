@@ -21,7 +21,6 @@ struct MQTTConfig: View {
 	@State var proxyToClientEnabled = false
 	@State var address = ""
 	@State var defaultServer = true
-	@State var showTls = true
 	@State var username = ""
 	@State var password = ""
 	@State var encryptionEnabled = true
@@ -190,7 +189,6 @@ struct MQTTConfig: View {
 									address = String(address.dropLast())
 									totalBytes = address.utf8.count
 								}
-								hasChanges = true
 							}
 							.keyboardType(.default)
 					}
@@ -209,7 +207,6 @@ struct MQTTConfig: View {
 										username = String(username.dropLast())
 										totalBytes = username.utf8.count
 									}
-									hasChanges = true
 								}
 								.foregroundColor(.gray)
 						}
@@ -227,14 +224,22 @@ struct MQTTConfig: View {
 										password = String(password.dropLast())
 										totalBytes = password.utf8.count
 									}
-									hasChanges = true
 								}
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					}
-					if showTls {
+					if defaultServer {
+						if accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
+							Toggle(isOn: $tlsEnabled) {
+								Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+								Text("TLS is required for the public Meshtastic MQTT server.")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.disabled(true)
+						}
+					} else {
 						Toggle(isOn: $tlsEnabled) {
 							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
 							Text("Your MQTT Server must support TLS.")
@@ -280,55 +285,54 @@ struct MQTTConfig: View {
 						}
 					}
 				}
-			}.onChange(of: enabled) { _, newEnabled in
-				if newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
+			}.onChange(of: enabled) { oldEnabled, newEnabled in
+				if oldEnabled != newEnabled && newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
+			.onChange(of: proxyToClientEnabled) { oldProxy, newProxyToClientEnabled in
 				if newProxyToClientEnabled {
 					jsonEnabled = false
 				}
-				if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
+				if oldProxy != newProxyToClientEnabled && newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 			}
-			.onChange(of: address) { _, newAddress in
-				if address.lowercased() == "mqtt.meshtastic.org" {
+			.onChange(of: address) { oldAddress, newAddress in
+				if newAddress.lowercased() == "mqtt.meshtastic.org" {
 					username = "meshdev"
 					password = "large4cats"
 					defaultServer = true
-					if proxyToClientEnabled {
-						showTls = false
+					if accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
+						tlsEnabled = true
 					}
 				} else {
 					defaultServer = false
-					showTls = true
 				}
-				if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
+				if oldAddress != newAddress && newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 			}
-			.onChange(of: username) { _, newUsername in
-				if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
+			.onChange(of: username) { oldUsername, newUsername in
+				if oldUsername != newUsername && newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
 			}
-			.onChange(of: password) { _, newPassword in
-				if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
+			.onChange(of: password) { oldPassword, newPassword in
+				if oldPassword != newPassword && newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
 			}
-			.onChange(of: root) { _, newRoot in
-				if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
+			.onChange(of: root) { oldRoot, newRoot in
+				if oldRoot != newRoot && newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
 			}
 			.onChange(of: selectedTopic) { _, newSelectedTopic in
 				root = newSelectedTopic
 			}
-			.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
-				if newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
+			.onChange(of: encryptionEnabled) { oldEncryption, newEncryptionEnabled in
+				if oldEncryption != newEncryptionEnabled && newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
 			}
-			.onChange(of: jsonEnabled) { _, newJsonEnabled in
+			.onChange(of: jsonEnabled) { oldJson, newJsonEnabled in
 				if newJsonEnabled {
 					proxyToClientEnabled = false
 				}
-				if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
+				if oldJson != newJsonEnabled && newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 			}
-			.onChange(of: tlsEnabled) { _, newTlsEnabled in
-				if defaultServer {
-					tlsEnabled = false
-				} else {
-					if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
+			.onChange(of: tlsEnabled) { oldTls, newTlsEnabled in
+				if defaultServer && accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
+					tlsEnabled = true
+				} else if !defaultServer {
+					if oldTls != newTlsEnabled && newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
 				}
 			}
 			.onChange(of: mqttConnected) { _, newMqttConnected in
@@ -342,11 +346,11 @@ struct MQTTConfig: View {
 					}
 				}
 			}
-			.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
-				if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
+			.onChange(of: mapReportingEnabled) { oldMapReporting, newMapReportingEnabled in
+				if oldMapReporting != newMapReportingEnabled && newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
 			}
-			.onChange(of: mapPublishIntervalSecs.intValue) { _, newMapPublishIntervalSecs in
-				if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
+			.onChange(of: mapPublishIntervalSecs.intValue) { oldMapInterval, newMapPublishIntervalSecs in
+				if oldMapInterval != newMapPublishIntervalSecs && newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 			}
 		}
 		.navigationTitle("MQTT Config")
@@ -445,7 +449,11 @@ struct MQTTConfig: View {
 		self.root = node?.mqttConfig?.root ?? "msh"
 		self.encryptionEnabled = node?.mqttConfig?.encryptionEnabled ?? false
 		self.jsonEnabled = node?.mqttConfig?.jsonEnabled ?? false
-		self.tlsEnabled = node?.mqttConfig?.tlsEnabled ?? false
+		if defaultServer && accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
+			self.tlsEnabled = true
+		} else {
+			self.tlsEnabled = node?.mqttConfig?.tlsEnabled ?? false
+		}
 		self.mqttConnected = accessoryManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
 		if node?.mqttConfig?.mapPublishIntervalSecs ?? 0 < 3600 {
@@ -457,10 +465,8 @@ struct MQTTConfig: View {
 		self.mapReportingOptIn = UserDefaults.mapReportingOptIn
 		if mapPositionPrecision < 11 || mapPositionPrecision > 14 {
 			self.mapPositionPrecision = 14
-			self.hasChanges = true
-		} else {
-			self.hasChanges = false
 		}
+		self.hasChanges = false
 	}
 }
 

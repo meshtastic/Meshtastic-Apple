@@ -27,6 +27,7 @@ struct NodeList: View {
 	@State private var shareContactNode: NodeInfoEntity?
 	@StateObject var filters = NodeFilterParameters()
 	@State var isEditingFilters = false
+	@State private var filteredNodeCount: Int = 0
 	@State private var showingHelp = false
 	@State private var filteredNodeCount: Int = 0
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
@@ -176,7 +177,6 @@ struct NodeList: View {
 		}
 		.accessibilityElement(children: .contain))
 	}
-
 }
 
 //
