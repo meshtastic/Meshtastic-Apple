@@ -82,7 +82,7 @@ struct NodeListHelp: View {
 					)
 					HelpItem(
 						symbol: AnyView(
-							Image(systemName: "dot.radiowaves.up.forward")
+							Image(systemName: "cellularbars")
 								.font(.title3)
 								.foregroundColor(.accentColor)
 						),

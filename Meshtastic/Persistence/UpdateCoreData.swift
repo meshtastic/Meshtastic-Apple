@@ -184,6 +184,10 @@ extension MeshPackets {
 		guard packet.from > 0 else { return }
 		guard packet.from != activeDeviceNum else { return }
 		
+		// Skip routing packets with no rxTime — these are locally-generated implicit ACKs
+		// that don't represent actual RF contact with the remote node.
+		let isImplicitAck = packet.decoded.portnum == .routingApp && packet.rxTime == 0
+		
 		let num = Int64(packet.from)
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate<NodeInfoEntity> { $0.num == num }
@@ -195,12 +199,14 @@ extension MeshPackets {
 				node.id = Int64(packet.from)
 				node.num = Int64(packet.from)
 				
-				if packet.rxTime > 0 {
-					node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-					Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard from rxTime=\(packet.rxTime)")
-				} else {
-					node.lastHeard = Date()
-					Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
+				if !isImplicitAck {
+					if packet.rxTime > 0 {
+						node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+						Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard from rxTime=\(packet.rxTime)")
+					} else {
+						node.lastHeard = Date()
+						Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
+					}
 				}
 				
 				node.snr = packet.rxSnr

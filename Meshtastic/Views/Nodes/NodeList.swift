@@ -29,6 +29,7 @@ struct NodeList: View {
 	@State var isEditingFilters = false
 	@State private var showingHelp = false
 	@State private var filteredNodeCount: Int = 0
+	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	var connectedNode: NodeInfoEntity? {
@@ -289,7 +290,7 @@ fileprivate struct FilteredNodeList: View {
 	) -> some View {
 		if let user = node.user {
 			NodeAlertsButton(context: context, node: node, user: user)
-			if !user.unmessagable && user.num == UserDefaults.preferredPeripheralNum {
+			if !user.unmessagable {
 				Button(action: {
 					shareContactNode = node
 				}) {

@@ -350,8 +350,6 @@
 		DD1BEF4A2E0292320090CE24 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF492E0292220090CE24 /* KeychainHelper.swift */; };
 		DD1BEF4C2E030D310090CE24 /* KeyBackupStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */; };
 		DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */; };
-		DD1BEF542E0A00010090CE24 /* HelpItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF532E0A00010090CE24 /* HelpItem.swift */; };
-		DD1BEF562E0A00020090CE24 /* NodeListHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF552E0A00020090CE24 /* NodeListHelp.swift */; };
 		DD1BEF502E0528AA0090CE24 /* PersistantTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */; };
 		DD1BEF5A2E0A00040090CE24 /* PersistentTipStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF592E0A00040090CE24 /* PersistentTipStyle.swift */; };
 		DD1BEF522E08E9B80090CE24 /* ChannelLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */; };
@@ -517,6 +515,27 @@
 		E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
 		EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */; };
 		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
+		43C0CB306098FD005C2D489F /* IntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA63632A10C2DD076FA222BE /* IntentHandler.swift */; };
+		7717E5954788B23527BACF65 /* IntentMessageConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */; };
+		AB4622DCF4B1D4115ED00312 /* SendMessageIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */; };
+		B0E4EEF2D2C41A884A5E949C /* SearchForMessagesIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */; };
+		9BC51D7EF97090D149658843 /* SetMessageAttributeIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */; };
+		AA0005WTCH00000000BF0001 /* MeshtasticWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */; };
+		AA0005WTCH00000000BF0002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0002 /* ContentView.swift */; };
+		AA0005WTCH00000000BF0003 /* MeshNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0003 /* MeshNode.swift */; };
+		AA0005WTCH00000000BF0004 /* PhoneConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */; };
+		AA0005WTCH00000000BF0005 /* WatchLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */; };
+		AA0005WTCH00000000BF0006 /* FoxhuntCompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */; };
+		AA0005WTCH00000000BF0007 /* NearbyNodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */; };
+		AA0005WTCH00000000BF0008 /* DeviceConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */; };
+		AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0009 /* Assets.xcassets */; };
+		AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AA0005WTCH00000000BF0013 /* WatchCircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005WTCH00000000FR0013 /* WatchCircleText.swift */; };
+		DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */; };
+		6AC10554C1BCC1DF509C85EE /* NodeListHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A96594950B87789C0BB96DB /* NodeListHelp.swift */; };
+		DD6F657D2C6EC2910053C113 /* HelpItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6F657C2C6EC2910053C113 /* HelpItem.swift */; };
+		DD000031FWEDTENUM0000001 /* FirmwareEditionEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */; };
+		DDC1B81B2AB5377B00C71E39 /* PersistentTipStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC1B81C2AB5377B00C71E39 /* PersistentTipStyle.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -943,8 +962,6 @@
 		DD1BEF492E0292220090CE24 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBackupStatus.swift; sourceTree = "<group>"; };
 		DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsHelp.swift; sourceTree = "<group>"; };
-		DD1BEF532E0A00010090CE24 /* HelpItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpItem.swift; sourceTree = "<group>"; };
-		DD1BEF552E0A00020090CE24 /* NodeListHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListHelp.swift; sourceTree = "<group>"; };
 		DD1BEF4F2E0528A80090CE24 /* PersistantTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistantTips.swift; sourceTree = "<group>"; };
 		DD1BEF592E0A00040090CE24 /* PersistentTipStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentTipStyle.swift; sourceTree = "<group>"; };
 		DD1BEF512E08E9AE0090CE24 /* ChannelLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelLock.swift; sourceTree = "<group>"; };
@@ -1163,6 +1180,28 @@
 		F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
 		F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanView.swift; sourceTree = "<group>"; };
 		FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
+		CA63632A10C2DD076FA222BE /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
+		39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentMessageConverters.swift; sourceTree = "<group>"; };
+		5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessageIntentHandler.swift; sourceTree = "<group>"; };
+		0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchForMessagesIntentHandler.swift; sourceTree = "<group>"; };
+		CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMessageAttributeIntentHandler.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWatchApp.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0003 /* MeshNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshNode.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneConnectivityManager.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLocationManager.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxhuntCompassView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyNodesListView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionView.swift; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Meshtastic Watch App.entitlements"; sourceTree = "<group>"; };
+		AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meshtastic Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0005WTCH00000000FR0013 /* WatchCircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCircleText.swift; sourceTree = "<group>"; };
+		DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFirmwareNotificationTests.swift; sourceTree = "<group>"; };
+		8A96594950B87789C0BB96DB /* NodeListHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListHelp.swift; sourceTree = "<group>"; };
+		DD6F657C2C6EC2910053C113 /* HelpItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpItem.swift; sourceTree = "<group>"; };
+		DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareEditionEnum.swift; sourceTree = "<group>"; };
+		DDC1B81C2AB5377B00C71E39 /* PersistentTipStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentTipStyle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -1632,6 +1671,7 @@
 				DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */,
 				DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */,
 				DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */,
+				DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -1912,9 +1952,9 @@
 				DD1BEF4D2E0391620090CE24 /* ChannelsHelp.swift */,
 				DD6F65752C6EA5490053C113 /* AckErrors.swift */,
 				DD6F65782C6EADE60053C113 /* DirectMessagesHelp.swift */,
-				DD1BEF532E0A00010090CE24 /* HelpItem.swift */,
 				DD6F657A2C6EC2900053C113 /* LockLegend.swift */,
-				DD1BEF552E0A00020090CE24 /* NodeListHelp.swift */,
+				DD6F657C2C6EC2910053C113 /* HelpItem.swift */,
+				8A96594950B87789C0BB96DB /* NodeListHelp.swift */,
 			);
 			path = Help;
 			sourceTree = "<group>";
@@ -1936,6 +1976,7 @@
 				DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */,
 				AA11223344556677AABB0002 /* DiscoveryTips.swift */,
 				DDC1B8192AB5377B00C71E39 /* MessagesTips.swift */,
+				DDC1B81C2AB5377B00C71E39 /* PersistentTipStyle.swift */,
 			);
 			path = Tips;
 			sourceTree = "<group>";
@@ -1974,6 +2015,7 @@
 				DD994B68295F88B60013760A /* IntervalEnums.swift */,
 				D93068D42B812B700066FBC8 /* MessageDestination.swift */,
 				DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */,
+				DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -2632,6 +2674,7 @@
 				DD00002DSNPVWTST000000001 /* SwiftUIViewSnapshotTests.swift in Sources */,
 				DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */,
 				DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */,
+				DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2811,8 +2854,6 @@
 				BD7B1A838F8245A0B6BE56C5 /* WatchSessionManager.swift in Sources */,
 				DD3619152B1EF9F900C41C8C /* LocationsHandler.swift in Sources */,
 				DD6F65792C6EADE60053C113 /* DirectMessagesHelp.swift in Sources */,
-				DD1BEF542E0A00010090CE24 /* HelpItem.swift in Sources */,
-				DD1BEF562E0A00020090CE24 /* NodeListHelp.swift in Sources */,
 				23148E302EE1CCE500F0DB2C /* MeshtasticAPI.swift in Sources */,
 				23C2BD292EE87D0300F6A997 /* CoreDataBrowser.swift in Sources */,
 				233E99B62D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift in Sources */,
@@ -2995,6 +3036,10 @@
 				655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */,
 				9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */,
 				7CCBCA0251DAB58FD9D63D06 /* GenericCoTHandler.swift in Sources */,
+				6AC10554C1BCC1DF509C85EE /* NodeListHelp.swift in Sources */,
+				DD6F657D2C6EC2910053C113 /* HelpItem.swift in Sources */,
+				DD000031FWEDTENUM0000001 /* FirmwareEditionEnum.swift in Sources */,
+				DDC1B81B2AB5377B00C71E39 /* PersistentTipStyle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
