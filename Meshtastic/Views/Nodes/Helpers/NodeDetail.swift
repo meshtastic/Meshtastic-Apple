@@ -42,12 +42,7 @@ struct NodeDetail: View {
 					.frame(height: 0) // Ensure it has no height
 					.id("topOfList")
 				List {
-					Section("Hardware") {
-						
-						NodeInfoItem(node: node)
-						//	.id("topOfList")
-					}
-					.accessibilityElement(children: .combine)
+					NodeInfoItem(node: node)
 					Section("Node") { // Node
 						HStack(alignment: .center) {
 							Spacer()

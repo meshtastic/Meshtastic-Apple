@@ -45,6 +45,8 @@ private struct DeviceHardware: Codable {
 	let hasInkHud: Bool?
 	let partitionScheme: String?
 	let hasMui: Bool?
+	let key: String?
+	let variant: String?
 }
 
 /// Firmware Release Lists
@@ -236,6 +238,13 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				deviceEntity.architecture = device.architecture.rawValue
 				deviceEntity.activelySupported = device.activelySupported
 				deviceEntity.displayName = device.displayName
+				deviceEntity.supportLevel = device.supportLevel ?? 0
+				deviceEntity.requiresDfu = device.requiresDfu ?? false
+				deviceEntity.hasInkHud = device.hasInkHud ?? false
+				deviceEntity.partitionScheme = device.partitionScheme
+				deviceEntity.hasMui = device.hasMui ?? false
+				deviceEntity.key = device.key
+				deviceEntity.variant = device.variant
 
 				// Handle Tags
 				var tags = [DeviceHardwareTagEntity]()
