@@ -5,11 +5,10 @@ import SwiftProtobuf
 import MapKit
 import DatadogCore
 import OSLog
-import CoreData
+import SwiftData
 
 struct AppSettings: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
@@ -200,9 +199,8 @@ struct AppSettings: View {
 										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 									}
 								}
-								await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: true)
+								await PersistenceController.shared.clearDatabase(includeRoutes: true)
 								clearNotifications()
-								context.refreshAllObjects()
 							}
 						}
 					}
@@ -224,18 +222,11 @@ struct AppSettings: View {
 }
 
 struct BuildTestNode: View {
-	@FetchRequest private var nodes: FetchedResults<NodeInfoEntity>
+	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
+	private var nodes: [NodeInfoEntity]
 	@Binding var nodeListDensity: NodeListDensity
 	
 	init(nodeListDensity: Binding<NodeListDensity>) {
-		let request: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
-		request.sortDescriptors = [
-			NSSortDescriptor(key: "ignored", ascending: true),
-			NSSortDescriptor(key: "favorite", ascending: false),
-			NSSortDescriptor(key: "lastHeard", ascending: false),
-			NSSortDescriptor(key: "user.longName", ascending: true)
-		]
-		self._nodes = FetchRequest(fetchRequest: request)
 		self._nodeListDensity = nodeListDensity
 	}
 

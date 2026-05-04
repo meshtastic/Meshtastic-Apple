@@ -96,7 +96,7 @@ struct NodeListItemCompact: View {
 		return desc
 	}
 	
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -117,7 +117,7 @@ struct NodeListItemCompact: View {
 	}
 	
 	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.positions?.lastObject as? PositionEntity else {
+		guard let lastPostion = node.positions.last else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
@@ -233,7 +233,7 @@ struct NodeListItemCompact: View {
 							}
 						}
 						// Location
-						if shouldShowLocation && node.positions?.count ?? 0 > 0 && connectedNode != node.num {
+						if shouldShowLocation && node.positions.count > 0 && connectedNode != node.num {
 							Divider().frame(height: 15)
 							HStack {
 								if let (lastPostion, myCoord) = locationData {
@@ -299,11 +299,10 @@ struct DefaultIconCompact: View {
 #Preview {
 	List {
 		NodeListItemCompact(node: {
-			let context = PersistenceController.preview.container.viewContext
-			let nodeInfo = NodeInfoEntity(context: context)
-			let user = UserEntity(context: context)
-			let telemetryEntity = TelemetryEntity(context: context)
-			let positionEntity = PositionEntity(context: context)
+			let nodeInfo = NodeInfoEntity()
+			let user = UserEntity()
+			let telemetryEntity = TelemetryEntity()
+			let positionEntity = PositionEntity()
 			
 			user.longName = "Hopscotch"
 			user.shortName = "HS01"
@@ -330,11 +329,10 @@ struct DefaultIconCompact: View {
 		}(), isDirectlyConnected: true, connectedNode: 0, modemPreset: .medFast)
 		
 		NodeListItemCompact(node: {
-			let context = PersistenceController.preview.container.viewContext
-			let nodeInfo = NodeInfoEntity(context: context)
-			let storeForwardConfig = StoreForwardConfigEntity(context: context)
-			let telemetryEntity = TelemetryEntity(context: context)
-			let user = UserEntity(context: context)
+			let nodeInfo = NodeInfoEntity()
+			let storeForwardConfig = StoreForwardConfigEntity()
+			let telemetryEntity = TelemetryEntity()
+			let user = UserEntity()
 			
 			user.longName = "Brad!!"
 			user.shortName = "B"
@@ -355,9 +353,8 @@ struct DefaultIconCompact: View {
 		}(), isDirectlyConnected: false, connectedNode: 1, modemPreset: .medFast)
 		
 		NodeListItemCompact(node: {
-			let context = PersistenceController.preview.container.viewContext
-			let nodeInfo = NodeInfoEntity(context: context)
-			let user = UserEntity(context: context)
+			let nodeInfo = NodeInfoEntity()
+			let user = UserEntity()
 			
 			user.longName = "MQTT Matt"
 			user.shortName = "MQTM"
@@ -373,10 +370,9 @@ struct DefaultIconCompact: View {
 		}(), isDirectlyConnected: false, connectedNode: 1, modemPreset: .medFast)
 		
 		NodeListItemCompact(node: {
-			let context = PersistenceController.preview.container.viewContext
-			let nodeInfo = NodeInfoEntity(context: context)
-			let user = UserEntity(context: context)
-			let telemetryEntity = TelemetryEntity(context: context)
+			let nodeInfo = NodeInfoEntity()
+			let user = UserEntity()
+			let telemetryEntity = TelemetryEntity()
 			
 			user.longName = "Sneaky Little Roof Node 03"
 			user.shortName = "SLN"
