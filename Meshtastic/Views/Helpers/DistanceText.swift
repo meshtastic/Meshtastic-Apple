@@ -12,11 +12,25 @@ import MapKit
 struct DistanceText: View {
 
 	var meters: CLLocationDistance
+	var isCompact = false
+	let distanceFormatter = MKDistanceFormatter()
+	
+	init(meters: CLLocationDistance, isCompact: Bool = false) {
+		self.meters = meters
+		self.isCompact = isCompact
+		
+		if isCompact {
+			distanceFormatter.unitStyle = .abbreviated
+		}
+	}
 
 	var body: some View {
 
-		let distanceFormatter = MKDistanceFormatter()
-		Text("\(distanceFormatter.string(fromDistance: Double(meters))) away")
+		if isCompact {
+			Text("\(distanceFormatter.string(fromDistance: Double(meters)))")
+		} else {
+			Text("\(distanceFormatter.string(fromDistance: Double(meters))) away")
+		}
 	}
 }
 struct DistanceText_Previews: PreviewProvider {

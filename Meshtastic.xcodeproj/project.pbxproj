@@ -448,6 +448,8 @@
 		E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
 		EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */; };
 		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
+		AB61EBF12E3326DC00B35962 /* NodeListItemCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */; };
+		AB6E72762E3FC85A00639328 /* LayoutEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6E72752E3FC85A00639328 /* LayoutEnums.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1012,6 +1014,8 @@
 		F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
 		F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanView.swift; sourceTree = "<group>"; };
 		FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
+		AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItemCompact.swift; sourceTree = "<group>"; };
+		AB6E72752E3FC85A00639328 /* LayoutEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEnums.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -1827,6 +1831,7 @@
 				D93068D42B812B700066FBC8 /* MessageDestination.swift */,
 				DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */,
 				DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */,
+				AB6E72752E3FC85A00639328 /* LayoutEnums.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -2108,6 +2113,7 @@
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
+				AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */,
 				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
 				231A53772E69ADB900216B99 /* NodeFilterParameters.swift */,
 				251926882C3BAF2E00249DF5 /* Actions */,
@@ -2694,6 +2700,8 @@
 				BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */,
+				AB61EBF12E3326DC00B35962 /* NodeListItemCompact.swift in Sources */,
+				AB6E72762E3FC85A00639328 /* LayoutEnums.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
 				2519268C2C3BB52000249DF5 /* TraceRouteButton.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
