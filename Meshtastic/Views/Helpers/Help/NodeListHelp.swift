@@ -82,12 +82,50 @@ struct NodeListHelp: View {
 					)
 					HelpItem(
 						symbol: AnyView(
-							Image(systemName: "cellularbars")
+							Image(systemName: "dot.radiowaves.left.and.right")
 								.font(.title3)
-								.foregroundColor(.accentColor)
+								.foregroundColor(.green)
 						),
-						title: String(localized: "Signal Metrics"),
-						subtitle: String(localized: "SNR and RSSI values indicating the radio signal quality between nodes.")
+						title: String(localized: "Signal: Good"),
+						subtitle: String(localized: "SNR is above the limit for the current modem preset. Strong, reliable signal.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "dot.radiowaves.left.and.right")
+								.font(.title3)
+								.foregroundColor(.yellow)
+						),
+						title: String(localized: "Signal: Fair"),
+						subtitle: String(localized: "SNR is slightly below the modem preset limit. Connection may be intermittent.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "dot.radiowaves.left.and.right")
+								.font(.title3)
+								.foregroundColor(.orange)
+						),
+						title: String(localized: "Signal: Bad"),
+						subtitle: String(localized: "SNR is well below the modem preset limit. Expect packet loss and unreliable delivery.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "dot.radiowaves.left.and.right")
+								.font(.title3)
+								.foregroundColor(.red)
+						),
+						title: String(localized: "Signal: Very Bad"),
+						subtitle: String(localized: "SNR is far below the modem preset limit. Communication is unlikely at this signal level.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Gauge(value: 2.0, in: 0...3) {
+							}
+							.gaugeStyle(.accessoryLinear)
+							.tint(Gradient(colors: [.red, .orange, .yellow, .green]))
+							.frame(width: 32)
+						),
+						title: String(localized: "Signal Strength Meter"),
+						subtitle: String(localized: "The gradient bar in the Complete layout shows overall signal quality from red (no signal) through orange, yellow, to green (good signal). It combines SNR and RSSI relative to your modem preset.")
 					)
 					HelpItem(
 						symbol: AnyView(

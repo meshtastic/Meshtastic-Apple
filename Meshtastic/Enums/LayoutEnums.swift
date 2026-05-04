@@ -14,7 +14,7 @@ enum NodeListDensity: Int, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .standard:
-            return "Standard".localized
+            return "Complete".localized
         case .compact:
             return "Compact".localized
         }
@@ -31,4 +31,7 @@ enum NodeListPreferences: String {
 	case shouldShowPower
 	case lastHeardIsRelative
 	case shouldShowLastHeard
+	case shouldShowChannel
+	case shouldShowHops
+	case shouldShowSignal
 }

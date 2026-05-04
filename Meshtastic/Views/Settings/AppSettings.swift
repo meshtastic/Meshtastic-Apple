@@ -28,6 +28,9 @@ struct AppSettings: View {
 	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard = true
 	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative = false
 	@AppStorage(NodeListPreferences.shouldShowRole.rawValue) private var shouldShowRole = true
+	@AppStorage(NodeListPreferences.shouldShowChannel.rawValue) private var shouldShowChannel = true
+	@AppStorage(NodeListPreferences.shouldShowHops.rawValue) private var shouldShowHops = true
+	@AppStorage(NodeListPreferences.shouldShowSignal.rawValue) private var shouldShowSignal = true
 
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
@@ -87,25 +90,39 @@ struct AppSettings: View {
 						}
 						.pickerStyle(.segmented)
 						if nodeListDensity == .compact {
-							Toggle(isOn: $shouldShowRole) {
-								Text("Show Role")
-							}
-							Toggle(isOn: $shouldShowLocation) {
-								Text("Show Location")
-							}
 							Toggle(isOn: $shouldShowPower) {
-								Text("Show Power")
-							}
-							Toggle(isOn: $shouldShowTelemetry) {
-								Text("Show Telemetry Icons")
+								Text("Power")
 							}
 							Toggle(isOn: $shouldShowLastHeard.animation()) {
-								Text("Show Last Heard Time")
+								Text("Last Heard Time")
 							}
 							Toggle(isOn: $lastHeardIsRelative) {
 								Text("Relative Last Heard Time")
 							}
 							.disabled(!shouldShowLastHeard)
+							Toggle(isOn: $shouldShowLocation) {
+								Text("Distance and Bearing")
+							}
+							Toggle(isOn: $shouldShowHops) {
+								Text("Hops Away")
+							}
+							Toggle(isOn: $shouldShowSignal) {
+								Text("Signal (Direct Only)")
+							}
+							Toggle(isOn: $shouldShowChannel) {
+								Text("Channel")
+							}
+							Toggle(isOn: $shouldShowRole) {
+								Text("Device Role")
+							}
+							Toggle(isOn: $shouldShowTelemetry) {
+								Text("Log Icons")
+							}
+						}
+						if nodeListDensity == .standard {
+							Text("The Complete layout displays all available node data. Fields with no data are automatically hidden.")
+								.font(.footnote)
+								.foregroundStyle(.secondary)
 						}
 						BuildTestNode(nodeListDensity: $nodeListDensity)
 					}

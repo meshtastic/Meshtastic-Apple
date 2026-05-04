@@ -245,8 +245,8 @@ struct NodeListItem: View {
 				.frame(maxWidth: .infinity, alignment: .leading)
 			}
 		}
-		.padding(.top, 4)
-		.padding(.bottom, 4)
+		.padding(.top, 3)
+		.padding(.bottom, 3)
 		.accessibilityElement(children: .ignore)
 		.accessibilityLabel(accessibilityDescription)
 	}

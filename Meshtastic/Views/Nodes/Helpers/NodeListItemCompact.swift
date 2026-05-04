@@ -18,7 +18,15 @@ struct NodeListItemCompact: View {
 	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard = true
 	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative = false
 	@AppStorage(NodeListPreferences.shouldShowRole.rawValue) private var shouldShowRole = true
-	
+	@AppStorage(NodeListPreferences.shouldShowChannel.rawValue) private var shouldShowChannel = true
+	@AppStorage(NodeListPreferences.shouldShowHops.rawValue) private var shouldShowHops = true
+	@AppStorage(NodeListPreferences.shouldShowSignal.rawValue) private var shouldShowSignal = true
+
+	@ScaledMetric(relativeTo: .body) private var baseUnit: CGFloat = 24
+	@ScaledMetric(relativeTo: .body) private var minCircle: CGFloat = 36
+	@ScaledMetric(relativeTo: .body) private var maxCircle: CGFloat = 50
+	@ScaledMetric(relativeTo: .caption) private var rowSpacing: CGFloat = 2
+
 	private var accessibilityDescription: String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
@@ -134,7 +142,7 @@ struct NodeListItemCompact: View {
 	
 	var lineNums: Int {
 		var lines = 1
-		if shouldShowRole || shouldShowLocation || shouldShowTelemetry {
+		if shouldShowRole || shouldShowLocation || shouldShowTelemetry || shouldShowChannel || shouldShowHops || shouldShowSignal {
 			lines += 1
 		}
 		
@@ -146,35 +154,31 @@ struct NodeListItemCompact: View {
 	}
 	
 	var body: some View {
-		let circleSize = min(70, 24 * lineNums)
+		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
 		LazyVStack(alignment: .leading) {
 			HStack {
 				// First Column
-				if lineNums == 1 {
-					let color = Color(hex: UInt32(node.num).toHex()).opacity(100)
-					Text(node.user?.shortName ?? "?")
-						.foregroundColor(color.isLight() ? .black : .white)
-						.bold()
-						.padding(.all, 4)
-						.background(color, in: .capsule)
-				} else {
-					VStack(alignment: .center) {
-						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: CGFloat(circleSize))
+				VStack(alignment: .center) {
+					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
+						.padding(.trailing, 5)
+					if shouldShowPower && node.latestDeviceMetrics != nil {
+						BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption2, iconFont: .caption, color: .accentColor)
 							.padding(.trailing, 5)
 					}
 				}
 				// End First Column
 				// Second Column
-				VStack(alignment: .leading) {
+				VStack(alignment: .leading, spacing: rowSpacing) {
 					HStack(alignment: .firstTextBaseline) {
 						let (image, color) = userKeyStatus
 						IconAndText(systemName: image,
 									imageColor: color,
 									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
 									textColor: .primary)
-						Spacer()
-						if shouldShowPower && node.latestDeviceMetrics != nil {
-							BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+						if node.favorite {
+							Spacer()
+							Image(systemName: "star.fill")
+								.symbolRenderingMode(.multicolor)
 						}
 					}
 					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
@@ -189,18 +193,42 @@ struct NodeListItemCompact: View {
 							text: lastHeardText ?? "Unknown Age".localized
 						)
 					}
-					HStack {
-						if node.channel > 0 {
-							IconAndText(systemName: "\(node.channel).circle.fill", text: "Channel")
+					// Distance, bearing, hops, signal, role, telemetry row
+					HStack(alignment: .center, spacing: 6) {
+						if shouldShowLocation && node.positions.count > 0 && connectedNode != node.num {
+							if let (lastPostion, myCoord) = locationData {
+								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+								let metersAway = nodeCoord.distance(from: myCoord)
+								DistanceText(meters: metersAway, isCompact: true)
+									.font(.callout)
+									.foregroundColor(.gray)
+								let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
+								let headingDegrees = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+								Image(systemName: "location.north")
+									.font(.callout)
+									.symbolRenderingMode(.multicolor)
+									.clipShape(Circle())
+									.rotationEffect(Angle(degrees: headingDegrees.value))
+							}
 						}
-					}
-					// Display easy to differentiate information in a more compact list
-					HStack(alignment: .bottom) {
+						if shouldShowHops && node.hopsAway > 0 {
+							Divider().frame(height: 15)
+							DefaultIconCompact(systemName: "\(node.hopsAway).square")
+						}
+						if shouldShowSignal && node.hopsAway == 0 && node.snr != 0 && !node.viaMqtt {
+							Divider().frame(height: 15)
+							DefaultIconCompact(systemName: "dot.radiowaves.left.and.right")
+								.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+						}
+						if shouldShowChannel && node.channel > 0 {
+							Divider().frame(height: 15)
+							DefaultIconCompact(systemName: "\(node.channel).circle.fill")
+						}
 						// Device Role
 						if shouldShowRole {
+							Divider().frame(height: 15)
 							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 							DefaultIconCompact(systemName: role?.systemName ?? "figure")
-
 							if node.user?.unmessagable ?? false {
 								DefaultIconCompact(systemName: "iphone.slash")
 							}
@@ -213,73 +241,32 @@ struct NodeListItemCompact: View {
 						}
 						// Telemetry
 						if shouldShowTelemetry && (node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes) {
-							HStack(alignment: .bottom) {
-								Divider().frame(height: 15)
-								if node.hasDeviceMetrics {
-									DefaultIconCompact(systemName: "flipphone")
-								}
-								if node.hasPositions {
-									DefaultIconCompact(systemName: "mappin.and.ellipse")
-								}
-								if node.hasEnvironmentMetrics {
-									DefaultIconCompact(systemName: "cloud.sun.rain")
-								}
-								if node.hasDetectionSensorMetrics {
-									DefaultIconCompact(systemName: "sensor")
-								}
-								if node.hasTraceRoutes {
-									DefaultIconCompact(systemName: "signpost.right.and.left")
-								}
-							}
-						}
-						// Location
-						if shouldShowLocation && node.positions.count > 0 && connectedNode != node.num {
 							Divider().frame(height: 15)
-							HStack {
-								if let (lastPostion, myCoord) = locationData {
-									let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-									let metersAway = nodeCoord.distance(from: myCoord)
-
-									DistanceText(meters: metersAway, isCompact: true)
-										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-										.foregroundColor(.gray)
-									let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
-									let headingDegrees = Measurement(value: trueBearing, unit: UnitAngle.degrees)
-									Image(systemName: "location.north")
-										.font(.callout)
-										.symbolRenderingMode(.multicolor)
-										.clipShape(Circle())
-										.rotationEffect(Angle(degrees: headingDegrees.value))
-								}
+							if node.hasDeviceMetrics {
+								DefaultIconCompact(systemName: "flipphone")
+							}
+							if node.hasPositions {
+								DefaultIconCompact(systemName: "mappin.and.ellipse")
+							}
+							if node.hasEnvironmentMetrics {
+								DefaultIconCompact(systemName: "cloud.sun.rain")
+							}
+							if node.hasDetectionSensorMetrics {
+								DefaultIconCompact(systemName: "sensor")
+							}
+							if node.hasTraceRoutes {
+								DefaultIconCompact(systemName: "signpost.right.and.left")
 							}
 						}
-
 					}
 					.padding(EdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 0))
 				}
 				.frame(maxWidth: .infinity, alignment: .leading)
 				// End Second Column
-				// Third Column
-				VStack {
-					if node.favorite {
-						Image(systemName: "star.fill")
-							.symbolRenderingMode(.multicolor)
-						Spacer()
-					}
-					// Hops Away
-					if node.hopsAway > 0 {
-						DefaultIconCompact(systemName: "\(node.hopsAway).square")
-
-					} else {
-						if node.snr != 0 && !node.viaMqtt {
-							DefaultIconCompact(systemName: "dot.radiowaves.left.and.right")
-								.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
-						}
-					}
-				}
-				// End Third Column
 			}
 		}
+		.padding(.top, 2)
+		.padding(.bottom, 2)
 		.accessibilityElement(children: .ignore)
 		.accessibilityLabel(accessibilityDescription)
 	}

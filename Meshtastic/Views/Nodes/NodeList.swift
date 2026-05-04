@@ -24,6 +24,7 @@ struct NodeList: View {
 	@State private var shareContactNode: NodeInfoEntity?
 	@StateObject var filters = NodeFilterParameters()
 	@State var isEditingFilters = false
+	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	var connectedNode: NodeInfoEntity? {
@@ -73,8 +74,23 @@ struct NodeList: View {
 				filters: filters
 			)
 		}
-		.safeAreaInset(edge: .bottom, alignment: .trailing) {
+		.sheet(isPresented: $showingHelp) {
+			NodeListHelp()
+		}
+		.safeAreaInset(edge: .bottom, alignment: .leading) {
 			HStack {
+				Button(action: {
+					withAnimation {
+						showingHelp = !showingHelp
+					}
+				}) {
+					Image(systemName: !showingHelp ? "questionmark.circle" : "questionmark.circle.fill")
+						.padding(.vertical, 5)
+				}
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+				Spacer()
 				Button(action: {
 					withAnimation {
 						isEditingFilters = !isEditingFilters
