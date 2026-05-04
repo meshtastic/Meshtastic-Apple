@@ -10,7 +10,19 @@ import CoreLocation
 import Foundation
 
 struct NodeListItem: View {
-	
+
+	private static let relativeDateFormatter: RelativeDateTimeFormatter = {
+		let f = RelativeDateTimeFormatter()
+		f.unitsStyle = .full
+		return f
+	}()
+
+	private static let distanceFormatter: LengthFormatter = {
+		let f = LengthFormatter()
+		f.unitStyle = .medium
+		return f
+	}()
+
 	private var accessibilityDescription: String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
@@ -26,10 +38,8 @@ struct NodeListItem: View {
 		if node.favorite {
 			desc += ", favorite"
 		}
-		if node.lastHeard != nil {
-			let formatter = RelativeDateTimeFormatter()
-			formatter.unitsStyle = .full
-			let relative = formatter.localizedString(for: node.lastHeard!, relativeTo: Date())
+		if let lastHeard = node.lastHeard {
+			let relative = Self.relativeDateFormatter.localizedString(for: lastHeard, relativeTo: Date())
 			desc += ", last heard " + relative
 		}
 		if node.isOnline {
@@ -56,9 +66,7 @@ struct NodeListItem: View {
 		if !isDirectlyConnected, let (lastPosition, myCoord) = locationData {
 			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
 			let metersAway = nodeCoord.distance(from: myCoord)
-			let distanceFormatter = LengthFormatter()
-			distanceFormatter.unitStyle = .medium
-			let formattedDistance = distanceFormatter.string(fromMeters: metersAway)
+			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
 			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
 			let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
 			let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
@@ -125,6 +133,7 @@ struct NodeListItem: View {
 	}
 	
 	var body: some View {
+		let cachedLocationData = locationData
 		LazyVStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
@@ -172,9 +181,9 @@ struct NodeListItem: View {
 									text: "Store & Forward".localized)
 					}
 					
-					if node.positions.count > 0 && connectedNode != node.num {
+					if connectedNode != node.num {
 						HStack {
-							if let (lastPostion, myCoord) = locationData {
+							if let (lastPostion, myCoord) = cachedLocationData {
 								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 								let metersAway = nodeCoord.distance(from: myCoord)
 								Image(systemName: "lines.measurement.horizontal")
