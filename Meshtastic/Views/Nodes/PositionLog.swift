@@ -152,7 +152,7 @@ struct PositionLog: View {
 					isPresented: $isExporting,
 					document: CsvDocument(emptyCsv: exportString),
 					contentType: .commaSeparatedText,
-					defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
+					defaultFilename: String("\(node.user?.longName ?? "Node") Position Log \(Date.now.formatted(.iso8601.year().month().day().dateSeparator(.dash)))_\(Date.now.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits).second(.twoDigits)))"),
 					onCompletion: { result in
 						switch result {
 						case .success:

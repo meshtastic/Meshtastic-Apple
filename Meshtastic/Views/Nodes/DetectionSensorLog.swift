@@ -127,7 +127,7 @@ struct DetectionSensorLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("Detection Sensor Log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Detection Sensor Log".localized) \(Date.now.formatted(.iso8601.year().month().day().dateSeparator(.dash)))_\(Date.now.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits).second(.twoDigits)))"),
 			onCompletion: { result in
 				switch result {
 				case .success:
