@@ -101,8 +101,8 @@ struct MessageText: View {
 			.tint(Self.linkBlue)
 			.padding(.vertical, 10)
 			.padding(.horizontal, 8)
-			.foregroundColor(.white)
-			.background(isCurrentUser ? .accentColor : Color(.gray))
+			.foregroundColor(isCurrentUser ? .white : Color("Colors/MeshtasticBubbleText"))
+			.background(isCurrentUser ? .accentColor : Color("Colors/MeshtasticBubble"))
 			.cornerRadius(15)
 			.background {
 				TextField("", text: $tapbackText)
