@@ -39,7 +39,7 @@ extension Color {
 	/// Error #E05252 both modes
 	static let red = Color("Colors/MeshtasticError")
 
-	/// Branded info — shadows SwiftUI `Color.blue`
+	/// Branded blue — shadows SwiftUI `Color.blue`
 	/// Info #5C6BC0 both modes
 	static let blue = Color("Colors/MeshtasticInfo")
 }
