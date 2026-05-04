@@ -141,7 +141,7 @@ struct MeshMapContent: MapContent {
 				Annotation(String(localized: "Start"), coordinate: routeCoords.first ?? LocationsHandler.DefaultLocation) {
 					ZStack {
 						Circle()
-							.fill(Color(.green))
+							.fill(Color.green)
 							.strokeBorder(.white, lineWidth: 3)
 							.frame(width: 15, height: 15)
 					}
