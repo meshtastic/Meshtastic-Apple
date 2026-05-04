@@ -82,6 +82,15 @@ struct NodeListHelp: View {
 					)
 					HelpItem(
 						symbol: AnyView(
+							Image(systemName: "2.circle.fill")
+								.font(.title3)
+								.foregroundColor(.accentColor)
+						),
+						title: String(localized: "Channel"),
+						subtitle: String(localized: "The numbered circle indicates which channel the node is using. Only shown when the node is on a secondary channel (not the primary channel 0).")
+					)
+					HelpItem(
+						symbol: AnyView(
 							Image(systemName: "dot.radiowaves.left.and.right")
 								.font(.title3)
 								.foregroundColor(.green)
@@ -129,18 +138,54 @@ struct NodeListHelp: View {
 					)
 					HelpItem(
 						symbol: AnyView(
+							Image(systemName: "flipphone")
+								.font(.title3)
+								.foregroundColor(.accentColor)
+						),
+						title: String(localized: "Device Metrics"),
+						subtitle: String(localized: "Battery level, voltage, channel utilization, and airtime reported by the node.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "mappin.and.ellipse")
+								.font(.title3)
+								.foregroundColor(.accentColor)
+						),
+						title: String(localized: "Positions"),
+						subtitle: String(localized: "GPS position data reported by the node including latitude, longitude, and altitude.")
+					)
+					HelpItem(
+						symbol: AnyView(
 							Image(systemName: "cloud.sun.rain")
 								.font(.title3)
 								.foregroundColor(.accentColor)
 						),
-						title: String(localized: "Telemetry"),
-						subtitle: String(localized: "Sensor data such as battery level, voltage, temperature, and humidity reported by the node.")
+						title: String(localized: "Environment"),
+						subtitle: String(localized: "Sensor data such as temperature, humidity, and barometric pressure reported by the node.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "sensor")
+								.font(.title3)
+								.foregroundColor(.accentColor)
+						),
+						title: String(localized: "Detection Sensor"),
+						subtitle: String(localized: "Detection sensor events reported by the node, such as motion or door open/close alerts.")
+					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "signpost.right.and.left")
+								.font(.title3)
+								.foregroundColor(.accentColor)
+						),
+						title: String(localized: "Trace Routes"),
+						subtitle: String(localized: "Recorded trace route paths showing the hops a message took through the mesh to reach this node.")
 					)
 					Link(destination: URL(string: "https://meshtastic.org/docs/configuration/radio/device/")!) {
 						Label("Device Configuration Docs", systemImage: "doc.text")
 					}
 				} header: {
-					Text("Node Details")
+					Text("Logs")
 				}
 			}
 			.navigationTitle("Node List Help")
