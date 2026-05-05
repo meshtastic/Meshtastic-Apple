@@ -621,9 +621,8 @@ struct NodeListItemCompactSnapshotTests {
 			lastHeard: Date(timeIntervalSinceNow: -30)
 		)
 		await assertViewSnapshot(
-			of: List { NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0) },
+			of: NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			height: 120,
 			named: "compact_directConnected_allInfo"
 		)
 	}
@@ -638,9 +637,8 @@ struct NodeListItemCompactSnapshotTests {
 			lastHeard: Date(timeIntervalSinceNow: -3600)
 		)
 		await assertViewSnapshot(
-			of: List { NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1) },
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			height: 120,
 			named: "compact_multiHop"
 		)
 	}
@@ -656,9 +654,8 @@ struct NodeListItemCompactSnapshotTests {
 			lastHeard: Date(timeIntervalSinceNow: -98200)
 		)
 		await assertViewSnapshot(
-			of: List { NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1) },
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			height: 120,
 			named: "compact_mqtt"
 		)
 	}
@@ -674,9 +671,8 @@ struct NodeListItemCompactSnapshotTests {
 			lastHeard: Date(timeIntervalSinceNow: -300600)
 		)
 		await assertViewSnapshot(
-			of: List { NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1) },
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			height: 120,
 			named: "compact_longName_stale"
 		)
 	}
@@ -691,9 +687,8 @@ struct NodeListItemCompactSnapshotTests {
 			lastHeard: Date(timeIntervalSinceNow: -60)
 		)
 		await assertViewSnapshot(
-			of: List { NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1) },
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			height: 120,
 			named: "compact_pkiMismatch"
 		)
 	}
@@ -704,9 +699,8 @@ struct NodeListItemCompactSnapshotTests {
 		node.hopsAway = 2
 		node.lastHeard = Date(timeIntervalSinceNow: -120)
 		await assertViewSnapshot(
-			of: List { NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1) },
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			height: 120,
 			named: "compact_unknownNode"
 		)
 	}
@@ -721,9 +715,8 @@ struct NodeListItemCompactSnapshotTests {
 			lastHeard: Date(timeIntervalSinceNow: -5)
 		)
 		await assertViewSnapshot(
-			of: List { NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0) },
+			of: NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			height: 120,
 			named: "compact_pluggedIn"
 		)
 	}
@@ -741,9 +734,8 @@ struct NodeListItemCompactSnapshotTests {
 			lastHeard: Date(timeIntervalSinceNow: -200)
 		)
 		await assertViewSnapshot(
-			of: List { NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 0) },
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			height: 120,
 			named: "compact_withPosition"
 		)
 	}
