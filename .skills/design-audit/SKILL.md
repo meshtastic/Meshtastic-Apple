@@ -22,7 +22,7 @@ Audit the specified SwiftUI view file(s) against the Meshtastic design standards
 
 **Usage:** `/audit-ui [file or directory path]`
 
-When no path is provided, audit all `*.swift` files under `Meshtastic/UI/`.
+When no path is provided, audit all `*.swift` files under `Meshtastic/Views/`.
 
 ## Logic
 
@@ -31,7 +31,7 @@ Perform the following checks on every SwiftUI view in scope:
 ### 1. Magic Numbers
 
 - Flag any hardcoded `CGFloat`, pixel, or point values used for padding, spacing, frame sizes, corner radii, or font sizes (e.g., `.padding(12)`, `.font(.system(size: 14))`).
-- Suggest replacing them with the theme's `Padding` or `Typography` constants defined in the design standards.
+- Suggest replacing them with named constants or semantic SwiftUI modifiers as recommended by the design standards. If the project defines shared theme constants (e.g., in a `Theme` or `DesignTokens` file), prefer those.
 
 ### 2. Color Palette Compliance
 
