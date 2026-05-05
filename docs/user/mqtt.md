@@ -10,11 +10,13 @@ The MQTT module allows a Meshtastic node to bridge mesh traffic to an MQTT broke
 
 ## What MQTT Does
 
-![MQTT connected — uplink and downlink active](../assets/screenshots/mqttConnected.png)
-![MQTT disconnected](../assets/screenshots/mqttDisconnected.png)
-![MQTT uplink only](../assets/screenshots/mqttUplinkOnly.png)
-
 A node with MQTT enabled acts as a gateway: it publishes received mesh packets to an MQTT broker and optionally subscribes to a topic so that remote nodes can inject packets back into the local mesh.
+
+| Icon | State | Description |
+|------|-------|-------------|
+| ![MQTT connected](../assets/screenshots/mqttConnected.png) | Connected | MQTT bridge is active — uplink and downlink both enabled. |
+| ![MQTT uplink only](../assets/screenshots/mqttUplinkOnly.png) | Uplink Only | Publishing mesh packets to the broker but not subscribing to incoming packets. |
+| ![MQTT disconnected](../assets/screenshots/mqttDisconnected.png) | Disconnected | MQTT is configured but not currently connected to the broker. |
 
 This enables two mesh networks in different physical locations to appear as one logical network — as long as at least one node in each location has internet access.
 

@@ -21,12 +21,10 @@ Meshtastic uses a channel system for group broadcasts and direct messages for pr
 
 | Icon | Meaning |
 |------|---------|
-| 🔒 Green lock | **Securely Encrypted** — the channel uses a 128-bit or 256-bit AES key. |
-| 🔓 Yellow lock | **Not Securely Encrypted** — the channel uses no key or a 1-byte known key, but is not used for precise location data. |
-| 🔓 Red lock | **Insecure with Location** — the channel is not securely encrypted and is used for precise location data. |
-| 🔓⚠️ Red lock + warning | **Insecure with MQTT** — not securely encrypted and precise location data is being uplinked to the internet via MQTT. |
-
-![Channel security lock legend](../assets/screenshots/lockLegend.png)
+| ![Securely Encrypted](../assets/screenshots/lockClosed.png) | **Securely Encrypted** — the channel uses a 128-bit or 256-bit AES key. |
+| ![Not Securely Encrypted](../assets/screenshots/lockOpen.png) | **Not Securely Encrypted** — the channel uses no key or a 1-byte known key, but is not used for precise location data. |
+| ![Insecure with Location](../assets/screenshots/lockOpenRed.png) | **Insecure with Location** — the channel is not securely encrypted and is used for precise location data. |
+| ![Insecure with MQTT](../assets/screenshots/lockOpenMqtt.png) | **Insecure with MQTT** — not securely encrypted and precise location data is being uplinked to the internet via MQTT. |
 
 ---
 
@@ -50,16 +48,16 @@ Meshtastic uses a channel system for group broadcasts and direct messages for pr
 
 | Element | Meaning |
 |---------|---------|
-| ⭐ Yellow star | **Favorites** — favorited contacts and nodes with recent messages appear at the top of the contact list. |
-| 👆 Long press | **Long Press Actions** — long press to favorite or mute the contact, or delete a conversation. |
+| ![Favorites](../assets/screenshots/favorite.png) | **Favorites** — favorited contacts and nodes with recent messages appear at the top of the contact list. |
+| ![Long press](../assets/screenshots/longPress.png) | **Long Press Actions** — long press to favorite or mute the contact, or delete a conversation. |
 
 ### Encryption
 
 | Icon | Meaning |
 |------|---------|
-| 🔓 Yellow lock | **Shared Key** — direct messages are using the shared key for the channel. |
-| 🔒 Green lock | **Public Key Encryption** — direct messages use the public key infrastructure for encryption. Requires firmware 2.5 or later. |
-| 🗝️ Red slash key | **Public Key Mismatch** — the most recent public key for this node does not match the previously recorded key. Verify who you are messaging with by comparing public keys in person or over the phone. |
+| ![Shared Key](../assets/screenshots/lockOpen.png) | **Shared Key** — direct messages are using the shared key for the channel. |
+| ![Public Key Encryption](../assets/screenshots/lockClosed.png) | **Public Key Encryption** — direct messages use the public key infrastructure for encryption. Requires firmware 2.5 or later. |
+| ![PKI Mismatch](../assets/screenshots/keySlash.png) | **Public Key Mismatch** — the most recent public key for this node does not match the previously recorded key. Verify who you are messaging with by comparing public keys in person or over the phone. |
 
 ---
 
@@ -93,5 +91,3 @@ The following errors may appear on a message bubble (red unless noted):
 | Not Authorized | The destination node refused the request due to permissions. |
 
 > Grey indicates successful delivery. Orange indicates a retryable error. Red indicates a permanent failure that will not succeed on retry.
-
-![Message acknowledgement error indicators](../assets/screenshots/ackErrors.png)

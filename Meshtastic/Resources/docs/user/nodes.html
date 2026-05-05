@@ -6,7 +6,7 @@
   <title>Nodes List</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
-<body>
+<body data-page="nodes">
 <div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Nodes List</h1>
 <p>The Nodes tab shows every device your radio has heard on the mesh. Tap any node for details.</p>
 <h2>Node Status</h2>
@@ -19,28 +19,23 @@
 </thead>
 <tbody>
 <tr>
-<td>Coloured circle with initials/emoji</td>
+<td><img src="../assets/screenshots/circleTextDefault.png" alt="Node circle" /></td>
 <td><strong>Short Name &amp; Long Name</strong> — each node has a short name (up to 4 bytes) shown in the coloured circle and a long name displayed next to it. The circle colour is derived from the node number. The short name can be an emoji or initials.</td>
 </tr>
 <tr>
-<td>✅ Green checkmark</td>
+<td><img src="../assets/screenshots/nodeOnline.png" alt="Online" /></td>
 <td><strong>Online</strong> — the node has been heard recently and is considered online.</td>
 </tr>
 <tr>
-<td>🌙 Orange moon</td>
+<td><img src="../assets/screenshots/nodeIdle.png" alt="Idle / Sleeping" /></td>
 <td><strong>Idle / Sleeping</strong> — the node has not been heard from recently and may be asleep or out of range.</td>
 </tr>
 <tr>
-<td>🐇 Hops icon</td>
+<td><img src="../assets/screenshots/hopsAway.png" alt="Hops Away" /></td>
 <td><strong>Hops Away</strong> — the number of intermediate nodes relaying messages between you and this node. No hops means direct communication.</td>
 </tr>
 </tbody>
 </table>
-<p><img src="../assets/screenshots/circleTextDefault.png" alt="Node circle with default short name" />
-<img src="../assets/screenshots/circleTextEmoji.png" alt="Node circle with emoji short name" /></p>
-<p><img src="../assets/screenshots/nodeOnline.png" alt="Online status indicator" />
-<img src="../assets/screenshots/nodeIdle.png" alt="Idle / sleeping status indicator" />
-<img src="../assets/screenshots/hopsAway.png" alt="Hops away badge" /></p>
 <h2>Encryption</h2>
 <table>
 <thead>
@@ -51,76 +46,84 @@
 </thead>
 <tbody>
 <tr>
-<td>🔓 Yellow lock</td>
+<td><img src="../assets/screenshots/lockOpen.png" alt="Shared Key" /></td>
 <td><strong>Shared Key</strong> — direct messages are using the shared key for the channel.</td>
 </tr>
 <tr>
-<td>🔒 Green lock</td>
+<td><img src="../assets/screenshots/lockClosed.png" alt="Public Key Encryption" /></td>
 <td><strong>Public Key Encryption</strong> — direct messages use public key infrastructure. Requires firmware 2.5+.</td>
 </tr>
 <tr>
-<td>🗝️ Red slash key</td>
+<td><img src="../assets/screenshots/keySlash.png" alt="PKI Mismatch" /></td>
 <td><strong>Public Key Mismatch</strong> — public key does not match the previously recorded key. Verify the contact out-of-band.</td>
 </tr>
 </tbody>
 </table>
-<p><img src="../assets/screenshots/lockClosed.png" alt="Encrypted channel lock" />
-<img src="../assets/screenshots/lockOpen.png" alt="Unencrypted channel lock — shared key" />
-<img src="../assets/screenshots/lockOpenRed.png" alt="Insecure lock — location exposed" />
-<img src="../assets/screenshots/keySlash.png" alt="PKI key mismatch icon" /></p>
 <h2>Device Roles</h2>
 <p>Each node is configured with a role that determines how it behaves on the mesh. Roles are shown in the node detail view.</p>
 <table>
 <thead>
 <tr>
+<th>Icon</th>
 <th>Role</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td><img src="../assets/screenshots/roleClient.png" alt="" /></td>
 <td>Client</td>
 <td>Standard end-user device. Sends and receives messages, shares position.</td>
 </tr>
 <tr>
+<td><img src="../assets/screenshots/roleClientMute.png" alt="" /></td>
 <td>Client Mute</td>
-<td>Like Client but does not rebroadcast packets. Reduces mesh traffic near congested areas.</td>
+<td>Like Client but does not forward packets from other devices. Reduces mesh traffic near congested areas.</td>
 </tr>
 <tr>
+<td><img src="../assets/screenshots/roleClientHidden.png" alt="" /></td>
+<td>Client Hidden</td>
+<td>Only broadcasts as needed for stealth or power savings.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/roleClientBase.png" alt="" /></td>
+<td>Client Base</td>
+<td>Rooftop node that distributes messages widely from nearby Client Mute nodes.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/roleRouter.png" alt="" /></td>
 <td>Router</td>
-<td>Dedicated router — prioritises packet forwarding. Do not run other apps on router nodes.</td>
+<td>Dedicated infrastructure node — prioritises packet forwarding. Not for rooftops or mobile nodes.</td>
 </tr>
 <tr>
-<td>Router Client</td>
-<td>Combined router and client. Forwards packets and allows normal use.</td>
+<td><img src="../assets/screenshots/roleRouterLate.png" alt="" /></td>
+<td>Router Late</td>
+<td>Like Router but rebroadcasts once after all other nodes. Better suited to rooftop deployments.</td>
 </tr>
 <tr>
-<td>Repeater</td>
-<td>Repeats all packets without filtering. Use for range extension only.</td>
-</tr>
-<tr>
+<td><img src="../assets/screenshots/roleTracker.png" alt="" /></td>
 <td>Tracker</td>
-<td>Optimised for position reporting. Sends frequent GPS updates, minimal messaging.</td>
+<td>Broadcasts GPS position packets as priority. Optimised for frequent location reporting.</td>
 </tr>
 <tr>
+<td><img src="../assets/screenshots/roleSensor.png" alt="" /></td>
 <td>Sensor</td>
-<td>Optimised for telemetry. Sends sensor data frequently, minimal messaging.</td>
+<td>Broadcasts telemetry packets as priority. Optimised for sensor data.</td>
 </tr>
 <tr>
+<td><img src="../assets/screenshots/roleTak.png" alt="" /></td>
 <td>TAK</td>
-<td>Used with TAK/ATAK integration. Sends CoT position reports.</td>
+<td>Optimised for ATAK system communication. Reduces routine broadcasts.</td>
 </tr>
 <tr>
+<td><img src="../assets/screenshots/roleTakTracker.png" alt="" /></td>
 <td>TAK Tracker</td>
-<td>Lightweight TAK role for position-only devices.</td>
+<td>Enables automatic TAK PLI broadcasts. Reduces routine broadcasts.</td>
 </tr>
 <tr>
+<td><img src="../assets/screenshots/roleLostAndFound.png" alt="" /></td>
 <td>Lost and Found</td>
-<td>Reports position infrequently. Useful for asset tracking.</td>
-</tr>
-<tr>
-<td>Gateway</td>
-<td>Acts as a bridge to MQTT or internet.</td>
+<td>Broadcasts location as a message to the default channel to assist with device recovery.</td>
 </tr>
 </tbody>
 </table>
@@ -142,60 +145,55 @@
 </thead>
 <tbody>
 <tr>
-<td>📍 Distance &amp; Bearing</td>
+<td><img src="../assets/screenshots/logDistance.png" alt="Distance &amp; Bearing" /></td>
 <td>Direction and distance to the node based on GPS. Requires both devices to share location.</td>
 </tr>
 <tr>
-<td><strong>2</strong> Channel circle</td>
+<td><img src="../assets/screenshots/channelBadge.png" alt="Channel badge" /></td>
 <td>The numbered circle shows which channel the node uses. Only shown for secondary channels (not primary channel 0).</td>
 </tr>
 <tr>
-<td>📶 Signal: Good</td>
+<td><img src="../assets/screenshots/signalGood.png" alt="Signal: Good" /></td>
 <td>SNR is above the modem preset limit — strong, reliable signal.</td>
 </tr>
 <tr>
-<td>📶 Signal: Fair</td>
+<td><img src="../assets/screenshots/signalBad.png" alt="Signal: Fair" /></td>
 <td>SNR is slightly below the modem preset limit — connection may be intermittent.</td>
 </tr>
 <tr>
-<td>📶 Signal: Bad</td>
+<td><img src="../assets/screenshots/signalBad.png" alt="Signal: Bad" /></td>
 <td>SNR is well below the modem preset limit — expect packet loss.</td>
 </tr>
 <tr>
-<td>📶 Signal: Very Bad</td>
+<td><img src="../assets/screenshots/signalNone.png" alt="Signal: Very Bad" /></td>
 <td>SNR is far below the modem preset limit — communication unlikely.</td>
 </tr>
 <tr>
-<td>Gradient meter</td>
+<td><img src="../assets/screenshots/gradientMeter.png" alt="Gradient meter" /></td>
 <td>Signal strength bar (red → orange → yellow → green) combining SNR and RSSI relative to modem preset.</td>
 </tr>
 <tr>
-<td>📱 Device Metrics</td>
+<td><img src="../assets/screenshots/logDeviceMetrics.png" alt="Device Metrics" /></td>
 <td>Battery level, voltage, channel utilisation, and airtime reported by the node.</td>
 </tr>
 <tr>
-<td>📍 Positions</td>
+<td><img src="../assets/screenshots/logPositions.png" alt="Positions" /></td>
 <td>GPS position data including latitude, longitude, and altitude.</td>
 </tr>
 <tr>
-<td>🌤️ Environment</td>
+<td><img src="../assets/screenshots/logEnvironment.png" alt="Environment" /></td>
 <td>Sensor data: temperature, humidity, barometric pressure.</td>
 </tr>
 <tr>
-<td>🔍 Detection Sensor</td>
+<td><img src="../assets/screenshots/logDetectionSensor.png" alt="Detection Sensor" /></td>
 <td>Motion or door open/close alerts from the node.</td>
 </tr>
 <tr>
-<td>🛤️ Trace Routes</td>
+<td><img src="../assets/screenshots/logTraceRoutes.png" alt="Trace Routes" /></td>
 <td>Recorded trace route paths showing the hops a message took through the mesh.</td>
 </tr>
 </tbody>
 </table>
-<p><img src="../assets/screenshots/signalGood.png" alt="Signal strength good" />
-<img src="../assets/screenshots/signalBad.png" alt="Signal strength bad" />
-<img src="../assets/screenshots/signalNone.png" alt="No signal" /></p>
-<p><img src="../assets/screenshots/shortDistance.png" alt="Short distance label" />
-<img src="../assets/screenshots/longDistance.png" alt="Long distance label" /></p>
 <p><a href="https://meshtastic.org/docs/configuration/radio/device/">Device Configuration Docs →</a></p>
 </body>
 </html>

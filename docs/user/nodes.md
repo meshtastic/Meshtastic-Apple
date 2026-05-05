@@ -12,48 +12,36 @@ The Nodes tab shows every device your radio has heard on the mesh. Tap any node 
 
 | Element | Meaning |
 |---------|---------|
-| Coloured circle with initials/emoji | **Short Name & Long Name** — each node has a short name (up to 4 bytes) shown in the coloured circle and a long name displayed next to it. The circle colour is derived from the node number. The short name can be an emoji or initials. |
-| ✅ Green checkmark | **Online** — the node has been heard recently and is considered online. |
-| 🌙 Orange moon | **Idle / Sleeping** — the node has not been heard from recently and may be asleep or out of range. |
-| 🐇 Hops icon | **Hops Away** — the number of intermediate nodes relaying messages between you and this node. No hops means direct communication. |
-
-![Node circle with default short name](../assets/screenshots/circleTextDefault.png)
-![Node circle with emoji short name](../assets/screenshots/circleTextEmoji.png)
-
-![Online status indicator](../assets/screenshots/nodeOnline.png)
-![Idle / sleeping status indicator](../assets/screenshots/nodeIdle.png)
-![Hops away badge](../assets/screenshots/hopsAway.png)
+| ![Node circle](../assets/screenshots/circleTextDefault.png) | **Short Name & Long Name** — each node has a short name (up to 4 bytes) shown in the coloured circle and a long name displayed next to it. The circle colour is derived from the node number. The short name can be an emoji or initials. |
+| ![Online](../assets/screenshots/nodeOnline.png) | **Online** — the node has been heard recently and is considered online. |
+| ![Idle / Sleeping](../assets/screenshots/nodeIdle.png) | **Idle / Sleeping** — the node has not been heard from recently and may be asleep or out of range. |
+| ![Hops Away](../assets/screenshots/hopsAway.png) | **Hops Away** — the number of intermediate nodes relaying messages between you and this node. No hops means direct communication. |
 
 ## Encryption
 
 | Icon | Meaning |
 |------|---------|
-| 🔓 Yellow lock | **Shared Key** — direct messages are using the shared key for the channel. |
-| 🔒 Green lock | **Public Key Encryption** — direct messages use public key infrastructure. Requires firmware 2.5+. |
-| 🗝️ Red slash key | **Public Key Mismatch** — public key does not match the previously recorded key. Verify the contact out-of-band. |
-
-![Encrypted channel lock](../assets/screenshots/lockClosed.png)
-![Unencrypted channel lock — shared key](../assets/screenshots/lockOpen.png)
-![Insecure lock — location exposed](../assets/screenshots/lockOpenRed.png)
-![PKI key mismatch icon](../assets/screenshots/keySlash.png)
+| ![Shared Key](../assets/screenshots/lockOpen.png) | **Shared Key** — direct messages are using the shared key for the channel. |
+| ![Public Key Encryption](../assets/screenshots/lockClosed.png) | **Public Key Encryption** — direct messages use public key infrastructure. Requires firmware 2.5+. |
+| ![PKI Mismatch](../assets/screenshots/keySlash.png) | **Public Key Mismatch** — public key does not match the previously recorded key. Verify the contact out-of-band. |
 
 ## Device Roles
 
 Each node is configured with a role that determines how it behaves on the mesh. Roles are shown in the node detail view.
 
-| Role | Description |
-|------|-------------|
-| Client | Standard end-user device. Sends and receives messages, shares position. |
-| Client Mute | Like Client but does not rebroadcast packets. Reduces mesh traffic near congested areas. |
-| Router | Dedicated router — prioritises packet forwarding. Do not run other apps on router nodes. |
-| Router Client | Combined router and client. Forwards packets and allows normal use. |
-| Repeater | Repeats all packets without filtering. Use for range extension only. |
-| Tracker | Optimised for position reporting. Sends frequent GPS updates, minimal messaging. |
-| Sensor | Optimised for telemetry. Sends sensor data frequently, minimal messaging. |
-| TAK | Used with TAK/ATAK integration. Sends CoT position reports. |
-| TAK Tracker | Lightweight TAK role for position-only devices. |
-| Lost and Found | Reports position infrequently. Useful for asset tracking. |
-| Gateway | Acts as a bridge to MQTT or internet. |
+| Icon | Role | Description |
+|------|------|-------------|
+| ![](../assets/screenshots/roleClient.png) | Client | Standard end-user device. Sends and receives messages, shares position. |
+| ![](../assets/screenshots/roleClientMute.png) | Client Mute | Like Client but does not forward packets from other devices. Reduces mesh traffic near congested areas. |
+| ![](../assets/screenshots/roleClientHidden.png) | Client Hidden | Only broadcasts as needed for stealth or power savings. |
+| ![](../assets/screenshots/roleClientBase.png) | Client Base | Rooftop node that distributes messages widely from nearby Client Mute nodes. |
+| ![](../assets/screenshots/roleRouter.png) | Router | Dedicated infrastructure node — prioritises packet forwarding. Not for rooftops or mobile nodes. |
+| ![](../assets/screenshots/roleRouterLate.png) | Router Late | Like Router but rebroadcasts once after all other nodes. Better suited to rooftop deployments. |
+| ![](../assets/screenshots/roleTracker.png) | Tracker | Broadcasts GPS position packets as priority. Optimised for frequent location reporting. |
+| ![](../assets/screenshots/roleSensor.png) | Sensor | Broadcasts telemetry packets as priority. Optimised for sensor data. |
+| ![](../assets/screenshots/roleTak.png) | TAK | Optimised for ATAK system communication. Reduces routine broadcasts. |
+| ![](../assets/screenshots/roleTakTracker.png) | TAK Tracker | Enables automatic TAK PLI broadcasts. Reduces routine broadcasts. |
+| ![](../assets/screenshots/roleLostAndFound.png) | Lost and Found | Broadcasts location as a message to the default channel to assist with device recovery. |
 
 [Choosing the Right Device Role →](https://meshtastic.org/blog/choosing-the-right-device-role/)
 
@@ -71,24 +59,17 @@ Tap a node and scroll to the Logs section for detailed metrics:
 
 | Log | Description |
 |-----|-------------|
-| 📍 Distance & Bearing | Direction and distance to the node based on GPS. Requires both devices to share location. |
-| **2** Channel circle | The numbered circle shows which channel the node uses. Only shown for secondary channels (not primary channel 0). |
-| 📶 Signal: Good | SNR is above the modem preset limit — strong, reliable signal. |
-| 📶 Signal: Fair | SNR is slightly below the modem preset limit — connection may be intermittent. |
-| 📶 Signal: Bad | SNR is well below the modem preset limit — expect packet loss. |
-| 📶 Signal: Very Bad | SNR is far below the modem preset limit — communication unlikely. |
-| Gradient meter | Signal strength bar (red → orange → yellow → green) combining SNR and RSSI relative to modem preset. |
-| 📱 Device Metrics | Battery level, voltage, channel utilisation, and airtime reported by the node. |
-| 📍 Positions | GPS position data including latitude, longitude, and altitude. |
-| 🌤️ Environment | Sensor data: temperature, humidity, barometric pressure. |
-| 🔍 Detection Sensor | Motion or door open/close alerts from the node. |
-| 🛤️ Trace Routes | Recorded trace route paths showing the hops a message took through the mesh. |
-
-![Signal strength good](../assets/screenshots/signalGood.png)
-![Signal strength bad](../assets/screenshots/signalBad.png)
-![No signal](../assets/screenshots/signalNone.png)
-
-![Short distance label](../assets/screenshots/shortDistance.png)
-![Long distance label](../assets/screenshots/longDistance.png)
+| ![Distance & Bearing](../assets/screenshots/logDistance.png) | Direction and distance to the node based on GPS. Requires both devices to share location. |
+| ![Channel badge](../assets/screenshots/channelBadge.png) | The numbered circle shows which channel the node uses. Only shown for secondary channels (not primary channel 0). |
+| ![Signal: Good](../assets/screenshots/signalGood.png) | SNR is above the modem preset limit — strong, reliable signal. |
+| ![Signal: Fair](../assets/screenshots/signalBad.png) | SNR is slightly below the modem preset limit — connection may be intermittent. |
+| ![Signal: Bad](../assets/screenshots/signalBad.png) | SNR is well below the modem preset limit — expect packet loss. |
+| ![Signal: Very Bad](../assets/screenshots/signalNone.png) | SNR is far below the modem preset limit — communication unlikely. |
+| ![Gradient meter](../assets/screenshots/gradientMeter.png) | Signal strength bar (red → orange → yellow → green) combining SNR and RSSI relative to modem preset. |
+| ![Device Metrics](../assets/screenshots/logDeviceMetrics.png) | Battery level, voltage, channel utilisation, and airtime reported by the node. |
+| ![Positions](../assets/screenshots/logPositions.png) | GPS position data including latitude, longitude, and altitude. |
+| ![Environment](../assets/screenshots/logEnvironment.png) | Sensor data: temperature, humidity, barometric pressure. |
+| ![Detection Sensor](../assets/screenshots/logDetectionSensor.png) | Motion or door open/close alerts from the node. |
+| ![Trace Routes](../assets/screenshots/logTraceRoutes.png) | Recorded trace route paths showing the hops a message took through the mesh. |
 
 [Device Configuration Docs →](https://meshtastic.org/docs/configuration/radio/device/)

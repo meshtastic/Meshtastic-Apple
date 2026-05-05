@@ -19,27 +19,33 @@ Meshtastic nodes can report sensor data across the mesh, giving you visibility i
 
 ### Device Metrics
 
-![Battery full](../assets/screenshots/batteryFull.png)
-![Battery low](../assets/screenshots/batteryLow.png)
-![Battery charging](../assets/screenshots/batteryCharging.png)
-![Battery unknown](../assets/screenshots/batteryNil.png)
+| Icon | State | Description |
+|------|-------|-------------|
+| ![Battery full](../assets/screenshots/batteryFull.png) | Full | Battery is well charged (≥80%). |
+| ![Battery low](../assets/screenshots/batteryLow.png) | Low | Battery is low (≤20%) — charge the node soon. |
+| ![Battery charging](../assets/screenshots/batteryCharging.png) | Charging | Node is plugged in and fully charged. |
+| ![Battery unknown](../assets/screenshots/batteryNil.png) | Unknown | Battery level not reported by this node. |
 
 ### Air Quality
 
-![AQI dot indicator](../assets/screenshots/aqiDot.png)
-![AQI pill indicator](../assets/screenshots/aqiPill.png)
-![AQI gauge](../assets/screenshots/aqiGauge.png)
-![AQI text indicator](../assets/screenshots/aqiText.png)
-![IAQ gauge](../assets/screenshots/iaqGauge.png)
-![IAQ pill indicator](../assets/screenshots/iaqPill.png)
-![IAQ scale](../assets/screenshots/iaqScale.png)
+| Icon | Display | Description |
+|------|---------|-------------|
+| ![AQI dot](../assets/screenshots/aqiDot.png) | Dot | Coloured dot — red/orange/yellow/green by AQI category. |
+| ![AQI pill](../assets/screenshots/aqiPill.png) | Pill | Compact pill label showing AQI category name. |
+| ![AQI gauge](../assets/screenshots/aqiGauge.png) | Gauge | Circular gauge showing AQI value and category. |
+| ![AQI text](../assets/screenshots/aqiText.png) | Text | Numeric AQI value with category label. |
+| ![IAQ gauge](../assets/screenshots/iaqGauge.png) | IAQ Gauge | Indoor Air Quality circular gauge (BME680). |
+| ![IAQ pill](../assets/screenshots/iaqPill.png) | IAQ Pill | Indoor Air Quality compact pill label. |
+| ![IAQ scale](../assets/screenshots/iaqScale.png) | IAQ Scale | Indoor Air Quality rating scale with category bands. |
 
 ### Environment
 
-![Humidity with dew point](../assets/screenshots/humidityWithDew.png)
-![Humidity without dew point](../assets/screenshots/humidityNoDew.png)
-![Pressure high](../assets/screenshots/pressureHigh.png)
-![Pressure low](../assets/screenshots/pressureLow.png)
+| Icon | Reading | Description |
+|------|---------|-------------|
+| ![Humidity with dew point](../assets/screenshots/humidityWithDew.png) | Humidity (with dew point) | Relative humidity percentage and calculated dew point temperature. |
+| ![Humidity without dew point](../assets/screenshots/humidityNoDew.png) | Humidity | Relative humidity percentage only. |
+| ![Pressure high](../assets/screenshots/pressureHigh.png) | High pressure | Barometric pressure above normal (≥1013 hPa). |
+| ![Pressure low](../assets/screenshots/pressureLow.png) | Low pressure | Barometric pressure below normal (<1013 hPa). |
 
 ## Viewing Telemetry
 

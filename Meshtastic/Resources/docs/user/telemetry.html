@@ -6,7 +6,7 @@
   <title>Telemetry &amp; Sensors</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
-<body>
+<body data-page="telemetry">
 <div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Telemetry &amp; Sensors</h1>
 <p>Meshtastic nodes can report sensor data across the mesh, giving you visibility into the physical environment at remote locations.</p>
 <h2>Telemetry Types</h2>
@@ -37,23 +37,116 @@
 </tbody>
 </table>
 <h3>Device Metrics</h3>
-<p><img src="../assets/screenshots/batteryFull.png" alt="Battery full" />
-<img src="../assets/screenshots/batteryLow.png" alt="Battery low" />
-<img src="../assets/screenshots/batteryCharging.png" alt="Battery charging" />
-<img src="../assets/screenshots/batteryNil.png" alt="Battery unknown" /></p>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>State</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="../assets/screenshots/batteryFull.png" alt="Battery full" /></td>
+<td>Full</td>
+<td>Battery is well charged (≥80%).</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/batteryLow.png" alt="Battery low" /></td>
+<td>Low</td>
+<td>Battery is low (≤20%) — charge the node soon.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/batteryCharging.png" alt="Battery charging" /></td>
+<td>Charging</td>
+<td>Node is plugged in and fully charged.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/batteryNil.png" alt="Battery unknown" /></td>
+<td>Unknown</td>
+<td>Battery level not reported by this node.</td>
+</tr>
+</tbody>
+</table>
 <h3>Air Quality</h3>
-<p><img src="../assets/screenshots/aqiDot.png" alt="AQI dot indicator" />
-<img src="../assets/screenshots/aqiPill.png" alt="AQI pill indicator" />
-<img src="../assets/screenshots/aqiGauge.png" alt="AQI gauge" />
-<img src="../assets/screenshots/aqiText.png" alt="AQI text indicator" />
-<img src="../assets/screenshots/iaqGauge.png" alt="IAQ gauge" />
-<img src="../assets/screenshots/iaqPill.png" alt="IAQ pill indicator" />
-<img src="../assets/screenshots/iaqScale.png" alt="IAQ scale" /></p>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>Display</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="../assets/screenshots/aqiDot.png" alt="AQI dot" /></td>
+<td>Dot</td>
+<td>Coloured dot — red/orange/yellow/green by AQI category.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/aqiPill.png" alt="AQI pill" /></td>
+<td>Pill</td>
+<td>Compact pill label showing AQI category name.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/aqiGauge.png" alt="AQI gauge" /></td>
+<td>Gauge</td>
+<td>Circular gauge showing AQI value and category.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/aqiText.png" alt="AQI text" /></td>
+<td>Text</td>
+<td>Numeric AQI value with category label.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/iaqGauge.png" alt="IAQ gauge" /></td>
+<td>IAQ Gauge</td>
+<td>Indoor Air Quality circular gauge (BME680).</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/iaqPill.png" alt="IAQ pill" /></td>
+<td>IAQ Pill</td>
+<td>Indoor Air Quality compact pill label.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/iaqScale.png" alt="IAQ scale" /></td>
+<td>IAQ Scale</td>
+<td>Indoor Air Quality rating scale with category bands.</td>
+</tr>
+</tbody>
+</table>
 <h3>Environment</h3>
-<p><img src="../assets/screenshots/humidityWithDew.png" alt="Humidity with dew point" />
-<img src="../assets/screenshots/humidityNoDew.png" alt="Humidity without dew point" />
-<img src="../assets/screenshots/pressureHigh.png" alt="Pressure high" />
-<img src="../assets/screenshots/pressureLow.png" alt="Pressure low" /></p>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>Reading</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="../assets/screenshots/humidityWithDew.png" alt="Humidity with dew point" /></td>
+<td>Humidity (with dew point)</td>
+<td>Relative humidity percentage and calculated dew point temperature.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/humidityNoDew.png" alt="Humidity without dew point" /></td>
+<td>Humidity</td>
+<td>Relative humidity percentage only.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/pressureHigh.png" alt="Pressure high" /></td>
+<td>High pressure</td>
+<td>Barometric pressure above normal (≥1013 hPa).</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/pressureLow.png" alt="Pressure low" /></td>
+<td>Low pressure</td>
+<td>Barometric pressure below normal (&lt;1013 hPa).</td>
+</tr>
+</tbody>
+</table>
 <h2>Viewing Telemetry</h2>
 <p>Telemetry is visible in two places:</p>
 <ol>

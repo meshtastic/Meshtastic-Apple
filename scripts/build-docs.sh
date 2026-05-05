@@ -66,6 +66,7 @@ fi
 html_template() {
     local title="$1"
     local content="$2"
+    local page_id="$3"
     cat <<EOF
 <!DOCTYPE html>
 <html lang="en">
@@ -75,7 +76,7 @@ html_template() {
   <title>${title}</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
-<body>
+<body data-page="${page_id}">
 ${BETA_BANNER}${content}
 </body>
 </html>
@@ -138,7 +139,7 @@ print(html, end="")
         title="$stem"
     fi
 
-    html_template "$title" "$html_content" > "$OUTPUT_DIR/$section/$stem.html"
+    html_template "$title" "$html_content" "$stem" > "$OUTPUT_DIR/$section/$stem.html"
     echo "$stem"
 }
 

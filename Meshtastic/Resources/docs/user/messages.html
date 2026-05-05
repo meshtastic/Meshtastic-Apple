@@ -6,7 +6,7 @@
   <title>Messages &amp; Channels</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
-<body>
+<body data-page="messages">
 <div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Messages &amp; Channels</h1>
 <p>Meshtastic uses a channel system for group broadcasts and direct messages for private one-to-one conversations.</p>
 <h2>Channels</h2>
@@ -39,24 +39,23 @@
 </thead>
 <tbody>
 <tr>
-<td>🔒 Green lock</td>
+<td><img src="../assets/screenshots/lockClosed.png" alt="Securely Encrypted" /></td>
 <td><strong>Securely Encrypted</strong> — the channel uses a 128-bit or 256-bit AES key.</td>
 </tr>
 <tr>
-<td>🔓 Yellow lock</td>
+<td><img src="../assets/screenshots/lockOpen.png" alt="Not Securely Encrypted" /></td>
 <td><strong>Not Securely Encrypted</strong> — the channel uses no key or a 1-byte known key, but is not used for precise location data.</td>
 </tr>
 <tr>
-<td>🔓 Red lock</td>
+<td><img src="../assets/screenshots/lockOpenRed.png" alt="Insecure with Location" /></td>
 <td><strong>Insecure with Location</strong> — the channel is not securely encrypted and is used for precise location data.</td>
 </tr>
 <tr>
-<td>🔓⚠️ Red lock + warning</td>
+<td><img src="../assets/screenshots/lockOpenMqtt.png" alt="Insecure with MQTT" /></td>
 <td><strong>Insecure with MQTT</strong> — not securely encrypted and precise location data is being uplinked to the internet via MQTT.</td>
 </tr>
 </tbody>
 </table>
-<p><img src="../assets/screenshots/lockLegend.png" alt="Channel security lock legend" /></p>
 <hr />
 <div class="tips-callout"><strong>Tip — Share Channels</strong>
 A QR code contains the LoRa config and channels needed for radios to communicate. Use <strong>Replace Channels</strong> to overwrite or <strong>Add Channels</strong> to append to existing channels.</div>
@@ -76,11 +75,11 @@ Select a node from the drop-down to manage connected or remote devices.</div>
 </thead>
 <tbody>
 <tr>
-<td>⭐ Yellow star</td>
+<td><img src="../assets/screenshots/favorite.png" alt="Favorites" /></td>
 <td><strong>Favorites</strong> — favorited contacts and nodes with recent messages appear at the top of the contact list.</td>
 </tr>
 <tr>
-<td>👆 Long press</td>
+<td><img src="../assets/screenshots/longPress.png" alt="Long press" /></td>
 <td><strong>Long Press Actions</strong> — long press to favorite or mute the contact, or delete a conversation.</td>
 </tr>
 </tbody>
@@ -95,15 +94,15 @@ Select a node from the drop-down to manage connected or remote devices.</div>
 </thead>
 <tbody>
 <tr>
-<td>🔓 Yellow lock</td>
+<td><img src="../assets/screenshots/lockOpen.png" alt="Shared Key" /></td>
 <td><strong>Shared Key</strong> — direct messages are using the shared key for the channel.</td>
 </tr>
 <tr>
-<td>🔒 Green lock</td>
+<td><img src="../assets/screenshots/lockClosed.png" alt="Public Key Encryption" /></td>
 <td><strong>Public Key Encryption</strong> — direct messages use the public key infrastructure for encryption. Requires firmware 2.5 or later.</td>
 </tr>
 <tr>
-<td>🗝️ Red slash key</td>
+<td><img src="../assets/screenshots/keySlash.png" alt="PKI Mismatch" /></td>
 <td><strong>Public Key Mismatch</strong> — the most recent public key for this node does not match the previously recorded key. Verify who you are messaging with by comparing public keys in person or over the phone.</td>
 </tr>
 </tbody>
@@ -189,6 +188,5 @@ Send channel broadcasts and direct messages. Long press any message for actions 
 <blockquote>
 <p>Grey indicates successful delivery. Orange indicates a retryable error. Red indicates a permanent failure that will not succeed on retry.</p>
 </blockquote>
-<p><img src="../assets/screenshots/ackErrors.png" alt="Message acknowledgement error indicators" /></p>
 </body>
 </html>

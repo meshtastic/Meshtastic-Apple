@@ -16,15 +16,17 @@ The app can check for and install Meshtastic firmware updates directly on your c
 
 ## Installing an Update
 
-![Firmware update progress — 0%](../assets/screenshots/progressZero.png)
-![Firmware update progress — 50%](../assets/screenshots/progressHalf.png)
-![Firmware update progress — complete](../assets/screenshots/progressComplete.png)
-![Firmware update error](../assets/screenshots/progressError.png)
-
 1. Tap **Update Firmware** when a newer version is available.
 2. The app downloads the correct firmware binary for your hardware.
 3. The radio enters update mode (DFU) and the new firmware is transferred over BLE.
 4. The radio reboots automatically when the update completes.
+
+| Icon | Progress | Description |
+|------|----------|-------------|
+| ![0%](../assets/screenshots/progressZero.png) | Starting | Update initiating — firmware binary downloading. |
+| ![50%](../assets/screenshots/progressHalf.png) | In Progress | Firmware transfer in progress over BLE. |
+| ![Complete](../assets/screenshots/progressComplete.png) | Complete | Transfer finished — radio is rebooting. |
+| ![Error](../assets/screenshots/progressError.png) | Error | Update failed — see Troubleshooting below. |
 
 **Do not close the app or move out of Bluetooth range during a firmware update.**
 

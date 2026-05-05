@@ -178,6 +178,60 @@ img {
     margin: 1em 0;
 }
 
+/* ── Inline icons inside table cells ── */
+td img, th img {
+    display: inline;
+    height: 44px;
+    width: auto;
+    vertical-align: middle;
+    border-radius: 3px;
+    margin: 0 6px 0 0;
+}
+
+/* Node circle icon — circular treatment */
+td img[src$="circleTextDefault.png"], th img[src$="circleTextDefault.png"] {
+    height: 44px;
+    border-radius: 50%;
+}
+
+/* Telemetry page — environment/AQI compact widget tiles are richer and need 3× height */
+body[data-page="telemetry"] td img[src$="humidityWithDew.png"],
+body[data-page="telemetry"] td img[src$="humidityNoDew.png"],
+body[data-page="telemetry"] td img[src$="pressureHigh.png"],
+body[data-page="telemetry"] td img[src$="pressureLow.png"] {
+    height: 132px;
+    border-radius: 8px;
+}
+
+/*
+ * Dark mode — invert monochrome icons (rendered dark-on-transparent in light mode).
+ * Coloured icons (lock, status indicators, distance, favourite, etc.) are excluded
+ * because inverting them produces wrong hues.
+ */
+@media (prefers-color-scheme: dark) {
+    td img[src$="logDeviceMetrics.png"],
+    td img[src$="logPositions.png"],
+    td img[src$="logEnvironment.png"],
+    td img[src$="logDetectionSensor.png"],
+    td img[src$="logTraceRoutes.png"],
+    td img[src$="longPress.png"],
+    td img[src$="hopsAway.png"],
+    td img[src$="channelBadge.png"],
+    td img[src$="roleClient.png"],
+    td img[src$="roleClientMute.png"],
+    td img[src$="roleClientHidden.png"],
+    td img[src$="roleRouter.png"],
+    td img[src$="roleRouterLate.png"],
+    td img[src$="roleClientBase.png"],
+    td img[src$="roleTracker.png"],
+    td img[src$="roleSensor.png"],
+    td img[src$="roleTak.png"],
+    td img[src$="roleTakTracker.png"],
+    td img[src$="roleLostAndFound.png"] {
+        filter: invert(1);
+    }
+}
+
 /* ── Horizontal rule ── */
 hr {
     border: none;

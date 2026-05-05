@@ -11,7 +11,7 @@ import UIKit
 /// Renders a SwiftUI view to a UIImage. When height is nil the view sizes itself
 /// using its intrinsic content height for the given width (via sizeThatFits).
 @MainActor
-private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = nil) -> UIImage {
+private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = nil, transparent: Bool = false) -> UIImage {
 	// Wrap the view to ignore safe area so content isn't inset by the device's safe area
 	let wrappedView = AnyView(
 		view
@@ -19,7 +19,7 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 			.ignoresSafeArea()
 	)
 	let hostingController = UIHostingController(rootView: wrappedView)
-	hostingController.view.backgroundColor = .systemBackground
+	hostingController.view.backgroundColor = transparent ? .clear : .systemBackground
 
 	// Measure the view's intrinsic height
 	let fittingSize = hostingController.sizeThatFits(in: CGSize(width: width, height: height ?? UIView.layoutFittingExpandedSize.height))
@@ -45,8 +45,13 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 	hostingController.view.setNeedsLayout()
 	hostingController.view.layoutIfNeeded()
 
-	let renderer = UIGraphicsImageRenderer(size: size)
-	return renderer.image { _ in
+	let format = UIGraphicsImageRendererFormat()
+	format.opaque = !transparent
+	let renderer = UIGraphicsImageRenderer(size: size, format: format)
+	return renderer.image { ctx in
+		if transparent {
+			ctx.cgContext.clear(CGRect(origin: .zero, size: size))
+		}
 		hostingController.view.drawHierarchy(in: CGRect(origin: .zero, size: size), afterScreenUpdates: true)
 	}
 }
@@ -59,11 +64,12 @@ private func assertViewSnapshot<V: View>(
 	of view: V,
 	width: CGFloat,
 	height: CGFloat? = nil,
+	transparent: Bool = false,
 	named name: String,
 	filePath: String = #filePath,
 	sourceLocation: SourceLocation = #_sourceLocation
 ) {
-	let image = renderImage(view, width: width, height: height)
+	let image = renderImage(view, width: width, height: height, transparent: transparent)
 	guard let pngData = image.pngData() else {
 		Issue.record("Failed to generate PNG data", sourceLocation: sourceLocation)
 		return
@@ -134,7 +140,7 @@ struct CircleTextSnapshotTests {
 
 	@Test("CircleText default size")
 	func circleTextDefault() async {
-		await assertViewSnapshot(of: CircleText(text: "AB", color: Color(uiColor: .systemGreen)), width: 60, named: "circleTextDefault")
+		await assertViewSnapshot(of: CircleText(text: "AB", color: Color(uiColor: .systemGreen)), width: 60, transparent: true, named: "circleTextDefault")
 	}
 }
 
@@ -225,17 +231,17 @@ struct LoRaSignalStrengthSnapshotTests {
 
 	@Test("LoRa signal none")
 	func signalNone() async {
-		await assertViewSnapshot(of: LoRaSignalStrengthIndicator(signalStrength: .none), width: 50, named: "signalNone")
+		await assertViewSnapshot(of: LoRaSignalStrengthIndicator(signalStrength: .none), width: 50, transparent: true, named: "signalNone")
 	}
 
 	@Test("LoRa signal bad")
 	func signalBad() async {
-		await assertViewSnapshot(of: LoRaSignalStrengthIndicator(signalStrength: .bad), width: 50, named: "signalBad")
+		await assertViewSnapshot(of: LoRaSignalStrengthIndicator(signalStrength: .bad), width: 50, transparent: true, named: "signalBad")
 	}
 
 	@Test("LoRa signal good")
 	func signalGood() async {
-		await assertViewSnapshot(of: LoRaSignalStrengthIndicator(signalStrength: .good), width: 50, named: "signalGood")
+		await assertViewSnapshot(of: LoRaSignalStrengthIndicator(signalStrength: .good), width: 50, transparent: true, named: "signalGood")
 	}
 }
 
@@ -246,17 +252,32 @@ struct MQTTIconSnapshotTests {
 
 	@Test("MQTT connected")
 	func mqttConnected() async {
-		await assertViewSnapshot(of: MQTTIcon(connected: true, uplink: true, downlink: true), width: 50, named: "mqttConnected")
+		let view = Image(systemName: "arrow.up.arrow.down.circle.fill")
+			.foregroundColor(Color(uiColor: .systemGreen))
+			.symbolRenderingMode(.hierarchical)
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttConnected")
 	}
 
 	@Test("MQTT disconnected")
 	func mqttDisconnected() async {
-		await assertViewSnapshot(of: MQTTIcon(connected: false, uplink: false, downlink: false), width: 50, named: "mqttDisconnected")
+		let view = Image(systemName: "arrow.up.arrow.down.circle.fill")
+			.foregroundColor(Color(uiColor: .systemGray))
+			.symbolRenderingMode(.hierarchical)
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttDisconnected")
 	}
 
 	@Test("MQTT uplink only")
 	func mqttUplinkOnly() async {
-		await assertViewSnapshot(of: MQTTIcon(connected: true, uplink: true, downlink: false), width: 50, named: "mqttUplinkOnly")
+		let view = Image(systemName: "arrow.up.circle.fill")
+			.foregroundColor(Color(uiColor: .systemGreen))
+			.symbolRenderingMode(.hierarchical)
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttUplinkOnly")
 	}
 }
 
@@ -415,6 +436,11 @@ struct LoRaSignalStrengthMeterSnapshotTests {
 	func nonCompactBad() async {
 		await assertViewSnapshot(of: LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: false), width: 100, named: "nonCompactBad")
 	}
+
+	@Test("Gradient meter icon")
+	func gradientMeterIcon() async {
+		await assertViewSnapshot(of: LoRaSignalStrengthMeter(snr: -8, rssi: -95, preset: .longFast, compact: true), width: 180, transparent: true, named: "gradientMeter")
+	}
 }
 
 // MARK: - RadarSweepView Snapshot Tests
@@ -556,6 +582,7 @@ struct NodeListItemCompactSnapshotTests {
 	private func makeNode(
 		longName: String,
 		shortName: String,
+		num: Int64 = 0,
 		hopsAway: Int32 = 0,
 		snr: Float = 0,
 		rssi: Int32 = 0,
@@ -572,6 +599,7 @@ struct NodeListItemCompactSnapshotTests {
 		channelIndex: Int32? = nil
 	) -> NodeInfoEntity {
 		let node = NodeInfoEntity()
+		node.num = num
 		let user = UserEntity()
 		user.longName = longName
 		user.shortName = shortName
@@ -611,6 +639,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = makeNode(
 			longName: "Hopscotch",
 			shortName: "HS01",
+			num: 0xE75432,
 			hopsAway: 0,
 			snr: 5.5,
 			rssi: -54,
@@ -632,6 +661,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = makeNode(
 			longName: "Brad!!",
 			shortName: "B",
+			num: 0x3A9FD1,
 			hopsAway: 7,
 			batteryLevel: 99,
 			lastHeard: Date(timeIntervalSinceNow: -3600)
@@ -648,6 +678,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = makeNode(
 			longName: "MQTT Matt",
 			shortName: "MQTM",
+			num: 0x5B2E8C,
 			hopsAway: 3,
 			viaMqtt: true,
 			role: 3,
@@ -682,6 +713,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = makeNode(
 			longName: "Spy Node",
 			shortName: "SPY",
+			num: 0xC84A1F,
 			pkiEncrypted: true,
 			keyMatch: false,
 			lastHeard: Date(timeIntervalSinceNow: -60)
@@ -726,6 +758,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = makeNode(
 			longName: "Trail Node",
 			shortName: "TRL",
+			num: 0x27B06E,
 			hopsAway: 1,
 			snr: 3.25,
 			rssi: -80,
@@ -774,7 +807,7 @@ struct NodeStatusIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemGreen))
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "nodeOnline")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "nodeOnline")
 	}
 
 	@Test("Idle / sleeping indicator")
@@ -784,7 +817,7 @@ struct NodeStatusIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemOrange))
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "nodeIdle")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "nodeIdle")
 	}
 
 	@Test("Hops away badge — 3 hops")
@@ -792,7 +825,7 @@ struct NodeStatusIconSnapshotTests {
 	func hopsAway() async {
 		let view = DefaultIconCompact(systemName: "3.square")
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "hopsAway")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "hopsAway")
 	}
 
 	@Test("Channel badge — channel 2")
@@ -800,7 +833,7 @@ struct NodeStatusIconSnapshotTests {
 	func channelBadge() async {
 		let view = DefaultIconCompact(systemName: "2.circle.fill")
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "channelBadge")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "channelBadge")
 	}
 }
 
@@ -814,9 +847,9 @@ struct ChannelLockIconSnapshotTests {
 	func lockClosed() async {
 		let view = Image(systemName: "lock.fill")
 			.foregroundColor(Color(uiColor: .systemGreen))
-			.font(.title2)
-			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "lockClosed")
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockClosed")
 	}
 
 	@Test("Lock open — unencrypted (yellow)")
@@ -824,9 +857,9 @@ struct ChannelLockIconSnapshotTests {
 	func lockOpen() async {
 		let view = Image(systemName: "lock.open.fill")
 			.foregroundColor(Color(uiColor: .systemYellow))
-			.font(.title2)
-			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "lockOpen")
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockOpen")
 	}
 
 	@Test("Lock open red — location exposed")
@@ -834,9 +867,9 @@ struct ChannelLockIconSnapshotTests {
 	func lockOpenRed() async {
 		let view = Image(systemName: "lock.open.fill")
 			.foregroundColor(Color(uiColor: .systemRed))
-			.font(.title2)
-			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "lockOpenRed")
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockOpenRed")
 	}
 
 	@Test("Lock open MQTT — insecure with MQTT uplink")
@@ -844,9 +877,9 @@ struct ChannelLockIconSnapshotTests {
 	func lockOpenMqtt() async {
 		let view = Image(systemName: "lock.open.trianglebadge.exclamationmark.fill")
 			.foregroundColor(Color(uiColor: .systemRed))
-			.font(.title2)
-			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "lockOpenMqtt")
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 38, transparent: true, named: "lockOpenMqtt")
 	}
 
 	@Test("Key slash — PKI mismatch")
@@ -854,8 +887,193 @@ struct ChannelLockIconSnapshotTests {
 	func keySlash() async {
 		let view = Image(systemName: "key.slash.fill")
 			.foregroundColor(Color(uiColor: .systemRed))
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "keySlash")
+	}
+}
+
+// MARK: - Node Log Icon Snapshots
+
+@Suite("NodeLogIconSnapshotTests")
+struct NodeLogIconSnapshotTests {
+
+	@Test("Distance & Bearing")
+	@MainActor
+	func logDistance() async {
+		let view = Image(systemName: "location.fill")
+			.foregroundColor(Color(uiColor: .systemBlue))
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, named: "keySlash")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDistance")
+	}
+
+	@Test("Device Metrics")
+	@MainActor
+	func logDeviceMetrics() async {
+		let view = Image(systemName: "flipphone")
+			.foregroundStyle(.secondary)
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDeviceMetrics")
+	}
+
+	@Test("Positions")
+	@MainActor
+	func logPositions() async {
+		let view = Image(systemName: "mappin.and.ellipse")
+			.foregroundStyle(.secondary)
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logPositions")
+	}
+
+	@Test("Environment")
+	@MainActor
+	func logEnvironment() async {
+		let view = Image(systemName: "cloud.sun.rain")
+			.foregroundStyle(.secondary)
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logEnvironment")
+	}
+
+	@Test("Detection Sensor")
+	@MainActor
+	func logDetectionSensor() async {
+		let view = Image(systemName: "sensor")
+			.foregroundStyle(.secondary)
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDetectionSensor")
+	}
+
+	@Test("Trace Routes")
+	@MainActor
+	func logTraceRoutes() async {
+		let view = Image(systemName: "signpost.right.and.left")
+			.foregroundStyle(.secondary)
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logTraceRoutes")
+	}
+}
+
+// MARK: - Messages Icon Snapshots
+
+@Suite("MessagesIconSnapshotTests")
+struct MessagesIconSnapshotTests {
+
+	@Test("Favorite star")
+	@MainActor
+	func favorite() async {
+		let view = Image(systemName: "star.fill")
+			.foregroundColor(Color(uiColor: .systemYellow))
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "favorite")
+	}
+
+	@Test("Long press / tap")
+	@MainActor
+	func longPress() async {
+		let view = Image(systemName: "hand.tap")
+			.foregroundStyle(.secondary)
+			.font(.title)
+			.padding(2)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "longPress")
+	}
+}
+
+// MARK: - Connection Status Icon Snapshots
+
+@Suite("ConnectionStatusIconSnapshotTests")
+struct ConnectionStatusIconSnapshotTests {
+
+	@Test("BLE connected")
+	@MainActor
+	func btConnected() async {
+		let view = Image("custom.bluetooth")
+			.foregroundColor(Color(uiColor: .systemOrange))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "btConnected")
+	}
+
+	@Test("Reconnecting / retrying")
+	@MainActor
+	func btReconnecting() async {
+		let view = Image(systemName: "square.stack.3d.down.forward")
+			.foregroundColor(Color(uiColor: .systemOrange))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "btReconnecting")
+	}
+
+	@Test("TCP / Wi-Fi connected")
+	@MainActor
+	func tcpConnected() async {
+		let view = Image(systemName: "network")
+			.font(.title2)
+			.foregroundColor(Color(uiColor: .systemOrange))
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "tcpConnected")
+	}
+
+	@Test("Serial / USB connected")
+	@MainActor
+	func serialConnected() async {
+		let view = Image(systemName: "cable.connector.horizontal")
+			.font(.title2)
+			.foregroundColor(Color(uiColor: .systemOrange))
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "serialConnected")
+	}
+}
+
+// MARK: - Device Role Icon Snapshots
+
+@Suite("DeviceRoleIconSnapshotTests")
+struct DeviceRoleIconSnapshotTests {
+
+	private func icon(_ systemName: String) -> some View {
+		Image(systemName: systemName)
+			.foregroundColor(Color(uiColor: .systemBlue))
+			.font(.title2)
+			.padding(4)
+	}
+
+	@Test("Client") @MainActor func roleClient() async {
+		await assertViewSnapshot(of: icon("apps.iphone"), width: 44, transparent: true, named: "roleClient")
+	}
+	@Test("Client Mute") @MainActor func roleClientMute() async {
+		await assertViewSnapshot(of: icon("speaker.slash"), width: 44, transparent: true, named: "roleClientMute")
+	}
+	@Test("Client Hidden") @MainActor func roleClientHidden() async {
+		await assertViewSnapshot(of: icon("eye.slash"), width: 44, transparent: true, named: "roleClientHidden")
+	}
+	@Test("Router") @MainActor func roleRouter() async {
+		await assertViewSnapshot(of: icon("wifi.router"), width: 44, transparent: true, named: "roleRouter")
+	}
+	@Test("Router Late") @MainActor func roleRouterLate() async {
+		await assertViewSnapshot(of: icon("wifi.router"), width: 44, transparent: true, named: "roleRouterLate")
+	}
+	@Test("Client Base") @MainActor func roleClientBase() async {
+		await assertViewSnapshot(of: icon("house"), width: 44, transparent: true, named: "roleClientBase")
+	}
+	@Test("Tracker") @MainActor func roleTracker() async {
+		await assertViewSnapshot(of: icon("mappin.and.ellipse.circle"), width: 44, transparent: true, named: "roleTracker")
+	}
+	@Test("Sensor") @MainActor func roleSensor() async {
+		await assertViewSnapshot(of: icon("sensor"), width: 44, transparent: true, named: "roleSensor")
+	}
+	@Test("TAK") @MainActor func roleTak() async {
+		await assertViewSnapshot(of: icon("shield.checkered"), width: 44, transparent: true, named: "roleTak")
+	}
+	@Test("TAK Tracker") @MainActor func roleTakTracker() async {
+		await assertViewSnapshot(of: icon("dog"), width: 44, transparent: true, named: "roleTakTracker")
+	}
+	@Test("Lost and Found") @MainActor func roleLostAndFound() async {
+		await assertViewSnapshot(of: icon("map"), width: 44, transparent: true, named: "roleLostAndFound")
 	}
 }

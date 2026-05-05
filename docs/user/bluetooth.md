@@ -12,7 +12,7 @@ The Meshtastic app connects to your radio over Bluetooth Low Energy (BLE). You c
 
 1. Power on your Meshtastic radio.
 2. Open the app and tap the **Connect** tab.
-3. Tap **Scan** to discover nearby devices.
+3. The app scans for nearby devices automatically when you are not connected.
 4. Tap your device name in the list to connect.
 
 The app remembers your preferred device and reconnects automatically when the radio is in range.
@@ -33,10 +33,10 @@ You can pair multiple radios but only one is active at a time. Switch between th
 
 | Icon | Meaning |
 |------|---------|
-| Bluetooth wave (green) | Connected via BLE |
-| Bluetooth wave (orange) | Reconnecting |
-| Wi-Fi symbol | Connected via TCP/IP |
-| USB symbol | Connected via serial (macOS) |
+| ![BLE connected](../assets/screenshots/btConnected.png) | Connected via BLE |
+| ![Reconnecting](../assets/screenshots/btReconnecting.png) | Reconnecting / retrying |
+| ![TCP connected](../assets/screenshots/tcpConnected.png) | Connected via TCP/IP |
+| ![Serial connected](../assets/screenshots/serialConnected.png) | Connected via serial (macOS) |
 
 ## Troubleshooting
 

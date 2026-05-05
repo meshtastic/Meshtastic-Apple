@@ -17,7 +17,6 @@ On supported devices running iOS 26+, the on-device AI assistant analyses the sc
 ## Running a Scan
 
 ![Radar sweep active — scan in progress](../assets/screenshots/radarActive.png)
-![Radar sweep inactive — scan stopped](../assets/screenshots/radarInactive.png)
 
 1. Go to **Settings → Local Mesh Discovery**.
 2. Tap **Start Scan**.

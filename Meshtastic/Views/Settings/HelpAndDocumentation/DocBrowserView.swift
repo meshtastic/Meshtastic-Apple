@@ -46,7 +46,7 @@ struct DocBrowserView: View {
 							NavigationLink {
 								DocPageView(page: page)
 							} label: {
-									Label(page.title, systemImage: item.section.systemImage)
+								pageLabel(page)
 								}
 								.accessibilityLabel(page.title)
 								.accessibilityHint("Opens \(page.title) documentation")
@@ -80,6 +80,15 @@ struct DocBrowserView: View {
 		.onAppear {
 			bundle.load()
 			Logger.docs.debug("DocBrowserView appeared — \(pages.count) pages loaded")
+		}
+	}
+
+	@ViewBuilder
+	private func pageLabel(_ page: DocPage) -> some View {
+		if page.systemImage.hasPrefix("custom.") {
+			Label(title: { Text(page.title) }, icon: { Image(page.systemImage) })
+		} else {
+			Label(page.title, systemImage: page.systemImage)
 		}
 	}
 }

@@ -6,14 +6,37 @@
   <title>MQTT</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
-<body>
+<body data-page="mqtt">
 <div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>MQTT</h1>
 <p>The MQTT module allows a Meshtastic node to bridge mesh traffic to an MQTT broker, extending the mesh over the internet and enabling integration with home automation systems.</p>
 <h2>What MQTT Does</h2>
-<p><img src="../assets/screenshots/mqttConnected.png" alt="MQTT connected — uplink and downlink active" />
-<img src="../assets/screenshots/mqttDisconnected.png" alt="MQTT disconnected" />
-<img src="../assets/screenshots/mqttUplinkOnly.png" alt="MQTT uplink only" /></p>
 <p>A node with MQTT enabled acts as a gateway: it publishes received mesh packets to an MQTT broker and optionally subscribes to a topic so that remote nodes can inject packets back into the local mesh.</p>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>State</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="../assets/screenshots/mqttConnected.png" alt="MQTT connected" /></td>
+<td>Connected</td>
+<td>MQTT bridge is active — uplink and downlink both enabled.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/mqttUplinkOnly.png" alt="MQTT uplink only" /></td>
+<td>Uplink Only</td>
+<td>Publishing mesh packets to the broker but not subscribing to incoming packets.</td>
+</tr>
+<tr>
+<td><img src="../assets/screenshots/mqttDisconnected.png" alt="MQTT disconnected" /></td>
+<td>Disconnected</td>
+<td>MQTT is configured but not currently connected to the broker.</td>
+</tr>
+</tbody>
+</table>
 <p>This enables two mesh networks in different physical locations to appear as one logical network — as long as at least one node in each location has internet access.</p>
 <h2>Configuring MQTT</h2>
 <p>Go to <strong>Settings → MQTT</strong>:</p>

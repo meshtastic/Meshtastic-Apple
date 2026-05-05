@@ -74,6 +74,36 @@ struct DocPage: Identifiable, Hashable {
 	let charCount: Int
 	let navOrder: Int
 
+	/// SF Symbol name for this page in the table of contents.
+	var systemImage: String {
+		switch id {
+		// User Guide
+		case "getting-started":	return "star.fill"
+		case "bluetooth":		return "custom.bluetooth"
+		case "messages":		return "message.fill"
+		case "nodes":			return "antenna.radiowaves.left.and.right"
+		case "map":				return "map.fill"
+		case "settings":		return "slider.horizontal.3"
+		case "telemetry":		return "chart.line.uptrend.xyaxis"
+		case "tak":				return "mappin.and.ellipse"
+		case "mqtt":			return "network"
+		case "discovery":		return "dot.radiowaves.left.and.right"
+		case "firmware":		return "arrow.down.circle.fill"
+		case "watch":			return "applewatch"
+		// Developer Guide
+		case "architecture":	return "building.columns.fill"
+		case "codebase":		return "chevron.left.forwardslash.chevron.right"
+		case "adding-features":	return "plus.square.fill"
+		case "transport":		return "wave.3.right"
+		case "swiftdata":		return "cylinder.fill"
+		case "testing":			return "checkmark.seal.fill"
+		case "contributing":	return "person.2.fill"
+		default:				return section == .developer
+			? "chevron.left.forwardslash.chevron.right"
+			: "doc.text.fill"
+		}
+	}
+
 	func hash(into hasher: inout Hasher) {
 		hasher.combine(id)
 		hasher.combine(section)
