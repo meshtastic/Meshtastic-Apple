@@ -108,11 +108,11 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	}
 	var color: Color {
 		if self == .none {
-			return Color.secondary
+			return Color(uiColor: .secondaryLabel)
 		} else if self.canRetry {
-			return Color.orange
+			return Color(uiColor: .systemOrange)
 		} else {
-			return Color.red
+			return Color(uiColor: .systemRed)
 		}
 	}
 	var canRetry: Bool {

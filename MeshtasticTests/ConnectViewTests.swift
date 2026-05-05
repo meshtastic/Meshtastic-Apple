@@ -422,19 +422,19 @@ struct ConnectedDeviceTests {
 struct CircleTextTests {
 
 	@Test func defaultCircleSize() {
-		let view = CircleText(text: "AB", color: .blue)
+		let view = CircleText(text: "AB", color: Color(uiColor: .systemBlue))
 		#expect(view.text == "AB")
 		#expect(view.circleSize == 45)
 	}
 
 	@Test func customCircleSize() {
-		let view = CircleText(text: "XY", color: .red, circleSize: 90)
+		let view = CircleText(text: "XY", color: Color(uiColor: .systemRed), circleSize: 90)
 		#expect(view.text == "XY")
 		#expect(view.circleSize == 90)
 	}
 
 	@Test func emojiText() {
-		let view = CircleText(text: "😝", color: .orange, circleSize: 80)
+		let view = CircleText(text: "😝", color: Color(uiColor: .systemOrange), circleSize: 80)
 		#expect(view.text == "😝")
 		#expect(view.circleSize == 80)
 	}
@@ -446,22 +446,22 @@ struct CircleTextTests {
 struct BatteryCompactTests {
 
 	@Test func creationWithLevel() {
-		let view = BatteryCompact(batteryLevel: 75, font: .caption, iconFont: .callout, color: .accentColor)
+		let view = BatteryCompact(batteryLevel: 75, font: .caption, iconFont: .callout, color: Color(hex: "6CB28E"))
 		#expect(view.batteryLevel == 75)
 	}
 
 	@Test func creationWithNilLevel() {
-		let view = BatteryCompact(batteryLevel: nil, font: .caption, iconFont: .callout, color: .accentColor)
+		let view = BatteryCompact(batteryLevel: nil, font: .caption, iconFont: .callout, color: Color(hex: "6CB28E"))
 		#expect(view.batteryLevel == nil)
 	}
 
 	@Test func pluggedInLevel() {
-		let view = BatteryCompact(batteryLevel: 101, font: .caption, iconFont: .callout, color: .accentColor)
+		let view = BatteryCompact(batteryLevel: 101, font: .caption, iconFont: .callout, color: Color(hex: "6CB28E"))
 		#expect(view.batteryLevel! > 100)
 	}
 
 	@Test func chargingLevel() {
-		let view = BatteryCompact(batteryLevel: 100, font: .caption, iconFont: .callout, color: .accentColor)
+		let view = BatteryCompact(batteryLevel: 100, font: .caption, iconFont: .callout, color: Color(hex: "6CB28E"))
 		#expect(view.batteryLevel == 100)
 	}
 }

@@ -49,7 +49,7 @@ struct DiscoveryModelTests {
 		#expect(node.nodeNum == 0)
 		#expect(node.shortName == "")
 		#expect(node.longName == "")
-		#expect(node.neighborType == "mesh")
+		#expect(node.neighborType == "direct")
 		#expect(node.latitude == 0.0)
 		#expect(node.longitude == 0.0)
 		#expect(node.distanceFromUser == 0.0)

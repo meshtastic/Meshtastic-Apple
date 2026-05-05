@@ -36,13 +36,13 @@ enum Aqi: Int, CaseIterable, Identifiable {
 	var color: Color {
 		switch self {
 		case .good:
-			return .green
+			return Color(uiColor: .systemGreen)
 		case .moderate:
 			return .yellow
 		case .sensitive:
-			return .orange
+			return Color(uiColor: .systemOrange)
 		case .unhealthy:
-			return .red
+			return Color(uiColor: .systemRed)
 		case .veryUnhealthy:
 			return .purple
 		case .hazardous:
@@ -119,15 +119,15 @@ enum Iaq: Int, CaseIterable, Identifiable {
 	var color: Color {
 		switch self {
 		case .excellent:
-			return .green
+			return Color(uiColor: .systemGreen)
 		case .good:
 			return .mint
 		case .lightlyPolluted:
 			return .yellow
 		case .moderatelyPolluted:
-			return .orange
+			return Color(uiColor: .systemOrange)
 		case .heavilyPolluted:
-			return .red
+			return Color(uiColor: .systemRed)
 		case .severelyPolluted:
 			return .magenta
 		case .extremelyPolluted:

@@ -70,15 +70,15 @@ struct RoutingErrorDetailedTests {
 	}
 
 	@Test func color_noneIsSecondary() {
-		#expect(RoutingError.none.color == Color.secondary)
+		#expect(RoutingError.none.color == Color(uiColor: .secondaryLabel))
 	}
 
 	@Test func color_retryableIsOrange() {
-		#expect(RoutingError.noRoute.color == Color.orange)
+		#expect(RoutingError.noRoute.color == Color(uiColor: .systemOrange))
 	}
 
 	@Test func color_tooLargeIsRed() {
-		#expect(RoutingError.tooLarge.color == Color.red)
+		#expect(RoutingError.tooLarge.color == Color(uiColor: .systemRed))
 	}
 
 	@Test func protoEnumValue_none() {

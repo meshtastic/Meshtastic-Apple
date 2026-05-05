@@ -48,16 +48,16 @@ struct RoutingErrorTests {
 	}
 
 	@Test func none_colorIsSecondary() {
-		#expect(RoutingError.none.color == Color.secondary)
+		#expect(RoutingError.none.color == Color(uiColor: .secondaryLabel))
 	}
 
 	@Test func nonRetryable_colorIsRed() {
-		#expect(RoutingError.tooLarge.color == Color.red)
+		#expect(RoutingError.tooLarge.color == Color(uiColor: .systemRed))
 	}
 
 	@Test func retryable_colorIsOrange() {
-		#expect(RoutingError.timeout.color == Color.orange)
-		#expect(RoutingError.noRoute.color == Color.orange)
+		#expect(RoutingError.timeout.color == Color(uiColor: .systemOrange))
+		#expect(RoutingError.noRoute.color == Color(uiColor: .systemOrange))
 	}
 
 	@Test func allCases_haveUniqueRawValues() {
@@ -115,7 +115,7 @@ struct AqiTests {
 	}
 
 	@Test func allCases_haveColors() {
-		#expect(Aqi.good.color == .green)
+		#expect(Aqi.good.color == Color(uiColor: .systemGreen))
 		#expect(Aqi.moderate.color == .yellow)
 		#expect(Aqi.hazardous.color == .magenta)
 	}
@@ -182,7 +182,7 @@ struct IaqTests {
 	}
 
 	@Test func allCases_haveColors() {
-		#expect(Iaq.excellent.color == .green)
+		#expect(Iaq.excellent.color == Color(uiColor: .systemGreen))
 		#expect(Iaq.good.color == .mint)
 		#expect(Iaq.extremelyPolluted.color == .brown)
 	}
