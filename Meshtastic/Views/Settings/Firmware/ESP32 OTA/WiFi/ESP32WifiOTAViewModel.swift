@@ -236,7 +236,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 					hasResumed = true
 					connection.cancel()
 					continuation.resume(returning: true)
-				case .failed(_), .waiting(_):
+				case .failed, .waiting:
 					hasResumed = true
 					connection.cancel()
 					continuation.resume(returning: false)
@@ -256,7 +256,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			let hasResumed = OSAllocatedUnfairLock(initialState: false)
 			listener.newConnectionHandler = { newConnection in
 				newConnection.start(queue: .global())
-				newConnection.receiveMessage { data, context, isComplete, error in
+				newConnection.receiveMessage { data, _, _, _ in
 					if let data = data, let message = String(data: data, encoding: .utf8) {
 						if message.hasPrefix("MeshtasticOTA") {
 							hasResumed.withLock { resumed in

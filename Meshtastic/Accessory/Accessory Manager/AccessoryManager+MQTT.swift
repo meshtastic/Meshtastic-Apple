@@ -88,4 +88,3 @@ extension AccessoryManager {
 		Logger.services.info("📲 [MQTT Client Proxy] onMqttError: \(message, privacy: .public)")
 	}
 }
-

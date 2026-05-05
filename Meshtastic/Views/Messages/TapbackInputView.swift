@@ -20,7 +20,7 @@ struct TapbackInputView: View {
 					)
 					.padding(.horizontal)
 					.padding(.top, 8)
-					.onChange(of: text) { oldValue, newValue in
+					.onChange(of: text) { _, newValue in
 						// Extract first emoji character and send it
 						if !newValue.isEmpty, let firstEmoji = extractFirstEmoji(from: newValue) {
 							onEmojiSelected(firstEmoji)
@@ -59,10 +59,10 @@ struct TapbackInputView: View {
 				let nextChar = string[emojiEnd]
 				// Check if this is a continuation (variation selector, skin tone modifier, zero-width joiner, etc.)
 				if let scalar = nextChar.unicodeScalars.first,
-				   (scalar.properties.isVariationSelector ||
+				   scalar.properties.isVariationSelector ||
 					scalar.value == 0xFE0F || // Variation selector
 					(scalar.value >= 0x1F3FB && scalar.value <= 0x1F3FF) || // Skin tone modifiers
-					scalar.value == 0x200D) { // Zero-width joiner
+					scalar.value == 0x200D { // Zero-width joiner
 					emojiEnd = string.index(after: emojiEnd)
 				} else if nextChar.isEmoji {
 					// If it's another emoji, include it (for compound emojis like flags)

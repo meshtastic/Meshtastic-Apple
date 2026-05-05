@@ -20,8 +20,8 @@ actor TAKConnection {
 	private var continuation: AsyncStream<TAKConnectionEvent>.Continuation?
 
 	// CoT XML message delimiters (from StreamingCotProtocol.java)
-	private let startTag = "<event".data(using: .utf8)!
-	private let endTag = "</event>".data(using: .utf8)!
+	private let startTag = Data("<event".utf8)
+	private let endTag = Data("</event>".utf8)
 	private let maxMessageSize = 8_388_608  // 8MB max per TAK Server spec
 
 	// Protocol state

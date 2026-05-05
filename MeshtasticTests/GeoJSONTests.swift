@@ -336,7 +336,7 @@ struct GeoJSONFeaturePropertiesTests {
 struct GeoJSONFeatureCollectionTests {
 
 	@Test func decode_pointFeature() throws {
-		let json = """
+		let json = Data("""
 		{
 			"type": "FeatureCollection",
 			"features": [{
@@ -348,7 +348,7 @@ struct GeoJSONFeatureCollectionTests {
 				"properties": {"name": "Test Point"}
 			}]
 		}
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: json)
 		#expect(collection.type == "FeatureCollection")
@@ -358,7 +358,7 @@ struct GeoJSONFeatureCollectionTests {
 	}
 
 	@Test func decode_lineStringFeature() throws {
-		let json = """
+		let json = Data("""
 		{
 			"type": "FeatureCollection",
 			"features": [{
@@ -370,7 +370,7 @@ struct GeoJSONFeatureCollectionTests {
 				"properties": {"stroke": "#FF0000", "stroke-width": 2}
 			}]
 		}
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: json)
 		let feature = collection.features[0]
@@ -380,7 +380,7 @@ struct GeoJSONFeatureCollectionTests {
 	}
 
 	@Test func decode_polygonFeature() throws {
-		let json = """
+		let json = Data("""
 		{
 			"type": "FeatureCollection",
 			"features": [{
@@ -392,7 +392,7 @@ struct GeoJSONFeatureCollectionTests {
 				"properties": {"fill": "#00FF00", "fill-opacity": 0.3}
 			}]
 		}
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: json)
 		let feature = collection.features[0]
@@ -402,16 +402,16 @@ struct GeoJSONFeatureCollectionTests {
 	}
 
 	@Test func decode_emptyFeatureCollection() throws {
-		let json = """
+		let json = Data("""
 		{"type": "FeatureCollection", "features": []}
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: json)
 		#expect(collection.features.isEmpty)
 	}
 
 	@Test func decode_multipleFeatures() throws {
-		let json = """
+		let json = Data("""
 		{
 			"type": "FeatureCollection",
 			"features": [
@@ -419,7 +419,7 @@ struct GeoJSONFeatureCollectionTests {
 				{"type": "Feature", "geometry": {"type": "Point", "coordinates": [1, 1]}, "properties": null}
 			]
 		}
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: json)
 		#expect(collection.features.count == 2)

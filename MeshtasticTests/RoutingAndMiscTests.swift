@@ -62,7 +62,7 @@ struct RoutingErrorDetailedTests {
 			.noRoute, .gotNak, .timeout, .noInterface, .maxRetransmit,
 			.noChannel, .noResponse, .dutyCycleLimit, .badRequest,
 			.notAuthorized, .pkiFailed, .pkiUnknownPubkey,
-			.adminBadSessionKey, .adminPublicKeyUnauthorized, .rateLimitExceeded,
+			.adminBadSessionKey, .adminPublicKeyUnauthorized, .rateLimitExceeded
 		]
 		for error in retryable {
 			#expect(error.canRetry == true, "Expected \(error) to be retryable")

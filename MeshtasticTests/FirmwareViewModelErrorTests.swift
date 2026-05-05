@@ -100,7 +100,7 @@ struct MetricsTableColumnPropertyExtendedTests {
 			maxWidth: maxWidth,
 			spacing: spacing,
 			visible: visible
-		) { _, value in
+		) { _, _ in
 			EmptyView()
 		}
 	}
@@ -179,7 +179,7 @@ struct MetricsColumnListExtendedTests {
 		let list = MetricsColumnList(columns: [
 			makeColumn(id: "a", visible: true),
 			makeColumn(id: "b", visible: false),
-			makeColumn(id: "c", visible: true),
+			makeColumn(id: "c", visible: true)
 		])
 		#expect(list.gridItems.count == 2)
 	}
@@ -194,7 +194,7 @@ struct MetricsColumnListExtendedTests {
 	@Test func visible_filtersCorrectly() {
 		let list = MetricsColumnList(columns: [
 			makeColumn(id: "a", visible: true),
-			makeColumn(id: "b", visible: false),
+			makeColumn(id: "b", visible: false)
 		])
 		#expect(list.visible.count == 1)
 		#expect(list.visible.first?.id == "a")

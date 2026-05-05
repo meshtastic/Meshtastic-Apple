@@ -391,31 +391,17 @@ struct CoTGroup: Sendable, Equatable {
 	var name: String
 	/// Role name (e.g., "Team Member", "Team Lead")
 	var role: String
-
-	init(name: String, role: String) {
-		self.name = name
-		self.role = role
-	}
 }
 
 /// Device status for a CoT event
 struct CoTStatus: Sendable, Equatable {
 	var battery: Int
-
-	init(battery: Int) {
-		self.battery = battery
-	}
 }
 
 /// Movement track for a CoT event
 struct CoTTrack: Sendable, Equatable {
 	var speed: Double
 	var course: Double
-
-	init(speed: Double, course: Double) {
-		self.speed = speed
-		self.course = course
-	}
 }
 
 /// Chat message details for a CoT event

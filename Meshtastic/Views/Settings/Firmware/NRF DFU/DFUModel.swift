@@ -5,7 +5,6 @@
 //  Created by jake on 12/2/25.
 //
 
-
 import Foundation
 import NordicDFU
 import CoreBluetooth

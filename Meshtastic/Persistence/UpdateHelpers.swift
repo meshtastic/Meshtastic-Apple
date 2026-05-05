@@ -1509,7 +1509,6 @@ extension MeshPackets {
 					Logger.data.info("💾 [SerialConfigEntity]Updated Serial Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 				} catch {
 					
-					
 					let nsError = error as NSError
 					Logger.data.error("💥 [SerialConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}

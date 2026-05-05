@@ -187,8 +187,8 @@ struct WifiProvisioningView: View {
 				case .selectingDevice(let devices):
 					deviceSelectionView(devices: devices)
 
-			case .connectingBLE:
-				waitingView(icon: "dot.radiowaves.right", message: "Connecting via Bluetooth…")
+				case .connectingBLE:
+					waitingView(icon: "dot.radiowaves.right", message: "Connecting via Bluetooth…")
 
 				case .checkingNetworkState:
 					waitingView(icon: "network", message: "Checking device network state…")

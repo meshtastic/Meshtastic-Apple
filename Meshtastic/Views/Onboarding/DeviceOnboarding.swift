@@ -137,7 +137,7 @@ struct DeviceOnboarding: View {
 					await goToNextStep(after: .notifications)
 				}
 			} label: {
-				Text("Configure notification permissions")
+				Text("Continue")
 					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()
@@ -167,7 +167,7 @@ struct DeviceOnboarding: View {
 					)
 					Toggle(isOn: $provideLocation ) {
 						Label {
-							Text("Enable Location Sharing")
+							Text("Share Location")
 						} icon: {
 							Image(systemName: "location.circle")
 						}
@@ -221,7 +221,7 @@ struct DeviceOnboarding: View {
 					await goToNextStep(after: .location)
 				}
 			} label: {
-				Text("Configure Location Permissions")
+				Text("Continue")
 					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()
@@ -269,7 +269,7 @@ struct DeviceOnboarding: View {
 					await goToNextStep(after: .localNetwork)
 				}
 			} label: {
-				Text("Configure Local Network Access")
+				Text("Continue")
 					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()
@@ -312,7 +312,7 @@ struct DeviceOnboarding: View {
 					await goToNextStep(after: .bluetooth)
 				}
 			} label: {
-				Text("Configure Bluetooth Connectivity")
+				Text("Continue")
 					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()
@@ -370,7 +370,7 @@ struct DeviceOnboarding: View {
 					await goToNextStep(after: .siri)
 				}
 			} label: {
-				Text("Configure Siri & Shortcuts")
+				Text("Continue")
 					.frame(maxWidth: 400)
 			}
 			.capsuleButtonStyle()

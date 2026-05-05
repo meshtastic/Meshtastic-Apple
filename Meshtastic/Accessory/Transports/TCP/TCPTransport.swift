@@ -82,13 +82,13 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		if let txtRecords = service.txtRecordData().map({NetService.dictionary(fromTXTRecord: $0)}) {
 			var nodeNameString = ""
 			if let shortNameData = txtRecords["shortname"] {
-				nodeNameString += String(decoding: shortNameData, as: UTF8.self)
+				nodeNameString += String(data: shortNameData, encoding: .utf8) ?? ""
 			}
 			if let nodeId = txtRecords["id"], nodeId.count > 4 {
 				if nodeNameString.count > 0 {
 					nodeNameString += "_"
 				}
-				nodeNameString += String(decoding: nodeId.suffix(4), as: UTF8.self)
+				nodeNameString += String(data: Data(nodeId.suffix(4)), encoding: .utf8) ?? ""
 			}
 			name = nodeNameString
 		} else {

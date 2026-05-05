@@ -418,10 +418,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		)
 		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int32: Int]()
-		for message in results {
-			if channelSet.contains(message.channel) {
-				counts[message.channel, default: 0] += 1
-			}
+		for message in results where channelSet.contains(message.channel) {
+			counts[message.channel, default: 0] += 1
 		}
 		return counts
 	}

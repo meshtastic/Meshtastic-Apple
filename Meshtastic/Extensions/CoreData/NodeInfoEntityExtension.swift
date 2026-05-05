@@ -45,7 +45,7 @@ extension NodeInfoEntity {
 		for attribute in attributes {
 			let mirror = Mirror(reflecting: latest)
 			if let child = mirror.children.first(where: { $0.label == attribute }) {
-				if child.value is Optional<Any> {
+				if child.value is Any? {
 					let m = Mirror(reflecting: child.value)
 					if m.displayStyle == .optional && m.children.count > 0 {
 						return true

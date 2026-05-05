@@ -98,7 +98,7 @@ extension MetricsSeriesList {
 					let stops: [Gradient.Stop] = generateStops(minTemp: lowerBound, maxTemp: upperBound, tempUnit: format, opacity: 1.0)
 					return LinearGradient(stops: stops, startPoint: .bottom, endPoint: .top)
 				},
-				chartBody: { series, chartRange, time, dewPoint in
+				chartBody: { series, _, time, dewPoint in
 					if let dewPoint {
 						LineMark(
 							x: .value("Time", time),

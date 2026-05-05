@@ -9,7 +9,7 @@ import Testing
 struct CoTXMLParserTests {
 
 	@Test func parse_pliMessage() throws {
-		let xml = """
+		let xml = Data("""
 		<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
 		<event version='2.0' uid='ANDROID-abc123' type='a-f-G-U-C' time='2025-01-01T12:00:00Z' start='2025-01-01T12:00:00Z' stale='2025-01-01T12:10:00Z' how='m-g'>
 		<point lat='37.7749' lon='-122.4194' hae='100.0' ce='9999999.0' le='9999999.0'/>
@@ -20,7 +20,7 @@ struct CoTXMLParserTests {
 		<track speed='5.0' course='180.0'/>
 		</detail>
 		</event>
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let msg = try CoTMessage.parseData(xml)
 		#expect(msg.uid == "ANDROID-abc123")
@@ -38,7 +38,7 @@ struct CoTXMLParserTests {
 	}
 
 	@Test func parse_chatMessage() throws {
-		let xml = """
+		let xml = Data("""
 		<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
 		<event version='2.0' uid='GeoChat.sender1.All Chat Rooms.msg-001' type='b-t-f' time='2025-01-01T12:00:00Z' start='2025-01-01T12:00:00Z' stale='2025-01-02T12:00:00Z' how='h-g-i-g-o'>
 		<point lat='0' lon='0' hae='9999999.0' ce='9999999.0' le='9999999.0'/>
@@ -50,7 +50,7 @@ struct CoTXMLParserTests {
 		<remarks>Hello from ATAK!</remarks>
 		</detail>
 		</event>
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let msg = try CoTMessage.parseData(xml)
 		#expect(msg.type == "b-t-f")
@@ -59,13 +59,13 @@ struct CoTXMLParserTests {
 	}
 
 	@Test func parse_minimalEvent() throws {
-		let xml = """
+		let xml = Data("""
 		<?xml version='1.0' encoding='UTF-8'?>
 		<event version='2.0' uid='test' type='a-f-G' time='2025-01-01T12:00:00Z' start='2025-01-01T12:00:00Z' stale='2025-01-01T12:10:00Z' how='m-g'>
 		<point lat='0' lon='0' hae='0' ce='0' le='0'/>
 		<detail/>
 		</event>
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let msg = try CoTMessage.parseData(xml)
 		#expect(msg.uid == "test")
@@ -81,20 +81,20 @@ struct CoTXMLParserTests {
 	}
 
 	@Test func parse_invalidXml_throws() {
-		let xml = "not xml at all".data(using: .utf8)!
+		let xml = Data("not xml at all".utf8)
 		#expect(throws: (any Error).self) {
 			try CoTMessage.parseData(xml)
 		}
 	}
 
 	@Test func parse_withFractionalSeconds() throws {
-		let xml = """
+		let xml = Data("""
 		<?xml version='1.0' encoding='UTF-8'?>
 		<event version='2.0' uid='frac-test' type='a-f-G' time='2025-06-15T10:30:45.123Z' start='2025-06-15T10:30:45.123Z' stale='2025-06-15T10:40:45.123Z' how='m-g'>
 		<point lat='37.0' lon='-122.0' hae='0' ce='0' le='0'/>
 		<detail/>
 		</event>
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let msg = try CoTMessage.parseData(xml)
 		#expect(msg.uid == "frac-test")
@@ -104,7 +104,7 @@ struct CoTXMLParserTests {
 	}
 
 	@Test func parse_rawDetailXML_preserved() throws {
-		let xml = """
+		let xml = Data("""
 		<?xml version='1.0' encoding='UTF-8'?>
 		<event version='2.0' uid='detail-test' type='a-u-G' time='2025-01-01T12:00:00Z' start='2025-01-01T12:00:00Z' stale='2025-01-01T12:10:00Z' how='h-e'>
 		<point lat='37.0' lon='-122.0' hae='0' ce='0' le='0'/>
@@ -114,7 +114,7 @@ struct CoTXMLParserTests {
 		<precisionlocation geopointsrc='GPS' altsrc='GPS'/>
 		</detail>
 		</event>
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let msg = try CoTMessage.parseData(xml)
 		#expect(msg.rawDetailXML != nil)
@@ -123,7 +123,7 @@ struct CoTXMLParserTests {
 	}
 
 	@Test func parse_statusBattery() throws {
-		let xml = """
+		let xml = Data("""
 		<?xml version='1.0' encoding='UTF-8'?>
 		<event version='2.0' uid='bat-test' type='a-f-G' time='2025-01-01T12:00:00Z' start='2025-01-01T12:00:00Z' stale='2025-01-01T12:10:00Z' how='m-g'>
 		<point lat='0' lon='0' hae='0' ce='0' le='0'/>
@@ -131,14 +131,14 @@ struct CoTXMLParserTests {
 		<status battery='42'/>
 		</detail>
 		</event>
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let msg = try CoTMessage.parseData(xml)
 		#expect(msg.status?.battery == 42)
 	}
 
 	@Test func parse_trackSpeedCourse() throws {
-		let xml = """
+		let xml = Data("""
 		<?xml version='1.0' encoding='UTF-8'?>
 		<event version='2.0' uid='track-test' type='a-f-G' time='2025-01-01T12:00:00Z' start='2025-01-01T12:00:00Z' stale='2025-01-01T12:10:00Z' how='m-g'>
 		<point lat='0' lon='0' hae='0' ce='0' le='0'/>
@@ -146,7 +146,7 @@ struct CoTXMLParserTests {
 		<track speed='25.5' course='90.0'/>
 		</detail>
 		</event>
-		""".data(using: .utf8)!
+		""".utf8)
 
 		let msg = try CoTMessage.parseData(xml)
 		#expect(msg.track?.speed == 25.5)

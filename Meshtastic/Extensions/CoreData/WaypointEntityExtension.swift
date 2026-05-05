@@ -59,9 +59,7 @@ extension WaypointEntity {
 extension WaypointEntity {
 	@MainActor
 	var mapCoordinate: CLLocationCoordinate2D {
-		get {
-			waypointCoordinate ?? LocationsHandler.DefaultLocation
-		}
+		waypointCoordinate ?? LocationsHandler.DefaultLocation
 	}
 
 	var mapTitle: String? {

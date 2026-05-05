@@ -67,7 +67,7 @@ struct UserList: View {
 	}
 }
 
-fileprivate struct FilteredUserList: View {
+private struct FilteredUserList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
 

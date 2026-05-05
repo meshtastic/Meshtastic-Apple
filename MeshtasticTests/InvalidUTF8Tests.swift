@@ -248,10 +248,8 @@ struct InvalidUTF8Tests {
 private extension Array where Element == UInt8 {
 	func findSubarray(_ target: [UInt8]) -> Range<Int>? {
 		guard target.count <= count else { return nil }
-		for i in 0...(count - target.count) {
-			if Array(self[i..<(i + target.count)]) == target {
-				return i..<(i + target.count)
-			}
+		for i in 0...(count - target.count) where Array(self[i..<(i + target.count)]) == target {
+			return i..<(i + target.count)
 		}
 		return nil
 	}

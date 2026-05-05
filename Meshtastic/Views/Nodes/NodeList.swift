@@ -187,7 +187,7 @@ struct NodeList: View {
 //  FilteredNodeList.swift
 //  Meshtastic
 //
-fileprivate struct FilteredNodeList: View {
+private struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
 	private var allNodes: [NodeInfoEntity]

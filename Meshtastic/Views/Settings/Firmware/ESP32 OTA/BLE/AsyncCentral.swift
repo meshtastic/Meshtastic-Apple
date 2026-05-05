@@ -51,7 +51,7 @@ extension AsyncCentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 	}
 
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
-						advertisementData: [String : Any], rssi RSSI: NSNumber) {
+	                    advertisementData: [String: Any], rssi RSSI: NSNumber) {
 		scanContinuation?.resume(returning: peripheral)
 		scanContinuation = nil
 		central.stopScan()
@@ -82,14 +82,12 @@ extension AsyncCentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-		if let error = error { characteristicContinuation?.resume(throwing: error) }
-		else { characteristicContinuation?.resume(returning: service.characteristics ?? []) }
+		if let error = error { characteristicContinuation?.resume(throwing: error) } else { characteristicContinuation?.resume(returning: service.characteristics ?? []) }
 		characteristicContinuation = nil
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-		if let error = error { notifyContinuation?.resume(throwing: error) }
-		else { notifyContinuation?.resume() }
+		if let error = error { notifyContinuation?.resume(throwing: error) } else { notifyContinuation?.resume() }
 		notifyContinuation = nil
 	}
 

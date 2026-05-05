@@ -128,7 +128,7 @@ struct NavigationStateExtendedTests {
 			(.firmwareUpdates, "firmwareUpdates"),
 			(.tak, "tak"),
 			(.takConfig, "takConfig"),
-			(.tools, "tools"),
+			(.tools, "tools")
 		]
 		for (setting, expected) in cases {
 			#expect(setting.rawValue == expected)
@@ -364,7 +364,7 @@ struct TriggerTypesNameTests {
 
 	@Test func allCases_haveProtoValues() {
 		for trigger in TriggerTypes.allCases {
-			let _ = trigger.protoEnumValue()
+			_ = trigger.protoEnumValue()
 		}
 	}
 }

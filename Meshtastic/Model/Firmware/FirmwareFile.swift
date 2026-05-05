@@ -288,4 +288,3 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		hasher.combine(architecture)
 	}
 }
-

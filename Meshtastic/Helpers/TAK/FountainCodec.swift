@@ -540,10 +540,8 @@ final class FountainCodec {
 		let cdf = buildRobustSolitonCDF(K: K)
 		let u = rng.nextDouble()
 
-		for d in 1...K {
-			if u <= cdf[d] {
-				return d
-			}
+		for d in 1...K where u <= cdf[d] {
+			return d
 		}
 		return K
 	}

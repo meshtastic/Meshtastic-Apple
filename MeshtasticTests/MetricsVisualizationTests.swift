@@ -110,7 +110,7 @@ struct MetricsColumnListCollectionTests {
 		let list = MetricsColumnList(columns: [
 			makeColumn(id: "a", visible: true),
 			makeColumn(id: "b", visible: false),
-			makeColumn(id: "c", visible: true),
+			makeColumn(id: "c", visible: true)
 		])
 		#expect(list.visible.count == 2)
 	}
@@ -136,7 +136,7 @@ struct MetricsColumnListCollectionTests {
 	@Test func columnWithId_found() {
 		let list = MetricsColumnList(columns: [
 			makeColumn(id: "a"),
-			makeColumn(id: "b"),
+			makeColumn(id: "b")
 		])
 		let found = list.column(withId: "b")
 		#expect(found?.id == "b")
@@ -151,7 +151,7 @@ struct MetricsColumnListCollectionTests {
 		let list = MetricsColumnList(columns: [
 			makeColumn(id: "a", visible: true),
 			makeColumn(id: "b", visible: false),
-			makeColumn(id: "c", visible: true),
+			makeColumn(id: "c", visible: true)
 		])
 		#expect(list.gridItems.count == 2)
 	}

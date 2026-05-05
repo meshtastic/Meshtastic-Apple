@@ -161,7 +161,7 @@ struct SettingsNavigationStateTests {
 			(.firmwareUpdates, "firmwareUpdates"),
 			(.tak, "tak"),
 			(.takConfig, "takConfig"),
-			(.tools, "tools"),
+			(.tools, "tools")
 		]
 		for (state, rawValue) in allCases {
 			#expect(state.rawValue == rawValue)

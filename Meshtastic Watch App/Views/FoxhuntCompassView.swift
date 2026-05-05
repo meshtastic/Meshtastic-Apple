@@ -313,13 +313,13 @@ private struct WatchCompassLabel {
 	let isCardinal: Bool
 
 	static let allLabels: [WatchCompassLabel] = [
-		WatchCompassLabel(degrees: 0,   text: "N",  isCardinal: true),
-		WatchCompassLabel(degrees: 45,  text: "NE", isCardinal: false),
-		WatchCompassLabel(degrees: 90,  text: "E",  isCardinal: true),
+		WatchCompassLabel(degrees: 0, text: "N", isCardinal: true),
+		WatchCompassLabel(degrees: 45, text: "NE", isCardinal: false),
+		WatchCompassLabel(degrees: 90, text: "E", isCardinal: true),
 		WatchCompassLabel(degrees: 135, text: "SE", isCardinal: false),
-		WatchCompassLabel(degrees: 180, text: "S",  isCardinal: true),
+		WatchCompassLabel(degrees: 180, text: "S", isCardinal: true),
 		WatchCompassLabel(degrees: 225, text: "SW", isCardinal: false),
-		WatchCompassLabel(degrees: 270, text: "W",  isCardinal: true),
+		WatchCompassLabel(degrees: 270, text: "W", isCardinal: true),
 		WatchCompassLabel(degrees: 315, text: "NW", isCardinal: false)
 	]
 }

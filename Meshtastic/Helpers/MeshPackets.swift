@@ -696,8 +696,6 @@ actor MeshPackets {
 						fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 					}
 					
-	
-					
 				} else {
 					return
 				}

@@ -94,7 +94,7 @@ extension URL {
 		 request.timeoutInterval = timeout
 		 
 		 let task = URLSession.shared.dataTask(with: request) { _, response, error in
-			 if let _ = error {
+			 if error != nil {
 				 completion(false)
 				 return
 			 }

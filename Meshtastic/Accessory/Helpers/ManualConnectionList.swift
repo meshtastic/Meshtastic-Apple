@@ -18,9 +18,7 @@ public class ManualConnectionList: ObservableObject {
 	}
 	
 	var connectionsList: [Device] {
-		get {
-			return _list
-		}
+		_list
 	}
 	
 	func insert(device: Device) {

@@ -103,16 +103,16 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	}
 
 	func readerSession(_ session: NFCNDEFReaderSession,
-					   didInvalidateWithError error: Error) {
+	                   didInvalidateWithError error: Error) {
 		logger.error("NFC session invalidated: \(error.localizedDescription)")
 	}
 
 	func readerSession(_ session: NFCNDEFReaderSession,
-					   didDetectNDEFs messages: [NFCNDEFMessage]) {
+	                   didDetectNDEFs messages: [NFCNDEFMessage]) {
 	}
 
 	func readerSession(_ session: NFCNDEFReaderSession,
-					   didDetect tags: [NFCNDEFTag]) {
+	                   didDetect tags: [NFCNDEFTag]) {
 
 		guard tags.count == 1, let tag = tags.first else {
 			session.alertMessage = "More than one tag detected. Please present only one."
