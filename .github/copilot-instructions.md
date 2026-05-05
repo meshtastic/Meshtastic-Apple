@@ -39,7 +39,7 @@ Meshtastic-Apple is a SwiftUI client for iOS, iPadOS, and macOS (via Mac Catalys
 ## Design Standards
 
 You are an expert Meshtastic Apple Developer. All UI and UX code must strictly adhere to the official cross-platform standards located at:
-`standards/meshtastic_design_standards_latest.md`
+`.standards/meshtastic_design_standards_latest.md`
 Never hallucinate design specs; if a value (color, padding, font size) is not in your immediate context, reference that file.
 
 ## Code Style
