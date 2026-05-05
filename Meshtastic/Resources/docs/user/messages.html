@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages &amp; Channels</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Messages &amp; Channels</h1>
+<p>Meshtastic uses a channel system for group broadcasts and direct messages for private one-to-one conversations.</p>
+<h2>Channels</h2>
+<h3>Channel Index</h3>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0</strong> (primary circle)</td>
+<td>Primary channel — broadcast packets are sent here. Location data is broadcast from the first channel where it is enabled (firmware 2.7+).</td>
+</tr>
+<tr>
+<td><strong>1–7</strong></td>
+<td>Secondary channels — separate messaging groups, each secured by their own key.</td>
+</tr>
+</tbody>
+</table>
+<h3>Channel Security</h3>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔒 Green lock</td>
+<td><strong>Securely Encrypted</strong> — the channel uses a 128-bit or 256-bit AES key.</td>
+</tr>
+<tr>
+<td>🔓 Yellow lock</td>
+<td><strong>Not Securely Encrypted</strong> — the channel uses no key or a 1-byte known key, but is not used for precise location data.</td>
+</tr>
+<tr>
+<td>🔓 Red lock</td>
+<td><strong>Insecure with Location</strong> — the channel is not securely encrypted and is used for precise location data.</td>
+</tr>
+<tr>
+<td>🔓⚠️ Red lock + warning</td>
+<td><strong>Insecure with MQTT</strong> — not securely encrypted and precise location data is being uplinked to the internet via MQTT.</td>
+</tr>
+</tbody>
+</table>
+<p><img src="../assets/screenshots/lockLegend.png" alt="Channel security lock legend" /></p>
+<hr />
+<div class="tips-callout"><strong>Tip — Share Channels</strong>
+A QR code contains the LoRa config and channels needed for radios to communicate. Use <strong>Replace Channels</strong> to overwrite or <strong>Add Channels</strong> to append to existing channels.</div>
+<div class="tips-callout"><strong>Tip — Manage Channels</strong>
+The primary channel handles broadcast traffic. Add secondary channels for separate messaging groups, each secured by their own key.</div>
+<div class="tips-callout"><strong>Tip — Administration Enabled</strong>
+Select a node from the drop-down to manage connected or remote devices.</div>
+<hr />
+<h2>Direct Messages</h2>
+<h3>Contacts</h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>⭐ Yellow star</td>
+<td><strong>Favorites</strong> — favorited contacts and nodes with recent messages appear at the top of the contact list.</td>
+</tr>
+<tr>
+<td>👆 Long press</td>
+<td><strong>Long Press Actions</strong> — long press to favorite or mute the contact, or delete a conversation.</td>
+</tr>
+</tbody>
+</table>
+<h3>Encryption</h3>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔓 Yellow lock</td>
+<td><strong>Shared Key</strong> — direct messages are using the shared key for the channel.</td>
+</tr>
+<tr>
+<td>🔒 Green lock</td>
+<td><strong>Public Key Encryption</strong> — direct messages use the public key infrastructure for encryption. Requires firmware 2.5 or later.</td>
+</tr>
+<tr>
+<td>🗝️ Red slash key</td>
+<td><strong>Public Key Mismatch</strong> — the most recent public key for this node does not match the previously recorded key. Verify who you are messaging with by comparing public keys in person or over the phone.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<div class="tips-callout"><strong>Tip — Messages</strong>
+Send channel broadcasts and direct messages. Long press any message for actions like copy, reply, tapback, and delivery details.</div>
+<hr />
+<h2>Message Status</h2>
+<table>
+<thead>
+<tr>
+<th>Colour</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grey</td>
+<td>Successful delivery.</td>
+</tr>
+<tr>
+<td>Orange bubble</td>
+<td><strong>Acknowledged by another node</strong> — message was relayed but not confirmed by the final recipient.</td>
+</tr>
+</tbody>
+</table>
+<p>The following errors may appear on a message bubble (red unless noted):</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No Route</td>
+<td>No route was found to the destination node.</td>
+</tr>
+<tr>
+<td>Got NAK</td>
+<td>The destination node explicitly rejected the message.</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>The message timed out waiting for acknowledgement.</td>
+</tr>
+<tr>
+<td>No Interface</td>
+<td>The radio interface is unavailable.</td>
+</tr>
+<tr>
+<td>Max Retransmit</td>
+<td>Maximum retransmission attempts reached without success.</td>
+</tr>
+<tr>
+<td>No Channel</td>
+<td>The specified channel does not exist on the destination.</td>
+</tr>
+<tr>
+<td>Too Large</td>
+<td>The packet exceeds the maximum allowed size.</td>
+</tr>
+<tr>
+<td>No Response</td>
+<td>No response received from the destination.</td>
+</tr>
+<tr>
+<td>PKI Failed</td>
+<td>Public key infrastructure encryption/decryption failed.</td>
+</tr>
+<tr>
+<td>Bad Request</td>
+<td>Malformed packet rejected by the destination.</td>
+</tr>
+<tr>
+<td>Not Authorized</td>
+<td>The destination node refused the request due to permissions.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Grey indicates successful delivery. Orange indicates a retryable error. Red indicates a permanent failure that will not succeed on retry.</p>
+</blockquote>
+<p><img src="../assets/screenshots/ackErrors.png" alt="Message acknowledgement error indicators" /></p>
+</body>
+</html>

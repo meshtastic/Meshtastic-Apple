@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwiftData</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>SwiftData</h1>
+<p>The app uses SwiftData exclusively for persistence. Do not introduce SQLite, Realm, Core Data, or any other persistence library.</p>
+<h2>ModelContainer Setup</h2>
+<p><code>PersistenceController.shared</code> (in <code>Meshtastic/Persistence/PersistenceController.swift</code>) creates and owns the <code>ModelContainer</code>. It is initialised once at app launch in <code>MeshtasticApp.swift</code> and injected via <code>.modelContainer(PersistenceController.shared.container)</code>.</p>
+<h2>Using the ModelContext in Views</h2>
+<pre><code class="language-swift">struct MyView: View {
+    @Environment(\.modelContext) private var context
+    @Query private var nodes: [NodeInfoEntity]
+
+    var body: some View { ... }
+}
+</code></pre>
+<p>Use <code>@Query</code> for data that drives the view. Use <code>context.insert(_:)</code> / <code>context.delete(_:)</code> for mutations. Mutations on the main context are safe on the main actor.</p>
+<h2>Background Writes</h2>
+<p>For writes triggered by incoming radio packets (off the main thread), use the <code>MeshPackets</code> <code>@ModelActor</code>:</p>
+<pre><code class="language-swift">let actor = MeshPackets(modelContainer: PersistenceController.shared.container)
+await actor.savePacket(packet)
+</code></pre>
+<p>Never write to the main <code>ModelContext</code> from a background thread.</p>
+<h2>Model Types</h2>
+<p>All model types live in <code>Meshtastic/Model/</code>. Each type is decorated with <code>@Model</code>:</p>
+<pre><code class="language-swift">@Model
+final class NodeInfoEntity {
+    var num: Int64
+    var longName: String?
+    // ...
+}
+</code></pre>
+<p>Key model types:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NodeInfoEntity</code></td>
+<td>A node heard on the mesh</td>
+</tr>
+<tr>
+<td><code>MessageEntity</code></td>
+<td>A channel or direct message</td>
+</tr>
+<tr>
+<td><code>PositionEntity</code></td>
+<td>A GPS position update</td>
+</tr>
+<tr>
+<td><code>TelemetryEntity</code></td>
+<td>Device/environment sensor data</td>
+</tr>
+<tr>
+<td><code>TraceRouteEntity</code></td>
+<td>A recorded trace route</td>
+</tr>
+<tr>
+<td><code>WaypointEntity</code></td>
+<td>A shared map waypoint</td>
+</tr>
+</tbody>
+</table>
+<h2>Schema Migrations</h2>
+<p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration:</p>
+<ol>
+<li>Add a new <code>VersionedSchema</code> in <code>MeshtasticSchema.swift</code>.</li>
+<li>Add a <code>MigrationStage</code> to the <code>SchemaMigrationPlan</code>.</li>
+<li>Use <code>.lightweight</code> for additive changes (new optional properties); use <code>.custom</code> for destructive changes.</li>
+</ol>
+<pre><code class="language-swift">enum MeshtasticSchemaV2: VersionedSchema {
+    static var versionIdentifier = Schema.Version(2, 0, 0)
+    static var models: [any PersistentModel.Type] = [NodeInfoEntity.self, ...]
+}
+
+// In the migration plan:
+.lightweight(fromVersion: MeshtasticSchemaV1.self, toVersion: MeshtasticSchemaV2.self)
+</code></pre>
+<p><strong>Never delete a <code>VersionedSchema</code>.</strong> Migration history must be preserved.</p>
+<h2>Query Helpers</h2>
+<p><code>QueryCoreData.swift</code> contains helper functions for common fetches:</p>
+<pre><code class="language-swift">let node = getNodeInfo(id: nodeNum, context: context)
+</code></pre>
+<p><code>UpdateCoreData.swift</code> contains helpers for upsert patterns:</p>
+<pre><code class="language-swift">upsertNode(packet: packet, context: context)
+</code></pre>
+<p>Prefer these helpers over direct queries to keep logic consistent.</p>
+</body>
+</html>

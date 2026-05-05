@@ -1,0 +1,226 @@
+/* Meshtastic Documentation CSS
+ * Light/dark support via prefers-color-scheme.
+ * Colours sourced from Meshtastic Client Design Standards v1.3.
+ * Used by cmark-gfm generated HTML pages (in-app bundle + GitHub Pages).
+ */
+
+/* ── Light mode (Meshtastic palette: Neutral 50 bg, Neutral 800 text) ── */
+:root {
+    --bg:          #F5F6FA; /* Neutral 50 */
+    --surface:     #FFFFFF; /* surfaceContainerLowest */
+    --text:        #2C2D3C; /* Neutral 800 */
+    --text-muted:  #555668; /* Neutral 600 */
+    --link:        #5C6BC0; /* Blue 600 — Info (WCAG-safe on light) */
+    --link-hover:  #2855A8; /* Blue 700 */
+    --code-bg:     #ECEDF3; /* Neutral 100 */
+    --code-text:   #2C2D3C; /* Neutral 800 */
+    --border:      #B8BAC8; /* Neutral 300 */
+    --divider:     #D5D6E0; /* Neutral 200 */
+    --callout-bg:  #E5FCEE; /* Green 100 — success tint for tips */
+    --callout-border: #3FB86D; /* Green 600 */
+    --pre-bg:      #ECEDF3; /* Neutral 100 */
+    --table-head:  #D5D6E0; /* Neutral 200 */
+    --table-alt:   #F5F6FA; /* Neutral 50 */
+    --warning-bg:  #FFF3E0; /* Warning Light */
+    --warning-border: #E8A33E; /* Warning */
+}
+
+/* ── Dark mode (Meshtastic palette: Neutral 900 bg, Neutral 100 text) ── */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg:          #1A1B26; /* Neutral 900 */
+        --surface:     #0F1017; /* Neutral 950 / surfaceContainerLowest dark */
+        --text:        #ECEDF3; /* Neutral 100 */
+        --text-muted:  #B8BAC8; /* Neutral 300 */
+        --link:        #B0BFF0; /* Blue 300 — WCAG-safe on dark */
+        --link-hover:  #D0D8F5; /* Blue 200 */
+        --code-bg:     #2C2D3C; /* Neutral 800 */
+        --code-text:   #ECEDF3; /* Neutral 100 */
+        --border:      #444660; /* NV 700 */
+        --divider:     #3D3E50; /* Neutral 700 */
+        --callout-bg:  #003D1A; /* Green 900 */
+        --callout-border: #67EA94; /* Green 500 / brand accent */
+        --pre-bg:      #2C2D3C; /* Neutral 800 */
+        --table-head:  #2C2D3C; /* Neutral 800 */
+        --table-alt:   #242533; /* surfaceContainer dark */
+        --warning-bg:  #2C2D3C;
+        --warning-border: #E8A33E;
+    }
+}
+
+/* ── Base ── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px; /* Design Standards §5: default body 16px */
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    font-size: 1rem;
+    line-height: 1.65;
+    margin: 0;
+    padding: 16px 20px 40px;
+    max-width: 780px;
+}
+
+/* ── Headings ── */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text);
+    line-height: 1.3;
+    margin-top: 1.5em;
+    margin-bottom: 0.4em;
+    font-weight: 600;
+}
+
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.375rem; border-bottom: 1px solid var(--divider); padding-bottom: 0.25em; }
+h3 { font-size: 1.125rem; }
+
+/* ── Links ── */
+a {
+    color: var(--link);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+}
+
+/* ── Paragraphs ── */
+p {
+    margin: 0.75em 0;
+}
+
+/* ── Code ── */
+code {
+    background-color: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 4px;
+    padding: 0.15em 0.4em;
+    font-size: 0.9em;
+    font-family: "SF Mono", Menlo, Monaco, "Courier New", monospace;
+}
+
+pre {
+    background-color: var(--pre-bg);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin: 1em 0;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: 0.875rem;
+}
+
+/* ── Blockquote ── */
+blockquote {
+    border-left: 4px solid var(--border);
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    color: var(--text-muted);
+}
+
+/* ── Tables ── */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    font-size: 0.9375rem;
+}
+
+th {
+    background-color: var(--table-head);
+    color: var(--text);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+}
+
+td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--divider);
+    vertical-align: top;
+}
+
+tr:nth-child(even) td {
+    background-color: var(--table-alt);
+}
+
+/* ── Task lists ── */
+ul.contains-task-list {
+    padding-left: 1.5em;
+    list-style: none;
+}
+
+.task-list-item {
+    margin: 0.3em 0;
+}
+
+/* ── Images ── */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    margin: 1em 0;
+}
+
+/* ── Horizontal rule ── */
+hr {
+    border: none;
+    border-top: 1px solid var(--divider);
+    margin: 1.5em 0;
+}
+
+/* ── Tips callout ── */
+.tips-callout {
+    background-color: var(--callout-bg);
+    border-left: 4px solid var(--callout-border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 1.25em 0;
+}
+
+.tips-callout strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--callout-border);
+}
+
+/* ── Warning callout ── */
+.warning-callout {
+    background-color: var(--warning-bg);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 1.25em 0;
+}
+
+.warning-callout strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--warning-border);
+}
+
+/* ── Pre-release warning banner ── */
+.pre-release-banner {
+    background-color: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+}

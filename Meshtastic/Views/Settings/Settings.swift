@@ -386,6 +386,14 @@ struct Settings: View {
 					}
 				}
 
+				NavigationLink(value: SettingsNavigationState.helpDocs) {
+					Label {
+						Text("Help & Documentation")
+					} icon: {
+						Image(systemName: "book.pages")
+					}
+				}
+
 				NavigationLink(value: SettingsNavigationState.appSettings) {
 					Label {
 						Text("App Settings")
@@ -587,6 +595,8 @@ struct Settings: View {
 					TAKModuleConfig(node: nodes.first(where: { $0.num == selectedNode }))
 				case .localMeshDiscovery:
 					DiscoveryScanView()
+				case .helpDocs:
+					DocBrowserView()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

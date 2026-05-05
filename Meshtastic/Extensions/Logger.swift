@@ -42,6 +42,9 @@ extension Logger {
 	/// All logs related to Local Mesh Discovery scans
 	static let discovery = Logger(subsystem: subsystem, category: "📡 Discovery")
 
+	/// All logs related to the documentation browser and AI assistant
+	static let docs = Logger(subsystem: subsystem, category: "📖 Docs")
+
 	/// Fetch from the logstore
 	static public func fetch(predicateFormat: String) async throws -> [OSLogEntryLog] {
 

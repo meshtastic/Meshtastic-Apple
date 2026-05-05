@@ -740,3 +740,122 @@ struct NodeListItemCompactSnapshotTests {
 		)
 	}
 }
+
+// MARK: - DocBrowserView Snapshot Tests
+
+@Suite("DocBrowserViewSnapshotTests")
+struct DocBrowserViewSnapshotTests {
+
+	@Test("Empty state renders without crash")
+	@MainActor
+	func emptyStateRenders() async {
+		// DocBundle.shared will have no pages in a test target (no bundle resources).
+		// This test validates the ContentUnavailableView fallback path renders correctly.
+		let view = DocBrowserView()
+		let image = renderImage(view, width: 390, height: 600)
+		let cgImage = image.cgImage
+		#expect(cgImage != nil)
+		if let cg = cgImage {
+			#expect(cg.width > 0)
+			#expect(cg.height > 0)
+		}
+	}
+}
+
+// MARK: - Node Status Icon Snapshots
+
+@Suite("NodeStatusIcon Snapshots")
+struct NodeStatusIconSnapshotTests {
+
+	@Test("Online indicator")
+	@MainActor
+	func nodeOnline() async {
+		let view = Image(systemName: "checkmark.circle.fill")
+			.foregroundColor(Color(uiColor: .systemGreen))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "nodeOnline")
+	}
+
+	@Test("Idle / sleeping indicator")
+	@MainActor
+	func nodeIdle() async {
+		let view = Image(systemName: "moon.circle.fill")
+			.foregroundColor(Color(uiColor: .systemOrange))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "nodeIdle")
+	}
+
+	@Test("Hops away badge — 3 hops")
+	@MainActor
+	func hopsAway() async {
+		let view = DefaultIconCompact(systemName: "3.square")
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "hopsAway")
+	}
+
+	@Test("Channel badge — channel 2")
+	@MainActor
+	func channelBadge() async {
+		let view = DefaultIconCompact(systemName: "2.circle.fill")
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "channelBadge")
+	}
+}
+
+// MARK: - Channel Lock Icon Snapshots
+
+@Suite("ChannelLockIcon Snapshots")
+struct ChannelLockIconSnapshotTests {
+
+	@Test("Lock closed — encrypted (green)")
+	@MainActor
+	func lockClosed() async {
+		let view = Image(systemName: "lock.fill")
+			.foregroundColor(Color(uiColor: .systemGreen))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "lockClosed")
+	}
+
+	@Test("Lock open — unencrypted (yellow)")
+	@MainActor
+	func lockOpen() async {
+		let view = Image(systemName: "lock.open.fill")
+			.foregroundColor(Color(uiColor: .systemYellow))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "lockOpen")
+	}
+
+	@Test("Lock open red — location exposed")
+	@MainActor
+	func lockOpenRed() async {
+		let view = Image(systemName: "lock.open.fill")
+			.foregroundColor(Color(uiColor: .systemRed))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "lockOpenRed")
+	}
+
+	@Test("Lock open MQTT — insecure with MQTT uplink")
+	@MainActor
+	func lockOpenMqtt() async {
+		let view = Image(systemName: "lock.open.trianglebadge.exclamationmark.fill")
+			.foregroundColor(Color(uiColor: .systemRed))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "lockOpenMqtt")
+	}
+
+	@Test("Key slash — PKI mismatch")
+	@MainActor
+	func keySlash() async {
+		let view = Image(systemName: "key.slash.fill")
+			.foregroundColor(Color(uiColor: .systemRed))
+			.font(.title2)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 44, named: "keySlash")
+	}
+}

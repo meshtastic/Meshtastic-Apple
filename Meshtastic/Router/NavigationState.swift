@@ -56,6 +56,7 @@ enum SettingsNavigationState: String {
 	case takConfig
 	case tools
 	case localMeshDiscovery
+	case helpDocs
 }
 
 struct NavigationState: Hashable {

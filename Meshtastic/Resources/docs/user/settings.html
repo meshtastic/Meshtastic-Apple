@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Settings</h1>
+<p>The Settings tab lets you configure the app and your connected Meshtastic radio.</p>
+<h2>App Settings</h2>
+<p>General app preferences including map style, notification behaviour, and theme. These affect only the app — not the radio.</p>
+<h2>Radio Configuration</h2>
+<p>Radio configuration requires a connected node. Select your node from the <strong>Configure</strong> section if you have multiple nodes.</p>
+<h3>LoRa</h3>
+<p>LoRa settings control how your radio communicates on the mesh:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Region</td>
+<td>Your geographical region. <strong>Must be set correctly</strong> — using the wrong region is illegal and prevents communication with local nodes.</td>
+</tr>
+<tr>
+<td>Modem Preset</td>
+<td>Speed/range trade-off. Most users should use Long Fast or Long Slow.</td>
+</tr>
+<tr>
+<td>Hop Limit</td>
+<td>The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic.</td>
+</tr>
+<tr>
+<td>Frequency Slot</td>
+<td>Fine-tune the exact frequency within your region.</td>
+</tr>
+</tbody>
+</table>
+<h3>Channels</h3>
+<p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
+<h3>Security</h3>
+<p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
+<h3>User</h3>
+<p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
+<h3>Bluetooth</h3>
+<p>BLE radio settings including PIN mode and power saving. Changes apply on next radio restart.</p>
+<h3>Device</h3>
+<p>Device role, serial output, debug log streaming, and node info broadcast interval.</p>
+<h3>Display</h3>
+<p>Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.</p>
+<h3>Network</h3>
+<p>Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).</p>
+<h3>Position</h3>
+<p>GPS update interval, position precision, and smart position broadcasting. Enable <strong>Broadcast Position</strong> to share your location with the mesh.</p>
+<h3>Power</h3>
+<p>Battery saving profiles, sleep modes, and minimum wake time. Critical for solar-powered router nodes.</p>
+<h2>Module Configuration</h2>
+<p>Optional feature modules. Only available when your connected node supports the module.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ambient Lighting</td>
+<td>Control NeoPixel/LED lighting on supported hardware.</td>
+</tr>
+<tr>
+<td>Canned Messages</td>
+<td>Pre-programmed message shortcuts accessible from the device buttons.</td>
+</tr>
+<tr>
+<td>Detection Sensor</td>
+<td>Configure PIR motion or contact sensors.</td>
+</tr>
+<tr>
+<td>External Notification</td>
+<td>Buzzer or LED alerts for incoming messages.</td>
+</tr>
+<tr>
+<td>MQTT</td>
+<td>Uplink/downlink messages to an MQTT broker for internet bridging.</td>
+</tr>
+<tr>
+<td>Range Test</td>
+<td>Automated range testing with position logging.</td>
+</tr>
+<tr>
+<td>Pax Counter</td>
+<td>Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection.</td>
+</tr>
+<tr>
+<td>Ringtone</td>
+<td>Custom RTTTL melodies for notification tones.</td>
+</tr>
+<tr>
+<td>Store &amp; Forward</td>
+<td>Store packets for nodes that are temporarily offline.</td>
+</tr>
+<tr>
+<td>Serial</td>
+<td>UART serial output for integration with other hardware.</td>
+</tr>
+<tr>
+<td>Telemetry</td>
+<td>Device, environment, and air-quality sensor reporting.</td>
+</tr>
+</tbody>
+</table>
+<h2>Firmware Updates</h2>
+<p>Check for and apply OTA firmware updates to your connected radio directly from the app. See <a href="firmware.md">Firmware Updates</a> for full details.</p>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firmware Updates</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Firmware Updates</h1>
+<p>The app can check for and install Meshtastic firmware updates directly on your connected radio over Bluetooth.</p>
+<h2>Checking for Updates</h2>
+<ol>
+<li>Connect to your radio.</li>
+<li>Go to <strong>Settings → Firmware Updates</strong>.</li>
+<li>The app shows the firmware version currently running on your radio and the latest stable release available from GitHub.</li>
+</ol>
+<h2>Installing an Update</h2>
+<p><img src="../assets/screenshots/progressZero.png" alt="Firmware update progress — 0%" />
+<img src="../assets/screenshots/progressHalf.png" alt="Firmware update progress — 50%" />
+<img src="../assets/screenshots/progressComplete.png" alt="Firmware update progress — complete" />
+<img src="../assets/screenshots/progressError.png" alt="Firmware update error" /></p>
+<ol>
+<li>Tap <strong>Update Firmware</strong> when a newer version is available.</li>
+<li>The app downloads the correct firmware binary for your hardware.</li>
+<li>The radio enters update mode (DFU) and the new firmware is transferred over BLE.</li>
+<li>The radio reboots automatically when the update completes.</li>
+</ol>
+<p><strong>Do not close the app or move out of Bluetooth range during a firmware update.</strong></p>
+<h2>Update Channels</h2>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stable</td>
+<td>Recommended for most users. Tested releases.</td>
+</tr>
+<tr>
+<td>Alpha</td>
+<td>Early access — may contain bugs. Use on secondary/test devices only.</td>
+</tr>
+</tbody>
+</table>
+<p>Select the update channel in <strong>Settings → App Settings → Firmware Channel</strong>.</p>
+<h2>Troubleshooting</h2>
+<p><strong>Update fails mid-way</strong></p>
+<ul>
+<li>Keep the radio within 1–2 metres of your phone during the update.</li>
+<li>If the radio appears bricked after a failed update, it can usually be recovered using the <a href="https://flasher.meshtastic.org/">Meshtastic Flasher</a> on a computer.</li>
+</ul>
+<p><img src="../assets/screenshots/invalidVersion.png" alt="Incompatible firmware version warning" /></p>
+<p><strong>Radio not appearing in firmware list</strong></p>
+<ul>
+<li>The firmware update feature requires a connected radio (BLE or TCP).</li>
+<li>Some older radios do not support OTA updates. Check the <a href="https://meshtastic.org/docs/hardware/">hardware compatibility list</a>.</li>
+</ul>
+<p><strong>Version shown as unknown</strong></p>
+<ul>
+<li>Ensure the radio has fully connected and synced (usually takes 5–10 seconds after BLE connection is established).</li>
+</ul>
+</body>
+</html>

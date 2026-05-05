@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bluetooth Device Connection</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Bluetooth Device Connection</h1>
+<p>The Meshtastic app connects to your radio over Bluetooth Low Energy (BLE). You can manage multiple radios and switch between them without re-pairing.</p>
+<h2>Connecting a Radio</h2>
+<ol>
+<li>Power on your Meshtastic radio.</li>
+<li>Open the app and tap the <strong>Connect</strong> tab.</li>
+<li>Tap <strong>Scan</strong> to discover nearby devices.</li>
+<li>Tap your device name in the list to connect.</li>
+</ol>
+<p>The app remembers your preferred device and reconnects automatically when the radio is in range.</p>
+<h2>Disconnecting a Radio</h2>
+<p>Swipe left on a connected radio in the Connect view and tap <strong>Disconnect</strong>. The radio continues operating on the mesh — it just stops syncing with the app.</p>
+<h2>Live Activity</h2>
+<p>Long press a connected radio row to start a Live Activity (iOS 16.2+). The Live Activity shows mesh status on your Lock Screen and in Dynamic Island.</p>
+<h2>Managing Multiple Radios</h2>
+<p>You can pair multiple radios but only one is active at a time. Switch between them by tapping a different device in the Connect view.</p>
+<h2>Connection Status Icons</h2>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bluetooth wave (green)</td>
+<td>Connected via BLE</td>
+</tr>
+<tr>
+<td>Bluetooth wave (orange)</td>
+<td>Reconnecting</td>
+</tr>
+<tr>
+<td>Wi-Fi symbol</td>
+<td>Connected via TCP/IP</td>
+</tr>
+<tr>
+<td>USB symbol</td>
+<td>Connected via serial (macOS)</td>
+</tr>
+</tbody>
+</table>
+<h2>Troubleshooting</h2>
+<p><strong>Radio not appearing in the list</strong></p>
+<ul>
+<li>Ensure Bluetooth is enabled in iOS Settings → Bluetooth.</li>
+<li>Move within 10 metres of the radio.</li>
+<li>Restart the radio.</li>
+</ul>
+<p><strong>Connection drops repeatedly</strong></p>
+<ul>
+<li>Check battery level on the radio.</li>
+<li>Try forgetting the device in iOS Settings → Bluetooth and reconnecting.</li>
+</ul>
+<p><strong>App asks for Bluetooth permission</strong></p>
+<ul>
+<li>Grant permission in iOS Settings → Privacy &amp; Security → Bluetooth → Meshtastic.</li>
+</ul>
+<hr />
+<div class="tips-callout"><strong>Tip — Connected Radio</strong>
+Swipe left to disconnect. Long press to start the Live Activity.</div>
+</body>
+</html>

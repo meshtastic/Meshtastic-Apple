@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TAK Integration</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>TAK Integration</h1>
+<p>The Meshtastic app supports Team Awareness Kit (TAK) integration, enabling interoperability with ATAK (Android Team Awareness Kit), iTAK, and other CoT (Cursor-on-Target) compatible systems.</p>
+<h2>What is TAK?</h2>
+<p>TAK is a situational awareness platform widely used in tactical, emergency management, and outdoor recreation contexts. It displays the positions and status of team members on a shared map. Meshtastic bridges TAK users over LoRa mesh radio without requiring cellular or internet connectivity.</p>
+<h2>Supported Device Roles</h2>
+<p>TAK integration works with two device roles:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TAK</td>
+<td>Full TAK role — sends CoT position reports and can relay TAK data packets.</td>
+</tr>
+<tr>
+<td>TAK Tracker</td>
+<td>Lightweight position-only TAK role. Lower power consumption, no packet relay.</td>
+</tr>
+</tbody>
+</table>
+<p>Set the device role in <strong>Settings → Device</strong>.</p>
+<h2>TAK Server Configuration</h2>
+<ol>
+<li>Go to <strong>Settings → TAK Server</strong>.</li>
+<li>Enter your TAK server address (IP or hostname) and port.</li>
+<li>Enable <strong>CoT Streaming</strong> to forward received mesh position data to the TAK server.</li>
+</ol>
+<h2>CoT Message Format</h2>
+<p>Meshtastic sends CoT (Cursor-on-Target) XML messages. Position packets received from the mesh are converted to CoT atoms and forwarded to the configured TAK server. The app supports:</p>
+<ul>
+<li>CoT type <code>a-f-G-U-C</code> (friendly ground unit)</li>
+<li>Position (latitude, longitude, altitude, speed, heading)</li>
+<li>Node callsign mapped from the Meshtastic long name</li>
+<li>PLI (Position Location Information) updates at the configured interval</li>
+</ul>
+<h2>TAK Module Configuration</h2>
+<p>Go to <strong>Settings → TAK Module</strong> to configure:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CoT PLI Broadcast Interval</td>
+<td>How often position reports are sent to the mesh.</td>
+</tr>
+<tr>
+<td>CoT Message Interval</td>
+<td>Minimum interval between CoT forwards to the TAK server.</td>
+</tr>
+<tr>
+<td>ATAK-D Rebroadcast</td>
+<td>Forward received ATAK-D packets to the TAK server.</td>
+</tr>
+</tbody>
+</table>
+<h2>Requirements</h2>
+<ul>
+<li>Firmware 2.3 or later on your radio</li>
+<li>A running TAK server (e.g., TAK Server, FreeTAKServer, or TAKX) on your local network</li>
+<li>Device configured with TAK or TAK Tracker role</li>
+</ul>
+</body>
+</html>
