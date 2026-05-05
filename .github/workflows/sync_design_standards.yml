@@ -25,7 +25,7 @@ jobs:
         mkdir -p .standards
         curl -sSfL \
           "https://raw.githubusercontent.com/meshtastic/design/master/standards/meshtastic_design_standards_latest.md" \
-          -o .standards/meshtastic_design_standards.md
+          -o .standards/meshtastic_design_standards_latest.md
 
     - name: Add auto-generation header
       run: |
@@ -35,8 +35,8 @@ jobs:
         "
         TEMP=$(mktemp)
         printf '%s' "$HEADER" > "$TEMP"
-        cat .standards/meshtastic_design_standards.md >> "$TEMP"
-        mv "$TEMP" .standards/meshtastic_design_standards.md
+        cat .standards/meshtastic_design_standards_latest.md >> "$TEMP"
+        mv "$TEMP" .standards/meshtastic_design_standards_latest.md
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
