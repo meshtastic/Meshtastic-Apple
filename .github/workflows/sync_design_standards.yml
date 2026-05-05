@@ -6,6 +6,10 @@ on:
   workflow_dispatch:
     # Allow manual triggering
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   sync-design-standards:
     runs-on: ubuntu-latest
@@ -46,7 +50,7 @@ jobs:
 
           **Source file:** [`standards/meshtastic_design_standards_latest.md`](https://github.com/meshtastic/design/blob/master/standards/meshtastic_design_standards_latest.md)
 
-          Automatically generated on ${{ github.event.repository.updated_at }}.
+          Automatically synced by workflow run [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
         branch: chore/sync-design-standards
         delete-branch: true
         add-paths: |
