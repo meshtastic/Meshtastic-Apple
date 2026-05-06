@@ -48,10 +48,15 @@ Each node is configured with a role that determines how it behaves on the mesh. 
 ## Compact Node Row Examples
 
 ![Directly connected node with all telemetry info](../assets/screenshots/compact_directConnected_allInfo.png)
+![Directly connected node with all telemetry info](../assets/screenshots/compact_directConnected_allInfo_dark.png)
 ![Multi-hop node 7 hops away](../assets/screenshots/compact_multiHop.png)
+![Multi-hop node 7 hops away](../assets/screenshots/compact_multiHop_dark.png)
 ![Node with position, 1 hop](../assets/screenshots/compact_withPosition.png)
+![Node with position, 1 hop](../assets/screenshots/compact_withPosition_dark.png)
 ![PKI key mismatch node](../assets/screenshots/compact_pkiMismatch.png)
+![PKI key mismatch node](../assets/screenshots/compact_pkiMismatch_dark.png)
 ![MQTT-bridged node](../assets/screenshots/compact_mqtt.png)
+![MQTT-bridged node](../assets/screenshots/compact_mqtt_dark.png)
 
 ## Logs (Node Detail View)
 

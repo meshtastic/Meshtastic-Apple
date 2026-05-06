@@ -37599,6 +37599,9 @@
         }
       }
     },
+    "Open %@ documentation" : {
+
+    },
     "Open Compass" : {
       "localizations" : {
         "es" : {

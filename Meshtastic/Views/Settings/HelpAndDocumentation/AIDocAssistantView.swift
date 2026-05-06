@@ -12,6 +12,14 @@ private struct ChirpyMessage: Identifiable {
 	let id = UUID()
 	let isUser: Bool
 	let text: String
+	/// Doc pages used to generate this reply. Empty for user messages.
+	let sourcePages: [DocPage]
+
+	init(isUser: Bool, text: String, sourcePages: [DocPage] = []) {
+		self.isUser = isUser
+		self.text = text
+		self.sourcePages = sourcePages
+	}
 }
 
 // MARK: - AIDocAssistantView (iOS 26+ only)
@@ -113,26 +121,43 @@ struct AIDocAssistantView: View {
 
 	@ViewBuilder
 	private func messageBubble(_ message: ChirpyMessage) -> some View {
-		HStack(alignment: .bottom, spacing: 8) {
-			if message.isUser {
-				Spacer(minLength: 56)
-				Text(message.text)
-					.padding(.horizontal, 14)
-					.padding(.vertical, 10)
-					.background(Color.accentColor)
-					.foregroundStyle(.white)
-					.clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-					.textSelection(.enabled)
-			} else {
-				chirpyAvatarSmall
-				Text(message.text)
-					.padding(.horizontal, 14)
-					.padding(.vertical, 10)
-					.background(Color(uiColor: .secondarySystemBackground))
-					.foregroundStyle(.primary)
-					.clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-					.textSelection(.enabled)
-				Spacer(minLength: 56)
+		VStack(alignment: .leading, spacing: 4) {
+			HStack(alignment: .bottom, spacing: 8) {
+				if message.isUser {
+					Spacer(minLength: 56)
+					Text(message.text)
+						.padding(.horizontal, 14)
+						.padding(.vertical, 10)
+						.background(Color.accentColor)
+						.foregroundStyle(.white)
+						.clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+						.textSelection(.enabled)
+				} else {
+					chirpyAvatarSmall
+					Text(message.text)
+						.padding(.horizontal, 14)
+						.padding(.vertical, 10)
+						.background(Color(uiColor: .secondarySystemBackground))
+						.foregroundStyle(.primary)
+						.clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+						.textSelection(.enabled)
+					Spacer(minLength: 56)
+				}
+			}
+			if !message.isUser && !message.sourcePages.isEmpty {
+				// Indent to align with the bubble (avatar width + spacing)
+				let avatarWidth = 28 * chirpyAspect + 8
+				VStack(alignment: .leading, spacing: 4) {
+					ForEach(message.sourcePages) { page in
+						NavigationLink(destination: DocPageView(page: page)) {
+							Label(page.title, systemImage: "arrow.up.right.square")
+								.font(.caption)
+								.foregroundStyle(Color.accentColor)
+						}
+						.accessibilityLabel("Open \(page.title) documentation")
+					}
+				}
+				.padding(.leading, avatarWidth)
 			}
 		}
 	}
@@ -229,8 +254,18 @@ struct AIDocAssistantView: View {
 
 		do {
 			let answer = try await runLanguageModel(question: trimmed, context: context)
-			messages.append(ChirpyMessage(isUser: false, text: answer))
-			Logger.docs.info("AI assistant answered query using \(contextPages.count) pages")
+			// Merge pages the model used as context with any pages it mentioned by name in the response.
+			// This handles cases where the model says e.g. "check the Nodes List page" — we surface
+			// a direct link even if that page wasn't in the top retrieved context pages.
+			let mentionedPages = bundle.allPages().filter { page in
+				answer.range(of: page.title, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+			}
+			var linkedPages = contextPages
+			for page in mentionedPages where !linkedPages.contains(where: { $0.id == page.id }) {
+				linkedPages.append(page)
+			}
+			messages.append(ChirpyMessage(isUser: false, text: answer, sourcePages: linkedPages))
+			Logger.docs.info("AI assistant answered query using \(contextPages.count) context pages; \(linkedPages.count) total linked")
 		} catch {
 			errorMessage = "Could not generate an answer. Please try again."
 			Logger.docs.error("AI assistant error: \(error.localizedDescription)")

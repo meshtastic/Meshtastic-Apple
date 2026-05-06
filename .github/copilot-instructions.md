@@ -123,6 +123,63 @@ The app registers the `meshtastic:///` URL scheme. Use `Router.route(url:)` to h
 2. Add a new `VersionedSchema` conformance and update the `SchemaMigrationPlan` in `MeshtasticSchema.swift`.
 3. Provide a `MigrationStage` (lightweight or custom) for the version transition.
 
+## In-App Documentation
+
+The app ships a complete offline documentation system (feature `003-app-docs-markdown`). Source markdown lives under `docs/user/` and `docs/developer/`. A build script converts it to HTML at `Meshtastic/Resources/docs/` for bundling.
+
+### When to update docs
+
+**Always** update the corresponding `docs/user/` page when any of these change:
+- User-visible UI strings, labels, or navigation structure
+- A new settings screen, sheet, or menu option is added or removed
+- Icon colours, status indicators, or symbol meanings change
+- Any user-facing flow changes (onboarding, connection, messaging, map, etc.)
+- A new TipKit tip is added to `Meshtastic/Tips/`
+
+**Always** update the corresponding `docs/developer/` page when:
+- Architecture, data flow, or module responsibilities change
+- A new transport, persistence layer, or concurrency pattern is introduced
+- The testing strategy or snapshot test conventions change
+
+### View → doc page mapping
+
+| Changed source path | Doc page to update |
+|---|---|
+| `Meshtastic/Views/Messages/` | `docs/user/messages.md` |
+| `Meshtastic/Views/Nodes/` | `docs/user/nodes.md` |
+| `Meshtastic/Views/Map/` | `docs/user/map.md` |
+| `Meshtastic/Views/Settings/Bluetooth/` | `docs/user/bluetooth.md` |
+| `Meshtastic/Views/Settings/Discovery/` | `docs/user/discovery.md` |
+| `Meshtastic/Views/Settings/MQTT/` | `docs/user/mqtt.md` |
+| `Meshtastic/Views/Settings/TAK/` | `docs/user/tak.md` |
+| `Meshtastic/Views/Settings/Firmware/` | `docs/user/firmware.md` |
+| `Meshtastic/Views/Settings/` (telemetry/sensor) | `docs/user/telemetry.md` |
+| `Meshtastic/Views/Settings/` (general) | `docs/user/settings.md` |
+| `Meshtastic/Views/Settings/HelpAndDocumentation/` | `docs/index.md` |
+| `Meshtastic Watch App/` | `docs/user/watch.md` |
+| `Meshtastic/Model/` | `docs/developer/swiftdata.md` or `docs/developer/architecture.md` |
+| `Meshtastic/Accessory/Transports/` | `docs/developer/transport.md` |
+| `MeshtasticTests/` (snapshot conventions) | `docs/developer/testing.md` |
+
+### Doc authoring conventions
+
+- **Screenshots**: Sourced exclusively from `MeshtasticTests/__Snapshots__/SwiftUIViewSnapshotTests/`. Copy PNGs to `docs/assets/screenshots/` and reference them with `![alt](../assets/screenshots/NAME.png)`.
+- **Icons in tables**: Use `![icon](../assets/screenshots/NAME.png)` inside a markdown table with at minimum `| Icon | Description |` columns. Do not use standalone `![]()` blocks for icon references — use tables (FR-032).
+- **Icon snapshots**: Use `transparent: true`, plain `Image` views (not `Button`/wrapper components), `.font(.title).padding(2)`. Connection-status icons use `systemOrange`. Lock icons use portrait canvas widths (`lockClosed/Open/Red` → `width: 30`).
+- **Callout blocks**: Use `> **Tip — …**` and `> **Warning — …**` blockquote syntax — the build script converts these to styled `<div class="tips-callout">` / `<div class="warning-callout">` elements.
+- **After editing any `.md` file under `docs/`**, regenerate the bundled HTML and commit it:
+  ```bash
+  bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta
+  ```
+  Then copy updated snapshots if needed:
+  ```bash
+  bash scripts/copy-snapshots.sh --output Meshtastic/Resources/docs/assets/screenshots
+  ```
+
+### PR checklist for doc changes
+
+The `.github/workflows/docs-staleness.yml` action posts an advisory comment on any PR that modifies `Meshtastic/Views/`, `Meshtastic/Model/`, `Meshtastic/Tips/`, or `Meshtastic/Accessory/` without also touching `docs/`. If a doc update is genuinely not required (e.g., internal refactor, bug fix, test change), add the **`skip-docs-check`** label to the PR to dismiss the warning.
+
 ## CI
 
 CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modify CI scripts without understanding the Xcode Cloud build environment.

@@ -239,6 +239,28 @@ hr {
     margin: 1.5em 0;
 }
 
+/*
+ * Light/dark image switching — _dark.png suffix convention.
+ * Images named *_dark.png are hidden in light mode; their paired light counterparts
+ * are hidden in dark mode. Both variants must appear in the HTML for this to work.
+ */
+img[src$="_dark.png"] {
+    display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    img[src$="compact_directConnected_allInfo.png"],
+    img[src$="compact_multiHop.png"],
+    img[src$="compact_withPosition.png"],
+    img[src$="compact_pkiMismatch.png"],
+    img[src$="compact_mqtt.png"] {
+        display: none;
+    }
+    img[src$="_dark.png"] {
+        display: block;
+    }
+}
+
 /* ── Tips callout ── */
 .tips-callout {
     background-color: var(--callout-bg);

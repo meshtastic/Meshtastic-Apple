@@ -11,15 +11,34 @@ import UIKit
 /// Renders a SwiftUI view to a UIImage. When height is nil the view sizes itself
 /// using its intrinsic content height for the given width (via sizeThatFits).
 @MainActor
-private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = nil, transparent: Bool = false) -> UIImage {
-	// Wrap the view to ignore safe area so content isn't inset by the device's safe area
-	let wrappedView = AnyView(
-		view
-			.frame(width: width)
-			.ignoresSafeArea()
-	)
+private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = nil, transparent: Bool = false, colorScheme: ColorScheme? = nil) -> UIImage {
+	// Wrap the view to ignore safe area so content isn't inset by the device's safe area.
+	// Inject colorScheme environment when specified so dark mode renders correctly
+	// even in a windowless UIHostingController context.
+	let wrappedView: AnyView
+	if let scheme = colorScheme {
+		wrappedView = AnyView(
+			view
+				.environment(\.colorScheme, scheme)
+				.frame(width: width)
+				.ignoresSafeArea()
+		)
+	} else {
+		wrappedView = AnyView(
+			view
+				.frame(width: width)
+				.ignoresSafeArea()
+		)
+	}
 	let hostingController = UIHostingController(rootView: wrappedView)
-	hostingController.view.backgroundColor = transparent ? .clear : .systemBackground
+	if transparent {
+		hostingController.view.backgroundColor = .clear
+	} else if let scheme = colorScheme {
+		let traits = UITraitCollection(userInterfaceStyle: scheme == .dark ? .dark : .light)
+		hostingController.view.backgroundColor = UIColor.systemBackground.resolvedColor(with: traits)
+	} else {
+		hostingController.view.backgroundColor = .systemBackground
+	}
 
 	// Measure the view's intrinsic height
 	let fittingSize = hostingController.sizeThatFits(in: CGSize(width: width, height: height ?? UIView.layoutFittingExpandedSize.height))
@@ -65,11 +84,12 @@ private func assertViewSnapshot<V: View>(
 	width: CGFloat,
 	height: CGFloat? = nil,
 	transparent: Bool = false,
+	colorScheme: ColorScheme? = nil,
 	named name: String,
 	filePath: String = #filePath,
 	sourceLocation: SourceLocation = #_sourceLocation
 ) {
-	let image = renderImage(view, width: width, height: height, transparent: transparent)
+	let image = renderImage(view, width: width, height: height, transparent: transparent, colorScheme: colorScheme)
 	guard let pngData = image.pngData() else {
 		Issue.record("Failed to generate PNG data", sourceLocation: sourceLocation)
 		return
@@ -770,6 +790,107 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
 			named: "compact_withPosition"
+		)
+	}
+
+	// MARK: Dark mode variants
+
+	@Test("Directly connected, online, all info — dark")
+	func directlyConnectedAllInfoDark() async {
+		let node = makeNode(
+			longName: "Hopscotch",
+			shortName: "HS01",
+			num: 0xE75432,
+			hopsAway: 0,
+			snr: 5.5,
+			rssi: -54,
+			batteryLevel: 85,
+			latitudeI: 374206000,
+			longitudeI: -1221350000,
+			favorite: true,
+			lastHeard: Date(timeIntervalSinceNow: -30)
+		)
+		await assertViewSnapshot(
+			of: NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
+			width: 390,
+			colorScheme: .dark,
+			named: "compact_directConnected_allInfo_dark"
+		)
+	}
+
+	@Test("Multi-hop node, 7 hops away — dark")
+	func multiHopNodeDark() async {
+		let node = makeNode(
+			longName: "Brad!!",
+			shortName: "B",
+			num: 0x3A9FD1,
+			hopsAway: 7,
+			batteryLevel: 99,
+			lastHeard: Date(timeIntervalSinceNow: -3600)
+		)
+		await assertViewSnapshot(
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
+			width: 390,
+			colorScheme: .dark,
+			named: "compact_multiHop_dark"
+		)
+	}
+
+	@Test("MQTT node, 3 hops — dark")
+	func mqttNodeDark() async {
+		let node = makeNode(
+			longName: "MQTT Matt",
+			shortName: "MQTM",
+			num: 0x5B2E8C,
+			hopsAway: 3,
+			viaMqtt: true,
+			role: 3,
+			lastHeard: Date(timeIntervalSinceNow: -98200)
+		)
+		await assertViewSnapshot(
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
+			width: 390,
+			colorScheme: .dark,
+			named: "compact_mqtt_dark"
+		)
+	}
+
+	@Test("PKI encrypted, key mismatch — dark")
+	func pkiKeyMismatchDark() async {
+		let node = makeNode(
+			longName: "Spy Node",
+			shortName: "SPY",
+			num: 0xC84A1F,
+			pkiEncrypted: true,
+			keyMatch: false,
+			lastHeard: Date(timeIntervalSinceNow: -60)
+		)
+		await assertViewSnapshot(
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
+			width: 390,
+			colorScheme: .dark,
+			named: "compact_pkiMismatch_dark"
+		)
+	}
+
+	@Test("With position, 1 hop — dark")
+	func withPositionDark() async {
+		let node = makeNode(
+			longName: "Trail Node",
+			shortName: "TRL",
+			num: 0x27B06E,
+			hopsAway: 1,
+			snr: 3.25,
+			rssi: -80,
+			latitudeI: 374206000,
+			longitudeI: -1221350000,
+			lastHeard: Date(timeIntervalSinceNow: -200)
+		)
+		await assertViewSnapshot(
+			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 0).padding(.horizontal, 16),
+			width: 390,
+			colorScheme: .dark,
+			named: "compact_withPosition_dark"
 		)
 	}
 }

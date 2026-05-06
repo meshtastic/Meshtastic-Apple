@@ -1,0 +1,147 @@
+name: Docs Staleness Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    name: Check docs coverage
+    runs-on: ubuntu-latest
+    # Skip entirely if the PR author has applied the bypass label
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-docs-check') }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: changed
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+
+          # Files changed in this PR
+          changed=$(git diff --name-only "$BASE" "$HEAD")
+
+          # Determine whether user-facing views changed
+          views_changed=$(echo "$changed" | grep -E \
+            '^Meshtastic/Views/|^Meshtastic/Model/|^Meshtastic/Tips/|^Meshtastic/Accessory/' \
+            | grep -v '__Snapshots__' || true)
+
+          # Determine whether any in-repo doc source files changed
+          docs_changed=$(echo "$changed" | grep -E '^docs/(user|developer)/' || true)
+
+          echo "views_changed<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$views_changed" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "docs_changed<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$docs_changed" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$views_changed" && -z "$docs_changed" ]]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post warning comment
+        if: steps.changed.outputs.stale == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const viewsChanged = `${{ steps.changed.outputs.views_changed }}`.trim();
+            const body = [
+              '## 📄 Docs staleness warning',
+              '',
+              'This PR modifies user-facing Swift source files but does not update any page under `docs/user/` or `docs/developer/`.',
+              '',
+              '**Changed source files:**',
+              '```',
+              viewsChanged,
+              '```',
+              '',
+              '**What to check:**',
+              '| Changed area | Likely doc page |',
+              '|---|---|',
+              '| `Views/Messages/` | `docs/user/messages.md` |',
+              '| `Views/Nodes/` | `docs/user/nodes.md` |',
+              '| `Views/Map/` | `docs/user/map.md` |',
+              '| `Views/Settings/Bluetooth/` | `docs/user/bluetooth.md` |',
+              '| `Views/Settings/Discovery/` | `docs/user/discovery.md` |',
+              '| `Views/Settings/MQTT/` | `docs/user/mqtt.md` |',
+              '| `Views/Settings/TAK/` | `docs/user/tak.md` |',
+              '| `Views/Settings/Firmware/` | `docs/user/firmware.md` |',
+              '| `Views/Settings/` (telemetry/sensor) | `docs/user/telemetry.md` |',
+              '| `Views/Settings/` (general) | `docs/user/settings.md` |',
+              '| `Meshtastic Watch App/` | `docs/user/watch.md` |',
+              '| `Model/` | `docs/developer/swiftdata.md` or `docs/developer/architecture.md` |',
+              '| `Accessory/Transports/` | `docs/developer/transport.md` |',
+              '',
+              'If this PR does **not** require a doc update (e.g., internal refactor, bug fix, test change), add the **`skip-docs-check`** label to dismiss this warning.',
+              '',
+              'After updating `docs/`, re-run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta` locally and commit the regenerated HTML bundle.',
+            ].join('\n');
+
+            // Find and update an existing bot comment, or create a new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.includes('Docs staleness warning')
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Dismiss stale comment when docs are updated
+        if: steps.changed.outputs.stale == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.includes('Docs staleness warning')
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: '## ✅ Docs staleness check passed\n\nThis PR includes updates to `docs/` alongside the source changes. Thank you!',
+              });
+            }
+
+      - name: Set check status
+        # Always succeed — this is advisory, not blocking.
+        # Upgrade to `exit 1` here if you want to enforce docs as a required check.
+        run: echo "Docs staleness check complete (advisory only)."
