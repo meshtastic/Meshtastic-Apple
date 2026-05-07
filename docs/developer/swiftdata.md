@@ -62,23 +62,44 @@ Key model types:
 
 ## Schema Migrations
 
-When you add, rename, or remove properties on a `@Model` type, you must provide a migration:
+When you add, rename, or remove properties on a `@Model` type, you must provide a migration. Schema files live in `Meshtastic/Model/Schema/`.
 
-1. Add a new `VersionedSchema` in `MeshtasticSchema.swift`.
-2. Add a `MigrationStage` to the `SchemaMigrationPlan`.
-3. Use `.lightweight` for additive changes (new optional properties); use `.custom` for destructive changes.
+### Adding a New Schema Version
+
+1. Create `Meshtastic/Model/Schema/MeshtasticSchemaV2.swift` with the updated models:
 
 ```swift
 enum MeshtasticSchemaV2: VersionedSchema {
     static var versionIdentifier = Schema.Version(2, 0, 0)
-    static var models: [any PersistentModel.Type] = [NodeInfoEntity.self, ...]
+    static var models: [any PersistentModel.Type] { ... }
 }
-
-// In the migration plan:
-.lightweight(fromVersion: MeshtasticSchemaV1.self, toVersion: MeshtasticSchemaV2.self)
 ```
 
-**Never delete a `VersionedSchema`.** Migration history must be preserved.
+2. Append `MeshtasticSchemaV2.self` to `MeshtasticMigrationPlan.schemas` (newest last).
+3. Add a migration stage to `MeshtasticMigrationPlan.stages`:
+
+```swift
+// Lightweight — SwiftData infers additive changes automatically (new optional properties)
+static let migrateV1toV2 = MigrationStage.lightweight(
+    fromVersion: MeshtasticSchemaV1.self,
+    toVersion: MeshtasticSchemaV2.self
+)
+
+// Custom — when you need to transform or backfill data
+static let migrateV1toV2 = MigrationStage.custom(
+    fromVersion: MeshtasticSchemaV1.self,
+    toVersion: MeshtasticSchemaV2.self,
+    willMigrate: { context in },
+    didMigrate: { context in
+        // Transform data, populate new fields, etc.
+        try context.save()
+    }
+)
+```
+
+4. Update `MeshtasticSchema.current` to point to the new version.
+
+> **Warning — Never delete a `VersionedSchema`.** Migration history must be preserved or the migration plan will fail on devices that skipped intermediate versions.
 
 ## Query Helpers
 

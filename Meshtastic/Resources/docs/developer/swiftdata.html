@@ -71,21 +71,41 @@ final class NodeInfoEntity {
 </tbody>
 </table>
 <h2>Schema Migrations</h2>
-<p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration:</p>
+<p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration. Schema files live in <code>Meshtastic/Model/Schema/</code>.</p>
+<h3>Adding a New Schema Version</h3>
 <ol>
-<li>Add a new <code>VersionedSchema</code> in <code>MeshtasticSchema.swift</code>.</li>
-<li>Add a <code>MigrationStage</code> to the <code>SchemaMigrationPlan</code>.</li>
-<li>Use <code>.lightweight</code> for additive changes (new optional properties); use <code>.custom</code> for destructive changes.</li>
+<li>Create <code>Meshtastic/Model/Schema/MeshtasticSchemaV2.swift</code> with the updated models:</li>
 </ol>
 <pre><code class="language-swift">enum MeshtasticSchemaV2: VersionedSchema {
     static var versionIdentifier = Schema.Version(2, 0, 0)
-    static var models: [any PersistentModel.Type] = [NodeInfoEntity.self, ...]
+    static var models: [any PersistentModel.Type] { ... }
 }
-
-// In the migration plan:
-.lightweight(fromVersion: MeshtasticSchemaV1.self, toVersion: MeshtasticSchemaV2.self)
 </code></pre>
-<p><strong>Never delete a <code>VersionedSchema</code>.</strong> Migration history must be preserved.</p>
+<ol start="2">
+<li>Append <code>MeshtasticSchemaV2.self</code> to <code>MeshtasticMigrationPlan.schemas</code> (newest last).</li>
+<li>Add a migration stage to <code>MeshtasticMigrationPlan.stages</code>:</li>
+</ol>
+<pre><code class="language-swift">// Lightweight — SwiftData infers additive changes automatically (new optional properties)
+static let migrateV1toV2 = MigrationStage.lightweight(
+    fromVersion: MeshtasticSchemaV1.self,
+    toVersion: MeshtasticSchemaV2.self
+)
+
+// Custom — when you need to transform or backfill data
+static let migrateV1toV2 = MigrationStage.custom(
+    fromVersion: MeshtasticSchemaV1.self,
+    toVersion: MeshtasticSchemaV2.self,
+    willMigrate: { context in },
+    didMigrate: { context in
+        // Transform data, populate new fields, etc.
+        try context.save()
+    }
+)
+</code></pre>
+<ol start="4">
+<li>Update <code>MeshtasticSchema.current</code> to point to the new version.</li>
+</ol>
+<div class="warning-callout"><strong>Warning — Never delete a <code>VersionedSchema</code>.</strong> Migration history must be preserved or the migration plan will fail on devices that skipped intermediate versions.</div>
 <h2>Query Helpers</h2>
 <p><code>QueryCoreData.swift</code> contains helper functions for common fetches:</p>
 <pre><code class="language-swift">let node = getNodeInfo(id: nodeNum, context: context)
