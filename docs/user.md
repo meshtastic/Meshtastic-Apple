@@ -6,4 +6,4 @@ has_children: true
 
 # User Guide
 
-Documentation for using the Meshtastic iOS, iPadOS, and macOS app.
+Documentation for using the Meshtastic iOS, iPadOS, macOS, watchOS, and visionOS app.

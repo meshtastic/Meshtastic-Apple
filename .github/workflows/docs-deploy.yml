@@ -92,7 +92,7 @@ jobs:
 
       - name: Build with Jekyll
         working-directory: docs
-        run: bundle exec jekyll build --destination ../_site --baseurl ""
+        run: bundle exec jekyll build --destination ../_site --baseurl "/Meshtastic-Apple"
         env:
           JEKYLL_ENV: production
           PAGES_REPO_NWO: meshtastic/Meshtastic-Apple
