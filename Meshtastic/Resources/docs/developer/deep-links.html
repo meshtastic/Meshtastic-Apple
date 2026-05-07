@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deep Links</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="deep-links">
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Deep Links</h1>
+<p>The app registers the <code>meshtastic:///</code> URL scheme. Use <code>Router.route(url:)</code> to handle incoming URLs. Deep links work from Safari, Shortcuts, Siri Intents, and other apps.</p>
+<h2>Adding a New Deep Link</h2>
+<ol>
+<li>Add a case to the appropriate <code>*NavigationState</code> enum in <code>Meshtastic/Router/NavigationState.swift</code>.</li>
+<li>Update <code>Router</code>'s routing helpers in <code>Meshtastic/Router/Router.swift</code>.</li>
+<li>Document the URL in the table below.</li>
+</ol>
+<h2>Messages</h2>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meshtastic:///messages</code></td>
+<td>Messages tab</td>
+</tr>
+<tr>
+<td><code>meshtastic:///messages?channelId={channelId}&amp;messageId={messageId}</code></td>
+<td>Channel messages (<code>messageId</code> is optional)</td>
+</tr>
+<tr>
+<td><code>meshtastic:///messages?userNum={userNum}&amp;messageId={messageId}</code></td>
+<td>Direct messages (<code>messageId</code> is optional)</td>
+</tr>
+</tbody>
+</table>
+<h2>Connect</h2>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meshtastic:///connect</code></td>
+<td>Connect tab</td>
+</tr>
+</tbody>
+</table>
+<h2>Nodes</h2>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meshtastic:///nodes</code></td>
+<td>Nodes tab</td>
+</tr>
+<tr>
+<td><code>meshtastic:///nodes?nodenum={nodenum}</code></td>
+<td>Selected node</td>
+</tr>
+</tbody>
+</table>
+<h2>Mesh Map</h2>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meshtastic:///map</code></td>
+<td>Map tab</td>
+</tr>
+<tr>
+<td><code>meshtastic:///map?nodenum={nodenum}</code></td>
+<td>Node on map</td>
+</tr>
+<tr>
+<td><code>meshtastic:///map?waypointId={waypointId}</code></td>
+<td>Waypoint on map</td>
+</tr>
+</tbody>
+</table>
+<h2>Settings</h2>
+<p>No parameters are supported for settings URLs.</p>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meshtastic:///settings/about</code></td>
+<td>About Meshtastic</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/appSettings</code></td>
+<td>App Settings</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/helpDocs</code></td>
+<td>Help &amp; Documentation</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/routes</code></td>
+<td>Routes</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/routeRecorder</code></td>
+<td>Route Recorder</td>
+</tr>
+<tr>
+<td><strong>Radio Config</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/lora</code></td>
+<td>LoRa Config</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/channels</code></td>
+<td>Channels</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/security</code></td>
+<td>Security Config</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/shareQRCode</code></td>
+<td>Share QR Code</td>
+</tr>
+<tr>
+<td><strong>Device Config</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/user</code></td>
+<td>User Config</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/bluetooth</code></td>
+<td>Bluetooth Config</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/device</code></td>
+<td>Device Config</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/display</code></td>
+<td>Display Config</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/network</code></td>
+<td>Network Config</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/position</code></td>
+<td>Position Config</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/power</code></td>
+<td>Power Config</td>
+</tr>
+<tr>
+<td><strong>Module Config</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/ambientLighting</code></td>
+<td>Ambient Lighting</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/cannedMessages</code></td>
+<td>Canned Messages</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/detectionSensor</code></td>
+<td>Detection Sensor</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/externalNotification</code></td>
+<td>External Notification</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/mqtt</code></td>
+<td>MQTT</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/paxCounter</code></td>
+<td>Pax Counter</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/rangeTest</code></td>
+<td>Range Test</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/ringtone</code></td>
+<td>Ringtone</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/serial</code></td>
+<td>Serial</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/storeAndForward</code></td>
+<td>Store &amp; Forward</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/telemetry</code></td>
+<td>Telemetry</td>
+</tr>
+<tr>
+<td><strong>TAK</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/tak</code></td>
+<td>TAK Config</td>
+</tr>
+<tr>
+<td><strong>Logging</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/debugLogs</code></td>
+<td>Debug Logs</td>
+</tr>
+<tr>
+<td><strong>Developers</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/appFiles</code></td>
+<td>App Files</td>
+</tr>
+<tr>
+<td><code>meshtastic:///settings/firmwareUpdates</code></td>
+<td>Firmware Updates</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
