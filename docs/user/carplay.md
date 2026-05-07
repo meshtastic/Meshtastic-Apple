@@ -78,17 +78,5 @@ When a Meshtastic device connects during a CarPlay session, a **Dynamic Island /
 
 The Live Activity ends automatically when CarPlay disconnects.
 
-## Architecture Notes
+> **Tip —** For implementation details and component architecture, see the [CarPlay Developer Guide](../developer/carplay).
 
-| Component | File | Description |
-|---|---|---|
-| `CarPlaySceneDelegate` | `Meshtastic/CarPlay/CarPlaySceneDelegate.swift` | `CPTemplateApplicationSceneDelegate` that builds and manages the two-tab UI |
-| `CarPlayIntentDonation` | `Meshtastic/CarPlay/CarPlayIntentDonation.swift` | Donates incoming and outgoing `INSendMessageIntent` interactions so conversations appear in CarPlay Messages and Siri can read them aloud |
-| `SendMessageIntentHandler` | `Meshtastic/Intents/SendMessageIntentHandler.swift` | Handles `INSendMessageIntent` — resolves recipients/channels and sends the message over the active transport |
-| `SearchForMessagesIntentHandler` | `Meshtastic/Intents/SearchForMessagesIntentHandler.swift` | Handles `INSearchForMessagesIntent` |
-| `SetMessageAttributeIntentHandler` | `Meshtastic/Intents/SetMessageAttributeIntentHandler.swift` | Handles `INSetMessageAttributeIntent` (mark as read) |
-| `IntentHandler` | `Meshtastic/Intents/IntentHandler.swift` | Routes `INIntent`s to the appropriate handler |
-
-The scene delegate subscribes to `AccessoryManager.shared.$isConnected` with a 300 ms debounce and calls `updateSections(_:)` on existing `CPListTemplate` instances (rather than rebuilding the whole template tree) to minimise flicker during reconnects.
-
-Intent donations are de-duplicated per CarPlay session using an in-memory set to avoid repeated IPC calls to the intents daemon on every list refresh.

@@ -157,7 +157,7 @@ The app ships a complete offline documentation system (feature `003-app-docs-mar
 | `Meshtastic/Views/Settings/` (general) | `docs/user/settings.md` |
 | `Meshtastic/Views/Settings/HelpAndDocumentation/` | `docs/index.md` |
 | `Meshtastic Watch App/` | `docs/user/watch.md` |
-| `Meshtastic/CarPlay/` | `docs/user/carplay.md` |
+| `Meshtastic/CarPlay/` | `docs/user/carplay.md` (user guide) and `docs/developer/carplay.md` (architecture) |
 | `Meshtastic/Model/` | `docs/developer/swiftdata.md` or `docs/developer/architecture.md` |
 | `Meshtastic/Accessory/Transports/` | `docs/developer/transport.md` |
 | `MeshtasticTests/` (snapshot conventions) | `docs/developer/testing.md` |

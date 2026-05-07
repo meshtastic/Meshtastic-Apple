@@ -100,49 +100,6 @@ Messages are limited to <strong>200 bytes</strong> (UTF-8). Siri will not send m
 <li>A 15-minute countdown timer synced with the telemetry reporting interval</li>
 </ul>
 <p>The Live Activity ends automatically when CarPlay disconnects.</p>
-<h2>Architecture Notes</h2>
-<table>
-<thead>
-<tr>
-<th>Component</th>
-<th>File</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CarPlaySceneDelegate</code></td>
-<td><code>Meshtastic/CarPlay/CarPlaySceneDelegate.swift</code></td>
-<td><code>CPTemplateApplicationSceneDelegate</code> that builds and manages the two-tab UI</td>
-</tr>
-<tr>
-<td><code>CarPlayIntentDonation</code></td>
-<td><code>Meshtastic/CarPlay/CarPlayIntentDonation.swift</code></td>
-<td>Donates incoming and outgoing <code>INSendMessageIntent</code> interactions so conversations appear in CarPlay Messages and Siri can read them aloud</td>
-</tr>
-<tr>
-<td><code>SendMessageIntentHandler</code></td>
-<td><code>Meshtastic/Intents/SendMessageIntentHandler.swift</code></td>
-<td>Handles <code>INSendMessageIntent</code> — resolves recipients/channels and sends the message over the active transport</td>
-</tr>
-<tr>
-<td><code>SearchForMessagesIntentHandler</code></td>
-<td><code>Meshtastic/Intents/SearchForMessagesIntentHandler.swift</code></td>
-<td>Handles <code>INSearchForMessagesIntent</code></td>
-</tr>
-<tr>
-<td><code>SetMessageAttributeIntentHandler</code></td>
-<td><code>Meshtastic/Intents/SetMessageAttributeIntentHandler.swift</code></td>
-<td>Handles <code>INSetMessageAttributeIntent</code> (mark as read)</td>
-</tr>
-<tr>
-<td><code>IntentHandler</code></td>
-<td><code>Meshtastic/Intents/IntentHandler.swift</code></td>
-<td>Routes <code>INIntent</code>s to the appropriate handler</td>
-</tr>
-</tbody>
-</table>
-<p>The scene delegate subscribes to <code>AccessoryManager.shared.$isConnected</code> with a 300 ms debounce and calls <code>updateSections(_:)</code> on existing <code>CPListTemplate</code> instances (rather than rebuilding the whole template tree) to minimise flicker during reconnects.</p>
-<p>Intent donations are de-duplicated per CarPlay session using an in-memory set to avoid repeated IPC calls to the intents daemon on every list refresh.</p>
+<div class="tips-callout"><strong>Tip —</strong> For implementation details and component architecture, see the <a href="../developer/carplay">CarPlay Developer Guide</a>.</div>
 </body>
 </html>
