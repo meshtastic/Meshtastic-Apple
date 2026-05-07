@@ -91,7 +91,8 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build with Jekyll
-        run: bundle exec jekyll build --source docs --destination _site --baseurl ""
+        working-directory: docs
+        run: bundle exec jekyll build --destination ../_site --baseurl ""
         env:
           JEKYLL_ENV: production
 
