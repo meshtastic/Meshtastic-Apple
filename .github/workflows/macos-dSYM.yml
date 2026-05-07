@@ -50,7 +50,7 @@ jobs:
           find ./build/dSYMs -name "*.dSYM" -type d | sort
 
       - name: Upload dSYMs to Datadog
-        uses: DataDog/upload-dsyms-github-action@v1
+        uses: DataDog/upload-dsyms-github-action@v0.4.0
         with:
           api_key: ${{ secrets.DATADOG_API_KEY }}
           site: us5.datadoghq.com
