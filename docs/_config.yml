@@ -1,4 +1,4 @@
-title: Meshtastic Apple App Documentation
+title: Meshtastic Apple
 description: "User and developer documentation for the Meshtastic iOS, iPadOS, and macOS app."
 
 # just-the-docs theme (v0.11+)
@@ -17,8 +17,7 @@ nav_enabled: true
 search_enabled: true
 search_tokenizer_separator: /[\s\-/]+/
 
-# Footer
-footer_content: "Copyright &copy; 2024 Garth Vander Houwen. Distributed under the <a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">GPL v3 License.</a>"
+# Footer (rendered via _includes/footer_custom.html for dynamic year)
 
 # Heading anchors
 heading_anchors: true
