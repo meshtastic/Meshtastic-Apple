@@ -23,15 +23,7 @@ footer_content: "Copyright &copy; 2024 Garth Vander Houwen. Distributed under th
 # Heading anchors
 heading_anchors: true
 
-# Collections for nav ordering
-collections:
-  user:
-    output: true
-    permalink: /user/:name/
-  developer:
-    output: true
-    permalink: /developer/:name/
-
+# Default front-matter for pages in subdirectories
 defaults:
   - scope:
       path: "user"

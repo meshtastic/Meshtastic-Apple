@@ -1,33 +1,22 @@
 ---
-title: Meshtastic App Documentation
+title: Home
 layout: default
 nav_order: 0
 ---
 
-# Meshtastic App Documentation
+# Meshtastic Apple App Documentation
 
-Welcome to the documentation for the Meshtastic iOS, iPadOS, and macOS app.
+User and developer documentation for the Meshtastic iOS, iPadOS, and macOS app.
 
-## User Guide
+Use the sidebar navigation to browse the **User Guide** for app features and the **Developer Guide** for contributing to the project.
 
-- [Getting Started](user/getting-started.md)
-- [Bluetooth Device Connection](user/bluetooth.md)
-- [Messages & Channels](user/messages.md)
-- [Nodes List](user/nodes.md)
-- [Firmware Updates](user/firmware.md)
-- [Map & Waypoints](user/map.md)
-- [Settings](user/settings.md)
-- [Telemetry & Sensors](user/telemetry.md)
-- [Signal Meter](user/signal-meter.md)
-- [TAK Integration](user/tak.md)
-- [MQTT](user/mqtt.md)
-- [Local Mesh Discovery](user/discovery.md)
-- [Apple Watch App](user/watch.md)
+---
 
-## Developer Guide
+## Quick Links
 
-- [Architecture](developer/architecture.md)
-- [Adding Features](developer/adding-features.md)
-- [Testing](developer/testing.md)
-- [SwiftData](developer/swiftdata.md)
-- [Transport](developer/transport.md)
+| Guide | Description |
+|-------|-------------|
+| [Getting Started](user/getting-started) | Connect your first radio and send a message |
+| [Nodes List](user/nodes) | Understanding the mesh network node list |
+| [Signal Meter](user/signal-meter) | How the LoRa signal quality meter works |
+| [Architecture](developer/architecture) | App architecture overview for contributors |
