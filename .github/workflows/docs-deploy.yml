@@ -74,6 +74,11 @@ jobs:
           name: doc-snapshots
           path: Meshtastic/Resources/docs/assets/screenshots/
 
+      - name: Copy snapshots for Jekyll
+        run: |
+          mkdir -p docs/assets/screenshots
+          cp Meshtastic/Resources/docs/assets/screenshots/*.png docs/assets/screenshots/
+
       - name: Install cmark-gfm
         run: sudo apt-get install -y cmark-gfm
 
