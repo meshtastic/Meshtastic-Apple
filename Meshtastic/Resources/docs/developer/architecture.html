@@ -27,7 +27,7 @@
     ├── NodesNavigationState      (tab 2)
     └── SettingsNavigationState   (tab 3)
 </code></pre>
-<p>Deep links use the <code>meshtastic:///</code> URL scheme. <code>Router.route(url:)</code> parses the path and sets the appropriate navigation state.</p>
+<p>Deep links use the <code>meshtastic:///</code> URL scheme. <code>Router.route(url:)</code> parses the path and sets the appropriate navigation state. See <a href="deep-links">Deep Links</a> for the full URL reference.</p>
 <h2>AppState</h2>
 <p><code>AppState</code> wraps <code>Router</code> and is injected as an <code>@EnvironmentObject</code> at the root of the SwiftUI view hierarchy. Views that need to navigate programmatically read <code>@EnvironmentObject var router: Router</code> directly — or more commonly <code>@EnvironmentObject var appState: AppState</code> and access <code>appState.router</code>.</p>
 <h2>AccessoryManager</h2>
