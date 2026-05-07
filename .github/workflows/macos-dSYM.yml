@@ -24,43 +24,47 @@ jobs:
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic
 
-      - name: Archive for iOS (Release) and Generate dSYMs
+      - name: Build Release and Generate dSYMs
         env:
           DATADOG_CLIENT_TOKEN: ${{ secrets.DATADOG_CLIENT_TOKEN }}
         run: |
-          xcodebuild archive \
+          xcodebuild \
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
             -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath ./build/Meshtastic.xcarchive \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath ./build/DerivedData \
             -skipPackagePluginValidation \
             DATADOG_CLIENT_TOKEN="${DATADOG_CLIENT_TOKEN}" \
             DEBUG_INFORMATION_FORMAT=dwarf-with-dsym \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGN_ENTITLEMENTS="" \
-            DEVELOPMENT_TEAM=""
+            build
 
       - name: Collect dSYM Files
         run: |
-          DSYM_DIR="./build/Meshtastic.xcarchive/dSYMs"
-          echo "Found $(find "$DSYM_DIR" -name '*.dSYM' -type d 2>/dev/null | wc -l | tr -d ' ') dSYM bundles:"
-          find "$DSYM_DIR" -name "*.dSYM" -type d | sort
+          mkdir -p ./build/dSYMs
+          find ./build/DerivedData -name "*.dSYM" -exec cp -R {} ./build/dSYMs/ \;
+          COUNT=$(find ./build/dSYMs -name "*.dSYM" -type d | wc -l | tr -d ' ')
+          echo "Found $COUNT dSYM bundles:"
+          find ./build/dSYMs -name "*.dSYM" -type d | sort
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::No dSYM files found"
+            exit 1
+          fi
 
       - name: Upload dSYMs to Datadog
         env:
           DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
           DATADOG_SITE: us5.datadoghq.com
         run: |
-          npx --yes @datadog/datadog-ci dsyms upload \
-            ./build/Meshtastic.xcarchive/dSYMs
+          npx --yes @datadog/datadog-ci dsyms upload ./build/dSYMs
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dsym-files
-          path: ./build/Meshtastic.xcarchive/dSYMs
+          path: ./build/dSYMs
+          retention-days: 30
           retention-days: 30
