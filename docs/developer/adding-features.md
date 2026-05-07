@@ -79,7 +79,7 @@ func routeSettings(path: String) {
 
 The `rawValue` init already handles this automatically for `String`-backed enums — no additional code needed.
 
-Document the new URL in `README.md` under the Deep Links table.
+Document the new URL in `docs/developer/deep-links.md`.
 
 ## 5. Add Logging
 

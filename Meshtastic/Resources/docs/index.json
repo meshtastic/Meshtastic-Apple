@@ -579,10 +579,10 @@
             "existing",
             "create",
             "url",
-            "under",
-            "tests"
+            "tests",
+            "testing"
         ],
-        "charCount": 2712
+        "charCount": 2704
     },
     {
         "id": "architecture",
@@ -668,38 +668,38 @@
         "section": "developer",
         "navOrder": 7,
         "keywords": [
+            "docs",
             "swiftlint",
+            "meshtastic",
             "update",
             "length",
+            "scripts",
             "protobufs",
             "guard",
+            "commit",
             "changes",
             "all",
+            "under",
             "tests",
             "subject",
-            "scripts",
             "release",
             "only",
             "new",
             "ios",
-            "commit",
+            "github",
+            "documentation",
+            "deep",
             "body",
+            "app",
             "xcode",
             "use",
             "uikit",
             "type",
             "submodule",
-            "protos",
-            "process",
-            "pre",
-            "pass",
-            "opening",
-            "lines",
-            "line",
-            "install",
-            "include"
+            "settings",
+            "resources"
         ],
-        "charCount": 2256
+        "charCount": 2823
     },
     {
         "id": "deep-links",

@@ -16,6 +16,24 @@ Thank you for contributing to Meshtastic Apple! Please read this guide before op
 
 Run `./scripts/setup-hooks.sh` once after cloning to install the pre-commit SwiftLint hook.
 
+## Documentation
+
+The app ships a built-in Help & Documentation browser and a Jekyll site on GitHub Pages.
+
+| Resource | Location |
+|----------|----------|
+| GitHub Pages | https://meshtastic.github.io/Meshtastic-Apple/ |
+| In-app | Settings → Help & Documentation |
+| Deep link | `meshtastic:///settings/helpDocs` |
+
+Source markdown lives under `docs/user/` and `docs/developer/`. To rebuild the bundled HTML after editing any markdown:
+
+```sh
+bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta
+```
+
+Commit the regenerated files under `Meshtastic/Resources/docs/` with your PR.
+
 ## Branch Naming
 
 Branch from `main` (trunk-based development). Use descriptive names:
@@ -45,7 +63,7 @@ Explain *what* changed and *why* in the body. Keep subject lines under 72 charac
 - [ ] New tests written for new features and bug fixes
 - [ ] SwiftLint reports no new errors or warnings
 - [ ] UI changes include screenshots or a screen recording in the PR description
-- [ ] Deep link additions are documented in `README.md`
+- [ ] Deep link additions are documented in `docs/developer/deep-links.md`
 - [ ] SwiftData schema changes include a `VersionedSchema` and `MigrationStage`
 - [ ] Protobuf changes are regenerated with `./scripts/gen_protos.sh` and built
 
