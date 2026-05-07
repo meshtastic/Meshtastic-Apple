@@ -13,7 +13,7 @@ Meshtastic-Apple is a SwiftUI client for iOS, iPadOS, and macOS (via Mac Catalys
 ### State & Navigation
 - `Router` (`Meshtastic/Router/Router.swift`) is a `@MainActor` `ObservableObject` that owns a `NavigationState` struct and drives tab/deep-link routing.
 - `NavigationState` and the per-tab enums (`MessagesNavigationState`, `MapNavigationState`, `SettingsNavigationState`) live in `Meshtastic/Router/NavigationState.swift`.
-- Deep links use the `meshtastic:///` URL scheme (see README for the full table). `Router.route(url:)` dispatches them.
+- Deep links use the `meshtastic:///` URL scheme (see `docs/developer/deep-links.md` for the full table). `Router.route(url:)` dispatches them.
 - `AppState` wraps `Router` and is passed as an `@EnvironmentObject` throughout the view hierarchy.
 
 ### Connectivity
@@ -109,7 +109,7 @@ All UI must comply with the [Meshtastic Client Design Standards](https://raw.git
 The app registers the `meshtastic:///` URL scheme. Use `Router.route(url:)` to handle incoming URLs. When adding a new deep link:
 1. Add a case to the appropriate `*NavigationState` enum in `NavigationState.swift`.
 2. Update `Router`'s routing helpers.
-3. Document the URL in the README.
+3. Document the URL in `docs/developer/deep-links.md`.
 
 ## Adding or Updating Protobufs
 
