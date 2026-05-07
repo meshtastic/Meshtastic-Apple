@@ -1,5 +1,5 @@
 ---
-title: CarPlay
+title: 🚗 CarPlay
 parent: User Guide
 nav_order: 14
 ---
