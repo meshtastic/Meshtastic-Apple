@@ -32,8 +32,10 @@ Meshtastic nodes can report sensor data across the mesh, giving you visibility i
 
 The Indoor Air Quality scale shows category bands from Excellent (green) through Hazardous (maroon). The app supports multiple display modes for air quality readings:
 
-![Air Quality Index — all display modes](../assets/screenshots/aqi_all_modes_light.png)
-![Air Quality Index — all display modes (dark)](../assets/screenshots/aqi_all_modes_dark.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/aqi_all_modes_dark.png">
+  <img src="../assets/screenshots/aqi_all_modes_light.png" alt="Air Quality Index — all display modes">
+</picture>
 
 ### Environment
 

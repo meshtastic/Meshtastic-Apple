@@ -49,25 +49,47 @@ Each node is configured with a role that determines how it behaves on the mesh. 
 
 The full node row shows the circle avatar, battery level, encryption status, last-heard time, device role, signal strength, and log indicators all at once.
 
-![Directly connected node, favorite, with signal meter](../assets/screenshots/standard_directConnected.png)
-![Directly connected node, favorite, with signal meter — dark mode](../assets/screenshots/standard_directConnected_dark.png)
-![Multi-hop node 4 hops away](../assets/screenshots/standard_multiHop.png)
-![Multi-hop node 4 hops away — dark mode](../assets/screenshots/standard_multiHop_dark.png)
-![MQTT-bridged node](../assets/screenshots/standard_mqtt.png)
-![MQTT-bridged node — dark mode](../assets/screenshots/standard_mqtt_dark.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/standard_directConnected_dark.png">
+  <img src="../assets/screenshots/standard_directConnected.png" alt="Directly connected node, favorite, with signal meter">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/standard_multiHop_dark.png">
+  <img src="../assets/screenshots/standard_multiHop.png" alt="Multi-hop node 4 hops away">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/standard_mqtt_dark.png">
+  <img src="../assets/screenshots/standard_mqtt.png" alt="MQTT-bridged node">
+</picture>
 
 ## Compact Node Row Examples
 
-![Directly connected node with all telemetry info](../assets/screenshots/compact_directConnected_allInfo.png)
-![Directly connected node with all telemetry info](../assets/screenshots/compact_directConnected_allInfo_dark.png)
-![Multi-hop node 7 hops away](../assets/screenshots/compact_multiHop.png)
-![Multi-hop node 7 hops away](../assets/screenshots/compact_multiHop_dark.png)
-![Node with position, 1 hop](../assets/screenshots/compact_withPosition.png)
-![Node with position, 1 hop](../assets/screenshots/compact_withPosition_dark.png)
-![PKI key mismatch node](../assets/screenshots/compact_pkiMismatch.png)
-![PKI key mismatch node](../assets/screenshots/compact_pkiMismatch_dark.png)
-![MQTT-bridged node](../assets/screenshots/compact_mqtt.png)
-![MQTT-bridged node](../assets/screenshots/compact_mqtt_dark.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_directConnected_allInfo_dark.png">
+  <img src="../assets/screenshots/compact_directConnected_allInfo.png" alt="Directly connected node with all telemetry info">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_multiHop_dark.png">
+  <img src="../assets/screenshots/compact_multiHop.png" alt="Multi-hop node 7 hops away">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_withPosition_dark.png">
+  <img src="../assets/screenshots/compact_withPosition.png" alt="Node with position, 1 hop">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_pkiMismatch_dark.png">
+  <img src="../assets/screenshots/compact_pkiMismatch.png" alt="PKI key mismatch node">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_mqtt_dark.png">
+  <img src="../assets/screenshots/compact_mqtt.png" alt="MQTT-bridged node">
+</picture>
 
 ## Additional Icons
 

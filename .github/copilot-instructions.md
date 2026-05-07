@@ -164,6 +164,14 @@ The app ships a complete offline documentation system (feature `003-app-docs-mar
 ### Doc authoring conventions
 
 - **Screenshots**: Sourced exclusively from `MeshtasticTests/__Snapshots__/SwiftUIViewSnapshotTests/`. Copy PNGs to `docs/assets/screenshots/` and reference them with `![alt](../assets/screenshots/NAME.png)`.
+- **Dark/light image pairs**: When a view is snapshotted in both light and dark mode (e.g. `foo_light.png` + `foo_dark.png`), never embed both `![]()` tags side-by-side — both will render simultaneously. Instead use an HTML `<picture>` element with a `prefers-color-scheme` media query:
+  ```html
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/foo_dark.png">
+    <img src="../assets/screenshots/foo_light.png" alt="Description">
+  </picture>
+  ```
+  `cmark-gfm` is invoked with `--unsafe` so raw HTML passes through to both the Jekyll site and the in-app `WKWebView` renderer.
 - **Icons in tables**: Use `![icon](../assets/screenshots/NAME.png)` inside a markdown table with at minimum `| Icon | Description |` columns. Do not use standalone `![]()` blocks for icon references — use tables (FR-032).
 - **Icon snapshots**: Use `transparent: true`, plain `Image` views (not `Button`/wrapper components), `.font(.title).padding(2)`. Connection-status icons use `systemOrange`. Lock icons use portrait canvas widths (`lockClosed/Open/Red` → `width: 30`).
 - **Callout blocks**: Use `> **Tip — …**` and `> **Warning — …**` blockquote syntax — the build script converts these to styled `<div class="tips-callout">` / `<div class="warning-callout">` elements.

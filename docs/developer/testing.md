@@ -69,6 +69,19 @@ struct MyViewSnapshotTests {
 - For views with `ScrollView` or no intrinsic height, pass an explicit `height:` parameter to `renderImage`.
 - Commit reference PNGs alongside the test file.
 
+### Embedding Dark/Light Snapshot Pairs in Docs
+
+When a view is snapshotted in both colour schemes (e.g. `foo_light.png` + `foo_dark.png`), embedding both `![]()` tags side-by-side causes both images to appear simultaneously on the Jekyll site and in the in-app viewer. Use an HTML `<picture>` element instead:
+
+```html
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/foo_dark.png">
+  <img src="../assets/screenshots/foo_light.png" alt="Description">
+</picture>
+```
+
+This works in both contexts because `build-docs.sh` invokes `cmark-gfm --unsafe` (raw HTML is passed through) and `WKWebView` (used for in-app display) is full WebKit and respects `prefers-color-scheme`.
+
 ### Regenerating Snapshots
 
 Delete the reference PNG and run the test once — it records a new reference. Commit the new reference with your PR.
