@@ -447,178 +447,86 @@ struct CircularProgressViewSnapshotTests {
 @Suite("LoRaSignalStrengthMeter Snapshots")
 struct LoRaSignalStrengthMeterSnapshotTests {
 
-	// MARK: Compact gauge — each signal level
+	// MARK: Compact gauge — all signal levels
 
-	@Test("Compact — Signal Good")
-	func compactGood() async {
+	@Test("Compact — All Levels")
+	func compactAllLevels() async {
 		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: -10, rssi: -100, preset: .longFast, compact: true)
-				.padding(.horizontal, 16),
-			width: 390,
+			of: VStack(spacing: 12) {
+				LoRaSignalStrengthMeter(snr: -10, rssi: -100, preset: .longFast, compact: true)
+				LoRaSignalStrengthMeter(snr: -9.5, rssi: -119, preset: .longFast, compact: true)
+				LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: true)
+				LoRaSignalStrengthMeter(snr: -26.0, rssi: -128, preset: .longFast, compact: true)
+			}
+			.padding(),
+			width: 400,
+			height: 220,
 			transparent: true,
-			named: "signalMeter_compact_good"
+			named: "signalMeter_compact_all"
 		)
 	}
 
-	@Test("Compact — Signal Fair")
-	func compactFair() async {
+	// MARK: Non-compact (bars + text) — all signal levels grid
+
+	@Test("Non-compact — All Levels Grid")
+	func nonCompactAllLevels() async {
 		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: -9.5, rssi: -119, preset: .longFast, compact: true)
-				.padding(.horizontal, 16),
-			width: 390,
+			of: VStack(spacing: 8) {
+				// Row 1 — Good
+				HStack {
+					LoRaSignalStrengthMeter(snr: -1, rssi: -114, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -5, rssi: -100, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -10, rssi: -100, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -17, rssi: -114, preset: .longFast, compact: false)
+				}
+				// Row 2 — Fair
+				HStack {
+					LoRaSignalStrengthMeter(snr: -9.5, rssi: -119, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -15.0, rssi: -115, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -17.5, rssi: -100, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -22.5, rssi: -100, preset: .longFast, compact: false)
+				}
+				// Row 3 — Bad
+				HStack {
+					LoRaSignalStrengthMeter(snr: -11.25, rssi: -120, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -20.25, rssi: -128, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -30, rssi: -120, preset: .longFast, compact: false)
+				}
+				// Row 4 — Bad/None boundary
+				HStack {
+					LoRaSignalStrengthMeter(snr: -15, rssi: -124, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -17.25, rssi: -126, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -19.5, rssi: -128, preset: .longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: -20, rssi: -150, preset: .longFast, compact: false)
+				}
+				// Row 5 — None
+				HStack {
+					LoRaSignalStrengthMeter(snr: -26.0, rssi: -129, preset: .longFast, compact: false)
+				}
+			}
+			.padding(),
+			width: 400,
+			height: 520,
 			transparent: true,
-			named: "signalMeter_compact_fair"
+			named: "signalMeter_full_all"
 		)
 	}
 
-	@Test("Compact — Signal Bad")
-	func compactBad() async {
+	// MARK: Compact node list style (SignalStrengthIndicator) — all levels
+
+	@Test("BLE style — All Levels")
+	func bleAllLevels() async {
 		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: true)
-				.padding(.horizontal, 16),
-			width: 390,
+			of: HStack(spacing: 16) {
+				SignalStrengthIndicator(signalStrength: .strong, width: 5, height: 20)
+				SignalStrengthIndicator(signalStrength: .normal, width: 5, height: 20)
+				SignalStrengthIndicator(signalStrength: .weak, width: 5, height: 20)
+			}
+			.padding(),
+			width: 140,
 			transparent: true,
-			named: "signalMeter_compact_bad"
-		)
-	}
-
-	@Test("Compact — Signal None")
-	func compactNone() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: -26.0, rssi: -128, preset: .longFast, compact: true)
-				.padding(.horizontal, 16),
-			width: 390,
-			transparent: true,
-			named: "signalMeter_compact_none"
-		)
-	}
-
-	// MARK: Non-compact (bars + text) — each signal level
-
-	@Test("Non-compact — Signal Good")
-	func nonCompactGood() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: -1, rssi: -114, preset: .longFast, compact: false),
-			width: 100,
-			transparent: true,
-			named: "signalMeter_full_good"
-		)
-	}
-
-	@Test("Non-compact — Signal Fair")
-	func nonCompactFair() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: -9.5, rssi: -119, preset: .longFast, compact: false),
-			width: 100,
-			transparent: true,
-			named: "signalMeter_full_fair"
-		)
-	}
-
-	@Test("Non-compact — Signal Bad")
-	func nonCompactBad() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: false),
-			width: 100,
-			transparent: true,
-			named: "signalMeter_full_bad"
-		)
-	}
-
-	@Test("Non-compact — Signal None")
-	func nonCompactNone() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: -26.0, rssi: -129, preset: .longFast, compact: false),
-			width: 100,
-			transparent: true,
-			named: "signalMeter_full_none"
-		)
-	}
-
-	// MARK: Bar indicator only — each signal level
-
-	@Test("Indicator bars — Good (green)")
-	func indicatorGood() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthIndicator(signalStrength: .good),
-			width: 60,
-			transparent: true,
-			named: "signalIndicator_good"
-		)
-	}
-
-	@Test("Indicator bars — Fair (yellow)")
-	func indicatorFair() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthIndicator(signalStrength: .fair),
-			width: 60,
-			transparent: true,
-			named: "signalIndicator_fair"
-		)
-	}
-
-	@Test("Indicator bars — Bad (orange)")
-	func indicatorBad() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthIndicator(signalStrength: .bad),
-			width: 60,
-			transparent: true,
-			named: "signalIndicator_bad"
-		)
-	}
-
-	@Test("Indicator bars — None (red)")
-	func indicatorNone() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthIndicator(signalStrength: .none),
-			width: 60,
-			transparent: true,
-			named: "signalIndicator_none"
-		)
-	}
-
-	// MARK: Compact node list style (SignalStrengthIndicator) — each level
-
-	@Test("BLE style — Strong (green)")
-	func bleStrong() async {
-		await assertViewSnapshot(
-			of: SignalStrengthIndicator(signalStrength: .strong, width: 5, height: 20),
-			width: 40,
-			transparent: true,
-			named: "signalBLE_strong"
-		)
-	}
-
-	@Test("BLE style — Normal (yellow)")
-	func bleNormal() async {
-		await assertViewSnapshot(
-			of: SignalStrengthIndicator(signalStrength: .normal, width: 5, height: 20),
-			width: 40,
-			transparent: true,
-			named: "signalBLE_normal"
-		)
-	}
-
-	@Test("BLE style — Weak (red)")
-	func bleWeak() async {
-		await assertViewSnapshot(
-			of: SignalStrengthIndicator(signalStrength: .weak, width: 5, height: 20),
-			width: 40,
-			transparent: true,
-			named: "signalBLE_weak"
-		)
-	}
-
-	// MARK: Doc alias
-
-	@Test("Gradient meter icon")
-	func gradientMeterIcon() async {
-		await assertViewSnapshot(
-			of: LoRaSignalStrengthMeter(snr: 5.5, rssi: -54, preset: .longFast, compact: true)
-				.padding(.horizontal, 16),
-			width: 390,
-			transparent: true,
-			named: "gradientMeter"
+			named: "signalBLE_all"
 		)
 	}
 }
