@@ -1,7 +1,7 @@
 ---
 title: Telemetry & Sensors
 parent: User Guide
-nav_order: 7
+nav_order: 8
 ---
 
 # Telemetry & Sensors
@@ -28,15 +28,12 @@ Meshtastic nodes can report sensor data across the mesh, giving you visibility i
 
 ### Air Quality
 
-| Icon | Display | Description |
-|------|---------|-------------|
-| ![AQI dot](../assets/screenshots/aqiDot.png) | Dot | Coloured dot — red/orange/yellow/green by AQI category. |
-| ![AQI pill](../assets/screenshots/aqiPill.png) | Pill | Compact pill label showing AQI category name. |
-| ![AQI gauge](../assets/screenshots/aqiGauge.png) | Gauge | Circular gauge showing AQI value and category. |
-| ![AQI text](../assets/screenshots/aqiText.png) | Text | Numeric AQI value with category label. |
-| ![IAQ gauge](../assets/screenshots/iaqGauge.png) | IAQ Gauge | Indoor Air Quality circular gauge (BME680). |
-| ![IAQ pill](../assets/screenshots/iaqPill.png) | IAQ Pill | Indoor Air Quality compact pill label. |
-| ![IAQ scale](../assets/screenshots/iaqScale.png) | IAQ Scale | Indoor Air Quality rating scale with category bands. |
+![IAQ Scale](../assets/screenshots/iaqScale.png)
+
+The Indoor Air Quality scale shows category bands from Excellent (green) through Hazardous (maroon). The app supports multiple display modes for air quality readings:
+
+![Air Quality Index — all display modes](../assets/screenshots/aqi_all_modes_light.png)
+![Air Quality Index — all display modes (dark)](../assets/screenshots/aqi_all_modes_dark.png)
 
 ### Environment
 

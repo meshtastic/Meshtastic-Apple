@@ -202,45 +202,89 @@ struct IAQScaleSnapshotTests {
 @Suite("AirQualityIndex Snapshots")
 struct AirQualityIndexSnapshotTests {
 
-	@Test("AQI pill mode")
-	func aqiPill() async {
-		await assertViewSnapshot(of: AirQualityIndex(aqi: 51), width: 200, named: "aqiPill")
+	private var aqiGrid: some View {
+		VStack(spacing: 8) {
+			Text(".pill").font(.title2)
+			HStack {
+				AirQualityIndex(aqi: 6)
+				AirQualityIndex(aqi: 51)
+			}
+			HStack {
+				AirQualityIndex(aqi: 101)
+				AirQualityIndex(aqi: 151)
+			}
+			HStack {
+				AirQualityIndex(aqi: 201)
+				AirQualityIndex(aqi: 351)
+			}
+			Text(".dot").font(.title2)
+			HStack {
+				AirQualityIndex(aqi: 6, displayMode: .dot)
+				AirQualityIndex(aqi: 51, displayMode: .dot)
+				AirQualityIndex(aqi: 101, displayMode: .dot)
+				AirQualityIndex(aqi: 201, displayMode: .dot)
+				AirQualityIndex(aqi: 350, displayMode: .dot)
+				AirQualityIndex(aqi: 351, displayMode: .dot)
+			}
+			Text(".text").font(.title2)
+			HStack {
+				AirQualityIndex(aqi: 6, displayMode: .text)
+				AirQualityIndex(aqi: 51, displayMode: .text)
+				AirQualityIndex(aqi: 101, displayMode: .text)
+			}
+			HStack {
+				AirQualityIndex(aqi: 201, displayMode: .text)
+				AirQualityIndex(aqi: 350, displayMode: .text)
+			}
+			Text(".gauge").font(.title2)
+			HStack(alignment: .top) {
+				AirQualityIndex(aqi: 6, displayMode: .gauge)
+				AirQualityIndex(aqi: 51, displayMode: .gauge)
+				AirQualityIndex(aqi: 101, displayMode: .gauge)
+				AirQualityIndex(aqi: 151, displayMode: .gauge)
+			}
+			HStack(alignment: .top) {
+				AirQualityIndex(aqi: 201, displayMode: .gauge)
+				AirQualityIndex(aqi: 251, displayMode: .gauge)
+				AirQualityIndex(aqi: 301, displayMode: .gauge)
+				AirQualityIndex(aqi: 351, displayMode: .gauge)
+			}
+			HStack(alignment: .top) {
+				AirQualityIndex(aqi: 401, displayMode: .gauge)
+				AirQualityIndex(aqi: 500, displayMode: .gauge)
+			}
+			Text(".gradient").font(.title2)
+			AirQualityIndex(aqi: 6, displayMode: .gradient)
+			AirQualityIndex(aqi: 51, displayMode: .gradient)
+			AirQualityIndex(aqi: 101, displayMode: .gradient)
+			AirQualityIndex(aqi: 201, displayMode: .gradient)
+			AirQualityIndex(aqi: 351, displayMode: .gradient)
+			AirQualityIndex(aqi: 401, displayMode: .gradient)
+			AirQualityIndex(aqi: 500, displayMode: .gradient)
+		}
+		.padding()
 	}
 
-	@Test("AQI dot mode")
-	func aqiDot() async {
-		await assertViewSnapshot(of: AirQualityIndex(aqi: 101, displayMode: .dot), width: 100, named: "aqiDot")
+	@Test("AQI — All Display Modes (Light)")
+	func aqiAllModesLight() async {
+		await assertViewSnapshot(
+			of: aqiGrid,
+			width: 350,
+			height: 820,
+			colorScheme: .light,
+			named: "aqi_all_modes_light"
+		)
 	}
 
-	@Test("AQI text mode")
-	func aqiText() async {
-		await assertViewSnapshot(of: AirQualityIndex(aqi: 201, displayMode: .text), width: 200, named: "aqiText")
-	}
-
-	@Test("AQI gauge mode")
-	func aqiGauge() async {
-		await assertViewSnapshot(of: AirQualityIndex(aqi: 150, displayMode: .gauge), width: 120, height: 120, named: "aqiGauge")
-	}
-
-	@Test("AQI gradient mode")
-	func aqiGradient() async {
-		await assertViewSnapshot(of: AirQualityIndex(aqi: 300, displayMode: .gradient), width: 350, named: "aqiGradient")
-	}
-}
-
-// MARK: - IndoorAirQuality Snapshot Tests
-
-@Suite("IndoorAirQuality Snapshots")
-struct IndoorAirQualitySnapshotTests {
-
-	@Test("IAQ pill mode")
-	func iaqPill() async {
-		await assertViewSnapshot(of: IndoorAirQuality(iaq: 75), width: 200, named: "iaqPill")
-	}
-
-	@Test("IAQ gauge mode")
-	func iaqGauge() async {
-		await assertViewSnapshot(of: IndoorAirQuality(iaq: 250, displayMode: .gauge), width: 120, height: 120, named: "iaqGauge")
+	@Test("AQI — All Display Modes (Dark)")
+	func aqiAllModesDark() async {
+		await assertViewSnapshot(
+			of: aqiGrid,
+			width: 350,
+			height: 820,
+			colorScheme: .dark,
+			named: "aqi_all_modes_dark"
+		)
 	}
 }
 

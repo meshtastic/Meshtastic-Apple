@@ -1,7 +1,7 @@
 ---
 title: Map & Waypoints
 parent: User Guide
-nav_order: 5
+nav_order: 6
 ---
 
 # Map & Waypoints
@@ -48,7 +48,5 @@ Tap the waypoint, then tap **Delete**. The deletion broadcasts to all nodes.
 When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.
 
 ## Your Location
-
-![Empty map without nodes](../assets/screenshots/emptyMap.png)
 
 Your current GPS position appears as a blue dot (standard iOS location indicator). Enable position broadcasting in **Settings → Position** to share your location with the mesh.

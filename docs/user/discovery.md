@@ -1,7 +1,7 @@
 ---
 title: Local Mesh Discovery
 parent: User Guide
-nav_order: 10
+nav_order: 11
 ---
 
 # Local Mesh Discovery

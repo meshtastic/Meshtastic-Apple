@@ -1,7 +1,7 @@
 ---
 title: MQTT
 parent: User Guide
-nav_order: 9
+nav_order: 10
 ---
 
 # MQTT

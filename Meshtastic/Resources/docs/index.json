@@ -42,7 +42,7 @@
         "id": "discovery",
         "title": "Local Mesh Discovery",
         "section": "user",
-        "navOrder": 10,
+        "navOrder": 11,
         "keywords": [
             "setting",
             "settings",
@@ -81,7 +81,7 @@
         "id": "firmware",
         "title": "Firmware Updates",
         "section": "user",
-        "navOrder": 11,
+        "navOrder": 5,
         "keywords": [
             "update",
             "firmware",
@@ -159,7 +159,7 @@
         "id": "map",
         "title": "Map &amp; Waypoints",
         "section": "user",
-        "navOrder": 5,
+        "navOrder": 6,
         "keywords": [
             "waypoint",
             "tap",
@@ -237,7 +237,7 @@
         "id": "mqtt",
         "title": "MQTT",
         "section": "user",
-        "navOrder": 9,
+        "navOrder": 10,
         "keywords": [
             "mqtt",
             "broker",
@@ -315,7 +315,7 @@
         "id": "settings",
         "title": "Settings",
         "section": "user",
-        "navOrder": 6,
+        "navOrder": 7,
         "keywords": [
             "radio",
             "settings",
@@ -354,7 +354,7 @@
         "id": "tak",
         "title": "TAK Integration",
         "section": "user",
-        "navOrder": 8,
+        "navOrder": 9,
         "keywords": [
             "tak",
             "cot",
@@ -393,7 +393,7 @@
         "id": "telemetry",
         "title": "Telemetry &amp; Sensors",
         "section": "user",
-        "navOrder": 7,
+        "navOrder": 8,
         "keywords": [
             "telemetry",
             "sensor",
@@ -429,10 +429,39 @@
         "charCount": 3064
     },
     {
+        "id": "signal-meter",
+        "title": "Signal Meter",
+        "section": "user",
+        "navOrder": 12,
+        "keywords": [
+            "signal",
+            "meter",
+            "bars",
+            "rssi",
+            "snr",
+            "lora",
+            "noise",
+            "strength",
+            "quality",
+            "good",
+            "fair",
+            "bad",
+            "none",
+            "clarity",
+            "interference",
+            "antenna",
+            "preset",
+            "spread",
+            "spectrum",
+            "decibels"
+        ],
+        "charCount": 3200
+    },
+    {
         "id": "watch",
         "title": "Apple Watch App",
         "section": "user",
-        "navOrder": 12,
+        "navOrder": 13,
         "keywords": [
             "watch",
             "node",
