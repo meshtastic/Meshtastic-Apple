@@ -194,6 +194,12 @@ td img[src$="circleTextDefault.png"], th img[src$="circleTextDefault.png"] {
     border-radius: 50%;
 }
 
+/* Gradient signal meter — cap width so it doesn't overwhelm the table row */
+td img[src$="gradientMeter.png"] {
+    height: auto;
+    max-width: 100px;
+}
+
 /* Telemetry page — environment/AQI compact widget tiles are richer and need 3× height */
 body[data-page="telemetry"] td img[src$="humidityWithDew.png"],
 body[data-page="telemetry"] td img[src$="humidityNoDew.png"],
@@ -253,7 +259,11 @@ img[src$="_dark.png"] {
     img[src$="compact_multiHop.png"],
     img[src$="compact_withPosition.png"],
     img[src$="compact_pkiMismatch.png"],
-    img[src$="compact_mqtt.png"] {
+    img[src$="compact_mqtt.png"],
+    img[src$="standard_directConnected.png"],
+    img[src$="standard_multiHop.png"],
+    img[src$="standard_mqtt.png"],
+    img[src$="mapAnnotations.png"] {
         display: none;
     }
     img[src$="_dark.png"] {

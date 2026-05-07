@@ -45,6 +45,17 @@ Each node is configured with a role that determines how it behaves on the mesh. 
 
 [Choosing the Right Device Role →](https://meshtastic.org/blog/choosing-the-right-device-role/)
 
+## Complete Node Row Examples
+
+The full node row shows the circle avatar, battery level, encryption status, last-heard time, device role, signal strength, and log indicators all at once.
+
+![Directly connected node, favorite, with signal meter](../assets/screenshots/standard_directConnected.png)
+![Directly connected node, favorite, with signal meter — dark mode](../assets/screenshots/standard_directConnected_dark.png)
+![Multi-hop node 4 hops away](../assets/screenshots/standard_multiHop.png)
+![Multi-hop node 4 hops away — dark mode](../assets/screenshots/standard_multiHop_dark.png)
+![MQTT-bridged node](../assets/screenshots/standard_mqtt.png)
+![MQTT-bridged node — dark mode](../assets/screenshots/standard_mqtt_dark.png)
+
 ## Compact Node Row Examples
 
 ![Directly connected node with all telemetry info](../assets/screenshots/compact_directConnected_allInfo.png)
@@ -58,7 +69,7 @@ Each node is configured with a role that determines how it behaves on the mesh. 
 ![MQTT-bridged node](../assets/screenshots/compact_mqtt.png)
 ![MQTT-bridged node](../assets/screenshots/compact_mqtt_dark.png)
 
-## Logs (Node Detail View)
+## Additional Icons
 
 Tap a node and scroll to the Logs section for detailed metrics:
 
@@ -66,11 +77,6 @@ Tap a node and scroll to the Logs section for detailed metrics:
 |-----|-------------|
 | ![Distance & Bearing](../assets/screenshots/logDistance.png) | Direction and distance to the node based on GPS. Requires both devices to share location. |
 | ![Channel badge](../assets/screenshots/channelBadge.png) | The numbered circle shows which channel the node uses. Only shown for secondary channels (not primary channel 0). |
-| ![Signal: Good](../assets/screenshots/signalGood.png) | SNR is above the modem preset limit — strong, reliable signal. |
-| ![Signal: Fair](../assets/screenshots/signalBad.png) | SNR is slightly below the modem preset limit — connection may be intermittent. |
-| ![Signal: Bad](../assets/screenshots/signalBad.png) | SNR is well below the modem preset limit — expect packet loss. |
-| ![Signal: Very Bad](../assets/screenshots/signalNone.png) | SNR is far below the modem preset limit — communication unlikely. |
-| ![Gradient meter](../assets/screenshots/gradientMeter.png) | Signal strength bar (red → orange → yellow → green) combining SNR and RSSI relative to modem preset. |
 | ![Device Metrics](../assets/screenshots/logDeviceMetrics.png) | Battery level, voltage, channel utilisation, and airtime reported by the node. |
 | ![Positions](../assets/screenshots/logPositions.png) | GPS position data including latitude, longitude, and altitude. |
 | ![Environment](../assets/screenshots/logEnvironment.png) | Sensor data: temperature, humidity, barometric pressure. |

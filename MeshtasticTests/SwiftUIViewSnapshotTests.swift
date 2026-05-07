@@ -447,19 +447,179 @@ struct CircularProgressViewSnapshotTests {
 @Suite("LoRaSignalStrengthMeter Snapshots")
 struct LoRaSignalStrengthMeterSnapshotTests {
 
-	@Test("LoRa meter compact good signal")
+	// MARK: Compact gauge — each signal level
+
+	@Test("Compact — Signal Good")
 	func compactGood() async {
-		await assertViewSnapshot(of: LoRaSignalStrengthMeter(snr: -10, rssi: -100, preset: .longFast, compact: true), width: 300, named: "compactGood")
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: -10, rssi: -100, preset: .longFast, compact: true)
+				.padding(.horizontal, 16),
+			width: 390,
+			transparent: true,
+			named: "signalMeter_compact_good"
+		)
 	}
 
-	@Test("LoRa meter non-compact bad signal")
-	func nonCompactBad() async {
-		await assertViewSnapshot(of: LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: false), width: 100, named: "nonCompactBad")
+	@Test("Compact — Signal Fair")
+	func compactFair() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: -9.5, rssi: -119, preset: .longFast, compact: true)
+				.padding(.horizontal, 16),
+			width: 390,
+			transparent: true,
+			named: "signalMeter_compact_fair"
+		)
 	}
+
+	@Test("Compact — Signal Bad")
+	func compactBad() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: true)
+				.padding(.horizontal, 16),
+			width: 390,
+			transparent: true,
+			named: "signalMeter_compact_bad"
+		)
+	}
+
+	@Test("Compact — Signal None")
+	func compactNone() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: -26.0, rssi: -128, preset: .longFast, compact: true)
+				.padding(.horizontal, 16),
+			width: 390,
+			transparent: true,
+			named: "signalMeter_compact_none"
+		)
+	}
+
+	// MARK: Non-compact (bars + text) — each signal level
+
+	@Test("Non-compact — Signal Good")
+	func nonCompactGood() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: -1, rssi: -114, preset: .longFast, compact: false),
+			width: 100,
+			transparent: true,
+			named: "signalMeter_full_good"
+		)
+	}
+
+	@Test("Non-compact — Signal Fair")
+	func nonCompactFair() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: -9.5, rssi: -119, preset: .longFast, compact: false),
+			width: 100,
+			transparent: true,
+			named: "signalMeter_full_fair"
+		)
+	}
+
+	@Test("Non-compact — Signal Bad")
+	func nonCompactBad() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: -12.75, rssi: -139, preset: .longFast, compact: false),
+			width: 100,
+			transparent: true,
+			named: "signalMeter_full_bad"
+		)
+	}
+
+	@Test("Non-compact — Signal None")
+	func nonCompactNone() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: -26.0, rssi: -129, preset: .longFast, compact: false),
+			width: 100,
+			transparent: true,
+			named: "signalMeter_full_none"
+		)
+	}
+
+	// MARK: Bar indicator only — each signal level
+
+	@Test("Indicator bars — Good (green)")
+	func indicatorGood() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthIndicator(signalStrength: .good),
+			width: 60,
+			transparent: true,
+			named: "signalIndicator_good"
+		)
+	}
+
+	@Test("Indicator bars — Fair (yellow)")
+	func indicatorFair() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthIndicator(signalStrength: .fair),
+			width: 60,
+			transparent: true,
+			named: "signalIndicator_fair"
+		)
+	}
+
+	@Test("Indicator bars — Bad (orange)")
+	func indicatorBad() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthIndicator(signalStrength: .bad),
+			width: 60,
+			transparent: true,
+			named: "signalIndicator_bad"
+		)
+	}
+
+	@Test("Indicator bars — None (red)")
+	func indicatorNone() async {
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthIndicator(signalStrength: .none),
+			width: 60,
+			transparent: true,
+			named: "signalIndicator_none"
+		)
+	}
+
+	// MARK: Compact node list style (SignalStrengthIndicator) — each level
+
+	@Test("BLE style — Strong (green)")
+	func bleStrong() async {
+		await assertViewSnapshot(
+			of: SignalStrengthIndicator(signalStrength: .strong, width: 5, height: 20),
+			width: 40,
+			transparent: true,
+			named: "signalBLE_strong"
+		)
+	}
+
+	@Test("BLE style — Normal (yellow)")
+	func bleNormal() async {
+		await assertViewSnapshot(
+			of: SignalStrengthIndicator(signalStrength: .normal, width: 5, height: 20),
+			width: 40,
+			transparent: true,
+			named: "signalBLE_normal"
+		)
+	}
+
+	@Test("BLE style — Weak (red)")
+	func bleWeak() async {
+		await assertViewSnapshot(
+			of: SignalStrengthIndicator(signalStrength: .weak, width: 5, height: 20),
+			width: 40,
+			transparent: true,
+			named: "signalBLE_weak"
+		)
+	}
+
+	// MARK: Doc alias
 
 	@Test("Gradient meter icon")
 	func gradientMeterIcon() async {
-		await assertViewSnapshot(of: LoRaSignalStrengthMeter(snr: -8, rssi: -95, preset: .longFast, compact: true), width: 180, transparent: true, named: "gradientMeter")
+		await assertViewSnapshot(
+			of: LoRaSignalStrengthMeter(snr: 5.5, rssi: -54, preset: .longFast, compact: true)
+				.padding(.horizontal, 16),
+			width: 390,
+			transparent: true,
+			named: "gradientMeter"
+		)
 	}
 }
 
@@ -525,6 +685,228 @@ struct DiscoveryMapViewSnapshotTests {
 			width: 375,
 			height: 300,
 			named: "emptyMap"
+		)
+	}
+}
+
+// MARK: - Doc Map Preview
+
+/// Purely-static SwiftUI "map" used for documentation screenshots.
+/// Renders a stylised city-block background (no MapKit tile dependency) with
+/// node circle annotations, connection lines, and an optional waypoint marker.
+private struct DocMapPreviewView: View {
+	struct NodePin: Identifiable {
+		let id = UUID()
+		let shortName: String
+		let num: Int64
+		let latitude: Double
+		let longitude: Double
+		let isDirect: Bool
+		var isWaypoint: Bool = false
+	}
+
+	let userLatitude: Double
+	let userLongitude: Double
+	let pins: [NodePin]
+	var colorScheme: ColorScheme = .light
+
+	// Fixed canvas size for consistent rendering
+	private let w: CGFloat = 390
+	private let h: CGFloat = 300
+
+	// Padded lat/lon extents so pins don't sit right at the edges
+	private var minLat: Double {
+		let lats = pins.map(\.latitude) + [userLatitude]
+		let span = max((lats.max()! - lats.min()!) * 0.45, 0.003)
+		return lats.min()! - span
+	}
+	private var maxLat: Double {
+		let lats = pins.map(\.latitude) + [userLatitude]
+		let span = max((lats.max()! - lats.min()!) * 0.45, 0.003)
+		return lats.max()! + span
+	}
+	private var minLon: Double {
+		let lons = pins.map(\.longitude) + [userLongitude]
+		let span = max((lons.max()! - lons.min()!) * 0.45, 0.003)
+		return lons.min()! - span
+	}
+	private var maxLon: Double {
+		let lons = pins.map(\.longitude) + [userLongitude]
+		let span = max((lons.max()! - lons.min()!) * 0.45, 0.003)
+		return lons.max()! + span
+	}
+
+	/// Maps a lat/lon pair to a point in the fixed canvas coordinate space.
+	private func toXY(_ lat: Double, _ lon: Double) -> CGPoint {
+		let latRange = maxLat - minLat
+		let lonRange = maxLon - minLon
+		let x = lonRange > 0 ? CGFloat((lon - minLon) / lonRange) * w : w / 2
+		let y = latRange > 0 ? CGFloat(1.0 - (lat - minLat) / latRange) * h : h / 2
+		return CGPoint(x: x, y: y)
+	}
+
+	private var isDark: Bool { colorScheme == .dark }
+
+	var body: some View {
+		ZStack(alignment: .topLeading) {
+			mapBackground
+			linesOverlay
+			// "You" marker
+			let youPt = toXY(userLatitude, userLongitude)
+			Image(systemName: "location.circle.fill")
+				.foregroundStyle(.orange)
+				.font(.system(size: 28))
+				.shadow(color: .black.opacity(0.3), radius: 2)
+				.position(youPt)
+			// Node / waypoint pins
+			ForEach(pins) { pin in
+				if pin.isWaypoint {
+					waypointMarker.position(toXY(pin.latitude, pin.longitude))
+				} else {
+					CircleText(
+						text: pin.shortName,
+						color: Color(UIColor(hex: UInt32(pin.num))),
+						circleSize: 34
+					)
+					.shadow(color: .black.opacity(0.25), radius: 2)
+					.position(toXY(pin.latitude, pin.longitude))
+				}
+			}
+		}
+		.frame(width: w, height: h)
+		.clipped()
+	}
+
+	private var waypointMarker: some View {
+		ZStack {
+			Circle()
+				.fill(Color.purple.opacity(0.85))
+				.frame(width: 30, height: 30)
+			Image(systemName: "star.fill")
+				.font(.system(size: 14))
+				.foregroundStyle(.white)
+		}
+		.shadow(color: .black.opacity(0.3), radius: 2)
+	}
+
+	private var mapBackground: some View {
+		// Colour palette adapts for light/dark map styles
+		let land  = isDark ? Color(red: 0.17, green: 0.20, blue: 0.15) : Color(red: 0.93, green: 0.94, blue: 0.89)
+		let block = isDark ? Color(red: 0.23, green: 0.26, blue: 0.21) : Color(red: 0.97, green: 0.96, blue: 0.93)
+		let road  = isDark ? Color(red: 0.32, green: 0.36, blue: 0.30).opacity(0.9) : Color.white.opacity(0.80)
+		let park  = isDark ? Color(red: 0.10, green: 0.22, blue: 0.09).opacity(0.85) : Color(red: 0.70, green: 0.86, blue: 0.62).opacity(0.75)
+		let water = isDark ? Color(red: 0.05, green: 0.13, blue: 0.24).opacity(0.90) : Color(red: 0.57, green: 0.79, blue: 0.93).opacity(0.72)
+
+		return Canvas { ctx, size in
+			// Land base
+			ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(land))
+			// City block grid
+			var col: CGFloat = 0
+			while col < size.width {
+				var row: CGFloat = 0
+				while row < size.height {
+					ctx.fill(
+						Path(CGRect(x: col + 5, y: row + 5, width: 45, height: 35)),
+						with: .color(block)
+					)
+					row += 45
+				}
+				col += 55
+			}
+			// Horizontal roads
+			var row: CGFloat = 0
+			while row < size.height {
+				ctx.fill(Path(CGRect(x: 0, y: row, width: size.width, height: 5)), with: .color(road))
+				row += 45
+			}
+			// Vertical roads
+			col = 0
+			while col < size.width {
+				ctx.fill(Path(CGRect(x: col, y: 0, width: 5, height: size.height)), with: .color(road))
+				col += 55
+			}
+			// Park (bottom-right quadrant)
+			ctx.fill(
+				Path(CGRect(x: size.width * 0.60, y: size.height * 0.50, width: size.width * 0.40, height: size.height * 0.50)),
+				with: .color(park)
+			)
+			// Water body (bottom-left corner)
+			ctx.fill(
+				Path(CGRect(x: 0, y: size.height * 0.72, width: size.width * 0.22, height: size.height * 0.28)),
+				with: .color(water)
+			)
+		}
+		.frame(width: w, height: h)
+	}
+
+	private var linesOverlay: some View {
+		let userPt = toXY(userLatitude, userLongitude)
+		let meshPins = pins.filter { !$0.isWaypoint }
+		let nodePts = meshPins.map { toXY($0.latitude, $0.longitude) }
+		let directFlags = meshPins.map { $0.isDirect }
+		return Canvas { ctx, _ in
+			for i in 0..<meshPins.count {
+				var path = Path()
+				path.move(to: userPt)
+				path.addLine(to: nodePts[i])
+				if directFlags[i] {
+					ctx.stroke(path, with: .color(Color(red: 0.0, green: 0.72, blue: 0.2).opacity(0.70)),
+								style: StrokeStyle(lineWidth: 2.5))
+				} else {
+					ctx.stroke(path, with: .color(Color(red: 1.0, green: 0.55, blue: 0.0).opacity(0.55)),
+								style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+				}
+			}
+		}
+		.frame(width: w, height: h)
+	}
+}
+
+// MARK: - DocMapAnnotation Snapshot Tests
+
+@Suite("DocMapAnnotation Snapshots")
+struct DocMapAnnotationSnapshotTests {
+
+	private func makeView(colorScheme: ColorScheme = .light) -> DocMapPreviewView {
+		DocMapPreviewView(
+			userLatitude: 37.7749,
+			userLongitude: -122.4194,
+			pins: [
+				// Directly connected — HS01 "Hopscotch" (green solid line)
+				.init(shortName: "HS01", num: 0xE75432, latitude: 37.7810, longitude: -122.4140, isDirect: true),
+				// 1 hop — TRL "Trail Node" (orange dashed line)
+				.init(shortName: "TRL", num: 0x27B06E, latitude: 37.7690, longitude: -122.4260, isDirect: false),
+				// Multi-hop — B "Brad!!" (orange dashed)
+				.init(shortName: "B", num: 0x3A9FD1, latitude: 37.7790, longitude: -122.4290, isDirect: false),
+				// MQTT — MQTM "MQTT Matt" (orange dashed)
+				.init(shortName: "MQTM", num: 0x5B2E8C, latitude: 37.7710, longitude: -122.4090, isDirect: false),
+				// Waypoint — in the park area, away from other pins
+				.init(shortName: "★", num: 0, latitude: 37.7680, longitude: -122.4065, isDirect: false, isWaypoint: true)
+			],
+			colorScheme: colorScheme
+		)
+	}
+
+	@Test("Map with node annotations (light)")
+	@MainActor
+	func mapAnnotations() async {
+		await assertViewSnapshot(
+			of: makeView(),
+			width: 390,
+			height: 300,
+			named: "mapAnnotations"
+		)
+	}
+
+	@Test("Map with node annotations (dark)")
+	@MainActor
+	func mapAnnotationsDark() async {
+		await assertViewSnapshot(
+			of: makeView(colorScheme: .dark),
+			width: 390,
+			height: 300,
+			colorScheme: .dark,
+			named: "mapAnnotations_dark"
 		)
 	}
 }
@@ -891,6 +1273,180 @@ struct NodeListItemCompactSnapshotTests {
 			width: 390,
 			colorScheme: .dark,
 			named: "compact_withPosition_dark"
+		)
+	}
+}
+
+// MARK: - NodeListItem Snapshot Tests
+
+@Suite("NodeListItem Snapshots")
+struct NodeListItemSnapshotTests {
+
+	// MARK: Helpers
+
+	private func makeNode(
+		longName: String,
+		shortName: String,
+		num: Int64 = 0,
+		hopsAway: Int32 = 0,
+		snr: Float = 0,
+		rssi: Int32 = 0,
+		batteryLevel: Int32? = nil,
+		latitudeI: Int32? = nil,
+		longitudeI: Int32? = nil,
+		viaMqtt: Bool = false,
+		favorite: Bool = false,
+		pkiEncrypted: Bool = false,
+		keyMatch: Bool = true,
+		role: Int32 = 0,
+		lastHeard: Date? = nil
+	) -> NodeInfoEntity {
+		let node = NodeInfoEntity()
+		node.num = num
+		let user = UserEntity()
+		user.longName = longName
+		user.shortName = shortName
+		user.pkiEncrypted = pkiEncrypted
+		user.keyMatch = keyMatch
+		user.role = role
+		node.user = user
+		node.hopsAway = hopsAway
+		node.snr = snr
+		node.rssi = rssi
+		node.viaMqtt = viaMqtt
+		node.favorite = favorite
+		node.lastHeard = lastHeard
+		if let battery = batteryLevel {
+			let telemetry = TelemetryEntity()
+			telemetry.batteryLevel = battery
+			telemetry.distance = 100
+			node.telemetries = [telemetry]
+		}
+		if let lat = latitudeI, let lon = longitudeI {
+			let position = PositionEntity()
+			position.latitudeI = lat
+			position.longitudeI = lon
+			node.positions = [position]
+		}
+		return node
+	}
+
+	// MARK: Tests — light
+
+	@Test("Directly connected, online, all info")
+	func directlyConnected() async {
+		let node = makeNode(
+			longName: "Hopscotch",
+			shortName: "HS01",
+			num: 0xE75432,
+			snr: 5.5,
+			rssi: -54,
+			batteryLevel: 85,
+			latitudeI: 374206000,
+			longitudeI: -1221350000,
+			favorite: true,
+			lastHeard: Date(timeIntervalSinceNow: -30)
+		)
+		await assertViewSnapshot(
+			of: NodeListItem(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
+			width: 390,
+			named: "standard_directConnected"
+		)
+	}
+
+	@Test("Multi-hop node, 4 hops away")
+	func multiHop() async {
+		let node = makeNode(
+			longName: "Brad!!",
+			shortName: "B",
+			num: 0x3A9FD1,
+			hopsAway: 4,
+			batteryLevel: 62,
+			lastHeard: Date(timeIntervalSinceNow: -3600)
+		)
+		await assertViewSnapshot(
+			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
+			width: 390,
+			named: "standard_multiHop"
+		)
+	}
+
+	@Test("MQTT node, via MQTT")
+	func mqttNode() async {
+		let node = makeNode(
+			longName: "MQTT Matt",
+			shortName: "MQTM",
+			num: 0x5B2E8C,
+			hopsAway: 2,
+			viaMqtt: true,
+			role: 3,
+			lastHeard: Date(timeIntervalSinceNow: -98200)
+		)
+		await assertViewSnapshot(
+			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
+			width: 390,
+			named: "standard_mqtt"
+		)
+	}
+
+	// MARK: Dark mode variants
+
+	@Test("Directly connected, online, all info — dark")
+	func directlyConnectedDark() async {
+		let node = makeNode(
+			longName: "Hopscotch",
+			shortName: "HS01",
+			num: 0xE75432,
+			snr: 5.5,
+			rssi: -54,
+			batteryLevel: 85,
+			latitudeI: 374206000,
+			longitudeI: -1221350000,
+			favorite: true,
+			lastHeard: Date(timeIntervalSinceNow: -30)
+		)
+		await assertViewSnapshot(
+			of: NodeListItem(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
+			width: 390,
+			colorScheme: .dark,
+			named: "standard_directConnected_dark"
+		)
+	}
+
+	@Test("Multi-hop node, 4 hops away — dark")
+	func multiHopDark() async {
+		let node = makeNode(
+			longName: "Brad!!",
+			shortName: "B",
+			num: 0x3A9FD1,
+			hopsAway: 4,
+			batteryLevel: 62,
+			lastHeard: Date(timeIntervalSinceNow: -3600)
+		)
+		await assertViewSnapshot(
+			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
+			width: 390,
+			colorScheme: .dark,
+			named: "standard_multiHop_dark"
+		)
+	}
+
+	@Test("MQTT node, via MQTT — dark")
+	func mqttNodeDark() async {
+		let node = makeNode(
+			longName: "MQTT Matt",
+			shortName: "MQTM",
+			num: 0x5B2E8C,
+			hopsAway: 2,
+			viaMqtt: true,
+			role: 3,
+			lastHeard: Date(timeIntervalSinceNow: -98200)
+		)
+		await assertViewSnapshot(
+			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
+			width: 390,
+			colorScheme: .dark,
+			named: "standard_mqtt_dark"
 		)
 	}
 }

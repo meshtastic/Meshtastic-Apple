@@ -10,9 +10,7 @@ The Map tab shows all nodes that have shared a position, overlaid on an Apple Ma
 
 ## Node Pins
 
-![Map showing node pins](../assets/screenshots/mapWithNodes.png)
-
-Each node that has reported a GPS position appears as a coloured circle pin on the map. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
+Each node that has reported a GPS position appears as a coloured circle pin on the map. The **green solid line** shows a directly connected node; **orange dashed lines** show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
 
 Pins update automatically when a new position packet is received from the mesh.
 
