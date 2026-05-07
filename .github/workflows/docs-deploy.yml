@@ -95,6 +95,7 @@ jobs:
         run: bundle exec jekyll build --destination ../_site --baseurl ""
         env:
           JEKYLL_ENV: production
+          PAGES_REPO_NWO: meshtastic/Meshtastic-Apple
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
