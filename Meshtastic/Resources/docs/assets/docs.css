@@ -276,9 +276,18 @@ hr {
  * Light/dark image switching — _dark.png suffix convention.
  * Images named *_dark.png are hidden in light mode; their paired light counterparts
  * are hidden in dark mode. Both variants must appear in the HTML for this to work.
+ *
+ * NOTE: <img> elements inside <picture> elements are excluded — the browser's
+ * native <picture>/<source media="(prefers-color-scheme:dark)"> logic handles
+ * image selection for those; the CSS fallback must not interfere.
  */
 img[src$="_dark.png"] {
     display: none;
+}
+
+/* <picture> img must never be hidden by CSS — let the browser's picture logic decide */
+picture img {
+    display: block !important;
 }
 
 @media (prefers-color-scheme: dark) {
