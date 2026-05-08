@@ -436,27 +436,52 @@ struct BatteryCompactSnapshotTests {
 
 	@Test("Battery full")
 	func batteryFull() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: 95, font: .caption, iconFont: .callout, color: Color(uiColor: .systemGreen)), width: 200, named: "batteryFull")
+		let view = Image(systemName: "battery.75")
+			.font(.title)
+			.foregroundColor(Color(uiColor: .systemGreen))
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryFull")
 	}
 
 	@Test("Battery low")
 	func batteryLow() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: 10, font: .caption, iconFont: .callout, color: Color(uiColor: .systemOrange)), width: 200, named: "batteryLow")
+		let view = Image(systemName: "battery.25")
+			.font(.title)
+			.foregroundColor(Color(uiColor: .systemOrange))
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryLow")
 	}
 
 	@Test("Battery charging")
 	func batteryCharging() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: 100, font: .caption, iconFont: .callout, color: Color(uiColor: .systemGreen)), width: 200, named: "batteryCharging")
+		let view = Image(systemName: "battery.100.bolt")
+			.font(.title)
+			.foregroundColor(Color(uiColor: .systemGreen))
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryCharging")
 	}
 
 	@Test("Battery plugged in")
 	func batteryPluggedIn() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: 101, font: .caption, iconFont: .callout, color: Color(uiColor: .systemBlue)), width: 200, named: "batteryPluggedIn")
+		let view = Image(systemName: "powerplug")
+			.font(.title)
+			.foregroundColor(Color(uiColor: .systemBlue))
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryPluggedIn")
 	}
 
 	@Test("Battery nil")
 	func batteryNil() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: nil, font: .caption, iconFont: .callout, color: .gray), width: 200, named: "batteryNil")
+		let view = Image(systemName: "battery.0")
+			.font(.title)
+			.foregroundColor(.gray)
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryNil")
 	}
 }
 

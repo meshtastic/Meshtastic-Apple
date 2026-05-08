@@ -174,16 +174,6 @@ td img[src$="progressError.png"] {
     width: 80px;
 }
 
-/* Battery / device-metrics widget images are wide HStacks — cap to fit the column */
-td img[src$="batteryFull.png"],
-td img[src$="batteryLow.png"],
-td img[src$="batteryCharging.png"],
-td img[src$="batteryPluggedIn.png"],
-td img[src$="batteryNil.png"] {
-    height: auto;
-    width: 80px;
-}
-
 /* Any cell whose sole content is an image — centre both axes */
 td:has(> img) {
     text-align: center;
