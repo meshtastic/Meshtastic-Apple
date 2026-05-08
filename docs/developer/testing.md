@@ -75,8 +75,8 @@ When a view is snapshotted in both colour schemes (e.g. `foo_light.png` + `foo_d
 
 ```html
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/foo_dark.png">
-  <img src="../assets/screenshots/foo_light.png" alt="Description">
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/foo_dark.png" />
+  <img src="../assets/screenshots/foo_light.png" alt="Description" />
 </picture>
 ```
 

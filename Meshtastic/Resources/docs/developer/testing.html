@@ -64,8 +64,8 @@ struct MyViewSnapshotTests {
 <h3>Embedding Dark/Light Snapshot Pairs in Docs</h3>
 <p>When a view is snapshotted in both colour schemes (e.g. <code>foo_light.png</code> + <code>foo_dark.png</code>), embedding both <code>![]()</code> tags side-by-side causes both images to appear simultaneously on the Jekyll site and in the in-app viewer. Use an HTML <code>&lt;picture&gt;</code> element instead:</p>
 <pre><code class="language-html">&lt;picture&gt;
-  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../assets/screenshots/foo_dark.png&quot;&gt;
-  &lt;img src=&quot;../assets/screenshots/foo_light.png&quot; alt=&quot;Description&quot;&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../assets/screenshots/foo_dark.png&quot; /&gt;
+  &lt;img src=&quot;../assets/screenshots/foo_light.png&quot; alt=&quot;Description&quot; /&gt;
 &lt;/picture&gt;
 </code></pre>
 <p>This works in both contexts because <code>build-docs.sh</code> invokes <code>cmark-gfm --unsafe</code> (raw HTML is passed through) and <code>WKWebView</code> (used for in-app display) is full WebKit and respects <code>prefers-color-scheme</code>.</p>
