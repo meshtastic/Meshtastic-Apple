@@ -132,6 +132,9 @@ html = re.sub(r"<blockquote>\s*<p>(.*?)</p>\s*</blockquote>", repl, html, flags=
 print(html, end="")
 ')"
 
+    # Rewrite internal .md hrefs to .html so in-app WKWebView links work
+    html_content="$(echo "$html_content" | sed 's|href="\([^"]*\)\.md"|href="\1.html"|g')"
+
     local title
     # Extract first H1 as title; fall back to stem
     title="$(echo "$html_content" | grep -o '<h1[^>]*>[^<]*</h1>' | head -1 | sed 's/<[^>]*>//g')"
