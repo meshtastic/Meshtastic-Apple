@@ -69,7 +69,7 @@ body {
     max-width: 100%;
 }
 
-@media (min-width: 2560px) {
+@media (min-width: 1920px) {
     body {
         max-width: 900px;
         padding: 24px 32px 48px;
