@@ -507,6 +507,45 @@
         "charCount": 2811
     },
     {
+        "id": "translate",
+        "title": "Translate the App",
+        "section": "user",
+        "navOrder": 14,
+        "keywords": [
+            "project",
+            "meshtastic",
+            "app",
+            "translations",
+            "apple",
+            "xcode",
+            "new",
+            "language",
+            "xcstrings",
+            "steps",
+            "release",
+            "open",
+            "localizable",
+            "locale",
+            "follow",
+            "adding",
+            "add",
+            "yet",
+            "xcworkspace",
+            "wider",
+            "uses",
+            "upon",
+            "updating",
+            "update",
+            "translation",
+            "translate",
+            "tip",
+            "thank",
+            "subject",
+            "string"
+        ],
+        "charCount": 1115
+    },
+    {
         "id": "watch",
         "title": "Apple Watch App",
         "section": "user",
@@ -855,7 +894,7 @@
             "snapshots",
             "scale"
         ],
-        "charCount": 3510
+        "charCount": 3514
     },
     {
         "id": "transport",

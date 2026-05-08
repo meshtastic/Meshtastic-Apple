@@ -18,6 +18,8 @@ Documentation for using the Meshtastic iOS, iPadOS, macOS, watchOS, and visionOS
 Keep the last 5–8 entries and archive older ones by removing them.
 -->
 
+**May 2026** — [Translate the App](user/translate) — New page explaining how to contribute translations via Xcode string catalogs.
+
 **May 2026** — [Signal Meter](user/signal-meter) — New deep-dive page explaining how the LoRa signal quality meter works, why negative SNR values are normal, and how to interpret RSSI vs. SNR for your mesh.
 
 **May 2026** — [Apple Watch App](user/watch) — New page covering the companion watch app: node list, fox hunt compass, and how it syncs with your iPhone.
