@@ -165,6 +165,16 @@ td:first-child, th:first-child {
     min-width: 90px;
 }
 
+/* Any cell whose sole content is an image — centre both axes */
+td:has(> img) {
+    text-align: center;
+    vertical-align: middle;
+}
+
+td:has(> img) img {
+    margin: 0 auto;
+}
+
 td {
     padding: 8px 12px;
     border-bottom: 1px solid var(--divider);
