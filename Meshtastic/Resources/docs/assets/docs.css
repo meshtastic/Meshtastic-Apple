@@ -165,6 +165,15 @@ td:first-child, th:first-child {
     min-width: 90px;
 }
 
+/* Firmware progress icons are larger than standard icons — let them size naturally */
+td img[src$="progressZero.png"],
+td img[src$="progressHalf.png"],
+td img[src$="progressComplete.png"],
+td img[src$="progressError.png"] {
+    height: auto;
+    width: 80px;
+}
+
 /* Any cell whose sole content is an image — centre both axes */
 td:has(> img) {
     text-align: center;

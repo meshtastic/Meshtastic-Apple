@@ -467,22 +467,22 @@ struct CircularProgressViewSnapshotTests {
 
 	@Test("Progress 0%")
 	func progressZero() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.0, size: 100), width: 120, named: "progressZero")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.0, size: 100), width: 140, height: 140, transparent: true, named: "progressZero")
 	}
 
 	@Test("Progress 50%")
 	func progressHalf() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.5, size: 100), width: 120, named: "progressHalf")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.5, size: 100), width: 140, height: 140, transparent: true, named: "progressHalf")
 	}
 
 	@Test("Progress 100%")
 	func progressComplete() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 1.0, size: 100), width: 120, named: "progressComplete")
+		await assertViewSnapshot(of: CircularProgressView(progress: 1.0, size: 100), width: 140, height: 140, transparent: true, named: "progressComplete")
 	}
 
 	@Test("Progress error")
 	func progressError() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.3, isError: true, size: 100), width: 120, named: "progressError")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.3, isError: true, size: 100), width: 140, height: 140, transparent: true, named: "progressError")
 	}
 }
 
