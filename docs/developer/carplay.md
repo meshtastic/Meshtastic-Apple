@@ -6,7 +6,7 @@ nav_order: 9
 
 # CarPlay Architecture
 
-This page covers the implementation of the CarPlay feature. For the user-facing guide see [CarPlay](../user/carplay).
+This page covers the implementation of the CarPlay feature. For the user-facing guide see [CarPlay](../user/carplay.md).
 
 ## Components
 
