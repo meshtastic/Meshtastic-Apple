@@ -201,3 +201,8 @@ CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modif
 
 ## Recent Changes
 - 001-local-mesh-discovery: Added Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+)
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
