@@ -64,9 +64,16 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
     font-size: 1rem;
     line-height: 1.65;
-    margin: 0;
+    margin: 0 auto;
     padding: 16px 20px 40px;
-    max-width: 780px;
+    max-width: 100%;
+}
+
+@media (min-width: 1536px) {
+    body {
+        max-width: 900px;
+        padding: 24px 32px 48px;
+    }
 }
 
 /* ── Headings ── */
@@ -138,6 +145,9 @@ table {
     border-collapse: collapse;
     margin: 1em 0;
     font-size: 0.9375rem;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 th {
@@ -147,6 +157,31 @@ th {
     padding: 8px 12px;
     border-bottom: 2px solid var(--border);
     font-weight: 600;
+}
+
+/* First column (icon / symbol) — fixed width so all icon tables align consistently */
+td:first-child, th:first-child {
+    width: 90px;
+    min-width: 90px;
+}
+
+/* Firmware progress icons are larger than standard icons — let them size naturally */
+td img[src$="progressZero.png"],
+td img[src$="progressHalf.png"],
+td img[src$="progressComplete.png"],
+td img[src$="progressError.png"] {
+    height: auto;
+    width: 80px;
+}
+
+/* Any cell whose sole content is an image — centre both axes */
+td:has(> img) {
+    text-align: center;
+    vertical-align: middle;
+}
+
+td:has(> img) img {
+    margin: 0 auto;
 }
 
 td {
@@ -183,6 +218,7 @@ td img, th img {
     display: inline;
     height: 44px;
     width: auto;
+    max-width: none; /* prevent max-width:100% from the base img rule squishing icons */
     vertical-align: middle;
     border-radius: 3px;
     margin: 0 6px 0 0;
@@ -249,9 +285,18 @@ hr {
  * Light/dark image switching — _dark.png suffix convention.
  * Images named *_dark.png are hidden in light mode; their paired light counterparts
  * are hidden in dark mode. Both variants must appear in the HTML for this to work.
+ *
+ * NOTE: <img> elements inside <picture> elements are excluded — the browser's
+ * native <picture>/<source media="(prefers-color-scheme:dark)"> logic handles
+ * image selection for those; the CSS fallback must not interfere.
  */
 img[src$="_dark.png"] {
     display: none;
+}
+
+/* <picture> img must never be hidden by CSS — let the browser's picture logic decide */
+picture img {
+    display: block !important;
 }
 
 @media (prefers-color-scheme: dark) {

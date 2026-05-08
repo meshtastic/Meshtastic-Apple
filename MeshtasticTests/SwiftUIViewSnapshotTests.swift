@@ -436,27 +436,52 @@ struct BatteryCompactSnapshotTests {
 
 	@Test("Battery full")
 	func batteryFull() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: 95, font: .caption, iconFont: .callout, color: Color(uiColor: .systemGreen)), width: 200, named: "batteryFull")
+		let view = Image(systemName: "battery.75")
+			.font(.title)
+			.foregroundColor(Color(uiColor: .systemGreen))
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryFull")
 	}
 
 	@Test("Battery low")
 	func batteryLow() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: 10, font: .caption, iconFont: .callout, color: Color(uiColor: .systemOrange)), width: 200, named: "batteryLow")
+		let view = Image(systemName: "battery.25")
+			.font(.title)
+			.foregroundColor(Color(uiColor: .systemOrange))
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryLow")
 	}
 
 	@Test("Battery charging")
 	func batteryCharging() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: 100, font: .caption, iconFont: .callout, color: Color(uiColor: .systemGreen)), width: 200, named: "batteryCharging")
+		let view = Image(systemName: "battery.100.bolt")
+			.font(.title)
+			.foregroundColor(Color(uiColor: .systemGreen))
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryCharging")
 	}
 
 	@Test("Battery plugged in")
 	func batteryPluggedIn() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: 101, font: .caption, iconFont: .callout, color: Color(uiColor: .systemBlue)), width: 200, named: "batteryPluggedIn")
+		let view = Image(systemName: "powerplug")
+			.font(.title)
+			.foregroundColor(Color(uiColor: .systemBlue))
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryPluggedIn")
 	}
 
 	@Test("Battery nil")
 	func batteryNil() async {
-		await assertViewSnapshot(of: BatteryCompact(batteryLevel: nil, font: .caption, iconFont: .callout, color: .gray), width: 200, named: "batteryNil")
+		let view = Image(systemName: "battery.0")
+			.font(.title)
+			.foregroundColor(.gray)
+			.symbolRenderingMode(.multicolor)
+			.padding(4)
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryNil")
 	}
 }
 
@@ -467,22 +492,22 @@ struct CircularProgressViewSnapshotTests {
 
 	@Test("Progress 0%")
 	func progressZero() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.0, size: 100), width: 120, named: "progressZero")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.0, size: 100), width: 140, height: 140, transparent: true, named: "progressZero")
 	}
 
 	@Test("Progress 50%")
 	func progressHalf() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.5, size: 100), width: 120, named: "progressHalf")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.5, size: 100), width: 140, height: 140, transparent: true, named: "progressHalf")
 	}
 
 	@Test("Progress 100%")
 	func progressComplete() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 1.0, size: 100), width: 120, named: "progressComplete")
+		await assertViewSnapshot(of: CircularProgressView(progress: 1.0, size: 100), width: 140, height: 140, transparent: true, named: "progressComplete")
 	}
 
 	@Test("Progress error")
 	func progressError() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.3, isError: true, size: 100), width: 120, named: "progressError")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.3, isError: true, size: 100), width: 140, height: 140, transparent: true, named: "progressError")
 	}
 }
 
