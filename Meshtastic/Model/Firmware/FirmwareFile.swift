@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftUI
 import SwiftData
 
@@ -204,7 +205,13 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			predicate: #Predicate { $0.platformioTarget == target }
 		)
 		hardwareDescriptor.fetchLimit = 1
-		let hardwareResult = try? context.fetch(hardwareDescriptor).first
+		let hardwareResult: DeviceHardwareEntity?
+		do {
+			hardwareResult = try context.fetch(hardwareDescriptor).first
+		} catch {
+			Logger.data.error("Failed to fetch DeviceHardwareEntity for target \(target): \(error.localizedDescription)")
+			throw FirmwareFileError.unknownArchitecture
+		}
 		let architecture = hardwareResult?.architecture.flatMap { Architecture(rawValue: $0) }
 		
 		guard let architecture else { throw FirmwareFileError.unknownArchitecture }
@@ -217,9 +224,13 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			predicate: #Predicate { $0.versionId == version }
 		)
 		firmwareDescriptor.fetchLimit = 1
-		if let firmware = try? context.fetch(firmwareDescriptor).first {
-			releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) } ?? .unlisted
-			releaseNotes = firmware.releaseNotes
+		do {
+			if let firmware = try context.fetch(firmwareDescriptor).first {
+				releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) } ?? .unlisted
+				releaseNotes = firmware.releaseNotes
+			}
+		} catch {
+			Logger.data.error("Failed to fetch FirmwareReleaseEntity for version \(version): \(error.localizedDescription)")
 		}
 		self.releaseType = releaseType
 		self.releaseNotes = releaseNotes

@@ -1657,7 +1657,6 @@
 				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
 				DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */,
 				DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */,
-				23C2BE262EE9F4BD00F6A997 /* DeviceHardwareEntity.swift */,
 			);
 			path = SwiftData;
 			sourceTree = "<group>";
@@ -1983,6 +1982,7 @@
 			children = (
 				45E6EDE744E3446FA1084499 /* ChannelEntity.swift */,
 				4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */,
+				23C2BE262EE9F4BD00F6A997 /* DeviceHardwareEntity.swift */,
 				AA00SDRF0001 /* DeviceHardwareImageEntity.swift */,
 				AA00SDRF0002 /* DeviceHardwareTagEntity.swift */,
 				BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */,
