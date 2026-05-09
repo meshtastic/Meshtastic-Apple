@@ -66,6 +66,12 @@ private struct DocWebView: UIViewRepresentable {
 				return .cancel
 			}
 
+			// Handle meshtastic:/// deep links — route through the app's URL handler
+			if url.scheme == "meshtastic" {
+				await UIApplication.shared.open(url)
+				return .cancel
+			}
+
 			return .cancel
 		}
 
