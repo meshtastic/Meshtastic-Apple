@@ -270,7 +270,7 @@
             "used",
             "use"
         ],
-        "charCount": 3579
+        "charCount": 3581
     },
     {
         "id": "mqtt",
@@ -426,7 +426,7 @@
             "good",
             "clarity"
         ],
-        "charCount": 4136
+        "charCount": 4137
     },
     {
         "id": "tak",
@@ -465,7 +465,7 @@
             "kit",
             "from"
         ],
-        "charCount": 2029
+        "charCount": 2036
     },
     {
         "id": "telemetry",
@@ -477,34 +477,34 @@
             "sensor",
             "node",
             "environment",
+            "data",
             "quality",
             "humidity",
-            "data",
             "air",
             "pressure",
             "battery",
             "temperature",
             "sensors",
             "device",
+            "description",
             "metrics",
+            "from",
             "channel",
+            "wind",
+            "speed",
             "relative",
             "readings",
             "power",
             "often",
             "meshtastic",
             "low",
+            "level",
             "interval",
             "icon",
             "hpa",
-            "from",
-            "detection",
-            "description",
-            "broadcast",
-            "barometric",
-            "any"
+            "detection"
         ],
-        "charCount": 2811
+        "charCount": 3049
     },
     {
         "id": "translate",

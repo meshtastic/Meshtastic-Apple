@@ -8,6 +8,8 @@ nav_order: 12
 
 ![Signal meter levels](../assets/screenshots/signalMeter_full_all.png)
 
+![Compact signal meter](../assets/screenshots/signalMeter_compact_all.png)
+
 The Meshtastic signal meter—often seen as a series of bars or a status color in the app—is calculated very differently than the "bars" on a traditional cell phone or Wi-Fi router.
 
 Most consumer devices just measure how "loud" a signal is. However, because Meshtastic uses **LoRa (Long Range)** technology, its signal meter uses logic that measures how **clear** the signal is, relative to the specific settings your mesh is using.

@@ -16,10 +16,10 @@ TAK is a situational awareness platform widely used in tactical, emergency manag
 
 TAK integration works with two device roles:
 
-| Role | Description |
-|------|-------------|
-| TAK | Full TAK role — sends CoT position reports and can relay TAK data packets. |
-| TAK Tracker | Lightweight position-only TAK role. Lower power consumption, no packet relay. |
+| Icon | Role | Description |
+|------|------|-------------|
+| ![TAK](../assets/screenshots/roleTak.png) | TAK | Full TAK role — sends CoT position reports and can relay TAK data packets. |
+| ![TAK Tracker](../assets/screenshots/roleTakTracker.png) | TAK Tracker | Lightweight position-only TAK role. Lower power consumption, no packet relay. |
 
 Set the device role in **Settings → Device**.
 

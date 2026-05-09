@@ -46,6 +46,19 @@ The Indoor Air Quality scale shows category bands from Excellent (green) through
 | ![Pressure high](../assets/screenshots/pressureHigh.png) | High pressure | Barometric pressure above normal (≥1013 hPa). |
 | ![Pressure low](../assets/screenshots/pressureLow.png) | Low pressure | Barometric pressure below normal (<1013 hPa). |
 
+### Wind
+
+| Widget | Description |
+|--------|-------------|
+| ![Wind full](../assets/screenshots/windFull.png) | Wind speed, gust speed, and direction. |
+| ![Wind minimal](../assets/screenshots/windMinimal.png) | Wind speed only (no gust or direction data available). |
+
+### Radiation
+
+| Widget | Description |
+|--------|-------------|
+| ![Radiation](../assets/screenshots/radiation.png) | Radiation level in µR/hr from a connected Geiger counter sensor. |
+
 ## Viewing Telemetry
 
 Telemetry is visible in two places:

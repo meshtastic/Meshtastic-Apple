@@ -57,6 +57,8 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 
 ### Encryption
 
+![Encryption legend](../assets/screenshots/lockLegend.png)
+
 | Icon | Meaning |
 |------|---------|
 | ![Shared Key](../assets/screenshots/lockOpen.png) | **Shared Key** — direct messages are using the shared key for the channel. |
@@ -72,6 +74,8 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 ---
 
 ## Message Status
+
+![Message status reference](../assets/screenshots/ackErrors.png)
 
 | Colour | Meaning |
 |--------|---------|
