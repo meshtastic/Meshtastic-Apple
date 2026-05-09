@@ -33,7 +33,7 @@ struct NodeDetail: View {
 		guard let num = accessoryManager.activeDeviceNum else { return nil }
 		return getNodeInfo(id: num, context: context)
 	}
-	private var administrationUserPair: (fromUser: UserEntity, toUser: UserEntity)? {
+	private var administrationUsers: (fromUser: UserEntity, toUser: UserEntity)? {
 		guard let fromUser = connectedNode?.user,
 			  let toUser = node.user else {
 			return nil
@@ -574,15 +574,15 @@ struct NodeDetail: View {
 		   connectedNode != nil,
 		   accessoryManager.isConnected {
 			Section("Administration") {
-				let administrationUserPair = self.administrationUserPair
+				let hasAdministrationUsers = administrationUsers != nil
 				if UserDefaults.enableAdministration {
 					Button {
 						Task {
-							guard let administrationUserPair else { return }
+							guard let administrationUsers else { return }
 							do {
 								_ = try await accessoryManager.requestDeviceMetadata(
-									fromUser: administrationUserPair.fromUser,
-									toUser: administrationUserPair.toUser
+									fromUser: administrationUsers.fromUser,
+									toUser: administrationUsers.toUser
 								)
 								Logger.mesh.info("Sent node metadata request from node details")
 							} catch {
@@ -596,7 +596,7 @@ struct NodeDetail: View {
 							Image(systemName: "arrow.clockwise")
 						}
 					}
-					.disabled(administrationUserPair == nil)
+					.disabled(!hasAdministrationUsers)
 				}
 				if metadata.canShutdown {
 					Button {
@@ -609,11 +609,11 @@ struct NodeDetail: View {
 					) {
 						Button("Shutdown Node?", role: .destructive) {
 							Task {
-								guard let administrationUserPair else { return }
+								guard let administrationUsers else { return }
 								do {
 									try await accessoryManager.sendShutdown(
-										fromUser: administrationUserPair.fromUser,
-										toUser: administrationUserPair.toUser
+										fromUser: administrationUsers.fromUser,
+										toUser: administrationUsers.toUser
 									)
 								} catch {
 									Logger.mesh.warning("Shutdown Failed")
@@ -621,7 +621,7 @@ struct NodeDetail: View {
 							}
 						}
 					}
-					.disabled(administrationUserPair == nil)
+					.disabled(!hasAdministrationUsers)
 				}
 				Button {
 					showingRebootConfirm = true
@@ -636,11 +636,11 @@ struct NodeDetail: View {
 				) {
 					Button("Reboot node?", role: .destructive) {
 						Task {
-							guard let administrationUserPair else { return }
+							guard let administrationUsers else { return }
 							do {
 								try await accessoryManager.sendReboot(
-									fromUser: administrationUserPair.fromUser,
-									toUser: administrationUserPair.toUser
+									fromUser: administrationUsers.fromUser,
+									toUser: administrationUsers.toUser
 								)
 							} catch {
 								Logger.mesh.warning("Reboot Failed")
@@ -648,7 +648,7 @@ struct NodeDetail: View {
 						}
 					}
 				}
-				.disabled(administrationUserPair == nil)
+				.disabled(!hasAdministrationUsers)
 			}
 		}
 	}
