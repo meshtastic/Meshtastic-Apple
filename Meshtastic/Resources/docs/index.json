@@ -863,9 +863,10 @@
         "section": "developer",
         "navOrder": 6,
         "keywords": [
-            "quot",
             "test",
+            "quot",
             "tests",
+            "snapshots",
             "run",
             "let",
             "use",
@@ -891,10 +892,9 @@
             "using",
             "try",
             "suite",
-            "snapshots",
-            "scale"
+            "screenshots"
         ],
-        "charCount": 3514
+        "charCount": 3738
     },
     {
         "id": "transport",

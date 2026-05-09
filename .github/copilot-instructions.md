@@ -90,7 +90,8 @@ All UI must comply with the [Meshtastic Client Design Standards](https://raw.git
 ### Snapshot Tests
 - SwiftUI view snapshot tests live in `MeshtasticTests/SwiftUIViewSnapshotTests.swift`.
 - Use the custom `renderImage` helper (not swift-snapshot-testing's API) — it uses `UIHostingController` + `drawHierarchy(in:afterScreenUpdates: true)` with safe-area inset negation via `additionalSafeAreaInsets`.
-- Reference PNGs are saved to `MeshtasticTests/__Snapshots__/SwiftUIViewSnapshotTests/`. On first run they are recorded; on subsequent runs they are compared pixel-by-pixel using `CGImage` dimensions.
+- Pass `forDocs: true` to `assertViewSnapshot` when the snapshot is referenced in a docs markdown file. These PNGs are saved to `docs/assets/screenshots/`. Test-only snapshots (without `forDocs`) are saved to `MeshtasticTests/__Snapshots__/`.
+- `copy-snapshots.sh` copies only doc-referenced PNGs into the app bundle — test-only snapshots are never bundled.
 - For views that use `ScrollView` or don't have intrinsic height, pass an explicit `height:` parameter to `renderImage`.
 - Each `@Suite` groups tests for one view component. Name suites `<ViewName>SnapshotTests`.
 - Compare snapshots using `cgImage.width`/`cgImage.height` (pixel dimensions), not `UIImage.size` (which is scale-dependent).
@@ -164,7 +165,7 @@ The app ships a complete offline documentation system (feature `003-app-docs-mar
 
 ### Doc authoring conventions
 
-- **Screenshots**: Sourced exclusively from `MeshtasticTests/__Snapshots__/SwiftUIViewSnapshotTests/`. Copy PNGs to `docs/assets/screenshots/` and reference them with `![alt](../assets/screenshots/NAME.png)`.
+- **Screenshots**: Snapshot tests with `forDocs: true` write PNGs to `docs/assets/screenshots/`. Reference them in markdown with `![alt](../assets/screenshots/NAME.png)`. Run `copy-snapshots.sh` to bundle only doc-referenced images into the app.
 - **Dark/light image pairs**: When a view is snapshotted in both light and dark mode (e.g. `foo_light.png` + `foo_dark.png`), never embed both `![]()` tags side-by-side — both will render simultaneously. Instead use an HTML `<picture>` element with a `prefers-color-scheme` media query:
   ```html
   <picture>

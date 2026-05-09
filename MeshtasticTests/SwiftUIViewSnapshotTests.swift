@@ -78,6 +78,9 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 /// Saves a snapshot image to disk. On first run, records the reference.
 /// On subsequent runs, compares against the reference and fails if different.
 /// When height is nil the view determines its own height via sizeThatFits.
+/// When `forDocs` is true, the PNG is saved to `docs/assets/screenshots/` so
+/// it is shared directly with the documentation site. When false, it is saved
+/// to `__Snapshots__/` next to the test file (test-only, not bundled in the app).
 @MainActor
 private func assertViewSnapshot<V: View>(
 	of view: V,
@@ -86,6 +89,7 @@ private func assertViewSnapshot<V: View>(
 	transparent: Bool = false,
 	colorScheme: ColorScheme? = nil,
 	named name: String,
+	forDocs: Bool = false,
 	filePath: String = #filePath,
 	sourceLocation: SourceLocation = #_sourceLocation
 ) {
@@ -96,9 +100,22 @@ private func assertViewSnapshot<V: View>(
 	}
 
 	let fileUrl = URL(fileURLWithPath: filePath, isDirectory: false)
-	let snapshotDir = fileUrl.deletingLastPathComponent()
-		.appendingPathComponent("__Snapshots__")
-		.appendingPathComponent(fileUrl.deletingPathExtension().lastPathComponent)
+	let snapshotDir: URL
+	if forDocs {
+		// Write to docs/assets/screenshots/ — shared with the documentation site.
+		let repoRoot = fileUrl
+			.deletingLastPathComponent()  // MeshtasticTests/
+			.deletingLastPathComponent()  // repo root
+		snapshotDir = repoRoot
+			.appendingPathComponent("docs")
+			.appendingPathComponent("assets")
+			.appendingPathComponent("screenshots")
+	} else {
+		// Write to __Snapshots__/ next to the test file (test-only).
+		snapshotDir = fileUrl.deletingLastPathComponent()
+			.appendingPathComponent("__Snapshots__")
+			.appendingPathComponent(fileUrl.deletingPathExtension().lastPathComponent)
+	}
 	let snapshotFile = snapshotDir.appendingPathComponent("\(name).png")
 
 	let fm = FileManager.default
@@ -160,7 +177,7 @@ struct CircleTextSnapshotTests {
 
 	@Test("CircleText default size")
 	func circleTextDefault() async {
-		await assertViewSnapshot(of: CircleText(text: "AB", color: Color(uiColor: .systemGreen)), width: 60, transparent: true, named: "circleTextDefault")
+		await assertViewSnapshot(of: CircleText(text: "AB", color: Color(uiColor: .systemGreen)), width: 60, transparent: true, named: "circleTextDefault", forDocs: true)
 	}
 }
 
@@ -193,7 +210,7 @@ struct IAQScaleSnapshotTests {
 
 	@Test("IAQScale view")
 	func iaqScale() async {
-		await assertViewSnapshot(of: IAQScale(), width: 300, named: "iaqScale")
+		await assertViewSnapshot(of: IAQScale(), width: 300, named: "iaqScale", forDocs: true)
 	}
 }
 
@@ -272,7 +289,7 @@ struct AirQualityIndexSnapshotTests {
 			width: 350,
 			height: 820,
 			colorScheme: .light,
-			named: "aqi_all_modes_light"
+			named: "aqi_all_modes_light", forDocs: true
 		)
 	}
 
@@ -283,7 +300,7 @@ struct AirQualityIndexSnapshotTests {
 			width: 350,
 			height: 820,
 			colorScheme: .dark,
-			named: "aqi_all_modes_dark"
+			named: "aqi_all_modes_dark", forDocs: true
 		)
 	}
 }
@@ -321,7 +338,7 @@ struct MQTTIconSnapshotTests {
 			.symbolRenderingMode(.hierarchical)
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttConnected")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttConnected", forDocs: true)
 	}
 
 	@Test("MQTT disconnected")
@@ -331,7 +348,7 @@ struct MQTTIconSnapshotTests {
 			.symbolRenderingMode(.hierarchical)
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttDisconnected")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttDisconnected", forDocs: true)
 	}
 
 	@Test("MQTT uplink only")
@@ -341,7 +358,7 @@ struct MQTTIconSnapshotTests {
 			.symbolRenderingMode(.hierarchical)
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttUplinkOnly")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "mqttUplinkOnly", forDocs: true)
 	}
 }
 
@@ -352,22 +369,22 @@ struct CompactWidgetSnapshotTests {
 
 	@Test("Humidity with dew point")
 	func humidityWithDew() async {
-		await assertViewSnapshot(of: HumidityCompactWidget(humidity: 65, dewPoint: "18°"), width: 180, named: "humidityWithDew")
+		await assertViewSnapshot(of: HumidityCompactWidget(humidity: 65, dewPoint: "18°"), width: 180, named: "humidityWithDew", forDocs: true)
 	}
 
 	@Test("Humidity without dew point")
 	func humidityNoDew() async {
-		await assertViewSnapshot(of: HumidityCompactWidget(humidity: 42, dewPoint: nil), width: 180, named: "humidityNoDew")
+		await assertViewSnapshot(of: HumidityCompactWidget(humidity: 42, dewPoint: nil), width: 180, named: "humidityNoDew", forDocs: true)
 	}
 
 	@Test("Pressure low")
 	func pressureLow() async {
-		await assertViewSnapshot(of: PressureCompactWidget(pressure: "1004.76", unit: "hPA", low: true), width: 180, named: "pressureLow")
+		await assertViewSnapshot(of: PressureCompactWidget(pressure: "1004.76", unit: "hPA", low: true), width: 180, named: "pressureLow", forDocs: true)
 	}
 
 	@Test("Pressure high")
 	func pressureHigh() async {
-		await assertViewSnapshot(of: PressureCompactWidget(pressure: "1024.50", unit: "hPA", low: false), width: 180, named: "pressureHigh")
+		await assertViewSnapshot(of: PressureCompactWidget(pressure: "1024.50", unit: "hPA", low: false), width: 180, named: "pressureHigh", forDocs: true)
 	}
 
 	@Test("Wind full")
@@ -393,7 +410,7 @@ struct InvalidVersionSnapshotTests {
 
 	@Test("InvalidVersion view")
 	func invalidVersion() async {
-		await assertViewSnapshot(of: InvalidVersion(minimumVersion: "2.5.0", version: "2.3.1"), width: 390, height: 600, named: "invalidVersion")
+		await assertViewSnapshot(of: InvalidVersion(minimumVersion: "2.5.0", version: "2.3.1"), width: 390, height: 600, named: "invalidVersion", forDocs: true)
 	}
 
 	@Test("InvalidVersion empty version")
@@ -441,7 +458,7 @@ struct BatteryCompactSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemGreen))
 			.symbolRenderingMode(.multicolor)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryFull")
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryFull", forDocs: true)
 	}
 
 	@Test("Battery low")
@@ -451,7 +468,7 @@ struct BatteryCompactSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemOrange))
 			.symbolRenderingMode(.multicolor)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryLow")
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryLow", forDocs: true)
 	}
 
 	@Test("Battery charging")
@@ -461,7 +478,7 @@ struct BatteryCompactSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemGreen))
 			.symbolRenderingMode(.multicolor)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryCharging")
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryCharging", forDocs: true)
 	}
 
 	@Test("Battery plugged in")
@@ -481,7 +498,7 @@ struct BatteryCompactSnapshotTests {
 			.foregroundColor(.gray)
 			.symbolRenderingMode(.multicolor)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryNil")
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryNil", forDocs: true)
 	}
 }
 
@@ -492,22 +509,22 @@ struct CircularProgressViewSnapshotTests {
 
 	@Test("Progress 0%")
 	func progressZero() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.0, size: 100), width: 140, height: 140, transparent: true, named: "progressZero")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.0, size: 100), width: 140, height: 140, transparent: true, named: "progressZero", forDocs: true)
 	}
 
 	@Test("Progress 50%")
 	func progressHalf() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.5, size: 100), width: 140, height: 140, transparent: true, named: "progressHalf")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.5, size: 100), width: 140, height: 140, transparent: true, named: "progressHalf", forDocs: true)
 	}
 
 	@Test("Progress 100%")
 	func progressComplete() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 1.0, size: 100), width: 140, height: 140, transparent: true, named: "progressComplete")
+		await assertViewSnapshot(of: CircularProgressView(progress: 1.0, size: 100), width: 140, height: 140, transparent: true, named: "progressComplete", forDocs: true)
 	}
 
 	@Test("Progress error")
 	func progressError() async {
-		await assertViewSnapshot(of: CircularProgressView(progress: 0.3, isError: true, size: 100), width: 140, height: 140, transparent: true, named: "progressError")
+		await assertViewSnapshot(of: CircularProgressView(progress: 0.3, isError: true, size: 100), width: 140, height: 140, transparent: true, named: "progressError", forDocs: true)
 	}
 }
 
@@ -578,7 +595,7 @@ struct LoRaSignalStrengthMeterSnapshotTests {
 			width: 400,
 			height: 520,
 			transparent: true,
-			named: "signalMeter_full_all"
+			named: "signalMeter_full_all", forDocs: true
 		)
 	}
 
@@ -607,7 +624,7 @@ struct RadarSweepViewSnapshotTests {
 
 	@Test("Radar sweep active")
 	func radarActive() async {
-		await assertViewSnapshot(of: RadarSweepView(isActive: true), width: 200, height: 200, named: "radarActive")
+		await assertViewSnapshot(of: RadarSweepView(isActive: true), width: 200, height: 200, named: "radarActive", forDocs: true)
 	}
 
 	@Test("Radar sweep inactive")
@@ -928,7 +945,7 @@ struct DiscoverySummaryViewSnapshotTests {
 			of: NavigationStack { DiscoverySummaryView(session: session) },
 			width: 375,
 			height: 800,
-			named: "summaryTwoPresets"
+			named: "summaryTwoPresets", forDocs: true
 		)
 	}
 }
@@ -1031,7 +1048,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_directConnected_allInfo"
+			named: "compact_directConnected_allInfo", forDocs: true
 		)
 	}
 
@@ -1048,7 +1065,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_multiHop"
+			named: "compact_multiHop", forDocs: true
 		)
 	}
 
@@ -1066,7 +1083,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_mqtt"
+			named: "compact_mqtt", forDocs: true
 		)
 	}
 
@@ -1100,7 +1117,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_pkiMismatch"
+			named: "compact_pkiMismatch", forDocs: true
 		)
 	}
 
@@ -1148,7 +1165,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_withPosition"
+			named: "compact_withPosition", forDocs: true
 		)
 	}
 
@@ -1173,7 +1190,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_directConnected_allInfo_dark"
+			named: "compact_directConnected_allInfo_dark", forDocs: true
 		)
 	}
 
@@ -1191,7 +1208,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_multiHop_dark"
+			named: "compact_multiHop_dark", forDocs: true
 		)
 	}
 
@@ -1210,7 +1227,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_mqtt_dark"
+			named: "compact_mqtt_dark", forDocs: true
 		)
 	}
 
@@ -1228,7 +1245,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_pkiMismatch_dark"
+			named: "compact_pkiMismatch_dark", forDocs: true
 		)
 	}
 
@@ -1249,7 +1266,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_withPosition_dark"
+			named: "compact_withPosition_dark", forDocs: true
 		)
 	}
 }
@@ -1327,7 +1344,7 @@ struct NodeListItemSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItem(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			named: "standard_directConnected"
+			named: "standard_directConnected", forDocs: true
 		)
 	}
 
@@ -1344,7 +1361,7 @@ struct NodeListItemSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "standard_multiHop"
+			named: "standard_multiHop", forDocs: true
 		)
 	}
 
@@ -1362,7 +1379,7 @@ struct NodeListItemSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "standard_mqtt"
+			named: "standard_mqtt", forDocs: true
 		)
 	}
 
@@ -1386,7 +1403,7 @@ struct NodeListItemSnapshotTests {
 			of: NodeListItem(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "standard_directConnected_dark"
+			named: "standard_directConnected_dark", forDocs: true
 		)
 	}
 
@@ -1404,7 +1421,7 @@ struct NodeListItemSnapshotTests {
 			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "standard_multiHop_dark"
+			named: "standard_multiHop_dark", forDocs: true
 		)
 	}
 
@@ -1423,7 +1440,7 @@ struct NodeListItemSnapshotTests {
 			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "standard_mqtt_dark"
+			named: "standard_mqtt_dark", forDocs: true
 		)
 	}
 }
@@ -1461,7 +1478,7 @@ struct NodeStatusIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemGreen))
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "nodeOnline")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "nodeOnline", forDocs: true)
 	}
 
 	@Test("Idle / sleeping indicator")
@@ -1471,7 +1488,7 @@ struct NodeStatusIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemOrange))
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "nodeIdle")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "nodeIdle", forDocs: true)
 	}
 
 	@Test("Hops away badge — 3 hops")
@@ -1479,7 +1496,7 @@ struct NodeStatusIconSnapshotTests {
 	func hopsAway() async {
 		let view = DefaultIconCompact(systemName: "3.square")
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "hopsAway")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "hopsAway", forDocs: true)
 	}
 
 	@Test("Channel badge — channel 2")
@@ -1487,7 +1504,7 @@ struct NodeStatusIconSnapshotTests {
 	func channelBadge() async {
 		let view = DefaultIconCompact(systemName: "2.circle.fill")
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "channelBadge")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "channelBadge", forDocs: true)
 	}
 }
 
@@ -1503,7 +1520,7 @@ struct ChannelLockIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemGreen))
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockClosed")
+		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockClosed", forDocs: true)
 	}
 
 	@Test("Lock open — unencrypted (yellow)")
@@ -1513,7 +1530,7 @@ struct ChannelLockIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemYellow))
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockOpen")
+		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockOpen", forDocs: true)
 	}
 
 	@Test("Lock open red — location exposed")
@@ -1523,7 +1540,7 @@ struct ChannelLockIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemRed))
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockOpenRed")
+		await assertViewSnapshot(of: view, width: 30, transparent: true, named: "lockOpenRed", forDocs: true)
 	}
 
 	@Test("Lock open MQTT — insecure with MQTT uplink")
@@ -1533,7 +1550,7 @@ struct ChannelLockIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemRed))
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 38, transparent: true, named: "lockOpenMqtt")
+		await assertViewSnapshot(of: view, width: 38, transparent: true, named: "lockOpenMqtt", forDocs: true)
 	}
 
 	@Test("Key slash — PKI mismatch")
@@ -1543,7 +1560,7 @@ struct ChannelLockIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemRed))
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "keySlash")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "keySlash", forDocs: true)
 	}
 }
 
@@ -1559,7 +1576,7 @@ struct NodeLogIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemBlue))
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDistance")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDistance", forDocs: true)
 	}
 
 	@Test("Device Metrics")
@@ -1569,7 +1586,7 @@ struct NodeLogIconSnapshotTests {
 			.foregroundStyle(.secondary)
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDeviceMetrics")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDeviceMetrics", forDocs: true)
 	}
 
 	@Test("Positions")
@@ -1579,7 +1596,7 @@ struct NodeLogIconSnapshotTests {
 			.foregroundStyle(.secondary)
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logPositions")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logPositions", forDocs: true)
 	}
 
 	@Test("Environment")
@@ -1589,7 +1606,7 @@ struct NodeLogIconSnapshotTests {
 			.foregroundStyle(.secondary)
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logEnvironment")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logEnvironment", forDocs: true)
 	}
 
 	@Test("Detection Sensor")
@@ -1599,7 +1616,7 @@ struct NodeLogIconSnapshotTests {
 			.foregroundStyle(.secondary)
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDetectionSensor")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logDetectionSensor", forDocs: true)
 	}
 
 	@Test("Trace Routes")
@@ -1609,7 +1626,7 @@ struct NodeLogIconSnapshotTests {
 			.foregroundStyle(.secondary)
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logTraceRoutes")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "logTraceRoutes", forDocs: true)
 	}
 }
 
@@ -1625,7 +1642,7 @@ struct MessagesIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemYellow))
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "favorite")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "favorite", forDocs: true)
 	}
 
 	@Test("Long press / tap")
@@ -1635,7 +1652,7 @@ struct MessagesIconSnapshotTests {
 			.foregroundStyle(.secondary)
 			.font(.title)
 			.padding(2)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "longPress")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "longPress", forDocs: true)
 	}
 }
 
@@ -1651,7 +1668,7 @@ struct ConnectionStatusIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemOrange))
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "btConnected")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "btConnected", forDocs: true)
 	}
 
 	@Test("Reconnecting / retrying")
@@ -1661,7 +1678,7 @@ struct ConnectionStatusIconSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemOrange))
 			.font(.title2)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "btReconnecting")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "btReconnecting", forDocs: true)
 	}
 
 	@Test("TCP / Wi-Fi connected")
@@ -1671,7 +1688,7 @@ struct ConnectionStatusIconSnapshotTests {
 			.font(.title2)
 			.foregroundColor(Color(uiColor: .systemOrange))
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "tcpConnected")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "tcpConnected", forDocs: true)
 	}
 
 	@Test("Serial / USB connected")
@@ -1681,7 +1698,7 @@ struct ConnectionStatusIconSnapshotTests {
 			.font(.title2)
 			.foregroundColor(Color(uiColor: .systemOrange))
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "serialConnected")
+		await assertViewSnapshot(of: view, width: 44, transparent: true, named: "serialConnected", forDocs: true)
 	}
 }
 
@@ -1698,36 +1715,36 @@ struct DeviceRoleIconSnapshotTests {
 	}
 
 	@Test("Client") @MainActor func roleClient() async {
-		await assertViewSnapshot(of: icon("apps.iphone"), width: 44, transparent: true, named: "roleClient")
+		await assertViewSnapshot(of: icon("apps.iphone"), width: 44, transparent: true, named: "roleClient", forDocs: true)
 	}
 	@Test("Client Mute") @MainActor func roleClientMute() async {
-		await assertViewSnapshot(of: icon("speaker.slash"), width: 44, transparent: true, named: "roleClientMute")
+		await assertViewSnapshot(of: icon("speaker.slash"), width: 44, transparent: true, named: "roleClientMute", forDocs: true)
 	}
 	@Test("Client Hidden") @MainActor func roleClientHidden() async {
-		await assertViewSnapshot(of: icon("eye.slash"), width: 44, transparent: true, named: "roleClientHidden")
+		await assertViewSnapshot(of: icon("eye.slash"), width: 44, transparent: true, named: "roleClientHidden", forDocs: true)
 	}
 	@Test("Router") @MainActor func roleRouter() async {
-		await assertViewSnapshot(of: icon("wifi.router"), width: 44, transparent: true, named: "roleRouter")
+		await assertViewSnapshot(of: icon("wifi.router"), width: 44, transparent: true, named: "roleRouter", forDocs: true)
 	}
 	@Test("Router Late") @MainActor func roleRouterLate() async {
-		await assertViewSnapshot(of: icon("wifi.router"), width: 44, transparent: true, named: "roleRouterLate")
+		await assertViewSnapshot(of: icon("wifi.router"), width: 44, transparent: true, named: "roleRouterLate", forDocs: true)
 	}
 	@Test("Client Base") @MainActor func roleClientBase() async {
-		await assertViewSnapshot(of: icon("house"), width: 44, transparent: true, named: "roleClientBase")
+		await assertViewSnapshot(of: icon("house"), width: 44, transparent: true, named: "roleClientBase", forDocs: true)
 	}
 	@Test("Tracker") @MainActor func roleTracker() async {
-		await assertViewSnapshot(of: icon("mappin.and.ellipse.circle"), width: 44, transparent: true, named: "roleTracker")
+		await assertViewSnapshot(of: icon("mappin.and.ellipse.circle"), width: 44, transparent: true, named: "roleTracker", forDocs: true)
 	}
 	@Test("Sensor") @MainActor func roleSensor() async {
-		await assertViewSnapshot(of: icon("sensor"), width: 44, transparent: true, named: "roleSensor")
+		await assertViewSnapshot(of: icon("sensor"), width: 44, transparent: true, named: "roleSensor", forDocs: true)
 	}
 	@Test("TAK") @MainActor func roleTak() async {
-		await assertViewSnapshot(of: icon("shield.checkered"), width: 44, transparent: true, named: "roleTak")
+		await assertViewSnapshot(of: icon("shield.checkered"), width: 44, transparent: true, named: "roleTak", forDocs: true)
 	}
 	@Test("TAK Tracker") @MainActor func roleTakTracker() async {
-		await assertViewSnapshot(of: icon("dog"), width: 44, transparent: true, named: "roleTakTracker")
+		await assertViewSnapshot(of: icon("dog"), width: 44, transparent: true, named: "roleTakTracker", forDocs: true)
 	}
 	@Test("Lost and Found") @MainActor func roleLostAndFound() async {
-		await assertViewSnapshot(of: icon("map"), width: 44, transparent: true, named: "roleLostAndFound")
+		await assertViewSnapshot(of: icon("map"), width: 44, transparent: true, named: "roleLostAndFound", forDocs: true)
 	}
 }
