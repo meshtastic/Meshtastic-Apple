@@ -577,7 +577,7 @@ struct NodeDetail: View {
 								)
 								Logger.mesh.info("Sent node metadata request from node details")
 							} catch {
-								Logger.mesh.error("Faild to send node metadata request from node details")
+								Logger.mesh.error("Failed to send node metadata request from node details")
 							}
 						}
 					} label: {
