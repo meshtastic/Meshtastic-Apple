@@ -18,6 +18,8 @@ Documentation for using the Meshtastic iOS, iPadOS, macOS, watchOS, and visionOS
 Keep the last 5–8 entries and archive older ones by removing them.
 -->
 
+**May 2026** — [Units, Measurement & Locale](user/units-and-locale) — New page explaining how the app automatically adapts temperatures, distances, speeds, and times to your device's regional settings.
+
 **May 2026** — [Messages & Channels](user/messages) — Channel conversations now load the most recent 50 messages with a Load More button for older history.
 
 **May 2026** — [CarPlay](user/carplay) — Direct message list is now capped at 200 users sorted by most recent, improving performance on large meshes.
