@@ -327,6 +327,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
 
+		// Flush any debounced position/telemetry saves before disconnecting
+		await MeshPackets.shared.flushDebouncedSaves()
+
 		// Close out the connection
 		if let activeConnection = activeConnection {
 			try await activeConnection.connection.disconnect(withError: nil, shouldReconnect: false)
@@ -706,6 +709,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
 			}
+			// Save any pending updateAnyPacketFrom changes for packets that
+			// don't have a dedicated handler (UNHANDLED cases above).
+			await MeshPackets.shared.savePendingChanges()
 
 		case .nodeInfo(let nodeInfo):
 			await handleNodeInfo(nodeInfo)
