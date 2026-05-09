@@ -47,10 +47,11 @@ struct CoreDataBrowser: View {
 					NavigationLink(destination: DynamicEntityListView(modelType: model.type, entityName: model.name)) {
 						HStack {
 							Label(model.name, systemImage: "tablecells")
+								.font(.subheadline)
 							Spacer()
 							Text("\(fetchCount(of: model.type, context: modelContext))")
 								.foregroundColor(.secondary)
-								.font(.caption)
+								.font(.caption2)
 						}
 					}
 				}
@@ -74,10 +75,10 @@ struct DynamicEntityListView: View {
 			NavigationLink(destination: EntityDetailView(object: object)) {
 				VStack(alignment: .leading) {
 					Text(displayName(for: object))
-						.font(.headline)
+						.font(.subheadline)
 						.lineLimit(1)
 					Text(object.persistentModelID.hashValue.description)
-						.font(.caption)
+						.font(.caption2)
 						.foregroundColor(.secondary)
 				}
 			}
@@ -100,13 +101,8 @@ struct EntityDetailView: View {
 	let object: any PersistentModel
 
 	var body: some View {
-		let mirror = Mirror(reflecting: object)
-		let properties = mirror.children.compactMap { child -> (label: String, value: Any)? in
-			guard let label = child.label else { return nil }
-			// Strip underscore prefix from stored property backing
-			let cleanLabel = label.hasPrefix("_") ? String(label.dropFirst()) : label
-			return (label: cleanLabel, value: child.value)
-		}.sorted { $0.label < $1.label }
+		let properties = readSchemaProperties(of: object)
+			.sorted { $0.label < $1.label }
 
 		Form {
 			Section(header: Text("Metadata")) {
@@ -226,6 +222,27 @@ struct RelationshipListView: View {
 
 // MARK: - 6. Helpers
 
+/// Read properties from a SwiftData model using schema metadata and keypaths.
+/// Mirror doesn't work for @Model classes (shows _SwiftDataNoType() sentinels).
+/// PropertyMetadata.keypath is internal, so we use Mirror on the metadata struct to extract it.
+private func readSchemaProperties(of object: any PersistentModel) -> [(label: String, value: Any)] {
+	func _read<T: PersistentModel>(_ obj: T) -> [(label: String, value: Any)] {
+		T.schemaMetadata.compactMap { metadata in
+			let metaMirror = Mirror(reflecting: metadata)
+			guard let name = metaMirror.children.first(where: { $0.label == "name" })?.value as? String else {
+				return nil
+			}
+			if let anyKP = metaMirror.children.first(where: { $0.label == "keypath" })?.value,
+			   let kp = anyKP as? PartialKeyPath<T> {
+				let value = obj[keyPath: kp]
+				return (label: name, value: value)
+			}
+			return (label: name, value: Optional<Any>.none as Any)
+		}
+	}
+	return _read(object)
+}
+
 /// Unwrap an optional `Any` value.
 private func unwrapOptional(_ value: Any) -> Any? {
 	let mirror = Mirror(reflecting: value)
@@ -237,21 +254,21 @@ private func unwrapOptional(_ value: Any) -> Any? {
 
 /// Find a displayable name from a model instance using heuristic key search.
 private func displayName(for object: any PersistentModel) -> String {
-	let mirror = Mirror(reflecting: object)
+	let properties = readSchemaProperties(of: object)
 	let preferredKeys = ["longName", "name", "title", "shortName", "userId", "messagePayload"]
 
 	for key in preferredKeys {
-		if let child = mirror.children.first(where: { $0.label == "_\(key)" || $0.label == key }),
-		   let unwrapped = unwrapOptional(child.value) as? String,
-		   !unwrapped.isEmpty {
-			return unwrapped
+		if let prop = properties.first(where: { $0.label == key }),
+		   let str = unwrapOptional(prop.value) as? String,
+		   !str.isEmpty {
+			return str
 		}
 	}
 
 	// Fallback: first non-empty string property
-	for child in mirror.children {
-		if let unwrapped = unwrapOptional(child.value) as? String, !unwrapped.isEmpty {
-			return unwrapped
+	for prop in properties {
+		if let str = unwrapOptional(prop.value) as? String, !str.isEmpty {
+			return str
 		}
 	}
 
