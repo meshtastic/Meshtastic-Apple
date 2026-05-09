@@ -19,7 +19,7 @@ final class UserEntity {
 	var longName: String?
 	var mute: Bool = false
 	var newPublicKey: Data?
-	var num: Int64 = 0
+	@Attribute(.unique) var num: Int64 = 0
 	var numString: String?
 	var pkiEncrypted: Bool = false
 	var publicKey: Data?

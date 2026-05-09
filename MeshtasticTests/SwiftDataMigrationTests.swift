@@ -880,11 +880,11 @@ struct ConfigRelationshipTests {
 		let context = container.mainContext
 
 		let node1 = NodeInfoEntity()
-		node1.num = 1001
+		node1.num = 910001
 		context.insert(node1)
 
 		let node2 = NodeInfoEntity()
-		node2.num = 1002
+		node2.num = 910002
 		context.insert(node2)
 
 		let mqtt1 = MQTTConfigEntity()
