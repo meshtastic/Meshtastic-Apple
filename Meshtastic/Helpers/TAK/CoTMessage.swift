@@ -282,9 +282,14 @@ struct CoTMessage: Identifiable, Sendable {
 	// MARK: - XML Generation
 
 	/// Generate CoT XML string for transmission to TAK clients
+	private static let xmlDateFormatter: ISO8601DateFormatter = {
+		let formatter = ISO8601DateFormatter()
+		formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+		return formatter
+	}()
+
 	func toXML() -> String {
-		let dateFormatter = ISO8601DateFormatter()
-		dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+		let dateFormatter = Self.xmlDateFormatter
 
 		var cot = "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
 		cot += "<event version='2.0' uid='\(uid.xmlEscaped)' "
