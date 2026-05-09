@@ -11,6 +11,56 @@
 <p>The app uses SwiftData exclusively for persistence. Do not introduce SQLite, Realm, Core Data, or any other persistence library.</p>
 <h2>ModelContainer Setup</h2>
 <p><code>PersistenceController.shared</code> (in <code>Meshtastic/Persistence/PersistenceController.swift</code>) creates and owns the <code>ModelContainer</code>. It is initialised once at app launch in <code>MeshtasticApp.swift</code> and injected via <code>.modelContainer(PersistenceController.shared.container)</code>.</p>
+<p>Autosave is <strong>disabled</strong> in production (<code>container.mainContext.autosaveEnabled = false</code>). All persistence is driven by explicit <code>modelContext.save()</code> calls so the app controls exactly when SQLite writes occur.</p>
+<h2>Save Strategy</h2>
+<p>The app uses two save patterns depending on packet frequency:</p>
+<h3>Immediate Saves</h3>
+<p>Config changes, messages, waypoints, and other low-frequency mutations call <code>savePendingChanges()</code> directly after updating the model graph. This helper is a thin wrapper around <code>modelContext.save()</code> with error logging.</p>
+<h3>Debounced Saves</h3>
+<p>High-frequency packets — positions and telemetry — use <code>scheduleDebouncedSave()</code> to coalesce writes. The debouncer waits <strong>2 seconds</strong> of inactivity before flushing, with a hard ceiling of <strong>5 seconds</strong> from the first dirty change. This prevents dozens of SQLite writes per second when the mesh is busy.</p>
+<pre><code>Position packet 1 → dirty flag set, 2s timer starts
+Position packet 2 (200ms later) → timer resets to 2s
+Position packet 3 (200ms later) → timer resets to 2s
+...
+No packets for 2s → save() fires
+— OR —
+5s since first dirty change → save() fires regardless
+</code></pre>
+<p>Debounced saves are flushed explicitly on disconnect so no data is lost.</p>
+<h2>Indexes</h2>
+<p>Frequently queried fields use <code>@Attribute(.unique)</code> to create a UNIQUE INDEX in the underlying SQLite store. This eliminates full table scans on the hottest lookup paths:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Entity</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>num</code></td>
+<td><code>NodeInfoEntity</code></td>
+<td>Looked up on every incoming packet</td>
+</tr>
+<tr>
+<td><code>num</code></td>
+<td><code>UserEntity</code></td>
+<td>Looked up on every message</td>
+</tr>
+<tr>
+<td><code>messageId</code></td>
+<td><code>MessageEntity</code></td>
+<td>ACK lookups, deduplication</td>
+</tr>
+<tr>
+<td><code>hwModel</code></td>
+<td><code>DeviceHardwareEntity</code></td>
+<td>Hardware image lookups</td>
+</tr>
+</tbody>
+</table>
+<div class="tips-callout"><strong>Note</strong> — <code>@Attribute(.indexed)</code> requires iOS 18+. The app targets iOS 17.5, so <code>@Attribute(.unique)</code> is used instead (it creates a UNIQUE INDEX which also serves as a regular index).</div>
 <h2>Using the ModelContext in Views</h2>
 <pre><code class="language-swift">struct MyView: View {
     @Environment(\.modelContext) private var context
@@ -107,12 +157,41 @@ static let migrateV1toV2 = MigrationStage.custom(
 </ol>
 <div class="warning-callout"><strong>Warning — Never delete a <code>VersionedSchema</code>.</strong> Migration history must be preserved or the migration plan will fail on devices that skipped intermediate versions.</div>
 <h2>Query Helpers</h2>
-<p><code>QueryCoreData.swift</code> contains helper functions for common fetches:</p>
+<p><code>QuerySwiftData.swift</code> contains helper functions for common fetches:</p>
 <pre><code class="language-swift">let node = getNodeInfo(id: nodeNum, context: context)
 </code></pre>
-<p><code>UpdateCoreData.swift</code> contains helpers for upsert patterns:</p>
+<p><code>UpdateSwiftData.swift</code> contains helpers for upsert patterns:</p>
 <pre><code class="language-swift">upsertNode(packet: packet, context: context)
 </code></pre>
 <p>Prefer these helpers over direct queries to keep logic consistent.</p>
+<h2>Data Caps</h2>
+<p>To prevent unbounded database growth, the app enforces per-node caps when inserting new records. Older rows beyond the cap are deleted in the same transaction:</p>
+<table>
+<thead>
+<tr>
+<th>Relationship</th>
+<th>Cap</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NodeInfoEntity.positions</code></td>
+<td>5 000</td>
+<td>Oldest positions deleted when exceeded</td>
+</tr>
+<tr>
+<td><code>NodeInfoEntity.telemetries</code></td>
+<td>5 000 per metrics type</td>
+<td>Oldest telemetry of that type deleted</td>
+</tr>
+<tr>
+<td><code>MessageEntity</code> (per channel)</td>
+<td>50 000</td>
+<td>Oldest messages in the channel deleted</td>
+</tr>
+</tbody>
+</table>
+<p>These caps are enforced in <code>UpdateSwiftData.swift</code> during the upsert path, so they run on every incoming packet without requiring a separate maintenance task.</p>
 </body>
 </html>

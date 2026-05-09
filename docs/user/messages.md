@@ -10,6 +10,10 @@ Meshtastic uses a channel system for group broadcasts and direct messages for pr
 
 ## Channels
 
+### Message History
+
+Channel conversations load the most recent **50 messages** by default. Scroll to the top and tap **Load More** to fetch the next batch. This keeps the app responsive on channels with thousands of messages.
+
 ### Channel Index
 
 | Symbol | Meaning |
