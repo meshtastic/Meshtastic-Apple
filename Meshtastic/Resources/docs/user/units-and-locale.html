@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Units, Measurement &amp; Locale</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="units-and-locale">
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Units, Measurement &amp; Locale</h1>
+<p>The Meshtastic app automatically displays temperatures, distances, speeds, and times in the units your device is configured to use — no settings to change inside the app.</p>
+<hr />
+<h2>How It Works</h2>
+<p>Meshtastic radios always transmit data in <strong>metric units</strong> (meters, °C, km/h, hPa, etc.). When the app receives this data, it hands it to your device's built-in formatting system, which converts and displays values in whatever unit system you've chosen in <strong>Settings → General → Language &amp; Region</strong>.</p>
+<p><img src="../assets/screenshots/settingsLanguageRegion.png" alt="Language &amp; Region settings" /></p>
+<p>The <strong>Language &amp; Region</strong> screen controls how the Meshtastic app displays temperatures, distances, dates, numbers, and more. Key settings:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What It Controls in Meshtastic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Temperature</strong></td>
+<td>°C or °F for all sensor readings and weather</td>
+</tr>
+<tr>
+<td><strong>Measurement System</strong></td>
+<td>Metric (m, km, kg, mm) or US/UK (ft, mi, lbs, in)</td>
+</tr>
+<tr>
+<td><strong>Calendar</strong></td>
+<td>Calendar system for all dates</td>
+</tr>
+<tr>
+<td><strong>First Day of Week</strong></td>
+<td>Week start day in date displays</td>
+</tr>
+<tr>
+<td><strong>Date Format</strong></td>
+<td>Date ordering throughout the app</td>
+</tr>
+<tr>
+<td><strong>Number Format</strong></td>
+<td>Decimal separators and digit grouping</td>
+</tr>
+</tbody>
+</table>
+<div class="tips-callout"><strong>Tip — You never need to toggle units inside the app.</strong> Change your system measurement preferences and every screen in Meshtastic updates automatically — node details, telemetry charts, weather, altitude, and more.</div>
+<h2>Temperature</h2>
+<p>Temperature values from environment sensors and weather forecasts are transmitted as <strong>°C</strong> and displayed as either <strong>°C</strong> or <strong>°F</strong> based on your device's temperature unit preference.</p>
+<table>
+<thead>
+<tr>
+<th>Your Setting</th>
+<th>You See</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Celsius</td>
+<td>22 °C</td>
+</tr>
+<tr>
+<td>Fahrenheit</td>
+<td>72 °F</td>
+</tr>
+</tbody>
+</table>
+<p>This affects all temperature displays throughout the app: node environment telemetry, soil temperature, dew point, weather forecasts, and telemetry chart axes.</p>
+<h2>Distance &amp; Altitude</h2>
+<p>Distances between nodes and GPS altitudes are transmitted as <strong>meters</strong> and automatically scaled and converted by the system.</p>
+<table>
+<thead>
+<tr>
+<th>Your Setting</th>
+<th>Small Distance</th>
+<th>Large Distance</th>
+<th>Altitude</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Metric</td>
+<td>350 m</td>
+<td>2.5 km</td>
+<td>1,200 m</td>
+</tr>
+<tr>
+<td>Imperial (US)</td>
+<td>1,148 ft</td>
+<td>1.6 mi</td>
+<td>3,937 ft</td>
+</tr>
+</tbody>
+</table>
+<p>The app uses natural scaling — short distances stay in meters or feet, while longer distances switch to kilometres or miles automatically.</p>
+<h3>Where these appear</h3>
+<ul>
+<li><strong>Node list</strong> — distance and bearing to each node</li>
+<li><strong>Node detail</strong> — altitude, distance from your position</li>
+<li><strong>Map</strong> — waypoint distances, trace route hop distances</li>
+<li><strong>Compass</strong> — distance to selected node</li>
+<li><strong>Altitude chart</strong> — Y-axis labels adapt to your locale</li>
+</ul>
+<h2>Speed</h2>
+<p>GPS ground speed is displayed in your locale's preferred speed unit.</p>
+<table>
+<thead>
+<tr>
+<th>Your Setting</th>
+<th>You See</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Metric</td>
+<td>12 km/h</td>
+</tr>
+<tr>
+<td>Imperial (US)</td>
+<td>7 mph</td>
+</tr>
+</tbody>
+</table>
+<p>Speed appears on the <strong>GPS Status</strong> screen when your device has an active GPS fix.</p>
+<h2>Wind</h2>
+<p>Wind speed and gust data from environment sensors are transmitted as <strong>m/s</strong> and converted for display.</p>
+<table>
+<thead>
+<tr>
+<th>Your Setting</th>
+<th>You See</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Metric</td>
+<td>5 m/s</td>
+</tr>
+<tr>
+<td>Imperial (US)</td>
+<td>11 mph</td>
+</tr>
+</tbody>
+</table>
+<p>Wind readings appear in the <strong>Node Detail</strong> weather section and the <strong>Environment Telemetry</strong> log columns.</p>
+<h2>Weight</h2>
+<p>Weight telemetry is transmitted as <strong>kg</strong> and converted for display.</p>
+<table>
+<thead>
+<tr>
+<th>Your Setting</th>
+<th>You See</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Metric</td>
+<td>24.5 kg</td>
+</tr>
+<tr>
+<td>Imperial (US)</td>
+<td>54.0 lbs</td>
+</tr>
+</tbody>
+</table>
+<h2>Rainfall</h2>
+<p>Rainfall measurements (1-hour and 24-hour totals) are transmitted as <strong>mm</strong> and converted for display.</p>
+<table>
+<thead>
+<tr>
+<th>Your Setting</th>
+<th>You See</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Metric</td>
+<td>12 mm</td>
+</tr>
+<tr>
+<td>Imperial (US)</td>
+<td>0.5 in</td>
+</tr>
+</tbody>
+</table>
+<h2>Units That Never Change</h2>
+<p>Some units are international standards and are displayed the same way regardless of your locale:</p>
+<table>
+<thead>
+<tr>
+<th>Measurement</th>
+<th>Unit</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Barometric pressure</td>
+<td>hPa</td>
+<td>International meteorological standard</td>
+</tr>
+<tr>
+<td>Heading / bearing</td>
+<td>° (degrees)</td>
+<td>Universal navigation convention</td>
+</tr>
+<tr>
+<td>Radiation</td>
+<td>µR/hr</td>
+<td>Standard dosimetry unit</td>
+</tr>
+<tr>
+<td>GPS coordinates</td>
+<td>decimal degrees</td>
+<td>Universal geographic standard</td>
+</tr>
+<tr>
+<td>Humidity, battery, soil moisture</td>
+<td>%</td>
+<td>Universal</td>
+</tr>
+</tbody>
+</table>
+<h2>Date &amp; Time</h2>
+<p>All timestamps throughout the app — last heard, message times, telemetry logs, chart axes — follow your device's date and time preferences.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What It Controls</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>24-Hour Time</strong></td>
+<td>Clock format</td>
+<td>14:30 vs 2:30 PM</td>
+</tr>
+<tr>
+<td><strong>Date Format</strong></td>
+<td>Date ordering</td>
+<td>09/05/2026 vs 05/09/2026 vs 2026-05-09</td>
+</tr>
+<tr>
+<td><strong>Calendar</strong></td>
+<td>Calendar system</td>
+<td>Gregorian, Buddhist, Japanese, etc.</td>
+</tr>
+</tbody>
+</table>
+<p>The app also uses <strong>relative time</strong> where it makes sense — for example, &quot;5 min ago&quot; or &quot;2 hours ago&quot; in the node list — which is automatically localised into your device language.</p>
+<h2>Changing Your Measurement System</h2>
+<p>Your measurement system (metric vs imperial) is tied to your region setting. To change it without changing your language:</p>
+<ol>
+<li>Open <strong>Settings → General → Language &amp; Region</strong></li>
+<li>Tap <strong>Measurement System</strong></li>
+<li>Choose <strong>Metric</strong>, <strong>US</strong>, or <strong>UK</strong></li>
+</ol>
+<p>The Meshtastic app picks up the change immediately — no restart needed.</p>
+<div class="tips-callout"><strong>Tip — UK vs US imperial.</strong> The UK measurement system uses miles for distance but stones for body weight and Celsius for temperature. The US system uses Fahrenheit and pounds. The app respects these distinctions automatically.</div>
+</body>
+</html>
