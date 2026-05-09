@@ -683,8 +683,6 @@ struct DiscoveryMapViewSnapshotTests {
 	}
 }
 
-}
-
 // MARK: - DiscoverySummaryView Snapshot Tests
 
 @Suite("DiscoverySummaryView Snapshots")
@@ -1526,5 +1524,64 @@ struct DeviceRoleIconSnapshotTests {
 	}
 	@Test("Lost and Found") @MainActor func roleLostAndFound() async {
 		await assertViewSnapshot(of: icon("map"), width: 44, transparent: true, named: "roleLostAndFound", forDocs: true)
+	}
+}
+
+// MARK: - ChannelForm Snapshot Tests
+
+@Suite("ChannelForm Snapshots")
+struct ChannelFormSnapshotTests {
+
+	@Test("Primary channel with 256-bit key")
+	@MainActor
+	func channelFormPrimary() async {
+		let view = ChannelForm(
+			channelIndex: .constant(0),
+			channelName: .constant("LongFast"),
+			channelKeySize: .constant(32),
+			channelKey: .constant("AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE="),
+			channelRole: .constant(1),
+			uplink: .constant(false),
+			downlink: .constant(false),
+			positionPrecision: .constant(14),
+			preciseLocation: .constant(false),
+			positionsEnabled: .constant(true),
+			hasChanges: .constant(false),
+			hasValidKey: .constant(true),
+			supportedVersion: .constant(true)
+		)
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "channelForm_primary", forDocs: true)
+	}
+}
+
+// MARK: - TapbackInputView Snapshot Tests
+
+@Suite("TapbackInputView Snapshots")
+struct TapbackInputViewSnapshotTests {
+
+	@Test("Tapback emoji input")
+	@MainActor
+	func tapbackInput() async {
+		let view = TapbackInputView(
+			text: .constant(""),
+			isPresented: .constant(true),
+			onEmojiSelected: { _ in }
+		)
+		await assertViewSnapshot(of: view, width: 390, height: 120, named: "tapbackInput", forDocs: true)
+	}
+}
+
+// MARK: - AboutMeshtastic Snapshot Tests
+
+@Suite("AboutMeshtastic Snapshots")
+struct AboutMeshtasticSnapshotTests {
+
+	@Test("About page")
+	@MainActor
+	func aboutPage() async {
+		let view = NavigationView {
+			AboutMeshtastic()
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "aboutMeshtastic", forDocs: true)
 	}
 }

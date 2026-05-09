@@ -162,8 +162,8 @@
         "navOrder": 1,
         "keywords": [
             "radio",
-            "name",
             "meshtastic",
+            "name",
             "step",
             "nodes",
             "device",
@@ -192,7 +192,7 @@
             "enabled",
             "devices"
         ],
-        "charCount": 1913
+        "charCount": 1931
     },
     {
         "id": "map",
@@ -250,27 +250,27 @@
             "destination",
             "meaning",
             "location",
+            "encryption",
             "direct",
             "tip",
             "securely",
-            "encryption",
+            "press",
+            "long",
             "encrypted",
             "data",
             "uses",
+            "tapback",
             "recent",
             "primary",
-            "press",
             "precise",
+            "mqtt",
             "messaging",
-            "long",
             "indicates",
             "from",
             "delivery",
-            "broadcast",
-            "used",
-            "use"
+            "broadcast"
         ],
-        "charCount": 3581
+        "charCount": 3819
     },
     {
         "id": "mqtt",
