@@ -52,7 +52,7 @@ struct PositionAltitudeChart: View {
 					AxisValueLabel("""
 						\(value.as(PlottableMeasurement.self)!
 							.measurement
-							.converted(to: .meters),
+							.converted(to: Locale.current.measurementSystem == .metric ? .meters : .feet),
 								format: .measurement(
 									width: .wide,
 									numberFormatStyle: .number.precision(

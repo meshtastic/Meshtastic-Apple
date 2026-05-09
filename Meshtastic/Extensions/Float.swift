@@ -28,7 +28,7 @@ extension Float {
 		let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
 		var format: UnitTemperature = .celsius
 
-		if localeUnit! as? String == "Fahrenheit" {
+		if (localeUnit as? String) == "Fahrenheit" {
 			format = .fahrenheit
 		}
 		return temperature.converted(to: format).value

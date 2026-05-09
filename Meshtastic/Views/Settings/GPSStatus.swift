@@ -20,7 +20,7 @@ struct GPSStatus: View {
 		let horizontalAccuracy = Measurement(value: newLocation.horizontalAccuracy, unit: UnitLength.meters)
 		let verticalAccuracy = Measurement(value: newLocation.verticalAccuracy, unit: UnitLength.meters)
 		let altitiude = Measurement(value: newLocation.altitude, unit: UnitLength.meters)
-		let speed = Measurement(value: newLocation.speed, unit: UnitSpeed.kilometersPerHour)
+		let speed = Measurement(value: newLocation.speed, unit: UnitSpeed.metersPerSecond)
 		let speedAccuracy = Measurement(value: newLocation.speedAccuracy, unit: UnitSpeed.metersPerSecond)
 		let courseAccuracy = Measurement(value: newLocation.courseAccuracy, unit: UnitAngle.degrees)
 
