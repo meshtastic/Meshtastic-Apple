@@ -23,6 +23,7 @@ struct ChannelMessageList: View {
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageToHighlight: Int64 = 0
 	@State private var needsReadSync: Bool = false
+	@State private var messageLimit: Int = 50
 	@Query private var allPrivateMessages: [MessageEntity]
 	
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
@@ -62,8 +63,8 @@ struct ChannelMessageList: View {
 	}
 
 	var body: some View {
-		// Cast allPrivateMessages to an array for easier indexing and ForEach.
-		let messages: [MessageEntity] = Array(allPrivateMessages)
+		// Show only the most recent N messages to limit memory usage
+		let messages = allPrivateMessages.suffix(messageLimit)
 
 		// Precompute previous message
 		let previousByID: [Int64: MessageEntity?] = {
@@ -76,6 +77,17 @@ struct ChannelMessageList: View {
 		ScrollViewReader { scrollView in
 			ScrollView {
 				LazyVStack {
+					if allPrivateMessages.count > messageLimit {
+						Button {
+							messageLimit += 50
+						} label: {
+							Label("Load Earlier Messages", systemImage: "arrow.up.circle")
+								.font(.caption)
+								.foregroundColor(.accentColor)
+						}
+						.buttonStyle(.borderless)
+						.padding(.vertical, 8)
+					}
 					ForEach(messages, id: \.messageId) { message in
 						  let previousMessage: MessageEntity? = previousByID[message.messageId] ?? nil
 						  

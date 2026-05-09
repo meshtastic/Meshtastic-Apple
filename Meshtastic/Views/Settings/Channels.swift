@@ -50,9 +50,6 @@ struct Channels: View {
 	@State var minimumVersion = "2.2.24"
 	@State private var showingHelp = false
 
-	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
-	var nodes: [NodeInfoEntity]
-
 	private var displayChannels: [ChannelEntity] {
 		guard let channels = node.myInfo?.channels else { return [] }
 		var byIndex: [Int32: ChannelEntity] = [:]
@@ -265,8 +262,15 @@ struct Channels: View {
 							for object in objects {
 								context.delete(object)
 							}
-							for node in nodes where node.channel == channel.index {
-								context.delete(node)
+							let channelIdx = channel.index
+							var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(
+								predicate: #Predicate { $0.channel == channelIdx }
+							)
+							nodeDescriptor.fetchLimit = 100
+							if let matchingNodes = try? context.fetch(nodeDescriptor) {
+								for matchingNode in matchingNodes {
+									context.delete(matchingNode)
+								}
 							}
 							context.delete(selectedChannel!)
 							do {

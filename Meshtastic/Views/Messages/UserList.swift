@@ -236,6 +236,7 @@ private struct FilteredUserList: View {
 	}
 }
 fileprivate extension NodeFilterParameters {
+	/// In-memory filter matching for use with @Query results
 	func matches(user: UserEntity) -> Bool {
 		// Search text
 		if !searchText.isEmpty {
@@ -271,10 +272,6 @@ fileprivate extension NodeFilterParameters {
 			if let lastHeard = user.userNode?.lastHeard, lastHeard < twoHoursAgo { return false }
 			if user.userNode?.lastHeard == nil { return false }
 		}
-		// Encrypted
-		if isPkiEncrypted {
-			if !user.pkiEncrypted { return false }
-		}
 		// Favorites
 		if isFavorite {
 			if user.userNode?.favorite != true { return false }
@@ -307,6 +304,10 @@ fileprivate extension NodeFilterParameters {
 		}
 		// Ignored
 		if user.userNode?.ignored == true { return false }
+		// Encrypted
+		if isPkiEncrypted {
+			if !user.pkiEncrypted { return false }
+		}
 		// Connected node
 		if user.numString == String(UserDefaults.preferredPeripheralNum) { return false }
 		return true

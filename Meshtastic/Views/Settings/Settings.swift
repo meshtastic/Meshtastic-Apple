@@ -522,6 +522,7 @@ struct Settings: View {
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
+				let configNode = nodes.first(where: { $0.num == selectedNode })
 				switch destination {
 				case .about:
 					AboutMeshtastic()
@@ -532,7 +533,7 @@ struct Settings: View {
 				case .routeRecorder:
 					RouteRecorder()
 				case .lora:
-					LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					LoRaConfig(node: configNode)
 				case .channels:
 					if let node = node {
 						Channels(node: node)
@@ -542,43 +543,43 @@ struct Settings: View {
 				case .shareQRCode:
 					ShareChannels(node: node)
 				case .user:
-					UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					UserConfig(node: configNode)
 				case .bluetooth:
-					BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					BluetoothConfig(node: configNode)
 				case .device:
-					DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					DeviceConfig(node: configNode)
 				case .display:
-					DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					DisplayConfig(node: configNode)
 				case .network:
-					NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					NetworkConfig(node: configNode)
 				case .position:
-					PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					PositionConfig(node: configNode)
 				case .power:
-					PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					PowerConfig(node: configNode)
 				case .ambientLighting:
 					AmbientLightingConfig(node: node)
 				case .cannedMessages:
-					CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					CannedMessagesConfig(node: configNode)
 				case .detectionSensor:
-					DetectionSensorConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					DetectionSensorConfig(node: configNode)
 				case .externalNotification:
-					ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					ExternalNotificationConfig(node: configNode)
 				case .mqtt:
-					MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					MQTTConfig(node: configNode)
 				case .rangeTest:
-					RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					RangeTestConfig(node: configNode)
 				case .paxCounter:
-					PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					PaxCounterConfig(node: configNode)
 				case .ringtone:
-					RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					RtttlConfig(node: configNode)
 				case .security:
-					SecurityConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					SecurityConfig(node: configNode)
 				case .serial:
-					SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					SerialConfig(node: configNode)
 				case .storeAndForward:
-					StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					StoreForwardConfig(node: configNode)
 				case .telemetry:
-					TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					TelemetryConfig(node: configNode)
 				case .debugLogs:
 					AppLog()
 				case .appFiles:
@@ -592,7 +593,7 @@ struct Settings: View {
 				case .tak:
 					TAKServerConfig()
 				case .takConfig:
-					TAKModuleConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					TAKModuleConfig(node: configNode)
 				case .localMeshDiscovery:
 					DiscoveryScanView()
 				case .helpDocs:

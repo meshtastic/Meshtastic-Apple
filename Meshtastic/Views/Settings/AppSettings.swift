@@ -239,17 +239,24 @@ struct AppSettings: View {
 }
 
 struct BuildTestNode: View {
-	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
-	private var nodes: [NodeInfoEntity]
+	@Environment(\.modelContext) private var context
 	@Binding var nodeListDensity: NodeListDensity
 	
 	init(nodeListDensity: Binding<NodeListDensity>) {
 		self._nodeListDensity = nodeListDensity
 	}
 
+	private var exampleNode: NodeInfoEntity? {
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? context.fetch(descriptor).first
+	}
+
 	var body: some View {
 		VStack {
-			if let exampleNode = nodes.first {
+			if let exampleNode {
 				switch nodeListDensity {
 				case .standard:
 					NodeListItem(
