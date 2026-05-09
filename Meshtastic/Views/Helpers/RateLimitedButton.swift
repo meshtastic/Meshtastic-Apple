@@ -116,6 +116,7 @@ class RateLimitStorage: ObservableObject {
 				self.timer?.invalidate()
 				self.timer = nil
 				self.rateLimits.removeAll()
+				return
 			}
 			self.objectWillChange.send()
 		}
