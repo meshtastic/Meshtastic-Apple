@@ -233,8 +233,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
 		} onCancel: {
 			Task { @MainActor in
-				wantConfigContinuation?.resume(throwing: CancellationError())
-				wantConfigContinuation = nil
+				if let continuation = wantConfigContinuation {
+					wantConfigContinuation = nil
+					continuation.resume(throwing: CancellationError())
+				}
 			}
 		}
 	}
@@ -263,8 +265,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB first NodeInfo received.")
 		} onCancel: {
 			Task { @MainActor in
-				firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
-				firstDatabaseNodeInfoContinuation = nil
+				if let continuation = firstDatabaseNodeInfoContinuation {
+					firstDatabaseNodeInfoContinuation = nil
+					continuation.resume(throwing: CancellationError())
+				}
 			}
 		}
 	}
@@ -296,11 +300,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		heartbeatTimer = nil
 		heartbeatResponseTimer = nil
 		
-		// Clean up continuations
-		wantConfigContinuation?.resume(throwing: CancellationError())
-		wantConfigContinuation = nil
-		firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
-		firstDatabaseNodeInfoContinuation = nil
+		// Clean up continuations — nil before resume to prevent double-resume races
+		if let continuation = wantConfigContinuation {
+			wantConfigContinuation = nil
+			continuation.resume(throwing: CancellationError())
+		}
+		if let continuation = firstDatabaseNodeInfoContinuation {
+			firstDatabaseNodeInfoContinuation = nil
+			continuation.resume(throwing: CancellationError())
+		}
 		
 		await wantDatabaseGate.cancelAll()
 		await wantDatabaseGate.reset()
@@ -763,6 +771,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
 				if let continuation = wantConfigContinuation {
+					wantConfigContinuation = nil
 					continuation.resume()
 				}
 				
