@@ -302,7 +302,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	private func fetchDirectMessageItems() -> [CPMessageListItem] {
 		do {
-			let users = try context.fetch(FetchDescriptor<UserEntity>())
+			var descriptor = FetchDescriptor<UserEntity>(
+				predicate: #Predicate<UserEntity> { $0.userNode != nil },
+				sortBy: [SortDescriptor(\UserEntity.lastMessage, order: .reverse)]
+			)
+			descriptor.fetchLimit = 200
+			let users = try context.fetch(descriptor)
 			let connectedNum = AccessoryManager.shared.activeDeviceNum ?? 0
 			let filteredUsers = users
 				.filter { user in
@@ -327,7 +332,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 					return (lhs.longName ?? lhs.shortName ?? "") < (rhs.longName ?? rhs.shortName ?? "")
 				}
 				.prefix(24)
-			let nodeNums = users.compactMap { $0.userNode?.num }
+			let nodeNums = filteredUsers.compactMap { $0.userNode?.num }
 			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
 			let now = Date()
 
