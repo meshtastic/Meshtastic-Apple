@@ -47,10 +47,11 @@ struct CoreDataBrowser: View {
 					NavigationLink(destination: DynamicEntityListView(modelType: model.type, entityName: model.name)) {
 						HStack {
 							Label(model.name, systemImage: "tablecells")
+								.font(.subheadline)
 							Spacer()
 							Text("\(fetchCount(of: model.type, context: modelContext))")
 								.foregroundColor(.secondary)
-								.font(.caption)
+								.font(.caption2)
 						}
 					}
 				}
@@ -74,10 +75,10 @@ struct DynamicEntityListView: View {
 			NavigationLink(destination: EntityDetailView(object: object)) {
 				VStack(alignment: .leading) {
 					Text(displayName(for: object))
-						.font(.headline)
+						.font(.subheadline)
 						.lineLimit(1)
 					Text(object.persistentModelID.hashValue.description)
-						.font(.caption)
+						.font(.caption2)
 						.foregroundColor(.secondary)
 				}
 			}
