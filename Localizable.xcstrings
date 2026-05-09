@@ -13897,6 +13897,9 @@
         }
       }
     },
+    "Could not open the Core Data store" : {
+
+    },
     "Counter Clockwise Rotary Event" : {
       "localizations" : {
         "da" : {
@@ -58928,6 +58931,9 @@
           }
         }
       }
+    },
+    "Unavailable" : {
+
     },
     "Unhealthy" : {
       "extractionState" : "stale",

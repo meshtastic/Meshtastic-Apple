@@ -6,7 +6,6 @@
 //
 
 import SwiftData
-import CoreData
 import OSLog
 
 @MainActor
@@ -32,42 +31,6 @@ class PersistenceController {
 
 	var context: ModelContext {
 		container.mainContext
-	}
-
-	/// Core Data managed object context backed by the same SQLite store.
-	/// Used by CoreDataBrowser for low-level database introspection.
-	lazy var coreDataContext: NSManagedObjectContext? = {
-		guard let storeURL = container.configurations.first?.url else {
-			Logger.data.error("Could not determine SwiftData store URL for Core Data browser")
-			return nil
-		}
-		guard let model = NSManagedObjectModel(contentsOf: storeURL) ?? inferredModel(at: storeURL) else {
-			Logger.data.error("Could not load managed object model for Core Data browser")
-			return nil
-		}
-		let coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
-		do {
-			try coordinator.addPersistentStore(
-				ofType: NSSQLiteStoreType,
-				configurationName: nil,
-				at: storeURL,
-				options: [NSReadOnlyPersistentStoreOption: true]
-			)
-		} catch {
-			Logger.data.error("Failed to open Core Data store for browser: \(error.localizedDescription, privacy: .public)")
-			return nil
-		}
-		let ctx = NSManagedObjectContext(.mainQueue)
-		ctx.persistentStoreCoordinator = coordinator
-		return ctx
-	}()
-
-	private func inferredModel(at storeURL: URL) -> NSManagedObjectModel? {
-		guard let metadata = try? NSPersistentStoreCoordinator.metadataForPersistentStore(
-			ofType: NSSQLiteStoreType,
-			at: storeURL
-		) else { return nil }
-		return NSManagedObjectModel.mergedModel(from: nil, forStoreMetadata: metadata)
 	}
 
 	init(inMemory: Bool = false, storeName: String = "Meshtastic") {

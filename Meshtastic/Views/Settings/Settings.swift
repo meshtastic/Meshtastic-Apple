@@ -602,12 +602,7 @@ struct Settings: View {
 				case .takConfig:
 					TAKModuleConfig(node: configNode)
 				case .coreDataBrowser:
-					if let coreDataContext = PersistenceController.shared.coreDataContext {
-						CoreDataBrowser()
-							.environment(\.managedObjectContext, coreDataContext)
-					} else {
-						ContentUnavailableView("Unavailable", systemImage: "exclamationmark.triangle", description: Text("Could not open the Core Data store"))
-					}
+					CoreDataBrowser()
 				case .localMeshDiscovery:
 					DiscoveryScanView()
 				case .helpDocs:
