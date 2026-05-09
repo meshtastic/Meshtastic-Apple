@@ -61,7 +61,59 @@ actor MeshPackets {
 		let container = MainActor.assumeIsolated { PersistenceController.shared.container }
 		return MeshPackets(modelContainer: container)
 	}()
-	
+
+	// MARK: - Save Helpers
+
+	/// Saves any pending changes in the model context. Call once at the end of each
+	/// top-level packet handler to batch all mutations from a single packet into one write.
+	func savePendingChanges(caller: String = #function) {
+		guard modelContext.hasChanges else { return }
+		do {
+			try modelContext.save()
+			Logger.data.info("💾 [\(caller, privacy: .public)] Saved pending changes")
+		} catch {
+			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	// MARK: - Debounced Save for High-Frequency Packets
+
+	/// Timer task for debounced saves (position/telemetry).
+	private var debounceSaveTask: Task<Void, Never>?
+	/// Tracks when we last flushed debounced changes to enforce a maximum delay.
+	private var lastDebouncedSaveTime: ContinuousClock.Instant = .now
+	/// How long to wait after the last mutation before flushing.
+	private static let debounceInterval: Duration = .seconds(2)
+	/// Maximum wall-clock time between flushes, even if packets keep arriving.
+	private static let maxDebounceDelay: Duration = .seconds(5)
+
+	/// Schedules a debounced save. Each call resets the 2-second timer. If packets
+	/// keep arriving continuously, a save is forced every 5 seconds.
+	/// Use for high-frequency packet types (position, telemetry) instead of `savePendingChanges`.
+	func scheduleDebouncedSave() {
+		debounceSaveTask?.cancel()
+		let elapsed = ContinuousClock.now - lastDebouncedSaveTime
+		if elapsed >= Self.maxDebounceDelay {
+			savePendingChanges(caller: "debouncedFlush-maxDelay")
+			lastDebouncedSaveTime = .now
+			return
+		}
+		debounceSaveTask = Task {
+			try? await Task.sleep(for: Self.debounceInterval)
+			guard !Task.isCancelled else { return }
+			self.savePendingChanges(caller: "debouncedFlush")
+			self.lastDebouncedSaveTime = .now
+		}
+	}
+
+	/// Immediately flushes any debounced saves. Call on disconnect or when entering background.
+	func flushDebouncedSaves() {
+		debounceSaveTask?.cancel()
+		debounceSaveTask = nil
+		savePendingChanges(caller: "flushDebouncedSaves")
+		lastDebouncedSaveTime = .now
+	}
+
 	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) {
 		switch config.payloadVariant {
 		case .bluetooth:
@@ -139,14 +191,9 @@ actor MeshPackets {
 				if !myInfo.pioEnv.isEmpty {
 					myInfoEntity.pioEnv = myInfo.pioEnv
 				}
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
-					return myInfoEntity.persistentModelID
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 Error Inserting New Core Data MyInfoEntity: \(nsError, privacy: .public)")
-				}
+				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+				savePendingChanges()
+				return myInfoEntity.persistentModelID
 			} else {
 				
 				fetchedMyInfo[0].peripheralId = peripheralId
@@ -156,14 +203,9 @@ actor MeshPackets {
 					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
 				}
 				
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 Updated myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
-					return fetchedMyInfo[0].persistentModelID
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 Error Updating Core Data MyInfoEntity: \(nsError, privacy: .public)")
-				}
+				Logger.data.info("💾 Updated myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+				savePendingChanges()
+				return fetchedMyInfo[0].persistentModelID
 			}
 		} catch {
 			Logger.data.error("💥 Fetch MyInfo Error")
@@ -201,11 +243,7 @@ actor MeshPackets {
 						newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
 						newChannel.mute = channel.settings.moduleSettings.isMuted
 					}
-					do {
-						try modelContext.save()
-					} catch {
-						Logger.data.error("💥 Failed to save channel: \(error.localizedDescription, privacy: .public)")
-					}
+					savePendingChanges()
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {
 					Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
@@ -254,11 +292,7 @@ actor MeshPackets {
 						newNode.metadata = newMetadata
 					}
 				}
-				do {
-					try modelContext.save()
-				} catch {
-					Logger.data.error("💥 Failed to save device metadata: \(error.localizedDescription, privacy: .public)")
-				}
+				savePendingChanges()
 				Logger.data.info("💾 Updated Device Metadata from Admin App Packet For: \(fromNum.toHex(), privacy: .public)")
 			} catch {
 				let nsError = error as NSError
@@ -377,16 +411,11 @@ actor MeshPackets {
 						if fetchedMyInfo.count > 0 {
 							newNode.myInfo = fetchedMyInfo[0]
 						}
-						do {
-							if !deferSave {
-								try modelContext.save()
-								Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
-							}
-							return newNode.persistentModelID
-						} catch {
-							let nsError = error as NSError
-							Logger.data.error("Error Saving Core Data NodeInfoEntity: \(nsError, privacy: .public)")
+						if !deferSave {
+							savePendingChanges()
+							Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
 						}
+						return newNode.persistentModelID
 					} catch {
 						Logger.data.error("Fetch MyInfo Error")
 					}
@@ -491,16 +520,11 @@ actor MeshPackets {
 						if fetchedMyInfo.count > 0 {
 							fetchedNode[0].myInfo = fetchedMyInfo[0]
 						}
-						do {
-							if !deferSave {
-								try modelContext.save()
-								Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
-							}
-							return fetchedNode[0].persistentModelID
-						} catch {
-							let nsError = error as NSError
-							Logger.data.error("💥 Error Saving Core Data NodeInfoEntity: \(nsError, privacy: .public)")
+						if !deferSave {
+							savePendingChanges()
+							Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
 						}
+						return fetchedNode[0].persistentModelID
 					} catch {
 						Logger.data.error("💥 Fetch MyInfo Error")
 					}
@@ -532,13 +556,8 @@ actor MeshPackets {
 								.trimmingCharacters(in: .whitespacesAndNewlines)
 								.components(separatedBy: "\n").first ?? ""
 							fetchedNode[0].cannedMessageConfig?.messages = messages
-							do {
-								try modelContext.save()
-								Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized, privacy: .public)")
-							} catch {
-								let nsError = error as NSError
-								Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
-							}
+							savePendingChanges()
+							Logger.data.info("💾 Updated Canned Messages Messages For: \(fetchedNode.first?.num.toHex() ?? "Unknown".localized, privacy: .public)")
 						}
 					} catch {
 						Logger.data.error("💥 Error Deserializing ADMIN_APP packet.")
@@ -615,11 +634,7 @@ actor MeshPackets {
 				fetchedMessage[0].relayNode = Int64(packet.relayNode)
 				fetchedMessage[0].ackSNR = packet.rxSnr
 	
-				do {
-					try modelContext.save()
-				} catch {
-					Logger.data.error("Failed to save admin message response as an ack: \(error.localizedDescription, privacy: .public)")
-				}
+				savePendingChanges()
 			}
 		} catch {
 			Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription, privacy: .public)")
@@ -647,11 +662,7 @@ actor MeshPackets {
 				
 				if fetchedNode.count > 0 {
 					fetchedNode[0].pax.append(newPax)
-					do {
-						try modelContext.save()
-					} catch {
-						Logger.data.error("Failed to save pax: \(error.localizedDescription, privacy: .public)")
-					}
+					savePendingChanges()
 				} else {
 					Logger.data.info("Node Info Not Found")
 				}
@@ -699,7 +710,7 @@ actor MeshPackets {
 				} else {
 					return
 				}
-				try modelContext.save()
+				savePendingChanges()
 				Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
 			} catch {
 				let nsError = error as NSError
@@ -793,8 +804,8 @@ actor MeshPackets {
 							fetchedNode[0].lastHeard = Date()
 						}
 					}
-					try modelContext.save()
-					Logger.data.info("💾 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) Saved for Node: \(packet.from.toHex(), privacy: .public)")
+					scheduleDebouncedSave()
+					Logger.data.info("📈 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) buffered for Node: \(packet.from.toHex(), privacy: .public)")
 					if telemetry.metricsType == 0 {
 						// Connected Device Metrics
 						// ------------------------
@@ -1005,12 +1016,13 @@ actor MeshPackets {
 					}
 					var messageSaved = false
 					do {
-						try modelContext.save()
+						if modelContext.hasChanges {
+							try modelContext.save()
+						}
 						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 					} catch {
-						let nsError = error as NSError
-						Logger.data.error("Failed to save new MessageEntity \(nsError, privacy: .public)")
+						Logger.data.error("💥 Failed to save new MessageEntity: \(error.localizedDescription, privacy: .public)")
 					}
 					// Send notifications if the message saved properly to core data
 					if messageSaved {
@@ -1141,11 +1153,10 @@ actor MeshPackets {
 						waypoint.expire = nil
 					}
 					waypoint.created = Date()
-					do {
-						try modelContext.save()
-						Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id, privacy: .public)")
-						
-						Task { @MainActor in
+					savePendingChanges()
+					Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id, privacy: .public)")
+					
+					Task { @MainActor in
 							let manager = LocalNotificationManager()
 							let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
 							let latitude = Double(waypoint.latitudeI) / 1e7
@@ -1163,10 +1174,6 @@ actor MeshPackets {
 							Logger.data.debug("meshtastic:///map?waypointid=\(waypoint.id, privacy: .public)")
 							manager.schedule()
 						}
-					} catch {
-						let nsError = error as NSError
-						Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
-					}
 				} else {
 					// Update existing waypoint
 					let existingWaypoint = fetchedWaypoint[0]
@@ -1174,13 +1181,8 @@ actor MeshPackets {
 						let currentTime = Int64(Date().timeIntervalSince1970)
 						if waypointMessage.expire > 0 && waypointMessage.expire <= currentTime {
 							modelContext.delete(existingWaypoint)
-							do {
-								try modelContext.save()
-								Logger.data.info("💾 Deleted a waypoint")
-							} catch {
-								let nsError = error as NSError
-								Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
-							}
+							savePendingChanges()
+							Logger.data.info("💾 Deleted a waypoint")
 						} else {
 							existingWaypoint.name = waypointMessage.name
 							existingWaypoint.longDescription = waypointMessage.description_p
@@ -1195,13 +1197,8 @@ actor MeshPackets {
 								existingWaypoint.expire = nil
 							}
 							existingWaypoint.lastUpdated = Date()
-							do {
-								try modelContext.save()
-								Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
-							} catch {
-								let nsError = error as NSError
-								Logger.data.error("Error Saving WaypointEntity from WAYPOINT_APP \(nsError, privacy: .public)")
-							}
+							savePendingChanges()
+							Logger.data.info("💾 Updated Node Waypoint App Packet For: \(existingWaypoint.id, privacy: .public)")
 						}
 					}
 				}

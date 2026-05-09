@@ -57,7 +57,7 @@ class PersistenceController {
 					configurations: config
 				)
 			}
-			container.mainContext.autosaveEnabled = !isTestEnvironment
+			container.mainContext.autosaveEnabled = false
 			Logger.data.info("💾 SwiftData store initialized successfully")
 		} catch {
 			Logger.data.error("SwiftData Error: \(error.localizedDescription, privacy: .public). Attempting to recreate database.")

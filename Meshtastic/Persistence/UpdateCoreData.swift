@@ -218,13 +218,8 @@ extension MeshPackets {
 					Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) hopsAway=\(node.hopsAway)")
 				}
 				
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(node.num.toHex(), privacy: .public) snr=\(node.snr), rssi=\(node.rssi) from packet \(packet.id.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [updateAnyPacketFrom] Error Saving node \(node.num.toHex(), privacy: .public) from packet \(packet.id.toHex(), privacy: .public)  \(nsError, privacy: .public)")
-				}
+				// Changes are saved by the subsequent packet handler's save call
+				Logger.data.info("💾 [updateAnyPacketFrom] Updated node \(node.num.toHex(), privacy: .public) snr=\(node.snr), rssi=\(node.rssi) from packet \(packet.id.toHex(), privacy: .public)")
 			}
 		} catch {
 			Logger.data.error("💥 [updateAnyPacketFrom] fetch data error")
@@ -370,13 +365,8 @@ extension MeshPackets {
 					}
 				}
 				
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [NodeInfoEntity] Error Inserting New Core Data: \(nsError, privacy: .public)")
-				}
+				savePendingChanges()
+				Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				
 			} else {
 				// Update an existing node
@@ -473,13 +463,8 @@ extension MeshPackets {
 						Logger.data.error("Error Creating a new UserEntity on an existing node from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 					}
 				}
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [NodeInfoEntity] Error Saving from NODEINFO_APP \(nsError, privacy: .public)")
-				}
+				savePendingChanges()
+				Logger.data.info("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 			}
 		} catch {
 			Logger.data.error("💥 [NodeInfoEntity] fetch data error for NODEINFO_APP")
@@ -563,13 +548,8 @@ extension MeshPackets {
 						fetchedNode[0].channel = Int32(packet.channel)
 						fetchedNode[0].positions = mutablePositions
 						
-						do {
-							try modelContext.save()
-							Logger.data.info("💾 [Position] Saved from Position App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
-						} catch {
-							let nsError = error as NSError
-							Logger.data.error("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError, privacy: .public)")
-						}
+						scheduleDebouncedSave()
+						Logger.data.info("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")
 					}
 				} else {
 					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
@@ -608,13 +588,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [BluetoothConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [BluetoothConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [BluetoothConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
 			}
@@ -665,13 +640,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [DeviceConfigEntity] Updated Device Config for node number: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [DeviceConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			}
 		} catch {
 			let nsError = error as NSError
@@ -721,15 +691,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					
-					try modelContext.save()
-					Logger.data.info("💾 [DisplayConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-					
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [DisplayConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
+				savePendingChanges()
+				Logger.data.info("💾 [DisplayConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [DisplayConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Display Config")
 			}
@@ -796,13 +759,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [LoRaConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [LoRaConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [LoRaConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Lora Config")
 			}
@@ -844,14 +802,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
-					
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [NetworkConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
+				savePendingChanges()
+				Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [NetworkConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
 			}
@@ -909,13 +861,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [PositionConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [PositionConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [PositionConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Position Config")
 			}
@@ -960,13 +907,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [PowerConfigEntity] Updated Power Config for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [PowerConfigEntity] Error Updating Core Data PowerConfigEntity: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [PowerConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Power Config")
 			}
@@ -1022,14 +964,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 [SecurityConfigEntity] Updated Security Config for node: \(nodeNum.toHex(), privacy: .public)")
-					
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [SecurityConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
+				savePendingChanges()
+				Logger.data.info("💾 [SecurityConfigEntity] Updated Security Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [SecurityConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Security Config")
 			}
@@ -1078,13 +1014,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [AmbientLightingConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [AmbientLightingConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [AmbientLightingConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Ambient Lighting Module Config")
 			}
@@ -1137,13 +1068,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [CannedMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [CannedMessageConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [CannedMessageConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Canned Message Module Config")
 			}
@@ -1191,14 +1117,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 [DetectionSensorConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-					
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [DetectionSensorConfigEntity] Error Updating Core Data : \(nsError, privacy: .public)")
-				}
+				savePendingChanges()
+				Logger.data.info("💾 [DetectionSensorConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				
 			} else {
 				Logger.data.error("💥 [DetectionSensorConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Detection Sensor Module Config")
@@ -1263,13 +1183,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [ExternalNotificationConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [ExternalNotificationConfigEntity] Error Updating Core Data : \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [ExternalNotificationConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save External Notification Module Config")
 			}
@@ -1305,13 +1220,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [PaxCounterConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [PaxCounterConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [PaxCounterConfigEntity] No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save PAX Counter Module Config")
 			}
@@ -1345,13 +1255,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [RtttlConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [RtttlConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [RtttlConfigEntity] No nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save RTTTL Ringtone Config")
 			}
@@ -1408,13 +1313,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [MQTTConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [MQTTConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [MQTTConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save MQTT Module Config")
 			}
@@ -1452,13 +1352,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [RangeTestConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [RangeTestConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [RangeTestConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Range Test Module Config")
 			}
@@ -1504,14 +1399,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 [SerialConfigEntity]Updated Serial Module Config for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					
-					let nsError = error as NSError
-					Logger.data.error("💥 [SerialConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
+				savePendingChanges()
+				Logger.data.info("💾 [SerialConfigEntity]Updated Serial Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [SerialConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
 			}
@@ -1555,13 +1444,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [StoreForwardConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [StoreForwardConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [StoreForwardConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Store & Forward Module Config")
 			}
@@ -1611,14 +1495,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
-					Logger.data.info("💾 [TelemetryConfigEntity] Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")
-					
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [TelemetryConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
+				savePendingChanges()
+				Logger.data.info("💾 [TelemetryConfigEntity] Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 				
 			} else {
 				Logger.data.error("💥 [TelemetryConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Telemetry Module Config")
@@ -1655,13 +1533,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				do {
-					try modelContext.save()
+				savePendingChanges()
 					Logger.data.info("💾 [TAKConfigEntity] Updated TAK Module Config for node: \(nodeNum.toHex(), privacy: .public)")
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [TAKConfigEntity] Error Updating Core Data: \(nsError, privacy: .public)")
-				}
 			} else {
 				Logger.data.error("💥 [TAKConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save TAK Module Config")
 			}
