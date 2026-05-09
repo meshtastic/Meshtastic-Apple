@@ -17,7 +17,7 @@ final class MessageEntity {
 	var adminDescription: String?
 	var channel: Int32 = 0
 	var isEmoji: Bool = false
-	var messageId: Int64 = 0
+	@Attribute(.unique) var messageId: Int64 = 0
 	var messagePayload: String? = ""
 	var messagePayloadMarkdown: String?
 	var messagePayloadTranslated: String?

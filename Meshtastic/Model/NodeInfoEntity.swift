@@ -18,7 +18,7 @@ final class NodeInfoEntity {
 	var id: Int64 = 0
 	var ignored: Bool = false
 	var lastHeard: Date?
-	var num: Int64 = 0
+	@Attribute(.unique) var num: Int64 = 0
 	var peripheralId: String?
 	var rssi: Int32 = 0
 	var sessionExpiration: Date?
