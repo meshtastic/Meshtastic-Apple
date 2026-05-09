@@ -105,4 +105,10 @@ Tap a node and scroll to the Logs section for detailed metrics:
 | ![Detection Sensor](../assets/screenshots/logDetectionSensor.png) | Motion or door open/close alerts from the node. |
 | ![Trace Routes](../assets/screenshots/logTraceRoutes.png) | Recorded trace route paths showing the hops a message took through the mesh. |
 
+## Node Detail View
+
+Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:
+
+![Node Detail](../assets/screenshots/nodeDetail.png)
+
 [Device Configuration Docs →](https://meshtastic.org/docs/configuration/radio/device/)

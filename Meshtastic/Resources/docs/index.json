@@ -333,6 +333,8 @@
             "mesh",
             "heard",
             "circle",
+            "view",
+            "tap",
             "tak",
             "shows",
             "shown",
@@ -344,11 +346,9 @@
             "position",
             "packets",
             "optimised",
-            "location",
-            "hops",
-            "gps"
+            "log"
         ],
-        "charCount": 3256
+        "charCount": 3392
     },
     {
         "id": "settings",

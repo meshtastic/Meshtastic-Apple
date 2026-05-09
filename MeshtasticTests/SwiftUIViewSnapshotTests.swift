@@ -3,6 +3,7 @@
 
 import Testing
 import SwiftUI
+import SwiftData
 import UIKit
 @testable import Meshtastic
 
@@ -1584,6 +1585,83 @@ struct AboutMeshtasticSnapshotTests {
 			AboutMeshtastic()
 		}
 		await assertViewSnapshot(of: view, width: 390, height: 700, named: "aboutMeshtastic", forDocs: true)
+	}
+}
+
+// MARK: - NodeDetail Snapshot Tests
+
+@Suite("NodeDetail Snapshots")
+struct NodeDetailSnapshotTests {
+
+	@Test("Node detail with environment metrics")
+	@MainActor
+	func nodeDetailWithEnvironment() async {
+		let container = try! ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = container.mainContext
+
+		let node = NodeInfoEntity()
+		node.num = 0xE75432
+		node.lastHeard = Date(timeIntervalSinceNow: -120)
+		node.firstHeard = Date(timeIntervalSinceNow: -86400)
+		node.snr = 5.5
+		node.rssi = -54
+		node.hopsAway = 0
+		node.favorite = true
+
+		let user = UserEntity()
+		user.longName = "Hopscotch Base"
+		user.shortName = "HB"
+		user.role = 0 // Client
+		user.pkiEncrypted = true
+		user.keyMatch = true
+		user.unmessagable = false
+		user.hwModel = "HELTEC_V3"
+		user.hwModelId = 43
+		node.user = user
+
+		// Insert a DeviceHardwareEntity so NodeInfoItem shows "Supported Hardware"
+		let hw = DeviceHardwareEntity()
+		hw.hwModel = 43
+		hw.displayName = "Heltec V3"
+		hw.hwModelSlug = "heltecV3"
+		hw.activelySupported = true
+		hw.supportLevel = 1 // flagship
+		context.insert(hw)
+
+		// Position (needed for environment section rendering)
+		let position = PositionEntity()
+		position.latitudeI = 374206000
+		position.longitudeI = -1221350000
+		node.positions = [position]
+
+		// Device metrics telemetry (metricsType 0)
+		let deviceTelemetry = TelemetryEntity()
+		deviceTelemetry.metricsType = 0
+		deviceTelemetry.batteryLevel = 85
+		deviceTelemetry.voltage = 4.05
+		deviceTelemetry.uptimeSeconds = 172800 // 2 days
+		deviceTelemetry.channelUtilization = 12.5
+		deviceTelemetry.airUtilTx = 3.2
+
+		// Environment telemetry (metricsType 1)
+		let envTelemetry = TelemetryEntity()
+		envTelemetry.metricsType = 1
+		envTelemetry.temperature = 22.5
+		envTelemetry.relativeHumidity = 55.0
+		envTelemetry.barometricPressure = 1013.25
+
+		node.telemetries = [deviceTelemetry, envTelemetry]
+		context.insert(node)
+
+		let view = NodeDetail(node: node)
+			.environmentObject(AccessoryManager.shared)
+			.environmentObject(MeshtasticAPI.shared)
+			.modelContainer(container)
+
+		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "nodeDetail", forDocs: true)
 	}
 }
 
