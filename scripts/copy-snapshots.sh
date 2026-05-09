@@ -40,3 +40,7 @@ for filename in $referenced; do
 done
 
 echo "Copied $copied doc-referenced screenshots to $OUTPUT_DIR"
+
+# Clean up orphaned screenshots from the source directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+bash "$SCRIPT_DIR/cleanup-screenshots.sh"
