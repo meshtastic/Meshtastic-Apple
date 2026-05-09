@@ -41,8 +41,9 @@ struct MyFeatureTests {
 <h3>How Snapshots Work</h3>
 <ol>
 <li>A <code>renderImage</code> helper renders a SwiftUI view to a <code>UIImage</code> using <code>UIHostingController</code> + <code>drawHierarchy(in:afterScreenUpdates:true)</code>.</li>
-<li>On first run, the PNG is saved to <code>MeshtasticTests/__Snapshots__/SwiftUIViewSnapshotTests/</code> as a reference.</li>
+<li>On first run, the PNG is saved as a reference. Snapshots with <code>forDocs: true</code> are saved to <code>docs/assets/screenshots/</code> (shared with the documentation site); test-only snapshots are saved to <code>MeshtasticTests/__Snapshots__/</code>.</li>
 <li>On subsequent runs, the rendered image is compared pixel-by-pixel to the reference using <code>CGImage</code> dimensions.</li>
+<li><code>copy-snapshots.sh</code> copies only doc-referenced PNGs into the app bundle — test-only snapshots are never bundled.</li>
 </ol>
 <h3>Writing a Snapshot Test</h3>
 <pre><code class="language-swift">@Suite(&quot;MyViewSnapshotTests&quot;)
