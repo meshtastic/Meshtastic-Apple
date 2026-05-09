@@ -35,6 +35,8 @@ The app displays the Bluetooth signal strength of nearby devices during scanning
 
 ![BLE Signal Strength](../assets/screenshots/bleSignalStrength.png)
 
+![BLE signal bars — strong, normal, weak](../assets/screenshots/signalBLE_all.png)
+
 ## Connection Status Icons
 
 | Icon | Meaning |

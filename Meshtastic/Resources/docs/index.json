@@ -36,7 +36,7 @@
             "not",
             "nearby"
         ],
-        "charCount": 1841
+        "charCount": 1842
     },
     {
         "id": "carplay",
@@ -153,7 +153,7 @@
             "after",
             "within"
         ],
-        "charCount": 1849
+        "charCount": 1850
     },
     {
         "id": "getting-started",
@@ -487,6 +487,7 @@
             "sensors",
             "device",
             "description",
+            "power",
             "metrics",
             "from",
             "channel",
@@ -494,7 +495,6 @@
             "speed",
             "relative",
             "readings",
-            "power",
             "often",
             "meshtastic",
             "low",
@@ -504,7 +504,7 @@
             "hpa",
             "detection"
         ],
-        "charCount": 3050
+        "charCount": 3104
     },
     {
         "id": "translate",

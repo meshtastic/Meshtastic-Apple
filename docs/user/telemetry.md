@@ -25,6 +25,7 @@ Meshtastic nodes can report sensor data across the mesh, giving you visibility i
 | ![Battery low](../assets/screenshots/batteryLow.png) | Low | Battery is low (≤20%) — charge the node soon. |
 | ![Battery charging](../assets/screenshots/batteryCharging.png) | Charging | Node is plugged in and fully charged. |
 | ![Battery unknown](../assets/screenshots/batteryNil.png) | Unknown | Battery level not reported by this node. |
+| ![Battery plugged in](../assets/screenshots/batteryPluggedIn.png) | Plugged In | Node is powered via USB/external power. |
 
 ### Air Quality
 

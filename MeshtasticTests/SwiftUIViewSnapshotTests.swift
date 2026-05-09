@@ -426,7 +426,7 @@ struct SecurityVersionNagSnapshotTests {
 
 	@Test("SecurityVersionNag view")
 	func securityVersionNag() async {
-		await assertViewSnapshot(of: SecurityVersionNag(minimumSecureVersion: "2.5.6", version: "2.4.0"), width: 390, height: 500, named: "securityVersionNag")
+		await assertViewSnapshot(of: SecurityVersionNag(minimumSecureVersion: "2.5.6", version: "2.4.0"), width: 390, height: 500, named: "securityVersionNag", forDocs: true)
 	}
 }
 
@@ -488,7 +488,7 @@ struct BatteryCompactSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemBlue))
 			.symbolRenderingMode(.multicolor)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryPluggedIn")
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryPluggedIn", forDocs: true)
 	}
 
 	@Test("Battery nil")
@@ -612,7 +612,8 @@ struct LoRaSignalStrengthMeterSnapshotTests {
 			.padding(),
 			width: 140,
 			transparent: true,
-			named: "signalBLE_all"
+			named: "signalBLE_all",
+			forDocs: true
 		)
 	}
 }
