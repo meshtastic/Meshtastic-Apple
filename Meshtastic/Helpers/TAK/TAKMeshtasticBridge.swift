@@ -528,25 +528,23 @@ final class TAKMeshtasticBridge {
 		
 		Logger.tak.info("Starting broadcast of all mesh nodes to TAK (excluding node \(connectedNodeNum))")
 		
-		// Fetch all nodes - be more lenient, include any node that's been heard from
-		// We'll check positions when creating CoT messages
-		let descriptor = FetchDescriptor<NodeInfoEntity>()
+		// Fetch nodes heard within the last 2 hours that have user info
+		let descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.user != nil && $0.lastHeard != nil && $0.lastHeard! >= twoHoursAgo },
+			sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)]
+		)
 		
 		do {
 			let nodes = try context.fetch(descriptor)
-				.filter { $0.user != nil }
-				.sorted { ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast) }
 			Logger.tak.info("Found \(nodes.count) total nodes with user info, connected node: \(connectedNodeNum)")
 			
 			var broadcastCount = 0
 			var skippedNoPosition = 0
 			var skippedConnected = 0
 			var skippedInvalidPosition = 0
-			var skippedTooOld = 0
 			
 			for node in nodes {
 				// Skip the connected node - it's our own device
-				// Use the same pattern as other parts of the codebase: node.num == accessoryManager.activeDeviceNum
 				if node.num == connectedNodeNum {
 					Logger.tak.info("Skipping connected node \(node.num)")
 					skippedConnected += 1
@@ -567,12 +565,6 @@ final class TAKMeshtasticBridge {
 					continue
 				}
 				
-				// Check if node has been heard from recently (within last 2 hours)
-				if let lastHeard = node.lastHeard, lastHeard < twoHoursAgo {
-					skippedTooOld += 1
-					continue
-				}
-				
 				if let cotMessage = createCoTFromNode(node) {
 					await takServerManager.broadcast(cotMessage)
 					broadcastCount += 1
@@ -582,7 +574,7 @@ final class TAKMeshtasticBridge {
 				}
 			}
 
-			Logger.tak.info("Broadcast complete: \(broadcastCount) nodes sent, \(skippedConnected) skipped (connected), \(skippedNoPosition) skipped (no position), \(skippedInvalidPosition) skipped (invalid position), \(skippedTooOld) skipped (too old)")
+			Logger.tak.info("Broadcast complete: \(broadcastCount) nodes sent, \(skippedConnected) skipped (connected), \(skippedNoPosition) skipped (no position), \(skippedInvalidPosition) skipped (invalid position)")
 		} catch {
 			Logger.tak.error("Failed to fetch nodes for TAK broadcast: \(error.localizedDescription)")
 		}
@@ -591,14 +583,15 @@ final class TAKMeshtasticBridge {
 	// MARK: - Helper Methods
 
 	private func lookupNodeInfo(nodeNum: UInt32) -> NodeInfoEntity? {
-		// Use PersistenceController's viewContext directly to ensure we can find nodes
 		let context = PersistenceController.shared.context
-
-		let descriptor = FetchDescriptor<NodeInfoEntity>()
+		let nodeNumInt64 = Int64(nodeNum)
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.num == nodeNumInt64 }
+		)
+		descriptor.fetchLimit = 1
 
 		do {
-			let nodeNumInt64 = Int64(nodeNum)
-			return try context.fetch(descriptor).first { $0.num == nodeNumInt64 }
+			return try context.fetch(descriptor).first
 		} catch {
 			Logger.tak.warning("Failed to lookup node info for \(nodeNum): \(error.localizedDescription)")
 			return nil

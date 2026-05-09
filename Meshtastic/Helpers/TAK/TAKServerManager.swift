@@ -141,7 +141,8 @@ final class TAKServerManager: ObservableObject {
 	/// Returns true if the primary channel is valid for TAK server operation
 	func checkPrimaryChannelValidity() {
 		let context = PersistenceController.shared.context
-		let descriptor = FetchDescriptor<MyInfoEntity>()
+		var descriptor = FetchDescriptor<MyInfoEntity>()
+		descriptor.fetchLimit = 1
 		
 		var issues: [PrimaryChannelIssue] = []
 		var isValid = true
@@ -596,7 +597,8 @@ final class TAKServerManager: ObservableObject {
 			return false
 		}
 
-		let descriptor = FetchDescriptor<MyInfoEntity>()
+		var descriptor = FetchDescriptor<MyInfoEntity>()
+		descriptor.fetchLimit = 1
 
 		do {
 			let myInfos = try context.fetch(descriptor)
