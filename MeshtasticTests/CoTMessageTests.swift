@@ -104,6 +104,33 @@ struct CoTMessageTests {
 		#expect(xml.contains("lon='-122.0'"))
 	}
 
+	@Test func toXML_formatsDatesAsUTCWithFractionalSeconds() {
+		var calendar = Calendar(identifier: .iso8601)
+		calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+		var components = DateComponents()
+		components.calendar = calendar
+		components.timeZone = calendar.timeZone
+		components.year = 2025
+		components.month = 6
+		components.day = 15
+		components.hour = 10
+		components.minute = 30
+		components.second = 45
+		components.nanosecond = 123_000_000
+		let time = try #require(calendar.date(from: components))
+		let msg = CoTMessage(
+			uid: "xml-time-test",
+			type: "a-f-G-U-C",
+			time: time,
+			start: time,
+			stale: time.addingTimeInterval(600)
+		)
+		let xml = msg.toXML()
+		#expect(xml.contains("time='2025-06-15T10:30:45.123Z'"))
+		#expect(xml.contains("start='2025-06-15T10:30:45.123Z'"))
+		#expect(xml.contains("stale='2025-06-15T10:40:45.123Z'"))
+	}
+
 	@Test func toXML_includesContact() {
 		let msg = CoTMessage(
 			uid: "test",

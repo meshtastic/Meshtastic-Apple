@@ -23,6 +23,5 @@ struct ConnectionTip: Tip {
 	}
 	var options: [TipOption] {
 		Tips.IgnoresDisplayFrequency(true)
-		Tips.MaxDisplayCount(3)
 	}
 }

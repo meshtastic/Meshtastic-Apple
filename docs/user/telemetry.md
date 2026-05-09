@@ -25,6 +25,7 @@ Meshtastic nodes can report sensor data across the mesh, giving you visibility i
 | ![Battery low](../assets/screenshots/batteryLow.png) | Low | Battery is low (≤20%) — charge the node soon. |
 | ![Battery charging](../assets/screenshots/batteryCharging.png) | Charging | Node is plugged in and fully charged. |
 | ![Battery unknown](../assets/screenshots/batteryNil.png) | Unknown | Battery level not reported by this node. |
+| ![Battery plugged in](../assets/screenshots/batteryPluggedIn.png) | Plugged In | Node is powered via USB/external power. |
 
 ### Air Quality
 
@@ -46,6 +47,19 @@ The Indoor Air Quality scale shows category bands from Excellent (green) through
 | ![Pressure high](../assets/screenshots/pressureHigh.png) | High pressure | Barometric pressure above normal (≥1013 hPa). |
 | ![Pressure low](../assets/screenshots/pressureLow.png) | Low pressure | Barometric pressure below normal (<1013 hPa). |
 
+### Wind
+
+| Widget | Description |
+|--------|-------------|
+| ![Wind full](../assets/screenshots/windFull.png) | Wind speed, gust speed, and direction. |
+| ![Wind minimal](../assets/screenshots/windMinimal.png) | Wind speed only (no gust or direction data available). |
+
+### Radiation
+
+| Widget | Description |
+|--------|-------------|
+| ![Radiation](../assets/screenshots/radiation.png) | Radiation level in µR/hr from a connected Geiger counter sensor. |
+
 ## Viewing Telemetry
 
 Telemetry is visible in two places:
@@ -56,6 +70,8 @@ Telemetry is visible in two places:
 ## Configuring Telemetry
 
 Go to **Settings → Telemetry** to enable telemetry modules and set reporting intervals:
+
+![Telemetry Config](../assets/screenshots/telemetryConfig.png)
 
 | Setting | Description |
 |---------|-------------|

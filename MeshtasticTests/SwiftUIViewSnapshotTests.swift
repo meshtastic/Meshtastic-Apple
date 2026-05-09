@@ -3,6 +3,7 @@
 
 import Testing
 import SwiftUI
+import SwiftData
 import UIKit
 @testable import Meshtastic
 
@@ -188,7 +189,7 @@ struct AckErrorsSnapshotTests {
 
 	@Test("AckErrors view")
 	func ackErrors() async {
-		await assertViewSnapshot(of: AckErrors(), width: 350, named: "ackErrors")
+		await assertViewSnapshot(of: AckErrors(), width: 350, named: "ackErrors", forDocs: true)
 	}
 }
 
@@ -199,7 +200,7 @@ struct LockLegendSnapshotTests {
 
 	@Test("LockLegend view")
 	func lockLegend() async {
-		await assertViewSnapshot(of: LockLegend(), width: 350, named: "lockLegend")
+		await assertViewSnapshot(of: LockLegend(), width: 350, named: "lockLegend", forDocs: true)
 	}
 }
 
@@ -389,17 +390,17 @@ struct CompactWidgetSnapshotTests {
 
 	@Test("Wind full")
 	func windFull() async {
-		await assertViewSnapshot(of: WindCompactWidget(speed: "12 mph", gust: "15 mph", direction: "SW"), width: 180, named: "windFull")
+		await assertViewSnapshot(of: WindCompactWidget(speed: "12 mph", gust: "15 mph", direction: "SW"), width: 180, named: "windFull", forDocs: true)
 	}
 
 	@Test("Wind minimal")
 	func windMinimal() async {
-		await assertViewSnapshot(of: WindCompactWidget(speed: "8 mph", gust: nil, direction: nil), width: 180, named: "windMinimal")
+		await assertViewSnapshot(of: WindCompactWidget(speed: "8 mph", gust: nil, direction: nil), width: 180, named: "windMinimal", forDocs: true)
 	}
 
 	@Test("Radiation")
 	func radiation() async {
-		await assertViewSnapshot(of: RadiationCompactWidget(radiation: "15", unit: "µR/hr"), width: 180, named: "radiation")
+		await assertViewSnapshot(of: RadiationCompactWidget(radiation: "15", unit: "µR/hr"), width: 180, named: "radiation", forDocs: true)
 	}
 }
 
@@ -426,7 +427,7 @@ struct SecurityVersionNagSnapshotTests {
 
 	@Test("SecurityVersionNag view")
 	func securityVersionNag() async {
-		await assertViewSnapshot(of: SecurityVersionNag(minimumSecureVersion: "2.5.6", version: "2.4.0"), width: 390, height: 500, named: "securityVersionNag")
+		await assertViewSnapshot(of: SecurityVersionNag(minimumSecureVersion: "2.5.6", version: "2.4.0"), width: 390, height: 500, named: "securityVersionNag", forDocs: true)
 	}
 }
 
@@ -488,7 +489,7 @@ struct BatteryCompactSnapshotTests {
 			.foregroundColor(Color(uiColor: .systemBlue))
 			.symbolRenderingMode(.multicolor)
 			.padding(4)
-		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryPluggedIn")
+		await assertViewSnapshot(of: view, width: 60, transparent: true, named: "batteryPluggedIn", forDocs: true)
 	}
 
 	@Test("Battery nil")
@@ -548,7 +549,7 @@ struct LoRaSignalStrengthMeterSnapshotTests {
 			width: 400,
 			height: 220,
 			transparent: true,
-			named: "signalMeter_compact_all"
+			named: "signalMeter_compact_all", forDocs: true
 		)
 	}
 
@@ -612,7 +613,8 @@ struct LoRaSignalStrengthMeterSnapshotTests {
 			.padding(),
 			width: 140,
 			transparent: true,
-			named: "signalBLE_all"
+			named: "signalBLE_all",
+			forDocs: true
 		)
 	}
 }
@@ -679,228 +681,6 @@ struct DiscoveryMapViewSnapshotTests {
 			width: 375,
 			height: 300,
 			named: "emptyMap"
-		)
-	}
-}
-
-// MARK: - Doc Map Preview
-
-/// Purely-static SwiftUI "map" used for documentation screenshots.
-/// Renders a stylised city-block background (no MapKit tile dependency) with
-/// node circle annotations, connection lines, and an optional waypoint marker.
-private struct DocMapPreviewView: View {
-	struct NodePin: Identifiable {
-		let id = UUID()
-		let shortName: String
-		let num: Int64
-		let latitude: Double
-		let longitude: Double
-		let isDirect: Bool
-		var isWaypoint: Bool = false
-	}
-
-	let userLatitude: Double
-	let userLongitude: Double
-	let pins: [NodePin]
-	var colorScheme: ColorScheme = .light
-
-	// Fixed canvas size for consistent rendering
-	private let w: CGFloat = 390
-	private let h: CGFloat = 300
-
-	// Padded lat/lon extents so pins don't sit right at the edges
-	private var minLat: Double {
-		let lats = pins.map(\.latitude) + [userLatitude]
-		let span = max((lats.max()! - lats.min()!) * 0.45, 0.003)
-		return lats.min()! - span
-	}
-	private var maxLat: Double {
-		let lats = pins.map(\.latitude) + [userLatitude]
-		let span = max((lats.max()! - lats.min()!) * 0.45, 0.003)
-		return lats.max()! + span
-	}
-	private var minLon: Double {
-		let lons = pins.map(\.longitude) + [userLongitude]
-		let span = max((lons.max()! - lons.min()!) * 0.45, 0.003)
-		return lons.min()! - span
-	}
-	private var maxLon: Double {
-		let lons = pins.map(\.longitude) + [userLongitude]
-		let span = max((lons.max()! - lons.min()!) * 0.45, 0.003)
-		return lons.max()! + span
-	}
-
-	/// Maps a lat/lon pair to a point in the fixed canvas coordinate space.
-	private func toXY(_ lat: Double, _ lon: Double) -> CGPoint {
-		let latRange = maxLat - minLat
-		let lonRange = maxLon - minLon
-		let x = lonRange > 0 ? CGFloat((lon - minLon) / lonRange) * w : w / 2
-		let y = latRange > 0 ? CGFloat(1.0 - (lat - minLat) / latRange) * h : h / 2
-		return CGPoint(x: x, y: y)
-	}
-
-	private var isDark: Bool { colorScheme == .dark }
-
-	var body: some View {
-		ZStack(alignment: .topLeading) {
-			mapBackground
-			linesOverlay
-			// "You" marker
-			let youPt = toXY(userLatitude, userLongitude)
-			Image(systemName: "location.circle.fill")
-				.foregroundStyle(.orange)
-				.font(.system(size: 28))
-				.shadow(color: .black.opacity(0.3), radius: 2)
-				.position(youPt)
-			// Node / waypoint pins
-			ForEach(pins) { pin in
-				if pin.isWaypoint {
-					waypointMarker.position(toXY(pin.latitude, pin.longitude))
-				} else {
-					CircleText(
-						text: pin.shortName,
-						color: Color(UIColor(hex: UInt32(pin.num))),
-						circleSize: 34
-					)
-					.shadow(color: .black.opacity(0.25), radius: 2)
-					.position(toXY(pin.latitude, pin.longitude))
-				}
-			}
-		}
-		.frame(width: w, height: h)
-		.clipped()
-	}
-
-	private var waypointMarker: some View {
-		ZStack {
-			Circle()
-				.fill(Color.purple.opacity(0.85))
-				.frame(width: 30, height: 30)
-			Image(systemName: "star.fill")
-				.font(.system(size: 14))
-				.foregroundStyle(.white)
-		}
-		.shadow(color: .black.opacity(0.3), radius: 2)
-	}
-
-	private var mapBackground: some View {
-		// Colour palette adapts for light/dark map styles
-		let land  = isDark ? Color(red: 0.17, green: 0.20, blue: 0.15) : Color(red: 0.93, green: 0.94, blue: 0.89)
-		let block = isDark ? Color(red: 0.23, green: 0.26, blue: 0.21) : Color(red: 0.97, green: 0.96, blue: 0.93)
-		let road  = isDark ? Color(red: 0.32, green: 0.36, blue: 0.30).opacity(0.9) : Color.white.opacity(0.80)
-		let park  = isDark ? Color(red: 0.10, green: 0.22, blue: 0.09).opacity(0.85) : Color(red: 0.70, green: 0.86, blue: 0.62).opacity(0.75)
-		let water = isDark ? Color(red: 0.05, green: 0.13, blue: 0.24).opacity(0.90) : Color(red: 0.57, green: 0.79, blue: 0.93).opacity(0.72)
-
-		return Canvas { ctx, size in
-			// Land base
-			ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(land))
-			// City block grid
-			var col: CGFloat = 0
-			while col < size.width {
-				var row: CGFloat = 0
-				while row < size.height {
-					ctx.fill(
-						Path(CGRect(x: col + 5, y: row + 5, width: 45, height: 35)),
-						with: .color(block)
-					)
-					row += 45
-				}
-				col += 55
-			}
-			// Horizontal roads
-			var row: CGFloat = 0
-			while row < size.height {
-				ctx.fill(Path(CGRect(x: 0, y: row, width: size.width, height: 5)), with: .color(road))
-				row += 45
-			}
-			// Vertical roads
-			col = 0
-			while col < size.width {
-				ctx.fill(Path(CGRect(x: col, y: 0, width: 5, height: size.height)), with: .color(road))
-				col += 55
-			}
-			// Park (bottom-right quadrant)
-			ctx.fill(
-				Path(CGRect(x: size.width * 0.60, y: size.height * 0.50, width: size.width * 0.40, height: size.height * 0.50)),
-				with: .color(park)
-			)
-			// Water body (bottom-left corner)
-			ctx.fill(
-				Path(CGRect(x: 0, y: size.height * 0.72, width: size.width * 0.22, height: size.height * 0.28)),
-				with: .color(water)
-			)
-		}
-		.frame(width: w, height: h)
-	}
-
-	private var linesOverlay: some View {
-		let userPt = toXY(userLatitude, userLongitude)
-		let meshPins = pins.filter { !$0.isWaypoint }
-		let nodePts = meshPins.map { toXY($0.latitude, $0.longitude) }
-		let directFlags = meshPins.map { $0.isDirect }
-		return Canvas { ctx, _ in
-			for i in 0..<meshPins.count {
-				var path = Path()
-				path.move(to: userPt)
-				path.addLine(to: nodePts[i])
-				if directFlags[i] {
-					ctx.stroke(path, with: .color(Color(red: 0.0, green: 0.72, blue: 0.2).opacity(0.70)),
-								style: StrokeStyle(lineWidth: 2.5))
-				} else {
-					ctx.stroke(path, with: .color(Color(red: 1.0, green: 0.55, blue: 0.0).opacity(0.55)),
-								style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
-				}
-			}
-		}
-		.frame(width: w, height: h)
-	}
-}
-
-// MARK: - DocMapAnnotation Snapshot Tests
-
-@Suite("DocMapAnnotation Snapshots")
-struct DocMapAnnotationSnapshotTests {
-
-	private func makeView(colorScheme: ColorScheme = .light) -> DocMapPreviewView {
-		DocMapPreviewView(
-			userLatitude: 37.7749,
-			userLongitude: -122.4194,
-			pins: [
-				// Directly connected — HS01 "Hopscotch" (green solid line)
-				.init(shortName: "HS01", num: 0xE75432, latitude: 37.7810, longitude: -122.4140, isDirect: true),
-				// 1 hop — TRL "Trail Node" (orange dashed line)
-				.init(shortName: "TRL", num: 0x27B06E, latitude: 37.7690, longitude: -122.4260, isDirect: false),
-				// Multi-hop — B "Brad!!" (orange dashed)
-				.init(shortName: "B", num: 0x3A9FD1, latitude: 37.7790, longitude: -122.4290, isDirect: false),
-				// MQTT — MQTM "MQTT Matt" (orange dashed)
-				.init(shortName: "MQTM", num: 0x5B2E8C, latitude: 37.7710, longitude: -122.4090, isDirect: false),
-				// Waypoint — in the park area, away from other pins
-				.init(shortName: "★", num: 0, latitude: 37.7680, longitude: -122.4065, isDirect: false, isWaypoint: true)
-			],
-			colorScheme: colorScheme
-		)
-	}
-
-	@Test("Map with node annotations (light)")
-	@MainActor
-	func mapAnnotations() async {
-		await assertViewSnapshot(
-			of: makeView(),
-			width: 390,
-			height: 300,
-			named: "mapAnnotations"
-		)
-	}
-
-	@Test("Map with node annotations (dark)")
-	@MainActor
-	func mapAnnotationsDark() async {
-		await assertViewSnapshot(
-			of: makeView(colorScheme: .dark),
-			width: 390,
-			height: 300,
-			colorScheme: .dark,
-			named: "mapAnnotations_dark"
 		)
 	}
 }
@@ -1746,5 +1526,202 @@ struct DeviceRoleIconSnapshotTests {
 	}
 	@Test("Lost and Found") @MainActor func roleLostAndFound() async {
 		await assertViewSnapshot(of: icon("map"), width: 44, transparent: true, named: "roleLostAndFound", forDocs: true)
+	}
+}
+
+// MARK: - ChannelForm Snapshot Tests
+
+@Suite("ChannelForm Snapshots")
+struct ChannelFormSnapshotTests {
+
+	@Test("Primary channel with 256-bit key")
+	@MainActor
+	func channelFormPrimary() async {
+		let view = ChannelForm(
+			channelIndex: .constant(0),
+			channelName: .constant("LongFast"),
+			channelKeySize: .constant(32),
+			channelKey: .constant("AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE="),
+			channelRole: .constant(1),
+			uplink: .constant(false),
+			downlink: .constant(false),
+			positionPrecision: .constant(14),
+			preciseLocation: .constant(false),
+			positionsEnabled: .constant(true),
+			hasChanges: .constant(false),
+			hasValidKey: .constant(true),
+			supportedVersion: .constant(true)
+		)
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "channelForm_primary", forDocs: true)
+	}
+}
+
+// MARK: - TapbackInputView Snapshot Tests
+
+@Suite("TapbackInputView Snapshots")
+struct TapbackInputViewSnapshotTests {
+
+	@Test("Tapback emoji input")
+	@MainActor
+	func tapbackInput() async {
+		let view = TapbackInputView(
+			text: .constant(""),
+			isPresented: .constant(true),
+			onEmojiSelected: { _ in }
+		)
+		await assertViewSnapshot(of: view, width: 390, height: 120, named: "tapbackInput", forDocs: true)
+	}
+}
+
+// MARK: - AboutMeshtastic Snapshot Tests
+
+@Suite("AboutMeshtastic Snapshots")
+struct AboutMeshtasticSnapshotTests {
+
+	@Test("About page")
+	@MainActor
+	func aboutPage() async {
+		let view = NavigationView {
+			AboutMeshtastic()
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "aboutMeshtastic", forDocs: true)
+	}
+}
+
+// MARK: - NodeDetail Snapshot Tests
+
+@Suite("NodeDetail Snapshots")
+struct NodeDetailSnapshotTests {
+
+	@Test("Node detail with environment metrics")
+	@MainActor
+	func nodeDetailWithEnvironment() async {
+		let container = try! ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = container.mainContext
+
+		let node = NodeInfoEntity()
+		node.num = 0xE75432
+		node.lastHeard = Date(timeIntervalSinceNow: -120)
+		node.firstHeard = Date(timeIntervalSinceNow: -86400)
+		node.snr = 5.5
+		node.rssi = -54
+		node.hopsAway = 0
+		node.favorite = true
+
+		let user = UserEntity()
+		user.longName = "Hopscotch Base"
+		user.shortName = "HB"
+		user.role = 0 // Client
+		user.pkiEncrypted = true
+		user.keyMatch = true
+		user.unmessagable = false
+		user.hwModel = "HELTEC_V3"
+		user.hwModelId = 43
+		node.user = user
+
+		// Insert a DeviceHardwareEntity so NodeInfoItem shows "Supported Hardware"
+		let hw = DeviceHardwareEntity()
+		hw.hwModel = 43
+		hw.displayName = "Heltec V3"
+		hw.hwModelSlug = "heltecV3"
+		hw.activelySupported = true
+		hw.supportLevel = 1 // flagship
+		context.insert(hw)
+
+		// Position (needed for environment section rendering)
+		let position = PositionEntity()
+		position.latitudeI = 374206000
+		position.longitudeI = -1221350000
+		node.positions = [position]
+
+		// Device metrics telemetry (metricsType 0)
+		let deviceTelemetry = TelemetryEntity()
+		deviceTelemetry.metricsType = 0
+		deviceTelemetry.batteryLevel = 85
+		deviceTelemetry.voltage = 4.05
+		deviceTelemetry.uptimeSeconds = 172800 // 2 days
+		deviceTelemetry.channelUtilization = 12.5
+		deviceTelemetry.airUtilTx = 3.2
+
+		// Environment telemetry (metricsType 1)
+		let envTelemetry = TelemetryEntity()
+		envTelemetry.metricsType = 1
+		envTelemetry.temperature = 22.5
+		envTelemetry.relativeHumidity = 55.0
+		envTelemetry.barometricPressure = 1013.25
+
+		node.telemetries = [deviceTelemetry, envTelemetry]
+		context.insert(node)
+
+		let view = NodeDetail(node: node)
+			.environmentObject(AccessoryManager.shared)
+			.environmentObject(MeshtasticAPI.shared)
+			.modelContainer(container)
+
+		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "nodeDetail", forDocs: true)
+	}
+}
+
+// MARK: - MQTTConfig Snapshot Tests
+
+@Suite("MQTTConfig Snapshots")
+struct MQTTConfigSnapshotTests {
+
+	@Test("MQTT settings form")
+	@MainActor
+	func mqttSettingsForm() async {
+		let view = NavigationView {
+			MQTTConfig(node: nil)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(PersistenceController.preview.container)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 900, named: "mqttConfig", forDocs: true)
+	}
+}
+
+// MARK: - TelemetryConfig Snapshot Tests
+
+@Suite("TelemetryConfig Snapshots")
+struct TelemetryConfigSnapshotTests {
+
+	@Test("Telemetry settings form")
+	@MainActor
+	func telemetrySettingsForm() async {
+		let view = NavigationView {
+			TelemetryConfig(node: nil)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(PersistenceController.preview.container)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 900, named: "telemetryConfig", forDocs: true)
+	}
+}
+
+// MARK: - BLE Signal Strength Snapshot Tests
+
+@Suite("BLE Signal Strength Snapshots")
+struct BLESignalStrengthSnapshotTests {
+
+	@Test("Signal strength indicators")
+	@MainActor
+	func signalStrengthAll() async {
+		let view = HStack(spacing: 16) {
+			VStack {
+				SignalStrengthIndicator(signalStrength: .weak)
+				Text("Weak").font(.caption)
+			}
+			VStack {
+				SignalStrengthIndicator(signalStrength: .normal)
+				Text("Normal").font(.caption)
+			}
+			VStack {
+				SignalStrengthIndicator(signalStrength: .strong)
+				Text("Strong").font(.caption)
+			}
+		}
+		.padding()
+		await assertViewSnapshot(of: view, width: 200, height: 80, named: "bleSignalStrength", forDocs: true)
 	}
 }

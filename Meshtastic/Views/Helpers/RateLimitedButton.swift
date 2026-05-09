@@ -108,16 +108,17 @@ class RateLimitStorage: ObservableObject {
 		// Create the timer
 		self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
 			guard let self = self else { return }
-			self.objectWillChange.send()
 
 			// Determine if we can clean up the dictionary and stop the timer.
 			let maxExpiration = self.rateLimits.values.map { $0.rateLimitExpires }.max() ?? .distantPast
 			if maxExpiration.timeIntervalSinceNow < 0 {
-				// All rateLimits are in the past.  Stop and clean up
+				// All rateLimits are in the past. Stop and clean up
 				self.timer?.invalidate()
 				self.timer = nil
 				self.rateLimits.removeAll()
+				return
 			}
+			self.objectWillChange.send()
 		}
 	}
 }

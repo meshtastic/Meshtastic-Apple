@@ -182,11 +182,13 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	private func fetchFavoriteContactItems() -> [CPMessageListItem] {
 		do {
-			let descriptor = FetchDescriptor<NodeInfoEntity>(
+			let activeNum = Int64(AccessoryManager.shared.activeDeviceNum ?? 0)
+			var descriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.favorite == true && $0.num != activeNum },
 				sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
 			)
-			let activeNum = AccessoryManager.shared.activeDeviceNum ?? 0
-			let nodes = try context.fetch(descriptor).filter { $0.favorite && $0.num != activeNum }
+			descriptor.fetchLimit = 50
+			let nodes = try context.fetch(descriptor)
 			let nodeNums = nodes.compactMap { $0.user != nil ? $0.num : nil as Int64? }
 			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
 			let now = Date()

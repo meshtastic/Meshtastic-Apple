@@ -16,7 +16,7 @@ import SwiftUI
 
 // MARK: - Scan State
 
-enum DiscoveryScanState: Equatable {
+enum DiscoveryScanState: Equatable, CustomStringConvertible {
 	case idle
 	case shifting
 	case reconnecting
@@ -25,6 +25,19 @@ enum DiscoveryScanState: Equatable {
 	case complete
 	case paused
 	case restoring
+
+	var description: String {
+		switch self {
+		case .idle: "idle"
+		case .shifting: "shifting"
+		case .reconnecting: "reconnecting"
+		case .dwell: "dwell"
+		case .analysis: "analysis"
+		case .complete: "complete"
+		case .paused: "paused"
+		case .restoring: "restoring"
+		}
+	}
 }
 
 // MARK: - DiscoveryScanEngine
@@ -91,7 +104,7 @@ final class DiscoveryScanEngine {
 
 	func startScan() async {
 		guard currentState == .idle else {
-			Logger.discovery.warning("📡 [Discovery] Cannot start scan — not idle (state: \(String(describing: self.currentState)))")
+			Logger.discovery.warning("📡 [Discovery] Cannot start scan — not idle (state: \(self.currentState))")
 			return
 		}
 		guard !selectedPresets.isEmpty else {
@@ -688,7 +701,7 @@ extension DiscoveryScanEngine {
 	private func transitionTo(_ newState: DiscoveryScanState) {
 		let oldState = currentState
 		currentState = newState
-		Logger.discovery.info("📡 [Discovery] State: \(String(describing: oldState)) → \(String(describing: newState))")
+		Logger.discovery.info("📡 [Discovery] State: \(oldState) → \(newState)")
 	}
 
 	private func cleanupAndIdle() {

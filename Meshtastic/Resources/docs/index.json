@@ -6,10 +6,10 @@
         "navOrder": 2,
         "keywords": [
             "radio",
-            "connected",
             "bluetooth",
-            "device",
+            "connected",
             "app",
+            "device",
             "live",
             "ios",
             "connection",
@@ -21,22 +21,22 @@
             "radios",
             "multiple",
             "meshtastic",
+            "ble",
             "view",
             "them",
             "switch",
             "swipe",
+            "strength",
             "status",
             "start",
+            "signal",
             "reconnecting",
             "press",
             "permission",
             "not",
-            "mesh",
-            "long",
-            "list",
-            "left"
+            "nearby"
         ],
-        "charCount": 1738
+        "charCount": 1842
     },
     {
         "id": "carplay",
@@ -153,7 +153,7 @@
             "after",
             "within"
         ],
-        "charCount": 1849
+        "charCount": 1850
     },
     {
         "id": "getting-started",
@@ -162,8 +162,8 @@
         "navOrder": 1,
         "keywords": [
             "radio",
-            "name",
             "meshtastic",
+            "name",
             "step",
             "nodes",
             "device",
@@ -192,7 +192,7 @@
             "enabled",
             "devices"
         ],
-        "charCount": 1913
+        "charCount": 1931
     },
     {
         "id": "map",
@@ -250,27 +250,27 @@
             "destination",
             "meaning",
             "location",
+            "encryption",
             "direct",
             "tip",
             "securely",
-            "encryption",
+            "press",
+            "long",
             "encrypted",
             "data",
             "uses",
+            "tapback",
             "recent",
             "primary",
-            "press",
             "precise",
+            "mqtt",
             "messaging",
-            "long",
             "indicates",
             "from",
             "delivery",
-            "broadcast",
-            "used",
-            "use"
+            "broadcast"
         ],
-        "charCount": 3579
+        "charCount": 3819
     },
     {
         "id": "mqtt",
@@ -309,7 +309,7 @@
             "optional",
             "only"
         ],
-        "charCount": 2526
+        "charCount": 2527
     },
     {
         "id": "nodes",
@@ -333,6 +333,8 @@
             "mesh",
             "heard",
             "circle",
+            "view",
+            "tap",
             "tak",
             "shows",
             "shown",
@@ -344,11 +346,9 @@
             "position",
             "packets",
             "optimised",
-            "location",
-            "hops",
-            "gps"
+            "log"
         ],
-        "charCount": 3256
+        "charCount": 3392
     },
     {
         "id": "settings",
@@ -426,7 +426,7 @@
             "good",
             "clarity"
         ],
-        "charCount": 4136
+        "charCount": 4137
     },
     {
         "id": "tak",
@@ -465,7 +465,7 @@
             "kit",
             "from"
         ],
-        "charCount": 2029
+        "charCount": 2036
     },
     {
         "id": "telemetry",
@@ -477,34 +477,34 @@
             "sensor",
             "node",
             "environment",
+            "data",
             "quality",
             "humidity",
-            "data",
             "air",
             "pressure",
             "battery",
             "temperature",
             "sensors",
             "device",
+            "description",
+            "power",
             "metrics",
+            "from",
             "channel",
+            "wind",
+            "speed",
             "relative",
             "readings",
-            "power",
             "often",
             "meshtastic",
             "low",
+            "level",
             "interval",
             "icon",
             "hpa",
-            "from",
-            "detection",
-            "description",
-            "broadcast",
-            "barometric",
-            "any"
+            "detection"
         ],
-        "charCount": 2811
+        "charCount": 3104
     },
     {
         "id": "translate",
