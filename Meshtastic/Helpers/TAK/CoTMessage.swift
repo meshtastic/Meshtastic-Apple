@@ -282,16 +282,17 @@ struct CoTMessage: Identifiable, Sendable {
 	// MARK: - XML Generation
 
 	/// Generate CoT XML string for transmission to TAK clients
+	private static let xmlDateFormatStyle = Date.ISO8601FormatStyle(includingFractionalSeconds: true, timeZone: TimeZone(secondsFromGMT: 0)!)
+
 	func toXML() -> String {
-		let dateFormatter = ISO8601DateFormatter()
-		dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+		let dateFormatter = Self.xmlDateFormatStyle
 
 		var cot = "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
 		cot += "<event version='2.0' uid='\(uid.xmlEscaped)' "
 		cot += "type='\(type)' "
-		cot += "time='\(dateFormatter.string(from: time))' "
-		cot += "start='\(dateFormatter.string(from: start))' "
-		cot += "stale='\(dateFormatter.string(from: stale))' "
+		cot += "time='\(time.formatted(dateFormatter))' "
+		cot += "start='\(start.formatted(dateFormatter))' "
+		cot += "stale='\(stale.formatted(dateFormatter))' "
 		cot += "how='\(how)'>"
 		cot += "<point lat='\(latitude)' lon='\(longitude)' "
 		cot += "hae='\(hae)' ce='\(ce)' le='\(le)'/>"
