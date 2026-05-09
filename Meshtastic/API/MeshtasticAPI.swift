@@ -445,11 +445,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	}
 	
 	private static func deleteOrphanedTags(context: ModelContext) {
-		let descriptor = FetchDescriptor<DeviceHardwareTagEntity>(
-			predicate: #Predicate<DeviceHardwareTagEntity> { $0.devices.isEmpty }
-		)
+		let descriptor = FetchDescriptor<DeviceHardwareTagEntity>()
 		if let tags = try? context.fetch(descriptor) {
-			for tag in tags {
+			for tag in tags where tag.devices.isEmpty {
 				context.delete(tag)
 			}
 		}
