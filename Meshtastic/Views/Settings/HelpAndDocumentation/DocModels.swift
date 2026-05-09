@@ -92,6 +92,8 @@ struct DocPage: Identifiable, Hashable {
 		case "watch":			return "applewatch"
 		case "carplay":			return "car"
 		case "translate":		return "globe"
+		case "signal-meter":	return "cellularbars"
+		case "units-and-locale":	return "ruler.fill"
 		// Developer Guide
 		case "architecture":	return "building.columns.fill"
 		case "codebase":		return "chevron.left.forwardslash.chevron.right"
@@ -101,6 +103,7 @@ struct DocPage: Identifiable, Hashable {
 		case "testing":			return "checkmark.seal.fill"
 		case "contributing":	return "person.2.fill"
 		case "deep-links":		return "link"
+		case "measurement":		return "scalemass.fill"
 		default:				return section == .developer
 			? "chevron.left.forwardslash.chevron.right"
 			: "doc.text.fill"
