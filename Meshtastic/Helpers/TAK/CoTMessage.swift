@@ -353,7 +353,7 @@ struct CoTMessage: Identifiable, Sendable {
 			cot += "<__serverdestination destinations='0.0.0.0:4242:tcp:\(senderUid.xmlEscaped)'/>"
 			cot += "<remarks source='BAO.F.ATAK.\(senderUid.xmlEscaped)' "
 			cot += "to='\(chat.chatroom.xmlEscaped)' "
-			cot += "time='\(dateFormatter.string(from: time))'>"
+			cot += "time='\(time.formatted(dateFormatter))'>"
 			cot += "\(chat.message.xmlEscaped)</remarks>"
 		} else if let remarks, !remarks.isEmpty {
 			cot += "<remarks>\(remarks.xmlEscaped)</remarks>"
