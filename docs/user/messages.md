@@ -21,6 +21,12 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 | **0** (primary circle) | Primary channel — broadcast packets are sent here. Location data is broadcast from the first channel where it is enabled (firmware 2.7+). |
 | **1–7** | Secondary channels — separate messaging groups, each secured by their own key. |
 
+### Channel Configuration
+
+![Channel form](../assets/screenshots/channelForm_primary.png)
+
+The channel form lets you configure the channel name, encryption key, role, position sharing, and MQTT uplink/downlink settings.
+
 ### Channel Security
 
 | Icon | Meaning |
@@ -57,11 +63,21 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 
 ### Encryption
 
+![Encryption legend](../assets/screenshots/lockLegend.png)
+
 | Icon | Meaning |
 |------|---------|
 | ![Shared Key](../assets/screenshots/lockOpen.png) | **Shared Key** — direct messages are using the shared key for the channel. |
 | ![Public Key Encryption](../assets/screenshots/lockClosed.png) | **Public Key Encryption** — direct messages use the public key infrastructure for encryption. Requires firmware 2.5 or later. |
 | ![PKI Mismatch](../assets/screenshots/keySlash.png) | **Public Key Mismatch** — the most recent public key for this node does not match the previously recorded key. Verify who you are messaging with by comparing public keys in person or over the phone. |
+
+---
+
+### Tapback Reactions
+
+Long press any message and tap **Tapback** to send an emoji reaction.
+
+![Tapback input](../assets/screenshots/tapbackInput.png)
 
 ---
 
@@ -72,6 +88,8 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 ---
 
 ## Message Status
+
+![Message status reference](../assets/screenshots/ackErrors.png)
 
 | Colour | Meaning |
 |--------|---------|
