@@ -15,6 +15,18 @@ The Meshtastic app automatically displays temperatures, distances, speeds, and t
 
 Meshtastic radios always transmit data in **metric units** (meters, °C, km/h, hPa, etc.). When the app receives this data, it hands it to your device's built-in formatting system, which converts and displays values in whatever unit system you've chosen in **Settings → General → Language & Region**.
 
+![Language & Region settings](../assets/screenshots/settingsLanguageRegion.png)
+
+The **Language & Region** screen controls how the Meshtastic app displays temperatures, distances, dates, numbers, and more. Key settings:
+
+| Setting | What It Controls in Meshtastic |
+|---|---|
+| **Temperature** | °C or °F for all sensor readings and weather |
+| **Measurement System** | Metric (m, km, kg, mm) or US/UK (ft, mi, lbs, in) |
+| **Calendar** | Calendar system for all dates |
+| **Date Format** | Date ordering throughout the app |
+| **Number Format** | Decimal separators and digit grouping |
+
 > **Tip — You never need to toggle units inside the app.** Change your system measurement preferences and every screen in Meshtastic updates automatically — node details, telemetry charts, weather, altitude, and more.
 
 ## Temperature
@@ -25,13 +37,6 @@ Temperature values from environment sensors and weather forecasts are transmitte
 |---|---|
 | Celsius | 22 °C |
 | Fahrenheit | 72 °F |
-
-### Where to change it
-
-| Platform | Path |
-|---|---|
-| **iPhone / iPad** | **Settings → General → Language & Region → Temperature** |
-| **Mac** | **System Settings → General → Language & Region → Temperature** |
 
 This affects all temperature displays throughout the app: node environment telemetry, soil temperature, dew point, weather forecasts, and telemetry chart axes.
 
@@ -117,15 +122,6 @@ All timestamps throughout the app — last heard, message times, telemetry logs,
 | **Calendar** | Calendar system | Gregorian, Buddhist, Japanese, etc. |
 
 The app also uses **relative time** where it makes sense — for example, "5 min ago" or "2 hours ago" in the node list — which is automatically localised into your device language.
-
-### Where to change it
-
-| Platform | Path |
-|---|---|
-| **iPhone / iPad** | **Settings → General → Date & Time** (24-hour toggle) |
-| | **Settings → General → Language & Region** (date format, calendar) |
-| **Mac** | **System Settings → General → Date & Time** |
-| | **System Settings → General → Language & Region** (date format, calendar) |
 
 ## Changing Your Measurement System
 
