@@ -808,15 +808,15 @@
             "usernum",
             "user",
             "urls",
+            "tools",
             "telemetry",
             "swift",
             "serial",
             "security",
             "routes",
-            "route",
-            "ringtone"
+            "route"
         ],
-        "charCount": 2794
+        "charCount": 2908
     },
     {
         "id": "swiftdata",
