@@ -200,7 +200,7 @@ extension MetricsColumnList {
 				tableBody: { _, speed in
 					speed.map {
 						let windSpeed = Measurement(
-							value: Double($0), unit: UnitSpeed.kilometersPerHour)
+							value: Double($0), unit: UnitSpeed.metersPerSecond)
 						return Text(
 							windSpeed.formatted(
 								.measurement(
@@ -289,11 +289,15 @@ extension MetricsColumnList {
 				visible: false,
 				tableBody: { _, distance in
 					distance.map {
-						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-							Text(verbatim: "\($0.formatted(.number.grouping(.never).precision(.fractionLength(1)))) mm")
-						} else {
-							Text("\($0.formatted(.number.grouping(.never).precision(.fractionLength(1))))")
-						}
+						let dist = Measurement(
+							value: Double($0), unit: UnitLength.millimeters)
+						return Text(
+							dist.formatted(
+								.measurement(
+									width: .abbreviated,
+									numberFormatStyle: .number.grouping(.never)
+										.precision(
+										.fractionLength(1)))))
 					} ?? Text(Constants.nilValueIndicator)
 				}),
 

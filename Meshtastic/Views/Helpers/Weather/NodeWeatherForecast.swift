@@ -27,10 +27,13 @@ struct NodeWeatherForecastView: View {
 		.task {
 			do {
 				let weather = try await WeatherService.shared.weather(for: location, including: .hourly).forecast
+				let locale = NSLocale.current as NSLocale
+				let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
+				let targetUnit: UnitTemperature = (localeUnit as? String) == "Fahrenheit" ? .fahrenheit : .celsius
 				forecast = NodeWeatherForecast(entries: weather.map {
 					.init(
 						date: $0.date,
-						degrees: $0.temperature.converted(to: .fahrenheit).value,
+						degrees: $0.temperature.converted(to: targetUnit).value,
 						isDaylight: $0.isDaylight
 					)
 				})

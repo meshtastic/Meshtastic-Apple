@@ -344,15 +344,24 @@ struct NodeDetail: View {
 									RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
 								}
 								if let weight = metrics.weight {
-									WeightCompactWidget(weight: weight.formatted(.number.precision(.fractionLength(1))), unit: "kg")
+									let weightMeasurement = Measurement(value: Double(weight), unit: UnitMass.kilograms)
+									let usesMetric = Locale.current.measurementSystem == .metric
+									let weightUnit = usesMetric ? UnitMass.kilograms : UnitMass.pounds
+									let weightLabel = usesMetric ? "kg" : "lbs"
+									WeightCompactWidget(weight: weightMeasurement.converted(to: weightUnit).value.formatted(.number.precision(.fractionLength(1))), unit: weightLabel)
 								}
 								if let distance = metrics.distance {
-									DistanceCompactWidget(distance: distance.formatted(.number.precision(.fractionLength(0))), unit: "mm")
+									let distMeasurement = Measurement(value: Double(distance), unit: UnitLength.millimeters)
+									let usesMetric = Locale.current.measurementSystem == .metric
+									let distUnit = usesMetric ? UnitLength.millimeters : UnitLength.inches
+									let distLabel = usesMetric ? "mm" : "in"
+									let distDecimals = usesMetric ? 0 : 1
+									DistanceCompactWidget(distance: distMeasurement.converted(to: distUnit).value.formatted(.number.precision(.fractionLength(distDecimals))), unit: distLabel)
 								}
 								if let soilTemperature = metrics.soilTemperature {
 									let locale = NSLocale.current as NSLocale
 									let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-									let unit = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? "°F" : "°C"
+									let unit = (localeUnit as? String) == "Fahrenheit" ? "°F" : "°C"
 									SoilTemperatureCompactWidget(temperature: soilTemperature.localeTemperature().formatted(.number.precision(.fractionLength(0))), unit: unit)
 								}
 								if let soilMoisture = metrics.soilMoisture {

@@ -24,7 +24,7 @@ extension MetricsSeriesList {
 				foregroundStyle: { chartRange in
 					let locale = NSLocale.current as NSLocale
 					let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-					let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
+					let format: UnitTemperature = (localeUnit as? String) == "Fahrenheit" ? .fahrenheit : .celsius
 					let lowerBound = chartRange.map { Double($0.lowerBound) } ?? 0.0
 					let upperBound = chartRange.map { Double($0.upperBound) } ?? 100.0
 					let stops: [Gradient.Stop] = generateStops(minTemp: lowerBound, maxTemp: upperBound, tempUnit: format, opacity: 1.0)
@@ -92,7 +92,7 @@ extension MetricsSeriesList {
 				foregroundStyle: { chartRange in
 					let locale = NSLocale.current as NSLocale
 					let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-					let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
+					let format: UnitTemperature = (localeUnit as? String) == "Fahrenheit" ? .fahrenheit : .celsius
 					let lowerBound = chartRange.map { Double($0.lowerBound) } ?? 0.0
 					let upperBound = chartRange.map { Double($0.upperBound) } ?? 100.0
 					let stops: [Gradient.Stop] = generateStops(minTemp: lowerBound, maxTemp: upperBound, tempUnit: format, opacity: 1.0)
