@@ -798,6 +798,20 @@ actor MeshPackets {
 						telemetry.rssi = packet.rxRssi
 						telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: telemetryMessage.time)))
 						fetchedNode[0].telemetries.append(telemetry)
+
+						// Prune old telemetry to prevent unbounded memory growth
+						let metricsType = telemetry.metricsType
+						let maxTelemetryPerType = 5000
+						let sameTelemetries = fetchedNode[0].telemetries
+							.filter { $0.metricsType == metricsType }
+							.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+						if sameTelemetries.count > maxTelemetryPerType {
+							let excess = sameTelemetries.count - maxTelemetryPerType
+							for i in 0..<excess {
+								modelContext.delete(sameTelemetries[i])
+							}
+						}
+
 						if packet.rxTime > 0 {
 							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
 						} else {
@@ -1021,6 +1035,24 @@ actor MeshPackets {
 						}
 						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
+
+						// Prune old messages to prevent unbounded growth
+						let maxTotalMessages = 50000
+						let countDescriptor = FetchDescriptor<MessageEntity>()
+						let totalMessages = (try? modelContext.fetchCount(countDescriptor)) ?? 0
+						if totalMessages > maxTotalMessages {
+							var oldestDescriptor = FetchDescriptor<MessageEntity>(
+								sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
+							)
+							oldestDescriptor.fetchLimit = totalMessages - maxTotalMessages
+							if let oldMessages = try? modelContext.fetch(oldestDescriptor) {
+								for old in oldMessages {
+									modelContext.delete(old)
+								}
+								try modelContext.save()
+								Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(maxTotalMessages))")
+							}
+						}
 					} catch {
 						Logger.data.error("💥 Failed to save new MessageEntity: \(error.localizedDescription, privacy: .public)")
 					}

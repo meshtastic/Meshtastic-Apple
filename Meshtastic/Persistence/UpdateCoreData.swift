@@ -534,7 +534,7 @@ extension MeshPackets {
 						mutablePositions.append(position)
 						
 						// Prune old positions to prevent unbounded memory growth
-						let maxPositionsPerNode = 500
+						let maxPositionsPerNode = 5000
 						while mutablePositions.count > maxPositionsPerNode {
 							let oldest = mutablePositions[0]
 							if !oldest.latest {
