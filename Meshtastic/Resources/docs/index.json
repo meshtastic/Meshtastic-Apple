@@ -561,12 +561,12 @@
             "imperial",
             "distances",
             "distance",
+            "date",
             "amp",
             "units",
             "telemetry",
             "meshtastic",
             "device",
-            "date",
             "automatically",
             "weather",
             "unit",
@@ -576,13 +576,13 @@
             "locale",
             "language",
             "gps",
+            "displays",
             "change",
             "altitude",
             "uses",
-            "time",
-            "settings"
+            "time"
         ],
-        "charCount": 4765
+        "charCount": 4817
     },
     {
         "id": "watch",

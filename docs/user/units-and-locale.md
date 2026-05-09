@@ -24,6 +24,7 @@ The **Language & Region** screen controls how the Meshtastic app displays temper
 | **Temperature** | °C or °F for all sensor readings and weather |
 | **Measurement System** | Metric (m, km, kg, mm) or US/UK (ft, mi, lbs, in) |
 | **Calendar** | Calendar system for all dates |
+| **First Day of Week** | Week start day in date displays |
 | **Date Format** | Date ordering throughout the app |
 | **Number Format** | Decimal separators and digit grouping |
 
