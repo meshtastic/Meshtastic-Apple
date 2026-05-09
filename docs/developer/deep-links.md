@@ -85,4 +85,6 @@ No parameters are supported for settings URLs.
 | [`meshtastic:///settings/debugLogs`](meshtastic:///settings/debugLogs) | Debug Logs |
 | **Developers** | |
 | [`meshtastic:///settings/appFiles`](meshtastic:///settings/appFiles) | App Files |
+| [`meshtastic:///settings/tools`](meshtastic:///settings/tools) | Tools (iOS 18+) |
+| [`meshtastic:///settings/coreDataBrowser`](meshtastic:///settings/coreDataBrowser) | Data Browser (DEBUG only) |
 | [`meshtastic:///settings/firmwareUpdates`](meshtastic:///settings/firmwareUpdates) | Firmware Updates |

@@ -350,6 +350,13 @@ struct Settings: View {
 					}
 				}
 			}
+			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
+				Label {
+					Text("Data Browser")
+				} icon: {
+					Image(systemName: "tablecells")
+				}
+			}
 		}
 	}
 
@@ -594,6 +601,8 @@ struct Settings: View {
 					TAKServerConfig()
 				case .takConfig:
 					TAKModuleConfig(node: configNode)
+				case .coreDataBrowser:
+					CoreDataBrowser()
 				case .localMeshDiscovery:
 					DiscoveryScanView()
 				case .helpDocs:

@@ -304,7 +304,7 @@
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
 		DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */; };
 		DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */; };
-		DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */; };
+		DD3CC6C228EB9D4900FA9159 /* UpdateSwiftData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */; };
 		DD3D17E02C3FB67200561584 /* LocalWeatherConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3D17DF2C3FB67200561584 /* LocalWeatherConditions.swift */; };
 		DD4074692F1233F400BCC22F /* ExchangeUserInfoButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */; };
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
@@ -352,7 +352,7 @@
 		DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */; };
 		DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */; };
 		DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */; };
-		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
+		DD964FC62975DBFD007C176F /* QuerySwiftData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QuerySwiftData.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
 		DD98EB212E7A31140016320A /* AppIcon_Ham.icon in Resources */ = {isa = PBXBuildFile; fileRef = DD98EB202E7A31140016320A /* AppIcon_Ham.icon */; };
@@ -828,7 +828,7 @@
 		DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
 		DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGauge.swift; sourceTree = "<group>"; };
 		DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingEnums.swift; sourceTree = "<group>"; };
-		DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCoreData.swift; sourceTree = "<group>"; };
+		DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateSwiftData.swift; sourceTree = "<group>"; };
 		DD3D17DC2C3D7B1400561584 /* MeshtasticDataModelV 39.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 39.xcdatamodel"; sourceTree = "<group>"; };
 		DD3D17DF2C3FB67200561584 /* LocalWeatherConditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalWeatherConditions.swift; sourceTree = "<group>"; };
 		DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeUserInfoButton.swift; sourceTree = "<group>"; };
@@ -892,7 +892,7 @@
 		DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSettingsForm.swift; sourceTree = "<group>"; };
 		DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
 		DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntityExtension.swift; sourceTree = "<group>"; };
-		DD964FC52975DBFD007C176F /* QueryCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryCoreData.swift; sourceTree = "<group>"; };
+		DD964FC52975DBFD007C176F /* QuerySwiftData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuerySwiftData.swift; sourceTree = "<group>"; };
 		DD9681A22BBB22BE00FD2C47 /* MeshtasticDataModelV32.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV32.xcdatamodel; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
@@ -1644,7 +1644,7 @@
 			path = TextMessageField;
 			sourceTree = "<group>";
 		};
-		DD007BB12AA59B9A00F5FA12 /* CoreData */ = {
+		DD007BB12AA59B9A00F5FA12 /* SwiftData */ = {
 			isa = PBXGroup;
 			children = (
 				108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */,
@@ -1659,7 +1659,7 @@
 				DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */,
 				23C2BE262EE9F4BD00F6A997 /* DeviceHardwareEntity.swift */,
 			);
-			path = CoreData;
+			path = SwiftData;
 			sourceTree = "<group>";
 		};
 		DD1BD0EC2C603C5B008C0C70 /* Measurement */ = {
@@ -2098,8 +2098,8 @@
 			isa = PBXGroup;
 			children = (
 				DDC4D567275499A500A4208E /* Persistence.swift */,
-				DD964FC52975DBFD007C176F /* QueryCoreData.swift */,
-				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,
+				DD964FC52975DBFD007C176F /* QuerySwiftData.swift */,
+				DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -2151,7 +2151,7 @@
 		DDDB443E29F79A9400EE2349 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				DD007BB12AA59B9A00F5FA12 /* CoreData */,
+				DD007BB12AA59B9A00F5FA12 /* SwiftData */,
 				DD62605A2E6D2D3200E50C4F /* Bool.swift */,
 				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
 				DDDB444529F8A96500EE2349 /* Character.swift */,
@@ -2720,7 +2720,7 @@
 				DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */,
 				23D9D9392E50DA97005D1C18 /* ResettableTimer.swift in Sources */,
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
-				DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */,
+				DD3CC6C228EB9D4900FA9159 /* UpdateSwiftData.swift in Sources */,
 				DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */,
 				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
 				231A53782E69ADB900216B99 /* NodeFilterParameters.swift in Sources */,
@@ -2777,7 +2777,7 @@
 				108FFECB2DD3F43C00BFAA81 /* ShareContactQRDialog.swift in Sources */,
 				233E99C52D84A0B600CC3A77 /* CompactWidget.swift in Sources */,
 				DDC1B81A2AB5377B00C71E39 /* MessagesTips.swift in Sources */,
-				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
+				DD964FC62975DBFD007C176F /* QuerySwiftData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,
 				DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */,
 				6C95257E7B3E55D4FED5694C /* MapWindow.swift in Sources */,
