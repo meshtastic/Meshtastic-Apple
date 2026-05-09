@@ -6,10 +6,10 @@
         "navOrder": 2,
         "keywords": [
             "radio",
-            "connected",
             "bluetooth",
-            "device",
+            "connected",
             "app",
+            "device",
             "live",
             "ios",
             "connection",
@@ -21,22 +21,22 @@
             "radios",
             "multiple",
             "meshtastic",
+            "ble",
             "view",
             "them",
             "switch",
             "swipe",
+            "strength",
             "status",
             "start",
+            "signal",
             "reconnecting",
             "press",
             "permission",
             "not",
-            "mesh",
-            "long",
-            "list",
-            "left"
+            "nearby"
         ],
-        "charCount": 1738
+        "charCount": 1841
     },
     {
         "id": "carplay",
@@ -309,7 +309,7 @@
             "optional",
             "only"
         ],
-        "charCount": 2526
+        "charCount": 2527
     },
     {
         "id": "nodes",
@@ -504,7 +504,7 @@
             "hpa",
             "detection"
         ],
-        "charCount": 3049
+        "charCount": 3050
     },
     {
         "id": "translate",

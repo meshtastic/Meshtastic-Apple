@@ -1585,3 +1585,64 @@ struct AboutMeshtasticSnapshotTests {
 		await assertViewSnapshot(of: view, width: 390, height: 700, named: "aboutMeshtastic", forDocs: true)
 	}
 }
+
+// MARK: - MQTTConfig Snapshot Tests
+
+@Suite("MQTTConfig Snapshots")
+struct MQTTConfigSnapshotTests {
+
+	@Test("MQTT settings form")
+	@MainActor
+	func mqttSettingsForm() async {
+		let view = NavigationView {
+			MQTTConfig(node: nil)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(PersistenceController.preview.container)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 900, named: "mqttConfig", forDocs: true)
+	}
+}
+
+// MARK: - TelemetryConfig Snapshot Tests
+
+@Suite("TelemetryConfig Snapshots")
+struct TelemetryConfigSnapshotTests {
+
+	@Test("Telemetry settings form")
+	@MainActor
+	func telemetrySettingsForm() async {
+		let view = NavigationView {
+			TelemetryConfig(node: nil)
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(PersistenceController.preview.container)
+		}
+		await assertViewSnapshot(of: view, width: 390, height: 900, named: "telemetryConfig", forDocs: true)
+	}
+}
+
+// MARK: - BLE Signal Strength Snapshot Tests
+
+@Suite("BLE Signal Strength Snapshots")
+struct BLESignalStrengthSnapshotTests {
+
+	@Test("Signal strength indicators")
+	@MainActor
+	func signalStrengthAll() async {
+		let view = HStack(spacing: 16) {
+			VStack {
+				SignalStrengthIndicator(signalStrength: .weak)
+				Text("Weak").font(.caption)
+			}
+			VStack {
+				SignalStrengthIndicator(signalStrength: .normal)
+				Text("Normal").font(.caption)
+			}
+			VStack {
+				SignalStrengthIndicator(signalStrength: .strong)
+				Text("Strong").font(.caption)
+			}
+		}
+		.padding()
+		await assertViewSnapshot(of: view, width: 200, height: 80, named: "bleSignalStrength", forDocs: true)
+	}
+}

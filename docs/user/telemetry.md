@@ -70,6 +70,8 @@ Telemetry is visible in two places:
 
 Go to **Settings → Telemetry** to enable telemetry modules and set reporting intervals:
 
+![Telemetry Config](../assets/screenshots/telemetryConfig.png)
+
 | Setting | Description |
 |---------|-------------|
 | Device Metrics Interval | How often (seconds) the node broadcasts battery and utilisation data. |
