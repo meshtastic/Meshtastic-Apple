@@ -18,14 +18,26 @@ struct DetectionSensorLog: View {
 	@State var isExporting = false
 	@State var exportString = ""
 	@Bindable var node: NodeInfoEntity
-	@Query(filter: #Predicate<MessageEntity> { $0.portNum == 10 },
-		   sort: \MessageEntity.messageTimestamp, order: .reverse)
-	private var detections: [MessageEntity]
+	@Query private var detections: [MessageEntity]
+
+	init(node: NodeInfoEntity) {
+		self.node = node
+		let nodeNum = node.user?.num ?? 0
+		let portNum: Int32 = 10
+		let sevenDaysAgoTimestamp = Int32((Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast).timeIntervalSince1970)
+		_detections = Query(
+			filter: #Predicate<MessageEntity> {
+				$0.portNum == portNum && $0.messageTimestamp >= sevenDaysAgoTimestamp && $0.fromUser?.num == nodeNum
+			},
+			sort: \MessageEntity.messageTimestamp,
+			order: .reverse
+		)
+	}
 
 	var body: some View {
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
 		let chartData = detections
-			.filter { $0.timestamp >= oneDayAgo! && $0.fromUser?.num ?? -1 == node.user?.num ?? 0 }
+			.filter { $0.timestamp >= oneDayAgo! }
 			.sorted { $0.timestamp < $1.timestamp }
 
 		VStack {
@@ -90,7 +102,7 @@ struct DetectionSensorLog: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-						ForEach(detections.filter( {$0.fromUser?.num ?? -1 == node.user?.num ?? 0})) { d in
+						ForEach(detections) { d in
 							GridRow {
 								Text(d.messagePayload ?? "Detected")
 									.font(.caption)

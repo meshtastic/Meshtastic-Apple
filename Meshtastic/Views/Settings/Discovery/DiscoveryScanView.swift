@@ -22,14 +22,15 @@ struct DiscoveryScanView: View {
 	@State private var showHistory = false
 	@State private var showDefaultKeyAlert = false
 
-	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
-	private var nodes: [NodeInfoEntity]
-
 	@State private var engine: DiscoveryScanEngine?
 
 	private var connectedNode: NodeInfoEntity? {
-		let nodeNum = UserDefaults.preferredPeripheralNum
-		return nodes.first(where: { $0.num == Int64(nodeNum) })
+		let nodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.num == nodeNum }
+		)
+		descriptor.fetchLimit = 1
+		return try? context.fetch(descriptor).first
 	}
 
 	private var primaryChannelUsesDefaultKey: Bool {
