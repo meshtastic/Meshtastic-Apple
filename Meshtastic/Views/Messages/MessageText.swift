@@ -7,7 +7,6 @@ import Translation
 #endif
 
 struct MessageText: View {
-	static let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	
@@ -97,7 +96,7 @@ struct MessageText: View {
 		return Group {
 			Text(markdownText)
 		}
-			.tint(Self.linkBlue)
+			.tint(isCurrentUser ? .white : Color("Colors/MeshtasticLink"))
 			.padding(.vertical, 10)
 			.padding(.horizontal, 8)
 			.foregroundColor(isCurrentUser ? .white : Color("Colors/MeshtasticBubbleText"))
