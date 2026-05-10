@@ -24,6 +24,9 @@ struct ChannelMessageList: View {
 	@State private var messageToHighlight: Int64 = 0
 	@State private var needsReadSync: Bool = false
 	@State private var messageLimit: Int = 50
+	@State private var tapbackTargetMessage: MessageEntity?
+	@State private var tapbackText = ""
+	@FocusState var tapbackFocused: Bool
 	@Query private var allPrivateMessages: [MessageEntity]
 	
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
@@ -60,6 +63,30 @@ struct ChannelMessageList: View {
 	private func routerIsShowingThisChannel() -> Bool {
 		guard appState.router.selectedTab == .messages else { return false }
 		return scenePhase == .active
+	}
+
+	private func processTapback() {
+		guard !tapbackText.isEmpty, let target = tapbackTargetMessage else { return }
+		let emojiToSend = tapbackText
+		let destination = MessageDestination.channel(channel)
+
+		Task {
+			do {
+				try await accessoryManager.sendMessage(
+					message: emojiToSend,
+					toUserNum: destination.userNum,
+					channel: destination.channelNum,
+					isEmoji: true,
+					replyID: target.messageId
+				)
+			} catch {
+				Logger.services.warning("Failed to send tapback.")
+			}
+		}
+
+		tapbackText = ""
+		tapbackFocused = false
+		tapbackTargetMessage = nil
 	}
 
 	var body: some View {
@@ -101,7 +128,24 @@ struct ChannelMessageList: View {
 							  messageFieldFocused: $messageFieldFocused,
 							  messageToHighlight: $messageToHighlight,
 							  scrollView: scrollView,
-							  onInteractionComplete: handleInteractionComplete
+							  onInteractionComplete: handleInteractionComplete,
+							  onTapback: { message in
+								  tapbackFocused = false
+								  tapbackTargetMessage = message
+								  DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+									  tapbackFocused = true
+									  #if targetEnvironment(macCatalyst)
+									  DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+										  if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+											  let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+											  if nsApp.responds(to: selector) {
+												  nsApp.perform(selector, with: nil)
+											  }
+										  }
+									  }
+									  #endif
+								  }
+							  }
 						  )
 						  .onAppear {
 							  if !message.read && UIApplication.shared.applicationState == .active {
@@ -134,6 +178,26 @@ struct ChannelMessageList: View {
 						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 					}
 				}
+			}
+			.onChange(of: tapbackFocused) {
+				if tapbackFocused, let target = tapbackTargetMessage {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+						withAnimation {
+							scrollView.scrollTo(target.messageId, anchor: .center)
+						}
+					}
+				}
+			}
+			.background {
+				TextField("", text: $tapbackText)
+					.keyboardType(.emoji)
+					.focused($tapbackFocused)
+					.frame(width: 1, height: 1)
+					.opacity(0.01)
+					.allowsHitTesting(false)
+					.onChange(of: tapbackText) {
+						processTapback()
+					}
 			}
 			TextMessageField(
 				destination: .channel(channel),

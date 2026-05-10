@@ -21,6 +21,9 @@ struct UserMessageList: View {
 	@State private var messageToHighlight: Int64 = 0
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
+	@State private var tapbackTargetMessage: MessageEntity?
+	@State private var tapbackText = ""
+	@FocusState var tapbackFocused: Bool
 	private var allPrivateMessages: [MessageEntity] {
 		let sent = user.sentMessages ?? []
 		let received = user.receivedMessages ?? []
@@ -57,6 +60,30 @@ struct UserMessageList: View {
 		return scenePhase == .active
 	}
 
+	private func processTapback() {
+		guard !tapbackText.isEmpty, let target = tapbackTargetMessage else { return }
+		let emojiToSend = tapbackText
+		let destination = MessageDestination.user(user)
+
+		Task {
+			do {
+				try await accessoryManager.sendMessage(
+					message: emojiToSend,
+					toUserNum: destination.userNum,
+					channel: destination.channelNum,
+					isEmoji: true,
+					replyID: target.messageId
+				)
+			} catch {
+				Logger.services.warning("Failed to send tapback.")
+			}
+		}
+
+		tapbackText = ""
+		tapbackFocused = false
+		tapbackTargetMessage = nil
+	}
+
 	var body: some View {
 		// Cast user.messageList to an array for easier indexing and ForEach.
 		let messages: [MessageEntity] = Array(allPrivateMessages)
@@ -86,7 +113,24 @@ struct UserMessageList: View {
 								messageFieldFocused: $messageFieldFocused,
 								messageToHighlight: $messageToHighlight,
 								scrollView: scrollView,
-								onInteractionComplete: handleInteractionComplete
+								onInteractionComplete: handleInteractionComplete,
+								onTapback: { message in
+									tapbackFocused = false
+									tapbackTargetMessage = message
+									DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+										tapbackFocused = true
+										#if targetEnvironment(macCatalyst)
+										DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+											if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+												let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+												if nsApp.responds(to: selector) {
+													nsApp.perform(selector, with: nil)
+												}
+											}
+										}
+										#endif
+									}
+								}
 							)
 							.onAppear {
 								// Only mark as read if the app is in the foreground
@@ -118,6 +162,26 @@ struct UserMessageList: View {
 							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 						}
 					}
+				}
+				.onChange(of: tapbackFocused) {
+					if tapbackFocused, let target = tapbackTargetMessage {
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+							withAnimation {
+								scrollView.scrollTo(target.messageId, anchor: .center)
+							}
+						}
+					}
+				}
+				.background {
+					TextField("", text: $tapbackText)
+						.keyboardType(.emoji)
+						.focused($tapbackFocused)
+						.frame(width: 1, height: 1)
+						.opacity(0.01)
+						.allowsHitTesting(false)
+						.onChange(of: tapbackText) {
+							processTapback()
+						}
 				}
 			}
 			TextMessageField(

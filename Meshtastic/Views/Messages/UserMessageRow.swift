@@ -22,6 +22,7 @@ struct UserMessageRow: View {
 	@Binding var messageToHighlight: Int64
 	let scrollView: ScrollViewProxy
 	let onInteractionComplete: () -> Void
+	let onTapback: (MessageEntity) -> Void
 	
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
@@ -36,7 +37,8 @@ struct UserMessageRow: View {
 	     messageFieldFocused: FocusState<Bool>.Binding,
 	     messageToHighlight: Binding<Int64>,
 	     scrollView: ScrollViewProxy,
-	     onInteractionComplete: @escaping () -> Void) {
+	     onInteractionComplete: @escaping () -> Void,
+	     onTapback: @escaping (MessageEntity) -> Void) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
 		self.allMessages = allMessages
@@ -48,6 +50,7 @@ struct UserMessageRow: View {
 		self._messageToHighlight = messageToHighlight
 		self.scrollView = scrollView
 		self.onInteractionComplete = onInteractionComplete
+		self.onTapback = onTapback
 	}
 	
 	var body: some View {
@@ -127,8 +130,8 @@ struct UserMessageRow: View {
 							isCurrentUser: isCurrentUser
 						) {
 							self.replyMessageId = message.messageId
-							self.messageFieldFocused = true
-						}
+							self.messageFieldFocused = true						} onTapback: {
+							onTapback(message)						}
 						
 						if isCurrentUser && message.canRetry || (isCurrentUser && message.receivedACK && !message.realACK) {
 							RetryButton(message: message, destination: .user(user))
