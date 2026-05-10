@@ -52,6 +52,19 @@ struct GenerateMessageMarkdownTests {
 		#expect(result.contains("[https://meshtastic.org]"))
 		#expect(result.contains("[https://github.com]"))
 	}
+
+	@Test func duplicateURLs_eachWrappedOnce() {
+		let result = generateMessageMarkdown(message: "Link https://meshtastic.org and again https://meshtastic.org")
+		let occurrences = result.components(separatedBy: "[https://meshtastic.org](https://meshtastic.org)").count - 1
+		#expect(occurrences == 2)
+	}
+
+	@Test func urlWithEmoji_correctRangeHandling() {
+		let result = generateMessageMarkdown(message: "🔥 https://meshtastic.org 🎉")
+		#expect(result.contains("[https://meshtastic.org](https://meshtastic.org)"))
+		#expect(result.contains("🔥"))
+		#expect(result.contains("🎉"))
+	}
 }
 
 // MARK: - TelemetryEnums Aqi

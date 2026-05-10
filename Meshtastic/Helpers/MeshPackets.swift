@@ -22,37 +22,35 @@ fileprivate extension Bool {
 	}
 }
 
-func generateMessageMarkdown (message: String) -> String {
-	if !message.isEmoji() {
-		let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
-		guard let detector = try? NSDataDetector(types: types.rawValue) else {
-			return message
-		}
-		let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
-		var messageWithMarkdown = message
-		if matches.count > 0 {
-			for match in matches {
-				guard let range = Range(match.range, in: message) else { continue }
-				if match.resultType == .address {
-					let address = message[range]
-					let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
-					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
-				} else if match.resultType == .phoneNumber {
-					let phone = messageWithMarkdown[range]
-					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
-				} else if match.resultType == .link {
-					let start = match.range.lowerBound
-					let stop = match.range.upperBound
-					let url = message[start ..< stop]
-					let absoluteUrl = match.url?.absoluteString ?? ""
-					let markdownUrl = "[\(url)](\(absoluteUrl))"
-					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: markdownUrl)
-				}
-			}
-		}
-		return messageWithMarkdown
+func generateMessageMarkdown(message: String) -> String {
+	guard !message.isEmoji() else { return message }
+	let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
+	guard let detector = try? NSDataDetector(types: types.rawValue) else {
+		return message
 	}
-	return message
+	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
+	guard !matches.isEmpty else { return message }
+	var messageWithMarkdown = message
+	// Process matches in reverse order so earlier ranges stay valid
+	// after inserting markdown syntax at later positions.
+	for match in matches.reversed() {
+		guard let range = Range(match.range, in: messageWithMarkdown) else { continue }
+		let matchedText = String(messageWithMarkdown[range])
+		let replacement: String
+		if match.resultType == .address {
+			let urlEncodedAddress = matchedText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+			replacement = "[\(matchedText)](http://maps.apple.com/?address=\(urlEncodedAddress))"
+		} else if match.resultType == .phoneNumber {
+			replacement = "[\(matchedText)](tel:\(matchedText))"
+		} else if match.resultType == .link {
+			let absoluteUrl = match.url?.absoluteString ?? ""
+			replacement = "[\(matchedText)](\(absoluteUrl))"
+		} else {
+			continue
+		}
+		messageWithMarkdown.replaceSubrange(range, with: replacement)
+	}
+	return messageWithMarkdown
 }
 
 @ModelActor
