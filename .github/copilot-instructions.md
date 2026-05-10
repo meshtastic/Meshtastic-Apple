@@ -199,6 +199,8 @@ CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modif
 - SwiftData (`ModelContainer` / `ModelContext`) (001-local-mesh-discovery)
 - Swift (latest stable) for app code; bash for build scripts; YAML for GitHub Actions workflows + WebKit (`WKWebView`), FoundationModels (iOS 26+), `cmark-gfm` CLI (Homebrew), GitHub Actions (`actions/deploy-pages`), `just-the-docs` Jekyll theme (003-app-docs-markdown)
 - Main app bundle — `Meshtastic/Resources/docs/` copied via Xcode Copy Files build phase; no SwiftData models required (003-app-docs-markdown)
+- Swift (latest stable), Swift Concurrency (`async/await`, `@MainActor`) + SwiftUI (`TextEditor`, `TextSelection`), SF Symbols (004-message-formatting-toolbar)
+- SwiftData (existing `MessageEntity` — no schema changes required) (004-message-formatting-toolbar)
 
 ## Recent Changes
 - 001-local-mesh-discovery: Added Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+)
