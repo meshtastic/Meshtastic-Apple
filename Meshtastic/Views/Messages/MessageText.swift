@@ -15,12 +15,11 @@ struct MessageText: View {
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
 	let onReply: () -> Void
+	let onTapback: () -> Void
 	// State for handling channel URL sheet
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
 	@State private var isShowingTranslationPresentation = false
-	@State private var tapbackText = ""
-	@FocusState private var isTapbackInputFocused: Bool
 	
 	var body: some View {
 		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
@@ -104,18 +103,6 @@ struct MessageText: View {
 			.foregroundColor(isCurrentUser ? .white : Color("Colors/MeshtasticBubbleText"))
 			.background(isCurrentUser ? .accentColor : Color("Colors/MeshtasticBubble"))
 			.cornerRadius(15)
-			.background {
-				TextField("", text: $tapbackText)
-					.keyboardType(.emoji)
-					.scrollDismissesKeyboard(.immediately)
-					.focused($isTapbackInputFocused)
-					.frame(width: 1, height: 1)
-					.opacity(0.01)
-					.allowsHitTesting(false)
-					.onChange(of: tapbackText) {
-						processTapback()
-					}
-			}
 			.overlay(messageOverlays)
 			.contextMenu {
 				MessageContextMenuItems(
@@ -123,10 +110,7 @@ struct MessageText: View {
 					tapBackDestination: tapBackDestination,
 					isCurrentUser: isCurrentUser,
 					isShowingDeleteConfirmation: $isShowingDeleteConfirmation,
-					isShowingTapbackInput: Binding(
-						get: { isTapbackInputFocused },
-						set: { isTapbackInputFocused = $0 }
-					),
+					onTapback: onTapback,
 					onReply: onReply,
 					canTranslate: canTranslate,
 						hasTranslatedText: hasTranslatedText,
@@ -256,36 +240,6 @@ struct MessageText: View {
 		} catch {
 			Logger.data.error("Failed to clear translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 		}
-	}
-	
-	private func processTapback() {
-		guard !tapbackText.isEmpty else { return }
-		let emojiToSend = tapbackText
-		
-		Task {
-			do {
-				try await accessoryManager.sendMessage(
-					message: emojiToSend,
-					toUserNum: tapBackDestination.userNum,
-					channel: tapBackDestination.channelNum,
-					isEmoji: true,
-					replyID: message.messageId
-				)
-				await MainActor.run {
-					switch tapBackDestination {
-					case .channel:
-						break
-					case .user:
-						break
-					}
-				}
-			} catch {
-				Logger.services.warning("Failed to send tapback.")
-			}
-		}
-		
-		tapbackText = ""
-		isTapbackInputFocused = false
 	}
 }
 
