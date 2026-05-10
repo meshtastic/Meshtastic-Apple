@@ -130,18 +130,21 @@ struct ChannelMessageList: View {
 							  scrollView: scrollView,
 							  onInteractionComplete: handleInteractionComplete,
 							  onTapback: { message in
+								  tapbackFocused = false
 								  tapbackTargetMessage = message
-								  tapbackFocused = true
-								  #if targetEnvironment(macCatalyst)
-								  DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-									  if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
-										  let selector = NSSelectorFromString("orderFrontCharacterPalette:")
-										  if nsApp.responds(to: selector) {
-											  nsApp.perform(selector, with: nil)
+								  DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+									  tapbackFocused = true
+									  #if targetEnvironment(macCatalyst)
+									  DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+										  if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+											  let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+											  if nsApp.responds(to: selector) {
+												  nsApp.perform(selector, with: nil)
+											  }
 										  }
 									  }
+									  #endif
 								  }
-								  #endif
 							  }
 						  )
 						  .onAppear {
