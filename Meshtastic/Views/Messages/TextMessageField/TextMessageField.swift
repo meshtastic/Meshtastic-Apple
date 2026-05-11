@@ -116,7 +116,11 @@ struct TextMessageField: View {
 				}
 			} label: {
 				Image(systemName: "face.smiling")
+					.frame(minWidth: 44, minHeight: 36)
+					.foregroundColor(.primary)
+					.contentShape(Rectangle())
 			}
+			.buttonStyle(.plain)
 			Spacer()
 			#endif
 			AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
