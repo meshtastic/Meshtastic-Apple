@@ -51,6 +51,33 @@ struct MeshMap: View {
 	/// Track whether the map pop-out window is already open
 	@State private var isMapWindowOpen = false
 
+	@AppStorage("enableMapShowFavorites") private var showFavorites = false
+
+	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true },
+		   sort: \PositionEntity.time, order: .reverse)
+	private var allLatestPositions: [PositionEntity]
+
+	/// Positions filtered once per render, passed to MeshMapContent to avoid repeated relationship faulting.
+	private var filteredPositions: [PositionEntity] {
+		if showFavorites {
+			return allLatestPositions.filter { $0.nodePosition?.favorite == true }
+		}
+		return allLatestPositions
+	}
+
+	/// Whether the map tab is currently visible. Driven by `router.selectedTab`
+	/// rather than `onAppear`/`onDisappear` which are unreliable in TabView.
+	/// When false, the Map is fed empty data to reduce memory from annotations.
+	private var isMapVisible: Bool {
+		router.selectedTab == .map
+	}
+
+	/// Positions actually passed to the map — empty when the tab is off-screen
+	/// so MapKit drops its annotation view trees and reduces memory.
+	private var visiblePositions: [PositionEntity] {
+		isMapVisible ? filteredPositions : []
+	}
+
 	var body: some View {
 		NavigationStack {
 			ZStack {
@@ -67,7 +94,8 @@ struct MeshMap: View {
 							selectedMapLayer: $selectedMapLayer,
 							selectedPosition: $selectedPosition,
 							selectedWaypoint: $selectedWaypoint,
-							enabledOverlayConfigs: $enabledOverlayConfigs
+							enabledOverlayConfigs: $enabledOverlayConfigs,
+							filteredPositions: visiblePositions
 						)
 					}
 					.id(meshMapDistance)
@@ -235,7 +263,16 @@ struct MeshMap: View {
 		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
+			GeoJSONOverlayManager.shared.clearCache()
 		})
+		.onChange(of: router.selectedTab) { _, newTab in
+			if newTab == .map {
+				UIApplication.shared.isIdleTimerDisabled = true
+			} else {
+				UIApplication.shared.isIdleTimerDisabled = false
+				GeoJSONOverlayManager.shared.clearCache()
+			}
+		}
 		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
 			if let deletedFileId = notification.object as? UUID {
 				enabledOverlayConfigs.remove(deletedFileId)

@@ -17,9 +17,9 @@ struct IdentifiableOverlay: Identifiable {
 }
 
 struct ReducedPrecisionMapCircleKey: Hashable {
-    let latitudeI: Int32
-    let longitudeI: Int32
-    let precisionBits: Int32
+	let latitudeI: Int32
+	let longitudeI: Int32
+	let precisionBits: Int32
 }
 
 struct MeshMapContent: MapContent {
@@ -29,7 +29,6 @@ struct MeshMapContent: MapContent {
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
-	@AppStorage("enableMapShowFavorites") private var showFavorites = false
 	@Binding var showTraffic: Bool
 	@Binding var showPointsOfInterest: Bool
 	@Binding var selectedMapLayer: MapLayer
@@ -41,9 +40,9 @@ struct MeshMapContent: MapContent {
 	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
 	@Binding var enabledOverlayConfigs: Set<UUID>
 	
-	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true },
-		   sort: \PositionEntity.time, order: .reverse)
-	var positions: [PositionEntity]
+	/// Pre-filtered positions passed in from the parent view to avoid
+	/// relationship faulting inside MapContent (which is re-evaluated frequently).
+	var filteredPositions: [PositionEntity]
 
 	@Query(sort: \WaypointEntity.name, order: .reverse)
 	var waypoints: [WaypointEntity]
@@ -51,13 +50,6 @@ struct MeshMapContent: MapContent {
 	@Query(filter: #Predicate<RouteEntity> { $0.enabled == true },
 		   sort: \RouteEntity.name)
 	private var routes: [RouteEntity]
-
-	/// Single filtered pass over positions — used by annotations, circles, and convex hull.
-	private var filteredPositions: [PositionEntity] {
-		positions.filter { position in
-			(!showFavorites || (position.nodePosition?.favorite == true)) && !(position.nodePosition?.ignored == true)
-		}
-	}
 
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
@@ -80,7 +72,7 @@ struct MeshMapContent: MapContent {
 						AnimatedNodePin(
 							nodeColor: nodeColor,
 							shortName: position.nodePosition?.user?.shortName,
-							hasDetectionSensorMetrics: position.nodePosition?.hasDetectionSensorMetrics ?? false,
+							hasDetectionSensorMetrics: false,
 							isOnline: position.nodePosition?.isOnline ?? false,
 							calculatedDelay: calculatedDelay
 						)
@@ -109,21 +101,21 @@ struct MeshMapContent: MapContent {
 		return lowestNumForKey.map { ($0.value, $0.key) }.sorted { $0.nodeNum < $1.nodeNum }
 	}
 
-    @MapContentBuilder
-    var reducedPrecisionMapCircles: some MapContent {
-        ForEach(reducedPrecisionCircleItems, id: \.nodeNum) { item in
-            let circleKey = item.circleKey
-            let nodeNum = item.nodeNum
-            let radius = PositionPrecision(rawValue: Int(circleKey.precisionBits))?.precisionMeters ?? 0
-            if radius > 0.0 {
-                let center = CLLocationCoordinate2D(latitude: Double(circleKey.latitudeI) / 1e7, longitude: Double(circleKey.longitudeI) / 1e7)
+	@MapContentBuilder
+	var reducedPrecisionMapCircles: some MapContent {
+		ForEach(reducedPrecisionCircleItems, id: \.nodeNum) { item in
+			let circleKey = item.circleKey
+			let nodeNum = item.nodeNum
+			let radius = PositionPrecision(rawValue: Int(circleKey.precisionBits))?.precisionMeters ?? 0
+			if radius > 0.0 {
+				let center = CLLocationCoordinate2D(latitude: Double(circleKey.latitudeI) / 1e7, longitude: Double(circleKey.longitudeI) / 1e7)
 				let nodeColor = UIColor(hex: UInt32(nodeNum))
-                MapCircle(center: center, radius: radius)
-                    .foregroundStyle(Color(nodeColor).opacity(0.25))
-                    .stroke(.white, lineWidth: 1)
-            }
-        }
-    }
+				MapCircle(center: center, radius: radius)
+					.foregroundStyle(Color(nodeColor).opacity(0.25))
+					.stroke(.white, lineWidth: 1)
+			}
+		}
+	}
 
 	@MapContentBuilder
 	var routeAnnotations: some MapContent {
@@ -175,38 +167,42 @@ struct MeshMapContent: MapContent {
 						}
 					}
 				}
-				.annotationTitles(.automatic) 
+				.annotationTitles(.automatic)
 			}
 		}
 	}
 	
 	@MapContentBuilder
 	var meshMap: some MapContent {
-		// Only compute LoRa node coordinates when the convex hull is actually displayed.
-		let loraCoords: [CLLocationCoordinate2D] = showConvexHull
-			? filteredPositions
-				.filter { !($0.nodePosition?.viaMqtt ?? true) }
-				.compactMap { $0.nodeCoordinate ?? LocationsHandler.DefaultLocation }
-			: []
-		/// Convex Hull
-		if showConvexHull {
-			if loraCoords.count > 0 {
-				let hull = loraCoords.getConvexHull()
-				MapPolygon(coordinates: hull)
-					.stroke(.blue, lineWidth: 3)
-					.foregroundStyle(.indigo.opacity(0.4))
+		// When filteredPositions is empty (tab off-screen), skip all expensive content
+		// to reduce memory from MapKit annotation/overlay view trees.
+		if !filteredPositions.isEmpty {
+			// Only compute LoRa node coordinates when the convex hull is actually displayed.
+			let loraCoords: [CLLocationCoordinate2D] = showConvexHull
+				? filteredPositions
+					.filter { !($0.nodePosition?.viaMqtt ?? true) }
+					.compactMap { $0.nodeCoordinate ?? LocationsHandler.DefaultLocation }
+				: []
+			/// Convex Hull
+			if showConvexHull {
+				if loraCoords.count > 0 {
+					let hull = loraCoords.getConvexHull()
+					MapPolygon(coordinates: hull)
+						.stroke(.blue, lineWidth: 3)
+						.foregroundStyle(.indigo.opacity(0.4))
+				}
 			}
+
+			/// GeoJSON Overlays with embedded styling
+			if showMapOverlays {
+				overlayContent
+			}
+
+			positionAnnotations
+			reducedPrecisionMapCircles
+			routeAnnotations
+			waypointAnnotations
 		}
-		
-		/// GeoJSON Overlays with embedded styling
-		if showMapOverlays {
-			overlayContent
-		}
-		
-		positionAnnotations
-		reducedPrecisionMapCircles
-		routeAnnotations
-		waypointAnnotations
 	}
 	
 	var overlayContent: some MapContent {
