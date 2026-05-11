@@ -322,58 +322,110 @@ private extension MessageDestination {
 // MARK: - ReturnKeyHandler (Mac Catalyst)
 
 #if targetEnvironment(macCatalyst)
-/// Injects a UIKeyCommand for Return into the nearest view controller,
-/// allowing it to override UITextView's built-in newline insertion.
+/// Finds the UITextView backing a SwiftUI TextEditor and intercepts Return
+/// via a delegate proxy, calling `action` instead of inserting a newline.
+/// Shift+Return still inserts a newline.
 private struct ReturnKeyHandler: UIViewRepresentable {
 	let action: () -> Void
+
+	func makeCoordinator() -> Coordinator {
+		Coordinator(action: action)
+	}
 
 	func makeUIView(context: Context) -> UIView {
 		let view = UIView(frame: .zero)
 		view.isHidden = true
-		DispatchQueue.main.async {
-			guard let vc = view.findViewController() else { return }
-			let existing = vc.children.compactMap { $0 as? ReturnKeyViewController }
-			existing.forEach { $0.removeFromParent() }
-			let child = ReturnKeyViewController()
-			child.action = action
-			vc.addChild(child)
-			child.didMove(toParent: vc)
-		}
+		view.isUserInteractionEnabled = false
+		context.coordinator.hostView = view
 		return view
 	}
 
 	func updateUIView(_ uiView: UIView, context: Context) {
-		guard let vc = uiView.findViewController() else { return }
-		if let child = vc.children.compactMap({ $0 as? ReturnKeyViewController }).first {
-			child.action = action
+		context.coordinator.action = action
+		// Defer to next run loop so the TextEditor's UITextView is in the hierarchy
+		DispatchQueue.main.async {
+			context.coordinator.installDelegateProxy()
 		}
 	}
-}
 
-private class ReturnKeyViewController: UIViewController {
-	var action: (() -> Void)?
+	class Coordinator: NSObject, UITextViewDelegate {
+		var action: () -> Void
+		weak var hostView: UIView?
+		weak var originalDelegate: UITextViewDelegate?
+		weak var hookedTextView: UITextView?
 
-	override var keyCommands: [UIKeyCommand]? {
-		let command = UIKeyCommand(input: "\r", modifierFlags: [], action: #selector(handleReturn))
-		command.wantsPriorityOverSystemBehavior = true
-		return [command]
-	}
+		init(action: @escaping () -> Void) {
+			self.action = action
+		}
 
-	@objc private func handleReturn() {
-		action?()
-	}
-}
+		func installDelegateProxy() {
+			guard let hostView, hookedTextView == nil else { return }
+			guard let textView = findTextView(in: hostView.superview) else { return }
+			originalDelegate = textView.delegate
+			textView.delegate = self
+			hookedTextView = textView
+		}
 
-private extension UIView {
-	func findViewController() -> UIViewController? {
-		var responder: UIResponder? = self
-		while let next = responder?.next {
-			if let vc = next as? UIViewController {
-				return vc
+		private func findTextView(in view: UIView?) -> UITextView? {
+			guard let view else { return nil }
+			// Walk siblings and parent hierarchy to find the UITextView
+			if let parent = view.superview {
+				for sibling in parent.subviews {
+					if let found = findTextViewRecursive(in: sibling) {
+						return found
+					}
+				}
+				// Go up one more level
+				if let grandparent = parent.superview {
+					for child in grandparent.subviews {
+						if let found = findTextViewRecursive(in: child) {
+							return found
+						}
+					}
+				}
 			}
-			responder = next
+			return nil
 		}
-		return nil
+
+		private func findTextViewRecursive(in view: UIView) -> UITextView? {
+			if let textView = view as? UITextView {
+				return textView
+			}
+			for subview in view.subviews {
+				if let found = findTextViewRecursive(in: subview) {
+					return found
+				}
+			}
+			return nil
+		}
+
+		// MARK: UITextViewDelegate — intercept Return
+
+		func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+			if text == "\n" {
+				action()
+				return false
+			}
+			return originalDelegate?.textView?(textView, shouldChangeTextIn: range, replacementText: text) ?? true
+		}
+
+		// MARK: Forward all other delegate methods
+
+		func textViewDidChange(_ textView: UITextView) {
+			originalDelegate?.textViewDidChange?(textView)
+		}
+
+		func textViewDidBeginEditing(_ textView: UITextView) {
+			originalDelegate?.textViewDidBeginEditing?(textView)
+		}
+
+		func textViewDidEndEditing(_ textView: UITextView) {
+			originalDelegate?.textViewDidEndEditing?(textView)
+		}
+
+		func textViewDidChangeSelection(_ textView: UITextView) {
+			originalDelegate?.textViewDidChangeSelection?(textView)
+		}
 	}
 }
 #endif
