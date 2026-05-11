@@ -156,6 +156,11 @@ struct UserMessageList: View {
 				.defaultScrollAnchor(.bottom)
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
+				.onAppear {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+					}
+				}
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {

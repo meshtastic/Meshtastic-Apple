@@ -27,6 +27,10 @@ extension Color {
 	/// Neutral 300 #B8BAC8 light / Neutral 600 #555668 dark
 	static let secondary = Color("Colors/MeshtasticSecondary")
 
+	/// On-surface variant for descriptive/secondary text (timestamps, previews)
+	/// NV 600 #5C5E78 light / NV 300 #BDBFCF dark — WCAG AA compliant
+	static let onSurfaceVariant = Color("Colors/MeshtasticOnSurfaceVariant")
+
 	/// Branded success green — shadows SwiftUI `Color.green`
 	/// Green 600 #3FB86D light / Green 500 #67EA94 dark
 	static let green = Color("Colors/MeshtasticSuccess")

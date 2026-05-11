@@ -85,19 +85,19 @@ struct ChannelList: View {
 						if lastMessageDay == currentDay {
 							Text(lastMessageTime, style: .time )
 								.font(.footnote)
-								.foregroundColor(.secondary)
+								.foregroundColor(.onSurfaceVariant)
 						} else if  lastMessageDay == (currentDay - 1) {
 							Text("Yesterday")
 								.font(.footnote)
-								.foregroundColor(.secondary)
+								.foregroundColor(.onSurfaceVariant)
 						} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
 							Text(lastMessageTime.formattedDate(format: dateFormatString))
 								.font(.footnote)
-								.foregroundColor(.secondary)
+								.foregroundColor(.onSurfaceVariant)
 						} else if lastMessageDay < (currentDay - 1800) {
 							Text(lastMessageTime.formattedDate(format: dateFormatString))
 								.font(.footnote)
-								.foregroundColor(.secondary)
+								.foregroundColor(.onSurfaceVariant)
 						}
 					}
 					if channel.mute {
@@ -107,9 +107,9 @@ struct ChannelList: View {
 
 				if hasMessages {
 					HStack(alignment: .top) {
-						Text(mostRecent?.messagePayload ?? " ")
+						Text(LocalizedStringKey(mostRecent?.messagePayload ?? " "))
 							.font(.footnote)
-							.foregroundColor(.secondary)
+							.foregroundColor(.onSurfaceVariant)
 					}
 				}
 			}

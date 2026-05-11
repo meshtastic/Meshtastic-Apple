@@ -61,24 +61,7 @@ A user is composing a message that contains markdown syntax. Below the compose f
 
 ---
 
-### User Story 4 - Active Formatting State Indication (Priority: P3)
-
-When the cursor is positioned inside existing markdown delimiters, the corresponding toolbar button visually indicates that the style is active. This helps users understand which formatting is applied at their current cursor position.
-
-**Why this priority**: This is a polish/UX enhancement. The feature works without it, but it significantly improves discoverability and user confidence.
-
-**Independent Test**: Can be fully tested by placing the cursor inside `**bold text**` and verifying the Bold button shows the active state (accent-filled pill background with white foreground).
-
-**Acceptance Scenarios**:
-
-1. **Given** the cursor is positioned between `**` and `**` delimiters, **When** the user views the toolbar, **Then** the Bold button displays an accent-filled pill background with white foreground icon.
-2. **Given** the cursor is positioned between `*` and `*` (single) delimiters, **When** the user views the toolbar, **Then** the Italic button displays the active state.
-3. **Given** the cursor is positioned outside any delimiters, **When** the user views the toolbar, **Then** all formatting buttons display their default (inactive) state.
-4. **Given** the cursor is positioned inside nested `***` (bold+italic) delimiters, **When** the user views the toolbar, **Then** both Bold and Italic buttons display the active state.
-
----
-
-### User Story 5 - Combined Bold+Italic Formatting (Priority: P3)
+### User Story 4 - Combined Bold+Italic Formatting (Priority: P3)
 
 A user wants to apply both bold and italic to the same text. They can either apply bold first and then italic (or vice versa), resulting in `***text***` triple-star syntax.
 
@@ -112,12 +95,12 @@ Users on iOS 17.x (or macOS 14.x) see absolutely no change to their messaging ex
 ### Edge Cases
 
 - What happens when the user applies formatting that would exceed the 200-byte limit? The byte limit is enforced on the raw `typingMessage` string. If wrapping with delimiters would exceed 200 bytes, the excess characters are trimmed as per existing behaviour (the `onChange` handler drops trailing characters).
-- What happens when the user selects text that partially overlaps existing delimiters? The selection wrapping applies to exactly the selected substring — partial delimiter overlap results in nested/malformed markdown, which is acceptable as the preview shows the user exactly what will be sent.
-- What happens when the compose field is empty and the user taps a formatting button? Delimiters are inserted at position 0 with the cursor between them.
+- What happens when the user selects text that partially overlaps existing delimiters? When wrapping a selection that contains existing markdown delimiters, all existing delimiters within the selection are stripped first, then the new style's delimiters are applied. This prevents garbled/overlapping syntax (e.g., `~~**T~~e*st**` is impossible — the result is always clean).
+- What happens when the compose field is empty and the user taps a formatting button? Formatting buttons are hidden until the user has typed at least 3 characters.
 - What happens when the user pastes text containing markdown? The pasted text is treated as raw text — markdown in pasted content renders in the preview just like typed markdown.
 - What happens with very long messages near the byte limit? The existing `onChange` truncation handles this — delimiter insertion that exceeds 200 bytes triggers the same drop-last-character logic.
 - What happens when `TextSelection` is nil (e.g. before the user taps the editor)? Formatting buttons are disabled (greyed out) until the editor has focus and provides a valid `TextSelection`.
-- What happens when the user selects only the inner text of a bold span and taps Italic? The italic delimiters wrap only the inner text, producing `**_text_**` (nested), not `***text***` (triple-star). The preview shows the actual rendering so the user can verify. To get triple-star, the user must select the entire bold span including its `**` delimiters.
+- What happens when the user selects only the inner text of a bold span and taps Italic? The italic delimiters wrap only the inner text — existing bold delimiters within the selection are stripped first, resulting in `*text*` (italic only). The preview shows the actual rendering so the user can verify.
 
 ## Requirements *(mandatory)*
 
@@ -125,15 +108,15 @@ Users on iOS 17.x (or macOS 14.x) see absolutely no change to their messaging ex
 
 - **FR-001**: On iOS 18+ / macOS 15+, the compose field MUST use a SwiftUI `TextEditor` with the iOS 18 `selection:` binding (`TextSelection?`) to provide cursor and selection range access.
 - **FR-002**: On iOS 17.x / macOS 14.x, the compose field MUST remain the existing `TextField` with no changes to appearance or behaviour.
-- **FR-003**: The `TextEditor` MUST visually match the existing `TextField` appearance — same `RoundedRectangle(cornerRadius: 20)` border, same padding (horizontal 16, vertical 12), same `.primary` foreground colour, same multiline vertical growth.
-- **FR-004**: Four formatting buttons MUST be added to the keyboard toolbar row on iOS 18+: Bold (`bold` SF Symbol), Italic (`italic` SF Symbol), Strikethrough (`strikethrough` SF Symbol), Code (`chevron.left.forwardslash.chevron.right` SF Symbol).
-- **FR-005**: Formatting buttons MUST be placed before the existing `AlertButton` in the toolbar row.
-- **FR-006**: Each formatting button MUST meet the 44×44pt minimum touch target size.
-- **FR-007**: When a formatting button's style is active at the current cursor position, the button MUST display an accent-filled pill background with white foreground (iMessage-style toggle).
-- **FR-008**: When a formatting button is tapped with a non-empty text selection, the system MUST wrap the selected substring with the appropriate markdown delimiters (`**` for bold, `*` for italic, `~~` for strikethrough, `` ` `` for code).
+- **FR-003**: The `TextEditor` MUST visually match the existing `TextField` appearance — same `RoundedRectangle(cornerRadius: 20)` border, padding (horizontal 16, vertical 4), same `.primary` foreground colour, and `.frame(minHeight: 36, maxHeight: 200)` for content-adaptive sizing.
+- **FR-004**: Four formatting buttons MUST be displayed in a compact unified toolbar row on iOS 18+ (alongside Alert, Position, and byte counter): Bold (`bold` SF Symbol), Italic (`italic` SF Symbol), Strikethrough (`strikethrough` SF Symbol), Code (`chevron.left.forwardslash.chevron.right` SF Symbol). Formatting buttons MUST only appear after the user has typed at least 3 characters. All toolbar controls (Alert bell, Position pin, byte counter) MUST use compact styling — icon-only with `.primary` foreground, no text labels.
+- **FR-005**: Formatting buttons MUST be placed before the existing `AlertButton` in the toolbar row. The toolbar MUST scroll horizontally when its content exceeds the screen width. The byte counter MUST be right-aligned.
+- **FR-006**: Each formatting button MUST meet the 44×36pt minimum touch target size.
+- **FR-007**: *(Removed — active state pill indication was removed as too brittle with TextSelection index management.)*
+- **FR-008**: When a formatting button is tapped with a non-empty text selection, the system MUST first expand the selection to include any adjacent markdown delimiter characters, strip all existing markdown delimiters from the expanded text, trim whitespace so delimiters hug content (trailing/leading spaces move outside delimiters), then wrap the cleaned text with the appropriate markdown delimiters (`**` for bold, `*` for italic, `~~` for strikethrough, `` ` `` for code). After wrapping, any orphaned (unpaired) delimiter characters remaining in the full text MUST be cleaned up. The resulting selection MUST expand to include the newly inserted delimiters (e.g., selecting `dolphin` and tapping Bold produces `**dolphin**` with the full `**dolphin**` selected). This prevents overlapping/garbled syntax and ensures correct markdown rendering.
 - **FR-009**: When a formatting button is tapped with the inner text selected (excluding delimiters) on text already wrapped in the corresponding delimiters, the system MUST remove those delimiters (toggle off).
 - **FR-010**: When a formatting button is tapped with a collapsed cursor (no selection), the system MUST insert opening and closing delimiters at the cursor position and place the cursor between them.
-- **FR-011**: When the compose field contains markdown syntax, a read-only live preview MUST appear below the compose field, rendered using `Text(LocalizedStringKey(typingMessage))`.
+- **FR-011**: When the compose field contains markdown syntax, a read-only live preview MUST appear above the compose field, rendered using `Text(LocalizedStringKey(typingMessage))`.
 - **FR-012**: When the compose field contains no markdown syntax, the live preview MUST be hidden.
 - **FR-013**: The live preview MUST be styled to resemble a sent message bubble.
 - **FR-014**: The byte limit (200 bytes) MUST be enforced on the raw `typingMessage` string using `typingMessage.utf8.count`. The existing `onChange` truncation logic applies unchanged.
@@ -142,11 +125,16 @@ Users on iOS 17.x (or macOS 14.x) see absolutely no change to their messaging ex
 - **FR-017**: On Mac Catalyst, the existing character palette button MUST remain; formatting buttons MUST also be shown.
 - **FR-018**: All formatting buttons MUST use SF Symbols exclusively — no styled text labels, no custom image assets.
 - **FR-019**: No UIKit views are permitted — no `UIViewRepresentable`, no `UITextView`, no `NSAttributedString`. All UI MUST be pure SwiftUI.
+- **FR-020**: Message list previews (ChannelList and UserList) MUST render markdown in the most-recent-message snippet using `Text(LocalizedStringKey(...))`.
+- **FR-021**: On Mac Catalyst, pressing Enter in the `TextEditor` MUST send the message. Pressing Shift+Enter MUST insert a line break. The `onKeyPress(.return)` modifier MUST be placed on the parent `VStack` container, not on the `TextEditor` itself.
+- **FR-022**: The toolbar MUST appear when the `TextEditor` gains focus and hide (with a 0.3-second delay) when it loses focus. Visibility is controlled by a `showToolbar` state variable updated via `onChange(of: isFocused)`.
+- **FR-023**: On iOS 26+ / macOS 26+, the toolbar MUST use `.ultraThinMaterial` background in a `Capsule()` shape. On earlier versions, it MUST use a `Divider()` separator above and `.background(.bar)` for the toolbar row.
+- **FR-024**: Formatting buttons MUST use `.buttonStyle(.plain)` to prevent SwiftUI's default button tinting from overriding the `.foregroundColor(.primary)` styling.
 
 ### Key Entities
 
 - **typingMessage** (`String`): The raw message text including any markdown syntax characters. This is the single source of truth for both the compose field content and the transmitted message. No separate "formatted" or "attributed" representation exists.
-- **TextSelection**: The SwiftUI iOS 18 type providing cursor position and selection range within the `TextEditor`. Used to determine where to insert/wrap delimiters and which formatting button states are active.
+- **TextSelection**: The SwiftUI iOS 18 type providing cursor position and selection range within the `TextEditor`. Used to determine where to insert/wrap delimiters. Updated after formatting operations to reflect the new selection (including delimiters).
 - **MarkdownStyle**: A logical grouping (Bold, Italic, Strikethrough, Code) each with its opening/closing delimiter strings and corresponding SF Symbol name.
 
 ## Success Criteria *(mandatory)*
@@ -159,7 +147,7 @@ Users on iOS 17.x (or macOS 14.x) see absolutely no change to their messaging ex
 - **SC-004**: 100% of formatting operations (wrap, unwrap, cursor-insert) complete without exceeding the 200-byte message limit or losing user text.
 - **SC-005**: All four formatting styles (bold, italic, strikethrough, code) are accessible within the keyboard toolbar without requiring additional navigation or menus.
 - **SC-006**: Formatted messages sent from iOS 18+ users render correctly in the recipient's message bubble on all supported OS versions (recipients do not need iOS 18+ to see rendered markdown).
-- **SC-007**: Unit test coverage exists for all markdown wrapping/unwrapping helper functions: wrap with bold/italic/strikethrough/code, unwrap (toggle off), wrap at cursor (empty selection), detect if selection is already wrapped, bold+italic triple-star combination.
+- **SC-007**: Unit test coverage exists for all markdown wrapping/unwrapping helper functions: wrap with bold/italic/strikethrough/code, unwrap (toggle off), wrap at cursor (empty selection), delimiter boundary expansion, orphan cleanup, bold+italic triple-star combination.
 
 ## Assumptions
 
