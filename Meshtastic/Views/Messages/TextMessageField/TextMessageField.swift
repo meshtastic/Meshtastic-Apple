@@ -1,5 +1,6 @@
 import SwiftUI
 import OSLog
+import DatadogSessionReplay
 
 struct TextMessageField: View {
 	static let maxbytes = 200
@@ -16,29 +17,30 @@ struct TextMessageField: View {
 	@State private var sendPositionWithMessage = false
 
 	var body: some View {
-		if #available(iOS 18.0, macOS 15.0, *) {
-			FormattingComposeArea(
-				typingMessage: $typingMessage,
-				totalBytes: $totalBytes,
-				replyMessageId: $replyMessageId,
-				isFocused: $isFocused,
-				maxbytes: Self.maxbytes,
-				onSend: sendMessage,
-				onAlert: { typingMessage += "🔔 Alert Bell Character! \u{7}" },
-				onRequestPosition: requestPosition
-			)
-		} else {
-			VStack(spacing: 0) {
-				HStack(alignment: .top) {
-					if replyMessageId != 0 || isFocused {
-						Button {
-							withAnimation(.easeInOut(duration: 0.2)) {
-								replyMessageId = 0
-							}
-							isFocused = false
-						} label: {
-							Image(systemName: "x.circle.fill")
-								.font(.largeTitle)
+		SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
+			if #available(iOS 18.0, macOS 15.0, *) {
+				FormattingComposeArea(
+					typingMessage: $typingMessage,
+					totalBytes: $totalBytes,
+					replyMessageId: $replyMessageId,
+					isFocused: $isFocused,
+					maxbytes: Self.maxbytes,
+					onSend: sendMessage,
+					onAlert: { typingMessage += "🔔 Alert Bell Character! \u{7}" },
+					onRequestPosition: requestPosition
+				)
+			} else {
+				VStack(spacing: 0) {
+					HStack(alignment: .top) {
+						if replyMessageId != 0 || isFocused {
+							Button {
+								withAnimation(.easeInOut(duration: 0.2)) {
+									replyMessageId = 0
+								}
+								isFocused = false
+							} label: {
+								Image(systemName: "x.circle.fill")
+									.font(.largeTitle)
 							}
 							if replyMessageId != 0 {
 								Text("Reply")
@@ -96,6 +98,7 @@ struct TextMessageField: View {
 								.background(.bar)
 						}
 					}
+				}
 			}
 		}
 	}
@@ -174,7 +177,6 @@ private struct FormattingComposeArea: View {
 
 	@State private var textSelection: TextSelection?
 	@State private var showToolbar = false
-	@State private var showLinkSheet = false
 
 	var body: some View {
 		VStack(spacing: 0) {
@@ -223,6 +225,9 @@ private struct FormattingComposeArea: View {
 							.font(.largeTitle)
 							.foregroundColor(.accentColor)
 					}
+					#if targetEnvironment(macCatalyst)
+					.keyboardShortcut(.return, modifiers: [])
+					#endif
 				}
 			}
 			.padding(15)
@@ -248,21 +253,12 @@ private struct FormattingComposeArea: View {
 				showToolbar = true
 			} else {
 				DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-					if !isFocused && !showLinkSheet {
+					if !isFocused {
 						showToolbar = false
 					}
 				}
 			}
 		}
-		#if targetEnvironment(macCatalyst)
-		.onKeyPress(.return, phases: .down) { keyPress in
-			if keyPress.modifiers.contains(.shift) {
-				return .ignored
-			}
-			onSend()
-			return .handled
-		}
-		#endif
 	}
 
 	private var toolbarContent: some View {
@@ -270,7 +266,7 @@ private struct FormattingComposeArea: View {
 			ScrollView(.horizontal, showsIndicators: false) {
 				HStack {
 					if typingMessage.count >= 3 {
-						FormattingToolbarButtons(typingMessage: $typingMessage, textSelection: $textSelection, showLinkAlert: $showLinkSheet)
+						FormattingToolbarButtons(typingMessage: $typingMessage, textSelection: $textSelection)
 					}
 					#if targetEnvironment(macCatalyst)
 					Button {
