@@ -225,12 +225,18 @@ private struct FormattingComposeArea: View {
 							.font(.largeTitle)
 							.foregroundColor(.accentColor)
 					}
-					#if targetEnvironment(macCatalyst)
-					.keyboardShortcut(.return, modifiers: [])
-					#endif
 				}
 			}
 			.padding(15)
+			#if targetEnvironment(macCatalyst)
+			.background(
+				ReturnKeyHandler {
+					if !typingMessage.isEmpty {
+						onSend()
+					}
+				}
+			)
+			#endif
 			if showToolbar {
 				if #available(iOS 26.0, macOS 26.0, *) {
 					toolbarContent
@@ -312,3 +318,62 @@ private extension MessageDestination {
 		}
 	}
 }
+
+// MARK: - ReturnKeyHandler (Mac Catalyst)
+
+#if targetEnvironment(macCatalyst)
+/// Injects a UIKeyCommand for Return into the nearest view controller,
+/// allowing it to override UITextView's built-in newline insertion.
+private struct ReturnKeyHandler: UIViewRepresentable {
+	let action: () -> Void
+
+	func makeUIView(context: Context) -> UIView {
+		let view = UIView(frame: .zero)
+		view.isHidden = true
+		DispatchQueue.main.async {
+			guard let vc = view.findViewController() else { return }
+			let existing = vc.children.compactMap { $0 as? ReturnKeyViewController }
+			existing.forEach { $0.removeFromParent() }
+			let child = ReturnKeyViewController()
+			child.action = action
+			vc.addChild(child)
+			child.didMove(toParent: vc)
+		}
+		return view
+	}
+
+	func updateUIView(_ uiView: UIView, context: Context) {
+		guard let vc = uiView.findViewController() else { return }
+		if let child = vc.children.compactMap({ $0 as? ReturnKeyViewController }).first {
+			child.action = action
+		}
+	}
+}
+
+private class ReturnKeyViewController: UIViewController {
+	var action: (() -> Void)?
+
+	override var keyCommands: [UIKeyCommand]? {
+		let command = UIKeyCommand(input: "\r", modifierFlags: [], action: #selector(handleReturn))
+		command.wantsPriorityOverSystemBehavior = true
+		return [command]
+	}
+
+	@objc private func handleReturn() {
+		action?()
+	}
+}
+
+private extension UIView {
+	func findViewController() -> UIViewController? {
+		var responder: UIResponder? = self
+		while let next = responder?.next {
+			if let vc = next as? UIViewController {
+				return vc
+			}
+			responder = next
+		}
+		return nil
+	}
+}
+#endif
