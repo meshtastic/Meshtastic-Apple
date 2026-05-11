@@ -284,7 +284,11 @@ private struct FormattingComposeArea: View {
 						}
 					} label: {
 						Image(systemName: "face.smiling")
+							.frame(minWidth: 44, minHeight: 36)
+							.foregroundColor(.primary)
+							.contentShape(Rectangle())
 					}
+					.buttonStyle(.plain)
 					#endif
 					AlertButton(action: onAlert, compact: true)
 					RequestPositionButton(action: onRequestPosition, compact: true)
