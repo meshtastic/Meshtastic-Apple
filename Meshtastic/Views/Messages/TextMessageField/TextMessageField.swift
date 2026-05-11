@@ -108,10 +108,13 @@ struct TextMessageField: View {
 			Spacer()
 			#if targetEnvironment(macCatalyst)
 			Button {
-				if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
-					let selector = NSSelectorFromString("orderFrontCharacterPalette:")
-					if nsApp.responds(to: selector) {
-						nsApp.perform(selector, with: nil)
+				isFocused = true
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+					if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+						let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+						if nsApp.responds(to: selector) {
+							nsApp.perform(selector, with: nil)
+						}
 					}
 				}
 			} label: {
@@ -280,10 +283,13 @@ private struct FormattingComposeArea: View {
 					}
 					#if targetEnvironment(macCatalyst)
 					Button {
-						if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
-							let selector = NSSelectorFromString("orderFrontCharacterPalette:")
-							if nsApp.responds(to: selector) {
-								nsApp.perform(selector, with: nil)
+						isFocused = true
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+							if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+								let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+								if nsApp.responds(to: selector) {
+									nsApp.perform(selector, with: nil)
+								}
 							}
 						}
 					} label: {
