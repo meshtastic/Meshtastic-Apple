@@ -25,6 +25,7 @@ struct NodeDetail: View {
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
 	@Bindable	var node: NodeInfoEntity
+	var showMapLink: Bool = true
 	@State private var environmentSectionHeight: CGFloat = 0
 
 	/// The currently BLE-connected (or remotely administered) node, derived reactively
@@ -43,31 +44,35 @@ struct NodeDetail: View {
 	@State var showingCompassSheet = false
 	
 	var body: some View {
-		NavigationStack {
-			ScrollViewReader { scrollView in
-				Color.clear
-					.frame(height: 0) // Ensure it has no height
-					.id("topOfList")
-				List {
-					NodeInfoItem(node: node)
-					nodeSection
-					environmentSection
-					powerSection
-					logsSection
-					actionsSection
-					administrationSection
-				}
-				.sheet(isPresented: $showingCompassSheet) {
-					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.longName ?? nil, waypointShortName: node.user?.shortName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
-						}
-				.onAppear {
-					scrollView.scrollTo("topOfList", anchor: .top)
-				}
-				.listStyle(.insetGrouped)
-				.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
-				.navigationBarTitleDisplayMode(.inline)
+		ScrollViewReader { scrollView in
+			Color.clear
+				.frame(height: 0) // Ensure it has no height
+				.id("topOfList")
+			nodeDetailList
+			.sheet(isPresented: $showingCompassSheet) {
+				CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.longName ?? nil, waypointShortName: node.user?.shortName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+					}
+			.onAppear {
+				scrollView.scrollTo("topOfList", anchor: .top)
 			}
+			.contentMargins(.top, 0, for: .scrollContent)
+			.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
+			.navigationBarTitleDisplayMode(.inline)
 		}
+	}
+
+	@ViewBuilder
+	private var nodeDetailList: some View {
+		List {
+			NodeInfoItem(node: node)
+			nodeSection
+			environmentSection
+			powerSection
+			logsSection
+			actionsSection
+			administrationSection
+		}
+		.listStyle(.insetGrouped)
 	}
 
 	// MARK: - Node Section
@@ -409,17 +414,19 @@ struct NodeDetail: View {
 				}
 			}
 			.disabled(!node.hasDeviceMetrics)
-			NavigationLink {
-				NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
-			} label: {
-				Label {
-					Text("Node Map")
-				} icon: {
-					Image(systemName: "map")
-						.symbolRenderingMode(.multicolor)
+			if showMapLink {
+				NavigationLink {
+					NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
+				} label: {
+					Label {
+						Text("Node Map")
+					} icon: {
+						Image(systemName: "map")
+							.symbolRenderingMode(.multicolor)
+					}
 				}
+				.disabled(!node.hasPositions)
 			}
-			.disabled(!node.hasPositions)
 			NavigationLink {
 				PositionLog(node: node)
 			} label: {

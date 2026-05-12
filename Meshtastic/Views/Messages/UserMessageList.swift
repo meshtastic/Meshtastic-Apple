@@ -24,12 +24,19 @@ struct UserMessageList: View {
 	@State private var tapbackTargetMessage: MessageEntity?
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
-	private var allPrivateMessages: [MessageEntity] {
-		let sent = user.sentMessages ?? []
-		let received = user.receivedMessages ?? []
-		return (sent + received)
-			.filter { !$0.isEmoji }
-			.sorted { $0.messageTimestamp < $1.messageTimestamp }
+	@Query private var allPrivateMessages: [MessageEntity]
+
+	init(user: UserEntity) {
+		self.user = user
+		let userNum = user.num
+		let detectionSensorPortNum: Int32 = 10
+		_allPrivateMessages = Query(
+			filter: #Predicate<MessageEntity> {
+				($0.fromUser?.num == userNum || $0.toUser?.num == userNum)
+				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+			},
+			sort: \MessageEntity.messageTimestamp
+		)
 	}
 
 	func handleInteractionComplete() {

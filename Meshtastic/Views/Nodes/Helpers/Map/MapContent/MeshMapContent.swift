@@ -23,7 +23,47 @@ struct ReducedPrecisionMapCircleKey: Hashable {
 }
 
 struct MeshMapContent: MapContent {
-	
+
+	/// Lightweight snapshot of a position's node data, extracted once to avoid
+	/// repeated SwiftData relationship faults inside the MapContent builder.
+	struct PositionSnapshot: Identifiable {
+		let id: PersistentIdentifier
+		let coordinate: CLLocationCoordinate2D
+		let precisionBits: Int32
+		let nodeNum: Int64
+		let longName: String
+		let shortName: String?
+		let isOnline: Bool
+		let viaMqtt: Bool
+		let calculatedDelay: Double
+	}
+
+	/// Pre-extract all position data into value-type snapshots so the map builder
+	/// never faults SwiftData relationships during layout.
+	private var positionSnapshots: [PositionSnapshot] {
+		filteredPositions.compactMap { (position) -> PositionSnapshot? in
+			let coord: CLLocationCoordinate2D = if position.isPreciseLocation {
+				position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+			} else {
+				position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
+			}
+			let bits = position.precisionBits
+			guard 12...15 ~= bits || bits == 32 else { return nil }
+			let node = position.nodePosition
+			return PositionSnapshot(
+				id: position.persistentModelID,
+				coordinate: coord,
+				precisionBits: bits,
+				nodeNum: node?.num ?? 0,
+				longName: node?.user?.longName ?? "?",
+				shortName: node?.user?.shortName,
+				isOnline: node?.isOnline ?? false,
+				viaMqtt: node?.viaMqtt ?? true,
+				calculatedDelay: Double(abs(position.persistentModelID.hashValue) % 100) / 100.0 * 0.5
+			)
+		}
+	}
+
 	/// Parameters
 	@Binding var showUserLocation: Bool
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
@@ -53,34 +93,23 @@ struct MeshMapContent: MapContent {
 
 	@MapContentBuilder
 	var positionAnnotations: some MapContent {
-		ForEach(filteredPositions, id: \.id) { position in
-			let coordinateForNodePin: CLLocationCoordinate2D = if position.isPreciseLocation {
-				position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-			} else {
-				position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
-			}
-			if 12...15 ~= position.precisionBits || position.precisionBits == 32 {
-
-				let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-				let positionName = position.nodePosition?.user?.longName ?? "?"
-
-				// Use a hash of the position ID to stagger animation delays for each node, preventing synchronized animations and improving visual distinction.
-				let calculatedDelay = Double(position.id.hashValue % 100) / 100.0 * 0.5
-
-				Annotation(positionName, coordinate: coordinateForNodePin) {
-					LazyVStack {
-						AnimatedNodePin(
-							nodeColor: nodeColor,
-							shortName: position.nodePosition?.user?.shortName,
-							hasDetectionSensorMetrics: false,
-							isOnline: position.nodePosition?.isOnline ?? false,
-							calculatedDelay: calculatedDelay
-						)
-					}
-					.highPriorityGesture(TapGesture().onEnded { _ in
-						selectedPosition = (selectedPosition == position ? nil : position)
-					})
+		let snapshots = positionSnapshots
+		ForEach(snapshots) { snap in
+			Annotation(snap.longName, coordinate: snap.coordinate) {
+				LazyVStack {
+					AnimatedNodePin(
+						nodeColor: UIColor(hex: UInt32(snap.nodeNum)),
+						shortName: snap.shortName,
+						hasDetectionSensorMetrics: false,
+						isOnline: snap.isOnline,
+						calculatedDelay: snap.calculatedDelay
+					)
 				}
+				.highPriorityGesture(TapGesture().onEnded { _ in
+					if let pos = filteredPositions.first(where: { $0.persistentModelID == snap.id }) {
+						selectedPosition = (selectedPosition == pos ? nil : pos)
+					}
+				})
 			}
 		}
 	}
@@ -177,11 +206,12 @@ struct MeshMapContent: MapContent {
 		// When filteredPositions is empty (tab off-screen), skip all expensive content
 		// to reduce memory from MapKit annotation/overlay view trees.
 		if !filteredPositions.isEmpty {
+			let snapshots = positionSnapshots
 			// Only compute LoRa node coordinates when the convex hull is actually displayed.
 			let loraCoords: [CLLocationCoordinate2D] = showConvexHull
-				? filteredPositions
-					.filter { !($0.nodePosition?.viaMqtt ?? true) }
-					.compactMap { $0.nodeCoordinate ?? LocationsHandler.DefaultLocation }
+				? snapshots
+					.filter { !$0.viaMqtt }
+					.map(\.coordinate)
 				: []
 			/// Convex Hull
 			if showConvexHull {

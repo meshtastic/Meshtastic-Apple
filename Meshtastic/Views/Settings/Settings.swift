@@ -21,7 +21,7 @@ struct Settings: View {
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
 
-	@ObservedObject
+	@EnvironmentObject
 	var router: Router
 
 	// MARK: Helper
@@ -374,14 +374,7 @@ struct Settings: View {
 
 	var body: some View {
 		NavigationStack(
-			path: Binding<[SettingsNavigationState]>(
-				get: {
-					[router.settingsState].compactMap { $0 }
-				},
-				set: { newPath in
-					router.settingsState = newPath.first
-				}
-			)
+			path: $router.settingsPath
 		) {
 			let node = nodes.first(where: { $0.num == preferredNodeNum })
 			List {

@@ -13,13 +13,10 @@ class Router: ObservableObject {
 	var messagesState: MessagesNavigationState?
 
 	@Published
-	var nodeListSelectedNodeNum: Int64?
-
-	@Published
 	var mapState: MapNavigationState?
 
 	@Published
-	var settingsState: SettingsNavigationState?
+	var settingsPath: [SettingsNavigationState] = []
 
 	@Published
 	var discoveryShowHistory: Bool = false
@@ -28,22 +25,38 @@ class Router: ObservableObject {
 	/// Provided for backward compatibility (e.g. tests) and convenience.
 	var navigationState: NavigationState {
 		get {
-			NavigationState(
+			return NavigationState(
 				selectedTab: selectedTab,
 				messages: messagesState,
-				nodeListSelectedNodeNum: nodeListSelectedNodeNum,
+				nodeListSelectedNodeNum: selectedNodeNum,
 				map: mapState,
-				settings: settingsState
+				settings: settingsPath.last
 			)
 		}
 		set {
 			selectedTab = newValue.selectedTab
 			messagesState = newValue.messages
-			nodeListSelectedNodeNum = newValue.nodeListSelectedNodeNum
+			if let num = newValue.nodeListSelectedNodeNum {
+				selectedNodeNum = num
+				lastNodeNum = num
+			} else {
+				selectedNodeNum = nil
+				lastNodeNum = nil
+			}
 			mapState = newValue.map
-			settingsState = newValue.settings
+			if let setting = newValue.settings {
+				settingsPath = [setting]
+			} else {
+				settingsPath = []
+			}
 		}
 	}
+
+	/// Tracks the last node num navigated to for cross-tab deep links.
+	@Published var lastNodeNum: Int64?
+
+	/// The currently selected node in the NavigationSplitView detail pane.
+	@Published var selectedNodeNum: Int64?
 
 	// MARK: Node Object ID Cache
 
@@ -85,9 +98,13 @@ class Router: ObservableObject {
 	) {
 		self.selectedTab = navigationState.selectedTab
 		self.messagesState = navigationState.messages
-		self.nodeListSelectedNodeNum = navigationState.nodeListSelectedNodeNum
+		if let num = navigationState.nodeListSelectedNodeNum {
+			self.selectedNodeNum = num
+		}
 		self.mapState = navigationState.map
-		self.settingsState = navigationState.settings
+		if let setting = navigationState.settings {
+			self.settingsPath = [setting]
+		}
 
 		$selectedTab.sink { tab in
 			Logger.services.info("🛣 [App] Routed to \(tab.rawValue, privacy: .public)")
@@ -155,12 +172,32 @@ class Router: ObservableObject {
 			.flatMap(Int64.init)
 
 		selectedTab = .nodes
-		nodeListSelectedNodeNum = nodeId
+		if let nodeId {
+			selectedNodeNum = nodeId
+			lastNodeNum = nodeId
+		} else {
+			selectedNodeNum = nil
+			lastNodeNum = nil
+		}
 	}
+
 	func navigateToNodeDetail(nodeNum: Int64) {
 		Logger.services.info("🛣 [App] Direct route to node detail \(nodeNum, privacy: .public)")
 		selectedTab = .nodes
-		nodeListSelectedNodeNum = nodeNum
+		selectedNodeNum = nodeNum
+		lastNodeNum = nodeNum
+	}
+
+	func popToRoot(tab: NavigationState.Tab) {
+		switch tab {
+		case .nodes:
+			selectedNodeNum = nil
+			lastNodeNum = nil
+		case .settings:
+			settingsPath = []
+		default:
+			break
+		}
 	}
 
 	private func routeMap(_ components: URLComponents) {
@@ -193,7 +230,11 @@ class Router: ObservableObject {
 			.flatMap(SettingsNavigationState.init(rawValue:))
 
 		selectedTab = .settings
-		settingsState = settingFromPath
+		if let settingFromPath {
+			settingsPath = [settingFromPath]
+		} else {
+			settingsPath = []
+		}
 
 		if settingFromPath == .localMeshDiscovery && segments.count > 1 && segments[1] == "history" {
 			discoveryShowHistory = true

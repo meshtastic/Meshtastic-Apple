@@ -86,16 +86,26 @@ struct Messages: View {
 				Text("Select a conversation type")
 			}
 		} detail: {
-			if let myInfo = node?.myInfo, let channelSelection {
-				ChannelMessageList(myInfo: myInfo, channel: channelSelection)
-					// The toolbar is now defined inside ChannelMessageList.swift
-			} else if let userSelection {
-				UserMessageList(user: userSelection)
-			} else if case .channels = router.messagesState {
-				Text("Select a channel")
-			} else if case .directMessages = router.messagesState {
-				Text("Select a conversation")
+			NavigationStack {
+				Group {
+					if let myInfo = node?.myInfo, let channelSelection {
+						ChannelMessageList(myInfo: myInfo, channel: channelSelection)
+					} else if let userSelection {
+						UserMessageList(user: userSelection)
+					} else if case .channels = router.messagesState {
+						Text("Select a channel")
+					} else if case .directMessages = router.messagesState {
+						Text("Select a conversation")
+					}
+				}
+				.navigationDestination(for: Int64.self) { nodeNum in
+					if let node = getNodeInfo(id: nodeNum, context: context) {
+						NodeDetail(node: node)
+					}
+				}
 			}
+		}.onAppear {
+			setupNavigationState()
 		}.onChange(of: router.messagesState) {
 			setupNavigationState()
 		}
@@ -103,7 +113,7 @@ struct Messages: View {
 
 	private func setupNavigationState() {
 		let nodeId = Int64(UserDefaults.preferredPeripheralNum)
-		if nodeId > 0 {
+		if nodeId > 0 && node == nil {
 			node = getNodeInfo(id: nodeId, context: context)
 		}
 

@@ -151,8 +151,14 @@ struct MeshMap: View {
 					.ignoresSafeArea()
 				}
 				.sheet(item: $selectedPosition) { selection in
-					PositionPopover(position: selection, popover: false)
-						.padding()
+					if let nodeNum = selection.nodePosition?.num,
+					   let node = getNodeInfo(id: Int64(nodeNum), context: context) {
+						NavigationStack {
+							NodeDetail(node: node, showMapLink: false)
+						}
+						.presentationDetents([.large])
+						.presentationDragIndicator(.visible)
+					}
 				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
@@ -196,7 +202,7 @@ struct MeshMap: View {
 				}
 				.sheet(isPresented: $showLegend) {
 					MapLegend(isMeshMap: true)
-						.presentationDetents([.medium, .large])
+						.presentationDetents([.large])
 						.presentationContentInteraction(.scrolls)
 						.presentationDragIndicator(.visible)
 						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
