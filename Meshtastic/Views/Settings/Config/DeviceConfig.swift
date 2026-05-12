@@ -175,7 +175,9 @@ struct DeviceConfig: View {
 										try await accessoryManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!)
 										try await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
-										await PersistenceController.shared.clearDatabase(includeRoutes: false)
+										await MeshPackets.shared.flushDebouncedSaves()
+										await MeshPackets.shared.clearDatabase(includeRoutes: false)
+										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("NodeDB Reset Failed")
@@ -200,7 +202,9 @@ struct DeviceConfig: View {
 										try await accessoryManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!)
 										try await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
-										await PersistenceController.shared.clearDatabase(includeRoutes: false)
+										await MeshPackets.shared.flushDebouncedSaves()
+										await MeshPackets.shared.clearDatabase(includeRoutes: false)
+										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("Factory Reset Failed")
@@ -213,7 +217,9 @@ struct DeviceConfig: View {
 										try await accessoryManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!, resetDevice: true)
 										try? await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
-										await PersistenceController.shared.clearDatabase(includeRoutes: false)
+										await MeshPackets.shared.flushDebouncedSaves()
+										await MeshPackets.shared.clearDatabase(includeRoutes: false)
+										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("Factory Reset Failed")

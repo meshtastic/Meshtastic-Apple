@@ -216,7 +216,9 @@ struct AppSettings: View {
 										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 									}
 								}
-								await PersistenceController.shared.clearDatabase(includeRoutes: true)
+								await MeshPackets.shared.flushDebouncedSaves()
+								await MeshPackets.shared.clearDatabase(includeRoutes: true)
+								MeshPackets.recreateShared()
 								clearNotifications()
 							}
 						}

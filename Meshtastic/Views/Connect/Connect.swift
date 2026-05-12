@@ -610,7 +610,9 @@ struct ManualConnectionMenu: View {
 						if accessoryManager.allowDisconnect {
 							try await accessoryManager.disconnect()
 						}
-						await PersistenceController.shared.clearDatabase(includeRoutes: false)
+						await MeshPackets.shared.flushDebouncedSaves()
+						await MeshPackets.shared.clearDatabase(includeRoutes: false)
+						MeshPackets.recreateShared()
 						clearNotifications()
 						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
 						
@@ -691,7 +693,12 @@ struct DeviceConnectRow: View {
 						if accessoryManager.allowDisconnect {
 							try await accessoryManager.disconnect()
 						}
-						await PersistenceController.shared.clearDatabase(includeRoutes: false)
+						// Flush pending saves, clear database via the MeshPackets actor
+						// (not the main context) to avoid destroying model instances that
+						// views still reference, then recreate with a fresh ModelContext.
+						await MeshPackets.shared.flushDebouncedSaves()
+						await MeshPackets.shared.clearDatabase(includeRoutes: false)
+						MeshPackets.recreateShared()
 						clearNotifications()
 						
 						try await accessoryManager.connect(to: device)
