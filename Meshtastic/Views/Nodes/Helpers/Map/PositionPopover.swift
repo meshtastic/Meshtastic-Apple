@@ -30,11 +30,13 @@ struct PositionPopover: View {
 			VStack {
 				HStack {
 					ZStack {
-						Button {
-							if let nodeNum = position.nodePosition?.num {
+					Button {
+						if let nodeNum = position.nodePosition?.num {
+							dismiss()
+							DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
 								appState.router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
-								dismiss()
 							}
+						}
 						} label: {
 							CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 						}
