@@ -1,6 +1,5 @@
 import SwiftUI
 import OSLog
-import DatadogSessionReplay
 
 struct TextMessageField: View {
 	static let maxbytes = 200
@@ -17,30 +16,29 @@ struct TextMessageField: View {
 	@State private var sendPositionWithMessage = false
 
 	var body: some View {
-		SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
-			if #available(iOS 18.0, macOS 15.0, *) {
-				FormattingComposeArea(
-					typingMessage: $typingMessage,
-					totalBytes: $totalBytes,
-					replyMessageId: $replyMessageId,
-					isFocused: $isFocused,
-					maxbytes: Self.maxbytes,
-					onSend: sendMessage,
-					onAlert: { typingMessage += "🔔 Alert Bell Character! \u{7}" },
-					onRequestPosition: requestPosition
-				)
-			} else {
-				VStack(spacing: 0) {
-					HStack(alignment: .top) {
-						if replyMessageId != 0 || isFocused {
-							Button {
-								withAnimation(.easeInOut(duration: 0.2)) {
-									replyMessageId = 0
-								}
-								isFocused = false
-							} label: {
-								Image(systemName: "x.circle.fill")
-									.font(.largeTitle)
+		if #available(iOS 18.0, macOS 15.0, *) {
+			FormattingComposeArea(
+				typingMessage: $typingMessage,
+				totalBytes: $totalBytes,
+				replyMessageId: $replyMessageId,
+				isFocused: $isFocused,
+				maxbytes: Self.maxbytes,
+				onSend: sendMessage,
+				onAlert: { typingMessage += "🔔 Alert Bell Character! \u{7}" },
+				onRequestPosition: requestPosition
+			)
+		} else {
+			VStack(spacing: 0) {
+				HStack(alignment: .top) {
+					if replyMessageId != 0 || isFocused {
+						Button {
+							withAnimation(.easeInOut(duration: 0.2)) {
+								replyMessageId = 0
+							}
+							isFocused = false
+						} label: {
+							Image(systemName: "x.circle.fill")
+								.font(.largeTitle)
 							}
 							if replyMessageId != 0 {
 								Text("Reply")
@@ -98,7 +96,6 @@ struct TextMessageField: View {
 								.background(.bar)
 						}
 					}
-				}
 			}
 		}
 	}
@@ -108,22 +105,15 @@ struct TextMessageField: View {
 			Spacer()
 			#if targetEnvironment(macCatalyst)
 			Button {
-				isFocused = true
-				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-					if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
-						let selector = NSSelectorFromString("orderFrontCharacterPalette:")
-						if nsApp.responds(to: selector) {
-							nsApp.perform(selector, with: nil)
-						}
+				if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+					let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+					if nsApp.responds(to: selector) {
+						nsApp.perform(selector, with: nil)
 					}
 				}
 			} label: {
 				Image(systemName: "face.smiling")
-					.frame(minWidth: 44, minHeight: 36)
-					.foregroundColor(.primary)
-					.contentShape(Rectangle())
 			}
-			.buttonStyle(.plain)
 			Spacer()
 			#endif
 			AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
@@ -184,6 +174,7 @@ private struct FormattingComposeArea: View {
 
 	@State private var textSelection: TextSelection?
 	@State private var showToolbar = false
+	@State private var showLinkSheet = false
 
 	var body: some View {
 		VStack(spacing: 0) {
@@ -235,15 +226,6 @@ private struct FormattingComposeArea: View {
 				}
 			}
 			.padding(15)
-			#if targetEnvironment(macCatalyst)
-			.background(
-				ReturnKeyHandler {
-					if !typingMessage.isEmpty {
-						onSend()
-					}
-				}
-			)
-			#endif
 			if showToolbar {
 				if #available(iOS 26.0, macOS 26.0, *) {
 					toolbarContent
@@ -266,12 +248,21 @@ private struct FormattingComposeArea: View {
 				showToolbar = true
 			} else {
 				DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-					if !isFocused {
+					if !isFocused && !showLinkSheet {
 						showToolbar = false
 					}
 				}
 			}
 		}
+		#if targetEnvironment(macCatalyst)
+		.onKeyPress(.return, phases: .down) { keyPress in
+			if keyPress.modifiers.contains(.shift) {
+				return .ignored
+			}
+			onSend()
+			return .handled
+		}
+		#endif
 	}
 
 	private var toolbarContent: some View {
@@ -279,26 +270,19 @@ private struct FormattingComposeArea: View {
 			ScrollView(.horizontal, showsIndicators: false) {
 				HStack {
 					if typingMessage.count >= 3 {
-						FormattingToolbarButtons(typingMessage: $typingMessage, textSelection: $textSelection)
+						FormattingToolbarButtons(typingMessage: $typingMessage, textSelection: $textSelection, showLinkAlert: $showLinkSheet)
 					}
 					#if targetEnvironment(macCatalyst)
 					Button {
-						isFocused = true
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-							if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
-								let selector = NSSelectorFromString("orderFrontCharacterPalette:")
-								if nsApp.responds(to: selector) {
-									nsApp.perform(selector, with: nil)
-								}
+						if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+							let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+							if nsApp.responds(to: selector) {
+								nsApp.perform(selector, with: nil)
 							}
 						}
 					} label: {
 						Image(systemName: "face.smiling")
-							.frame(minWidth: 44, minHeight: 36)
-							.foregroundColor(.primary)
-							.contentShape(Rectangle())
 					}
-					.buttonStyle(.plain)
 					#endif
 					AlertButton(action: onAlert, compact: true)
 					RequestPositionButton(action: onRequestPosition, compact: true)
@@ -332,114 +316,3 @@ private extension MessageDestination {
 		}
 	}
 }
-
-// MARK: - ReturnKeyHandler (Mac Catalyst)
-
-#if targetEnvironment(macCatalyst)
-/// Finds the UITextView backing a SwiftUI TextEditor and intercepts Return
-/// via a delegate proxy, calling `action` instead of inserting a newline.
-/// Shift+Return still inserts a newline.
-private struct ReturnKeyHandler: UIViewRepresentable {
-	let action: () -> Void
-
-	func makeCoordinator() -> Coordinator {
-		Coordinator(action: action)
-	}
-
-	func makeUIView(context: Context) -> UIView {
-		let view = UIView(frame: .zero)
-		view.isHidden = true
-		view.isUserInteractionEnabled = false
-		context.coordinator.hostView = view
-		return view
-	}
-
-	func updateUIView(_ uiView: UIView, context: Context) {
-		context.coordinator.action = action
-		// Defer to next run loop so the TextEditor's UITextView is in the hierarchy
-		DispatchQueue.main.async {
-			context.coordinator.installDelegateProxy()
-		}
-	}
-
-	class Coordinator: NSObject, UITextViewDelegate {
-		var action: () -> Void
-		weak var hostView: UIView?
-		weak var originalDelegate: UITextViewDelegate?
-		weak var hookedTextView: UITextView?
-
-		init(action: @escaping () -> Void) {
-			self.action = action
-		}
-
-		func installDelegateProxy() {
-			guard let hostView, hookedTextView == nil else { return }
-			guard let textView = findTextView(in: hostView.superview) else { return }
-			originalDelegate = textView.delegate
-			textView.delegate = self
-			hookedTextView = textView
-		}
-
-		private func findTextView(in view: UIView?) -> UITextView? {
-			guard let view else { return nil }
-			// Walk siblings and parent hierarchy to find the UITextView
-			if let parent = view.superview {
-				for sibling in parent.subviews {
-					if let found = findTextViewRecursive(in: sibling) {
-						return found
-					}
-				}
-				// Go up one more level
-				if let grandparent = parent.superview {
-					for child in grandparent.subviews {
-						if let found = findTextViewRecursive(in: child) {
-							return found
-						}
-					}
-				}
-			}
-			return nil
-		}
-
-		private func findTextViewRecursive(in view: UIView) -> UITextView? {
-			if let textView = view as? UITextView {
-				return textView
-			}
-			for subview in view.subviews {
-				if let found = findTextViewRecursive(in: subview) {
-					return found
-				}
-			}
-			return nil
-		}
-
-		// MARK: UITextViewDelegate — intercept Return
-
-		func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-			if text == "\n" {
-				action()
-				return false
-			}
-			return originalDelegate?.textView?(textView, shouldChangeTextIn: range, replacementText: text) ?? true
-		}
-
-		// MARK: Forward all other delegate methods
-
-		func textViewDidChange(_ textView: UITextView) {
-			originalDelegate?.textViewDidChange?(textView)
-		}
-
-		func textViewDidBeginEditing(_ textView: UITextView) {
-			originalDelegate?.textViewDidBeginEditing?(textView)
-		}
-
-		func textViewDidEndEditing(_ textView: UITextView) {
-			originalDelegate?.textViewDidEndEditing?(textView)
-		}
-
-		func textViewDidChangeSelection(_ textView: UITextView) {
-			originalDelegate?.textViewDidChangeSelection?(textView)
-		}
-	}
-}
-#endif
