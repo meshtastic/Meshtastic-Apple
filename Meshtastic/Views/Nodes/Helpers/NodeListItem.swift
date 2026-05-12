@@ -23,7 +23,7 @@ struct NodeListItem: View {
 		return f
 	}()
 
-	private var accessibilityDescription: String {
+	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
 			desc = shortName.formatNodeNameForVoiceOver()
@@ -54,7 +54,7 @@ struct NodeListItem: View {
 		if node.hopsAway > 0 {
 			desc += ", \(node.hopsAway) hops away"
 		}
-		if let battery = node.latestDeviceMetrics?.batteryLevel {
+		if let battery = cachedMetrics?.batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -63,7 +63,7 @@ struct NodeListItem: View {
 				desc += ", battery \(battery)%"
 			}
 		}
-		if !isDirectlyConnected, let (lastPosition, myCoord) = locationData {
+		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
 			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
 			let metersAway = nodeCoord.distance(from: myCoord)
 			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
@@ -117,7 +117,7 @@ struct NodeListItem: View {
 	}
 	
 	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.positions.last else {
+		guard let lastPostion = node.latestPosition else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
@@ -133,14 +133,22 @@ struct NodeListItem: View {
 	}
 	
 	var body: some View {
+		// Cache all expensive computed properties ONCE to avoid repeated FetchDescriptor queries
+		let cachedMetrics = node.latestDeviceMetrics
 		let cachedLocationData = locationData
+		let cachedHasPositions = node.hasPositions
+		let cachedHasDeviceMetrics = cachedMetrics != nil
+		let cachedHasEnvironmentMetrics = node.hasEnvironmentMetrics
+		let cachedHasDetectionSensorMetrics = node.hasDetectionSensorMetrics
+		let cachedHasTraceRoutes = node.hasTraceRoutes
+		let cachedHasLogs = cachedHasPositions || cachedHasEnvironmentMetrics || cachedHasDetectionSensorMetrics || cachedHasTraceRoutes
 		LazyVStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 						.padding(.trailing, 5)
-					if node.latestDeviceMetrics != nil {
-						BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+					if let batteryLevel = cachedMetrics?.batteryLevel {
+						BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 							.padding(.trailing, 5)
 					}
 				}
@@ -218,22 +226,22 @@ struct NodeListItem: View {
 										text: "MQTT")
 						}
 					}
-					if node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes {
+					if cachedHasLogs {
 						HStack {
 							IconAndText(systemName: "scroll", text: "Logs:")
-							if node.hasDeviceMetrics {
+							if cachedHasDeviceMetrics {
 								DefaultIcon(systemName: "flipphone")
 							}
-							if node.hasPositions {
+							if cachedHasPositions {
 								DefaultIcon(systemName: "mappin.and.ellipse")
 							}
-							if node.hasEnvironmentMetrics {
+							if cachedHasEnvironmentMetrics {
 								DefaultIcon(systemName: "cloud.sun.rain")
 							}
-							if node.hasDetectionSensorMetrics {
+							if cachedHasDetectionSensorMetrics {
 								DefaultIcon(systemName: "sensor")
 							}
-							if node.hasTraceRoutes {
+							if cachedHasTraceRoutes {
 								DefaultIcon(systemName: "signpost.right.and.left")
 							}
 						}
@@ -247,7 +255,7 @@ struct NodeListItem: View {
 					} else {
 						if node.snr != 0 && !node.viaMqtt {
 							LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: modemPreset, compact: true)
-								.padding(.top, node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes ? 0 : 15)
+								.padding(.top, cachedHasLogs ? 0 : 15)
 						}
 					}
 				}
@@ -257,7 +265,7 @@ struct NodeListItem: View {
 		.padding(.top, 3)
 		.padding(.bottom, 3)
 		.accessibilityElement(children: .ignore)
-		.accessibilityLabel(accessibilityDescription)
+		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
 	}
 }
 
