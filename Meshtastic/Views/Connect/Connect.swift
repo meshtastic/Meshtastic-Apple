@@ -610,7 +610,9 @@ struct ManualConnectionMenu: View {
 						if accessoryManager.allowDisconnect {
 							try await accessoryManager.disconnect()
 						}
+						await MeshPackets.shared.flushDebouncedSaves()
 						await PersistenceController.shared.clearDatabase(includeRoutes: false)
+						MeshPackets.recreateShared()
 						clearNotifications()
 						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
 						
@@ -691,7 +693,12 @@ struct DeviceConnectRow: View {
 						if accessoryManager.allowDisconnect {
 							try await accessoryManager.disconnect()
 						}
+						// Flush any pending saves from the old device before clearing
+						await MeshPackets.shared.flushDebouncedSaves()
 						await PersistenceController.shared.clearDatabase(includeRoutes: false)
+						// Recreate MeshPackets with a fresh ModelContext so the new
+						// connection doesn't see stale cached objects from the old device
+						MeshPackets.recreateShared()
 						clearNotifications()
 						
 						try await accessoryManager.connect(to: device)
