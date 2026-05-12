@@ -147,15 +147,7 @@ struct Channels: View {
 									VStack {
 										HStack {
 											ChannelLock(channel: channel)
-											if channel.name?.isEmpty ?? false {
-												if channel.role == 1 {
-													Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
-												} else {
-													Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
-												}
-											} else {
-												Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
-											}
+											Text(channel.displayName).font(.headline)
 										}
 									}
 								}

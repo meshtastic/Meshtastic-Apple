@@ -425,15 +425,7 @@ struct TAKServerConfig: View {
 	// MARK: - Channel Label
 	@ViewBuilder
 	private func channelLabel(_ channel: ChannelEntity) -> some View {
-		if channel.name?.isEmpty ?? false {
-			if channel.role == 1 {
-				Text(String("PrimaryChannel").camelCaseToWords())
-			} else {
-				Text(String("Channel \(channel.index)").camelCaseToWords())
-			}
-		} else {
-			Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
-		}
+		Text(channel.displayName)
 	}
 
 	// MARK: - Import Handlers

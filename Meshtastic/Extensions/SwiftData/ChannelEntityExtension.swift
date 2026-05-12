@@ -9,6 +9,30 @@ import SwiftData
 import MeshtasticProtobufs
 
 extension ChannelEntity {
+	var displayName: String {
+		if let name, !name.isEmpty {
+			return name
+		}
+
+		if index == 0 && role == 1 {
+			return "Primary Channel"
+		}
+
+		return "Channel \(index)"
+	}
+
+	var shortDisplayName: String {
+		if let name, !name.isEmpty {
+			return name
+		}
+
+		if index == 0 {
+			return "Primary"
+		}
+
+		return "Channel \(index)"
+	}
+
 	@MainActor
 	var allPrivateMessages: [MessageEntity] {
 		let context = PersistenceController.shared.context
