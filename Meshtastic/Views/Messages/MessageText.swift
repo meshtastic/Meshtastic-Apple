@@ -88,12 +88,26 @@ struct MessageText: View {
 		return AnyView(baseMessageContent)
 	}
 
-	private var baseMessageContent: some View {
-		let markdownText = LocalizedStringKey(message.displayedMarkdownPayload)
-		return Group {
-			Text(markdownText)
+	private func underlineLinks(in source: AttributedString) -> AttributedString {
+		var result = source
+		let linkColor = Color("Colors/MeshtasticLink")
+		for run in result.runs where run.link != nil {
+			result[run.range].underlineStyle = .single
+			result[run.range].foregroundColor = linkColor
 		}
-			.tint(isCurrentUser ? .white : Color("Colors/MeshtasticLink"))
+		return result
+	}
+
+	private var baseMessageContent: some View {
+		let payload = message.displayedMarkdownPayload
+		return Group {
+			if let attributed = try? AttributedString(markdown: payload, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+				Text(underlineLinks(in: attributed))
+			} else {
+				Text(LocalizedStringKey(payload))
+			}
+		}
+			.tint(Color("Colors/MeshtasticLink"))
 			.padding(.vertical, 10)
 			.padding(.horizontal, 8)
 			.foregroundColor(isCurrentUser ? .white : Color("Colors/MeshtasticBubbleText"))

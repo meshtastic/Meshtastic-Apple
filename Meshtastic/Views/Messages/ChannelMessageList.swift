@@ -164,6 +164,11 @@ struct ChannelMessageList: View {
 			.defaultScrollAnchor(.bottom)
 			.defaultScrollAnchorBottomSizeChanges()
 			.scrollDismissesKeyboard(.immediately)
+			.onAppear {
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+					scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+				}
+			}
 			.task(id: needsReadSync) {
 				guard needsReadSync else { return }
 				// Brief delay so multiple .onAppear calls can batch before saving

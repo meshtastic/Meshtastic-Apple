@@ -1725,3 +1725,154 @@ struct BLESignalStrengthSnapshotTests {
 		await assertViewSnapshot(of: view, width: 200, height: 80, named: "bleSignalStrength", forDocs: true)
 	}
 }
+
+// MARK: - MessagePreview Snapshot Tests
+
+@Suite("MessagePreview Snapshots")
+struct MessagePreviewSnapshotTests {
+
+	@Test("Formatting toolbar buttons")
+	@MainActor
+	func formattingToolbar() async {
+		let view = HStack(spacing: 12) {
+			ForEach(MarkdownStyle.allCases, id: \.self) { style in
+				Image(systemName: style.sfSymbol)
+					.frame(minWidth: 44, minHeight: 36)
+					.foregroundStyle(.primary)
+			}
+		}
+		await assertViewSnapshot(of: view, width: 250, height: 44, named: "formattingToolbar", forDocs: true)
+	}
+
+	@Test("Preview with bold text")
+	@MainActor
+	func boldPreview() async {
+		let view = MessagePreview(text: "**hello** world")
+		await assertViewSnapshot(of: view, width: 300, height: 60, named: "messagePreview_bold", forDocs: true)
+	}
+
+	@Test("Preview with mixed formatting")
+	@MainActor
+	func mixedPreview() async {
+		let view = MessagePreview(text: "**bold** *italic* ~~strike~~ `code`")
+		await assertViewSnapshot(of: view, width: 350, height: 60, named: "messagePreview_mixed", forDocs: true)
+	}
+
+	@Test("Preview hidden when no markdown")
+	@MainActor
+	func noMarkdownHidden() async {
+		let view = MessagePreview(text: "plain text no markdown")
+		await assertViewSnapshot(of: view, width: 300, height: 10, named: "messagePreview_hidden")
+	}
+
+	@Test("Full compose area with formatting")
+	@MainActor
+	func composeAreaWithFormatting() async {
+		let markdownText = "I am markdown text, **bold** and *italic* and ~~strike~~ and `code`"
+		let view = VStack(spacing: 0) {
+			// Preview bubble
+			MessagePreview(text: markdownText)
+			// Compose field mock
+			HStack(alignment: .top, spacing: 8) {
+				Button {} label: {
+					Image(systemName: "xmark.circle.fill")
+						.font(.title2)
+						.foregroundColor(Color("Colors/MeshtasticAccent"))
+				}
+				.buttonStyle(.plain)
+
+				Text(markdownText)
+					.font(.body)
+					.padding(.horizontal, 16)
+					.padding(.vertical, 10)
+					.frame(maxWidth: .infinity, alignment: .leading)
+					.background(
+						RoundedRectangle(cornerRadius: 20)
+							.strokeBorder(.tertiary, lineWidth: 1)
+							.background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground)))
+					)
+
+				Button {} label: {
+					Image(systemName: "arrow.up.circle.fill")
+						.font(.title2)
+						.foregroundColor(Color("Colors/MeshtasticAccent"))
+				}
+				.buttonStyle(.plain)
+			}
+			.padding(.horizontal, 8)
+			// Toolbar
+			HStack(spacing: 0) {
+				ScrollView(.horizontal, showsIndicators: false) {
+					HStack(spacing: 0) {
+						ForEach(MarkdownStyle.allCases, id: \.self) { style in
+							Image(systemName: style.sfSymbol)
+								.frame(width: 44, height: 36)
+								.foregroundColor(Color("Colors/MeshtasticPrimary"))
+						}
+						Image(systemName: "bell.fill")
+							.frame(width: 44, height: 36)
+							.foregroundColor(Color("Colors/MeshtasticPrimary"))
+						Image(systemName: "mappin.and.ellipse")
+							.frame(width: 44, height: 36)
+							.foregroundColor(Color("Colors/MeshtasticPrimary"))
+					}
+				}
+				Spacer()
+				TextMessageSize(maxbytes: 200, totalBytes: 68, compact: true)
+					.layoutPriority(1)
+			}
+			.padding(.vertical, 8)
+			.padding(.horizontal, 12)
+			.background(.ultraThinMaterial, in: Capsule())
+			.padding(.horizontal, 8)
+			.padding(.top, 10)
+		}
+		.padding(.vertical, 8)
+		.background(Color(.systemBackground))
+		await assertViewSnapshot(of: view, width: 360, height: 250, named: "composeArea_formatting", forDocs: true)
+		await assertViewSnapshot(of: view, width: 360, height: 250, colorScheme: .dark, named: "composeArea_formatting_dark", forDocs: true)
+	}
+}
+
+@Suite("MessageTextLink Snapshots")
+struct MessageTextLinkSnapshotTests {
+	@Test("Link styled with underline and Link color - light")
+	@MainActor func linkStyledLight() async {
+		let linkColor = Color("Colors/MeshtasticLink")
+		var attributed = try! AttributedString(markdown: "Check out [Meshtastic](https://meshtastic.org) for details", options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))
+		for run in attributed.runs where run.link != nil {
+			attributed[run.range].underlineStyle = .single
+			attributed[run.range].foregroundColor = linkColor
+		}
+		let view = Text(attributed)
+			.tint(linkColor)
+			.padding(.vertical, 10)
+			.padding(.horizontal, 8)
+			.foregroundColor(Color("Colors/MeshtasticBubbleText"))
+			.background(Color("Colors/MeshtasticBubble"))
+			.cornerRadius(15)
+			.padding()
+			.background(Color(.systemBackground))
+		await assertViewSnapshot(of: view, width: 350, height: 80, named: "messageText_link", forDocs: true)
+	}
+
+	@Test("Link styled with underline and Link color - dark")
+	@MainActor func linkStyledDark() async {
+		let linkColor = Color("Colors/MeshtasticLink")
+		var attributed = try! AttributedString(markdown: "Check out [Meshtastic](https://meshtastic.org) for details", options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))
+		for run in attributed.runs where run.link != nil {
+			attributed[run.range].underlineStyle = .single
+			attributed[run.range].foregroundColor = linkColor
+		}
+		let view = Text(attributed)
+			.tint(linkColor)
+			.padding(.vertical, 10)
+			.padding(.horizontal, 8)
+			.foregroundColor(Color("Colors/MeshtasticBubbleText"))
+			.background(Color("Colors/MeshtasticBubble"))
+			.cornerRadius(15)
+			.padding()
+			.background(Color(.systemBackground))
+		await assertViewSnapshot(of: view, width: 350, height: 80, colorScheme: .dark, named: "messageText_link_dark", forDocs: true)
+	}
+}

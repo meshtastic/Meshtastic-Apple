@@ -104,7 +104,7 @@ struct CoTMessageTests {
 		#expect(xml.contains("lon='-122.0'"))
 	}
 
-	@Test func toXML_formatsDatesAsUTCWithFractionalSeconds() {
+	@Test func toXML_formatsDatesAsUTCWithFractionalSeconds() throws {
 		var calendar = Calendar(identifier: .iso8601)
 		calendar.timeZone = TimeZone(secondsFromGMT: 0)!
 		var components = DateComponents()

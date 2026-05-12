@@ -1,60 +1,50 @@
 ## What changed?
 
-Adds **Local Mesh Discovery** (Settings → Local Mesh Discovery) — an automated multi-preset RF scanner that cycles through LoRa modem presets to audit the local mesh environment and recommend optimal radio configuration using on-device AI.
+Adds **message formatting toolbar** (iOS 18+) and **link styling** for message bubbles.
 
-### Scan Engine (`DiscoveryScanEngine`)
+### Message Formatting Toolbar (iOS 18+)
 
-`@MainActor @Observable` state machine with states: `idle` → `shifting` → `reconnecting` → `dwell` → `analysis` → `complete` (plus `paused` and `restoring`).
+A markdown formatting toolbar in the message compose UI. Users type/see raw markdown; a live preview shows rendered output. Gated to iOS 18+ / macOS 15+ — iOS 17 users see the unchanged compose field.
 
-- Sends `AdminMessage setConfig.lora` to switch the connected radio to each selected preset
-- Handles radio reboot + BLE reconnect automatically (60-second timeout)
-- Collects packets per-preset during configurable dwell windows (default 15 min)
-- 2-Packet Rule: requires ≥2 DeviceMetrics to compute Δ airtime rate
-- Graceful stop: halts mid-scan, saves partial results, restores the user's home preset
-- Alerts and disables scan start when primary channel uses the default key (#1706)
+- **Bold**, **Italic**, **Strikethrough**, **Code**, and **Link** formatting buttons in a compact scrollable toolbar row
+- Select text + tap to wrap with delimiters; tap again to toggle off
+- Tap with collapsed cursor to insert delimiter pairs and type between them
+- Link button opens a URL entry dialog; wraps selection as `[text](url)`
+- Live preview bubble above compose field (hidden when no markdown present)
+- Markdown rendered in channel/user message list previews
+- Mac Catalyst: Enter sends, Shift+Enter inserts line break; character palette retained
 
-### Data Model (3 new SwiftData `@Model` types)
+### Link Styling in Message Bubbles
 
-- **`DiscoverySessionEntity`** — session-level aggregates: timestamp, presets scanned, total unique nodes, average channel utilization, message/sensor counts, furthest distance, AI summary, user location, completion status
-- **`DiscoveryPresetResultEntity`** — per-preset metrics: node counts (direct/mesh/infrastructure), message/sensor counts, channel utilization, airtime rate, packet success/failure rates, raw LocalStats fields (TX/RX/bad/dupe/relay/relay-canceled/online/total/uptime)
-- **`DiscoveredNodeEntity`** — per-node observations: short/long name, neighbor type (direct vs. mesh), position, distance, hop count, SNR/RSSI, message/sensor counts, infrastructure flag, computed `iconName` (social → `person.2.fill`, sensor → `thermometer.medium`)
+- Links in message bubbles (URLs, Meshtastic channel/contact links, markdown links) now use the **design standards v1.4 Link color** (Blue 400 `#9BA8E0`) with underline styling
+- `MeshtasticLink` color asset updated to Blue 400 `#9BA8E0` (same value for light and dark mode per design standards v1.4)
+- `MessageText.underlineLinks(in:)` sets both `foregroundColor` and `underlineStyle` on `AttributedString` link runs
+- `.tint` modifier on message bubbles uses `MeshtasticLink` for consistency
 
-### Views
+### Files Changed
 
-| View | Description |
-|------|-------------|
-| `DiscoveryScanView` | Preset multi-select (auto-filters LORA_24 for non-2.4 GHz hardware), dwell time picker, Start/Stop scan controls, live map + timer during dwell, `DiscoveryScanTip` explainer |
-| `DiscoveryMapView` | MapKit with auto-zoom region fitting, color-coded annotations (green = direct 1-hop, blue = mesh/NeighborInfo), topology polylines to user position, `RadarSweepView` overlay during active scan |
-| `RadarSweepView` | Animated rotating sweep + expanding pulse rings (15s rotation, 3 rings) |
-| `DiscoverySummaryView` | Per-preset stat cards, RF health section (packet success/failure), FoundationModels AI recommendation (iOS 26+; fallback to structured table), PDF export |
-| `DiscoveryHistoryView` | Reverse-chronological session list with detail drill-down and swipe-to-delete |
-
-### PDF Export (`DiscoverySummaryPDF`)
-
-- `UIGraphicsPDFRenderer` + `MKMapSnapshotter` for map image
-- `FileDocument` conformance for share sheet integration
-- Includes session metadata, per-preset metrics, and map snapshot
-
-### Integration Points
-
-- **Navigation**: `SettingsNavigationState.localMeshDiscovery` case, `NavigationLink` in Settings view
-- **Tips**: `DiscoveryScanTip` (TipKit) explains the feature on first use
-- **FoundationModels**: `LanguageModelSession` (iOS 26+) generates natural-language preset recommendations; gated with `#if canImport(FoundationModels)`
-- **2.4 GHz Gating**: LORA_24 preset hidden for hardware without SX1280/SX1281 support
+| File | Change |
+|------|--------|
+| `Meshtastic/Views/Messages/MessageText.swift` | Link color → `MeshtasticLink`, underline styling via `underlineLinks(in:)` |
+| `Meshtastic/Assets.xcassets/Colors/MeshtasticLink.colorset/Contents.json` | Updated to Blue 400 `#9BA8E0` per design standards v1.4 |
+| `Meshtastic/Views/Messages/TextMessageField/TextMessageField.swift` | Formatting toolbar, live preview, Mac Catalyst Enter key handling |
+| `specs/004-message-formatting-toolbar/spec.md` | Added FR-031 for link color styling |
+| `docs/user/messages.md` | Added Link Appearance section with screenshot |
+| `MeshtasticTests/SwiftUIViewSnapshotTests.swift` | Added `MessageTextLink` snapshot tests (light + dark) |
 
 ## Why did it change?
 
-There was no existing way to understand mesh activity across different LoRa presets in a given area. Users had to manually switch presets, wait, observe, and compare — a tedious process. This feature automates that workflow and uses on-device AI (FoundationModels, iOS 26+; no internet required) to surface which preset is optimal for a location based on node count, channel utilization, and traffic patterns.
+1. **Formatting toolbar**: Users had no way to format messages with bold, italic, etc. without manually typing markdown syntax. The toolbar makes formatting discoverable and accessible.
+2. **Link styling**: Links in message bubbles were visually indistinct from regular text, making them hard to identify as tappable. The design standards v1.4 introduced a dedicated Link color token (Blue 400 `#9BA8E0`) which provides clear visual distinction with WCAG-compliant contrast.
 
 ## How is this tested?
 
-- **`DiscoveryScanEngineTests`** (Swift Testing) — initial state, `isScanning` property, default dwell duration, state transitions
-- **`DiscoveryModelTests`** (Swift Testing) — entity relationships, computed properties (icon classification based on message vs. sensor counts)
-- **Manual testing**: single-preset scan with 15-minute dwell against a live radio, verified node collection, map rendering, BLE reconnect after preset change, PDF export, and session persistence across app restart
+- **Snapshot tests**: `MessageTextLinkSnapshotTests` — light and dark mode snapshots of link-styled message bubbles; `MessagePreviewSnapshotTests` — formatting toolbar, bold preview, mixed preview, compose area
+- **Manual testing**: Verified link color rendering on device in both light and dark mode; tested URL tapping for external links, Meshtastic channel URLs, and contact URLs; verified formatting toolbar on iOS 18 and fallback on iOS 17
 
 ## Screenshots/Videos (when applicable)
 
-<!-- Attach screenshots of: scan config screen, discovery map with nodes, summary report with AI recommendation -->
+<!-- Attach screenshots of: link-styled message bubbles (light + dark), formatting toolbar -->
 
 ## Checklist
 

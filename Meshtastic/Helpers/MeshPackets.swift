@@ -30,12 +30,25 @@ func generateMessageMarkdown(message: String) -> String {
 	}
 	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
 	guard !matches.isEmpty else { return message }
+
+	// Find all existing markdown link ranges [text](url) so we can skip URLs inside them
+	let linkPattern = try? NSRegularExpression(pattern: "\\[[^\\]]+\\]\\([^)]+\\)")
+	let existingLinkRanges: [NSRange] = linkPattern?.matches(in: message, range: NSRange(location: 0, length: message.utf16.count)).map { $0.range } ?? []
+
 	var messageWithMarkdown = message
 	// Process matches in reverse order so earlier ranges stay valid
 	// after inserting markdown syntax at later positions.
 	for match in matches.reversed() {
 		guard let range = Range(match.range, in: messageWithMarkdown) else { continue }
 		let matchedText = String(messageWithMarkdown[range])
+
+		// Skip if this match overlaps with an existing markdown link
+		let matchNSRange = match.range
+		let isInsideExistingLink = existingLinkRanges.contains { linkRange in
+			NSIntersectionRange(linkRange, matchNSRange).length > 0
+		}
+		if isInsideExistingLink { continue }
+
 		let replacement: String
 		if match.resultType == .address {
 			let urlEncodedAddress = matchedText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""

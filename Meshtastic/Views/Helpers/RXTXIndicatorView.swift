@@ -14,7 +14,7 @@ struct RXTXIndicatorWidget: View {
 	@State private var isPopoverOpen = false
 	@State private var localSent: Int = 0
 	@State private var localReceived: Int = 0
-	private let pollTimer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
+	private let pollTimer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
 	let fontSize: CGFloat = 7.0
 	var body: some View {
