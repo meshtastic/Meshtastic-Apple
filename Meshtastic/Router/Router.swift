@@ -36,13 +36,7 @@ class Router: ObservableObject {
 		set {
 			selectedTab = newValue.selectedTab
 			messagesState = newValue.messages
-			if let num = newValue.nodeListSelectedNodeNum {
-				selectedNodeNum = num
-				lastNodeNum = num
-			} else {
-				selectedNodeNum = nil
-				lastNodeNum = nil
-			}
+			selectedNodeNum = newValue.nodeListSelectedNodeNum
 			mapState = newValue.map
 			if let setting = newValue.settings {
 				settingsPath = [setting]
@@ -51,9 +45,6 @@ class Router: ObservableObject {
 			}
 		}
 	}
-
-	/// Tracks the last node num navigated to for cross-tab deep links.
-	@Published var lastNodeNum: Int64?
 
 	/// The currently selected node in the NavigationSplitView detail pane.
 	@Published var selectedNodeNum: Int64?
@@ -174,10 +165,8 @@ class Router: ObservableObject {
 		selectedTab = .nodes
 		if let nodeId {
 			selectedNodeNum = nodeId
-			lastNodeNum = nodeId
 		} else {
 			selectedNodeNum = nil
-			lastNodeNum = nil
 		}
 	}
 
@@ -185,14 +174,12 @@ class Router: ObservableObject {
 		Logger.services.info("🛣 [App] Direct route to node detail \(nodeNum, privacy: .public)")
 		selectedTab = .nodes
 		selectedNodeNum = nodeNum
-		lastNodeNum = nodeNum
 	}
 
 	func popToRoot(tab: NavigationState.Tab) {
 		switch tab {
 		case .nodes:
 			selectedNodeNum = nil
-			lastNodeNum = nil
 		case .settings:
 			settingsPath = []
 		default:

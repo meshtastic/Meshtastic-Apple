@@ -374,7 +374,7 @@ struct RouterURLRoutingTests {
 		#expect(router.selectedNodeNum == 123)
 		router.popToRoot(tab: .nodes)
 		#expect(router.selectedNodeNum == nil)
-		#expect(router.lastNodeNum == nil)
+		#expect(router.selectedNodeNum == nil)
 	}
 
 	@Test @MainActor func popToRoot_settings() {
@@ -391,7 +391,7 @@ struct RouterURLRoutingTests {
 		router.selectedTab = .nodes
 		router.navigateToNodeDetail(nodeNum: 555)
 		#expect(router.selectedNodeNum == 555)
-		#expect(router.lastNodeNum == 555)
+		#expect(router.selectedNodeNum == 555)
 	}
 
 	@Test @MainActor func navigateToNodeDetail_crossTab() {
@@ -400,7 +400,7 @@ struct RouterURLRoutingTests {
 		router.navigateToNodeDetail(nodeNum: 888)
 		// Tab switches immediately, path deferred
 		#expect(router.selectedTab == .nodes)
-		#expect(router.lastNodeNum == 888)
+		#expect(router.selectedNodeNum == 888)
 	}
 
 	@Test @MainActor func route_settings_noParams() {

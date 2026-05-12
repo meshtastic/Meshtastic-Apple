@@ -26,7 +26,6 @@ struct NodeList: View {
 	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
-	@State private var selectedNode: NodeInfoEntity?
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -51,11 +50,6 @@ struct NodeList: View {
 			}
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onChange(of: router.lastNodeNum) { _, newValue in
-			if let num = newValue {
-				router.selectedNodeNum = num
-			}
-		}
 	}
 
 	// MARK: - Sidebar

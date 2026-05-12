@@ -156,6 +156,28 @@ struct MeshMap: View {
 						NavigationStack {
 							NodeDetail(node: node, showMapLink: false)
 						}
+						#if targetEnvironment(macCatalyst)
+						.overlay(alignment: .topTrailing) {
+							Button {
+								selectedPosition = nil
+							} label: {
+								ZStack {
+									Circle()
+										.fill(Color(white: 0.19))
+									Image(systemName: "xmark")
+										.resizable()
+										.scaledToFit()
+										.font(.body.weight(.bold))
+										.scaleEffect(0.416)
+										.foregroundColor(Color(white: 0.62))
+								}
+								.frame(width: 36, height: 36)
+							}
+							.buttonStyle(.plain)
+							.padding(.top, 14)
+							.padding(.trailing, 14)
+						}
+						#endif
 						.presentationDetents([.large])
 						.presentationDragIndicator(.visible)
 					}
