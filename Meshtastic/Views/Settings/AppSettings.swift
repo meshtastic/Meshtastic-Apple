@@ -217,7 +217,7 @@ struct AppSettings: View {
 									}
 								}
 								await MeshPackets.shared.flushDebouncedSaves()
-								await PersistenceController.shared.clearDatabase(includeRoutes: true)
+								await MeshPackets.shared.clearDatabase(includeRoutes: true)
 								MeshPackets.recreateShared()
 								clearNotifications()
 							}

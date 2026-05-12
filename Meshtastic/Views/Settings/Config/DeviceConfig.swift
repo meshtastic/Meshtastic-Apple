@@ -176,7 +176,7 @@ struct DeviceConfig: View {
 										try await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
 										await MeshPackets.shared.flushDebouncedSaves()
-										await PersistenceController.shared.clearDatabase(includeRoutes: false)
+										await MeshPackets.shared.clearDatabase(includeRoutes: false)
 										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
@@ -203,7 +203,7 @@ struct DeviceConfig: View {
 										try await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
 										await MeshPackets.shared.flushDebouncedSaves()
-										await PersistenceController.shared.clearDatabase(includeRoutes: false)
+										await MeshPackets.shared.clearDatabase(includeRoutes: false)
 										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
@@ -218,7 +218,7 @@ struct DeviceConfig: View {
 										try? await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
 										await MeshPackets.shared.flushDebouncedSaves()
-										await PersistenceController.shared.clearDatabase(includeRoutes: false)
+										await MeshPackets.shared.clearDatabase(includeRoutes: false)
 										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
