@@ -66,14 +66,16 @@ struct MeshtasticAppleApp: App {
 				)
 			)
 
-			RUM.enable(
-				with: RUM.Configuration(
-					applicationID: appID,
-					swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
-					swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
-					trackBackgroundEvents: true
-				)
+			var rumConfig = RUM.Configuration(
+				applicationID: appID,
+				swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+				swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
+				trackBackgroundEvents: true
 			)
+			// Disable expensive continuous monitoring to reduce idle CPU (~15% savings)
+			rumConfig.longTaskThreshold = nil  // Disables LongTaskObserver CFRunLoop hook
+			rumConfig.vitalsUpdateFrequency = nil    // Disables VitalRefreshRateReader display link
+			RUM.enable(with: rumConfig)
 
 		}
 

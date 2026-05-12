@@ -22,9 +22,17 @@ struct NodeMapContent: MapContent {
 
 	// Static UIImage caches keyed by node.num.
 	// Node colors are deterministic from node.num (via UIColor(hex:)), so caching by num is correct.
-	// nonisolated(unsafe) is required for static mutable state in Swift 6.
-	private nonisolated(unsafe) static var circleImageCache: [Int64: UIImage] = [:]
-	private nonisolated(unsafe) static var arrowImageCache: [Int64: UIImage] = [:]
+	// Use NSCache for automatic memory-pressure eviction instead of unbounded dictionaries.
+	private static let circleImageCache: NSCache<NSNumber, UIImage> = {
+		let cache = NSCache<NSNumber, UIImage>()
+		cache.countLimit = 200
+		return cache
+	}()
+	private static let arrowImageCache: NSCache<NSNumber, UIImage> = {
+		let cache = NSCache<NSNumber, UIImage>()
+		cache.countLimit = 200
+		return cache
+	}()
 
 	@MapContentBuilder
 	var nodeMap: some MapContent {
@@ -166,7 +174,8 @@ struct NodeMapContent: MapContent {
 	}
 
 	private func prerenderHistoryPointCircle(fill: Color, stroke: Color) -> UIImage {
-		if let cached = NodeMapContent.circleImageCache[node.num] { return cached }
+		let key = NSNumber(value: node.num)
+		if let cached = NodeMapContent.circleImageCache.object(forKey: key) { return cached }
 		let content = Circle()
 			.fill(fill)
 			.strokeBorder(stroke, lineWidth: 2)
@@ -174,12 +183,13 @@ struct NodeMapContent: MapContent {
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
 		let image = renderer.uiImage!
-		NodeMapContent.circleImageCache[node.num] = image
+		NodeMapContent.circleImageCache.setObject(image, forKey: key)
 		return image
 	}
 
 	private func prerenderHistoryPointArrow(fill: Color, stroke: Color) -> UIImage {
-		if let cached = NodeMapContent.arrowImageCache[node.num] { return cached }
+		let key = NSNumber(value: node.num)
+		if let cached = NodeMapContent.arrowImageCache.object(forKey: key) { return cached }
 		let content = Image(systemName: "location.north.circle")
 			.resizable()
 			.scaledToFit()
@@ -190,7 +200,7 @@ struct NodeMapContent: MapContent {
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
 		let image = renderer.uiImage!
-		NodeMapContent.arrowImageCache[node.num] = image
+		NodeMapContent.arrowImageCache.setObject(image, forKey: key)
 		return image
 	}
 }
