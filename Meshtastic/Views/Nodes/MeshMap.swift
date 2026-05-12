@@ -13,11 +13,14 @@ import OSLog
 import MapKit
 
 struct MeshMap: View {
+	private let defaultMeshMapDistance: Double = 100_000
+	private let maximumInitialMeshMapDistance: Double = 1_000_000
 
 	@Environment(\.modelContext) private var context
 	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
 	@Environment(\.openWindow) private var openWindow
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@ObservedObject private var locationsHandler = LocationsHandler.shared
 
 	@ObservedObject
 	var router: Router
@@ -33,10 +36,11 @@ struct MeshMap: View {
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
 	@Namespace var mapScope
-	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 100_000
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
-	@State private var distance = 10000.0
+	@State private var distance = 100_000.0
+	@State private var hasSetInitialCamera = false
 	@State private var editingSettings = false
 	@State private var editingFilters = false
 	@State var selectedPosition: PositionEntity?
@@ -276,6 +280,8 @@ struct MeshMap: View {
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
+			migrateLegacyMapDistanceDefaultIfNeeded()
+			setInitialMapCameraIfNeeded()
 
 			switch selectedMapLayer {
 			case .standard:
@@ -296,10 +302,17 @@ struct MeshMap: View {
 			if newTab == .map {
 				refreshMapWindowOpenState()
 				UIApplication.shared.isIdleTimerDisabled = true
+				setInitialMapCameraIfNeeded()
 			} else {
 				UIApplication.shared.isIdleTimerDisabled = false
 				GeoJSONOverlayManager.shared.clearCache()
 			}
+		}
+		.onChange(of: filteredPositions.count) {
+			setInitialMapCameraIfNeeded()
+		}
+		.onChange(of: locationsHandler.locationsArray.count) {
+			setInitialMapCameraIfNeeded()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
 			if let deletedFileId = notification.object as? UUID {
@@ -332,5 +345,46 @@ struct MeshMap: View {
 				)
 			)
 		})
+	}
+
+	private func setInitialMapCameraIfNeeded() {
+		guard !hasSetInitialCamera else { return }
+		guard let userLocation = LocationsHandler.currentLocation else { return }
+
+		let initialDistance = initialMapDistance(centeredAt: userLocation)
+		distance = initialDistance
+		position = .camera(
+			MapCamera(
+				centerCoordinate: userLocation,
+				distance: initialDistance,
+				heading: 0,
+				pitch: 0
+			)
+		)
+		hasSetInitialCamera = true
+	}
+
+	private func initialMapDistance(centeredAt userLocation: CLLocationCoordinate2D) -> Double {
+		let nodeDistances = filteredPositions.compactMap { position -> CLLocationDistance? in
+			guard 12...15 ~= position.precisionBits || position.precisionBits == 32 else { return nil }
+			let coordinate = position.isPreciseLocation ? position.nodeCoordinate : position.fuzzedNodeCoordinate
+			return coordinate?.distance(from: userLocation)
+		}
+
+		guard let nearestNodeDistance = nodeDistances.min() else {
+			return defaultMeshMapDistance
+		}
+
+		if nearestNodeDistance <= defaultMeshMapDistance {
+			return defaultMeshMapDistance
+		}
+
+		return min(nearestNodeDistance * 1.25, maximumInitialMeshMapDistance)
+	}
+
+	private func migrateLegacyMapDistanceDefaultIfNeeded() {
+		if meshMapDistance == 800_000 {
+			meshMapDistance = defaultMeshMapDistance
+		}
 	}
 }

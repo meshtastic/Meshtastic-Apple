@@ -107,7 +107,7 @@ extension UserDefaults {
 	@UserDefault(.mapLayer, defaultValue: .standard)
 	static var mapLayer: MapLayer
 
-	@UserDefault(.meshMapDistance, defaultValue: 800000)
+	@UserDefault(.meshMapDistance, defaultValue: 100_000)
 	static var meshMapDistance: Double
 
 	@UserDefault(.enableMapWaypoints, defaultValue: true)

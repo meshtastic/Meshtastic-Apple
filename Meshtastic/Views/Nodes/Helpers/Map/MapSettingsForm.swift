@@ -22,7 +22,7 @@ struct MapSettingsForm: View {
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
-	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 100_000
 	@Binding var meshMap: Bool
 	@Binding var enabledOverlayConfigs: Set<UUID>
 

@@ -56,6 +56,7 @@ enum MeshMapDistances: Double, CaseIterable, Identifiable {
 	case tenMiles = 16093.4
 	case twentyFiveMiles = 40233.6
 	case fiftyMiles = 80467.2
+	case oneHundredKilometers = 100000
 	case oneHundredMiles = 160934
 	case twoHundredMiles = 321869
 	case fiveHundredMiles = 804672
