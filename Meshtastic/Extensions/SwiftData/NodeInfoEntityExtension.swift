@@ -10,34 +10,83 @@ import SwiftData
 
 extension NodeInfoEntity {
 
+	// MARK: - Targeted Fetch Helpers
+	// These use FetchDescriptor with fetchLimit to avoid loading entire relationship arrays.
+
 	var latestPosition: PositionEntity? {
-		return self.positions.sorted(by: { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }).last
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		var descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == nodeNum },
+			sortBy: [SortDescriptor(\PositionEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
 	}
 
 	var latestDeviceMetrics: TelemetryEntity? {
-		return self.telemetries.filter { $0.metricsType == 0 }.sorted(by: { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }).last
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		let metricsType: Int32 = 0
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
 	}
 
 	var latestEnvironmentMetrics: TelemetryEntity? {
-		return self.telemetries.filter { $0.metricsType == 1 }.sorted(by: { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }).last
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		let metricsType: Int32 = 1
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
 	}
 
 	var latestPowerMetrics: TelemetryEntity? {
-		return self.telemetries.filter { $0.metricsType == 2 }.sorted(by: { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }).last
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		let metricsType: Int32 = 2
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
 	}
 
 	var hasPositions: Bool {
-		return self.positions.count > 0
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == nodeNum }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
 
 	var hasDeviceMetrics: Bool {
-		let deviceMetrics = telemetries.filter { $0.metricsType == 0 }
-		return deviceMetrics.count > 0
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let metricsType: Int32 = 0
+		let descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
 
 	var hasEnvironmentMetrics: Bool {
-		let environmentMetrics = telemetries.filter { $0.metricsType == 1 }
-		return environmentMetrics.count > 0
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let metricsType: Int32 = 1
+		let descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
 
 	func hasDataForLatestEnvironmentMetrics(attributes: [String]) -> Bool {
@@ -60,17 +109,31 @@ extension NodeInfoEntity {
 
 	@MainActor
 	var hasDetectionSensorMetrics: Bool {
-		return user?.sensorMessageList.count ?? 0 > 0
+		guard let ctx = modelContext, let userNum = user?.num else { return false }
+		let portNum: Int32 = 10
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { $0.fromUser?.num == userNum && $0.portNum == portNum }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
 
 	var hasPowerMetrics: Bool {
-		let powerMetrics = telemetries.filter { $0.metricsType == 2 }
-		return powerMetrics.count > 0
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let metricsType: Int32 = 2
+		let descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
 
 	var hasTraceRoutes: Bool {
-		let routes = traceRoutes.filter { $0.response }
-		return routes.count > 0
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let descriptor = FetchDescriptor<TraceRouteEntity>(
+			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum && $0.response == true }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
 
 	var hasPax: Bool {

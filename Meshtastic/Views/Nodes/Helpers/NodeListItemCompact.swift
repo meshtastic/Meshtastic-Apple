@@ -39,7 +39,7 @@ struct NodeListItemCompact: View {
 		return f
 	}()
 
-	private var accessibilityDescription: String {
+	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
 			desc = shortName.formatNodeNameForVoiceOver()
@@ -70,7 +70,7 @@ struct NodeListItemCompact: View {
 		if node.hopsAway > 0 {
 			desc += ", \(node.hopsAway) hops away"
 		}
-		if let battery = node.latestDeviceMetrics?.batteryLevel {
+		if let battery = cachedMetrics?.batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -79,7 +79,7 @@ struct NodeListItemCompact: View {
 				desc += ", battery \(battery)%"
 			}
 		}
-		if !isDirectlyConnected, let (lastPosition, myCoord) = locationData {
+		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
 			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
 			let metersAway = nodeCoord.distance(from: myCoord)
 			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
@@ -133,7 +133,7 @@ struct NodeListItemCompact: View {
 	}
 	
 	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.positions.last else {
+		guard let lastPostion = node.latestPosition else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
@@ -163,15 +163,22 @@ struct NodeListItemCompact: View {
 	
 	var body: some View {
 		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
+		// Cache all expensive computed properties ONCE to avoid repeated FetchDescriptor queries
+		let cachedMetrics = node.latestDeviceMetrics
 		let cachedLocationData = locationData
+		let cachedHasPositions = node.hasPositions
+		let cachedHasDeviceMetrics = cachedMetrics != nil
+		let cachedHasEnvironmentMetrics = node.hasEnvironmentMetrics
+		let cachedHasDetectionSensorMetrics = node.hasDetectionSensorMetrics
+		let cachedHasTraceRoutes = node.hasTraceRoutes
 		LazyVStack(alignment: .leading) {
 			HStack {
 				// First Column
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
 						.padding(.trailing, 5)
-					if shouldShowPower && node.latestDeviceMetrics != nil {
-						BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption2, iconFont: .caption, color: .accentColor)
+					if shouldShowPower, let batteryLevel = cachedMetrics?.batteryLevel {
+						BatteryCompact(batteryLevel: batteryLevel, font: .caption2, iconFont: .caption, color: .accentColor)
 							.padding(.trailing, 5)
 					}
 				}
@@ -249,21 +256,21 @@ struct NodeListItemCompact: View {
 							}
 						}
 						// Telemetry
-						if shouldShowTelemetry && (node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes) {
+						if shouldShowTelemetry && (cachedHasPositions || cachedHasEnvironmentMetrics || cachedHasDetectionSensorMetrics || cachedHasTraceRoutes) {
 							Divider().frame(height: 15)
-							if node.hasDeviceMetrics {
+							if cachedHasDeviceMetrics {
 								DefaultIconCompact(systemName: "flipphone")
 							}
-							if node.hasPositions {
+							if cachedHasPositions {
 								DefaultIconCompact(systemName: "mappin.and.ellipse")
 							}
-							if node.hasEnvironmentMetrics {
+							if cachedHasEnvironmentMetrics {
 								DefaultIconCompact(systemName: "cloud.sun.rain")
 							}
-							if node.hasDetectionSensorMetrics {
+							if cachedHasDetectionSensorMetrics {
 								DefaultIconCompact(systemName: "sensor")
 							}
-							if node.hasTraceRoutes {
+							if cachedHasTraceRoutes {
 								DefaultIconCompact(systemName: "signpost.right.and.left")
 							}
 						}
@@ -277,7 +284,7 @@ struct NodeListItemCompact: View {
 		.padding(.top, 2)
 		.padding(.bottom, 2)
 		.accessibilityElement(children: .ignore)
-		.accessibilityLabel(accessibilityDescription)
+		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
 	}
 }
 
