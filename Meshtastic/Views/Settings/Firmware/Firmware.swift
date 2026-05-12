@@ -13,11 +13,14 @@ import SwiftDraw
 import UniformTypeIdentifiers
 
 // 1. THE WRAPPER
-// This handles the fetching safely. It does not run logic in init.
+// Caches the resolved hardware so SwiftData re-evaluations don't flash the
+// "reconnect" screen when relationships momentarily fault to nil.
 struct Firmware: View {
 	let node: NodeInfoEntity?
 
 	@Query var hardwareResults: [DeviceHardwareEntity]
+	@State private var cachedHardware: DeviceHardwareEntity?
+	@State private var cachedNode: NodeInfoEntity?
 
 	init(node: NodeInfoEntity?) {
 		self.node = node
@@ -27,20 +30,36 @@ struct Firmware: View {
 				hw.platformioTarget == pioEnv
 			})
 		} else {
-			// Return all results; body will handle the missing-pioEnv case
 			_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { _ in false })
 		}
 	}
 
 	var body: some View {
-		if let node, node.myInfo?.pioEnv != nil, let hardware = hardwareResults.first {
-			FirmwareContentView(node: node, hardware: hardware)
-		} else {
-			List {
-				ContentUnavailableView("Firmware Updates",
-					systemImage: "arrow.triangle.2.circlepath",
-					description: Text("Please reconnect to your device to load firmware information."))
+		Group {
+			if let resolvedNode = cachedNode, let resolvedHardware = cachedHardware {
+				FirmwareContentView(node: resolvedNode, hardware: resolvedHardware)
+					.id(resolvedNode.num)
+			} else {
+				List {
+					ContentUnavailableView("Firmware Updates",
+						systemImage: "arrow.triangle.2.circlepath",
+						description: Text("Please reconnect to your device to load firmware information."))
+				}
 			}
+		}
+		.onAppear {
+			resolveHardware()
+		}
+		.onChange(of: hardwareResults) {
+			resolveHardware()
+		}
+	}
+
+	private func resolveHardware() {
+		// Only update cache when we have valid data — never clear it
+		if let node, node.myInfo?.pioEnv != nil, let hardware = hardwareResults.first {
+			cachedNode = node
+			cachedHardware = hardware
 		}
 	}
 }
@@ -67,6 +86,14 @@ private struct FirmwareContentView: View {
 	@State var showFirmwareFilePicker = false
 	@State var showInstallationSheet: FirmwareFile.FirmwareType?
 	@State var locallyChosenFirmwareFile: URL?
+	// For row-level install sheet
+	@State var rowInstallation: RowInstallation?
+
+	struct RowInstallation: Identifiable {
+		let type: FirmwareFile.FirmwareType
+		let url: URL
+		var id: String { "\(type.rawValue)-\(url.absoluteString)" }
+	}
 	
 	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
 		self.node = node
@@ -129,6 +156,16 @@ private struct FirmwareContentView: View {
 				firmwareList.refresh()
 			}
 		}
+		.sheet(item: $rowInstallation) { installation in
+			switch installation.type {
+			case .otaZip:
+				NRFDFUSheet(firmwareToFlash: installation.url)
+			case .uf2:
+				UF2MassStorageView(fileURL: installation.url)
+			case .bin:
+				ESP32OTAIntroSheet(binFileURL: installation.url)
+			}
+		}
 	}
 	
 	// MARK: - Subviews
@@ -139,7 +176,9 @@ private struct FirmwareContentView: View {
 		case .stable:
 			let stables = firmwareList.mostRecentFirmware(forReleaseType: .stable)
 			ForEach(stables, id: \.localUrl) { release in
-				FirmwareRow(firmwareFile: release)
+				FirmwareRow(firmwareFile: release) { type, url in
+					self.rowInstallation = RowInstallation(type: type, url: url)
+				}
 			}
 			if let last = stables.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
@@ -155,7 +194,9 @@ private struct FirmwareContentView: View {
 		case .alpha:
 			let alphas = firmwareList.mostRecentFirmware(forReleaseType: .alpha)
 			ForEach(alphas, id: \.localUrl) { release in
-				FirmwareRow(firmwareFile: release)
+				FirmwareRow(firmwareFile: release) { type, url in
+					self.rowInstallation = RowInstallation(type: type, url: url)
+				}
 			}
 			if let last = alphas.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
@@ -174,7 +215,9 @@ private struct FirmwareContentView: View {
 				Text("No firmware has been downloaded for this device.")
 			} else {
 				ForEach(downloads, id: \.localUrl) { file in
-					FirmwareRow(firmwareFile: file)
+					FirmwareRow(firmwareFile: file) { type, url in
+						self.rowInstallation = RowInstallation(type: type, url: url)
+					}
 				}
 				.onDelete { offsets in
 					let files = offsets.map { downloads[$0] }
@@ -362,7 +405,7 @@ private struct FirmwareRow: View {
 
 	@ObservedObject var firmwareFile: FirmwareFile
 
-	@State var showInstallationSheet: FirmwareFile.FirmwareType?
+	var onInstall: (FirmwareFile.FirmwareType, URL) -> Void
 
 	/// ESP32 OTA (BLE/WiFi) requires the AdminMessage.OTAEvent protocol with otaHash,
 	/// which was added to Meshtastic firmware in 2.7.18.
@@ -405,14 +448,7 @@ private struct FirmwareRow: View {
 
 			case .downloaded:
 				Button {
-					switch firmwareFile.firmwareType {
-					case .uf2:
-						self.showInstallationSheet = .uf2
-					case .bin:
-						self.showInstallationSheet = .bin
-					case .otaZip:
-						self.showInstallationSheet = .otaZip
-					}
+					onInstall(firmwareFile.firmwareType, firmwareFile.localUrl)
 				} label: {
 					HStack(alignment: .firstTextBaseline, spacing: 2.0) {
 						Text("Install")
@@ -437,16 +473,6 @@ private struct FirmwareRow: View {
 				.controlSize(.small)
 			case .error:
 				Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
-			}
-		}
-		.sheet(item: $showInstallationSheet) { type in
-			switch type {
-			case .otaZip:
-				NRFDFUSheet(firmwareToFlash: firmwareFile.localUrl)
-			case .uf2:
-				UF2MassStorageView(fileURL: firmwareFile.localUrl)
-			case .bin:
-				ESP32OTAIntroSheet(binFileURL: firmwareFile.localUrl)
 			}
 		}
 	}

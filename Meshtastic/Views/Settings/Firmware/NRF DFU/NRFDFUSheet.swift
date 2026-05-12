@@ -16,46 +16,53 @@ struct NRFDFUSheet: View {
 	let firmwareToFlash: URL
 	
 	var body: some View {
-		NavigationView { // Use a NavigationView for a title bar
-			VStack(spacing: 20.0) {
-				Text("DFU Firmware Update")
-					.font(.headline)
-				
-				Text("Please do not leave this screen until this process is complete.")
-					.multilineTextAlignment(.center)
-					.padding()
-				
-				CircularProgressView(progress: dfuViewModel.progress, isIndeterminate: ( self.dfuViewModel.state == .starting), size: 225.0, subtitleText: dfuViewModel.statusMessage)
-				
-				Group {
-					switch dfuViewModel.state {
-					case .idle:
-						Button("Begin Update") {
-							Task {
-								// Action for your primary button
-								if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
-									let peripheral = await connection.peripheral
-									dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
-								}
-							}
-						}
-						.controlSize(.large)
-						.frame(maxWidth: .infinity)
-						.cornerRadius(10)
-						.buttonStyle(.borderedProminent)
-						.disabled(showWarningAlert) // Make sure it can't be tapped till the warning is dismissed.
-						
-					case .uploading, .starting, .success:
-						Text(dfuViewModel.rotatingMessage)
+		NavigationView {
+			Group {
+				if showWarningAlert {
+					UpdateWarningSheet(
+						onDismiss: { dismiss() },
+						onAccept: { showWarningAlert = false }
+					)
+				} else {
+					VStack(spacing: 20.0) {
+						Text("DFU Firmware Update")
+							.font(.headline)
+
+						Text("Please do not leave this screen until this process is complete.")
 							.multilineTextAlignment(.center)
-							.padding(.horizontal)
-					case .error(let message):
-						Text("Error: \(message)")
+							.padding()
+
+						CircularProgressView(progress: dfuViewModel.progress, isIndeterminate: (self.dfuViewModel.state == .starting), size: 225.0, subtitleText: dfuViewModel.statusMessage)
+
+						Group {
+							switch dfuViewModel.state {
+							case .idle:
+								Button("Begin Update") {
+									Task {
+										if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
+											let peripheral = await connection.peripheral
+											dfuViewModel.startDFU(peripheral: peripheral, zipFileUrl: firmwareToFlash)
+										}
+									}
+								}
+								.controlSize(.large)
+								.frame(maxWidth: .infinity)
+								.cornerRadius(10)
+								.buttonStyle(.borderedProminent)
+
+							case .uploading, .starting, .success:
+								Text(dfuViewModel.rotatingMessage)
+									.multilineTextAlignment(.center)
+									.padding(.horizontal)
+							case .error(let message):
+								Text("Error: \(message)")
+							}
+						}.frame(minHeight: 250.0)
 					}
-				}.frame(minHeight: 250.0)
-			}.toolbar {
+				}
+			}
+			.toolbar {
 				ToolbarItem(placement: .navigationBarLeading) {
-					// 2. Create a button that calls dismiss()
 					Button("Done") {
 						dismiss()
 					}.disabled([.starting, .uploading].contains(dfuViewModel.state))
@@ -63,9 +70,6 @@ struct NRFDFUSheet: View {
 			}
 			.navigationTitle("Nordic DFU Update")
 			.navigationBarTitleDisplayMode(.inline)
-		}
-		.sheet(isPresented: $showWarningAlert) {
-			UpdateWarningSheet(onDismiss: { dismiss() }, onAccept: { showWarningAlert = false })
 		}
 		.interactiveDismissDisabled(true)
 	}
@@ -132,7 +136,6 @@ private struct UpdateWarningSheet: View {
 			.padding(.horizontal)
 			.padding(.bottom, 24)
 		}
-		.presentationDetents([.large])
-		.interactiveDismissDisabled(true)
+		.padding(.top)
 	}
 }
