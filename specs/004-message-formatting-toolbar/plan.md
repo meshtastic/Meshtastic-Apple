@@ -1,40 +1,38 @@
-# Implementation Plan: Message Formatting Toolbar (Pure SwiftUI)
+# Implementation Plan: Link Formatting (FR-025 – FR-030)
 
-**Branch**: `004-message-formatting-toolbar` | **Date**: 2026-05-10 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/004-message-formatting-toolbar/spec.md`
+**Branch**: `004-message-formatting-toolbar` | **Date**: 2026-05-11 | **Spec**: `specs/004-message-formatting-toolbar/spec.md`
+**Input**: Feature specification from `/specs/004-message-formatting-toolbar/spec.md` — User Story 5 (Link Formatting)
 
 ## Summary
 
-Add a markdown formatting toolbar to the message compose UI using a pure SwiftUI approach. On iOS 18+ / macOS 15+, the existing `TextField` is replaced with a `TextEditor(text:selection:)` that exposes cursor position and selection range via `TextSelection?`. Four formatting buttons (Bold, Italic, Strikethrough, Code) are added to the keyboard toolbar. Users type/see raw markdown in the compose field with a live preview rendered below via `Text(LocalizedStringKey(...))`. iOS 17.x / macOS 14.x users see zero changes. No UIKit, no `UIViewRepresentable`, no `NSAttributedString`.
+Add a Link formatting button to the existing markdown formatting toolbar. When tapped, it presents a URL entry dialog and wraps selected text in `[text](url)` markdown link syntax. Supports wrap, unwrap (toggle-off), and placeholder insertion at collapsed cursor. Three new helper functions in `MarkdownFormatting.swift`, UI changes in `FormattingToolbarButtons.swift`, and new test coverage.
 
 ## Technical Context
 
-**Language/Version**: Swift (latest stable), Swift Concurrency (`async/await`, `@MainActor`)
-**Primary Dependencies**: SwiftUI (`TextEditor`, `TextSelection`), SF Symbols
-**Storage**: SwiftData (existing `MessageEntity` — no schema changes required)
-**Testing**: Swift Testing (`@Suite`, `@Test`, `#expect`, `#require`); custom snapshot renderer
-**Target Platform**: iOS 18+ / macOS 15+ (Mac Catalyst) for new UI; iOS 17.x / macOS 14.x graceful fallback
-**Project Type**: Mobile app (iOS/iPadOS/macOS via Catalyst)
-**Performance Goals**: Live preview updates at typing speed (< 16ms per keystroke)
-**Constraints**: 200-byte message limit on raw `typingMessage` string; no UIKit views permitted
-**Scale/Scope**: 4 new/modified files in `Meshtastic/Views/Messages/TextMessageField/`, 1 new helper file, unit + snapshot tests
+**Language/Version**: Swift (latest stable)  
+**Primary Dependencies**: SwiftUI (TextEditor, TextSelection — iOS 18+)  
+**Storage**: N/A (no schema changes — raw markdown stored in existing `messagePayload`)  
+**Testing**: Swift Testing (`@Suite`, `@Test`, `#expect`)  
+**Target Platform**: iOS 18+ / macOS 15+ (Mac Catalyst)  
+**Project Type**: Mobile app (iOS/iPadOS/macOS)  
+**Performance Goals**: N/A (single-tap formatting operation)  
+**Constraints**: 200-byte message limit, pure SwiftUI (no UIKit), SF Symbols only  
+**Scale/Scope**: 3 files modified, ~150 lines added
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+*GATE: All checks pass.*
 
 | Principle | Status | Notes |
-|-----------|--------|-------|
-| I. SwiftUI-Native | ✅ PASS | Pure SwiftUI — `TextEditor`, `Text`, SF Symbols. No UIKit. |
-| II. SwiftData Persistence | ✅ PASS | No schema changes. Existing `MessageEntity` stores raw markdown in `messagePayload` as-is. |
-| III. Protocol-Oriented Transport | ✅ N/A | No transport changes. `sendMessage()` receives the raw markdown string. |
-| IV. Structured Logging | ✅ PASS | Any logging will use `Logger` categories. No `print()`. |
-| V. Protobuf Contract Fidelity | ✅ N/A | No protobuf changes. Message payload is an opaque string. |
-| VI. Lint-Clean Commits | ✅ PASS | All code will pass SwiftLint. |
-| VII. Platform Parity | ✅ PASS | iOS 18+ gated with `if #available`. iOS 17.x fallback preserves existing `TextField`. Mac Catalyst supported with character palette preserved. |
-| VIII. Design Standards | ✅ PASS | Will follow Meshtastic Design Standards for button sizing, colours, and layout. |
-
-**Gate result**: ALL PASS — proceed to Phase 0.
+|---|---|---|
+| I. SwiftUI-Native | ✅ | All UI is SwiftUI. `.alert` is native SwiftUI. No UIKit. |
+| II. SwiftData Persistence | ✅ | No schema changes. Raw markdown stored in existing fields. |
+| III. Protocol-Oriented Transport | ✅ | No transport changes. |
+| IV. Structured Logging | ✅ | No logging needed for UI formatting helpers. |
+| V. Protobuf Contract Fidelity | ✅ | No proto changes. |
+| VI. Lint-Clean Commits | ✅ | Will follow SwiftLint rules (tabs, line length). |
+| VII. Platform Parity | ✅ | `@available(iOS 18.0, macOS 15.0, *)` guard. iOS 17 unaffected. |
+| VIII. Design Standards | ✅ | Link button uses SF Symbol `link`, 44×36pt touch target, `.buttonStyle(.plain)`. |
 
 ## Project Structure
 
@@ -46,32 +44,26 @@ specs/004-message-formatting-toolbar/
 ├── research.md          # Phase 0 output
 ├── data-model.md        # Phase 1 output
 ├── quickstart.md        # Phase 1 output
-├── contracts/           # Phase 1 output
-│   └── markdown-formatting-api.md
+├── contracts/
+│   └── link-formatting.md
 └── tasks.md             # Phase 2 output (created by /speckit.tasks)
 ```
 
-### Source Code (repository root)
+### Source Code (files to modify)
 
 ```text
-Meshtastic/Views/Messages/TextMessageField/
-├── TextMessageField.swift          # MODIFIED — conditional TextEditor vs TextField
-├── AlertButton.swift               # UNCHANGED
-├── RequestPositionButton.swift     # UNCHANGED
-├── TextMessageSize.swift           # UNCHANGED
-├── FormattingToolbarButtons.swift  # NEW — formatting button row component
-└── MessagePreview.swift            # NEW — live markdown preview bubble
-
-Meshtastic/Helpers/
-└── MarkdownFormatting.swift        # NEW — delimiter wrap/unwrap/detect logic
+Meshtastic/
+├── Helpers/
+│   └── MarkdownFormatting.swift          # Add .link enum case + 3 new functions
+└── Views/Messages/TextMessageField/
+    └── FormattingToolbarButtons.swift    # Add link dialog UI + state
 
 MeshtasticTests/
-├── MarkdownFormattingTests.swift   # NEW — unit tests for helper functions
-└── SwiftUIViewSnapshotTests.swift  # MODIFIED — snapshot tests for new views
+└── MarkdownFormattingTests.swift         # Add LinkFormattingTests suite
 ```
 
-**Structure Decision**: Feature code lives in the existing `TextMessageField/` directory following the project's file-per-component pattern. Pure formatting logic is extracted to `Helpers/` for testability.
+**Structure Decision**: All changes are within existing files — no new files needed.
 
 ## Complexity Tracking
 
-No constitution violations — table not needed.
+No constitution violations. No complexity justification needed.

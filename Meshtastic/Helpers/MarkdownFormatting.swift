@@ -9,6 +9,7 @@ enum MarkdownStyle: CaseIterable {
 	case italic
 	case strikethrough
 	case code
+	case link
 
 	var openingDelimiter: String {
 		switch self {
@@ -16,11 +17,15 @@ enum MarkdownStyle: CaseIterable {
 		case .italic: return "*"
 		case .strikethrough: return "~~"
 		case .code: return "`"
+		case .link: return "["
 		}
 	}
 
 	var closingDelimiter: String {
-		openingDelimiter
+		switch self {
+		case .link: return "]"
+		default: return openingDelimiter
+		}
 	}
 
 	var sfSymbol: String {
@@ -29,6 +34,7 @@ enum MarkdownStyle: CaseIterable {
 		case .italic: return "italic"
 		case .strikethrough: return "strikethrough"
 		case .code: return "chevron.left.forwardslash.chevron.right"
+		case .link: return "link"
 		}
 	}
 }
@@ -131,6 +137,53 @@ func insertDelimiters(
 	return FormattingResult(text: newText, selectedRange: cursorPos..<cursorPos)
 }
 
+/// Returns true if the given text matches the `[text](url)` markdown link pattern.
+func isMarkdownLink(_ text: String) -> Bool {
+	text.range(of: "^\\[([^\\]]+)\\]\\(([^)]+)\\)$", options: .regularExpression) != nil
+}
+
+/// Wraps selected text with a markdown link `[text](url)`, or inserts a placeholder if the range is collapsed.
+func wrapSelectionWithLink(in text: String, range: Range<String.Index>, url: String) -> FormattingResult {
+	let selectedText = String(text[range])
+	if selectedText.isEmpty {
+		// Collapsed cursor — insert placeholder
+		let placeholder = "[link text](\(url))"
+		var newText = text
+		newText.replaceSubrange(range, with: placeholder)
+		let start = range.lowerBound
+		let end = newText.index(start, offsetBy: placeholder.count)
+		return FormattingResult(text: newText, selectedRange: start..<end)
+	} else {
+		let linkMarkdown = "[\(selectedText)](\(url))"
+		var newText = text
+		newText.replaceSubrange(range, with: linkMarkdown)
+		let start = range.lowerBound
+		let end = newText.index(start, offsetBy: linkMarkdown.count)
+		return FormattingResult(text: newText, selectedRange: start..<end)
+	}
+}
+
+/// Unwraps a markdown link `[text](url)` in the selection, returning only the display text.
+/// Returns nil if the selected text is not a markdown link.
+func unwrapLink(in text: String, range: Range<String.Index>) -> FormattingResult? {
+	let selectedText = String(text[range])
+	guard let match = selectedText.range(of: "^\\[([^\\]]+)\\]\\(([^)]+)\\)$", options: .regularExpression) else {
+		return nil
+	}
+	// Extract display text between [ and ]
+	let inner = selectedText[match]
+	guard let openBracket = inner.firstIndex(of: "["),
+		  let closeBracket = inner.firstIndex(of: "]") else {
+		return nil
+	}
+	let displayText = String(inner[inner.index(after: openBracket)..<closeBracket])
+	var newText = text
+	newText.replaceSubrange(range, with: displayText)
+	let start = range.lowerBound
+	let end = newText.index(start, offsetBy: displayText.count)
+	return FormattingResult(text: newText, selectedRange: start..<end)
+}
+
 /// Returns true if text contains valid paired markdown formatting syntax.
 func containsMarkdownSyntax(_ text: String) -> Bool {
 	guard !text.isEmpty else { return false }
@@ -143,6 +196,8 @@ func containsMarkdownSyntax(_ text: String) -> Bool {
 	if text.range(of: "~~[^~]+~~", options: .regularExpression) != nil { return true }
 	// Code: `text`
 	if text.range(of: "`[^`]+`", options: .regularExpression) != nil { return true }
+	// Link: [text](url)
+	if text.range(of: "\\[[^\\]]+\\]\\([^)]+\\)", options: .regularExpression) != nil { return true }
 	return false
 }
 

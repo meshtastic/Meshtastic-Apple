@@ -317,3 +317,68 @@ struct BoldItalicCombinationTests {
 		#expect(!result.text.contains("**"))
 	}
 }
+
+// MARK: - Link Formatting Tests
+
+@Suite("LinkFormattingTests")
+struct LinkFormattingTests {
+
+	@Test("isMarkdownLink returns true for valid link")
+	func isMarkdownLinkValid() {
+		#expect(isMarkdownLink("[text](https://example.com)"))
+	}
+
+	@Test("isMarkdownLink returns false for plain text")
+	func isMarkdownLinkPlainText() {
+		#expect(!isMarkdownLink("hello world"))
+	}
+
+	@Test("isMarkdownLink returns false for partial patterns")
+	func isMarkdownLinkPartial() {
+		#expect(!isMarkdownLink("[text]"))
+		#expect(!isMarkdownLink("(url)"))
+		#expect(!isMarkdownLink("[text]("))
+	}
+
+	@Test("wrapSelectionWithLink wraps selected text with URL")
+	func wrapWithLink() {
+		let text = "hello world"
+		let range = text.range(of: "hello")!
+		let result = wrapSelectionWithLink(in: text, range: range, url: "https://example.com")
+		#expect(result.text == "[hello](https://example.com) world")
+		#expect(String(result.text[result.selectedRange]) == "[hello](https://example.com)")
+	}
+
+	@Test("wrapSelectionWithLink with collapsed cursor inserts placeholder")
+	func wrapWithLinkCollapsed() {
+		let text = "hello world"
+		let cursor = text.index(text.startIndex, offsetBy: 5)
+		let range = cursor..<cursor
+		let result = wrapSelectionWithLink(in: text, range: range, url: "https://example.com")
+		#expect(result.text == "hello[link text](https://example.com) world")
+		#expect(String(result.text[result.selectedRange]) == "[link text](https://example.com)")
+	}
+
+	@Test("unwrapLink extracts display text from link")
+	func unwrapLinkValid() {
+		let text = "[hello](https://example.com)"
+		let range = text.startIndex..<text.endIndex
+		let result = unwrapLink(in: text, range: range)
+		#expect(result != nil)
+		#expect(result!.text == "hello")
+		#expect(String(result!.text[result!.selectedRange]) == "hello")
+	}
+
+	@Test("unwrapLink returns nil for plain text")
+	func unwrapLinkPlainText() {
+		let text = "hello world"
+		let range = text.startIndex..<text.endIndex
+		let result = unwrapLink(in: text, range: range)
+		#expect(result == nil)
+	}
+
+	@Test("containsMarkdownSyntax returns true for link syntax")
+	func containsMarkdownSyntaxLink() {
+		#expect(containsMarkdownSyntax("check [hello](https://example.com) out"))
+	}
+}

@@ -200,6 +200,13 @@ Send channel broadcasts and direct messages. Long press any message for actions 
 <p>Grey indicates successful delivery. Orange indicates a retryable error. Red indicates a permanent failure that will not succeed on retry.</p>
 </blockquote>
 <hr />
+<h2>Link Appearance</h2>
+<p>Links in message bubbles — including URLs, Meshtastic channel links, and markdown <code>[text](url)</code> links — are styled with an underline and the design standards Link color (Blue 400). This makes links visually distinct from regular message text in both light and dark mode. Tapping a link opens it in the browser, or for Meshtastic channel/contact URLs, opens the appropriate in-app handler.</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/messageText_link_dark.png">
+  <img src="../assets/screenshots/messageText_link.png" alt="Message bubble with styled link">
+</picture>
+<hr />
 <h2>Message Formatting (iOS 18+)</h2>
 <p>On iOS 18 and later, formatting buttons appear in the compact toolbar below the compose field after you have typed at least 3 characters. The formatting buttons share the toolbar row with the Alert bell, Position pin, and byte counter — all rendered as compact icons. The toolbar scrolls horizontally if it exceeds the screen width.</p>
 <picture>

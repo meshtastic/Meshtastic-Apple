@@ -107,3 +107,68 @@ No state machine — the compose field is a simple text-in / text-out flow:
 The live preview is a pure function of `typingMessage`:
 - `containsMarkdownDelimiters(typingMessage)` → show/hide preview
 - `Text(LocalizedStringKey(typingMessage))` → render preview content
+
+# Data Model: Link Formatting (FR-025 – FR-030)
+
+**Branch**: `004-message-formatting-toolbar` | **Date**: 2026-05-11
+
+## Entities
+
+### MarkdownStyle (Updated)
+
+Existing enum in `Meshtastic/Helpers/MarkdownFormatting.swift`. Add `.link` case.
+
+| Field | Type | Notes |
+|---|---|---|
+| `bold` | case | Existing — `**` delimiters |
+| `italic` | case | Existing — `*` delimiters |
+| `strikethrough` | case | Existing — `~~` delimiters |
+| `code` | case | Existing — `` ` `` delimiters |
+| `link` | case | **NEW** — asymmetric `[text](url)` syntax |
+
+**Computed properties for `.link`**:
+- `openingDelimiter` → `"["` (used only for delimiter expansion/detection)
+- `closingDelimiter` → `"]"` (partial — the full close includes `(url)`)
+- `sfSymbol` → `"link"`
+
+### FormattingResult (Unchanged)
+
+No changes needed. Already returns `text: String` and `selectedRange: Range<String.Index>`.
+
+## New Functions
+
+### `wrapSelectionWithLink(in:range:url:) -> FormattingResult`
+
+Wraps the selected text in `[text](url)` syntax. Located in `MarkdownFormatting.swift`.
+
+- **Input**: `text: String`, `range: Range<String.Index>`, `url: String`
+- **Output**: `FormattingResult` with updated text and selection covering `[text](url)`
+- If range is collapsed (empty), inserts `[link text](url)` placeholder
+
+### `unwrapLink(in:range:) -> FormattingResult?`
+
+Detects if selected text matches `[text](url)` pattern. If yes, removes link formatting keeping only display text. Returns `nil` if not a link.
+
+- **Input**: `text: String`, `range: Range<String.Index>`
+- **Output**: `FormattingResult?` — nil if selection is not a link pattern
+
+### `isMarkdownLink(_:) -> Bool`
+
+Returns true if a string matches the `[text](url)` markdown link pattern.
+
+- **Input**: `text: String`
+- **Output**: `Bool`
+
+## State Changes
+
+### FormattingToolbarButtons (Updated)
+
+| Property | Type | Notes |
+|---|---|---|
+| `showLinkAlert` | `@State Bool` | **NEW** — controls link URL dialog visibility |
+| `linkURL` | `@State String` | **NEW** — bound to URL text field in dialog |
+| `pendingLinkRange` | `@State Range<String.Index>?` | **NEW** — stores the selection range while dialog is open |
+
+## No Schema Changes
+
+No SwiftData model changes required. `MessageEntity` stores raw markdown strings — link syntax `[text](url)` is just text content. Rendering is handled by `Text(LocalizedStringKey(...))` which already supports markdown links.

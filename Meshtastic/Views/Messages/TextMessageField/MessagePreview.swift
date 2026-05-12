@@ -9,13 +9,23 @@ struct MessagePreview: View {
 		if containsMarkdownSyntax(text) {
 			HStack {
 				Spacer()
-				Text(LocalizedStringKey(text))
-					.tint(.white)
-					.padding(.vertical, 10)
-					.padding(.horizontal, 8)
-					.foregroundColor(.white)
-					.background(Color.accentColor)
-					.cornerRadius(15)
+				if let attributed = try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+					Text(attributed)
+						.tint(.white)
+						.padding(.vertical, 10)
+						.padding(.horizontal, 8)
+						.foregroundColor(.white)
+						.background(Color.accentColor)
+						.cornerRadius(15)
+				} else {
+					Text(LocalizedStringKey(text))
+						.tint(.white)
+						.padding(.vertical, 10)
+						.padding(.horizontal, 8)
+						.foregroundColor(.white)
+						.background(Color.accentColor)
+						.cornerRadius(15)
+				}
 			}
 			.padding(.horizontal, 15)
 			.padding(.bottom, 4)

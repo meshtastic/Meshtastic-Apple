@@ -1,7 +1,7 @@
-# Specification Quality Checklist: Message Formatting Toolbar (Pure SwiftUI)
+# Specification Quality Checklist: Message Formatting Toolbar — Link Support Update
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning  
-**Created**: 2026-05-10  
+**Created**: 2026-05-11  
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -31,8 +31,5 @@
 
 ## Notes
 
-- This is a re-specification replacing the previous WYSIWYG approach that violated Constitution Principle I (no UIKit views).
-- The spec references SwiftUI `TextEditor` and `TextSelection` as platform capabilities (not implementation choices) since the feature is inherently tied to iOS 18 API availability.
-- FR-001 through FR-003 reference specific SwiftUI types (`TextEditor`, `TextField`, `TextSelection`) because the feature's gating mechanism is inseparable from these platform constructs. These are "what" requirements (which compose control to use) not "how" requirements (internal architecture).
-- All 20 functional requirements map to testable acceptance scenarios across the 6 user stories.
-- No [NEEDS CLARIFICATION] markers — all ambiguities resolved via the user's detailed description and clarifications from the previous session.
+- All items pass. Spec is ready for `/speckit.plan`.
+- Note: FR-001 through FR-024 reference SwiftUI/iOS APIs by name — this is inherited from the original spec which intentionally names platform APIs as constraints. The new link requirements (FR-025–FR-030) follow the same convention.

@@ -1833,3 +1833,46 @@ struct MessagePreviewSnapshotTests {
 		await assertViewSnapshot(of: view, width: 360, height: 250, colorScheme: .dark, named: "composeArea_formatting_dark", forDocs: true)
 	}
 }
+
+@Suite("MessageTextLink Snapshots")
+struct MessageTextLinkSnapshotTests {
+	@Test("Link styled with underline and Link color - light")
+	@MainActor func linkStyledLight() async {
+		let linkColor = Color("Colors/MeshtasticLink")
+		var attributed = try! AttributedString(markdown: "Check out [Meshtastic](https://meshtastic.org) for details", options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))
+		for run in attributed.runs where run.link != nil {
+			attributed[run.range].underlineStyle = .single
+			attributed[run.range].foregroundColor = linkColor
+		}
+		let view = Text(attributed)
+			.tint(linkColor)
+			.padding(.vertical, 10)
+			.padding(.horizontal, 8)
+			.foregroundColor(Color("Colors/MeshtasticBubbleText"))
+			.background(Color("Colors/MeshtasticBubble"))
+			.cornerRadius(15)
+			.padding()
+			.background(Color(.systemBackground))
+		await assertViewSnapshot(of: view, width: 350, height: 80, named: "messageText_link", forDocs: true)
+	}
+
+	@Test("Link styled with underline and Link color - dark")
+	@MainActor func linkStyledDark() async {
+		let linkColor = Color("Colors/MeshtasticLink")
+		var attributed = try! AttributedString(markdown: "Check out [Meshtastic](https://meshtastic.org) for details", options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))
+		for run in attributed.runs where run.link != nil {
+			attributed[run.range].underlineStyle = .single
+			attributed[run.range].foregroundColor = linkColor
+		}
+		let view = Text(attributed)
+			.tint(linkColor)
+			.padding(.vertical, 10)
+			.padding(.horizontal, 8)
+			.foregroundColor(Color("Colors/MeshtasticBubbleText"))
+			.background(Color("Colors/MeshtasticBubble"))
+			.cornerRadius(15)
+			.padding()
+			.background(Color(.systemBackground))
+		await assertViewSnapshot(of: view, width: 350, height: 80, colorScheme: .dark, named: "messageText_link_dark", forDocs: true)
+	}
+}

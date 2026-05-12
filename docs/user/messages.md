@@ -116,6 +116,17 @@ The following errors may appear on a message bubble (red unless noted):
 
 ---
 
+## Link Appearance
+
+Links in message bubbles — including URLs, Meshtastic channel links, and markdown `[text](url)` links — are styled with an underline and the design standards Link color (Blue 400). This makes links visually distinct from regular message text in both light and dark mode. Tapping a link opens it in the browser, or for Meshtastic channel/contact URLs, opens the appropriate in-app handler.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/messageText_link_dark.png">
+  <img src="../assets/screenshots/messageText_link.png" alt="Message bubble with styled link">
+</picture>
+
+---
+
 ## Message Formatting (iOS 18+)
 
 On iOS 18 and later, formatting buttons appear in the compact toolbar below the compose field after you have typed at least 3 characters. The formatting buttons share the toolbar row with the Alert bell, Position pin, and byte counter — all rendered as compact icons. The toolbar scrolls horizontally if it exceeds the screen width.
