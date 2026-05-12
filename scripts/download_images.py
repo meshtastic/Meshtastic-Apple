@@ -174,7 +174,7 @@ def main():
             new_api_hash = hashlib.sha256(api_data_bytes).hexdigest()
             devices = json.loads(api_data_bytes.decode('utf-8'))
     except (urllib.error.URLError, urllib.error.HTTPError, socket.timeout) as e:
-        log_error(f"Could not fetch API data from {API_URL}: {e}")
+        log_warning(f"Could not fetch API data from {API_URL}: {e}. Building with cached images.")
         sys.exit(0) # Fail silently, XCode may be building offline without a network
     except json.JSONDecodeError:
         log_error("Failed to parse JSON from API response. The server may be down or the response is corrupt.")

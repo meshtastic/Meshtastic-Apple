@@ -55,10 +55,29 @@ func generateMessageMarkdown(message: String) -> String {
 
 @ModelActor
 actor MeshPackets {
-	static let shared: MeshPackets = {
-		let container = MainActor.assumeIsolated { PersistenceController.shared.container }
-		return MeshPackets(modelContainer: container)
+	private static let _container: ModelContainer = {
+		MainActor.assumeIsolated { PersistenceController.shared.container }
 	}()
+
+	/// The current shared instance. Access via `MeshPackets.shared`.
+	/// Periodically recreated to release accumulated ModelContext memory.
+	nonisolated(unsafe) private static var _shared: MeshPackets = MeshPackets(modelContainer: _container)
+	private static let _lock = NSLock()
+
+	static var shared: MeshPackets {
+		_lock.lock()
+		defer { _lock.unlock() }
+		return _shared
+	}
+
+	/// Discards the current actor and creates a fresh one with a new ModelContext.
+	/// Call after DB retrieval completes or periodically to release accumulated memory.
+	static func recreateShared() {
+		_lock.lock()
+		_shared = MeshPackets(modelContainer: _container)
+		_lock.unlock()
+		Logger.data.info("♻️ [MeshPackets] Recreated shared instance to release ModelContext memory")
+	}
 
 	// MARK: - Save Helpers
 
@@ -329,7 +348,7 @@ actor MeshPackets {
 						telemetry.voltage = nodeInfo.deviceMetrics.voltage
 						telemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-						newNode.telemetries.append(telemetry)
+						telemetry.nodeTelemetry = newNode
 					}
 					if nodeInfo.lastHeard > 0 {
 						newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
@@ -397,7 +416,7 @@ actor MeshPackets {
 						position.speed = Int32(nodeInfo.position.groundSpeed)
 						position.heading = Int32(nodeInfo.position.groundTrack)
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-						newNode.positions.append(position)
+						position.nodePosition = newNode
 					}
 					
 					// Look for a MyInfo
@@ -490,7 +509,7 @@ actor MeshPackets {
 						newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
 						newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-						fetchedNode[0].telemetries.append(newTelemetry)
+						newTelemetry.nodeTelemetry = fetchedNode[0]
 					}
 					
 					if nodeInfo.hasPosition {
@@ -504,7 +523,7 @@ actor MeshPackets {
 							position.altitude = nodeInfo.position.altitude
 							position.satsInView = Int32(nodeInfo.position.satsInView)
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-							fetchedNode[0].positions.append(position)
+							position.nodePosition = fetchedNode[0]
 						}
 						
 					}
@@ -795,18 +814,28 @@ actor MeshPackets {
 						telemetry.snr = packet.rxSnr
 						telemetry.rssi = packet.rxRssi
 						telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(truncatingIfNeeded: telemetryMessage.time)))
-						fetchedNode[0].telemetries.append(telemetry)
+						// Assign via relationship without loading all telemetries
+						telemetry.nodeTelemetry = fetchedNode[0]
 
-						// Prune old telemetry to prevent unbounded memory growth
+						// Prune old telemetry using a targeted query instead of faulting the full relationship
 						let metricsType = telemetry.metricsType
 						let maxTelemetryPerType = 5000
-						let sameTelemetries = fetchedNode[0].telemetries
-							.filter { $0.metricsType == metricsType }
-							.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
-						if sameTelemetries.count > maxTelemetryPerType {
-							let excess = sameTelemetries.count - maxTelemetryPerType
-							for i in 0..<excess {
-								modelContext.delete(sameTelemetries[i])
+						let nodeNum = packetFrom
+						var countDescriptor = FetchDescriptor<TelemetryEntity>(
+							predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+						)
+						countDescriptor.fetchLimit = maxTelemetryPerType + 1
+						let currentCount = (try? modelContext.fetchCount(countDescriptor)) ?? 0
+						if currentCount > maxTelemetryPerType {
+							let excess = currentCount - maxTelemetryPerType
+							var pruneDescriptor = FetchDescriptor<TelemetryEntity>(
+								predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+								sortBy: [SortDescriptor(\TelemetryEntity.time, order: .forward)]
+							)
+							pruneDescriptor.fetchLimit = excess
+							let toDelete = (try? modelContext.fetch(pruneDescriptor)) ?? []
+							for old in toDelete {
+								modelContext.delete(old)
 							}
 						}
 

@@ -1,6 +1,5 @@
 import SwiftUI
 import OSLog
-import DatadogSessionReplay
 
 struct TextMessageField: View {
 	static let maxbytes = 200
@@ -17,8 +16,7 @@ struct TextMessageField: View {
 	@State private var sendPositionWithMessage = false
 
 	var body: some View {
-		SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs) {
-			VStack(spacing: 0) {
+		VStack(spacing: 0) {
 				HStack(alignment: .bottom) {
 					if replyMessageId != 0 || isFocused {
 						Button {
@@ -127,7 +125,6 @@ struct TextMessageField: View {
 						.padding(.vertical, 10)
 						.background(.bar)
 					}
-				}
 			}
 		}
 	}

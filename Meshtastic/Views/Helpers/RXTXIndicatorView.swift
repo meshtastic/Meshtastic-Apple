@@ -12,6 +12,9 @@ import OSLog
 struct RXTXIndicatorWidget: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPopoverOpen = false
+	@State private var localSent: Int = 0
+	@State private var localReceived: Int = 0
+	private let pollTimer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
 	let fontSize: CGFloat = 7.0
 	var body: some View {
@@ -42,12 +45,12 @@ struct RXTXIndicatorWidget: View {
 				HStack(spacing: 2.0) {
 					Image(systemName: "arrow.up")
 						.font(.system(size: fontSize))
-					LEDIndicator(flash: $accessoryManager.packetsSent, color: .green)
+					LEDIndicator(flash: $localSent, color: .green)
 				}.frame(maxHeight: fontSize)
 				HStack(spacing: 2.0) {
 					Image(systemName: "arrow.down")
 						.font(.system(size: fontSize))
-					LEDIndicator(flash: $accessoryManager.packetsReceived, color: .red)
+					LEDIndicator(flash: $localReceived, color: .red)
 				}.frame(maxHeight: fontSize)
 			}
 			.contentShape(Rectangle()) // Make sure the whole thing is tappable
@@ -66,23 +69,23 @@ struct RXTXIndicatorWidget: View {
 						VStack(alignment: .leading) {
 							HStack(spacing: 3.0) {
 								HStack(spacing: 2.0) {
-									LEDIndicator(flash: $accessoryManager.packetsSent, color: .green)
+									LEDIndicator(flash: $localSent, color: .green)
 										.frame(maxHeight: fontSize)
 									Image(systemName: "arrow.up")
 										.font(.system(size: fontSize))
 								}
-								Text("To Radio (TX): \(accessoryManager.packetsSent)")
+								Text("To Radio (TX): \(localSent)")
 									.font(.caption2)
 								Spacer()
 							}
 							HStack(spacing: 3.0) {
 								HStack(spacing: 2.0) {
-									LEDIndicator(flash: $accessoryManager.packetsReceived, color: .red)
+									LEDIndicator(flash: $localReceived, color: .red)
 										.frame(maxHeight: fontSize)
 									Image(systemName: "arrow.down")
 										.font(.system(size: fontSize))
 								}
-								Text("From Radio (RX): \(accessoryManager.packetsReceived)")
+								Text("From Radio (RX): \(localReceived)")
 									.font(.caption2)
 								Spacer()
 							}
@@ -93,6 +96,12 @@ struct RXTXIndicatorWidget: View {
 				.presentationCompactAdaptation(.popover)
 			}
 		}.buttonStyle(.borderless)
+		.onReceive(pollTimer) { _ in
+			let sent = accessoryManager.packetsSent
+			let received = accessoryManager.packetsReceived
+			if sent != localSent { localSent = sent }
+			if received != localReceived { localReceived = received }
+		}
 	}
 }
 

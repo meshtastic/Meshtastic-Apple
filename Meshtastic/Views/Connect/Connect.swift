@@ -50,8 +50,8 @@ struct Connect: View {
 									VStack(alignment: .center) {
 										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
 											.padding(.trailing, 5)
-										if node?.latestDeviceMetrics != nil {
-											BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+										if let batteryLevel = latestBatteryLevel(for: node) {
+											BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 												.padding(.trailing, 5)
 										}
 									}
@@ -425,6 +425,20 @@ struct Connect: View {
 		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
 	}
 
+	/// Fetch only the latest device metrics battery level without faulting all telemetries.
+	private func latestBatteryLevel(for node: NodeInfoEntity?) -> Int32? {
+		guard let nodeNum = node?.num else { return nil }
+		let metricsType: Int32 = 0
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		guard let result = try? context.fetch(descriptor).first else { return nil }
+		let level = result.batteryLevel ?? 0
+		return level > 0 ? level : nil
+	}
+
 	/// Starts nymea passive discovery only when the Connect view is foreground-visible
 	/// and the app has no primary transport in flight; otherwise stops it.
 	private func updateNymeaDiscovery() {
@@ -445,8 +459,14 @@ struct Connect: View {
 		liveActivityStarted = true
 		// 15 Minutes Local Stats Interval
 		let timerSeconds = 900
-		let localStats = node?.telemetries.filter { $0.metricsType == 4 }
-		let mostRecent = localStats?.last
+		let nodeNum = node?.num ?? 0
+		let metricsType: Int32 = 4
+		var statsDescriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		statsDescriptor.fetchLimit = 1
+		let mostRecent = try? context.fetch(statsDescriptor).first
 		
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		

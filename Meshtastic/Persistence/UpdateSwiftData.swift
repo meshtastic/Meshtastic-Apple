@@ -385,7 +385,7 @@ extension MeshPackets {
 						telemetry.voltage = nodeInfoMessage.deviceMetrics.voltage
 						telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
-						fetchedNode[0].telemetries.append(telemetry)
+						telemetry.nodeTelemetry = fetchedNode[0]
 					}
 					if nodeInfoMessage.hasUser {
 						fetchedNode[0].user?.userId = nodeInfoMessage.num.toHex()
@@ -490,7 +490,7 @@ extension MeshPackets {
 						
 						// Unset the current latest position for this node
 						let posNum = Int64(packet.from)
-											let fetchCurrentLatestPositionsRequest = FetchDescriptor<PositionEntity>(predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == true })
+						let fetchCurrentLatestPositionsRequest = FetchDescriptor<PositionEntity>(predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == true })
 						let fetchedPositions = try modelContext.fetch(fetchCurrentLatestPositionsRequest)
 						if fetchedPositions.count > 0 {
 							for position in fetchedPositions {
@@ -519,34 +519,57 @@ extension MeshPackets {
 						} else {
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 						}
-						var mutablePositions = fetchedNode[0].positions
-						/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
-						if mutablePositions.count > 0 && (position.precisionBits == 32 || position.precisionBits == 0) {
-							if let mostRecentCoord = mutablePositions.last?.nodeCoordinate,
+
+						// Deduplication: fetch only the most recent position for this node
+						// instead of loading the entire positions array (which could be thousands)
+						var mostRecentDescriptor = FetchDescriptor<PositionEntity>(
+							predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum },
+							sortBy: [SortDescriptor(\PositionEntity.time, order: .reverse)]
+						)
+						mostRecentDescriptor.fetchLimit = 1
+						let mostRecentPositions = try modelContext.fetch(mostRecentDescriptor)
+
+						if position.precisionBits == 32 || position.precisionBits == 0 {
+							// Don't save nearly the same position. If within 9m of most recent, replace it.
+							if let mostRecent = mostRecentPositions.first,
+							   let mostRecentCoord = mostRecent.nodeCoordinate,
 							   let positionCoord = position.nodeCoordinate,
 							   mostRecentCoord.distance(from: positionCoord) < 9.0 {
-								mutablePositions.removeLast()
+								modelContext.delete(mostRecent)
 							}
-						} else if mutablePositions.count > 0 {
-							/// Don't store any history for reduced accuracy positions, we will just show a circle
-							mutablePositions.removeAll()
+						} else {
+							// Don't store any history for reduced accuracy positions — delete all non-latest
+							let deleteDescriptor = FetchDescriptor<PositionEntity>(
+								predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == false }
+							)
+							let oldPositions = try modelContext.fetch(deleteDescriptor)
+							for old in oldPositions {
+								modelContext.delete(old)
+							}
 						}
-						mutablePositions.append(position)
-						
-						// Prune old positions to prevent unbounded memory growth
-						let maxPositionsPerNode = 5000
-						while mutablePositions.count > maxPositionsPerNode {
-							let oldest = mutablePositions[0]
-							if !oldest.latest {
-								modelContext.delete(oldest)
-								mutablePositions.removeFirst()
-							} else {
-								break
+
+						// Assign position to node via relationship
+						position.nodePosition = fetchedNode[0]
+
+						// Prune: keep at most 5000 positions per node
+						let countDescriptor = FetchDescriptor<PositionEntity>(
+							predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum }
+						)
+						let totalCount = try modelContext.fetchCount(countDescriptor)
+						if totalCount > 5000 {
+							let excess = totalCount - 5000
+							var pruneDescriptor = FetchDescriptor<PositionEntity>(
+								predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == false },
+								sortBy: [SortDescriptor(\PositionEntity.time, order: .forward)]
+							)
+							pruneDescriptor.fetchLimit = excess
+							let toDelete = try modelContext.fetch(pruneDescriptor)
+							for old in toDelete {
+								modelContext.delete(old)
 							}
 						}
 
 						fetchedNode[0].channel = Int32(packet.channel)
-						fetchedNode[0].positions = mutablePositions
 						
 						scheduleDebouncedSave()
 						Logger.data.info("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")
