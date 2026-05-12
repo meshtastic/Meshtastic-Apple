@@ -173,6 +173,10 @@ extension AccessoryManager {
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 				self.updateState(.subscribed)
+
+				// Release accumulated ModelContext memory from DB retrieval
+				await MeshPackets.shared.flushDebouncedSaves()
+				MeshPackets.recreateShared()
 				
 				// If we successfully connected to a manual connection, then save it to the list
 				// Remember, Device is a value type (struct) so don't use use `device` here, thats

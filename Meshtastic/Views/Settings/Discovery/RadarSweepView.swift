@@ -24,7 +24,7 @@ struct RadarSweepView: View {
 
 	var body: some View {
 		if isActive {
-			TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
+			TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
 				let elapsed = timeline.date.timeIntervalSince(startDate)
 				let rotation = (elapsed / rotationDuration).truncatingRemainder(dividingBy: 1.0) * 360.0
 

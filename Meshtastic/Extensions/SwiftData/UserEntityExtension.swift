@@ -10,31 +10,62 @@ import SwiftData
 import MeshtasticProtobufs
 
 extension UserEntity {
+	/// Builds a predicate for messages involving this user, excluding emoji/admin/sensor messages
+	@MainActor
+	private static func userMessagePredicate(userNum: Int64, portNum: Int32 = 10) -> Predicate<MessageEntity> {
+		return #Predicate<MessageEntity> {
+			($0.fromUser?.num == userNum || $0.toUser?.num == userNum)
+			&& $0.isEmoji == false && $0.admin == false && $0.portNum != portNum
+		}
+	}
+
 	@MainActor
 	var messageList: [MessageEntity] {
-		let context = PersistenceController.shared.context
-		let messages = (self.sentMessages ?? []) + (self.receivedMessages ?? [])
-		return messages.filter { msg in
-			msg.toUser != nil && msg.fromUser != nil && !msg.isEmoji && !msg.admin && msg.portNum != 10
-		}.sorted { $0.messageTimestamp < $1.messageTimestamp }
+		guard let ctx = modelContext else { return [] }
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: Self.userMessagePredicate(userNum: self.num),
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp)]
+		)
+		return (try? ctx.fetch(descriptor)) ?? []
 	}
 
 	@MainActor
 	var mostRecentMessage: MessageEntity? {
-		guard self.lastMessage != nil else { return nil }
-		return messageList.last
+		guard let ctx = modelContext, self.lastMessage != nil else { return nil }
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: Self.userMessagePredicate(userNum: self.num),
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
 	}
 
 	@MainActor
 	var sensorMessageList: [MessageEntity] {
-		return (self.sentMessages ?? []).filter { $0.portNum == 10 }
-			.sorted { $0.messageTimestamp < $1.messageTimestamp }
+		guard let ctx = modelContext else { return [] }
+		let userNum = self.num
+		let portNum: Int32 = 10
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { $0.fromUser?.num == userNum && $0.portNum == portNum },
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp)]
+		)
+		return (try? ctx.fetch(descriptor)) ?? []
 	}
 
 	@MainActor
 	func unreadMessages(context: ModelContext, skipLastMessageCheck: Bool = false) -> Int {
 		guard self.lastMessage != nil || skipLastMessageCheck else { return 0 }
-		return messageList.filter { !$0.read }.count
+		guard let ctx = modelContext else { return 0 }
+		let userNum = self.num
+		let portNum: Int32 = 10
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				($0.fromUser?.num == userNum || $0.toUser?.num == userNum)
+				&& $0.read == false
+				&& $0.isEmoji == false && $0.admin == false && $0.portNum != portNum
+			}
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0
 	}
 
 	@MainActor

@@ -165,9 +165,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var locationTask: Task<Void, Error>?
 	var connectionStepper: SequentialSteps?
 	
-	// Flash subjects
-	@Published var packetsSent: Int = 0
-	@Published var packetsReceived: Int = 0
+	// Flash counters — NOT @Published to avoid triggering re-renders of all observing views.
+	// RXTXIndicatorWidget observes these via onChange polling.
+	var packetsSent: Int = 0
+	var packetsReceived: Int = 0
 	
 	// Continuations
 	var wantConfigContinuation: CheckedContinuation<Void, Error>?

@@ -8,6 +8,7 @@
 import Foundation
 import WatchConnectivity
 import SwiftData
+import CoreLocation
 import os
 
 /// Manages the WatchConnectivity session on the iOS side, sending mesh node
@@ -21,6 +22,10 @@ final class WatchSessionManager: NSObject, ObservableObject {
 
 	private let logger = Logger(subsystem: "gvh.MeshtasticClient", category: "⌚ Watch")
 	private var session: WCSession?
+	private var watchUpdateTask: Task<Void, Never>?
+	private var lastWatchSendTime: Date = .distantPast
+	/// Minimum interval between Watch updates (seconds)
+	private static let watchUpdateInterval: TimeInterval = 60
 
 	override init() {
 		super.init()
@@ -64,27 +69,54 @@ final class WatchSessionManager: NSObject, ObservableObject {
 		logger.info("Sent foxhunt target \(nodeNum) to Watch")
 	}
 
-	/// Fetch nodes from SwiftData and push them to the Watch via application context.
+	/// Throttled: schedules a Watch update at most once per 60 seconds.
 	func sendNodesToWatch() {
 		guard let session, session.activationState == .activated, session.isPaired, session.isWatchAppInstalled else {
 			return
 		}
 
-		Task { @MainActor in
-			let nodes = fetchNodesForWatch()
-			guard !nodes.isEmpty else { return }
-
-			do {
-				let data = try JSONEncoder().encode(nodes)
-				try session.updateApplicationContext(["nodes": data])
-				logger.info("Sent \(nodes.count) nodes to Watch via applicationContext")
-			} catch {
-				logger.error("Failed to send nodes to Watch: \(error.localizedDescription, privacy: .public)")
+		// If we sent recently, coalesce into a single deferred send
+		let now = Date()
+		if now.timeIntervalSince(lastWatchSendTime) < Self.watchUpdateInterval {
+			if watchUpdateTask == nil {
+				watchUpdateTask = Task { @MainActor in
+					let delay = Self.watchUpdateInterval - Date().timeIntervalSince(self.lastWatchSendTime)
+					if delay > 0 {
+						try? await Task.sleep(for: .seconds(delay))
+					}
+					guard !Task.isCancelled else { return }
+					self.performSendNodesToWatch()
+					self.watchUpdateTask = nil
+				}
 			}
+			return
+		}
+
+		Task { @MainActor in
+			self.performSendNodesToWatch()
+		}
+	}
+
+	@MainActor
+	private func performSendNodesToWatch() {
+		lastWatchSendTime = Date()
+
+		let nodes = fetchNodesForWatch()
+		guard !nodes.isEmpty else { return }
+
+		do {
+			let data = try JSONEncoder().encode(nodes)
+			try session?.updateApplicationContext(["nodes": data])
+			logger.info("Sent \(nodes.count) nodes to Watch via applicationContext")
+		} catch {
+			logger.error("Failed to send nodes to Watch: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
 	// MARK: - SwiftData → Watch Node Serialization
+
+	/// Maximum distance in meters to include a node (0.5 miles).
+	private static let maxDistanceMeters: Double = 804.672
 
 	@MainActor
 	private func fetchNodesForWatch() -> [WatchNode] {
@@ -92,6 +124,11 @@ final class WatchSessionManager: NSObject, ObservableObject {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate<NodeInfoEntity> { $0.user != nil }
 		)
+
+		guard let userLocation = LocationsHandler.shared.locationsArray.last else {
+			logger.info("No user location available, skipping Watch update")
+			return []
+		}
 
 		do {
 			let results = try context.fetch(descriptor)
@@ -104,12 +141,19 @@ final class WatchSessionManager: NSObject, ObservableObject {
 				let snr: Float? = nodeInfo.snr != 0 ? nodeInfo.snr : nil
 				let lastHeard = nodeInfo.lastHeard
 
+				// Find the latest position using a targeted fetch instead of faulting the entire relationship
+				let nodeNum = nodeInfo.num
+				var posDescriptor = FetchDescriptor<PositionEntity>(
+					predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == nodeNum && $0.latest == true }
+				)
+				posDescriptor.fetchLimit = 1
+				let latestPosition = try? context.fetch(posDescriptor).first
+
 				var latitude: Double?
 				var longitude: Double?
 				var altitude: Int32?
 				var lastPositionTime: Date?
 
-				let latestPosition = nodeInfo.positions.first(where: { $0.latest }) ?? nodeInfo.positions.last
 				if let pos = latestPosition {
 					let latI = pos.latitudeI
 					let lonI = pos.longitudeI
@@ -120,6 +164,12 @@ final class WatchSessionManager: NSObject, ObservableObject {
 						lastPositionTime = pos.time
 					}
 				}
+
+				// Only include nodes within 0.5 miles
+				guard let lat = latitude, let lon = longitude else { return nil }
+				let nodeLocation = CLLocation(latitude: lat, longitude: lon)
+				let distance = userLocation.distance(from: nodeLocation)
+				guard distance <= Self.maxDistanceMeters else { return nil }
 
 				return WatchNode(
 					num: UInt32(num),

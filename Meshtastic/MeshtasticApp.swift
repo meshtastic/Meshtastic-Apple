@@ -11,7 +11,6 @@ import DatadogCrashReporting
 import DatadogRUM
 import DatadogTrace
 import DatadogLogs
-import DatadogSessionReplay
 
 @main
 struct MeshtasticAppleApp: App {
@@ -63,7 +62,7 @@ struct MeshtasticAppleApp: App {
 			Logs.enable()
 			Trace.enable(
 				with: Trace.Configuration(
-					sampleRate: 100, networkInfoEnabled: true // 100% sampling for development/testing, reduce for production
+					sampleRate: 20, networkInfoEnabled: true
 				)
 			)
 
@@ -75,18 +74,7 @@ struct MeshtasticAppleApp: App {
 					trackBackgroundEvents: true
 				)
 			)
-			if Bundle.main.isTestFlight {
-				SessionReplay.enable(
-					with: SessionReplay.Configuration(
-						replaySampleRate: 100,
-						textAndInputPrivacyLevel: .maskSensitiveInputs,
-						imagePrivacyLevel: .maskNone,
-						touchPrivacyLevel: .show,
-						startRecordingImmediately: true,
-						featureFlags: [.swiftui: true]
-					)
-				)
-			}
+
 		}
 
 		accessoryManager = AccessoryManager.shared
@@ -224,9 +212,6 @@ struct MeshtasticAppleApp: App {
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
-				// Stop Session Replay when app goes to background to prevent crashes
-				// from accessing SwiftUI view hierarchy while backgrounded
-				SessionReplay.stopRecording()
 				accessoryManager.appDidEnterBackground()
 				do {
 					try persistenceController!.container.mainContext.save()
@@ -240,8 +225,6 @@ struct MeshtasticAppleApp: App {
 				Logger.services.info("🎬 [App] Scene is inactive")
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
-				// Resume Session Replay when app becomes active
-				SessionReplay.startRecording()
 				accessoryManager.appDidBecomeActive()
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")

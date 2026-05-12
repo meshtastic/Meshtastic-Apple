@@ -1,7 +1,6 @@
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
-import DatadogSessionReplay
 #if !targetEnvironment(macCatalyst)
 import Translation
 #endif
@@ -21,31 +20,29 @@ struct MessageText: View {
 	@State private var isShowingTranslationPresentation = false
 	
 	var body: some View {
-		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
-			messageContent
-				.environment(\.openURL, OpenURLAction { url in
-					handleURL(url)
-				})
-				.sheet(item: $saveChannelLink) { link in
-					SaveChannelQRCode(
-						channelSetLink: link.data,
-						addChannels: link.add,
-						accessoryManager: accessoryManager
-					)
-					.presentationDetents([.large])
-					.presentationDragIndicator(.visible)
+		messageContent
+			.environment(\.openURL, OpenURLAction { url in
+				handleURL(url)
+			})
+			.sheet(item: $saveChannelLink) { link in
+				SaveChannelQRCode(
+					channelSetLink: link.data,
+					addChannels: link.add,
+					accessoryManager: accessoryManager
+				)
+				.presentationDetents([.large])
+				.presentationDragIndicator(.visible)
+			}
+			.confirmationDialog(
+				"Are you sure you want to delete this message?",
+				isPresented: $isShowingDeleteConfirmation,
+				titleVisibility: .visible
+			) {
+				Button("Delete Message", role: .destructive) {
+					deleteMessage()
 				}
-				.confirmationDialog(
-					"Are you sure you want to delete this message?",
-					isPresented: $isShowingDeleteConfirmation,
-					titleVisibility: .visible
-				) {
-					Button("Delete Message", role: .destructive) {
-						deleteMessage()
-					}
-					Button("Cancel", role: .cancel) {}
-				}
-		}
+				Button("Cancel", role: .cancel) {}
+			}
 	}
 	
 	private var sourceMessageText: String {

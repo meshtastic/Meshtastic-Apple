@@ -284,23 +284,28 @@ fileprivate extension NodeFilterParameters {
 				let meanLat = poi.latitude * .pi / 180
 				let deltaLat = d / r * 180 / .pi
 				let deltaLon = d / (r * cos(meanLat)) * 180 / .pi
-				let minLat = poi.latitude - deltaLat
-				let maxLat = poi.latitude + deltaLat
-				let minLon = poi.longitude - deltaLon
-				let maxLon = poi.longitude + deltaLon
-				let hasNearbyPosition = (user.userNode?.positions ?? []).contains { pos in
-					guard pos.latest else { return false }
-					let lon = Double(pos.longitudeI) / 1e7
-					let lat = Double(pos.latitudeI) / 1e7
-					return lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat
+				let minLatI = Int32((poi.latitude - deltaLat) * 1e7)
+				let maxLatI = Int32((poi.latitude + deltaLat) * 1e7)
+				let minLonI = Int32((poi.longitude - deltaLon) * 1e7)
+				let maxLonI = Int32((poi.longitude + deltaLon) * 1e7)
+				if let nodeNum = user.userNode?.num, let ctx = user.modelContext {
+					let descriptor = FetchDescriptor<PositionEntity>(
+						predicate: #Predicate<PositionEntity> {
+							$0.nodePosition?.num == nodeNum && $0.latest == true
+							&& $0.latitudeI >= minLatI && $0.latitudeI <= maxLatI
+							&& $0.longitudeI >= minLonI && $0.longitudeI <= maxLonI
+						}
+					)
+					let count = (try? ctx.fetchCount(descriptor)) ?? 0
+					if count == 0 { return false }
+				} else {
+					return false
 				}
-				if !hasNearbyPosition { return false }
 			}
 		}
 		// Unmessagable filter
 		if user.unmessagable {
-			let hasMessages = !(user.receivedMessages ?? []).isEmpty || !(user.sentMessages ?? []).isEmpty
-			if !hasMessages { return false }
+			if user.lastMessage == nil { return false }
 		}
 		// Ignored
 		if user.userNode?.ignored == true { return false }

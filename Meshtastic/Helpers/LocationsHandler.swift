@@ -21,7 +21,9 @@ import OSLog
 	@Published var locationsArray: [CLLocation] = [CLLocation]()
 	@Published var isStationary = false
 	@Published var count = 0
-	@Published var isRecording = false
+	@Published var isRecording = false {
+		didSet { updateAccuracyForRecordingState() }
+	}
 	@Published var isRecordingPaused = false
 	@Published var recordingStarted: Date?
 	@Published var distanceTraveled = 0.0
@@ -128,11 +130,10 @@ import OSLog
 		// Allow background location updates for continuous tracking.
 		self.manager.allowsBackgroundLocationUpdates = true
 		// Set desired accuracy for location updates.
-		// Consider your app's needs: kCLLocationAccuracyBestForNavigation, kCLLocationAccuracyBest, etc.
-		// For general tracking, kCLLocationAccuracyHundredMeters might be sufficient to save battery.
-		self.manager.desiredAccuracy = kCLLocationAccuracyBest
-		// Set the distance filter to only receive updates when the device has moved a certain distance.
-		self.manager.distanceFilter = kCLDistanceFilterNone // Receive all updates initially
+		// Use HundredMeters by default to save battery; escalate to Best during route recording.
+		self.manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+		// Only deliver updates when the device has moved at least 10 meters.
+		self.manager.distanceFilter = 10
 		if CLLocationManager.headingAvailable() {
 				self.manager.headingFilter = 1 // Update heading when it changes by 1 degree
 				self.manager.headingOrientation = .portrait // Adjust based on device orientation
@@ -223,6 +224,18 @@ import OSLog
 		// Setting `updatesStarted` to false will cause the `liveUpdates()` loop to break.
 		self.updatesStarted = false
 	}
+
+	/// Escalates to best accuracy during route recording; reverts to battery-friendly defaults otherwise.
+	private func updateAccuracyForRecordingState() {
+		if isRecording {
+			manager.desiredAccuracy = kCLLocationAccuracyBest
+			manager.distanceFilter = kCLDistanceFilterNone
+		} else {
+			manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+			manager.distanceFilter = 10
+		}
+	}
+
 	/// Adds a location to the array and updates tracking metrics, applying smart position filters if enabled.
 	/// - Parameters:
 	///   - location: The `CLLocation` object to add.
