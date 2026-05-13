@@ -17,6 +17,7 @@ struct MeshtasticAppleApp: App {
 
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) private var appDelegate
 	@StateObject var appState: AppState
+	@StateObject private var lockdownCoordinator: LockdownCoordinator
 	private let persistenceController: PersistenceController
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
@@ -82,6 +83,14 @@ struct MeshtasticAppleApp: App {
 		}
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
+
+		// Lockdown coordinator. Constructed here so it lives at app scope and is
+		// injected into the SwiftUI environment for views to observe. The sender
+		// is wired after construction to avoid an init-time cycle with AccessoryManager.
+		let lockdown = LockdownCoordinator()
+		lockdown.setSender(accessoryManager)
+		accessoryManager.lockdownCoordinator = lockdown
+		self._lockdownCoordinator = StateObject(wrappedValue: lockdown)
 
 		self._appState = StateObject(wrappedValue: appState)
 
@@ -223,5 +232,6 @@ struct MeshtasticAppleApp: App {
 		.environment(\.managedObjectContext, persistenceController.container.viewContext)
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
+		.environmentObject(lockdownCoordinator)
 	}
 }

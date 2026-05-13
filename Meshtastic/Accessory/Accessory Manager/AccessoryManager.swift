@@ -137,6 +137,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 
+	/// MESHTASTIC_LOCKDOWN-hardened firmware state machine. See
+	/// Meshtastic/Helpers/LockdownCoordinator.swift and
+	/// specs/007-lockdown-mode/. Set by MeshtasticApp at startup.
+	var lockdownCoordinator: LockdownCoordinator?
+
 	var activeConnection: (device: Device, connection: any Connection)?
 
 	let transports: [any Transport]
@@ -265,6 +270,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
+
+		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
+		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
+		lockdownCoordinator?.onDisconnect()
 		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
@@ -703,7 +712,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			if state == .subscribed {
 				Task { try? await sendWantConfig() }
 			}
-			
+
+		case .lockdownStatus(let status):
+			// MESHTASTIC_LOCKDOWN-hardened firmware reports state after config_complete_id
+			// (and again in response to each LockdownAuth admin command). Route to the
+			// coordinator, which owns the per-connection state machine + passphrase cache.
+			lockdownCoordinator?.handle(status)
+
 		default:
 			Logger.mesh.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
 		}

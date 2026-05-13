@@ -1,0 +1,72 @@
+//
+//  LockdownPassphraseStore.swift
+//  Meshtastic
+//
+//  Per-peripheral passphrase cache for MESHTASTIC_LOCKDOWN-hardened nodes.
+//  Backed by KeychainHelper with synchronizable=false (lockdown is a per-device
+//  pairing, not iCloud-synced) and AfterFirstUnlockThisDeviceOnly accessibility
+//  so silent auto-replay can run after a fresh app launch from a locked device.
+//
+import Foundation
+
+struct StoredPassphrase: Codable, Equatable {
+	let passphrase: String
+	let bootsRemaining: UInt32
+	let validUntilEpoch: UInt32
+}
+
+final class LockdownPassphraseStore {
+
+	static let shared = LockdownPassphraseStore()
+
+	private let service = "meshtastic.lockdown.passphrase"
+	private let keychain: KeychainHelper
+
+	init(keychain: KeychainHelper = .standard) {
+		self.keychain = keychain
+	}
+
+	func get(peripheralID: UUID) -> StoredPassphrase? {
+		let key = peripheralID.uuidString
+		guard let json = keychain.read(key: key, service: service, synchronizable: false) else {
+			return nil
+		}
+		guard let data = json.data(using: .utf8) else {
+			// Malformed entry. Wipe so we don't keep returning nil through this branch.
+			_ = keychain.delete(key: key, service: service, synchronizable: false)
+			return nil
+		}
+		do {
+			return try JSONDecoder().decode(StoredPassphrase.self, from: data)
+		} catch {
+			_ = keychain.delete(key: key, service: service, synchronizable: false)
+			return nil
+		}
+	}
+
+	@discardableResult
+	func save(peripheralID: UUID, _ stored: StoredPassphrase) -> Bool {
+		guard let data = try? JSONEncoder().encode(stored),
+			  let json = String(data: data, encoding: .utf8) else {
+			return false
+		}
+		let status = keychain.save(
+			key: peripheralID.uuidString,
+			value: json,
+			service: service,
+			accessibility: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+			synchronizable: false
+		)
+		return status == errSecSuccess
+	}
+
+	@discardableResult
+	func delete(peripheralID: UUID) -> Bool {
+		let status = keychain.delete(
+			key: peripheralID.uuidString,
+			service: service,
+			synchronizable: false
+		)
+		return status == errSecSuccess || status == errSecItemNotFound
+	}
+}
