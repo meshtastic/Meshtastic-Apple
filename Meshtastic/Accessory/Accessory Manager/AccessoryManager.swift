@@ -825,6 +825,21 @@ extension AccessoryManager {
 		forVersion.compare(myVersion, options: .numeric) == .orderedSame
 		return supportedVersion
 	}
+
+	/// Whether the connected radio supports the v2 TAK port (ATAK_PLUGIN_V2 = 78)
+	/// with TAKPacketV2 + zstd dictionary compression via TAKPacket-SDK.
+	///
+	/// Firmware **>= 2.8.0** supports v2 (full typed CoT payloads — PLI, GeoChat,
+	/// DrawnShape, Marker, Route, Aircraft, Casevac, Emergency, Task — under
+	/// the 237 B LoRa MTU). Firmware **<= 2.7.x** falls back to the legacy
+	/// ATAK_PLUGIN port (72) with the original `TAKPacket` schema, which only
+	/// supports PLI and GeoChat (no shapes, markers, routes, etc.).
+	///
+	/// Returns `true` when the firmware version is unknown (radio not yet
+	/// handshook) since v2 is now the predominant firmware in the field.
+	var supportsTAKv2: Bool {
+		checkIsVersionSupported(forVersion: "2.8.0")
+	}
 }
 
 extension AccessoryManager {

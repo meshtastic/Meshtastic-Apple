@@ -224,6 +224,46 @@ extension AccessoryManager {
 		try await sendTAKV2Packet(wirePayload, channel: channel)
 	}
 
+	// MARK: - Send Legacy TAK Packet to Mesh (Port 72, V1)
+
+	/// Send a legacy V1 `TAKPacket` (bare protobuf, no zstd) to the mesh.
+	/// Used for firmware <= 2.7.x that doesn't support the V2 wire format on
+	/// port 78. The V1 schema supports only PLI and GeoChat — callers must
+	/// drop any other CoT type before reaching this method.
+	func sendTAKPacket(_ takPacket: MeshtasticProtobufs.TAKPacket, channel: UInt32 = 0) async throws {
+		guard let activeConnection else {
+			throw AccessoryError.connectionFailed("Not connected to Meshtastic device")
+		}
+		guard let deviceNum = activeConnection.device.num else {
+			throw AccessoryError.connectionFailed("No device number available")
+		}
+
+		let payload: Data
+		do {
+			payload = try takPacket.serializedData()
+		} catch {
+			Logger.tak.error("Failed to serialize V1 TAKPacket: \(error.localizedDescription)")
+			throw error
+		}
+
+		var dataMessage = DataMessage()
+		dataMessage.portnum = .atakPlugin  // Port 72 (legacy V1)
+		dataMessage.payload = payload
+
+		var meshPacket = MeshPacket()
+		meshPacket.to = 0xFFFFFFFF  // Broadcast
+		meshPacket.from = UInt32(deviceNum)
+		meshPacket.channel = channel
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.decoded = dataMessage
+
+		var toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		try await send(toRadio, debugDescription: "Sending legacy V1 TAKPacket to mesh")
+		Logger.tak.info("Sent V1 TAK packet to mesh (port=72, channel=\(channel), size=\(payload.count) bytes)")
+	}
+
 	/// Ensure static CoT types (routes, shapes, markers) have at least 5 minutes
 	/// of stale time remaining. iTAK uses 2-min stale for routes while ATAK uses
 	/// 24h. Over LoRa mesh with multi-hop relay, a short stale means the object

@@ -178,17 +178,40 @@ final class TAKMeshtasticBridge {
 			enrichedMessage.contact = CoTContact(callsign: cs)
 		}
 
-		// V2 protocol: Convert CoT XML → compress with SDK → send on port 78.
-		// Prefer the original source XML from the TAK client — toXML() loses
-		// shape geometry (<link point="..."/> vertices) that the app's parser
-		// strips as "known" elements but has no field to store.
-		// For GeoChat, use toXML() since the enrichment modifies contact.
-		do {
-			let cotXml = (cotMessage.type != "b-t-f" ? cotMessage.sourceEventXml : nil)
-				?? enrichedMessage.toXML()
-			try await accessoryManager.sendCoTToMeshV2(cotXml, channel: channel)
-		} catch {
-			Logger.tak.error("Failed to send V2 to mesh: \(error.localizedDescription)")
+		// Version-gated fork: pick the wire format based on the connected radio's
+		// firmware version. Firmware >= 2.8.0 supports the v2 port (78) with
+		// zstd dictionary compression and the full typed CoT payload schema
+		// (shapes, markers, routes, etc.). Firmware <= 2.7.x only understands
+		// the legacy v1 port (72) with bare TAKPacket protobuf, which can
+		// represent PLI and GeoChat only.
+		if accessoryManager.supportsTAKv2 {
+			// V2 protocol: Convert CoT XML → compress with SDK → send on port 78.
+			// Prefer the original source XML from the TAK client — toXML() loses
+			// shape geometry (<link point="..."/> vertices) that the app's parser
+			// strips as "known" elements but has no field to store.
+			// For GeoChat, use toXML() since the enrichment modifies contact.
+			do {
+				let cotXml = (cotMessage.type != "b-t-f" ? cotMessage.sourceEventXml : nil)
+					?? enrichedMessage.toXML()
+				try await accessoryManager.sendCoTToMeshV2(cotXml, channel: channel)
+			} catch {
+				Logger.tak.error("Failed to send V2 to mesh: \(error.localizedDescription)")
+			}
+		} else {
+			// Legacy V1 protocol: Convert CoT → bare TAKPacket → send on port 72.
+			// Only PLI (a-f-G/a-f-g) and GeoChat (b-t-f) are representable in
+			// the v1 schema; anything else returns nil from convertToTAKPacket
+			// and is dropped with a warning so the user knows they're missing
+			// payloads because of an old firmware on the radio.
+			guard let takPacket = convertToTAKPacket(cot: enrichedMessage) else {
+				Logger.tak.warning("Dropping CoT for legacy v1 radio: type=\(cotMessage.type) is not representable in the v1 TAKPacket schema (only PLI and GeoChat are supported). Upgrade radio firmware to >= 2.8.0 for full CoT payload support.")
+				return
+			}
+			do {
+				try await accessoryManager.sendTAKPacket(takPacket, channel: channel)
+			} catch {
+				Logger.tak.error("Failed to send V1 to mesh: \(error.localizedDescription)")
+			}
 		}
 	}
 
