@@ -58,9 +58,7 @@ struct ContentView: View {
 				}
 
 				Tab("Nodes", systemImage: "flipphone", value: NavigationState.Tab.nodes) {
-					NodeList(
-						router: appState.router
-					)
+					NodeList()
 				}
 
 				Tab("Mesh Map", systemImage: "map", value: NavigationState.Tab.map) {
@@ -68,9 +66,7 @@ struct ContentView: View {
 				}
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
-					Settings(
-						router: appState.router
-					)
+					Settings()
 				}
 			}
 		} else {
@@ -94,10 +90,8 @@ struct ContentView: View {
 				}
 				.tag(NavigationState.Tab.connect)
 
-				NodeList(
-					router: appState.router
-				)
-				.tabItem {
+				NodeList()
+			.tabItem {
 					Label("Nodes", systemImage: "flipphone")
 				}
 				.tag(NavigationState.Tab.nodes)
@@ -108,12 +102,10 @@ struct ContentView: View {
 				}
 				.tag(NavigationState.Tab.map)
 
-				Settings(
-					router: appState.router
-				)
-				.tabItem {
-					Label("Settings", systemImage: "gear")
-				}
+				Settings()
+			.tabItem {
+				Label("Settings", systemImage: "gear")
+			}
 				.tag(NavigationState.Tab.settings)
 			}
 		}

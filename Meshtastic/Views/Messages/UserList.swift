@@ -91,14 +91,56 @@ private struct FilteredUserList: View {
 		allUsers.filter { filters.matches(user: $0) }
 	}
 
+	// MARK: - Precomputed message info cache
+
+	/// Batch-fetch most recent messages and unread counts for all visible users in two queries
+	/// instead of 2N individual queries (one per row).
+	private var messageInfo: [Int64: (mostRecent: MessageEntity?, unreadCount: Int)] {
+		let userNums = Set(users.map(\.num))
+		guard !userNums.isEmpty else { return [:] }
+
+		// Fetch all non-emoji, non-admin messages for visible users in one query
+		let detectionSensorPortNum: Int32 = 10
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+			},
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+		)
+		let allMessages = (try? context.fetch(descriptor)) ?? []
+
+		var result: [Int64: (mostRecent: MessageEntity?, unreadCount: Int)] = [:]
+		for num in userNums {
+			result[num] = (mostRecent: nil, unreadCount: 0)
+		}
+		for message in allMessages {
+			let fromNum = message.fromUser?.num
+			let toNum = message.toUser?.num
+			// Check if this message belongs to any of the visible users
+			for num in [fromNum, toNum].compactMap({ $0 }) where userNums.contains(num) {
+				var entry = result[num]!
+				if entry.mostRecent == nil {
+					entry.mostRecent = message
+				}
+				if !message.read {
+					entry.unreadCount += 1
+				}
+				result[num] = entry
+			}
+		}
+		return result
+	}
+
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
+		let cachedInfo = messageInfo
 
 		List(users, selection: $userSelection) { user in
-			let mostRecent = user.mostRecentMessage
+			let info = cachedInfo[user.num]
+			let mostRecent = info?.mostRecent
 			let hasMessages = mostRecent != nil
-			let hasUnreadMessages = user.unreadMessages > 0
+			let hasUnreadMessages = (info?.unreadCount ?? 0) > 0
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0

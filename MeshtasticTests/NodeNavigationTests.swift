@@ -146,7 +146,7 @@ struct NodeNavigationTests {
 	@Test func navigateToNodeThenClearSelection() async {
 		let router = await Router()
 		await router.navigateToNodeDetail(nodeNum: 42)
-		await MainActor.run { router.nodeListSelectedNodeNum = nil }
+		await MainActor.run { router.popToRoot(tab: .nodes) }
 		let state = await router.navigationState
 		#expect(state.selectedTab == .nodes)
 		#expect(state.nodeListSelectedNodeNum == nil)

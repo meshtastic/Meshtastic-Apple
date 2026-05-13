@@ -66,15 +66,18 @@ struct PulsingCircle: View {
 
 	var body: some View {
 		Circle()
-			.fill(Color(nodeColor.lighter()).opacity(0.4))
-			.frame(width: 55, height: 55)
-			.scaleEffect(isPulsing ? 1.2 : 0.8)
+			.fill(Color(nodeColor.lighter()).opacity(0.3))
+			.frame(width: 50, height: 50)
+			.scaleEffect(isPulsing ? 1.1 : 0.9)
 			.animation(
-				.easeInOut(duration: 0.8).repeatForever(autoreverses: true).delay(calculatedDelay),
+				.easeInOut(duration: 1.2).repeatForever(autoreverses: true).delay(calculatedDelay),
 				value: isPulsing
 			)
 			.onAppear {
 				isPulsing = true
+			}
+			.onDisappear {
+				isPulsing = false
 			}
 	}
 }

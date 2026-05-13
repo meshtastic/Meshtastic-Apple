@@ -13,9 +13,8 @@ import Foundation
 struct NodeList: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@StateObject var router: Router
+	@EnvironmentObject var router: Router
 	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
-	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingPositionSentAlert = false
 	@State private var isPresentingPositionFailedAlert = false
@@ -27,6 +26,7 @@ struct NodeList: View {
 	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
+
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
 			return getNodeInfo(id: num, context: context)
@@ -34,26 +34,22 @@ struct NodeList: View {
 		return nil
 	}
 
+	@State private var columnVisibility: NavigationSplitViewVisibility = .all
+
 	var body: some View {
-		NavigationSplitView {
+		NavigationSplitView(columnVisibility: $columnVisibility) {
 			sidebarContent
 		} detail: {
-			detailContent
-		}
-		.onChange(of: router.navigationState.nodeListSelectedNodeNum) { _, newNum in
-			if let num = newNum {
-				self.selectedNode = getNodeInfo(id: num, context: context)
-			} else {
-				self.selectedNode = nil
+			NavigationStack {
+				if let selectedNum = router.selectedNodeNum,
+				   let node = getNodeInfo(id: selectedNum, context: context) {
+					NodeDetail(node: node)
+				} else {
+					ContentUnavailableView("Select a Node", systemImage: "flipphone")
+				}
 			}
 		}
-		.onChange(of: selectedNode) { _, node in
-			if let num = node?.num {
-				router.navigationState.nodeListSelectedNodeNum = num
-			} else {
-				router.navigationState.nodeListSelectedNodeNum = nil
-			}
-		}
+		.navigationSplitViewStyle(.balanced)
 	}
 
 	// MARK: - Sidebar
@@ -62,12 +58,12 @@ struct NodeList: View {
 	private var sidebarContent: some View {
 		FilteredNodeList(
 			withFilters: filters,
-			selectedNode: $selectedNode,
 			connectedNode: connectedNode,
 			isPresentingDeleteNodeAlert: $isPresentingDeleteNodeAlert,
 			deleteNodeId: $deleteNodeId,
 			shareContactNode: $shareContactNode,
-			nodeListDensity: $nodeListDensity
+			nodeListDensity: $nodeListDensity,
+			selectedNodeNum: $router.selectedNodeNum
 		)
 		.sheet(isPresented: $isEditingFilters) {
 			NodeListFilter(
@@ -143,19 +139,6 @@ struct NodeList: View {
 		.accessibilityElement(children: .contain))
 	}
 
-	// MARK: - Detail
-
-	@ViewBuilder
-	private var detailContent: some View {
-		if let node = selectedNode {
-			NodeDetail(
-				node: node
-			)
-		} else {
-			ContentUnavailableView("Select a Node", systemImage: "flipphone")
-		}
-	}
-
 	// Helper to get the count of nodes for the navigation title
 	private func getNodeCount() -> Int {
 		var descriptor = FetchDescriptor<NodeInfoEntity>()
@@ -193,30 +176,30 @@ private struct FilteredNodeList: View {
 	private var allNodes: [NodeInfoEntity]
 	@Environment(\.modelContext) private var context
 
-	@Binding var selectedNode: NodeInfoEntity?
 	var connectedNode: NodeInfoEntity?
 	@Binding var isPresentingDeleteNodeAlert: Bool
 	@Binding var deleteNodeId: Int64
 	@Binding var shareContactNode: NodeInfoEntity?
 	@Binding var nodeListDensity: NodeListDensity
+	@Binding var selectedNodeNum: Int64?
 	var filters: NodeFilterParameters
 
 	init(
 		withFilters: NodeFilterParameters,
-		selectedNode: Binding<NodeInfoEntity?>,
 		connectedNode: NodeInfoEntity?,
 		isPresentingDeleteNodeAlert: Binding<Bool>,
 		deleteNodeId: Binding<Int64>,
 		shareContactNode: Binding<NodeInfoEntity?>,
-		nodeListDensity: Binding<NodeListDensity>
+		nodeListDensity: Binding<NodeListDensity>,
+		selectedNodeNum: Binding<Int64?>
 	) {
 		self.filters = withFilters
-		self._selectedNode = selectedNode
 		self.connectedNode = connectedNode
 		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
 		self._deleteNodeId = deleteNodeId
 		self._shareContactNode = shareContactNode
 		self._nodeListDensity = nodeListDensity
+		self._selectedNodeNum = selectedNodeNum
 
 		// Push simple filters into the SwiftData predicate to reduce in-memory work
 		let showIgnored = withFilters.isIgnored
@@ -262,8 +245,8 @@ private struct FilteredNodeList: View {
 	var body: some View {
 		// If the connected node passes filters, always show it first
 		let nodesWithConnectedFirst = filteredNodes.filter { $0.num == accessoryManager.activeDeviceNum } + filteredNodes.filter { $0.num != accessoryManager.activeDeviceNum }
-		List(nodesWithConnectedFirst, id: \.self, selection: $selectedNode) { node in
-			NavigationLink(value: node) {
+		List(nodesWithConnectedFirst, id: \.self, selection: $selectedNodeNum) { node in
+			NavigationLink(value: node.num) {
 				switch nodeListDensity {
 				case .compact:
 					NodeListItemCompact(

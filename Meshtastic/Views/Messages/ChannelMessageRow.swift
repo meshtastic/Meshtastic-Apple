@@ -4,6 +4,7 @@ import SwiftUI
 
 struct ChannelMessageRow: View {
 	@EnvironmentObject var appState: AppState
+	@Environment(\.modelContext) private var context
 	
 	// Core Data object observed for changes (like Tapbacks being received)
 	@Bindable var message: MessageEntity
@@ -25,16 +26,16 @@ struct ChannelMessageRow: View {
 	}
 	
 	init(message: MessageEntity,
-	     allMessages: [MessageEntity],
-	     previousMessage: MessageEntity?,
-	     preferredPeripheralNum: Int,
-	     channel: ChannelEntity,
-	     replyMessageId: Binding<Int64>,
-	     messageFieldFocused: FocusState<Bool>.Binding,
-	     messageToHighlight: Binding<Int64>,
-	     scrollView: ScrollViewProxy,
-	     onInteractionComplete: @escaping () -> Void,
-	     onTapback: @escaping (MessageEntity) -> Void) {
+		 allMessages: [MessageEntity],
+		 previousMessage: MessageEntity?,
+		 preferredPeripheralNum: Int,
+		 channel: ChannelEntity,
+		 replyMessageId: Binding<Int64>,
+		 messageFieldFocused: FocusState<Bool>.Binding,
+		 messageToHighlight: Binding<Int64>,
+		 scrollView: ScrollViewProxy,
+		 onInteractionComplete: @escaping () -> Void,
+		 onTapback: @escaping (MessageEntity) -> Void) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
 		self.allMessages = allMessages
@@ -98,13 +99,11 @@ struct ChannelMessageRow: View {
 				if isCurrentUser { Spacer(minLength: 50) }
 				// Node Detail Tap
 				if !isCurrentUser {
-					CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 50)
-						.onTapGesture(count: 2) {
-							if let nodeNum = message.fromUser?.num {
-								appState.router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
-							}
-						}
-						.padding(.all, 5).offset(y: -7)
+					NavigationLink(value: Int64(message.fromUser?.num ?? 0)) {
+						CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 50)
+					}
+					.buttonStyle(.plain)
+					.padding(.all, 5).offset(y: -7)
 				}
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {

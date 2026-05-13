@@ -14,13 +14,10 @@ struct PositionPopover: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var appState: AppState
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.dismiss) private var dismiss
 	@Environment(\.openURL) var openURL
 	var position: PositionEntity
-	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
 	
-	@State private var detentSelection: PresentationDetent = .fraction(0.65)
 	@State private var navigateToCompass = false
 
 	var body: some View {
@@ -29,18 +26,7 @@ struct PositionPopover: View {
 		NavigationStack {
 			VStack {
 				HStack {
-					ZStack {
-					Button {
-						if let nodeNum = position.nodePosition?.num {
-							dismiss()
-							DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-								appState.router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
-							}
-						}
-						} label: {
-							CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
-						}
-				}
+					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 					Text(position.nodePosition?.user?.longName ?? "Unknown")
 						.font(.largeTitle)
 				}
@@ -49,10 +35,7 @@ struct PositionPopover: View {
 					VStack(alignment: .leading) {
 						if position.isPreciseLocation {
 							Button {
-								detentSelection = .large
-								DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-									navigateToCompass = true
-								}
+								navigateToCompass = true
 							} label: {
 								Label {
 									Text("Open Compass")
@@ -245,25 +228,9 @@ struct PositionPopover: View {
 					}
 				}
 				.padding(.top)
-				if !popover {
-#if targetEnvironment(macCatalyst)
-					Spacer()
-					Button {
-						dismiss()
-					} label: {
-						Label("Close", systemImage: "xmark")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-#endif
-				}
 			}
-			.presentationDetents([.fraction(0.65), .large], selection: $detentSelection)
-			.presentationContentInteraction(.scrolls)
-			.presentationDragIndicator(.visible)
-			.presentationBackgroundInteraction(.enabled(upThrough: .large))
+			.frame(idealWidth: 350, maxHeight: .infinity)
+			.fixedSize(horizontal: false, vertical: true)
 			.navigationDestination(isPresented: $navigateToCompass) {
 				CompassView(
 					waypointLocation: position.nodeCoordinate ?? LocationsHandler.DefaultLocation,
