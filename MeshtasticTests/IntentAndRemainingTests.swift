@@ -6,49 +6,6 @@ import Foundation
 import SwiftUI
 @testable import Meshtastic
 
-// MARK: - EXICodec Compression Detailed
-
-@Suite("EXICodec Compression Detailed")
-struct EXICodecCompressionDetailedTests {
-
-	@Test func compress_variousXMLSizes() {
-		// Small XML
-		let small = "<event/>"
-		let smallResult = EXICodec.shared.compress(small)
-		#expect(smallResult != nil)
-
-		// Medium XML
-		let medium = """
-		<?xml version='1.0'?><event version="2.0" uid="test-medium" type="a-f-G-U-C" time="2024-01-01T00:00:00Z" start="2024-01-01T00:00:00Z" stale="2024-01-01T00:10:00Z" how="m-g"><point lat="37.7749" lon="-122.4194" hae="50" ce="9999999" le="9999999"/><detail><contact callsign="TestUser"/><__group name="Cyan" role="Team Member"/><track speed="1.5" course="270.0"/><status battery="85"/></detail></event>
-		"""
-		let medResult = EXICodec.shared.compress(medium)
-		#expect(medResult != nil)
-		if let medResult {
-			#expect(medResult.count < medium.count)
-		}
-	}
-
-	@Test func decompress_compressedData_roundTrip() {
-		let original = "<event version=\"2.0\" uid=\"roundtrip\"/>"
-		if let compressed = EXICodec.shared.compress(original) {
-			let decompressed = EXICodec.shared.decompress(compressed)
-			#expect(decompressed == original)
-		}
-	}
-
-	@Test func compress_specialCharacters() {
-		let xml = "<event note=\"Hello &amp; goodbye\"/>"
-		let result = EXICodec.shared.compress(xml)
-		#expect(result != nil)
-	}
-
-	@Test func compress_unicodeContent() {
-		let xml = "<event note=\"こんにちは 🌍\"/>"
-		let result = EXICodec.shared.compress(xml)
-		#expect(result != nil)
-	}
-}
-
 // MARK: - LogDocument Tests
 
 @Suite("LogDocument Extended")

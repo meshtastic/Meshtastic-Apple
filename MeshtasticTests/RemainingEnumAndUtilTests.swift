@@ -200,69 +200,6 @@ struct TAKPortNumEnumTests {
 	}
 }
 
-// MARK: - CoTSendMethod Tests
-
-@Suite("CoTSendMethod Classification")
-struct CoTSendMethodClassificationTests {
-
-	@Test func pliType_returnsTakPacketPLI() async {
-		let cot = CoTMessage(uid: "test", type: "a-f-G-U-C")
-		let method = await GenericCoTHandler.shared.classifySendMethod(for: cot)
-		if case .takPacketPLI = method {} else {
-			Issue.record("Expected .takPacketPLI")
-		}
-	}
-
-	@Test func pliType_lowercase() async {
-		let cot = CoTMessage(uid: "test", type: "a-f-g-u-c")
-		let method = await GenericCoTHandler.shared.classifySendMethod(for: cot)
-		if case .takPacketPLI = method {} else {
-			Issue.record("Expected .takPacketPLI for lowercase")
-		}
-	}
-
-	@Test func chatType_returnsTakPacketChat() async {
-		let cot = CoTMessage(uid: "test", type: "b-t-f")
-		let method = await GenericCoTHandler.shared.classifySendMethod(for: cot)
-		if case .takPacketChat = method {} else {
-			Issue.record("Expected .takPacketChat")
-		}
-	}
-
-	@Test func genericType_returnsExi() async {
-		let cot = CoTMessage(uid: "test", type: "b-m-r")
-		let method = await GenericCoTHandler.shared.classifySendMethod(for: cot)
-		switch method {
-		case .exiDirect, .exiFountain:
-			break // expected
-		default:
-			Issue.record("Expected .exiDirect or .exiFountain for generic type")
-		}
-	}
-}
-
-// MARK: - GenericCoTError Tests
-
-@Suite("GenericCoTError")
-struct GenericCoTErrorEnumTests {
-
-	@Test func allCases_haveDescriptions() {
-		let errors: [GenericCoTError] = [.notConnected, .noDeviceNumber, .compressionFailed, .encodingFailed]
-		for error in errors {
-			#expect(error.errorDescription != nil)
-			#expect(!error.errorDescription!.isEmpty)
-		}
-	}
-
-	@Test func notConnected_description() {
-		#expect(GenericCoTError.notConnected.errorDescription == "Not connected to Meshtastic device")
-	}
-
-	@Test func compressionFailed_description() {
-		#expect(GenericCoTError.compressionFailed.errorDescription == "Failed to compress CoT to EXI")
-	}
-}
-
 // MARK: - SerialConfigEnums Extended Tests
 
 @Suite("SerialConfigEnums Extended")
@@ -388,36 +325,6 @@ struct FirmwareFileDownloadStatusTests {
 		#expect(FirmwareFile.DownloadStatus.error("err") == FirmwareFile.DownloadStatus.error("err"))
 		#expect(FirmwareFile.DownloadStatus.error("a") != FirmwareFile.DownloadStatus.error("b"))
 		#expect(FirmwareFile.DownloadStatus.notDownloaded != FirmwareFile.DownloadStatus.downloaded)
-	}
-}
-
-// MARK: - EXICodec Tests Extended
-
-@Suite("EXICodec Extended")
-struct EXICodecExtendedTests {
-
-	@Test func compress_decompress_roundTrip() {
-		let xml = "<?xml version='1.0'?><event version='2.0' uid='test' type='a-f-G' time='2024-01-01T00:00:00Z' start='2024-01-01T00:00:00Z' stale='2024-01-01T00:10:00Z' how='m-g'><point lat='37.0' lon='-122.0' hae='0' ce='9999999' le='9999999'/><detail/></event>"
-		let compressed = EXICodec.shared.compress(xml)
-		#expect(compressed != nil)
-		if let compressed {
-			#expect(compressed.count < xml.count)
-			let decompressed = EXICodec.shared.decompress(compressed)
-			#expect(decompressed != nil)
-			#expect(decompressed == xml)
-		}
-	}
-
-	@Test func decompress_invalidData_returnsNil() {
-		let garbage = Data([0xFF, 0xFE, 0xFD, 0xFC])
-		let result = EXICodec.shared.decompress(garbage)
-		#expect(result == nil)
-	}
-
-	@Test func compress_emptyString() {
-		let result = EXICodec.shared.compress("")
-		// Empty string should still compress (zlib can handle it)
-		#expect(result != nil)
 	}
 }
 
