@@ -22,4 +22,4 @@ Use the sidebar navigation to browse the **User Guide** for app features and the
 | [Units & Locale](user/units-and-locale) | How temperatures, distances, and times adapt to your region |
 | [Architecture](developer/architecture) | App architecture overview for contributors |
 
-In **Ask Chirpy**, local source links open in the in-app documentation viewer, while explicit `meshtastic.org` links in a reply open on the website.
+In **Ask Chirpy**, local source links open in the in-app documentation viewer. When internet is available, Chirpy may also augment answers with related `meshtastic.org` sources; without service, it continues using local docs only.
