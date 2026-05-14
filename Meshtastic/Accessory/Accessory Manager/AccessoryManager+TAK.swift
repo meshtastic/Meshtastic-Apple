@@ -208,7 +208,7 @@ extension AccessoryManager {
 		let freshXml = Self.ensureMinimumStaleForMesh(cotXml)
 		let strippedXml = Self.stripNonEssentialElements(freshXml)
 		let parser = MeshtasticTAK.CotXmlParser()
-		let packet = parser.parse(strippedXml)
+		let packet = try parser.parse(strippedXml)
 		let compressor = MeshtasticTAK.TakCompressor()
 		// compressWithRemarksFallback preserves <remarks> text when the
 		// compressed packet fits under the LoRa MTU, and strips remarks
