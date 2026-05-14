@@ -498,7 +498,7 @@ final class TAKServerManager: ObservableObject {
 		switch event {
 		case .connected(let clientInfo):
 			connectedClients.append(clientInfo)
-			Logger.tak.info("TAK client connected: \(clientInfo.displayName)")
+			Logger.tak.info("TAK client connected: \(clientInfo.displayName) (total connected: \(self.connections.count))")
 
 			// Drain any messages that arrived while no clients were connected
 			await drainOfflineQueue()
@@ -567,14 +567,18 @@ final class TAKServerManager: ObservableObject {
 		// connections — a message from the sole connected client doesn't
 		// need to be queued because there is nobody to deliver it to.
 		let recipientCount = connections.keys.filter { $0 != sender }.count
+		let totalCount = connections.count
 		guard recipientCount > 0 else {
 			if sender == nil {
 				enqueueOffline(.message(cotMessage))
+				Logger.tak.info("Queued CoT for offline delivery (0 TAK clients connected): \(cotMessage.type)")
+			} else {
+				Logger.tak.info("CoT fan-out skipped: sender is the only connected TAK client (total=\(totalCount), type=\(cotMessage.type))")
 			}
 			return
 		}
 
-		Logger.tak.info("Broadcasting CoT to \(recipientCount) TAK client(s): \(cotMessage.type)")
+		Logger.tak.info("Broadcasting CoT to \(recipientCount) TAK client(s) (total=\(totalCount), excludingSender=\(sender != nil)): \(cotMessage.type)")
 
 		// Snapshot the entry set up front so we never observe a mutation made
 		// by `removeConnection(_:)` (which `await`s on `TAKConnection.endpoint`
@@ -606,12 +610,17 @@ final class TAKServerManager: ObservableObject {
 	/// path to avoid echoing a client's own message back to itself.
 	func broadcastRawXml(_ xml: String, except sender: ObjectIdentifier? = nil) async {
 		let recipientCount = connections.keys.filter { $0 != sender }.count
+		let totalCount = connections.count
 		guard recipientCount > 0 else {
 			if sender == nil {
 				enqueueOffline(.rawXml(xml))
+				Logger.tak.info("Queued raw XML for offline delivery (0 TAK clients connected)")
+			} else {
+				Logger.tak.info("Raw XML fan-out skipped: sender is the only connected TAK client (total=\(totalCount))")
 			}
 			return
 		}
+		Logger.tak.info("Broadcasting raw XML to \(recipientCount) TAK client(s) (total=\(totalCount), excludingSender=\(sender != nil))")
 		// Same defensive snapshot + post-loop removal as `broadcast(_:)`.
 		let entries = Array(connections)
 		var failed: [ObjectIdentifier] = []
