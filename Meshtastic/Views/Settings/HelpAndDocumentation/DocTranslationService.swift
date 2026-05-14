@@ -1,4 +1,4 @@
-// MARK: DocTranslationService
+right // MARK: DocTranslationService
 //
 //  DocTranslationService.swift
 //  Meshtastic
@@ -256,7 +256,8 @@ actor DocTranslationService {
 		}
 
 		let task = Task<String, Never> {
-			if let translated = await self.translateUIText(source, targetLanguage: languageCode) {
+			if let translated = await self.translateUIText(source, targetLanguage: languageCode),
+			   !translated.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
 				return translated
 			}
 			return text
