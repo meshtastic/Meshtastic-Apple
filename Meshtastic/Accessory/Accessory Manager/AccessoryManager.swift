@@ -823,11 +823,27 @@ extension AccessoryManager {
 	}
 
 	func checkIsVersionSupported(forVersion: String) -> Bool {
-		let myVersion = connectedVersion ?? "0.0.0"
-		let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||
-		forVersion.compare(myVersion, options: .numeric) == .orderedAscending ||
-		forVersion.compare(myVersion, options: .numeric) == .orderedSame
-		return supportedVersion
+		// Prefer the live `connectedVersion` (full string including build hash,
+		// e.g. "2.8.0.3a0c08b"). Fall back to the persisted UserDefaults value
+		// (stripped of trailing hash, e.g. "2.8.0") because
+		// `activeConnection?.device.firmwareVersion` is briefly nil during
+		// reconnects before `handleDeviceMetadata` repopulates it — using only
+		// `connectedVersion` in that window collapses `myVersion` to "0.0.0"
+		// and incorrectly returns false for every capability check.
+		let storedVersion = UserDefaults.firmwareVersion
+		let myVersion: String
+		if let live = connectedVersion, !live.isEmpty {
+			myVersion = live
+		} else if storedVersion != "0.0.0" {
+			myVersion = storedVersion
+		} else {
+			// No firmware info at all — be permissive (matches the prior
+			// "first-launch" behavior; newer firmware is the common case).
+			return true
+		}
+
+		let comparison = forVersion.compare(myVersion, options: .numeric)
+		return comparison == .orderedAscending || comparison == .orderedSame
 	}
 
 	/// Whether the connected radio supports the v2 TAK port (ATAK_PLUGIN_V2 = 78)
