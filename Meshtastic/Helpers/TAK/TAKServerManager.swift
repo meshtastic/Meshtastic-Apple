@@ -552,14 +552,22 @@ final class TAKServerManager: ObservableObject {
 
 		Logger.tak.info("Broadcasting CoT to \(self.connections.count) TAK client(s): \(cotMessage.type)")
 
-		for (connectionId, connection) in connections {
+		// Snapshot the entry set up front so we never observe a mutation made
+		// by `removeConnection(_:)` (which `await`s on `TAKConnection.endpoint`
+		// and therefore lets other `@MainActor` work reenter) while iterating.
+		// Failed IDs are collected and removed after the loop completes.
+		let entries = Array(connections)
+		var failed: [ObjectIdentifier] = []
+		for (connectionId, connection) in entries {
 			do {
 				try await connection.send(cotMessage)
 			} catch {
 				Logger.tak.error("Failed to send to TAK client: \(error.localizedDescription)")
-				// Remove failed connection
-				await removeConnection(connectionId)
+				failed.append(connectionId)
 			}
+		}
+		for connectionId in failed {
+			await removeConnection(connectionId)
 		}
 	}
 
@@ -574,13 +582,19 @@ final class TAKServerManager: ObservableObject {
 			enqueueOffline(.rawXml(xml))
 			return
 		}
-		for (connectionId, connection) in connections {
+		// Same defensive snapshot + post-loop removal as `broadcast(_:)`.
+		let entries = Array(connections)
+		var failed: [ObjectIdentifier] = []
+		for (connectionId, connection) in entries {
 			do {
 				try await connection.sendRawXML(xml)
 			} catch {
 				Logger.tak.error("Failed to send raw XML to TAK client: \(error.localizedDescription)")
-				await removeConnection(connectionId)
+				failed.append(connectionId)
 			}
+		}
+		for connectionId in failed {
+			await removeConnection(connectionId)
 		}
 	}
 
