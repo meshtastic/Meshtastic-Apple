@@ -37642,6 +37642,9 @@
     "Open %@ documentation" : {
 
     },
+    "Open %@ on meshtastic.org" : {
+
+    },
     "Open Compass" : {
       "localizations" : {
         "es" : {
