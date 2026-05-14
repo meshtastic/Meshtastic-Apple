@@ -563,8 +563,28 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// Heltec Mesh Node T096 board features an nRF52840 CPU and a TFT screen.
   case heltecMeshNodeT096 // = 127
 
-  /// Seeed studio T1000-E Pro tracker card. NRF52840 w/ LR2021 radio, GPS, button, buzzer, and sensors. 
+  ///
+  /// Seeed studio T1000-E Pro tracker card. NRF52840 w/ LR2021 radio,
+  /// GPS, button, buzzer, and sensors.
   case trackerT1000EPro // = 128
+
+  ///
+  /// Elecrow ThinkNode M7, M8 and M9
+  case thinknodeM7 // = 129
+  case thinknodeM8 // = 130
+  case thinknodeM9 // = 131
+
+  ///
+  /// The Heltec-V4-R8 uses an ESP32S3R8 chip, plus an SX1262.
+  case heltecV4R8 // = 132
+
+  ///
+  /// The HELTEC_MESH_NODE_T1 uses an NRF52840 chip, plus an SX1262.
+  case heltecMeshNodeT1 // = 133
+
+  ///
+  /// B&Q Consulting Station G3: TBD
+  case stationG3 // = 134
 
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -708,6 +728,12 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 126: self = .tdisplayS3Pro
     case 127: self = .heltecMeshNodeT096
     case 128: self = .trackerT1000EPro
+    case 129: self = .thinknodeM7
+    case 130: self = .thinknodeM8
+    case 131: self = .thinknodeM9
+    case 132: self = .heltecV4R8
+    case 133: self = .heltecMeshNodeT1
+    case 134: self = .stationG3
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -844,6 +870,12 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .tdisplayS3Pro: return 126
     case .heltecMeshNodeT096: return 127
     case .trackerT1000EPro: return 128
+    case .thinknodeM7: return 129
+    case .thinknodeM8: return 130
+    case .thinknodeM9: return 131
+    case .heltecV4R8: return 132
+    case .heltecMeshNodeT1: return 133
+    case .stationG3: return 134
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -980,6 +1012,12 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .tdisplayS3Pro,
     .heltecMeshNodeT096,
     .trackerT1000EPro,
+    .thinknodeM7,
+    .thinknodeM8,
+    .thinknodeM9,
+    .heltecV4R8,
+    .heltecMeshNodeT1,
+    .stationG3,
     .privateHw,
   ]
 
@@ -2279,6 +2317,141 @@ public struct StoreForwardPlusPlus: Sendable {
 }
 
 ///
+/// The actual over-the-mesh message doing RemoteShell
+public struct RemoteShell: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Structured frame operation.
+  public var op: RemoteShell.OpCode = .opUnset
+
+  ///
+  /// Logical PTY session identifier.
+  public var sessionID: UInt32 = 0
+
+  ///
+  /// Monotonic sequence number for this frame.
+  public var seq: UInt32 = 0
+
+  ///
+  /// Cumulative ack sequence number.
+  public var ackSeq: UInt32 = 0
+
+  ///
+  /// Opaque bytes payload for INPUT/OUTPUT/ERROR and other frame bodies.
+  public var payload: Data = Data()
+
+  ///
+  /// Terminal size columns used for OPEN/RESIZE signaling.
+  public var cols: UInt32 = 0
+
+  ///
+  /// Terminal size rows used for OPEN/RESIZE signaling.
+  public var rows: UInt32 = 0
+
+  ///
+  /// Bit flags for protocol extensions.
+  public var flags: UInt32 = 0
+
+  ///
+  /// The last sequence number TX'd.
+  public var lastTxSeq: UInt32 = 0
+
+  ///
+  /// The last sequence number RX'd.
+  public var lastRxSeq: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// Frame op code for PTY session control and stream transport.
+  ///
+  /// Values 1-63 are client->server requests.
+  /// Values 64-127 are server->client responses/events.
+  public enum OpCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+    case opUnset // = 0
+
+    /// Client -> server
+    case `open` // = 1
+    case input // = 2
+    case resize // = 3
+    case close // = 4
+    case ping // = 5
+    case ack // = 6
+
+    /// Server -> client
+    case openOk // = 64
+    case output // = 65
+    case closed // = 66
+    case error // = 67
+    case pong // = 68
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .opUnset
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .opUnset
+      case 1: self = .open
+      case 2: self = .input
+      case 3: self = .resize
+      case 4: self = .close
+      case 5: self = .ping
+      case 6: self = .ack
+      case 64: self = .openOk
+      case 65: self = .output
+      case 66: self = .closed
+      case 67: self = .error
+      case 68: self = .pong
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .opUnset: return 0
+      case .open: return 1
+      case .input: return 2
+      case .resize: return 3
+      case .close: return 4
+      case .ping: return 5
+      case .ack: return 6
+      case .openOk: return 64
+      case .output: return 65
+      case .closed: return 66
+      case .error: return 67
+      case .pong: return 68
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [RemoteShell.OpCode] = [
+      .opUnset,
+      .open,
+      .input,
+      .resize,
+      .close,
+      .ping,
+      .ack,
+      .openOk,
+      .output,
+      .closed,
+      .error,
+      .pong,
+    ]
+
+  }
+
+  public init() {}
+}
+
+///
 /// Waypoint message, used to share arbitrary locations across the mesh
 public struct Waypoint: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -3396,6 +3569,20 @@ public struct FromRadio: Sendable {
     set {payloadVariant = .deviceuiConfig(newValue)}
   }
 
+  ///
+  /// Lockdown state notification for hardened firmware builds.
+  /// Sent post-config (so unauthorized clients learn they must
+  /// provision/unlock) and after each LockdownAuth admin command
+  /// to report success or failure. Replaces the earlier scheme of
+  /// encoding state as magic-string prefixes inside ClientNotification.
+  public var lockdownStatus: LockdownStatus {
+    get {
+      if case .lockdownStatus(let v)? = payloadVariant {return v}
+      return LockdownStatus()
+    }
+    set {payloadVariant = .lockdownStatus(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -3457,6 +3644,128 @@ public struct FromRadio: Sendable {
     ///
     /// Persistent data for device-ui
     case deviceuiConfig(DeviceUIConfig)
+    ///
+    /// Lockdown state notification for hardened firmware builds.
+    /// Sent post-config (so unauthorized clients learn they must
+    /// provision/unlock) and after each LockdownAuth admin command
+    /// to report success or failure. Replaces the earlier scheme of
+    /// encoding state as magic-string prefixes inside ClientNotification.
+    case lockdownStatus(LockdownStatus)
+
+  }
+
+  public init() {}
+}
+
+///
+/// Lockdown state report from firmware to client (for hardened builds
+/// with MESHTASTIC_LOCKDOWN). Sent immediately after config_complete_id
+/// to inform a freshly-connected unauthorized client what it must do,
+/// and again in response to each LockdownAuth admin command.
+public struct LockdownStatus: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Current lockdown state being reported. 
+  public var state: LockdownStatus.State = .unspecified
+
+  ///
+  /// For LOCKED: machine-readable reason. Known values:
+  ///   "needs_auth"        — storage already unlocked, client must auth
+  ///   "token_missing"     — no boot token on flash
+  ///   "token_expired"     — boot token wall-clock TTL elapsed
+  ///   "token_boots_zero"  — boot token boot-count TTL exhausted
+  ///   "token_hmac_fail"   — token tampered or wrong device
+  ///   "token_dek_fail"    — token DEK decrypt failed
+  ///   "token_wrong_size"  — token file corrupted
+  ///   "token_bad_magic"   — token file corrupted
+  ///   "not_provisioned"   — should generally use NEEDS_PROVISION state instead
+  /// Other values may be added; clients should treat unknown values as
+  /// "locked, ask for passphrase".
+  public var lockReason: String = String()
+
+  ///
+  /// For UNLOCKED: remaining boots on the issued session token.
+  /// Decrements by 1 on each subsequent boot.
+  public var bootsRemaining: UInt32 = 0
+
+  ///
+  /// For UNLOCKED: wall-clock expiry of the issued session token,
+  /// absolute Unix-epoch seconds. 0 = no time limit.
+  public var validUntilEpoch: UInt32 = 0
+
+  ///
+  /// For UNLOCK_FAILED: seconds the client must wait before another
+  /// passphrase attempt will be accepted. 0 = wrong passphrase, no
+  /// backoff (immediate retry allowed but advisable to prompt user).
+  public var backoffSeconds: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum State: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+
+    /// Default; should not be sent. 
+    case unspecified // = 0
+
+    ///
+    /// No passphrase has ever been provisioned on this device.
+    /// Client should prompt the operator to set one.
+    case needsProvision // = 1
+
+    ///
+    /// Storage is locked or this client has not authenticated yet.
+    /// lock_reason carries a machine-readable detail string.
+    /// Client should present (or auto-replay) a passphrase via
+    /// AdminMessage.lockdown_auth.
+    case locked // = 2
+
+    ///
+    /// Passphrase accepted; client is now authorized for this connection.
+    /// boots_remaining and valid_until_epoch describe the active session
+    /// token's TTL.
+    case unlocked // = 3
+
+    ///
+    /// Passphrase rejected. backoff_seconds is non-zero when rate-limited.
+    case unlockFailed // = 4
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unspecified
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unspecified
+      case 1: self = .needsProvision
+      case 2: self = .locked
+      case 3: self = .unlocked
+      case 4: self = .unlockFailed
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unspecified: return 0
+      case .needsProvision: return 1
+      case .locked: return 2
+      case .unlocked: return 3
+      case .unlockFailed: return 4
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [LockdownStatus.State] = [
+      .unspecified,
+      .needsProvision,
+      .locked,
+      .unlocked,
+      .unlockFailed,
+    ]
 
   }
 
@@ -4048,7 +4357,7 @@ public struct ChunkedPayloadResponse: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}SENSELORA_RP2040\0\u{1}SENSELORA_S3\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}TRACKER_T1000_E_PRO\0\u{2}\u{7f}\u{1}PRIVATE_HW\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}SENSELORA_RP2040\0\u{1}SENSELORA_S3\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}TRACKER_T1000_E_PRO\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{2}y\u{1}PRIVATE_HW\0")
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {
@@ -4692,6 +5001,85 @@ extension StoreForwardPlusPlus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 
 extension StoreForwardPlusPlus.SFPP_message_type: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CANON_ANNOUNCE\0\u{1}CHAIN_QUERY\0\u{2}\u{2}LINK_REQUEST\0\u{1}LINK_PROVIDE\0\u{1}LINK_PROVIDE_FIRSTHALF\0\u{1}LINK_PROVIDE_SECONDHALF\0")
+}
+
+extension RemoteShell: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RemoteShell"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}op\0\u{3}session_id\0\u{1}seq\0\u{3}ack_seq\0\u{1}payload\0\u{1}cols\0\u{1}rows\0\u{1}flags\0\u{3}last_tx_seq\0\u{3}last_rx_seq\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.op) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.sessionID) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.seq) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.ackSeq) }()
+      case 5: try { try decoder.decodeSingularBytesField(value: &self.payload) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.cols) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.rows) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.flags) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.lastTxSeq) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.lastRxSeq) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.op != .opUnset {
+      try visitor.visitSingularEnumField(value: self.op, fieldNumber: 1)
+    }
+    if self.sessionID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.sessionID, fieldNumber: 2)
+    }
+    if self.seq != 0 {
+      try visitor.visitSingularUInt32Field(value: self.seq, fieldNumber: 3)
+    }
+    if self.ackSeq != 0 {
+      try visitor.visitSingularUInt32Field(value: self.ackSeq, fieldNumber: 4)
+    }
+    if !self.payload.isEmpty {
+      try visitor.visitSingularBytesField(value: self.payload, fieldNumber: 5)
+    }
+    if self.cols != 0 {
+      try visitor.visitSingularUInt32Field(value: self.cols, fieldNumber: 6)
+    }
+    if self.rows != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rows, fieldNumber: 7)
+    }
+    if self.flags != 0 {
+      try visitor.visitSingularUInt32Field(value: self.flags, fieldNumber: 8)
+    }
+    if self.lastTxSeq != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lastTxSeq, fieldNumber: 9)
+    }
+    if self.lastRxSeq != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lastRxSeq, fieldNumber: 10)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: RemoteShell, rhs: RemoteShell) -> Bool {
+    if lhs.op != rhs.op {return false}
+    if lhs.sessionID != rhs.sessionID {return false}
+    if lhs.seq != rhs.seq {return false}
+    if lhs.ackSeq != rhs.ackSeq {return false}
+    if lhs.payload != rhs.payload {return false}
+    if lhs.cols != rhs.cols {return false}
+    if lhs.rows != rhs.rows {return false}
+    if lhs.flags != rhs.flags {return false}
+    if lhs.lastTxSeq != rhs.lastTxSeq {return false}
+    if lhs.lastRxSeq != rhs.lastRxSeq {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension RemoteShell.OpCode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OP_UNSET\0\u{1}OPEN\0\u{1}INPUT\0\u{1}RESIZE\0\u{1}CLOSE\0\u{1}PING\0\u{1}ACK\0\u{2}:OPEN_OK\0\u{1}OUTPUT\0\u{1}CLOSED\0\u{1}ERROR\0\u{1}PONG\0")
 }
 
 extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -5413,7 +5801,7 @@ extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FromRadio"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}packet\0\u{3}my_info\0\u{3}node_info\0\u{1}config\0\u{3}log_record\0\u{3}config_complete_id\0\u{1}rebooted\0\u{1}moduleConfig\0\u{1}channel\0\u{1}queueStatus\0\u{1}xmodemPacket\0\u{1}metadata\0\u{1}mqttClientProxyMessage\0\u{1}fileInfo\0\u{1}clientNotification\0\u{1}deviceuiConfig\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}packet\0\u{3}my_info\0\u{3}node_info\0\u{1}config\0\u{3}log_record\0\u{3}config_complete_id\0\u{1}rebooted\0\u{1}moduleConfig\0\u{1}channel\0\u{1}queueStatus\0\u{1}xmodemPacket\0\u{1}metadata\0\u{1}mqttClientProxyMessage\0\u{1}fileInfo\0\u{1}clientNotification\0\u{1}deviceuiConfig\0\u{3}lockdown_status\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5620,6 +6008,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           self.payloadVariant = .deviceuiConfig(v)
         }
       }()
+      case 18: try {
+        var v: LockdownStatus?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .lockdownStatus(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .lockdownStatus(v)
+        }
+      }()
       default: break
       }
     }
@@ -5698,6 +6099,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       guard case .deviceuiConfig(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
     }()
+    case .lockdownStatus?: try {
+      guard case .lockdownStatus(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
+    }()
     case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -5709,6 +6114,60 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension LockdownStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".LockdownStatus"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}state\0\u{3}lock_reason\0\u{3}boots_remaining\0\u{3}valid_until_epoch\0\u{3}backoff_seconds\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.state) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.lockReason) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.bootsRemaining) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.validUntilEpoch) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.backoffSeconds) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.state != .unspecified {
+      try visitor.visitSingularEnumField(value: self.state, fieldNumber: 1)
+    }
+    if !self.lockReason.isEmpty {
+      try visitor.visitSingularStringField(value: self.lockReason, fieldNumber: 2)
+    }
+    if self.bootsRemaining != 0 {
+      try visitor.visitSingularUInt32Field(value: self.bootsRemaining, fieldNumber: 3)
+    }
+    if self.validUntilEpoch != 0 {
+      try visitor.visitSingularUInt32Field(value: self.validUntilEpoch, fieldNumber: 4)
+    }
+    if self.backoffSeconds != 0 {
+      try visitor.visitSingularUInt32Field(value: self.backoffSeconds, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: LockdownStatus, rhs: LockdownStatus) -> Bool {
+    if lhs.state != rhs.state {return false}
+    if lhs.lockReason != rhs.lockReason {return false}
+    if lhs.bootsRemaining != rhs.bootsRemaining {return false}
+    if lhs.validUntilEpoch != rhs.validUntilEpoch {return false}
+    if lhs.backoffSeconds != rhs.backoffSeconds {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension LockdownStatus.State: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0STATE_UNSPECIFIED\0\u{1}NEEDS_PROVISION\0\u{1}LOCKED\0\u{1}UNLOCKED\0\u{1}UNLOCK_FAILED\0")
 }
 
 extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
