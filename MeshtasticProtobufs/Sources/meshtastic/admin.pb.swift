@@ -680,6 +680,23 @@ public struct AdminMessage: @unchecked Sendable {
     set {_uniqueStorage()._payloadVariant = .sensorConfig(newValue)}
   }
 
+  ///
+  /// Lockdown passphrase delivery / unlock / lock-now command for hardened
+  /// firmware builds (see MESHTASTIC_LOCKDOWN). Used to provision the
+  /// passphrase on first boot, unlock encrypted storage on subsequent
+  /// reboots, re-verify on already-unlocked devices to authorize a new
+  /// client connection, or immediately re-lock the device.
+  ///
+  /// Replaces the earlier scheme that repurposed SecurityConfig.private_key
+  /// to carry passphrase bytes; that hack is retired.
+  public var lockdownAuth: LockdownAuth {
+    get {
+      if case .lockdownAuth(let v)? = _storage._payloadVariant {return v}
+      return LockdownAuth()
+    }
+    set {_uniqueStorage()._payloadVariant = .lockdownAuth(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -871,6 +888,16 @@ public struct AdminMessage: @unchecked Sendable {
     ///
     /// Parameters and sensor configuration
     case sensorConfig(SensorConfig)
+    ///
+    /// Lockdown passphrase delivery / unlock / lock-now command for hardened
+    /// firmware builds (see MESHTASTIC_LOCKDOWN). Used to provision the
+    /// passphrase on first boot, unlock encrypted storage on subsequent
+    /// reboots, re-verify on already-unlocked devices to authorize a new
+    /// client connection, or immediately re-lock the device.
+    ///
+    /// Replaces the earlier scheme that repurposed SecurityConfig.private_key
+    /// to carry passphrase bytes; that hack is retired.
+    case lockdownAuth(LockdownAuth)
 
   }
 
@@ -1205,6 +1232,56 @@ public struct AdminMessage: @unchecked Sendable {
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+///
+/// Lockdown passphrase delivery payload.
+///
+/// One message handles three operations distinguished by content:
+///   - Provision (first-time): passphrase set, lock_now=false. Firmware
+///     generates DEK, wraps with passphrase-derived KEK, persists.
+///   - Unlock: passphrase set, lock_now=false. Firmware verifies
+///     passphrase against stored DEK, unlocks storage, authorizes the
+///     connection that delivered this packet.
+///   - Lock now: lock_now=true, passphrase ignored. Firmware revokes
+///     all client auth and reboots into the locked state.
+///
+/// Firmware decides between provision and unlock based on its own state
+/// (whether a DEK file already exists). Clients do not need to track
+/// which case applies.
+public struct LockdownAuth: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Passphrase bytes (1-32). Empty when lock_now is true.
+  /// Capped to 32 to match the proto cap on related security fields.
+  public var passphrase: Data = Data()
+
+  ///
+  /// Optional override of the boot-count token TTL granted on success.
+  /// 0 = use firmware default (TOKEN_DEFAULT_BOOTS).
+  /// On reboot the firmware decrements this; when it reaches 0 the
+  /// device boots fully locked and requires a fresh passphrase.
+  public var bootsRemaining: UInt32 = 0
+
+  ///
+  /// Optional wall-clock expiry for the unlock token, as absolute
+  /// Unix-epoch seconds. 0 = no time limit (only the boot-count TTL
+  /// applies). On boot, if the device RTC is set and now > this value,
+  /// the token is treated as expired.
+  public var validUntilEpoch: UInt32 = 0
+
+  ///
+  /// If true, ignore passphrase fields, immediately revoke all
+  /// connection-level admin authorization, and reboot the device into
+  /// the locked state. Always honoured regardless of current lock state.
+  public var lockNow: Bool = false
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 ///
@@ -1685,7 +1762,7 @@ extension OTAMode: SwiftProtobuf._ProtoNameProviding {
 
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{4}\u{f}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{4}\u{f}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0\u{3}lockdown_auth\0")
 
   fileprivate class _StorageClass {
     var _sessionPasskey: Data = Data()
@@ -2277,6 +2354,19 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
             _storage._payloadVariant = .sensorConfig(v)
           }
         }()
+        case 104: try {
+          var v: LockdownAuth?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .lockdownAuth(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .lockdownAuth(v)
+          }
+        }()
         default: break
         }
       }
@@ -2524,6 +2614,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         guard case .sensorConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 103)
       }()
+      case .lockdownAuth?: try {
+        guard case .lockdownAuth(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 104)
+      }()
       default: break
       }
     }
@@ -2633,6 +2727,51 @@ extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   public static func ==(lhs: AdminMessage.OTAEvent, rhs: AdminMessage.OTAEvent) -> Bool {
     if lhs.rebootOtaMode != rhs.rebootOtaMode {return false}
     if lhs.otaHash != rhs.otaHash {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".LockdownAuth"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}passphrase\0\u{3}boots_remaining\0\u{3}valid_until_epoch\0\u{3}lock_now\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.passphrase) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.bootsRemaining) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.validUntilEpoch) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.lockNow) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.passphrase.isEmpty {
+      try visitor.visitSingularBytesField(value: self.passphrase, fieldNumber: 1)
+    }
+    if self.bootsRemaining != 0 {
+      try visitor.visitSingularUInt32Field(value: self.bootsRemaining, fieldNumber: 2)
+    }
+    if self.validUntilEpoch != 0 {
+      try visitor.visitSingularUInt32Field(value: self.validUntilEpoch, fieldNumber: 3)
+    }
+    if self.lockNow != false {
+      try visitor.visitSingularBoolField(value: self.lockNow, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: LockdownAuth, rhs: LockdownAuth) -> Bool {
+    if lhs.passphrase != rhs.passphrase {return false}
+    if lhs.bootsRemaining != rhs.bootsRemaining {return false}
+    if lhs.validUntilEpoch != rhs.validUntilEpoch {return false}
+    if lhs.lockNow != rhs.lockNow {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

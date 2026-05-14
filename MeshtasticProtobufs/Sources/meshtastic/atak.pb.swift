@@ -1381,8 +1381,8 @@ public struct GeoChat: Sendable {
   /// or b-t-f-r (read). ReceiptType_None is the default for a normal chat
   /// message (cot_type_id = b-t-f).
   ///
-  /// Receivers can detect a receipt by checking receipt_type != None without
-  /// re-parsing the envelope cot_type_id.
+  /// Receivers can detect a receipt by checking receipt_type != ReceiptType_None
+  /// without re-parsing the envelope cot_type_id.
   public enum ReceiptType: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
@@ -1621,7 +1621,7 @@ public struct CotGeoPoint: Sendable {
 /// Covers CoT types u-d-c-c, u-d-r, u-d-f, u-d-f-m, u-d-p, u-r-b-c-c,
 /// u-r-b-bullseye. The shape's anchor position is carried on
 /// TAKPacketV2.latitude_i/longitude_i; polyline/polygon vertices are in the
-/// `vertices` repeated field (absolute, not deltas).
+/// `vertices` repeated field as `CotGeoPoint` deltas from that anchor.
 ///
 /// Colors use the Team enum as a 14-color palette (see color encoding below)
 /// with a fixed32 exact-ARGB fallback for custom user-picked colors that
@@ -1660,7 +1660,9 @@ public struct DrawnShape: @unchecked Sendable {
   }
 
   ///
-  /// Ellipse rotation angle in degrees (0..360). Default 360 = circle.
+  /// Ellipse rotation angle in degrees. Valid values are 0..360 inclusive;
+  /// 0 and 360 are equivalent rotations. In proto3, an unset uint32 reads
+  /// as 0, so senders should emit 0 when the angle is unspecified.
   public var angleDeg: UInt32 {
     get {return _storage._angleDeg}
     set {_uniqueStorage()._angleDeg = newValue}
@@ -3179,8 +3181,16 @@ public struct SensorFov: Sendable {
   public var azimuthDeg: UInt32 = 0
 
   ///
-  /// Maximum range of the cone in meters. ATAK-CIV default is 100m.
-  public var rangeM: UInt32 = 0
+  /// Maximum range of the cone in meters.
+  /// Optional — if unset, receivers should use the ATAK-CIV default of 100m.
+  public var rangeM: UInt32 {
+    get {return _rangeM ?? 0}
+    set {_rangeM = newValue}
+  }
+  /// Returns true if `rangeM` has been explicitly set.
+  public var hasRangeM: Bool {return self._rangeM != nil}
+  /// Clears the value of `rangeM`. Subsequent reads from it will return its default value.
+  public mutating func clearRangeM() {self._rangeM = nil}
 
   ///
   /// Horizontal field of view in whole degrees (cone's angular width).
@@ -3278,6 +3288,8 @@ public struct SensorFov: Sendable {
   }
 
   public init() {}
+
+  fileprivate var _rangeM: UInt32? = nil
 }
 
 ///
@@ -5041,7 +5053,7 @@ extension SensorFov: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularEnumField(value: &self.type) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.azimuthDeg) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.rangeM) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._rangeM) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.fovHorizontalDeg) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.fovVerticalDeg) }()
       case 6: try { try decoder.decodeSingularSInt32Field(value: &self.elevationDeg) }()
@@ -5053,15 +5065,19 @@ extension SensorFov: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.type != .unspecified {
       try visitor.visitSingularEnumField(value: self.type, fieldNumber: 1)
     }
     if self.azimuthDeg != 0 {
       try visitor.visitSingularUInt32Field(value: self.azimuthDeg, fieldNumber: 2)
     }
-    if self.rangeM != 0 {
-      try visitor.visitSingularUInt32Field(value: self.rangeM, fieldNumber: 3)
-    }
+    try { if let v = self._rangeM {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+    } }()
     if self.fovHorizontalDeg != 0 {
       try visitor.visitSingularUInt32Field(value: self.fovHorizontalDeg, fieldNumber: 4)
     }
@@ -5083,7 +5099,7 @@ extension SensorFov: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   public static func ==(lhs: SensorFov, rhs: SensorFov) -> Bool {
     if lhs.type != rhs.type {return false}
     if lhs.azimuthDeg != rhs.azimuthDeg {return false}
-    if lhs.rangeM != rhs.rangeM {return false}
+    if lhs._rangeM != rhs._rangeM {return false}
     if lhs.fovHorizontalDeg != rhs.fovHorizontalDeg {return false}
     if lhs.fovVerticalDeg != rhs.fovVerticalDeg {return false}
     if lhs.elevationDeg != rhs.elevationDeg {return false}
@@ -5100,7 +5116,7 @@ extension SensorFov.SensorType: SwiftProtobuf._ProtoNameProviding {
 
 extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TAKPacketV2"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{4}pli\0\u{1}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{4}pli\0\u{1}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0\u{c}\u{1b}\u{1}\u{c}\u{1c}\u{1}\u{c}\u{1d}\u{1}")
 
   fileprivate class _StorageClass {
     var _cotTypeID: CotType = .other
