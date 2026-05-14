@@ -412,6 +412,24 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	case narrowFast = 12
 	case narrowSlow = 13
 
+	/// Presets that should appear in user-facing pickers (LoRa config,
+	/// discovery scan). The Lite (125 kHz EU 866) and Narrow (62.5 kHz
+	/// EU 868) presets are intentionally hidden from selection for now —
+	/// they still exist as cases so a radio already configured on one of
+	/// them round-trips through protobuf and renders the correct label in
+	/// node lists, but the user can't pick them yet. Add the matching
+	/// cases back to this array when the firmware/UI rollout is ready.
+	static var userSelectable: [ModemPresets] {
+		allCases.filter { preset in
+			switch preset {
+			case .liteFast, .liteSlow, .narrowFast, .narrowSlow:
+				return false
+			default:
+				return true
+			}
+		}
+	}
+
 	var id: Int { self.rawValue }
 	var description: String {
     		switch self {

@@ -378,16 +378,16 @@
             "english",
             "connected",
             "configure",
-            "available",
             "using",
             "updates",
             "supported",
-            "slow",
             "set",
             "serial",
-            "notification"
+            "notification",
+            "not",
+            "name"
         ],
-        "charCount": 4878
+        "charCount": 4717
     },
     {
         "id": "signal-meter",

@@ -41,7 +41,9 @@ struct DiscoveryScanView: View {
 	}
 
 	private var availablePresets: [ModemPresets] {
-		ModemPresets.allCases
+		// Lite / Narrow presets are intentionally hidden from selection
+		// for now — see `ModemPresets.userSelectable`.
+		ModemPresets.userSelectable
 	}
 
 	private let discoveryScanTip = DiscoveryScanTip()

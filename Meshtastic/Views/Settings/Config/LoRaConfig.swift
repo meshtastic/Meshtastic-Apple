@@ -81,7 +81,9 @@ struct LoRaConfig: View {
 				if usePreset {
 					VStack(alignment: .leading) {
 						Picker("Presets", selection: $modemPreset ) {
-							ForEach(ModemPresets.allCases) { m in
+							// Lite / Narrow presets are intentionally hidden
+							// for now — `userSelectable` filters them out.
+							ForEach(ModemPresets.userSelectable) { m in
 								Text(m.description)
 							}
 						}
