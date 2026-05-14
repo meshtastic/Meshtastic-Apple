@@ -666,10 +666,20 @@ final class TAKServerManager: ObservableObject {
 	}
 	
 	/// Ensure bridge is initialized and ready for mesh-to-CoT broadcasting
-	/// Returns true if broadcasting is possible (meshToCotEnabled, server running, clients connected)
-	/// Call this before any mesh-to-CoT broadcast operations
+	/// Returns true if broadcasting is possible (meshToCotEnabled and server running).
+	/// Call this before any mesh-to-CoT broadcast operations.
+	///
+	/// We deliberately do NOT gate on `!connectedClients.isEmpty` here. The
+	/// callers (`AccessoryManager` handlers for positions, text messages, and
+	/// waypoints) rely on this method as their entry point into the bridge —
+	/// if it returns false when no client is connected, the message is dropped
+	/// before `broadcast(_:)` ever gets a chance to enqueue it for offline
+	/// delivery. The whole point of the offline queue is to absorb traffic
+	/// that arrives between server start and the first TAK client connecting;
+	/// `broadcast(_:)` / `broadcastRawXml(_:)` already enqueue when
+	/// `connectedClients` is empty, so we hand them the call unconditionally.
 	func ensureBridgeReadyForMeshToCot() -> Bool {
-		guard meshToCotEnabled, isRunning, !connectedClients.isEmpty else { return false }
+		guard meshToCotEnabled, isRunning else { return false }
 		ensureBridge()
 		return true
 	}

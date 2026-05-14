@@ -456,16 +456,16 @@
             "mesh",
             "import",
             "default",
+            "connected",
             "zip",
             "tip",
             "read",
             "quot",
             "primary",
             "position",
-            "pickers",
-            "over"
+            "pickers"
         ],
-        "charCount": 6074
+        "charCount": 6113
     },
     {
         "id": "telemetry",
@@ -948,31 +948,31 @@
             "swift",
             "xml",
             "route",
+            "quot",
             "atak",
+            "wire",
             "try",
             "takpacket",
+            "send",
             "sdk",
-            "quot",
+            "payload",
             "path",
+            "into",
             "firmware",
             "channel",
-            "wire",
-            "send",
             "radio",
             "pli",
             "meshtastictak",
             "let",
-            "into",
             "helpers",
             "geochat",
+            "data",
             "zstd",
             "via",
             "supportstakv2",
-            "routes",
-            "protobuf",
-            "per"
+            "routes"
         ],
-        "charCount": 7233
+        "charCount": 7693
     },
     {
         "id": "testing",

@@ -28,7 +28,14 @@ if accessoryManager.supportsTAKv2 {
     let parser = MeshtasticTAK.CotXmlParser()
     let packet = try parser.parse(strippedXml)
     let compressor = MeshtasticTAK.TakCompressor()
-    let wire = try compressor.compressWithRemarksFallback(packet, maxWireBytes: 225)
+    // `compressWithRemarksFallback` returns `Data?` — `nil` means the
+    // payload is still over the LoRa MTU even after `<remarks>` are
+    // stripped. The real `sendCoTToMeshV2` translates that into a
+    // thrown `AccessoryError.ioFailed(...)` so the caller's `do/catch`
+    // doesn't treat the silent drop as a successful send.
+    guard let wire = try compressor.compressWithRemarksFallback(packet, maxWireBytes: 225) else {
+        throw AccessoryError.ioFailed("TAK V2 payload exceeds LoRa wire size limit")
+    }
     try await sendTAKV2Packet(wire, channel: channel)
 } else {
     // V1: classify, then dispatch

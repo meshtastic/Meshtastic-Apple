@@ -135,70 +135,87 @@ extension AccessoryManager {
 			return
 		}
 
-		// Decompress using TAKPacket-SDK
-		do {
-			let compressor = MeshtasticTAK.TakCompressor()
-			let takPacketV2 = try compressor.decompress(wirePayload)
+		let fromNode = packet.from
+		// Hop off the main actor for everything CPU- or filesystem-heavy:
+		// zstd decompression, CoT XML rebuilding, regex cleanup, KML/zip
+		// generation, and `Data.write(to:)` into `Documents/TAK Routes/`.
+		// Receiving a large route or shape used to freeze the UI for hundreds
+		// of milliseconds — Copilot flagged this as a UI hang risk, and the
+		// AccessoryManager dispatch loop also stalls because every other
+		// portnum handler is `await`ing the same actor.
+		//
+		// `Task.detached` so we don't inherit `@MainActor` from the enclosing
+		// `AccessoryManager` actor context. We hop back only for the
+		// `LocalNotificationManager` work, which schedules `UNUserNotification`
+		// requests and must be main-actor isolated.
+		Task.detached(priority: .utility) {
+			do {
+				let compressor = MeshtasticTAK.TakCompressor()
+				let takPacketV2 = try compressor.decompress(wirePayload)
 
-			Logger.tak.info("Decompressed ATAK V2 packet from node \(packet.from): \(takPacketV2.callsign)")
+				Logger.tak.info("Decompressed ATAK V2 packet from node \(fromNode): \(takPacketV2.callsign)")
 
-			// Convert TAKPacketV2 → CoT XML via SDK builder, then forward
-			// the raw XML directly to TAK clients. Do NOT re-parse through
-			// CoTMessage — that strips shape detail elements (link-point
-			// vertices, strokeColor, fillColor, etc.) that ATAK needs.
-			let builder = MeshtasticTAK.CotXmlBuilder()
-			let rawCotXml = builder.build(takPacketV2)
-			// Strip the XML declaration and collapse formatting whitespace —
-			// TAK clients' TCP streaming parsers expect bare <event>...</event>
-			// on a single line, not a formatted XML document with <?xml ...?>
-			// prologue.
-			//
-			// The prologue match uses a permissive regex (`^\s*<\?xml[^>]*\?>`)
-			// so it's stripped even if the SDK builder ever emits it with
-			// single quotes, a different attribute order, or `standalone="yes"`
-			// — a literal substring match would silently leak the declaration
-			// mid-stream and tear down the TAK TCP connection.
-			//
-			// The inter-tag collapse only targets whitespace that sits between
-			// `>` and `<` so we don't mangle multi-line text content (e.g. a
-			// `<remarks>` chat body with embedded newlines).
-			let cotXml = rawCotXml
-				.replacingOccurrences(of: #"^\s*<\?xml[^>]*\?>"#, with: "", options: .regularExpression)
-				.replacingOccurrences(of: #">\s+<"#, with: "><", options: .regularExpression)
-				.trimmingCharacters(in: .whitespacesAndNewlines)
+				// Convert TAKPacketV2 → CoT XML via SDK builder, then forward
+				// the raw XML directly to TAK clients. Do NOT re-parse through
+				// CoTMessage — that strips shape detail elements (link-point
+				// vertices, strokeColor, fillColor, etc.) that ATAK needs.
+				let builder = MeshtasticTAK.CotXmlBuilder()
+				let rawCotXml = builder.build(takPacketV2)
+				// Strip the XML declaration and collapse formatting whitespace —
+				// TAK clients' TCP streaming parsers expect bare <event>...</event>
+				// on a single line, not a formatted XML document with <?xml ...?>
+				// prologue.
+				//
+				// The prologue match uses a permissive regex (`^\s*<\?xml[^>]*\?>`)
+				// so it's stripped even if the SDK builder ever emits it with
+				// single quotes, a different attribute order, or `standalone="yes"`
+				// — a literal substring match would silently leak the declaration
+				// mid-stream and tear down the TAK TCP connection.
+				//
+				// The inter-tag collapse only targets whitespace that sits between
+				// `>` and `<` so we don't mangle multi-line text content (e.g. a
+				// `<remarks>` chat body with embedded newlines).
+				let cotXml = rawCotXml
+					.replacingOccurrences(of: #"^\s*<\?xml[^>]*\?>"#, with: "", options: .regularExpression)
+					.replacingOccurrences(of: #">\s+<"#, with: "><", options: .regularExpression)
+					.trimmingCharacters(in: .whitespacesAndNewlines)
 
-			// Logger.tak.debug("=== Received CoT XML (mesh, \(cotXml.count) chars) ===")
-			// Logger.tak.debug("\(cotXml)")
-			// Logger.tak.debug("=== End Raw XML ===")
+				// Logger.tak.debug("=== Received CoT XML (mesh, \(cotXml.count) chars) ===")
+				// Logger.tak.debug("\(cotXml)")
+				// Logger.tak.debug("=== End Raw XML ===")
 
-			Task {
 				await TAKServerManager.shared.broadcastRawXml(cotXml)
-			}
-			Logger.tak.info("Forwarded ATAK V2 to TAK clients (raw XML)")
+				Logger.tak.info("Forwarded ATAK V2 to TAK clients (raw XML)")
 
-			// Routes: iTAK ignores b-m-r from TCP streaming. Save as KML
-			// data package to Documents/TAK Routes/ for manual import.
-			if cotXml.contains("type=\"b-m-r\"") {
-				if let (fileName, zipData) = RouteDataPackageGenerator.generateDataPackage(routeXml: cotXml),
-				   let savedURL = RouteDataPackageGenerator.saveToDocuments(fileName: fileName, zipData: zipData) {
-					Logger.tak.info("Route data package saved: \(savedURL.path)")
-					let routeName = RouteDataPackageGenerator.extractRouteName(routeXml: cotXml) ?? "Unknown Route"
-					Task { @MainActor in
-						let mgr = LocalNotificationManager()
-						mgr.notifications.append(Notification(
-							id: UUID().uuidString,
-							title: "Route Received",
-							subtitle: routeName,
-							content: "Saved to Files → Meshtastic → TAK Routes. Open in iTAK to import."
-						))
-						mgr.schedule()
+				// Routes: iTAK ignores b-m-r from TCP streaming. Save as KML
+				// data package to Documents/TAK Routes/ for manual import.
+				// Both quote styles must be supported — the SDK builder emits
+				// doubles but the regex-cleaned XML or a third-party emitter
+				// could yield singles, and skipping the KML write would let
+				// the route silently vanish.
+				let isRouteType = cotXml.contains("type=\"b-m-r\"") || cotXml.contains("type='b-m-r'")
+				if isRouteType {
+					if let (fileName, zipData) = RouteDataPackageGenerator.generateDataPackage(routeXml: cotXml),
+					   let savedURL = RouteDataPackageGenerator.saveToDocuments(fileName: fileName, zipData: zipData) {
+						Logger.tak.info("Route data package saved: \(savedURL.path)")
+						let routeName = RouteDataPackageGenerator.extractRouteName(routeXml: cotXml) ?? "Unknown Route"
+						await MainActor.run {
+							let mgr = LocalNotificationManager()
+							mgr.notifications.append(Notification(
+								id: UUID().uuidString,
+								title: "Route Received",
+								subtitle: routeName,
+								content: "Saved to Files → Meshtastic → TAK Routes. Open in iTAK to import."
+							))
+							mgr.schedule()
+						}
+					} else {
+						Logger.tak.warning("Route data package generation failed for b-m-r")
 					}
-				} else {
-					Logger.tak.warning("Route data package generation failed for b-m-r")
 				}
+			} catch {
+				Logger.tak.error("Failed to decompress ATAK V2 packet: \(error.localizedDescription)")
 			}
-		} catch {
-			Logger.tak.error("Failed to decompress ATAK V2 packet: \(error.localizedDescription)")
 		}
 	}
 
@@ -340,11 +357,13 @@ extension AccessoryManager {
 		return configured > 0 ? UInt32(truncatingIfNeeded: configured) : fallback
 	}
 
-	/// Ensure static CoT types (routes, shapes, markers) have at least 5 minutes
+	/// Ensure static CoT types (routes, shapes, markers) have at least 15 minutes
 	/// of stale time remaining. iTAK uses 2-min stale for routes while ATAK uses
 	/// 24h. Over LoRa mesh with multi-hop relay, a short stale means the object
 	/// arrives already expired and ATAK silently discards it. PLI and GeoChat are
-	/// left untouched — their stale times are semantically meaningful.
+	/// left untouched — their stale times are semantically meaningful. Update
+	/// both the docstring and the constant together so the assumed TTL stays
+	/// canonical.
 	private static let minimumMeshStaleTTL: TimeInterval = 900 // 15 minutes
 	private static let staticCoTTypePrefixes = ["b-m-r", "u-d-", "b-m-p-"]
 	private static let isoFormatter: ISO8601DateFormatter = {
@@ -359,17 +378,24 @@ extension AccessoryManager {
 	}()
 
 	private static func ensureMinimumStaleForMesh(_ xml: String) -> String {
+		// Both regexes accept either single- or double-quoted attribute
+		// values — `CoTMessage.toXML()` emits singles, the SDK builder emits
+		// doubles, and third-party generators are free to do either. Anchoring
+		// on one quote style silently skipped half the static CoT we wanted to
+		// extend, which let routes / shapes / markers arrive already-expired
+		// after mesh forwarding (the exact failure this helper exists to fix).
 		// Quick check: does the type match a static prefix?
-		guard let typeRe = try? NSRegularExpression(pattern: #"<event\s[^>]*\btype="([^"]*)""#),
+		guard let typeRe = try? NSRegularExpression(pattern: #"<event\s[^>]*\btype\s*=\s*(['"])([^'"]*)\1"#),
 			  let typeMatch = typeRe.firstMatch(in: xml, range: NSRange(xml.startIndex..., in: xml)),
-			  let typeRange = Range(typeMatch.range(at: 1), in: xml) else { return xml }
+			  let typeRange = Range(typeMatch.range(at: 2), in: xml) else { return xml }
 		let type = String(xml[typeRange])
 		guard staticCoTTypePrefixes.contains(where: { type.hasPrefix($0) }) else { return xml }
 
 		// Extract current stale timestamp
-		guard let staleRe = try? NSRegularExpression(pattern: #"\bstale="([^"]*)""#),
+		guard let staleRe = try? NSRegularExpression(pattern: #"\bstale\s*=\s*(['"])([^'"]*)\1"#),
 			  let staleMatch = staleRe.firstMatch(in: xml, range: NSRange(xml.startIndex..., in: xml)),
-			  let staleValueRange = Range(staleMatch.range(at: 1), in: xml),
+			  let staleQuoteRange = Range(staleMatch.range(at: 1), in: xml),
+			  let staleValueRange = Range(staleMatch.range(at: 2), in: xml),
 			  let staleFullRange = Range(staleMatch.range, in: xml) else { return xml }
 		let staleStr = String(xml[staleValueRange])
 		guard let staleDate = isoFormatter.date(from: staleStr) ?? isoFormatterFrac.date(from: staleStr) else { return xml }
@@ -378,11 +404,14 @@ extension AccessoryManager {
 		let remaining = staleDate.timeIntervalSince(now)
 		guard remaining < minimumMeshStaleTTL else { return xml }
 
-		// Extend to now + 5 min
+		// Extend to now + minimumMeshStaleTTL, preserving the original
+		// quote style so we don't replace `stale='...'` with `stale="..."`
+		// inside an otherwise single-quoted CoTMessage emission.
 		let newStale = now.addingTimeInterval(minimumMeshStaleTTL)
 		let newStaleStr = isoFormatter.string(from: newStale)
+		let quote = String(xml[staleQuoteRange])
 		var result = xml
-		result.replaceSubrange(staleFullRange, with: "stale=\"\(newStaleStr)\"")
+		result.replaceSubrange(staleFullRange, with: "stale=\(quote)\(newStaleStr)\(quote)")
 		Logger.tak.info("Extended stale for \(type): \(staleStr) → \(newStaleStr) (was \(Int(remaining))s remaining, now \(Int(minimumMeshStaleTTL))s)")
 		return result
 	}

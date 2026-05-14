@@ -10,7 +10,7 @@ The Meshtastic app supports Team Awareness Kit (TAK) integration, enabling inter
 
 ## What is TAK?
 
-TAK is a situational awareness platform widely used in tactical, emergency management, and outdoor recreation contexts. It displays the positions and status of team members on a shared map. Meshtastic bridges TAK users over LoRa without leaving cellular coverage.
+TAK is a situational awareness platform widely used in tactical, emergency management, and outdoor recreation contexts. It displays the positions and status of team members on a shared map. Meshtastic bridges TAK users over LoRa, so teams stay connected without requiring cellular or internet coverage.
 
 ## Supported Device Roles
 

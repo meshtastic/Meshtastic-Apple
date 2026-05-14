@@ -43,18 +43,35 @@ enum RouteDataPackageGenerator {
 		let nsRange = NSRange(routeXml.startIndex..., in: routeXml)
 		let matches = linkRegex.matches(in: routeXml, range: nsRange)
 
+		// Each `point` attribute comes from remote CoT XML and is otherwise
+		// concatenated straight into the KML <coordinates> body, so anything
+		// non-numeric — e.g. `1.0,2.0,3.0"></coordinates><...>injected</...><x x="`
+		// — would either break KML parsing or inject markup into the data
+		// package. Parse each component as `Double` and range-check it
+		// against the geodetic bounds before re-emitting; HAE outside
+		// roughly Earth-surface bounds is dropped to 0 since a bogus
+		// altitude is much less harmful than a bogus lat/lon.
 		var kmlCoords: [String] = []
 		for match in matches {
 			guard match.numberOfRanges >= 3,
 				  let pointRange = Range(match.range(at: 2), in: routeXml) else { continue }
 			let point = String(routeXml[pointRange]) // "lat,lon,hae" or "lat,lon"
 			let parts = point.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-			guard parts.count >= 2 else { continue }
-			let lat = parts[0]
-			let lon = parts[1]
-			let hae = parts.count >= 3 ? parts[2] : "0"
-			// KML coordinate order is lon,lat,hae (opposite of CoT's lat,lon,hae)
-			kmlCoords.append("\(lon),\(lat),\(hae)")
+			guard parts.count >= 2,
+				  let lat = Double(parts[0]), lat.isFinite, (-90.0...90.0).contains(lat),
+				  let lon = Double(parts[1]), lon.isFinite, (-180.0...180.0).contains(lon)
+			else { continue }
+			let hae: Double
+			if parts.count >= 3, let parsedHae = Double(parts[2]), parsedHae.isFinite,
+			   (-12_000.0...100_000.0).contains(parsedHae) {
+				hae = parsedHae
+			} else {
+				hae = 0
+			}
+			// KML coordinate order is lon,lat,hae (opposite of CoT's lat,lon,hae).
+			// Format with `%g` to keep things compact and avoid locale-specific
+			// commas which would corrupt the comma-delimited triplet.
+			kmlCoords.append(String(format: "%g,%g,%g", locale: Locale(identifier: "en_US_POSIX"), lon, lat, hae))
 		}
 
 		guard kmlCoords.count >= 2 else { return nil }

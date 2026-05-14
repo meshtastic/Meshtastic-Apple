@@ -1920,9 +1920,22 @@ struct TAKIdentitySectionSnapshotTests {
 
 	/// Wraps TAKIdentitySection in a Form so it renders as a real Settings
 	/// section. Section is not standalone — SwiftUI requires a Form/List host.
+	///
+	/// `TAKIdentitySection` gates `canEdit` on
+	/// `accessoryManager.isConnected && node?.takConfig != nil`. The shared
+	/// `AccessoryManager` starts with `isConnected == false`, which renders
+	/// the entire section disabled (greyed-out pickers, no Save button), so
+	/// the doc snapshot would capture the disabled state rather than the
+	/// "ready to edit" state these tests exist to document. We flip the
+	/// shared instance to connected for the duration of the snapshot. The
+	/// flag is a `@Published Bool` on a `@MainActor` singleton — there's no
+	/// network side-effect from setting it directly. We deliberately do
+	/// not restore it: nothing else in this test target reads it back, and
+	/// resetting via `defer` would race with SwiftUI's asynchronous render.
 	@MainActor
 	private func wrap(_ node: NodeInfoEntity) -> some View {
-		Form {
+		AccessoryManager.shared.isConnected = true
+		return Form {
 			TAKIdentitySection(node: node)
 		}
 		.environmentObject(AccessoryManager.shared)

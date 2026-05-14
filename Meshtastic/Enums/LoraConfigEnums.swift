@@ -98,9 +98,9 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .br902:
 			"BR_902"
 		case .itu12M:
-			"ITU_12M"
+			"ITU1_2M"
 		case .itu232M:
-			"ITU_2_3_2M"
+			"ITU23_2M"
 		case .eu866:
 			"EU_866"
 		case .eu874:
