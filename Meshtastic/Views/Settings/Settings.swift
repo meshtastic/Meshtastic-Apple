@@ -293,13 +293,13 @@ struct Settings: View {
 				}
 			}
 
-			// Module Configuration → TAK routes to the combined TAK Config page
-			// (matches upstream — Garth recombined the TAK Server settings back
-			// into TAK Config, so users have a single destination for both the
-			// module-level team/role settings AND the TAK Server mTLS / port /
-			// certificate settings). The TAK section at the bottom of this
-			// screen also links here so both entry points lead to the same view.
-			NavigationLink(value: SettingsNavigationState.takConfig) {
+			// Module Configuration → TAK routes to the combined TAK Server page
+			// (TAKServerConfig). That screen renders the firmware module config
+			// (team / role identity, via the embedded TAKIdentitySection) at
+			// the top, and the in-app TAK Server controls (Enable, channel,
+			// mTLS certificates, data package export) below it. The TAK
+			// section at the bottom of this screen links to the same view.
+			NavigationLink(value: SettingsNavigationState.tak) {
 				Label {
 					Text("TAK Server")
 				} icon: {
@@ -368,13 +368,13 @@ struct Settings: View {
 
 	var takSection: some View {
 		Section(header: Text("TAK")) {
-			// Routes to the same combined TAK Config page reached via the
+			// Routes to the same combined TAK Server page reached via the
 			// Module Configuration section above. Both entry points are kept
 			// because users naturally look in both places when configuring
 			// TAK — the Module Config link discovers the feature alongside
 			// other module configs, and the dedicated TAK section advertises
 			// the TAK Server functionality at a glance.
-			NavigationLink(value: SettingsNavigationState.takConfig) {
+			NavigationLink(value: SettingsNavigationState.tak) {
 				Label {
 					Text("TAK Server")
 				} icon: {
