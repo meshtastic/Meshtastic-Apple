@@ -8,11 +8,21 @@ import OSLog
 
 private struct DocWebView: UIViewRepresentable {
 
-	let htmlURL: URL
+	let htmlURL: URL?
+	let htmlString: String?
+	let baseURL: URL?
 
 	// Root of the bundled docs directory — grants WKWebView read access to all sibling pages and assets.
 	private var docsRoot: URL {
-		htmlURL.deletingLastPathComponent().deletingLastPathComponent()
+		if let htmlURL {
+			return htmlURL.deletingLastPathComponent().deletingLastPathComponent()
+		}
+		if let baseURL {
+			// For translated HTML, baseURL points at section dir (e.g. docs/user),
+			// so allow read access to docs root for ../assets and sibling pages.
+			return baseURL.deletingLastPathComponent()
+		}
+		return URL(fileURLWithPath: "/")
 	}
 
 	func makeUIView(context: Context) -> WKWebView {
@@ -27,11 +37,17 @@ private struct DocWebView: UIViewRepresentable {
 	}
 
 	func updateUIView(_ webView: WKWebView, context: Context) {
-		// loadFileURL correctly resolves all relative paths (CSS, images, inter-page links)
-		// without needing to read the HTML ourselves or set a manual baseURL.
-		guard webView.url != htmlURL else { return }
-		webView.loadFileURL(htmlURL, allowingReadAccessTo: docsRoot)
-		Logger.docs.debug("DocWebView loading \(htmlURL.lastPathComponent)")
+		if let htmlString {
+			// Translated content — load as HTML string with bundle base URL for CSS/images
+			let currentContent = webView.url?.absoluteString ?? ""
+			if currentContent.contains("translated") { return }
+			webView.loadHTMLString(htmlString, baseURL: baseURL)
+			Logger.docs.debug("DocWebView loading translated content")
+		} else if let htmlURL {
+			guard webView.url != htmlURL else { return }
+			webView.loadFileURL(htmlURL, allowingReadAccessTo: docsRoot)
+			Logger.docs.debug("DocWebView loading \(htmlURL.lastPathComponent)")
+		}
 	}
 
 	func makeCoordinator() -> Coordinator {
@@ -50,9 +66,7 @@ private struct DocWebView: UIViewRepresentable {
 		func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction) async -> WKNavigationActionPolicy {
 			guard let url = action.request.url else { return .allow }
 
-			// Allow the initial file load and same-page anchor jumps
 			if url.isFileURL {
-				// Only allow reads within the docs bundle
 				if url.path.hasPrefix(docsRoot.path) {
 					return .allow
 				}
@@ -60,13 +74,14 @@ private struct DocWebView: UIViewRepresentable {
 				return .cancel
 			}
 
-			// Open external http/https links in Safari
+			// Allow about:blank (used by loadHTMLString)
+			if url.scheme == "about" { return .allow }
+
 			if url.scheme == "https" || url.scheme == "http" {
 				await UIApplication.shared.open(url)
 				return .cancel
 			}
 
-			// Handle meshtastic:/// deep links — route through the app's URL handler
 			if url.scheme == "meshtastic" {
 				await UIApplication.shared.open(url)
 				return .cancel
@@ -87,12 +102,76 @@ struct DocPageView: View {
 
 	let page: DocPage
 
+	@State private var translatedHTML: String?
+	@State private var isTranslating = false
+	@State private var translationTask: Task<Void, Never>?
+
+	private var translatedBaseURL: URL {
+		// Keep relative links like ../assets/docs.css and ../assets/screenshots/... working.
+		page.htmlURL.deletingLastPathComponent()
+	}
+
 	var body: some View {
-		DocWebView(htmlURL: page.htmlURL)
-			.ignoresSafeArea(edges: .bottom)
-			.navigationTitle(page.title)
-			.navigationBarTitleDisplayMode(.inline)
-			.accessibilityLabel("\(page.title) documentation page")
-			.accessibilityHint("Web view showing the \(page.title) documentation")
+		ZStack {
+			if let translatedHTML {
+				DocWebView(htmlURL: nil, htmlString: translatedHTML, baseURL: translatedBaseURL)
+			} else {
+				DocWebView(htmlURL: page.htmlURL, htmlString: nil, baseURL: nil)
+			}
+
+			if isTranslating {
+				VStack {
+					ProgressView("Translating…")
+						.padding(12)
+						.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+					Spacer()
+				}
+				.padding(.top, 40)
+			}
+		}
+		.ignoresSafeArea(edges: .bottom)
+		.navigationTitle(page.title)
+		.navigationBarTitleDisplayMode(.inline)
+		.accessibilityLabel("\(page.title) documentation page")
+		.accessibilityHint("Web view showing the \(page.title) documentation")
+		.onAppear {
+			startTranslation()
+		}
+		.onDisappear {
+			translationTask?.cancel()
+			translationTask = nil
+		}
+		.onReceive(NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)) { _ in
+			translationTask?.cancel()
+			translatedHTML = nil
+			startTranslation()
+		}
+	}
+
+	// MARK: - Translation Loading
+
+	private func startTranslation() {
+		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+		guard languageCode != "en" else { return }
+
+		isTranslating = true
+
+		translationTask = Task.detached(priority: .userInitiated) {
+			let htmlResult = await DocTranslationService.shared.translatedHTMLString(for: page)
+
+			await MainActor.run {
+				isTranslating = false
+				if let htmlResult {
+					translatedHTML = htmlResult
+				}
+			}
+
+			// Start background prefetch if translation succeeded
+			if htmlResult != nil {
+				Task.detached(priority: .utility) {
+					await DocTranslationService.shared.prefetchAll(excluding: page.id)
+				}
+			}
+		}
 	}
 }

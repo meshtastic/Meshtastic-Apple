@@ -800,6 +800,9 @@ struct AIDocAssistantView: View {
 		isRetry: Bool = false,
 		strictGrounding: Bool = false
 	) async throws -> String {
+		guard await FoundationModelAvailability.shared.isAvailable else {
+			return "AI assistance is temporarily unavailable on this device. Please try again later."
+		}
 		let pageList = pages.map { "- \($0.title)" }.joined(separator: "\n")
 		let strictGroundingInstruction = strictGrounding
 			? "Every proper noun, product name, and organization name in your reply must already appear in the provided context. If not, omit it and say the docs do not provide that detail."
@@ -833,6 +836,7 @@ struct AIDocAssistantView: View {
 			let result = try await lmSession.respond(to: prompt)
 			return result.content
 		} catch {
+			await FoundationModelAvailability.shared.reportFailure(error)
 			// Retry with a single top page if this is not already a retry (handles context overflow errors)
 			if !isRetry && pages.count > 1 {
 				Logger.docs.warning("AI query failed — retrying with top 1 page: \(error.localizedDescription)")

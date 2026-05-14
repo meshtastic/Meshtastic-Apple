@@ -170,6 +170,10 @@
         AA003DOC0000002000000002 /* DocBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000002 /* DocBrowserView.swift */; };
         AA003DOC0000002000000003 /* DocPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000003 /* DocPageView.swift */; };
         AA003DOC0000002000000004 /* AIDocAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000004 /* AIDocAssistantView.swift */; };
+        AA003DOC0000002000000006 /* DocTranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000006 /* DocTranslationService.swift */; };
+        AA003DOC0000002000000007 /* TranslationCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000007 /* TranslationCache.swift */; };
+		AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003FM00000001000000001 /* FoundationModelAvailability.swift */; };
+        AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000008 /* DocTranslationTests.swift */; };
         AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000005 /* DocBundleTests.swift */; };
         AA003DOC0000004000000001 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000005000000001 /* docs */; };
         AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00SDRF0001 /* DeviceHardwareImageEntity.swift */; };
@@ -694,6 +698,10 @@
         AA003DOC0000001000000002 /* DocBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocBrowserView.swift; sourceTree = "<group>"; };
         AA003DOC0000001000000003 /* DocPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocPageView.swift; sourceTree = "<group>"; };
         AA003DOC0000001000000004 /* AIDocAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIDocAssistantView.swift; sourceTree = "<group>"; };
+        AA003DOC0000001000000006 /* DocTranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationService.swift; sourceTree = "<group>"; };
+        AA003DOC0000001000000007 /* TranslationCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TranslationCache.swift; path = Meshtastic/Services/TranslationCache.swift; sourceTree = "<group>"; };
+		AA003FM00000001000000001 /* FoundationModelAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FoundationModelAvailability.swift; path = Meshtastic/Services/FoundationModelAvailability.swift; sourceTree = "<group>"; };
+        AA003DOC0000001000000008 /* DocTranslationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationTests.swift; sourceTree = "<group>"; };
         AA003DOC0000001000000005 /* DocBundleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocBundleTests.swift; sourceTree = "<group>"; };
         AA003DOC0000005000000001 /* docs */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
         AA00SDRF0001 /* DeviceHardwareImageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareImageEntity.swift; sourceTree = "<group>"; };
@@ -1584,6 +1592,7 @@
                 AA003DOC0000001000000002 /* DocBrowserView.swift */,
                 AA003DOC0000001000000003 /* DocPageView.swift */,
                 AA003DOC0000001000000004 /* AIDocAssistantView.swift */,
+                AA003DOC0000001000000006 /* DocTranslationService.swift */,
             );
             path = HelpAndDocumentation;
             sourceTree = "<group>";
@@ -2486,6 +2495,7 @@
                 C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */,
                 1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */,
                 AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */,
+                AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */,
                 AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
                 DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
                 25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
@@ -2568,6 +2578,9 @@
                 AA003DOC0000002000000002 /* DocBrowserView.swift in Sources */,
                 AA003DOC0000002000000003 /* DocPageView.swift in Sources */,
                 AA003DOC0000002000000004 /* AIDocAssistantView.swift in Sources */,
+                AA003DOC0000002000000006 /* DocTranslationService.swift in Sources */,
+                AA003DOC0000002000000007 /* TranslationCache.swift in Sources */,
+				AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */,
                 D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */,
                 C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */,
                 BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */,

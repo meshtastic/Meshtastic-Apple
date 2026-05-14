@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TranslationCacheManifest",
+  "description": "Manifest tracking all cached doc translations for LRU eviction and invalidation",
+  "type": "object",
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TranslatedDocumentEntry"
+      }
+    }
+  },
+  "definitions": {
+    "TranslatedDocumentEntry": {
+      "type": "object",
+      "required": ["sourceFile", "languageCode", "contentHash", "translatedAt", "lastAccessedAt", "fileSize"],
+      "properties": {
+        "sourceFile": {
+          "type": "string",
+          "description": "Relative path from docs root (e.g., 'user/messages.md')"
+        },
+        "languageCode": {
+          "type": "string",
+          "description": "BCP 47 language code",
+          "pattern": "^[a-z]{2,3}(-[A-Za-z]{2,4})?$"
+        },
+        "contentHash": {
+          "type": "string",
+          "description": "SHA-256 hex digest of English source content",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "translatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastAccessedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fileSize": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}
