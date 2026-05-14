@@ -420,7 +420,7 @@ actor DocTranslationService {
 	}
 
 	#if !targetEnvironment(macCatalyst)
-	// MARK: - Translation Framework (iOS 17.4+)
+	// MARK: - Translation Framework (iOS 26+)
 
 	@available(iOS 17.4, *)
 	private func translateWithTranslationFramework(text: String, targetLanguage: String) async -> String? {
