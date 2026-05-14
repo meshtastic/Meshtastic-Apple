@@ -3464,7 +3464,7 @@
             repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
             requirement = {
                 kind = upToNextMinorVersion;
-                minimumVersion = 0.2.1;
+                minimumVersion = 0.2.2;
             };
         };
         102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {

@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/meshtastic/TAKPacket-SDK.git",
       "state" : {
-        "revision" : "a31c85155689a42f28837a45f535bcb850cc57eb",
-        "version" : "0.2.1"
+        "revision" : "a44a7358e477dab54fca500021a1b3333bb5b9a8",
+        "version" : "0.2.2"
       }
     },
     {
