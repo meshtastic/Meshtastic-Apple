@@ -9,6 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
 import SwiftData
+import MeshtasticProtobufs
 
 enum CertificateImportType {
 	case p12
@@ -48,6 +49,7 @@ struct TAKServerConfig: View {
 			if !takServer.primaryChannelIssues.isEmpty {
 				primaryChannelWarningSection
 			}
+			TAKIdentitySection(node: connectedNode)
 			serverStatusSection
 			serverConfigSection
 			certificatesSection
@@ -559,5 +561,198 @@ struct ZipDocument: FileDocument {
 
 	func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
 		FileWrapper(regularFileWithContents: data)
+	}
+}
+
+// MARK: - TAK Identity Section (firmware module config: team / role)
+//
+// Embedded at the top of the TAK Server screen so users can configure the
+// firmware-level Team color and Member Role (sent on the wire with every PLI)
+// in the same place as the in-app TAK Server controls. Replaces the separate
+// TAKModuleConfig screen for the common path; TAKModuleConfig still exists
+// for nodes that aren't the locally-connected one.
+
+struct TAKIdentitySection: View {
+	@Environment(\.modelContext) private var context
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+
+	let node: NodeInfoEntity?
+
+	@State private var team: Int = Int(Team.unspecifedColor.rawValue)
+	@State private var role: Int = Int(MemberRole.unspecifed.rawValue)
+	@State private var hasChanges: Bool = false
+	@State private var isSaving: Bool = false
+	@State private var saveError: String?
+
+	private var selectedTeam: Team { Team(rawValue: team) ?? .unspecifedColor }
+	private var selectedRole: MemberRole { MemberRole(rawValue: role) ?? .unspecifed }
+
+	private var deviceRole: DeviceRoles? {
+		guard let raw = node?.deviceConfig?.role ?? node?.user?.role else { return nil }
+		return DeviceRoles(rawValue: Int(raw))
+	}
+
+	private var canEdit: Bool { accessoryManager.isConnected && node?.takConfig != nil }
+
+	var body: some View {
+		Section(header: Text("TAK Identity")) {
+			if let deviceRole, deviceRole != .tak && deviceRole != .takTracker {
+				Text("These settings only apply when the device role is TAK or TAK Tracker.")
+					.font(.callout)
+					.foregroundColor(.orange)
+			}
+
+			if accessoryManager.isConnected, node?.takConfig == nil {
+				HStack(spacing: 12) {
+					ProgressView()
+					Text("Loading TAK config from the node.")
+						.foregroundColor(.secondary)
+				}
+			}
+
+			VStack(alignment: .leading) {
+				Picker("Team", selection: $team) {
+					ForEach(Team.allCases, id: \.rawValue) { teamOption in
+						Text(Self.teamTitle(teamOption)).tag(teamOption.rawValue)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text(Self.teamHelpText(selectedTeam))
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+
+			VStack(alignment: .leading) {
+				Picker("Role", selection: $role) {
+					ForEach(MemberRole.allCases, id: \.rawValue) { roleOption in
+						Text(Self.roleTitle(roleOption)).tag(roleOption.rawValue)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text(Self.roleHelpText(selectedRole))
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+
+			if hasChanges {
+				Button {
+					Task { await saveIdentity() }
+				} label: {
+					HStack {
+						if isSaving {
+							ProgressView()
+								.padding(.trailing, 4)
+						}
+						Text(isSaving ? "Saving…" : "Save TAK Identity")
+					}
+					.frame(maxWidth: .infinity)
+				}
+				.disabled(isSaving)
+			}
+
+			if let saveError {
+				Text(saveError)
+					.foregroundColor(.red)
+					.font(.callout)
+			}
+		}
+		.disabled(!canEdit)
+		.onAppear { resyncFromNode() }
+		.onChange(of: node?.takConfig?.team) { _, _ in resyncFromNode() }
+		.onChange(of: node?.takConfig?.role) { _, _ in resyncFromNode() }
+		.onChange(of: team) { _, newTeam in
+			hasChanges = newTeam != Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue))
+				|| role != Int(node?.takConfig?.role ?? Int32(MemberRole.unspecifed.rawValue))
+		}
+		.onChange(of: role) { _, newRole in
+			hasChanges = team != Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue))
+				|| newRole != Int(node?.takConfig?.role ?? Int32(MemberRole.unspecifed.rawValue))
+		}
+	}
+
+	private func resyncFromNode() {
+		team = Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue))
+		role = Int(node?.takConfig?.role ?? Int32(MemberRole.unspecifed.rawValue))
+		hasChanges = false
+	}
+
+	@MainActor
+	private func saveIdentity() async {
+		guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context),
+			  let fromUser = connectedNode.user,
+			  let toUser = node?.user else {
+			saveError = "Not connected to a node."
+			return
+		}
+
+		isSaving = true
+		saveError = nil
+
+		var config = ModuleConfig.TAKConfig()
+		config.team = selectedTeam
+		config.role = selectedRole
+
+		do {
+			_ = try await accessoryManager.saveTAKModuleConfig(config: config, fromUser: fromUser, toUser: toUser)
+			hasChanges = false
+		} catch {
+			Logger.mesh.error("🚨 TAK Identity save failed: \(error.localizedDescription)")
+			saveError = error.localizedDescription
+		}
+		isSaving = false
+	}
+
+	// MARK: Display helpers (duplicated from TAKModuleConfig to keep this view self-contained)
+
+	fileprivate static func teamTitle(_ team: Team) -> String {
+		switch team {
+		case .unspecifedColor: return "Default (Cyan)"
+		case .white: return "White"
+		case .yellow: return "Yellow"
+		case .orange: return "Orange"
+		case .magenta: return "Magenta"
+		case .red: return "Red"
+		case .maroon: return "Maroon"
+		case .purple: return "Purple"
+		case .darkBlue: return "Dark Blue"
+		case .blue: return "Blue"
+		case .cyan: return "Cyan"
+		case .teal: return "Teal"
+		case .green: return "Green"
+		case .darkGreen: return "Dark Green"
+		case .brown: return "Brown"
+		case .UNRECOGNIZED: return "Unknown"
+		}
+	}
+
+	fileprivate static func roleTitle(_ role: MemberRole) -> String {
+		switch role {
+		case .unspecifed: return "Default (Team Member)"
+		case .teamMember: return "Team Member"
+		case .teamLead: return "Team Lead"
+		case .hq: return "HQ"
+		case .sniper: return "Sniper"
+		case .medic: return "Medic"
+		case .forwardObserver: return "Forward Observer"
+		case .rto: return "RTO"
+		case .k9: return "K9"
+		case .UNRECOGNIZED: return "Unknown"
+		}
+	}
+
+	fileprivate static func teamHelpText(_ team: Team) -> String {
+		switch team {
+		case .unspecifedColor: return "Default uses Cyan."
+		case .UNRECOGNIZED: return "Unknown team color."
+		default: return "Shown to TAK clients as the \(teamTitle(team)) team color."
+		}
+	}
+
+	fileprivate static func roleHelpText(_ role: MemberRole) -> String {
+		switch role {
+		case .unspecifed: return "Default uses Team Member."
+		case .UNRECOGNIZED: return "Unknown TAK role."
+		default: return "Shown to TAK clients as the \(roleTitle(role)) role."
+		}
 	}
 }
