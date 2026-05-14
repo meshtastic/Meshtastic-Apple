@@ -519,6 +519,21 @@ final class TAKServerManager: ObservableObject {
 			// Forward to Meshtastic mesh via bridge (lazily create if needed)
 			let activeBridge = ensureBridge()
 			await activeBridge.sendToMesh(cotMessage, clientInfo: clientInfo)
+			// Also fan out to OTHER connected TAK clients on this server, so
+			// e.g. an ATAK client on the same in-app TAK Server sees chats and
+			// PLIs from a peer iTAK client without having to wait for the
+			// message to round-trip through the mesh (which won't happen at
+			// all — radios don't echo to sender, so without this fan-out
+			// co-located clients can't see each other). Prefer the original
+			// raw XML the client sent so detail elements (chatgrp,
+			// serverdestination, link, remarks) survive intact; fall back to
+			// the parsed CoTMessage if for some reason the raw XML wasn't
+			// captured.
+			if let rawXml = cotMessage.sourceEventXml {
+				await broadcastRawXml(rawXml, except: connectionId)
+			} else {
+				await broadcast(cotMessage, except: connectionId)
+			}
 
 		case .disconnected:
 			await removeConnection(connectionId)
@@ -544,13 +559,22 @@ final class TAKServerManager: ObservableObject {
 	/// Broadcast a CoT message to all connected TAK clients.
 	/// When no clients are connected, queues the message for delivery
 	/// when a client reconnects (up to 5-minute TTL, max 50 messages).
-	func broadcast(_ cotMessage: CoTMessage) async {
-		guard !connections.isEmpty else {
-			enqueueOffline(.message(cotMessage))
+	///
+	/// `except` skips a specific connection — used by the local fan-out
+	/// path to avoid echoing a client's own message back to itself.
+	func broadcast(_ cotMessage: CoTMessage, except sender: ObjectIdentifier? = nil) async {
+		// If `sender` is set, only `enqueueOffline` if there are no OTHER
+		// connections — a message from the sole connected client doesn't
+		// need to be queued because there is nobody to deliver it to.
+		let recipientCount = connections.keys.filter { $0 != sender }.count
+		guard recipientCount > 0 else {
+			if sender == nil {
+				enqueueOffline(.message(cotMessage))
+			}
 			return
 		}
 
-		Logger.tak.info("Broadcasting CoT to \(self.connections.count) TAK client(s): \(cotMessage.type)")
+		Logger.tak.info("Broadcasting CoT to \(recipientCount) TAK client(s): \(cotMessage.type)")
 
 		// Snapshot the entry set up front so we never observe a mutation made
 		// by `removeConnection(_:)` (which `await`s on `TAKConnection.endpoint`
@@ -558,7 +582,7 @@ final class TAKServerManager: ObservableObject {
 		// Failed IDs are collected and removed after the loop completes.
 		let entries = Array(connections)
 		var failed: [ObjectIdentifier] = []
-		for (connectionId, connection) in entries {
+		for (connectionId, connection) in entries where connectionId != sender {
 			do {
 				try await connection.send(cotMessage)
 			} catch {
@@ -577,15 +601,21 @@ final class TAKServerManager: ObservableObject {
 	/// reconnect — V2 routes/shapes are intentionally forwarded through
 	/// this path to preserve detail, so dropping them when offline would
 	/// defeat the point of the parallel offline queue on `broadcast(_:)`.
-	func broadcastRawXml(_ xml: String) async {
-		guard !connections.isEmpty else {
-			enqueueOffline(.rawXml(xml))
+	///
+	/// `except` skips a specific connection — used by the local fan-out
+	/// path to avoid echoing a client's own message back to itself.
+	func broadcastRawXml(_ xml: String, except sender: ObjectIdentifier? = nil) async {
+		let recipientCount = connections.keys.filter { $0 != sender }.count
+		guard recipientCount > 0 else {
+			if sender == nil {
+				enqueueOffline(.rawXml(xml))
+			}
 			return
 		}
 		// Same defensive snapshot + post-loop removal as `broadcast(_:)`.
 		let entries = Array(connections)
 		var failed: [ObjectIdentifier] = []
-		for (connectionId, connection) in entries {
+		for (connectionId, connection) in entries where connectionId != sender {
 			do {
 				try await connection.sendRawXML(xml)
 			} catch {
