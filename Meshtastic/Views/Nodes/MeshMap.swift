@@ -48,7 +48,7 @@ struct MeshMap: View {
 	@State private var showLegend = false
 	/// Filter
 	@StateObject var filters = NodeFilterParameters()
-	/// Track whether the map pop-out window is already open
+	/// Track whether a detached Mesh Map window is currently open.
 	@State private var isMapWindowOpen = false
 
 	@AppStorage("enableMapShowFavorites") private var showFavorites = false
@@ -65,11 +65,10 @@ struct MeshMap: View {
 		return allLatestPositions
 	}
 
-	/// Whether the map tab is currently visible. Driven by `router.selectedTab`
-	/// rather than `onAppear`/`onDisappear` which are unreliable in TabView.
-	/// When false, the Map is fed empty data to reduce memory from annotations.
+	/// Keep the detached map window fully populated while still starving the
+	/// main tabbed Mesh Map when it is off-screen.
 	private var isMapVisible: Bool {
-		router.selectedTab == .map
+		showOpenWindowButton ? router.selectedTab == .map : true
 	}
 
 	/// Positions actually passed to the map — empty when the tab is off-screen
@@ -273,10 +272,7 @@ struct MeshMap: View {
 		}
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
-			// Check if the map window scene is already connected
-			isMapWindowOpen = UIApplication.shared.connectedScenes.contains {
-				$0.session.configuration.name == "meshmap-window" && $0.activationState != .unattached
-			}
+			refreshMapWindowOpenState()
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
@@ -298,6 +294,7 @@ struct MeshMap: View {
 		})
 		.onChange(of: router.selectedTab) { _, newTab in
 			if newTab == .map {
+				refreshMapWindowOpenState()
 				UIApplication.shared.isIdleTimerDisabled = true
 			} else {
 				UIApplication.shared.isIdleTimerDisabled = false
@@ -309,12 +306,18 @@ struct MeshMap: View {
 				enabledOverlayConfigs.remove(deletedFileId)
 			}
 		}
-		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { notification in
-			if let scene = notification.object as? UIScene,
-			   scene.session.configuration.name == "meshmap-window" {
-				isMapWindowOpen = false
-			}
+		.onReceive(NotificationCenter.default.publisher(for: UIScene.didActivateNotification)) { _ in
+			refreshMapWindowOpenState()
 		}
+		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
+			refreshMapWindowOpenState()
+		}
+	}
+
+	private func refreshMapWindowOpenState() {
+		// One primary app window plus one detached window means > 1 attached scenes.
+		let attachedScenes = UIApplication.shared.connectedScenes.filter { $0.activationState != .unattached }
+		isMapWindowOpen = attachedScenes.count > 1
 	}
 
 	// moves the map to a new coordinate
