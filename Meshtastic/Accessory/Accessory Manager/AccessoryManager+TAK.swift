@@ -86,6 +86,36 @@ extension AccessoryManager {
 		}
 	}
 
+	// MARK: - Receive ATAK Forwarder Packet from Mesh (Port 257, V1)
+
+	/// Handle incoming `atakForwarder` (port 257) packet from another V1 Apple
+	/// peer. Wire format: EXI-compressed CoT XML, possibly fragmented across
+	/// multiple packets with Fountain (LT) codes. Reassembly + decompression
+	/// happens inside `GenericCoTHandler.handleIncomingForwarderPacket`, which
+	/// returns the reconstructed `CoTMessage` once a full transfer arrives
+	/// (or `nil` for intermediate fragments). Firmware and Android never
+	/// decode this — it's Apple ↔ Apple only.
+	func handleATAKForwarderPacket(_ packet: MeshPacket) {
+		guard case let .decoded(data) = packet.payloadVariant else {
+			Logger.tak.warning("Received ATAK_FORWARDER packet without decoded payload")
+			return
+		}
+
+		Logger.tak.debug("Received ATAK_FORWARDER packet: \(data.payload.count) bytes from node \(packet.from)")
+
+		let packetCopy = packet
+		let accessoryManagerRef = self
+		Task { @MainActor in
+			let handler = GenericCoTHandler.shared
+			handler.accessoryManager = accessoryManagerRef
+
+			if let cotMessage = handler.handleIncomingForwarderPacket(packetCopy) {
+				await TAKServerManager.shared.broadcast(cotMessage)
+				Logger.tak.info("Forwarded V1 generic CoT to TAK clients: \(cotMessage.type)")
+			}
+		}
+	}
+
 	// MARK: - Receive TAK V2 Packet from Mesh (Port 78)
 
 	/// Handle incoming ATAK Plugin V2 packet from the mesh network

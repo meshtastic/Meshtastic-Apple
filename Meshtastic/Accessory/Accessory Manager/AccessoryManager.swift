@@ -662,7 +662,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .privateApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
 				case .atakForwarder:
-					Logger.mesh.info("🕸️ MESH PACKET received for ATAK Forwarder (legacy, ignored)")
+					handleATAKForwarderPacket(packet)
 				case .simulatorApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
 				case .storeForwardPlusplusApp:
