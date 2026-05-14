@@ -705,6 +705,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received Group Alarm App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .lorawanBridge:
 					Logger.mesh.info("🕸️ MESH PACKET received for LoRaWAN Bridge UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .remoteShellApp:
+					Logger.mesh.info("🕸️ MESH PACKET received for Remote Shell UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .unknownApp:
 					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
