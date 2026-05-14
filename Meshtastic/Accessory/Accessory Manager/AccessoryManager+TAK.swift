@@ -223,19 +223,20 @@ extension AccessoryManager {
 		meshPacket.channel = channel
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.decoded = dataMessage
-		// Match Android-side TAKMeshIntegration: hop_limit=3, want_ack=true.
 		// `hop_limit=0` (the protobuf default) makes the firmware treat the
-		// packet as already-exhausted and silently drop it before TX, which
-		// is exactly the symptom users hit when the "Sent TAK V2 packet to
-		// mesh" log fires but peers never hear it on the air.
-		meshPacket.hopLimit = 3
+		// packet as already-exhausted and silently drop it before TX — the
+		// "Sent TAK V2 packet to mesh" log fires, queueStatus comes back
+		// clean, but peers never hear it on the air. Use the LoRa-config
+		// hop_limit (configurable per radio) with a 3-hop fallback when the
+		// config hasn't been received yet or is left at the protobuf default.
+		meshPacket.hopLimit = takBroadcastHopLimit(forDevice: deviceNum)
 		meshPacket.wantAck = true
 
 		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
 		try await send(toRadio, debugDescription: "Sending TAKPacket V2 to mesh")
-		Logger.tak.info("Sent TAK V2 packet to mesh (port=78, channel=\(channel), size=\(wirePayload.count) bytes)")
+		Logger.tak.info("Sent TAK V2 packet to mesh (port=78, channel=\(channel), size=\(wirePayload.count) bytes, hopLimit=\(meshPacket.hopLimit))")
 	}
 
 	/// Send a CoT message to the mesh using the V2 protocol
@@ -314,14 +315,29 @@ extension AccessoryManager {
 		// Same hop_limit / want_ack fix as the V2 path: a `hop_limit=0`
 		// MeshPacket is treated as already-exhausted by the radio firmware
 		// and never gets transmitted on the LoRa channel.
-		meshPacket.hopLimit = 3
+		meshPacket.hopLimit = takBroadcastHopLimit(forDevice: deviceNum)
 		meshPacket.wantAck = true
 
 		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
 		try await send(toRadio, debugDescription: "Sending legacy V1 TAKPacket to mesh")
-		Logger.tak.info("Sent V1 TAK packet to mesh (port=72, channel=\(channel), size=\(payload.count) bytes)")
+		Logger.tak.info("Sent V1 TAK packet to mesh (port=72, channel=\(channel), size=\(payload.count) bytes, hopLimit=\(meshPacket.hopLimit))")
+	}
+
+	/// Resolve the hop-limit to stamp on broadcast TAK MeshPackets. Reads
+	/// the connected node's persisted `LoRaConfig.hopLimit` (set by the
+	/// firmware-side configuration the user picked in **Settings → LoRa**)
+	/// and falls back to 3 hops when it's unavailable or left at the
+	/// protobuf default of 0 — sending with `hop_limit=0` causes the
+	/// firmware to treat the packet as already-exhausted and drop it
+	/// before transmit, which is the same trap Android-side
+	/// TAKMeshIntegration used to hit before it standardised on 3.
+	func takBroadcastHopLimit(forDevice deviceNum: Int64) -> UInt32 {
+		let fallback: UInt32 = 3
+		guard let node = getNodeInfo(id: deviceNum, context: context) else { return fallback }
+		let configured = node.loRaConfig?.hopLimit ?? 0
+		return configured > 0 ? UInt32(truncatingIfNeeded: configured) : fallback
 	}
 
 	/// Ensure static CoT types (routes, shapes, markers) have at least 5 minutes
