@@ -224,7 +224,7 @@ final class TAKMeshtasticBridge {
 				GenericCoTHandler.shared.accessoryManager = accessoryManager
 				do {
 					try await GenericCoTHandler.shared.sendGenericCoT(enrichedMessage, channel: channel)
-					Logger.tak.info("V1 send: EXI on port 257 (\(enrichedMessage.type), method=\(sendMethod))")
+					Logger.tak.info("V1 send: EXI on port 257 (\(enrichedMessage.type), method=\(String(describing: sendMethod)))")
 				} catch {
 					Logger.tak.error("V1 send: EXI failed: \(error.localizedDescription)")
 				}
