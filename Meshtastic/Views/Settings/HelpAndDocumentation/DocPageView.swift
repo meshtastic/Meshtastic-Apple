@@ -105,6 +105,7 @@ struct DocPageView: View {
 	@State private var translatedHTML: String?
 	@State private var isTranslating = false
 	@State private var translationTask: Task<Void, Never>?
+	@State private var translatedTitle: String?
 
 	private var translatedBaseURL: URL {
 		// Keep relative links like ../assets/docs.css and ../assets/screenshots/... working.
@@ -130,7 +131,7 @@ struct DocPageView: View {
 			}
 		}
 		.ignoresSafeArea(edges: .bottom)
-		.navigationTitle(page.title)
+		.navigationTitle(translatedTitle ?? page.title)
 		.navigationBarTitleDisplayMode(.inline)
 		.accessibilityLabel("\(page.title) documentation page")
 		.accessibilityHint("Web view showing the \(page.title) documentation")
@@ -144,6 +145,7 @@ struct DocPageView: View {
 		.onReceive(NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)) { _ in
 			translationTask?.cancel()
 			translatedHTML = nil
+			translatedTitle = nil
 			startTranslation()
 		}
 	}
@@ -157,17 +159,24 @@ struct DocPageView: View {
 		isTranslating = true
 
 		translationTask = Task.detached(priority: .userInitiated) {
-			let htmlResult = await DocTranslationService.shared.translatedHTMLString(for: page)
+			async let htmlResult = DocTranslationService.shared.translatedHTMLString(for: page)
+			async let titleResult = DocTranslationService.shared.translatedUIString(page.title, targetLanguage: languageCode)
+
+			let html = await htmlResult
+			let title = await titleResult
 
 			await MainActor.run {
 				isTranslating = false
-				if let htmlResult {
-					translatedHTML = htmlResult
+				if let html {
+					translatedHTML = html
+				}
+				if !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, title != page.title {
+					translatedTitle = title
 				}
 			}
 
 			// Start background prefetch if translation succeeded
-			if htmlResult != nil {
+			if html != nil {
 				Task.detached(priority: .utility) {
 					await DocTranslationService.shared.prefetchAll(excluding: page.id)
 				}

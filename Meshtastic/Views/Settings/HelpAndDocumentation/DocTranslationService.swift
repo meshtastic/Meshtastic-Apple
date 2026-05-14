@@ -1,4 +1,4 @@
-right // MARK: DocTranslationService
+// MARK: DocTranslationService
 //
 //  DocTranslationService.swift
 //  Meshtastic
