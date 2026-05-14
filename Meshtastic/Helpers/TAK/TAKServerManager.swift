@@ -111,8 +111,18 @@ final class TAKServerManager: ObservableObject {
 	// Offline message queue — buffers mesh-originated CoT messages when no TAK
 	// clients are connected, then drains them when a client reconnects. Entries
 	// expire after offlineQueueTTL to avoid delivering stale situational data.
+	//
+	// Both parsed CoT messages (the `broadcast(_:)` path) and raw XML payloads
+	// (the `broadcastRawXml(_:)` path used for V2 shapes / routes / markers
+	// where detail elements survive only as wire bytes) get queued. Raw XML is
+	// kept verbatim instead of being re-parsed to preserve <link point="..."/>
+	// vertices and other elements that CoTMessage strips.
+	private enum QueuedPayload {
+		case message(CoTMessage)
+		case rawXml(String)
+	}
 	private struct QueuedMessage {
-		let cotMessage: CoTMessage
+		let payload: QueuedPayload
 		let enqueuedAt: Date
 	}
 	private var offlineQueue: [QueuedMessage] = []
@@ -536,13 +546,7 @@ final class TAKServerManager: ObservableObject {
 	/// when a client reconnects (up to 5-minute TTL, max 50 messages).
 	func broadcast(_ cotMessage: CoTMessage) async {
 		guard !connections.isEmpty else {
-			// No clients — queue for delivery on reconnect
-			let cutoff = Date().addingTimeInterval(-offlineQueueTTL)
-			offlineQueue.removeAll { $0.enqueuedAt < cutoff }
-			if offlineQueue.count >= offlineQueueMaxSize {
-				offlineQueue.removeFirst()
-			}
-			offlineQueue.append(QueuedMessage(cotMessage: cotMessage, enqueuedAt: Date()))
+			enqueueOffline(.message(cotMessage))
 			return
 		}
 
@@ -561,8 +565,15 @@ final class TAKServerManager: ObservableObject {
 
 	/// Broadcast raw CoT XML verbatim to TAK clients, bypassing CoTMessage
 	/// parsing which strips shape detail elements (vertices, colors, stroke).
+	/// When no clients are connected, queues the XML for delivery on
+	/// reconnect — V2 routes/shapes are intentionally forwarded through
+	/// this path to preserve detail, so dropping them when offline would
+	/// defeat the point of the parallel offline queue on `broadcast(_:)`.
 	func broadcastRawXml(_ xml: String) async {
-		guard !connections.isEmpty else { return }
+		guard !connections.isEmpty else {
+			enqueueOffline(.rawXml(xml))
+			return
+		}
 		for (connectionId, connection) in connections {
 			do {
 				try await connection.sendRawXML(xml)
@@ -573,15 +584,30 @@ final class TAKServerManager: ObservableObject {
 		}
 	}
 
+	/// Append a payload to the offline queue, pruning expired entries first
+	/// and enforcing the max-size cap by dropping the oldest entry.
+	private func enqueueOffline(_ payload: QueuedPayload) {
+		let cutoff = Date().addingTimeInterval(-offlineQueueTTL)
+		offlineQueue.removeAll { $0.enqueuedAt < cutoff }
+		if offlineQueue.count >= offlineQueueMaxSize {
+			offlineQueue.removeFirst()
+		}
+		offlineQueue.append(QueuedMessage(payload: payload, enqueuedAt: Date()))
+	}
+
 	/// Drain any queued messages to newly connected TAK clients.
 	private func drainOfflineQueue() async {
 		let cutoff = Date().addingTimeInterval(-offlineQueueTTL)
-		let valid = offlineQueue.filter { $0.enqueuedAt >= cutoff }.map(\.cotMessage)
+		let valid = offlineQueue.filter { $0.enqueuedAt >= cutoff }
 		offlineQueue.removeAll()
-		if !valid.isEmpty {
-			Logger.tak.info("Draining \(valid.count) queued message(s) to reconnected TAK client")
-			for msg in valid {
+		guard !valid.isEmpty else { return }
+		Logger.tak.info("Draining \(valid.count) queued message(s) to reconnected TAK client")
+		for queued in valid {
+			switch queued.payload {
+			case .message(let msg):
 				await broadcast(msg)
+			case .rawXml(let xml):
+				await broadcastRawXml(xml)
 			}
 		}
 	}

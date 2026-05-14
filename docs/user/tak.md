@@ -23,33 +23,49 @@ TAK integration works with two device roles:
 
 Set the device role in **Settings → Device**.
 
-## TAK Server Configuration
+## TAK Server screen
 
-1. Go to **Settings → TAK Server**.
-2. Enter your TAK server address (IP or hostname) and port.
-3. Enable **CoT Streaming** to forward received mesh position data to the TAK server.
+**Settings → TAK Server** is the single destination for everything TAK-related. The screen is divided into sections:
+
+### TAK Identity (firmware module config)
+
+The first section, **TAK Identity**, controls the firmware-level team / role identity the radio attaches to every PLI:
+
+- **Team** — the team color shown to TAK clients (Cyan default, plus every standard ATAK team color).
+- **Role** — Team Member, Team Lead, HQ, Sniper, Medic, Forward Observer, RTO, or K9.
+
+These values only have effect when the device role is TAK or TAK Tracker — the section will tell you if the connected node is configured differently. A **Save TAK Identity** button appears in the section only when there are unsaved changes, and dispatches the update as an admin message to the connected node.
+
+Previously this lived on its own **Settings → TAK Module** screen; it is now embedded in TAK Server so that team / role and the in-app server controls live on one page.
+
+### Server status, Enable, and channel
+
+Below the identity section:
+
+- A status indicator showing whether the in-app TAK Server is running and whether the primary channel is suitable for TAK use (it needs a non-default name plus a non-default encryption key).
+- A toggle to **Enable TAK Server**.
+- A picker for the LoRa channel the server bridges between TAK clients and the mesh.
+- A read-only-mode toggle and a mesh-to-CoT relay toggle.
+
+### Certificates
+
+Import a P12 (PKCS#12) or PEM bundle for mTLS-protected ATAK / iTAK connections. The app keeps the certificates encrypted in the keychain.
+
+### Data Package
+
+Export a TAK data package zip you can sideload into ATAK / iTAK so the client can connect to the app's local server without manual server entry.
+
+Route packets received over the mesh (CoT `b-m-r`) are also automatically converted to KML data packages and saved to `Documents/TAK Routes/`, accessible via the iOS Files app, so you can import them manually into iTAK (which doesn't render route CoT from streaming).
 
 ## CoT Message Format
 
-Meshtastic sends CoT (Cursor-on-Target) XML messages. Position packets received from the mesh are converted to CoT atoms and forwarded to the configured TAK server. The app supports:
+Meshtastic supports two on-wire formats, picked per-send based on the connected radio's firmware version:
 
-- CoT type `a-f-G-U-C` (friendly ground unit)
-- Position (latitude, longitude, altitude, speed, heading)
-- Node callsign mapped from the Meshtastic long name
-- PLI (Position Location Information) updates at the configured interval
-
-## TAK Module Configuration
-
-Go to **Settings → TAK Module** to configure:
-
-| Setting | Description |
-|---------|-------------|
-| CoT PLI Broadcast Interval | How often position reports are sent to the mesh. |
-| CoT Message Interval | Minimum interval between CoT forwards to the TAK server. |
-| ATAK-D Rebroadcast | Forward received ATAK-D packets to the TAK server. |
+- **V2 (firmware ≥ 2.8.0)** — Full typed CoT payload (PLI, GeoChat, shapes, markers, routes, casevac, emergency, task) on ATAK_PLUGIN_V2 = port 78, compressed with zstd dictionary compression for maximum range.
+- **V1 (firmware ≤ 2.7.x)** — Bare `TAKPacket` protobuf for PLI / GeoChat on ATAK_PLUGIN = port 72, plus zlib + Fountain-coded CoT XML on ATAK_FORWARDER = port 257 for everything else (Apple-only fallback when interoperating with other iOS devices on the legacy stack).
 
 ## Requirements
 
-- Firmware 2.3 or later on your radio
-- A running TAK server (e.g., TAK Server, FreeTAKServer, or TAKX) on your local network
-- Device configured with TAK or TAK Tracker role
+- Firmware 2.3 or later on your radio (2.8.0 or later for full TAK V2 wire format)
+- An ATAK / iTAK / TAK-compatible client app on your phone or tablet
+- Device configured with the TAK or TAK Tracker role

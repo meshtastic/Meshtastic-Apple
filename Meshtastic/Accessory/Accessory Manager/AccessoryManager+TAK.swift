@@ -148,17 +148,23 @@ extension AccessoryManager {
 			// vertices, strokeColor, fillColor, etc.) that ATAK needs.
 			let builder = MeshtasticTAK.CotXmlBuilder()
 			let rawCotXml = builder.build(takPacketV2)
-			// Strip the XML declaration and collapse whitespace — TAK clients'
-			// TCP streaming parsers expect bare <event>...</event> on a single
-			// line, not a formatted XML document with <?xml ...?> prologue.
-			// Use a permissive regex (`^\s*<\?xml[^>]*\?>`) so the prologue is
-			// stripped even if the SDK builder ever emits it with single
-			// quotes, a different attribute order, or `standalone="yes"` —
-			// a literal substring match would silently leak the declaration
+			// Strip the XML declaration and collapse formatting whitespace —
+			// TAK clients' TCP streaming parsers expect bare <event>...</event>
+			// on a single line, not a formatted XML document with <?xml ...?>
+			// prologue.
+			//
+			// The prologue match uses a permissive regex (`^\s*<\?xml[^>]*\?>`)
+			// so it's stripped even if the SDK builder ever emits it with
+			// single quotes, a different attribute order, or `standalone="yes"`
+			// — a literal substring match would silently leak the declaration
 			// mid-stream and tear down the TAK TCP connection.
+			//
+			// The inter-tag collapse only targets whitespace that sits between
+			// `>` and `<` so we don't mangle multi-line text content (e.g. a
+			// `<remarks>` chat body with embedded newlines).
 			let cotXml = rawCotXml
 				.replacingOccurrences(of: #"^\s*<\?xml[^>]*\?>"#, with: "", options: .regularExpression)
-				.replacingOccurrences(of: "\\s*\\n\\s*", with: "", options: .regularExpression)
+				.replacingOccurrences(of: #">\s+<"#, with: "><", options: .regularExpression)
 				.trimmingCharacters(in: .whitespacesAndNewlines)
 
 			// Logger.tak.debug("=== Received CoT XML (mesh, \(cotXml.count) chars) ===")
@@ -238,8 +244,9 @@ extension AccessoryManager {
 
 		// Extend stale time for static objects (routes, shapes, markers) that
 		// may arrive over LoRa mesh past their original TTL. iTAK uses 2-min
-		// stale for routes; ATAK uses 24h. 5 min minimum ensures the object
-		// survives multi-hop mesh delivery and renders on the receiving end.
+		// stale for routes; ATAK uses 24h. We bump short stales up to
+		// `minimumMeshStaleTTL` (15 minutes) so the object survives multi-hop
+		// mesh delivery and renders on the receiving end.
 		let freshXml = Self.ensureMinimumStaleForMesh(cotXml)
 		let strippedXml = Self.stripNonEssentialElements(freshXml)
 		let parser = MeshtasticTAK.CotXmlParser()

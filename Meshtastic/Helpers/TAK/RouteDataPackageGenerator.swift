@@ -14,188 +14,232 @@ import OSLog
 
 enum RouteDataPackageGenerator {
 
-    struct RouteKmlResult {
-        let kml: String
-        let routeUid: String
-        let routeName: String
-    }
+	struct RouteKmlResult {
+		let kml: String
+		let routeUid: String
+		let routeName: String
+	}
 
-    // MARK: - KML Generation
+	// MARK: - KML Generation
 
-    /// Extract waypoints from route CoT XML and generate a KML LineString.
-    /// Returns nil if fewer than 2 waypoints are found.
-    static func generateKml(routeXml: String) -> RouteKmlResult? {
-        // Extract route UID from <event uid="...">
-        guard let uidMatch = routeXml.range(of: #"<event\s[^>]*\buid="([^"]*)"#, options: .regularExpression),
-              let uidCapture = routeXml[uidMatch].range(of: #"uid="([^"]*)"#, options: .regularExpression) else {
-            return nil
-        }
-        let uidAttr = String(routeXml[uidCapture])
-        let uid = String(uidAttr.dropFirst(5).dropLast(1)) // strip uid=" and trailing "
+	/// Extract waypoints from route CoT XML and generate a KML LineString.
+	/// Returns nil if fewer than 2 waypoints are found.
+	static func generateKml(routeXml: String) -> RouteKmlResult? {
+		guard let uid = attributeValue(in: routeXml, on: "event", named: "uid") else {
+			return nil
+		}
 
-        // Extract route name from <contact callsign="...">
-        let name: String
-        if let csMatch = routeXml.range(of: #"<contact\s[^>]*\bcallsign="([^"]*)"#, options: .regularExpression),
-           let csCapture = routeXml[csMatch].range(of: #"callsign="([^"]*)"#, options: .regularExpression) {
-            let csAttr = String(routeXml[csCapture])
-            name = String(csAttr.dropFirst(10).dropLast(1)) // strip callsign=" and trailing "
-        } else {
-            name = "Mesh Route"
-        }
+		let name = attributeValue(in: routeXml, on: "contact", named: "callsign") ?? "Mesh Route"
 
-        // Extract waypoints from <link ... point="lat,lon,hae" .../> elements
-        let linkPattern = #"<link\s[^>]*\bpoint="([^"]*)"[^>]*/>"#
-        guard let linkRegex = try? NSRegularExpression(pattern: linkPattern, options: []) else {
-            return nil
-        }
-        let nsRange = NSRange(routeXml.startIndex..., in: routeXml)
-        let matches = linkRegex.matches(in: routeXml, range: nsRange)
+		// Extract waypoints from <link ... point="lat,lon,hae" .../> elements.
+		// Match either single or double-quoted point attributes — the upstream
+		// SDK builder happens to emit doubles, but CoTMessage.toXML() and any
+		// third-party route generator could emit singles, and silently failing
+		// on those would drop a valid route.
+		let linkPattern = #"<link\b[^>]*\bpoint\s*=\s*(['"])([^'"]*)\1[^>]*/?>"#
+		guard let linkRegex = try? NSRegularExpression(pattern: linkPattern, options: []) else {
+			return nil
+		}
+		let nsRange = NSRange(routeXml.startIndex..., in: routeXml)
+		let matches = linkRegex.matches(in: routeXml, range: nsRange)
 
-        var kmlCoords: [String] = []
-        for match in matches {
-            guard match.numberOfRanges >= 2,
-                  let pointRange = Range(match.range(at: 1), in: routeXml) else { continue }
-            let point = String(routeXml[pointRange]) // "lat,lon,hae" or "lat,lon"
-            let parts = point.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-            guard parts.count >= 2 else { continue }
-            let lat = parts[0]
-            let lon = parts[1]
-            let hae = parts.count >= 3 ? parts[2] : "0"
-            // KML coordinate order is lon,lat,hae (opposite of CoT's lat,lon,hae)
-            kmlCoords.append("\(lon),\(lat),\(hae)")
-        }
+		var kmlCoords: [String] = []
+		for match in matches {
+			guard match.numberOfRanges >= 3,
+				  let pointRange = Range(match.range(at: 2), in: routeXml) else { continue }
+			let point = String(routeXml[pointRange]) // "lat,lon,hae" or "lat,lon"
+			let parts = point.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+			guard parts.count >= 2 else { continue }
+			let lat = parts[0]
+			let lon = parts[1]
+			let hae = parts.count >= 3 ? parts[2] : "0"
+			// KML coordinate order is lon,lat,hae (opposite of CoT's lat,lon,hae)
+			kmlCoords.append("\(lon),\(lat),\(hae)")
+		}
 
-        guard kmlCoords.count >= 2 else { return nil }
+		guard kmlCoords.count >= 2 else { return nil }
 
-        Logger.tak.info("Route KML: \(kmlCoords.count) waypoints, first=\(kmlCoords.first ?? "none")")
+		Logger.tak.info("Route KML: \(kmlCoords.count) waypoints, first=\(kmlCoords.first ?? "none")")
 
-        let escapedName = escapeXml(name)
-        let kml = """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <kml xmlns="http://www.opengis.net/kml/2.2">
-          <Document>
-            <name>\(escapedName)</name>
-            <Placemark>
-              <name>\(escapedName)</name>
-              <Style>
-                <LineStyle><color>ff0000ff</color><width>3</width></LineStyle>
-              </Style>
-              <LineString>
-                <coordinates>
-        \(kmlCoords.map { "          \($0)" }.joined(separator: "\n"))
-                </coordinates>
-              </LineString>
-            </Placemark>
-          </Document>
-        </kml>
-        """
+		let escapedName = escapeXml(name)
+		let kml = """
+		<?xml version="1.0" encoding="UTF-8"?>
+		<kml xmlns="http://www.opengis.net/kml/2.2">
+		  <Document>
+		    <name>\(escapedName)</name>
+		    <Placemark>
+		      <name>\(escapedName)</name>
+		      <Style>
+		        <LineStyle><color>ff0000ff</color><width>3</width></LineStyle>
+		      </Style>
+		      <LineString>
+		        <coordinates>
+		\(kmlCoords.map { "          \($0)" }.joined(separator: "\n"))
+		        </coordinates>
+		      </LineString>
+		    </Placemark>
+		  </Document>
+		</kml>
+		"""
 
-        return RouteKmlResult(kml: kml, routeUid: uid, routeName: name)
-    }
+		return RouteKmlResult(kml: kml, routeUid: uid, routeName: name)
+	}
 
-    // MARK: - Data Package Generation
+	// MARK: - Data Package Generation
 
-    /// Generate a complete data package (zip) containing the route as KML.
-    /// Returns (fileName, zipData) or nil if the route XML can't be parsed.
-    static func generateDataPackage(routeXml: String) -> (fileName: String, zipData: Data)? {
-        guard let result = generateKml(routeXml: routeXml) else { return nil }
+	/// Generate a complete data package (zip) containing the route as KML.
+	/// Returns (fileName, zipData) or nil if the route XML can't be parsed.
+	static func generateDataPackage(routeXml: String) -> (fileName: String, zipData: Data)? {
+		guard let result = generateKml(routeXml: routeXml) else { return nil }
 
-        let kmlFileName = "\(result.routeUid).kml"
-        let zipFileName = "\(result.routeUid).zip"
+		// routeUid comes from remote CoT XML so it must be treated as
+		// untrusted input. Use two separate sanitizations:
+		//   * `safeUid`        — strict alphanumeric/`-_.` form, used in
+		//                        file names and the temp directory path so
+		//                        a malicious UID can't escape to ../../ or
+		//                        include filesystem-illegal characters.
+		//   * `escapedManifestUid` — XML-escaped form for embedding inside
+		//                        the manifest's attribute value, so `&`,
+		//                        `<`, `>`, `"`, `'` don't break the XML.
+		let safeUid = sanitizeForFilename(result.routeUid)
+		let escapedManifestUid = escapeXml(result.routeUid)
 
-        let manifest = """
-        <MissionPackageManifest version="2">
-          <Configuration>
-            <Parameter name="uid" value="Meshtastic Route.\(result.routeUid)"/>
-            <Parameter name="name" value="\(escapeXml(result.routeName))"/>
-            <Parameter name="onReceiveDelete" value="true"/>
-          </Configuration>
-          <Contents>
-            <Content ignore="false" zipEntry="\(kmlFileName)"/>
-          </Contents>
-        </MissionPackageManifest>
-        """
+		let kmlFileName = "\(safeUid).kml"
+		let zipFileName = "\(safeUid).zip"
 
-        // Create temp directory with KML + manifest, then zip via NSFileCoordinator
-        let fileManager = FileManager.default
-        let tempDir = fileManager.temporaryDirectory.appendingPathComponent("route_pkg_\(result.routeUid)")
+		let manifest = """
+		<MissionPackageManifest version="2">
+		  <Configuration>
+		    <Parameter name="uid" value="Meshtastic Route.\(escapedManifestUid)"/>
+		    <Parameter name="name" value="\(escapeXml(result.routeName))"/>
+		    <Parameter name="onReceiveDelete" value="true"/>
+		  </Configuration>
+		  <Contents>
+		    <Content ignore="false" zipEntry="\(kmlFileName)"/>
+		  </Contents>
+		</MissionPackageManifest>
+		"""
 
-        do {
-            if fileManager.fileExists(atPath: tempDir.path) {
-                try fileManager.removeItem(at: tempDir)
-            }
-            try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
+		// Create temp directory with KML + manifest, then zip via NSFileCoordinator
+		let fileManager = FileManager.default
+		let tempDir = fileManager.temporaryDirectory.appendingPathComponent("route_pkg_\(safeUid)")
 
-            try result.kml.write(to: tempDir.appendingPathComponent(kmlFileName), atomically: true, encoding: .utf8)
-            try manifest.write(to: tempDir.appendingPathComponent("manifest.xml"), atomically: true, encoding: .utf8)
+		do {
+			if fileManager.fileExists(atPath: tempDir.path) {
+				try fileManager.removeItem(at: tempDir)
+			}
+			try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
 
-            // Create zip using NSFileCoordinator (same pattern as TAKDataPackageGenerator)
-            var zipData: Data?
-            var coordinatorError: NSError?
-            let coordinator = NSFileCoordinator()
+			try result.kml.write(to: tempDir.appendingPathComponent(kmlFileName), atomically: true, encoding: .utf8)
+			try manifest.write(to: tempDir.appendingPathComponent("manifest.xml"), atomically: true, encoding: .utf8)
 
-            coordinator.coordinate(readingItemAt: tempDir, options: .forUploading, error: &coordinatorError) { zipURL in
-                zipData = try? Data(contentsOf: zipURL)
-            }
+			// Create zip using NSFileCoordinator (same pattern as TAKDataPackageGenerator)
+			var zipData: Data?
+			var coordinatorError: NSError?
+			let coordinator = NSFileCoordinator()
 
-            try? fileManager.removeItem(at: tempDir)
+			coordinator.coordinate(readingItemAt: tempDir, options: .forUploading, error: &coordinatorError) { zipURL in
+				zipData = try? Data(contentsOf: zipURL)
+			}
 
-            if let coordinatorError {
-                Logger.tak.error("Route zip coordinator error: \(coordinatorError.localizedDescription)")
-                return nil
-            }
-            guard let data = zipData else {
-                Logger.tak.error("Route zip data was nil")
-                return nil
-            }
+			try? fileManager.removeItem(at: tempDir)
 
-            return (zipFileName, data)
-        } catch {
-            Logger.tak.error("Route data package generation failed: \(error.localizedDescription)")
-            try? fileManager.removeItem(at: tempDir)
-            return nil
-        }
-    }
+			if let coordinatorError {
+				Logger.tak.error("Route zip coordinator error: \(coordinatorError.localizedDescription)")
+				return nil
+			}
+			guard let data = zipData else {
+				Logger.tak.error("Route zip data was nil")
+				return nil
+			}
 
-    // MARK: - Save to Documents
+			return (zipFileName, data)
+		} catch {
+			Logger.tak.error("Route data package generation failed: \(error.localizedDescription)")
+			try? fileManager.removeItem(at: tempDir)
+			return nil
+		}
+	}
 
-    /// Save a data package zip to Documents/TAK Routes/. Returns the file URL on success.
-    static func saveToDocuments(fileName: String, zipData: Data) -> URL? {
-        let fileManager = FileManager.default
-        guard let documentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            Logger.tak.error("Could not get Documents directory")
-            return nil
-        }
+	// MARK: - Save to Documents
 
-        let routesDir = documentsDir.appendingPathComponent("TAK Routes")
-        do {
-            try fileManager.createDirectory(at: routesDir, withIntermediateDirectories: true)
-            let fileURL = routesDir.appendingPathComponent(fileName)
-            try zipData.write(to: fileURL)
-            return fileURL
-        } catch {
-            Logger.tak.error("Failed to save route data package: \(error.localizedDescription)")
-            return nil
-        }
-    }
+	/// Save a data package zip to Documents/TAK Routes/. Returns the file URL on success.
+	static func saveToDocuments(fileName: String, zipData: Data) -> URL? {
+		let fileManager = FileManager.default
+		guard let documentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+			Logger.tak.error("Could not get Documents directory")
+			return nil
+		}
 
-    // MARK: - Helpers
+		let routesDir = documentsDir.appendingPathComponent("TAK Routes")
+		do {
+			try fileManager.createDirectory(at: routesDir, withIntermediateDirectories: true)
+			let fileURL = routesDir.appendingPathComponent(fileName)
+			try zipData.write(to: fileURL)
+			return fileURL
+		} catch {
+			Logger.tak.error("Failed to save route data package: \(error.localizedDescription)")
+			return nil
+		}
+	}
 
-    /// Extract route name from CoT XML for notification display.
-    static func extractRouteName(routeXml: String) -> String? {
-        guard let csMatch = routeXml.range(of: #"<contact\s[^>]*\bcallsign="([^"]*)"#, options: .regularExpression),
-              let csCapture = routeXml[csMatch].range(of: #"callsign="([^"]*)"#, options: .regularExpression) else {
-            return nil
-        }
-        let csAttr = String(routeXml[csCapture])
-        return String(csAttr.dropFirst(10).dropLast(1))
-    }
+	// MARK: - Helpers
 
-    private static func escapeXml(_ string: String) -> String {
-        string
-            .replacingOccurrences(of: "&", with: "&amp;")
-            .replacingOccurrences(of: "<", with: "&lt;")
-            .replacingOccurrences(of: ">", with: "&gt;")
-            .replacingOccurrences(of: "\"", with: "&quot;")
-    }
+	/// Extract route name from CoT XML for notification display.
+	static func extractRouteName(routeXml: String) -> String? {
+		attributeValue(in: routeXml, on: "contact", named: "callsign")
+	}
+
+	/// Pull `<element ... name="value">` or `<element ... name='value'>` from
+	/// the first element matching `element`. Supports either quote style and
+	/// arbitrary attribute order. Returns nil when the element / attribute
+	/// is missing.
+	static func attributeValue(in xml: String, on element: String, named attribute: String) -> String? {
+		// Find the opening tag for the element.
+		let openTagPattern = #"<"# + element + #"\b[^>]*>"#
+		guard let tagRange = xml.range(of: openTagPattern, options: .regularExpression) else {
+			return nil
+		}
+		let tag = String(xml[tagRange])
+
+		// Match `name="value"` or `name='value'` inside that tag only.
+		let attrPattern = #"\b"# + attribute + #"\s*=\s*(['"])([^'"]*)\1"#
+		guard let attrRegex = try? NSRegularExpression(pattern: attrPattern, options: []) else {
+			return nil
+		}
+		let nsRange = NSRange(tag.startIndex..., in: tag)
+		guard let attrMatch = attrRegex.firstMatch(in: tag, range: nsRange),
+			  attrMatch.numberOfRanges >= 3,
+			  let valueRange = Range(attrMatch.range(at: 2), in: tag) else {
+			return nil
+		}
+		return String(tag[valueRange])
+	}
+
+	/// Reduce a string to characters safe for use as a file name on
+	/// case-preserving filesystems and APFS. Path separators (`/`, `\`),
+	/// directory traversal sequences, NUL bytes, and other shell-sensitive
+	/// characters are collapsed to `_`. A `route` placeholder is returned
+	/// if the sanitized result is empty.
+	static func sanitizeForFilename(_ input: String) -> String {
+		let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_."))
+		var out = String(input.unicodeScalars.map { allowed.contains($0) ? Character($0) : "_" })
+		// Collapse runs of `.` so we never create `..` or `...` directory
+		// traversal segments, and trim leading dots so the result isn't a
+		// hidden file or anchored to a different directory.
+		while out.contains("..") {
+			out = out.replacingOccurrences(of: "..", with: "_")
+		}
+		out = out.trimmingCharacters(in: CharacterSet(charactersIn: "."))
+		return out.isEmpty ? "route" : out
+	}
+
+	private static func escapeXml(_ string: String) -> String {
+		string
+			.replacingOccurrences(of: "&", with: "&amp;")
+			.replacingOccurrences(of: "<", with: "&lt;")
+			.replacingOccurrences(of: ">", with: "&gt;")
+			.replacingOccurrences(of: "\"", with: "&quot;")
+			.replacingOccurrences(of: "'", with: "&apos;")
+	}
 }

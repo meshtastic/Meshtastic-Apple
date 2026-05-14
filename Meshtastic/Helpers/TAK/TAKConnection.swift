@@ -223,8 +223,13 @@ actor TAKConnection {
 	private func parseAndYieldMessage(_ data: Data) {
 		// Fast-path: detect keepalive pings before full XML parsing to avoid
 		// both the parse overhead and noisy log lines every few seconds.
+		//
+		// Only match the `type` and `uid` attribute values on the root
+		// `<event>` so we don't accidentally classify a real CoT message
+		// as a ping just because it has "ping" or "t-x-c-t" sitting inside
+		// a `<remarks>` body or detail string.
 		if let xmlString = String(data: data, encoding: .utf8),
-		   xmlString.contains("t-x-c-t") || xmlString.contains("uid=\"ping\"") {
+		   Self.isKeepalivePing(xmlString) {
 			Task { await sendPong() }
 			return
 		}
@@ -379,6 +384,22 @@ actor TAKConnection {
 		} catch {
 			// Only log failures — successful keepalives are silent
 		}
+	}
+
+	/// Returns true only when the XML's root `<event>` element has
+	/// `type="t-x-c-t"` (ATAK keepalive request) or `uid="ping"` (iTAK
+	/// keepalive variant). Scans just the leading `<event ...>` tag so
+	/// pings can't be spoofed by user content inside `<remarks>` or
+	/// `<detail>` bodies.
+	static func isKeepalivePing(_ xml: String) -> Bool {
+		guard let eventTagRange = xml.range(of: #"<event\b[^>]*>"#, options: .regularExpression) else {
+			return false
+		}
+		let eventTag = xml[eventTagRange]
+		let typeRegex = #"\btype\s*=\s*(['"])t-x-c-t\1"#
+		let uidRegex = #"\buid\s*=\s*(['"])ping\1"#
+		return eventTag.range(of: typeRegex, options: .regularExpression) != nil
+			|| eventTag.range(of: uidRegex, options: .regularExpression) != nil
 	}
 
 	/// Respond to ATAK's t-x-c-t ping to reset its RX timeout counter.

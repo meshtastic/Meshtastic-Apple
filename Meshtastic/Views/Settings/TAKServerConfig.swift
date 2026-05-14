@@ -657,9 +657,15 @@ struct TAKIdentitySection: View {
 			}
 		}
 		.disabled(!canEdit)
-		.onAppear { resyncFromNode() }
+		.onAppear {
+			resyncFromNode()
+			requestTakConfigIfNeeded()
+		}
 		.onChange(of: node?.takConfig?.team) { _, _ in resyncFromNode() }
 		.onChange(of: node?.takConfig?.role) { _, _ in resyncFromNode() }
+		.onChange(of: accessoryManager.isConnected) { _, isConnected in
+			if isConnected { requestTakConfigIfNeeded() }
+		}
 		.onChange(of: team) { _, newTeam in
 			hasChanges = newTeam != Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue))
 				|| role != Int(node?.takConfig?.role ?? Int32(MemberRole.unspecifed.rawValue))
@@ -667,6 +673,30 @@ struct TAKIdentitySection: View {
 		.onChange(of: role) { _, newRole in
 			hasChanges = team != Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue))
 				|| newRole != Int(node?.takConfig?.role ?? Int32(MemberRole.unspecifed.rawValue))
+		}
+	}
+
+	// Without this, a first-time user with no prior TAK config on the node
+	// sees a perma-spinner: the section is `.disabled(!canEdit)` while
+	// takConfig is nil, but nothing ever fires the admin request. The old
+	// `TAKModuleConfig` screen did this in `.onAppear`; mirror the behavior
+	// here so the embedded section converges on the same payload.
+	private func requestTakConfigIfNeeded() {
+		guard accessoryManager.isConnected,
+			  let deviceNum = accessoryManager.activeDeviceNum,
+			  let node,
+			  node.num == deviceNum,
+			  node.takConfig == nil,
+			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
+			  let fromUser = connectedNode.user,
+			  let toUser = node.user else { return }
+		Task {
+			do {
+				Logger.mesh.info("⚙️ TAKIdentitySection: requesting empty TAK module config from node")
+				try await accessoryManager.requestTAKModuleConfig(fromUser: fromUser, toUser: toUser)
+			} catch {
+				Logger.mesh.error("🚨 TAKIdentitySection: TAK module config request failed: \(error.localizedDescription)")
+			}
 		}
 	}
 
