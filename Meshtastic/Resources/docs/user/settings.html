@@ -117,5 +117,24 @@
 </table>
 <h2>Firmware Updates</h2>
 <p>Check for and apply OTA firmware updates to your connected radio directly from the app. See <a href="firmware.html">Firmware Updates</a> for full details.</p>
+<h2>Automatic Documentation Translation</h2>
+<p>On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.</p>
+<h3>How It Works</h3>
+<ul>
+<li><strong>Language detection</strong>: The app reads your device's primary language setting each time you open a documentation page.</li>
+<li><strong>On-device translation</strong>: Pages are translated using Apple's on-device Translation framework (iOS 26+). If a language is not supported by the Translation framework, the app falls back to the on-device Foundation model (iOS 26+ only).</li>
+<li><strong>No network required</strong>: After initial translation, all content is available offline.</li>
+<li><strong>Caching</strong>: Translated pages are stored locally so they load instantly on subsequent visits.</li>
+<li><strong>Background prefetch</strong>: After the current page is translated, remaining pages are translated in the background at low priority.</li>
+</ul>
+<h3>Fallback to English</h3>
+<p>If translation is unavailable (older than iOS 26, unsupported language, or language pack not downloaded), the original English documentation is displayed. The app never shows blank or broken pages.</p>
+<h3>Cache Management</h3>
+<ul>
+<li>Translated files are stored in Application Support and persist across app launches.</li>
+<li>A 50 MB per-language limit is enforced using least-recently-used eviction.</li>
+<li>When the English source documentation is updated (new app version), stale translations are automatically regenerated.</li>
+</ul>
+<div class="tips-callout"><strong>Tip — Language change</strong>: If you change your device language while the app is open, documentation pages automatically reload in the new language.</div>
 </body>
 </html>

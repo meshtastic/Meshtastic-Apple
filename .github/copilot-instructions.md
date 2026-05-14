@@ -203,6 +203,13 @@ CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modif
 - SwiftData (existing `MessageEntity` — no schema changes required) (004-message-formatting-toolbar)
 - Swift (latest stable) + SwiftUI (TextEditor, TextSelection — iOS 18+) (004-message-formatting-toolbar)
 - N/A (no schema changes — raw markdown stored in existing `messagePayload`) (004-message-formatting-toolbar)
+- Swift (latest stable), iOS 26+ for translation APIs + Translation framework, FoundationModels, SwiftUI, WKWebView (existing DocPageView) (008-docs-auto-translation)
+- Application Support directory (file-based cache — translated .md files + metadata JSON) (008-docs-auto-translation)
 
 ## Recent Changes
 - 001-local-mesh-discovery: Added Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+)
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
