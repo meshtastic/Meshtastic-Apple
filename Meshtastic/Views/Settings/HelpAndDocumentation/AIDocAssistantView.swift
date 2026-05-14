@@ -1,4 +1,4 @@
-// Meshtastic/Views/Settings/HelpAndDocumentation/AIDocAssistantView.swift
+// WMeshtastic/Views/Settings/HelpAndDocumentation/AIDocAssistantView.swift
 
 import SwiftUI
 import OSLog
@@ -12,13 +12,25 @@ private struct ChirpyMessage: Identifiable {
 	let id = UUID()
 	let isUser: Bool
 	let text: String
-	/// Doc pages used to generate this reply. Empty for user messages.
+	/// Local doc pages used to generate this reply. Empty for user messages.
 	let sourcePages: [DocPage]
+	/// Explicit meshtastic.org links found in the reply markdown.
+	let sourceWebLinks: [ChirpyWebLink]
 
-	init(isUser: Bool, text: String, sourcePages: [DocPage] = []) {
+	init(isUser: Bool, text: String, sourcePages: [DocPage] = [], sourceWebLinks: [ChirpyWebLink] = []) {
 		self.isUser = isUser
 		self.text = text
 		self.sourcePages = sourcePages
+		self.sourceWebLinks = sourceWebLinks
+	}
+}
+
+private struct ChirpyWebLink: Identifiable, Hashable {
+	let title: String
+	let url: URL
+
+	var id: String {
+		"\(title)|\(url.absoluteString)"
 	}
 }
 
@@ -34,6 +46,7 @@ struct AIDocAssistantView: View {
 	@State private var isLoading = false
 	@State private var errorMessage: String?
 	@FocusState private var isInputFocused: Bool
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
 	private let bundle = DocBundle.shared
 
@@ -98,6 +111,38 @@ struct AIDocAssistantView: View {
 	// SVG viewBox is 1871.69 × 2607.94 — portrait ratio ~0.718 w:h
 	private let chirpyAspect: CGFloat = 1871.69 / 2607.94
 
+	private var chirpyAvatarSize: CGFloat {
+		#if targetEnvironment(macCatalyst)
+		112
+		#else
+		horizontalSizeClass == .compact ? 56 : 28
+		#endif
+	}
+
+	private var sourceLinkFont: Font {
+		#if targetEnvironment(macCatalyst)
+		.system(size: 18)
+		#else
+		.caption
+		#endif
+	}
+
+	private var sourceLinkIconFont: Font {
+		#if targetEnvironment(macCatalyst)
+		.system(size: 16, weight: .semibold)
+		#else
+		.caption
+		#endif
+	}
+
+	private var sourceLinkSpacing: CGFloat {
+		#if targetEnvironment(macCatalyst)
+		7
+		#else
+		4
+		#endif
+	}
+
 	private var welcomeCard: some View {
 		VStack(spacing: 16) {
 			Image("Chirpy")
@@ -134,7 +179,7 @@ struct AIDocAssistantView: View {
 						.textSelection(.enabled)
 				} else {
 					chirpyAvatarSmall
-					Text(message.text)
+					Text(markdownAttributedString(message.text))
 						.padding(.horizontal, 14)
 						.padding(.vertical, 10)
 						.background(Color(uiColor: .secondarySystemBackground))
@@ -144,22 +189,62 @@ struct AIDocAssistantView: View {
 					Spacer(minLength: 56)
 				}
 			}
-			if !message.isUser && !message.sourcePages.isEmpty {
+			if !message.isUser && (!message.sourcePages.isEmpty || !message.sourceWebLinks.isEmpty) {
 				// Indent to align with the bubble (avatar width + spacing)
-				let avatarWidth = 28 * chirpyAspect + 8
-				VStack(alignment: .leading, spacing: 4) {
+				let avatarWidth = chirpyAvatarSize * chirpyAspect + 8
+				VStack(alignment: .leading, spacing: sourceLinkSpacing) {
 					ForEach(message.sourcePages) { page in
 						NavigationLink(destination: DocPageView(page: page)) {
-							Label(page.title, systemImage: "arrow.up.right.square")
-								.font(.caption)
-								.foregroundStyle(Color.accentColor)
+							HStack(spacing: 6) {
+								Image(systemName: "doc.text")
+									.font(sourceLinkIconFont)
+								Text(page.title)
+							}
+							.font(sourceLinkFont)
+							.foregroundStyle(Color.accentColor)
 						}
 						.accessibilityLabel("Open \(page.title) documentation")
+					}
+					ForEach(message.sourceWebLinks) { webLink in
+						Link(destination: webLink.url) {
+							HStack(spacing: 6) {
+								Image(systemName: "globe")
+									.font(sourceLinkIconFont)
+								Text(webLink.title)
+							}
+							.font(sourceLinkFont)
+							.foregroundStyle(Color.accentColor)
+						}
+						.accessibilityLabel("Open \(webLink.title) on meshtastic.org")
 					}
 				}
 				.padding(.leading, avatarWidth)
 			}
 		}
+	}
+
+	private func extractMeshtasticWebLinks(from markdown: String) -> [ChirpyWebLink] {
+		let pattern = "\\[([^\\]]+)\\]\\((https?://(?:www\\.)?meshtastic\\.org[^\\s\\)]+)\\)"
+		guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+		let fullRange = NSRange(markdown.startIndex..., in: markdown)
+		let matches = regex.matches(in: markdown, range: fullRange)
+		var results: [ChirpyWebLink] = []
+		for match in matches {
+			guard match.numberOfRanges == 3,
+				let titleRange = Range(match.range(at: 1), in: markdown),
+				let urlRange = Range(match.range(at: 2), in: markdown)
+			else {
+				continue
+			}
+			let title = String(markdown[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+			let urlString = String(markdown[urlRange])
+			guard let url = URL(string: urlString) else { continue }
+			let link = ChirpyWebLink(title: title.isEmpty ? url.lastPathComponent : title, url: url)
+			if !results.contains(link) {
+				results.append(link)
+			}
+		}
+		return results
 	}
 
 	private var thinkingBubble: some View {
@@ -195,14 +280,27 @@ struct AIDocAssistantView: View {
 	}
 
 	private var chirpyAvatarSmall: some View {
-		Image("Chirpy")
+		return Image("Chirpy")
 			.resizable()
 			.scaledToFit()
-			.frame(width: 28 * chirpyAspect, height: 28)
+			.frame(width: chirpyAvatarSize * chirpyAspect, height: chirpyAvatarSize)
 			.accessibilityHidden(true)
 	}
 
 	// MARK: Input bar
+
+	/// Converts a markdown string to an `AttributedString` for rich rendering in `Text` views.
+	private func markdownAttributedString(_ markdown: String) -> AttributedString {
+		do {
+			let attributed = try AttributedString(
+				markdown: markdown,
+				options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+			)
+			return attributed
+		} catch {
+			return AttributedString(markdown)
+		}
+	}
 
 	private var inputBar: some View {
 		HStack(alignment: .bottom, spacing: 8) {
@@ -264,8 +362,9 @@ struct AIDocAssistantView: View {
 			for page in mentionedPages where !linkedPages.contains(where: { $0.id == page.id }) {
 				linkedPages.append(page)
 			}
-			messages.append(ChirpyMessage(isUser: false, text: answer, sourcePages: linkedPages))
-			Logger.docs.info("AI assistant answered query using \(contextPages.count) context pages; \(linkedPages.count) total linked")
+			let webLinks = extractMeshtasticWebLinks(from: answer)
+			messages.append(ChirpyMessage(isUser: false, text: answer, sourcePages: linkedPages, sourceWebLinks: webLinks))
+			Logger.docs.info("AI assistant answered query using \(contextPages.count) context pages; \(linkedPages.count) local links; \(webLinks.count) web links")
 		} catch {
 			errorMessage = "Could not generate an answer. Please try again."
 			Logger.docs.error("AI assistant error: \(error.localizedDescription)")
@@ -294,12 +393,24 @@ struct AIDocAssistantView: View {
 	}
 
 	#if canImport(FoundationModels)
+	@available(iOS 26, *)
 	@MainActor
 	private func runWithContext(question: String, context: String, pages: [DocPage], isRetry: Bool = false) async throws -> String {
 		let pageList = pages.map { "- \($0.title)" }.joined(separator: "\n")
+		let systemInstruction = """
+		You are Chirpy, the cheerful and enthusiastic AI assistant for the Meshtastic iOS app. \
+		You love mesh networking and get genuinely excited helping people learn about it! \
+		Use a warm, upbeat tone — sprinkle in the occasional mesh-themed pun or encouragement \
+		like "Happy meshing!" or "That's a great question — let's dig into the docs!" \
+		Keep answers concise but friendly. Use emoji sparingly (one or two per reply max). \
+		Answer questions using ONLY the provided documentation context. \
+		If the answer cannot be found in the provided context, say something like: \
+		"Hmm, I couldn't find that in the docs I have! Try browsing the documentation pages directly, \
+		or check out meshtastic.org for more details. 📡" \
+		Do not use any outside knowledge or pre-trained facts. \
+		When suggesting next steps, encourage the user to explore related features in the app.
+		"""
 		let prompt = """
-		You are Chirpy, the friendly AI assistant for the Meshtastic iOS app. You are helpful, concise, and enthusiastic about mesh networking. Answer the user's question based only on the documentation context provided below. If the answer is not in the context, say so briefly and suggest they check the full documentation.
-
 		Pages used:
 		\(pageList)
 
@@ -309,7 +420,7 @@ struct AIDocAssistantView: View {
 		Question: \(question)
 		"""
 		do {
-			let lmSession = LanguageModelSession()
+			let lmSession = LanguageModelSession(instructions: systemInstruction)
 			let result = try await lmSession.respond(to: prompt)
 			return result.content
 		} catch {
