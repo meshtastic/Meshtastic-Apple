@@ -151,8 +151,13 @@ extension AccessoryManager {
 			// Strip the XML declaration and collapse whitespace — TAK clients'
 			// TCP streaming parsers expect bare <event>...</event> on a single
 			// line, not a formatted XML document with <?xml ...?> prologue.
+			// Use a permissive regex (`^\s*<\?xml[^>]*\?>`) so the prologue is
+			// stripped even if the SDK builder ever emits it with single
+			// quotes, a different attribute order, or `standalone="yes"` —
+			// a literal substring match would silently leak the declaration
+			// mid-stream and tear down the TAK TCP connection.
 			let cotXml = rawCotXml
-				.replacingOccurrences(of: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>", with: "")
+				.replacingOccurrences(of: #"^\s*<\?xml[^>]*\?>"#, with: "", options: .regularExpression)
 				.replacingOccurrences(of: "\\s*\\n\\s*", with: "", options: .regularExpression)
 				.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -246,8 +251,14 @@ extension AccessoryManager {
 		// remarks the packet exceeds the limit.
 		let maxWirePayloadBytes = 225
 		guard let wirePayload = try compressor.compressWithRemarksFallback(packet, maxWireBytes: maxWirePayloadBytes) else {
+			// Compressor refused even after stripping <remarks> — payload is
+			// genuinely too large for the LoRa MTU. Throw so the caller can
+			// log it consistently with other send-path failures rather than
+			// silently swallowing the drop (the `do/catch` in
+			// `TAKMeshtasticBridge.sendToMesh` would otherwise treat this as
+			// a successful send).
 			Logger.tak.warning("Dropping oversized TAK packet: max=\(maxWirePayloadBytes)B xml=\(min(cotXml.count, 1024)) chars: \(String(cotXml.prefix(1024)))")
-			return
+			throw AccessoryError.ioFailed("TAK V2 payload exceeds LoRa wire size limit (\(maxWirePayloadBytes) bytes) even with remarks stripped")
 		}
 		Logger.tak.info("TAK → mesh: xml=\(cotXml.count)B → stripped=\(strippedXml.count)B → compressed=\(wirePayload.count)B")
 

@@ -678,10 +678,22 @@ struct TAKIdentitySection: View {
 
 	@MainActor
 	private func saveIdentity() async {
-		guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context),
-			  let fromUser = connectedNode.user,
-			  let toUser = node?.user else {
-			saveError = "Not connected to a node."
+		// Resolve the local (sender) and target (receiver) users separately so
+		// the user gets a precise message when any of these lookups fails.
+		// All three guards trigger only when the UI was already showing as
+		// connected (otherwise the pickers are disabled), so a generic
+		// "Not connected" was misleading — these failures mean the node
+		// metadata isn't yet populated in SwiftData even though the link is up.
+		guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context) else {
+			saveError = "Local node info unavailable — try reconnecting."
+			return
+		}
+		guard let fromUser = connectedNode.user else {
+			saveError = "Local node has no user record yet."
+			return
+		}
+		guard let toUser = node?.user else {
+			saveError = "Target node has no user record yet."
 			return
 		}
 
