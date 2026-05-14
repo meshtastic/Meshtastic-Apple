@@ -7,8 +7,13 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State var router: Router
+	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
+	@AppStorage("isMeshMapWindowOpen") private var isMeshMapWindowOpen = false
+
+	private var isDetachedMapActive: Bool {
+		isMeshMapWindowOpen
+	}
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -30,9 +35,19 @@ struct ContentView: View {
 				if UserDefaults.firstLaunch {
 					isShowingDeviceOnboardingFlow = true
 				}
+				router.mapWindowOpen = isMeshMapWindowOpen
+				if isMeshMapWindowOpen && router.selectedTab == .map {
+					router.selectedTab = .nodes
+				}
 			}
 			.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 				isShowingDeviceOnboardingFlow = newValue
+			}
+			.onChange(of: isMeshMapWindowOpen) { _, isOpen in
+				router.mapWindowOpen = isOpen
+				if isOpen && router.selectedTab == .map {
+					router.selectedTab = .nodes
+				}
 			}
 	}
 
@@ -41,10 +56,10 @@ struct ContentView: View {
 	@ViewBuilder
 	private var tabContent: some View {
 		if #available(iOS 18.0, macCatalyst 18.0, *) {
-			TabView(selection: $appState.router.selectedTab) {
+			TabView(selection: $router.selectedTab) {
 				Tab("Messages", systemImage: "message", value: NavigationState.Tab.messages) {
 					Messages(
-						router: appState.router,
+						router: router,
 						unreadChannelMessages: $appState.unreadChannelMessages,
 						unreadDirectMessages: $appState.unreadDirectMessages
 					)
@@ -53,7 +68,7 @@ struct ContentView: View {
 
 				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
 					Connect(
-						router: appState.router
+						router: router
 					)
 				}
 
@@ -61,18 +76,21 @@ struct ContentView: View {
 					NodeList()
 				}
 
-				Tab("Mesh Map", systemImage: "map", value: NavigationState.Tab.map) {
-					MeshMap(router: appState.router)
+				if !isDetachedMapActive {
+					Tab("Mesh Map", systemImage: "map", value: NavigationState.Tab.map) {
+						MeshMap(router: router)
+					}
 				}
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
 					Settings()
 				}
 			}
+			.id(isDetachedMapActive)
 		} else {
-			TabView(selection: $appState.router.selectedTab) {
+			TabView(selection: $router.selectedTab) {
 				Messages(
-					router: appState.router,
+					router: router,
 					unreadChannelMessages: $appState.unreadChannelMessages,
 					unreadDirectMessages: $appState.unreadDirectMessages
 				)
@@ -83,7 +101,7 @@ struct ContentView: View {
 				.badge(appState.totalUnreadMessages)
 
 				Connect(
-					router: appState.router
+					router: router
 				)
 				.tabItem {
 					Label("Connect", systemImage: "link")
@@ -91,23 +109,26 @@ struct ContentView: View {
 				.tag(NavigationState.Tab.connect)
 
 				NodeList()
-			.tabItem {
+				.tabItem {
 					Label("Nodes", systemImage: "flipphone")
 				}
 				.tag(NavigationState.Tab.nodes)
 
-				MeshMap(router: appState.router)
-				.tabItem {
-					Label("Mesh Map", systemImage: "map")
+				if !isDetachedMapActive {
+					MeshMap(router: router)
+					.tabItem {
+						Label("Mesh Map", systemImage: "map")
+					}
+					.tag(NavigationState.Tab.map)
 				}
-				.tag(NavigationState.Tab.map)
 
 				Settings()
-			.tabItem {
-				Label("Settings", systemImage: "gear")
-			}
+				.tabItem {
+					Label("Settings", systemImage: "gear")
+				}
 				.tag(NavigationState.Tab.settings)
 			}
+			.id(isDetachedMapActive)
 		}
 	}
 }

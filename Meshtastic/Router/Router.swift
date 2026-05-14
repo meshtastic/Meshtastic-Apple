@@ -19,6 +19,13 @@ class Router: ObservableObject {
 	var settingsPath: [SettingsNavigationState] = []
 
 	@Published
+	var mapWindowOpen: Bool = false {
+		didSet {
+			UserDefaults.standard.set(mapWindowOpen, forKey: "mapWindowOpen")
+		}
+	}
+
+	@Published
 	var discoveryShowHistory: Bool = false
 
 	/// Computed property that assembles the individual per-tab properties into a `NavigationState`.

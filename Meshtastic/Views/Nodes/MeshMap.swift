@@ -48,8 +48,8 @@ struct MeshMap: View {
 	@State private var showLegend = false
 	/// Filter
 	@StateObject var filters = NodeFilterParameters()
-	/// Track whether the map pop-out window is already open
-	@State private var isMapWindowOpen = false
+	@AppStorage("isMeshMapWindowOpen") private var isMeshMapWindowOpen = false
+	@AppStorage("meshMapWindowOpenRequested") private var meshMapWindowOpenRequested = false
 
 	@AppStorage("enableMapShowFavorites") private var showFavorites = false
 
@@ -65,11 +65,10 @@ struct MeshMap: View {
 		return allLatestPositions
 	}
 
-	/// Whether the map tab is currently visible. Driven by `router.selectedTab`
-	/// rather than `onAppear`/`onDisappear` which are unreliable in TabView.
-	/// When false, the Map is fed empty data to reduce memory from annotations.
+	/// Keep the detached map window fully populated while still starving the
+	/// main tabbed Mesh Map when it is off-screen.
 	private var isMapVisible: Bool {
-		router.selectedTab == .map
+		showOpenWindowButton ? router.selectedTab == .map : true
 	}
 
 	/// Positions actually passed to the map — empty when the tab is off-screen
@@ -256,10 +255,15 @@ struct MeshMap: View {
 				}
 			}
 			.navigationBarItems(leading: MeshtasticLogo(), trailing: HStack {
-				if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
+				if supportsMultipleWindows && showOpenWindowButton && !isMeshMapWindowOpen {
 					Button {
+						meshMapWindowOpenRequested = true
+						isMeshMapWindowOpen = true
+						router.mapWindowOpen = true
+						if router.selectedTab == .map {
+							router.selectedTab = .nodes
+						}
 						openWindow(id: "meshmap-window")
-						isMapWindowOpen = true
 					} label: {
 						Image(systemName: "macwindow.badge.plus")
 					}
@@ -271,9 +275,11 @@ struct MeshMap: View {
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
 			// Check if the map window scene is already connected
-			isMapWindowOpen = UIApplication.shared.connectedScenes.contains {
+			let connected = UIApplication.shared.connectedScenes.contains {
 				$0.session.configuration.name == "meshmap-window" && $0.activationState != .unattached
 			}
+			isMeshMapWindowOpen = connected
+			router.mapWindowOpen = connected
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
@@ -309,7 +315,9 @@ struct MeshMap: View {
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { notification in
 			if let scene = notification.object as? UIScene,
 			   scene.session.configuration.name == "meshmap-window" {
-				isMapWindowOpen = false
+				isMeshMapWindowOpen = false
+				meshMapWindowOpenRequested = false
+				router.mapWindowOpen = false
 			}
 		}
 	}
