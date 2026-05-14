@@ -453,7 +453,12 @@ actor MeshPackets {
 					
 					fetchedNode[0].id = Int64(nodeInfo.num)
 					fetchedNode[0].num = Int64(nodeInfo.num)
-					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
+					if nodeInfo.lastHeard > 0 {
+						let candidate = Date(timeIntervalSince1970: TimeInterval(nodeInfo.lastHeard))
+						if fetchedNode[0].lastHeard == nil || candidate > fetchedNode[0].lastHeard! {
+							fetchedNode[0].lastHeard = candidate
+						}
+					}
 					fetchedNode[0].snr = nodeInfo.snr
 					fetchedNode[0].channel = Int32(nodeInfo.channel)
 					fetchedNode[0].favorite = nodeInfo.isFavorite
