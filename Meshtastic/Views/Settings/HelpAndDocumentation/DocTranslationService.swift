@@ -10,6 +10,8 @@ import Foundation
 import OSLog
 #if !targetEnvironment(macCatalyst)
 import Translation
+#endif
+#if canImport(FoundationModels)
 import FoundationModels
 #endif
 
@@ -168,7 +170,7 @@ actor DocTranslationService {
 
 	#if !targetEnvironment(macCatalyst)
 	/// Translate a page using a provided TranslationSession (from .translationTask modifier).
-	@available(iOS 26, *)
+	@available(iOS 17.4, *)
 	func translateWithSession(_ session: TranslationSession, page: DocPage) async -> String? {
 		guard let htmlData = try? Data(contentsOf: page.htmlURL),
 			  let htmlString = String(data: htmlData, encoding: .utf8) else {
@@ -282,10 +284,14 @@ actor DocTranslationService {
 
 	private func translateUIText(_ text: String, targetLanguage: String) async -> String? {
 		#if !targetEnvironment(macCatalyst)
-		if #available(iOS 26, *) {
+		if #available(iOS 17.4, *) {
 			if let viaTranslation = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
 				return viaTranslation
 			}
+		}
+		#endif
+		#if canImport(FoundationModels)
+		if #available(iOS 26, *) {
 			return await translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
 		}
 		#endif
@@ -306,7 +312,7 @@ actor DocTranslationService {
 		var translateSegment: ((String) async -> String?)?
 
 		#if !targetEnvironment(macCatalyst)
-		if #available(iOS 26, *) {
+		if #available(iOS 17.4, *) {
 			let source = Locale.Language(identifier: "en")
 			let target = Locale.Language(identifier: targetLanguage)
 			let availability = LanguageAvailability()
@@ -332,11 +338,13 @@ actor DocTranslationService {
 			} else if status == .supported {
 				Logger.docs.info("DocTranslationService: Language \(targetLanguage, privacy: .public) supported but not installed — download via Settings > General > Language & Region > Translation Languages")
 			}
+		}
+		#endif
 
-			if translateSegment == nil {
-				translateSegment = { text in
-					await self.translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
-				}
+		#if canImport(FoundationModels)
+		if translateSegment == nil, #available(iOS 26, *) {
+			translateSegment = { text in
+				await self.translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
 			}
 		}
 		#endif
@@ -412,9 +420,9 @@ actor DocTranslationService {
 	}
 
 	#if !targetEnvironment(macCatalyst)
-	// MARK: - Translation Framework (iOS 26+)
+	// MARK: - Translation Framework (iOS 17.4+)
 
-	@available(iOS 26, *)
+	@available(iOS 17.4, *)
 	private func translateWithTranslationFramework(text: String, targetLanguage: String) async -> String? {
 		do {
 			let source = Locale.Language(identifier: "en")
@@ -447,7 +455,7 @@ actor DocTranslationService {
 	}
 	#endif
 
-	#if !targetEnvironment(macCatalyst)
+	#if canImport(FoundationModels)
 	// MARK: - FoundationModels Fallback (iOS 26+)
 
 	@available(iOS 26, *)

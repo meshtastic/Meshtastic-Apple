@@ -87,19 +87,19 @@ Check for and apply OTA firmware updates to your connected radio directly from t
 
 ## Automatic Documentation Translation
 
-On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.
+On devices running iOS 17.4 or later, the in-app documentation is automatically translated to your device language when it differs from English.
 
 ### How It Works
 
 - **Language detection**: The app reads your device's primary language setting each time you open a documentation page.
-- **On-device translation**: Pages are translated using Apple's on-device Translation framework. If a language is not supported by the Translation framework, the app falls back to the on-device Foundation model.
+- **On-device translation**: Pages are translated using Apple's on-device Translation framework (iOS 17.4+). If a language is not supported by the Translation framework, the app falls back to the on-device Foundation model (iOS 26+ only).
 - **No network required**: After initial translation, all content is available offline.
 - **Caching**: Translated pages are stored locally so they load instantly on subsequent visits.
 - **Background prefetch**: After the current page is translated, remaining pages are translated in the background at low priority.
 
 ### Fallback to English
 
-If translation is unavailable (older iOS version, unsupported language, or model not downloaded), the original English documentation is displayed. The app never shows blank or broken pages.
+If translation is unavailable (older than iOS 17.4, unsupported language, or language pack not downloaded), the original English documentation is displayed. The app never shows blank or broken pages.
 
 ### Cache Management
 
