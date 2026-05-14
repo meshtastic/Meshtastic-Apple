@@ -296,6 +296,9 @@ struct AIDocAssistantView: View {
 	#if canImport(FoundationModels)
 	@MainActor
 	private func runWithContext(question: String, context: String, pages: [DocPage], isRetry: Bool = false) async throws -> String {
+		guard await FoundationModelAvailability.shared.isAvailable else {
+			return "AI assistance is temporarily unavailable on this device. Please try again later."
+		}
 		let pageList = pages.map { "- \($0.title)" }.joined(separator: "\n")
 		let prompt = """
 		You are Chirpy, the friendly AI assistant for the Meshtastic iOS app. You are helpful, concise, and enthusiastic about mesh networking. Answer the user's question based only on the documentation context provided below. If the answer is not in the context, say so briefly and suggest they check the full documentation.
@@ -313,6 +316,7 @@ struct AIDocAssistantView: View {
 			let result = try await lmSession.respond(to: prompt)
 			return result.content
 		} catch {
+			await FoundationModelAvailability.shared.reportFailure(error)
 			// Retry with a single top page if this is not already a retry (handles context overflow errors)
 			if !isRetry && pages.count > 1 {
 				Logger.docs.warning("AI query failed — retrying with top 1 page: \(error.localizedDescription)")

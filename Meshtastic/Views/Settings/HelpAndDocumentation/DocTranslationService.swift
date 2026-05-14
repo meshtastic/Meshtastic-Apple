@@ -35,8 +35,6 @@ actor DocTranslationService {
 	private var uiStringCache: [String: String] = [:]
 	private var inFlightUIStringByKey: [String: Task<String, Never>] = [:]
 	private var sharedLanguageModelSessionBox: Any?
-	private var foundationModelsRetryAfter: Date?
-	private var hasLoggedFoundationModelsBackoff = false
 
 	private init() {}
 
@@ -454,20 +452,9 @@ actor DocTranslationService {
 
 	@available(iOS 26, *)
 	private func translateWithFoundationModels(text: String, targetLanguage: String) async -> String? {
-		if let retryAfter = foundationModelsRetryAfter, retryAfter > Date() {
-			if !hasLoggedFoundationModelsBackoff {
-				Logger.docs.info("DocTranslationService: FoundationModels temporarily disabled until \(retryAfter.ISO8601Format(), privacy: .public)")
-				hasLoggedFoundationModelsBackoff = true
-			}
-			return nil
-		}
+		guard await FoundationModelAvailability.shared.isAvailable else { return nil }
 
 		do {
-			if foundationModelsRetryAfter != nil {
-				foundationModelsRetryAfter = nil
-				hasLoggedFoundationModelsBackoff = false
-			}
-
 			let languageName = Locale.current.localizedString(forLanguageCode: targetLanguage) ?? targetLanguage
 			let prompt = """
 			Translate the following text from English to \(languageName). \
@@ -488,12 +475,7 @@ actor DocTranslationService {
 			let response = try await session.respond(to: prompt)
 			return response.content
 		} catch {
-			let description = error.localizedDescription.lowercased()
-			if description.contains("model is not available") || description.contains("not enabled") {
-				// Back off repeated attempts to avoid noisy PrewarmSession/asset errors.
-				foundationModelsRetryAfter = Date().addingTimeInterval(900)
-				hasLoggedFoundationModelsBackoff = false
-			}
+			await FoundationModelAvailability.shared.reportFailure(error)
 			Logger.docs.error("DocTranslationService: FoundationModels error: \(error.localizedDescription, privacy: .public)")
 			return nil
 		}

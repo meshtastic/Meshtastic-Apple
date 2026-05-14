@@ -392,6 +392,7 @@ struct DiscoverySummaryView: View {
 	@available(iOS 26, *)
 	private func generateFoundationModelRecommendation() async {
 		#if canImport(FoundationModels)
+		guard await FoundationModelAvailability.shared.isAvailable else { return }
 		isGeneratingAI = true
 		defer { isGeneratingAI = false }
 
@@ -402,6 +403,7 @@ struct DiscoverySummaryView: View {
 			aiSummary = response.content
 			self.session.aiSummaryText = response.content
 		} catch {
+			await FoundationModelAvailability.shared.reportFailure(error)
 			Logger.discovery.error("📡 [Discovery] AI recommendation failed: \(error.localizedDescription)")
 		}
 		#endif
@@ -411,10 +413,12 @@ struct DiscoverySummaryView: View {
 	private func generateFoundationModelPresetSummaries() async {
 		guard #available(iOS 26, *) else { return }
 		#if canImport(FoundationModels)
+		guard await FoundationModelAvailability.shared.isAvailable else { return }
 		let eligiblePresets = session.presetResults.filter { $0.uniqueNodesFound > 1 && $0.aiSummaryText.isEmpty }
 		guard !eligiblePresets.isEmpty else { return }
 
 		for result in eligiblePresets {
+			guard await FoundationModelAvailability.shared.isAvailable else { break }
 			generatingPresets.insert(result.presetName)
 			do {
 				let lmSession = LanguageModelSession()
@@ -423,6 +427,7 @@ struct DiscoverySummaryView: View {
 				presetSummaries[result.presetName] = response.content
 				result.aiSummaryText = response.content
 			} catch {
+				await FoundationModelAvailability.shared.reportFailure(error)
 				Logger.discovery.error("📡 [Discovery] Preset AI summary failed for \(result.presetName): \(error.localizedDescription)")
 			}
 			generatingPresets.remove(result.presetName)
@@ -444,6 +449,7 @@ struct DiscoverySummaryView: View {
 		for result in session.presetResults {
 			result.aiSummaryText = ""
 		}
+		await FoundationModelAvailability.shared.reset()
 		await generateAIRecommendation()
 		await generateFoundationModelPresetSummaries()
 	}
