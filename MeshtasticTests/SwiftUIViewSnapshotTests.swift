@@ -6,6 +6,7 @@ import SwiftUI
 import SwiftData
 import UIKit
 @testable import Meshtastic
+import MeshtasticProtobufs
 
 // MARK: - Snapshot Helpers
 
@@ -1874,5 +1875,85 @@ struct MessageTextLinkSnapshotTests {
 			.padding()
 			.background(Color(.systemBackground))
 		await assertViewSnapshot(of: view, width: 350, height: 80, colorScheme: .dark, named: "messageText_link_dark", forDocs: true)
+	}
+}
+
+// MARK: - TAKIdentitySection Snapshot Tests
+//
+// Snapshot coverage for the TAK Identity section embedded at the top of
+// TAKServerConfig. We synthesize a NodeInfoEntity with a populated
+// TAKConfigEntity so the section renders in its enabled / ready-to-edit
+// state. Full-screen TAKServerConfig snapshots are deferred — that view
+// depends on TAKServerManager.shared, a live AccessoryManager, a @Query
+// of ChannelEntity, and certificate state, which is more mocking than
+// belongs in a docs PR.
+
+@Suite("TAKIdentitySection Snapshots")
+struct TAKIdentitySectionSnapshotTests {
+
+	/// Synthesizes a NodeInfoEntity with a populated TAKConfigEntity so the
+	/// section renders in its enabled state. Uses the shared in-memory
+	/// container to avoid SwiftData context resets across tests.
+	@MainActor
+	private func makeTAKNode() -> NodeInfoEntity {
+		let context = sharedModelContainer.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0x_DEAD_BEEF
+		context.insert(node)
+
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot TAK Node"
+		user.shortName = "STAK"
+		context.insert(user)
+		node.user = user
+
+		let tak = TAKConfigEntity()
+		tak.team = Int32(Team.cyan.rawValue)
+		tak.role = Int32(MemberRole.teamMember.rawValue)
+		context.insert(tak)
+		node.takConfig = tak
+
+		try? context.save()
+		return node
+	}
+
+	/// Wraps TAKIdentitySection in a Form so it renders as a real Settings
+	/// section. Section is not standalone — SwiftUI requires a Form/List host.
+	@MainActor
+	private func wrap(_ node: NodeInfoEntity) -> some View {
+		Form {
+			TAKIdentitySection(node: node)
+		}
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(sharedModelContainer)
+	}
+
+	@Test
+	@MainActor
+	func takIdentitySection() async {
+		let node = makeTAKNode()
+		await assertViewSnapshot(
+			of: wrap(node),
+			width: 390,
+			height: 360,
+			colorScheme: .light,
+			named: "takIdentitySection",
+			forDocs: true
+		)
+	}
+
+	@Test
+	@MainActor
+	func takIdentitySectionDark() async {
+		let node = makeTAKNode()
+		await assertViewSnapshot(
+			of: wrap(node),
+			width: 390,
+			height: 360,
+			colorScheme: .dark,
+			named: "takIdentitySection_dark",
+			forDocs: true
+		)
 	}
 }

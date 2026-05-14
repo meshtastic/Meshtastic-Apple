@@ -22,8 +22,8 @@ LoRa settings control how your radio communicates on the mesh:
 
 | Setting | Description |
 |---------|-------------|
-| Region | Your geographical region. **Must be set correctly** — using the wrong region is illegal and prevents communication with local nodes. |
-| Modem Preset | Speed/range trade-off. Most users should use Long Fast or Long Slow. |
+| Region | Your geographical region. **Must be set correctly** — using the wrong region is illegal and prevents communication with local nodes. Available regions include the standard set plus Nepal 865MHz, Brazil 902MHz, ITU Region 1 Amateur 2m, ITU Region 2/3 Amateur 2m, and the EU 866 / 874 / 917 / 868-narrow bands. |
+| Modem Preset | Speed/range trade-off. Most users should use Long Fast or Long Slow. Specialty presets — **Lite Fast/Slow** (125 kHz, tuned for EU 866) and **Narrow Fast/Slow** (62.5 kHz, tuned for EU 868) — are available for EU SRD-band compliance. |
 | Hop Limit | The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic. |
 | Frequency Slot | Fine-tune the exact frequency within your region. |
 

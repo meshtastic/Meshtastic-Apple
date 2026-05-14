@@ -63,3 +63,9 @@ Model types are defined with `@Model` in `Meshtastic/Model/`. Schema evolution u
 ## Protobufs
 
 The `MeshtasticProtobufs` Swift Package (`MeshtasticProtobufs/Package.swift`) wraps protobuf-generated Swift sources. Regenerate with `./scripts/gen_protos.sh` after updating the `protobufs/` submodule.
+
+## External Swift Packages
+
+| Package | Purpose |
+|---------|---------|
+| [TAKPacket-SDK](https://github.com/meshtastic/TAKPacket-SDK) | TAK V2 wire format on `ATAK_PLUGIN_V2 = port 78`. Exposes `CotXmlParser`, `CotXmlBuilder`, and `TakCompressor` (zstd dictionary compression). Pinned in `Meshtastic.xcworkspace/.../Package.resolved`. See [TAK Protocol](tak-protocol.html). |
