@@ -38,7 +38,7 @@ struct MeshMap: View {
 	@Namespace var mapScope
 	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 100_000
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
-	@State var position = MapCameraPosition.automatic
+	@State var position = MapCameraPosition.userLocation(followsHeading: false, fallback: .automatic)
 	@State private var distance = 100_000.0
 	@State private var hasSetInitialCamera = false
 	@State private var editingSettings = false
@@ -349,13 +349,22 @@ struct MeshMap: View {
 
 	private func setInitialMapCameraIfNeeded() {
 		guard !hasSetInitialCamera else { return }
-		guard let userLocation = LocationsHandler.currentLocation else { return }
 
-		let initialDistance = initialMapDistance(centeredAt: userLocation)
+		let center: CLLocationCoordinate2D
+		if let userLocation = LocationsHandler.currentLocation {
+			center = userLocation
+		} else if let firstPosition = filteredPositions.first(where: { 12...15 ~= $0.precisionBits || $0.precisionBits == 32 }),
+				  let nodeCoord = firstPosition.isPreciseLocation ? firstPosition.nodeCoordinate : firstPosition.fuzzedNodeCoordinate {
+			center = nodeCoord
+		} else {
+			return
+		}
+
+		let initialDistance = initialMapDistance(centeredAt: center)
 		distance = initialDistance
 		position = .camera(
 			MapCamera(
-				centerCoordinate: userLocation,
+				centerCoordinate: center,
 				distance: initialDistance,
 				heading: 0,
 				pitch: 0
