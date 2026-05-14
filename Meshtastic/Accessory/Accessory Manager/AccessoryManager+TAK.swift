@@ -223,6 +223,13 @@ extension AccessoryManager {
 		meshPacket.channel = channel
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.decoded = dataMessage
+		// Match Android-side TAKMeshIntegration: hop_limit=3, want_ack=true.
+		// `hop_limit=0` (the protobuf default) makes the firmware treat the
+		// packet as already-exhausted and silently drop it before TX, which
+		// is exactly the symptom users hit when the "Sent TAK V2 packet to
+		// mesh" log fires but peers never hear it on the air.
+		meshPacket.hopLimit = 3
+		meshPacket.wantAck = true
 
 		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
@@ -304,6 +311,11 @@ extension AccessoryManager {
 		meshPacket.channel = channel
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.decoded = dataMessage
+		// Same hop_limit / want_ack fix as the V2 path: a `hop_limit=0`
+		// MeshPacket is treated as already-exhausted by the radio firmware
+		// and never gets transmitted on the LoRa channel.
+		meshPacket.hopLimit = 3
+		meshPacket.wantAck = true
 
 		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
