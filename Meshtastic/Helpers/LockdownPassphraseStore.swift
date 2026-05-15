@@ -15,7 +15,16 @@ struct StoredPassphrase: Codable, Equatable {
 	let validUntilEpoch: UInt32
 }
 
-final class LockdownPassphraseStore {
+/// Protocol abstraction over `LockdownPassphraseStore` so tests can substitute
+/// an in-memory fake without hitting the real iOS Keychain. Production code
+/// uses the concrete class via `LockdownPassphraseStore.shared`.
+protocol LockdownPassphraseStoring: AnyObject {
+	func get(peripheralID: UUID) -> StoredPassphrase?
+	@discardableResult func save(peripheralID: UUID, _ stored: StoredPassphrase) -> Bool
+	@discardableResult func delete(peripheralID: UUID) -> Bool
+}
+
+final class LockdownPassphraseStore: LockdownPassphraseStoring {
 
 	static let shared = LockdownPassphraseStore()
 

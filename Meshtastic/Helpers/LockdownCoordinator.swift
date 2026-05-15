@@ -50,7 +50,7 @@ final class LockdownCoordinator: ObservableObject {
 	// MARK: Collaborators
 
 	private weak var sender: LockdownSender?
-	private let store: LockdownPassphraseStore
+	private let store: LockdownPassphraseStoring
 	private let logger = Logger(subsystem: "gvh.MeshtasticClient", category: "Lockdown")
 
 	// MARK: Internal per-connection flags
@@ -65,7 +65,7 @@ final class LockdownCoordinator: ObservableObject {
 	// MARK: Init
 
 	init(sender: LockdownSender? = nil,
-		 store: LockdownPassphraseStore = .shared) {
+		 store: LockdownPassphraseStoring = LockdownPassphraseStore.shared) {
 		self.sender = sender
 		self.store = store
 	}
