@@ -1,13 +1,13 @@
 {
-  "originHash" : "0b65353a66780c944466d8744b2574142804eb3901236a34bd50fd8778e576f7",
+  "originHash" : "02e9d207c7ae3d3a8b5bd176e842a65b5ef636da7b4f30c3bbebdc7c606b8348",
   "pins" : [
     {
       "identity" : "cocoamqtt",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/emqx/CocoaMQTT",
       "state" : {
-        "revision" : "aff43422925cc30b9af319f4c4dce4f52859baf4",
-        "version" : "2.1.8"
+        "revision" : "9a756497f412214b9a7e9f40ea908dbd977bfaba",
+        "version" : "2.2.4"
       }
     },
     {
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/DataDog/dd-sdk-ios.git",
       "state" : {
-        "revision" : "8d67e973ff4a958cb536263cb816646ee904c508",
-        "version" : "3.3.0"
+        "revision" : "d5e75dd7fdc721a5234c415a111664c0605f2164",
+        "version" : "3.11.0"
       }
     },
     {
@@ -29,6 +29,15 @@
       }
     },
     {
+      "identity" : "kscrash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kstenerud/KSCrash.git",
+      "state" : {
+        "revision" : "95a8895d75f3c22aa9ad9f2a15d2fbd97b0a55e2",
+        "version" : "2.5.1"
+      }
+    },
+    {
       "identity" : "mqttcocoaasyncsocket",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/leeway1208/MqttCocoaAsyncSocket",
@@ -38,21 +47,12 @@
       }
     },
     {
-      "identity" : "opentelemetry-swift-packages",
+      "identity" : "opentelemetry-swift-core",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/DataDog/opentelemetry-swift-packages.git",
+      "location" : "https://github.com/open-telemetry/opentelemetry-swift-core",
       "state" : {
-        "revision" : "4a7295600d4ebb9525a23c11586c5fdb74ae8b7e",
-        "version" : "1.13.1"
-      }
-    },
-    {
-      "identity" : "plcrashreporter",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/microsoft/plcrashreporter.git",
-      "state" : {
-        "revision" : "8c61e5e38e9f737dd68512ed1ea5ab081244ad65",
-        "version" : "1.12.0"
+        "revision" : "240c8d5e36c3c7b774ed961325369f0b1f2c965f",
+        "version" : "2.3.0"
       }
     },
     {
@@ -65,6 +65,24 @@
       }
     },
     {
+      "identity" : "swift-atomics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-atomics.git",
+      "state" : {
+        "revision" : "b601256eab081c0f92f059e12818ac1d4f178ff7",
+        "version" : "1.3.0"
+      }
+    },
+    {
+      "identity" : "swift-cmark",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-cmark.git",
+      "state" : {
+        "revision" : "924936d0427cb25a61169739a7660230bffa6ea6",
+        "version" : "0.8.0"
+      }
+    },
+    {
       "identity" : "swift-custom-dump",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
@@ -74,12 +92,21 @@
       }
     },
     {
+      "identity" : "swift-markdown",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-markdown",
+      "state" : {
+        "revision" : "3c6f9523da3a1ec2fd829673e472d95b8097a3b8",
+        "version" : "0.8.0"
+      }
+    },
+    {
       "identity" : "swift-protobuf",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "c169a5744230951031770e27e475ff6eefe51f9d",
-        "version" : "1.33.3"
+        "revision" : "81558271e243f8f47dfe8e9fdd55f3c2b5413f68",
+        "version" : "1.37.0"
       }
     },
     {
@@ -105,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swhitty/SwiftDraw",
       "state" : {
-        "revision" : "17d55c17540f3eb10685058e803d7ae73d9bf9d3",
-        "version" : "0.25.3"
+        "revision" : "776456051ea2b099343e18ed8a53fca9dd2e9807",
+        "version" : "0.27.0"
       }
     },
     {
@@ -114,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/meshtastic/TAKPacket-SDK.git",
       "state" : {
-        "revision" : "a44a7358e477dab54fca500021a1b3333bb5b9a8",
-        "version" : "0.2.2"
+        "revision" : "c7faf1f65f723d63b24df310d3db2b5879c561ba",
+        "version" : "0.2.3"
       }
     },
     {

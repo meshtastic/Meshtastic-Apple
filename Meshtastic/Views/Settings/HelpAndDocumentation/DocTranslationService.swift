@@ -32,7 +32,7 @@ actor DocTranslationService {
 
 	/// Posted when a language transitions from `supported` to `installed`, signalling that
 	/// UI labels which previously failed translation should be retried.
-	static let languageBecameAvailableNotification = Notification.Name("DocTranslationServiceLanguageBecameAvailable")
+	static let languageBecameAvailableNotification = Foundation.Notification.Name("DocTranslationServiceLanguageBecameAvailable")
 
 	/// Avoids spamming identical availability logs for each translated text segment.
 	private var lastAvailabilityStatusByLanguage: [String: String] = [:]
@@ -48,16 +48,128 @@ actor DocTranslationService {
 	func clearUIStringCache() {
 		uiStringCache.removeAll()
 	}
+
+	/// Exports all cached UI string translations for a given language as a dictionary.
+	/// Keys are the source English strings, values are translated strings.
+	func exportUIStringCache(for languageCode: String) -> [String: String] {
+		let prefix = "\(languageCode)#"
+		var result: [String: String] = [:]
+		for (key, value) in uiStringCache where key.hasPrefix(prefix) {
+			let source = String(key.dropFirst(prefix.count))
+			result[source] = value
+		}
+		return result
+	}
+
+	/// Imports pre-translated UI strings into the cache (e.g., from community nav-labels.json).
+	func importUIStringCache(_ labels: [String: String], for languageCode: String) {
+		for (source, translated) in labels {
+			let key = "\(languageCode)#\(source)"
+			if uiStringCache[key] == nil {
+				uiStringCache[key] = translated
+			}
+		}
+		Logger.docs.info("DocTranslationService: Imported \(labels.count, privacy: .public) nav labels for \(languageCode, privacy: .public)")
+	}
+	// MARK: - Search Index
+
+	/// Generates a translated search index for all pages by translating titles and extracting
+	/// keywords from cached translated markdown. Stores the result in `DocBundle`.
+	func generateSearchIndex(for languageCode: String) async {
+		let pages = await DocBundle.shared.loadEnglishPages()
+		var entries: [TranslatedSearchEntry] = []
+
+		// Pre-translate section names and UI chrome so they end up in the cache / nav-labels
+		let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+		for source in chromeStrings {
+			_ = await translatedUIString(source, targetLanguage: languageCode)
+		}
+
+		for page in pages {
+			let translatedTitle = await translatedUIString(page.title, targetLanguage: languageCode)
+
+			// Extract keywords from cached translated markdown
+			var translatedKeywords: [String] = []
+			let sourceFile = "\(page.section.rawValue)/\(page.id).md"
+			let sourceURL = page.markdownURL ?? page.htmlURL
+			if let sourceHash = TranslationCache.sha256Hash(ofFileAt: sourceURL),
+			   let cachedURL = await TranslationCache.shared.retrieve(
+				sourceFile: sourceFile,
+				languageCode: languageCode,
+				currentHash: sourceHash
+			   ),
+			   let content = try? String(contentsOf: cachedURL, encoding: .utf8) {
+				translatedKeywords = Self.extractKeywords(from: content)
+			}
+
+			// Merge with English keywords so search works in both languages
+			let combined = Array(Set(translatedKeywords + page.keywords)).sorted()
+
+			entries.append(TranslatedSearchEntry(
+				id: page.id,
+				section: page.section.rawValue,
+				title: translatedTitle,
+				keywords: combined
+			))
+		}
+
+		await DocBundle.shared.importSearchIndex(entries, for: languageCode)
+
+		// Write rendered index.json so DocBundle can load translated pages on next launch
+		await TranslationCache.shared.storeRenderedIndex(entries, languageCode: languageCode)
+
+		Logger.docs.info("DocTranslationService: Generated search index for \(languageCode, privacy: .public) — \(entries.count, privacy: .public) entries")
+	}
+
+	/// Exports the current translated search index for a language as JSON data.
+	func exportSearchIndex(for languageCode: String) async -> [TranslatedSearchEntry]? {
+		await DocBundle.shared.searchIndex(for: languageCode)
+	}
+
+	/// Extracts top keywords from translated markdown text (lowercase, 3+ chars, deduped, top 30).
+	private static let stopWords: Set<String> = [
+		"the", "and", "for", "are", "but", "not", "you", "all", "can", "had",
+		"her", "was", "one", "our", "out", "has", "have", "been", "were", "they",
+		"this", "that", "with", "will", "each", "make", "from", "them", "than",
+		"its", "over", "into", "just", "your", "some", "could", "also", "about",
+		"which", "when", "what", "their", "other", "then", "more", "very", "most",
+		"como", "para", "por", "con", "una", "los", "las", "del", "que", "est",
+		"les", "des", "une", "dans", "pour", "avec", "sur", "qui", "pas", "sont",
+		"der", "die", "das", "und", "ein", "den", "dem", "ist", "von", "mit"
+	]
+
+	static func extractKeywords(from text: String) -> [String] {
+		let words = text.lowercased()
+			.components(separatedBy: CharacterSet.alphanumerics.inverted)
+			.filter { $0.count >= 3 && !stopWords.contains($0) }
+
+		// Count frequencies, take top 30
+		var freq: [String: Int] = [:]
+		for word in words { freq[word, default: 0] += 1 }
+
+		return freq.sorted { $0.value > $1.value }
+			.prefix(30)
+			.map { $0.key }
+	}
+
 	// MARK: - Public API
 
 	/// Returns translated HTML string for the given page, or nil if English should be used.
+	/// Translates the markdown source, caches the translated `.md`, and converts to HTML.
 	func translatedHTMLString(for page: DocPage) async -> String? {
 		guard !isEnglish() else { return nil }
 
-		let languageCode = currentLanguageCode()
-		let sourceFile = "\(page.section.rawValue)/\(page.id).html"
+		// Don't run on-device translation while community download is building the folder
+		if await CommunityTranslationFetcher.shared.isBuildingFolder { return nil }
 
-		guard let sourceHash = TranslationCache.sha256Hash(ofFileAt: page.htmlURL) else {
+		let languageCode = currentLanguageCode()
+
+		// Prefer markdown source; fall back to HTML if not bundled
+		let useMarkdown = page.markdownURL != nil
+		let sourceURL = page.markdownURL ?? page.htmlURL
+		let sourceFile = "\(page.section.rawValue)/\(page.id).\(useMarkdown ? "md" : "html")"
+
+		guard let sourceHash = TranslationCache.sha256Hash(ofFileAt: sourceURL) else {
 			Logger.docs.warning("DocTranslationService: Cannot hash source for \(page.id, privacy: .public)")
 			return nil
 		}
@@ -68,38 +180,106 @@ actor DocTranslationService {
 		}
 
 		let task = Task<String?, Never> {
-			// Check cache
-			if let cachedMdURL = await TranslationCache.shared.retrieve(
+			// Check cache for translated markdown
+			if let cachedURL = await TranslationCache.shared.retrieve(
 				sourceFile: sourceFile,
 				languageCode: languageCode,
 				currentHash: sourceHash
 			) {
 				Logger.docs.debug("DocTranslationService: Cache hit for \(page.id, privacy: .public) [\(languageCode, privacy: .public)]")
-				if let cachedHTML = try? String(contentsOf: cachedMdURL, encoding: .utf8) {
-					return cachedHTML
+				if let cachedContent = try? String(contentsOf: cachedURL, encoding: .utf8) {
+					if useMarkdown {
+						// Convert cached translated markdown to HTML
+						let htmlBody = MarkdownConverter.convert(cachedContent)
+						return MarkdownConverter.wrapInHTMLDocument(
+							htmlBody, title: page.title, pageId: page.id,
+							languageCode: languageCode
+						)
+					}
+					return cachedContent
 				}
 			}
 
 			Logger.docs.info("DocTranslationService: Translating \(page.id, privacy: .public) to \(languageCode, privacy: .public)")
 
-			guard let translatedHTML = await self.translate(page: page, targetLanguage: languageCode) else {
-				Logger.docs.warning("DocTranslationService: Translation failed for \(page.id, privacy: .public) [\(languageCode, privacy: .public)] — falling back to English")
-				return nil
-			}
-
-			await TranslationCache.shared.store(
-				translatedMarkdown: translatedHTML,
+			// Try community translations first (available to all users, no on-device model needed)
+			let communityFetched = await CommunityTranslationFetcher.shared.fetchIfAvailable(
+				page: page,
+				languageCode: languageCode,
+				sourceFile: sourceFile,
+				sourceHash: sourceHash
+			)
+			if communityFetched,
+			   let cachedURL = await TranslationCache.shared.retrieve(
 				sourceFile: sourceFile,
 				languageCode: languageCode,
-				contentHash: sourceHash
-			)
+				currentHash: sourceHash
+			   ),
+			   let cachedContent = try? String(contentsOf: cachedURL, encoding: .utf8) {
+				if useMarkdown {
+					let htmlBody = MarkdownConverter.convert(cachedContent)
+					return MarkdownConverter.wrapInHTMLDocument(
+						htmlBody, title: page.title, pageId: page.id,
+						languageCode: languageCode
+					)
+				}
+				return cachedContent
+			}
 
-			return translatedHTML
+			// Fall back to on-device translation
+
+			if useMarkdown {
+				// Translate the markdown source
+				guard let translatedMd = await self.translateMarkdown(page: page, targetLanguage: languageCode) else {
+					Logger.docs.warning("DocTranslationService: Translation failed for \(page.id, privacy: .public) [\(languageCode, privacy: .public)] — falling back to English")
+					return nil
+				}
+
+				// Cache the translated markdown
+				await TranslationCache.shared.store(
+					translatedMarkdown: translatedMd,
+					sourceFile: sourceFile,
+					languageCode: languageCode,
+					contentHash: sourceHash
+				)
+
+				// Convert to HTML
+				let htmlBody = MarkdownConverter.convert(translatedMd)
+				return MarkdownConverter.wrapInHTMLDocument(
+					htmlBody, title: page.title, pageId: page.id,
+					languageCode: languageCode
+				)
+			} else {
+				// Legacy: translate HTML directly
+				guard let translatedHTML = await self.translate(page: page, targetLanguage: languageCode) else {
+					Logger.docs.warning("DocTranslationService: Translation failed for \(page.id, privacy: .public) [\(languageCode, privacy: .public)] — falling back to English")
+					return nil
+				}
+
+				await TranslationCache.shared.store(
+					translatedMarkdown: translatedHTML,
+					sourceFile: sourceFile,
+					languageCode: languageCode,
+					contentHash: sourceHash
+				)
+
+				return translatedHTML
+			}
 		}
 
 		inFlightHTMLByCacheKey[cacheKey] = task
 		let result = await task.value
 		inFlightHTMLByCacheKey[cacheKey] = nil
+
+		// Write a self-contained HTML file with absolute CSS URL for fast file-based reloads
+		if let html = result {
+			await TranslationCache.shared.storeRenderedHTML(
+				MarkdownConverter.rewrapForFile(html, title: page.title, pageId: page.id, languageCode: languageCode),
+				page: page,
+				languageCode: languageCode
+			)
+		}
+
 		return result
 	}
 
@@ -162,12 +342,46 @@ actor DocTranslationService {
 	func prefetchAll(excluding currentPageId: String) async {
 		if activePrefetchTask != nil { return }
 
+		// Don't run on-device translation while community download is building the folder
+		if await CommunityTranslationFetcher.shared.isBuildingFolder { return }
+
+		let languageCode = currentLanguageCode()
 		let task = Task<Void, Never> {
-		let pages = DocBundle.shared.allPages().filter { $0.id != currentPageId }
+		// Always use English pages for source material (markdown URLs point to bundle)
+		let pages = await DocBundle.shared.loadEnglishPages().filter { $0.id != currentPageId }
+
+		// Bulk-download community translations first (fast, no on-device model needed)
+		let communityCount = await CommunityTranslationFetcher.shared.prefetchAll(
+			languageCode: languageCode,
+			pages: pages
+		)
+		if communityCount > 0 {
+			Logger.docs.info("DocTranslationService: Pre-loaded \(communityCount, privacy: .public) community translations")
+		}
+
 		for page in pages {
 			try? await Task.sleep(nanoseconds: 100_000_000) // 100ms between pages
 			guard !Task.isCancelled else { return }
 			_ = await translatedHTMLString(for: page)
+		}
+
+		// Generate translated search index after all pages are translated
+		if !Task.isCancelled && languageCode != "en" {
+			await self.generateSearchIndex(for: languageCode)
+		}
+
+		// Auto-upload translations after all pages are cached
+		if !Task.isCancelled && languageCode != "en" {
+			let participateInDistributedTranslations = UserDefaults.standard.object(forKey: "participateInDistributedTranslations") as? Bool ?? true
+			if participateInDistributedTranslations {
+				let allPages = await DocBundle.shared.loadEnglishPages()
+				Task.detached(priority: .background) {
+					await DocsTranslationUploader.shared.uploadIfNeeded(
+						languageCode: languageCode,
+						pages: allPages
+					)
+				}
+			}
 		}
 		}
 
@@ -247,6 +461,12 @@ actor DocTranslationService {
 		}
 	}
 
+	/// Returns a cached translation for a UI string if available, without triggering on-device translation.
+	func cachedUIString(_ text: String, targetLanguage: String) -> String? {
+		let key = "\(targetLanguage)#\(text.trimmingCharacters(in: .whitespacesAndNewlines))"
+		return uiStringCache[key]
+	}
+
 	/// Translates short UI labels (nav/section/page titles). Falls back to source text.
 	func translatedUIString(_ text: String, targetLanguage: String? = nil) async -> String {
 		let source = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -290,6 +510,49 @@ actor DocTranslationService {
 	}
 
 	// MARK: - Translation Engine
+
+	/// Translates a markdown source file, preserving non-translatable segments.
+	private func translateMarkdown(page: DocPage, targetLanguage: String) async -> String? {
+		guard let mdURL = page.markdownURL,
+			  let mdContent = try? String(contentsOf: mdURL, encoding: .utf8) else {
+			return nil
+		}
+
+		let cleaned = MarkdownConverter.stripFrontMatter(mdContent)
+		let segments = segmentMarkdown(cleaned)
+		var translatedSegments: [String] = []
+
+		for segment in segments {
+			if segment.translatable && !segment.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+				if let translated = await translateText(segment.text, targetLanguage: targetLanguage) {
+					translatedSegments.append(translated)
+				} else {
+					translatedSegments.append(segment.text) // fallback to English
+				}
+			} else {
+				translatedSegments.append(segment.text)
+			}
+		}
+
+		return translatedSegments.joined()
+	}
+
+	/// Translates a single text string using the best available engine.
+	private func translateText(_ text: String, targetLanguage: String) async -> String? {
+		#if !targetEnvironment(macCatalyst)
+		if #available(iOS 26, *) {
+			if let viaTranslation = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
+				return viaTranslation
+			}
+		}
+		#endif
+		#if canImport(FoundationModels)
+		if #available(iOS 26, *) {
+			return await translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
+		}
+		#endif
+		return nil
+	}
 
 	private func translateUIText(_ text: String, targetLanguage: String) async -> String? {
 		#if !targetEnvironment(macCatalyst)
@@ -522,6 +785,114 @@ actor DocTranslationService {
 		let translatable: Bool
 	}
 
+	/// Splits a line into translatable text and non-translatable inline code spans.
+	/// Backtick-wrapped code (`` `code` ``) is preserved verbatim; surrounding text is translatable.
+	/// Also preserves callout keyword prefixes like `> **Warning —` untranslated.
+	private func segmentInlineCode(_ line: String) -> [MarkdownSegment] {
+		var segments: [MarkdownSegment] = []
+		let scanner = line[line.startIndex...]
+		var current = scanner.startIndex
+		var inBacktick = false
+		var backtickStart = scanner.startIndex
+
+		var idx = scanner.startIndex
+		while idx < scanner.endIndex {
+			if scanner[idx] == "`" {
+				if inBacktick {
+					// End of code span — flush preceding text as translatable, code as non-translatable
+					let textBefore = String(scanner[current..<backtickStart])
+					if !textBefore.isEmpty {
+						segments.append(contentsOf: segmentCalloutPrefix(textBefore))
+					}
+					let code = String(scanner[backtickStart...idx])
+					segments.append(MarkdownSegment(text: code, translatable: false))
+					current = scanner.index(after: idx)
+					inBacktick = false
+				} else {
+					inBacktick = true
+					backtickStart = idx
+				}
+			}
+			idx = scanner.index(after: idx)
+		}
+
+		// Remaining text after last code span
+		let remaining = String(scanner[current..<scanner.endIndex])
+		if !remaining.isEmpty {
+			segments.append(contentsOf: segmentCalloutPrefix(remaining))
+		}
+
+		// Append trailing newline
+		if let last = segments.last {
+			segments[segments.count - 1] = MarkdownSegment(text: last.text + "\n", translatable: last.translatable)
+		} else {
+			segments.append(MarkdownSegment(text: line + "\n", translatable: true))
+		}
+
+		return segments
+	}
+
+	/// If text starts with a blockquote callout prefix like `> **Warning — ` or `> **Tip — `,
+	/// split the prefix as non-translatable so the keyword isn't translated.
+	private func segmentCalloutPrefix(_ text: String) -> [MarkdownSegment] {
+		// Match patterns like "> **Warning — ", "> **Tip — ", "> **Note — ", "> **Caution — ", "> **Important — "
+		let calloutPattern = #"^(>\s*\*\*(?:Warning|Tip|Note|Caution|Important)\s*[-—–]\s*)"#
+		if let regex = try? NSRegularExpression(pattern: calloutPattern),
+		   let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+		   let range = Range(match.range(at: 1), in: text) {
+			let prefix = String(text[range])
+			let rest = String(text[range.upperBound...])
+			var result = [MarkdownSegment(text: prefix, translatable: false)]
+			if !rest.isEmpty {
+				result.append(MarkdownSegment(text: rest, translatable: true))
+			}
+			return result
+		}
+		return [MarkdownSegment(text: text, translatable: true)]
+	}
+
+	/// Returns true if the line is a GFM table separator (e.g. `|---|---|`).
+	private func isTableSeparator(_ trimmed: String) -> Bool {
+		trimmed.hasPrefix("|") && trimmed.allSatisfy { $0 == "|" || $0 == "-" || $0 == ":" || $0 == " " }
+	}
+
+	/// Returns true if the trimmed cell content is an image reference or empty.
+	private func isCellNonTranslatable(_ cell: String) -> Bool {
+		let t = cell.trimmingCharacters(in: .whitespaces)
+		return t.isEmpty || t.hasPrefix("![") || t.hasPrefix("<img")
+	}
+
+	/// Splits a markdown table row into segments: pipe delimiters and image cells are
+	/// non-translatable; text cells are translatable. The row's trailing newline is preserved.
+	private func segmentTableRow(_ line: String) -> [MarkdownSegment] {
+		// Split on `|` keeping delimiters as structure
+		let trimmed = line.trimmingCharacters(in: .whitespaces)
+		guard trimmed.hasPrefix("|") && trimmed.hasSuffix("|") else {
+			// Not a well-formed table row — treat whole line as translatable
+			return [MarkdownSegment(text: line + "\n", translatable: true)]
+		}
+
+		// Extract cells between pipes (drop leading/trailing empty splits)
+		let inner = String(trimmed.dropFirst().dropLast()) // strip outer pipes
+		let cells = inner.components(separatedBy: "|")
+
+		var segments: [MarkdownSegment] = []
+		segments.append(MarkdownSegment(text: "| ", translatable: false))
+		for (index, cell) in cells.enumerated() {
+			let cellTrimmed = cell.trimmingCharacters(in: .whitespaces)
+			if isCellNonTranslatable(cellTrimmed) {
+				segments.append(MarkdownSegment(text: cellTrimmed, translatable: false))
+			} else {
+				segments.append(MarkdownSegment(text: cellTrimmed, translatable: true))
+			}
+			if index < cells.count - 1 {
+				segments.append(MarkdownSegment(text: " | ", translatable: false))
+			}
+		}
+		segments.append(MarkdownSegment(text: " |\n", translatable: false))
+		return segments
+	}
+
 	/// Splits markdown into translatable and non-translatable segments.
 	private func segmentMarkdown(_ text: String) -> [MarkdownSegment] {
 		var segments: [MarkdownSegment] = []
@@ -566,8 +937,23 @@ actor DocTranslationService {
 				segments.append(MarkdownSegment(text: line + "\n", translatable: false))
 			} else if trimmed.isEmpty {
 				segments.append(MarkdownSegment(text: "\n", translatable: false))
+			} else if let headingMatch = trimmed.range(of: #"^(#{1,6})\s+"#, options: .regularExpression) {
+				// Heading line — preserve `## ` prefix, translate only the title text
+				let prefix = String(trimmed[headingMatch])
+				let title = String(trimmed[headingMatch.upperBound...])
+				segments.append(MarkdownSegment(text: prefix, translatable: false))
+				segments.append(contentsOf: segmentInlineCode(title))
+			} else if trimmed.hasPrefix("|") && trimmed.hasSuffix("|") {
+				// Table row — parse per-cell
+				if isTableSeparator(trimmed) {
+					// Separator row (|---|---|) — never translate
+					segments.append(MarkdownSegment(text: line + "\n", translatable: false))
+				} else {
+					segments.append(contentsOf: segmentTableRow(line))
+				}
 			} else {
-				segments.append(MarkdownSegment(text: line + "\n", translatable: true))
+				// Protect inline code spans from translation by splitting them out
+				segments.append(contentsOf: segmentInlineCode(line))
 			}
 		}
 

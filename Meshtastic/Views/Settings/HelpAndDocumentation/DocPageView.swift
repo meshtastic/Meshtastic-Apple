@@ -15,11 +15,12 @@ private struct DocWebView: UIViewRepresentable {
 	// Root of the bundled docs directory — grants WKWebView read access to all sibling pages and assets.
 	private var docsRoot: URL {
 		if let htmlURL {
-			return htmlURL.deletingLastPathComponent().deletingLastPathComponent()
+			// For translated files in Application Support, go up to the html/ root
+			// For bundled files, go up to docs/ root
+			let parent = htmlURL.deletingLastPathComponent().deletingLastPathComponent()
+			return parent
 		}
 		if let baseURL {
-			// For translated HTML, baseURL points at section dir (e.g. docs/user),
-			// so allow read access to docs root for ../assets and sibling pages.
 			return baseURL.deletingLastPathComponent()
 		}
 		return URL(fileURLWithPath: "/")
@@ -102,6 +103,7 @@ struct DocPageView: View {
 
 	let page: DocPage
 
+	@State private var renderedFileURL: URL?
 	@State private var translatedHTML: String?
 	@State private var isTranslating = false
 	@State private var translationTask: Task<Void, Never>?
@@ -114,7 +116,10 @@ struct DocPageView: View {
 
 	var body: some View {
 		ZStack {
-			if let translatedHTML {
+			if let renderedFileURL {
+				// Best path: pre-rendered file on disk, loaded with loadFileURL — CSS works perfectly
+				DocWebView(htmlURL: renderedFileURL, htmlString: nil, baseURL: nil)
+			} else if let translatedHTML {
 				DocWebView(htmlURL: nil, htmlString: translatedHTML, baseURL: translatedBaseURL)
 			} else {
 				DocWebView(htmlURL: page.htmlURL, htmlString: nil, baseURL: nil)
@@ -170,9 +175,32 @@ struct DocPageView: View {
 		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
 		guard languageCode != "en" else { return }
 
-		isTranslating = true
+		// If DocBundle already loaded from translated folder, htmlURL points to translated file
+		if DocBundle.shared.loadedLanguage != "en" {
+			// Title is already translated in the page object
+			translatedTitle = page.title
+			return
+		}
 
 		translationTask = Task.detached(priority: .userInitiated) {
+			// 1. Check for a pre-rendered HTML file on disk (fastest, CSS resolves perfectly)
+			if let fileURL = await TranslationCache.shared.renderedHTMLFileURL(for: page, languageCode: languageCode) {
+				let title = await DocTranslationService.shared.translatedUIString(page.title, targetLanguage: languageCode)
+				await MainActor.run {
+					renderedFileURL = fileURL
+					if !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, title != page.title {
+						translatedTitle = title
+					}
+				}
+				Task.detached(priority: .utility) {
+					await DocTranslationService.shared.prefetchAll(excluding: page.id)
+				}
+				return
+			}
+
+			// 2. Translate the page (community CDN download or on-device)
+			await MainActor.run { isTranslating = true }
+
 			async let htmlResult = DocTranslationService.shared.translatedHTMLString(for: page)
 			async let titleResult = DocTranslationService.shared.translatedUIString(page.title, targetLanguage: languageCode)
 
@@ -189,8 +217,14 @@ struct DocPageView: View {
 				}
 			}
 
-			// Start background prefetch if translation succeeded
+			// 3. Switch to rendered file now that translation has written it
 			if html != nil {
+				if let fileURL = await TranslationCache.shared.renderedHTMLFileURL(for: page, languageCode: languageCode) {
+					await MainActor.run {
+						renderedFileURL = fileURL
+						translatedHTML = nil
+					}
+				}
 				Task.detached(priority: .utility) {
 					await DocTranslationService.shared.prefetchAll(excluding: page.id)
 				}

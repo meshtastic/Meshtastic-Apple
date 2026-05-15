@@ -81,6 +81,21 @@ actor TranslationCache {
 
 	// MARK: - Manifest I/O
 
+	/// Removes all cached translations and resets the manifest.
+	func clearAll() {
+		do {
+			if fileManager.fileExists(atPath: cacheRoot.path) {
+				try fileManager.removeItem(at: cacheRoot)
+			}
+			manifest = TranslationCacheManifest(entries: [])
+			UserDefaults.standard.removeObject(forKey: "DocBrowserTranslatedLabels")
+			UserDefaults.standard.removeObject(forKey: "DocBrowserTranslatedLabelsLanguage")
+			Logger.docs.info("TranslationCache: Cleared all cached translations")
+		} catch {
+			Logger.docs.error("TranslationCache: Failed to clear cache: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	private func loadManifest() {
 		guard fileManager.fileExists(atPath: manifestURL.path) else {
 			manifest = TranslationCacheManifest(entries: [])
@@ -108,6 +123,76 @@ actor TranslationCache {
 		} catch {
 			Logger.docs.error("TranslationCache: Failed to save manifest: \(error.localizedDescription, privacy: .public)")
 		}
+	}
+
+	// MARK: - Rendered HTML Folder
+
+	/// Root directory for rendered HTML files for a language: TranslatedDocs/{lang}/html/
+	func renderedHTMLRoot(for languageCode: String) -> URL {
+		cacheRoot
+			.appendingPathComponent(languageCode, isDirectory: true)
+			.appendingPathComponent("html", isDirectory: true)
+	}
+
+	/// Writes a fully rendered HTML file for a page into the language folder.
+	func storeRenderedHTML(_ html: String, page: DocPage, languageCode: String) {
+		let dir = renderedHTMLRoot(for: languageCode)
+			.appendingPathComponent(page.section.rawValue, isDirectory: true)
+		do {
+			try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+			let fileURL = dir.appendingPathComponent("\(page.id).html")
+			try Data(html.utf8).write(to: fileURL, options: .atomic)
+		} catch {
+			Logger.docs.error("TranslationCache: Failed to write rendered HTML for \(page.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	/// Writes a translated index.json into the language folder.
+	func storeRenderedIndex(_ entries: [TranslatedSearchEntry], languageCode: String) {
+		let dir = renderedHTMLRoot(for: languageCode)
+		do {
+			try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+			let data = try JSONEncoder().encode(entries)
+			try data.write(to: dir.appendingPathComponent("index.json"), options: .atomic)
+
+			// Copy bundled assets (CSS, screenshots) so rendered HTML can reference ../assets/
+			copyBundledAssets(to: dir)
+
+			Logger.docs.info("TranslationCache: Wrote rendered index.json for \(languageCode, privacy: .public)")
+		} catch {
+			Logger.docs.error("TranslationCache: Failed to write rendered index: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	/// Copies the bundled docs/assets folder into the rendered HTML root.
+	private func copyBundledAssets(to htmlRoot: URL) {
+		guard let bundledAssetsURL = Bundle.main.url(forResource: "assets", withExtension: nil, subdirectory: "docs") else {
+			Logger.docs.warning("TranslationCache: Bundled docs/assets not found — CSS won't work in translated pages")
+			return
+		}
+		let destAssets = htmlRoot.appendingPathComponent("assets", isDirectory: true)
+		if fileManager.fileExists(atPath: destAssets.path) { return } // Already copied
+		do {
+			try fileManager.copyItem(at: bundledAssetsURL, to: destAssets)
+		} catch {
+			Logger.docs.error("TranslationCache: Failed to copy assets: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	/// Returns the URL of the rendered HTML file for a page if it exists on disk.
+	func renderedHTMLFileURL(for page: DocPage, languageCode: String) -> URL? {
+		let url = renderedHTMLRoot(for: languageCode)
+			.appendingPathComponent(page.section.rawValue, isDirectory: true)
+			.appendingPathComponent("\(page.id).html")
+		return fileManager.fileExists(atPath: url.path) ? url : nil
+	}
+
+	/// Returns the URL of the rendered HTML root if it exists and has an index.json.
+	func renderedHTMLRootIfReady(for languageCode: String) -> URL? {
+		let root = renderedHTMLRoot(for: languageCode)
+		let indexURL = root.appendingPathComponent("index.json")
+		guard fileManager.fileExists(atPath: indexURL.path) else { return nil }
+		return root
 	}
 
 	// MARK: - Cache Lookup

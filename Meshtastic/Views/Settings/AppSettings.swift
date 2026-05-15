@@ -31,6 +31,7 @@ struct AppSettings: View {
 	@AppStorage(NodeListPreferences.shouldShowChannel.rawValue) private var shouldShowChannel = true
 	@AppStorage(NodeListPreferences.shouldShowHops.rawValue) private var shouldShowHops = true
 	@AppStorage(NodeListPreferences.shouldShowSignal.rawValue) private var shouldShowSignal = true
+	@AppStorage("participateInDistributedTranslations") private var participateInDistributedTranslations = true
 
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
@@ -196,6 +197,10 @@ struct AppSettings: View {
 							Task {
 								try await accessoryManager.disconnect()
 								
+								/// Clear translation cache
+								await TranslationCache.shared.clearAll()
+								await DocTranslationService.shared.clearUIStringCache()
+								
 								/// Delete any database backups too
 								if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
 									url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
@@ -229,6 +234,15 @@ struct AppSettings: View {
 						Label("Reset App Settings", systemImage: "arrow.counterclockwise.circle")
 							.foregroundColor(.red)
 					}
+				}
+				Section(header: Text("Documentation Translations")) {
+					Toggle(isOn: $participateInDistributedTranslations) {
+						Label("Participate in Distributed Translations", systemImage: "globe")
+					}
+					.tint(.accentColor)
+					Text("Upload on-device translated documentation to help improve translations for the community. Translated docs are shared anonymously so other users get instant translations without needing on-device models.")
+						.foregroundStyle(.secondary)
+						.font(idiom == .phone ? .caption : .callout)
 				}
 			}
 		}

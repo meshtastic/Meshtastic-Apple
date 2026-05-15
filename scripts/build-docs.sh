@@ -47,6 +47,7 @@ fi
 
 # ── Setup output directories ──────────────────────────────────────────────────
 mkdir -p "$OUTPUT_DIR/user" "$OUTPUT_DIR/developer" "$OUTPUT_DIR/assets"
+mkdir -p "$OUTPUT_DIR/markdown/user" "$OUTPUT_DIR/markdown/developer"
 
 # Write .nojekyll to output dir to suppress native GitHub Pages Jekyll build (FR-003)
 touch "$OUTPUT_DIR/.nojekyll"
@@ -251,3 +252,13 @@ fi
 
 echo "✅ Built $PAGE_COUNT pages → $OUTPUT_DIR"
 echo "📦 Bundle size: ${TOTAL_MB} MB / $((DOCS_SIZE_LIMIT_BYTES / 1048576)) MB limit"
+
+# ── Copy markdown source files for on-device translation ──────────────────────
+for section in user developer; do
+    for md_file in "$SOURCE_DIR/$section"/*.md; do
+        [[ -f "$md_file" ]] || continue
+        cp "$md_file" "$OUTPUT_DIR/markdown/$section/"
+    done
+done
+MD_COUNT=$(find "$OUTPUT_DIR/markdown" -name "*.md" | wc -l | tr -d ' ')
+echo "📝 Bundled $MD_COUNT markdown source files for translation"

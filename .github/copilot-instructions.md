@@ -212,4 +212,5 @@ CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modif
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
+at `specs/009-docs-translation-pipeline/plan.md`
 <!-- SPECKIT END -->

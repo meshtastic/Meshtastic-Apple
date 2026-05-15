@@ -63,6 +63,15 @@ struct KeywordIndexEntry: Codable {
 	let charCount: Int
 }
 
+// MARK: - TranslatedSearchEntry
+
+struct TranslatedSearchEntry: Codable {
+	let id: String
+	let section: String
+	let title: String
+	let keywords: [String]
+}
+
 // MARK: - DocPage
 
 struct DocPage: Identifiable, Hashable {
@@ -73,6 +82,15 @@ struct DocPage: Identifiable, Hashable {
 	let keywords: [String]
 	let charCount: Int
 	let navOrder: Int
+
+	/// URL to the bundled English markdown source file.
+	var markdownURL: URL? {
+		Bundle.main.url(
+			forResource: id,
+			withExtension: "md",
+			subdirectory: "docs/markdown/\(section.rawValue)"
+		)
+	}
 
 	/// SF Symbol name for this page in the table of contents.
 	var systemImage: String {
@@ -122,12 +140,19 @@ struct DocPage: Identifiable, Hashable {
 
 // MARK: - DocBundle
 
+@MainActor
 @Observable
 final class DocBundle {
 
 	static let shared = DocBundle()
 
 	private(set) var pages: [DocPage] = []
+
+	/// The language code the current pages are loaded for ("en" if using bundled English).
+	private(set) var loadedLanguage: String = "en"
+
+	/// Translated keywords + titles keyed by language code, loaded from community or generated on-device.
+	private(set) var translatedSearchIndices: [String: [TranslatedSearchEntry]] = [:]
 
 	private init() {
 		// Lazily populated by load()
@@ -137,6 +162,18 @@ final class DocBundle {
 	func allPages() -> [DocPage] { pages }
 
 	func load() {
+		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+
+		// Try loading from pre-rendered translated folder first
+		if languageCode != "en", let translatedPages = loadTranslated(languageCode: languageCode) {
+			pages = translatedPages
+			loadedLanguage = languageCode
+			Logger.docs.info("DocBundle loaded \(self.pages.count) translated pages for \(languageCode, privacy: .public)")
+			return
+		}
+
+		// Fall back to bundled English
+		loadedLanguage = "en"
 		guard let indexURL = Bundle.main.url(
 			forResource: "index",
 			withExtension: "json",
@@ -175,6 +212,77 @@ final class DocBundle {
 			Logger.docs.info("DocBundle loaded \(self.pages.count) pages from index")
 		} catch {
 			Logger.docs.error("Failed to load docs/index.json: \(error.localizedDescription)")
+		}
+	}
+
+	/// Load pages from the pre-rendered translated HTML folder.
+	private func loadTranslated(languageCode: String) -> [DocPage]? {
+		// Check synchronously — TranslationCache is an actor but we need the URL pattern
+		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+		let htmlRoot = appSupport
+			.appendingPathComponent("TranslatedDocs", isDirectory: true)
+			.appendingPathComponent(languageCode, isDirectory: true)
+			.appendingPathComponent("html", isDirectory: true)
+		let indexURL = htmlRoot.appendingPathComponent("index.json")
+
+		guard FileManager.default.fileExists(atPath: indexURL.path) else { return nil }
+
+		do {
+			let data = try Data(contentsOf: indexURL)
+			let entries = try JSONDecoder().decode([TranslatedSearchEntry].self, from: data)
+
+			// Also load English index for navOrder and charCount
+			guard let englishIndexURL = Bundle.main.url(forResource: "index", withExtension: "json", subdirectory: "docs"),
+				  let englishData = try? Data(contentsOf: englishIndexURL),
+				  let englishEntries = try? JSONDecoder().decode([KeywordIndexEntry].self, from: englishData) else {
+				return nil
+			}
+			let englishByID = Dictionary(englishEntries.map { ($0.id, $0) }, uniquingKeysWith: { f, _ in f })
+
+			let translatedPages: [DocPage] = entries.compactMap { entry in
+				guard let section = DocSection(rawValue: entry.section) else { return nil }
+				let htmlFileURL = htmlRoot
+					.appendingPathComponent(section.rawValue, isDirectory: true)
+					.appendingPathComponent("\(entry.id).html")
+				guard FileManager.default.fileExists(atPath: htmlFileURL.path) else { return nil }
+
+				let english = englishByID[entry.id]
+				return DocPage(
+					id: entry.id,
+					title: entry.title,
+					section: section,
+					htmlURL: htmlFileURL,
+					keywords: entry.keywords,
+					charCount: english?.charCount ?? 0,
+					navOrder: english?.navOrder ?? 999
+				)
+			}
+
+			guard !translatedPages.isEmpty else { return nil }
+
+			// Import the search index too
+			translatedSearchIndices[languageCode] = entries
+
+			return translatedPages
+		} catch {
+			Logger.docs.warning("DocBundle: Failed to load translated index for \(languageCode, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			return nil
+		}
+	}
+
+	/// Load English pages (for translation source, upload, etc.)
+	func loadEnglishPages() -> [DocPage] {
+		guard let indexURL = Bundle.main.url(forResource: "index", withExtension: "json", subdirectory: "docs"),
+			  let data = try? Data(contentsOf: indexURL),
+			  let entries = try? JSONDecoder().decode([KeywordIndexEntry].self, from: data) else {
+			return []
+		}
+		return entries.compactMap { entry in
+			guard let section = DocSection(rawValue: entry.section),
+				  let htmlURL = Bundle.main.url(forResource: entry.id, withExtension: "html", subdirectory: "docs/\(section.rawValue)") else {
+				return nil
+			}
+			return DocPage(id: entry.id, title: entry.title.htmlEntityDecoded, section: section, htmlURL: htmlURL, keywords: entry.keywords, charCount: entry.charCount, navOrder: entry.navOrder ?? 999)
 		}
 	}
 
@@ -222,5 +330,16 @@ final class DocBundle {
 			}
 		}
 		return selected
+	}
+
+	/// Import a translated search index for a language.
+	func importSearchIndex(_ entries: [TranslatedSearchEntry], for languageCode: String) {
+		translatedSearchIndices[languageCode] = entries
+		Logger.docs.info("DocBundle: Imported \(entries.count) translated search entries for \(languageCode, privacy: .public)")
+	}
+
+	/// Export the translated search index for a language.
+	func searchIndex(for languageCode: String) -> [TranslatedSearchEntry]? {
+		translatedSearchIndices[languageCode]
 	}
 }
