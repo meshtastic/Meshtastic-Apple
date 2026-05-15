@@ -23,6 +23,7 @@ import MeshtasticProtobufs
 ///   - MeshPacket.decoded.portnum = .adminApp
 ///   - MeshPacket.decoded.payload = AdminMessage{lockdownAuth: ...}.serializedData()
 ///   - MeshPacket.pkiEncrypted MUST NOT be set
+@MainActor
 protocol LockdownSender: AnyObject {
 	/// Connected device's myNodeNum (0 if MyInfo not yet received).
 	var myNodeNum: UInt32 { get }

@@ -148,7 +148,7 @@ private struct PassphraseEntryContent: View {
 					Text("\(passphraseByteCount)/32")
 						.font(.caption)
 						.monospacedDigit()
-						.foregroundStyle(isPassphraseValid ? .secondary : .red)
+						.foregroundStyle(isPassphraseValid ? Color.secondary : Color.red)
 				}
 			}
 
