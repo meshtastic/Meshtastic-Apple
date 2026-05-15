@@ -110,6 +110,14 @@ struct DocBrowserView: View {
 			translatedLabels = [:]
 			startLabelTranslations()
 		}
+		.onReceive(NotificationCenter.default.publisher(for: DocTranslationService.languageBecameAvailableNotification)) { _ in
+			// Language pack just finished downloading — clear stale failures and retry
+			Task {
+				await DocTranslationService.shared.clearUIStringCache()
+			}
+			translatedLabels = [:]
+			startLabelTranslations()
+		}
 	}
 
 	@ViewBuilder
