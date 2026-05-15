@@ -76,7 +76,7 @@ actor DocTranslationService {
 	/// Generates a translated search index for all pages by translating titles and extracting
 	/// keywords from cached translated markdown. Stores the result in `DocBundle`.
 	func generateSearchIndex(for languageCode: String) async {
-		let pages = DocBundle.shared.allPages()
+		let pages = DocBundle.shared.loadEnglishPages()
 		var entries: [TranslatedSearchEntry] = []
 
 		for page in pages {
@@ -108,6 +108,10 @@ actor DocTranslationService {
 		}
 
 		DocBundle.shared.importSearchIndex(entries, for: languageCode)
+
+		// Write rendered index.json so DocBundle can load translated pages on next launch
+		await TranslationCache.shared.storeRenderedIndex(entries, languageCode: languageCode)
+
 		Logger.docs.info("DocTranslationService: Generated search index for \(languageCode, privacy: .public) — \(entries.count, privacy: .public) entries")
 	}
 
@@ -148,6 +152,9 @@ actor DocTranslationService {
 	/// Translates the markdown source, caches the translated `.md`, and converts to HTML.
 	func translatedHTMLString(for page: DocPage) async -> String? {
 		guard !isEnglish() else { return nil }
+
+		// Don't run on-device translation while community download is building the folder
+		if await CommunityTranslationFetcher.shared.isBuildingFolder { return nil }
 
 		let languageCode = currentLanguageCode()
 
@@ -257,6 +264,16 @@ actor DocTranslationService {
 		inFlightHTMLByCacheKey[cacheKey] = task
 		let result = await task.value
 		inFlightHTMLByCacheKey[cacheKey] = nil
+
+		// Write a self-contained HTML file with absolute CSS URL for fast file-based reloads
+		if let html = result {
+			await TranslationCache.shared.storeRenderedHTML(
+				MarkdownConverter.rewrapForFile(html, title: page.title, pageId: page.id, languageCode: languageCode),
+				page: page,
+				languageCode: languageCode
+			)
+		}
+
 		return result
 	}
 
@@ -319,9 +336,13 @@ actor DocTranslationService {
 	func prefetchAll(excluding currentPageId: String) async {
 		if activePrefetchTask != nil { return }
 
+		// Don't run on-device translation while community download is building the folder
+		if await CommunityTranslationFetcher.shared.isBuildingFolder { return }
+
 		let languageCode = currentLanguageCode()
 		let task = Task<Void, Never> {
-		let pages = DocBundle.shared.allPages().filter { $0.id != currentPageId }
+		// Always use English pages for source material (markdown URLs point to bundle)
+		let pages = DocBundle.shared.loadEnglishPages().filter { $0.id != currentPageId }
 
 		// Bulk-download community translations first (fast, no on-device model needed)
 		let communityCount = await CommunityTranslationFetcher.shared.prefetchAll(
@@ -347,7 +368,7 @@ actor DocTranslationService {
 		if !Task.isCancelled && languageCode != "en" {
 			let participateInDistributedTranslations = UserDefaults.standard.object(forKey: "participateInDistributedTranslations") as? Bool ?? true
 			if participateInDistributedTranslations {
-				let allPages = DocBundle.shared.allPages()
+				let allPages = DocBundle.shared.loadEnglishPages()
 				Task.detached(priority: .background) {
 					await DocsTranslationUploader.shared.uploadIfNeeded(
 						languageCode: languageCode,
@@ -432,6 +453,12 @@ actor DocTranslationService {
 			Logger.docs.error("DocTranslationService: Failed to write translated HTML: \(error.localizedDescription, privacy: .public)")
 			return nil
 		}
+	}
+
+	/// Returns a cached translation for a UI string if available, without triggering on-device translation.
+	func cachedUIString(_ text: String, targetLanguage: String) -> String? {
+		let key = "\(targetLanguage)#\(text.trimmingCharacters(in: .whitespacesAndNewlines))"
+		return uiStringCache[key]
 	}
 
 	/// Translates short UI labels (nav/section/page titles). Falls back to source text.

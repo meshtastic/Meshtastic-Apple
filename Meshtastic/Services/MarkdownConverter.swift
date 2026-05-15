@@ -65,6 +65,40 @@ enum MarkdownConverter {
 		return "<!DOCTYPE html>\n<html lang=\"\(languageCode)\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>\(escapeHTML(title))</title>\n  <link rel=\"stylesheet\" href=\"\(cssHref)\">\n</head>\n<body data-page=\"\(pageId)\">\n\(banner)\(body)</body>\n</html>"
 	}
 
+	/// Wraps converted HTML body using an absolute file URL to the bundled CSS.
+	/// Use this when writing translated HTML to Application Support so CSS resolves correctly.
+	static func wrapInHTMLDocumentForFile(
+		_ body: String,
+		title: String,
+		pageId: String,
+		languageCode: String
+	) -> String {
+		// Use absolute bundle URL for CSS so the file loads correctly from any on-disk location
+		let cssHref: String
+		if let cssURL = Bundle.main.url(forResource: "docs", withExtension: "css", subdirectory: "docs/assets") {
+			cssHref = cssURL.absoluteString
+		} else {
+			cssHref = "../assets/docs.css"
+		}
+		let banner = "<div class=\"pre-release-banner\">⚠️ <strong>Pre-release</strong> — subject to change</div>"
+		return "<!DOCTYPE html>\n<html lang=\"\(languageCode)\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>\(escapeHTML(title))</title>\n  <link rel=\"stylesheet\" href=\"\(cssHref)\">\n</head>\n<body data-page=\"\(pageId)\">\n\(banner)\(body)</body>\n</html>"
+	}
+
+	/// Re-wraps an already-complete HTML document with an absolute CSS URL.
+	/// Used when writing translated HTML to disk so loadFileURL resolves CSS correctly.
+	static func rewrapForFile(_ html: String, title: String, pageId: String, languageCode: String) -> String {
+		// Extract the body content between <body...> and </body>
+		let bodyPattern = try? NSRegularExpression(pattern: #"<body[^>]*>(.*)</body>"#, options: .dotMatchesLineSeparators)
+		let body: String
+		if let match = bodyPattern?.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
+		   let range = Range(match.range(at: 1), in: html) {
+			body = String(html[range])
+		} else {
+			body = html
+		}
+		return wrapInHTMLDocumentForFile(body, title: title, pageId: pageId, languageCode: languageCode)
+	}
+
 	// MARK: - Callout Conversion
 
 	/// Converts `<blockquote>` elements containing **Tip/Note/Warning** patterns
