@@ -7,8 +7,22 @@ import SwiftUI
 struct ContentView: View {
 	@ObservedObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var lockdown: LockdownCoordinator
 	@State var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
+
+	/// True when the connected device's lockdown state requires the user to act
+	/// (provision a passphrase, unlock, or wait out a backoff). The sheet is
+	/// non-dismissable; it only closes when the coordinator transitions to a
+	/// non-blocking state (.none, .unlocked, .lockNowAcknowledged).
+	private var isLockdownGateActive: Bool {
+		switch lockdown.state {
+		case .needsProvision, .locked, .unlockFailed, .unlockBackoff:
+			return true
+		case .none, .unlocked, .lockNowAcknowledged:
+			return false
+		}
+	}
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -68,6 +82,12 @@ struct ContentView: View {
 				DeviceOnboarding()
 			}
 		)
+		.fullScreenCover(isPresented: Binding(
+			get: { isLockdownGateActive },
+			set: { _ in /* non-dismissable; coordinator state controls visibility */ }
+		)) {
+			LockdownSheet()
+		}
 		.onAppear {
 			if UserDefaults.firstLaunch {
 				isShowingDeviceOnboardingFlow = true
