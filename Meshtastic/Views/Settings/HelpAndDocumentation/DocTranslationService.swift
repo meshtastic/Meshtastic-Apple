@@ -199,12 +199,24 @@ actor DocTranslationService {
 	func prefetchAll(excluding currentPageId: String) async {
 		if activePrefetchTask != nil { return }
 
+		let languageCode = currentLanguageCode()
 		let task = Task<Void, Never> {
 		let pages = DocBundle.shared.allPages().filter { $0.id != currentPageId }
 		for page in pages {
 			try? await Task.sleep(nanoseconds: 100_000_000) // 100ms between pages
 			guard !Task.isCancelled else { return }
 			_ = await translatedHTMLString(for: page)
+		}
+
+		// Auto-upload translations after all pages are cached
+		if !Task.isCancelled && languageCode != "en" {
+			let allPages = DocBundle.shared.allPages()
+			Task.detached(priority: .background) {
+				await DocsTranslationUploader.shared.uploadIfNeeded(
+					languageCode: languageCode,
+					pages: allPages
+				)
+			}
 		}
 		}
 

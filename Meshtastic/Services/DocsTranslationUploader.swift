@@ -11,143 +11,190 @@ import OSLog
 
 // MARK: - DocsTranslationUploader
 
-/// Checks the Meshtastic docs site repo for existing translations (read-only, no auth needed
-/// for public repos) and saves translated markdown files locally for upload via GitHub Action.
+/// After all pages for a language are translated, automatically commits the translated
+/// markdown files to the `translations/` folder in Meshtastic-Apple. A GitHub Action
+/// then picks them up and opens a PR on the docs site.
+///
+/// Read-only checks against the public docs site repo need no auth.
+/// Write operations target Meshtastic-Apple using a fine-grained token from Secrets.json.
 actor DocsTranslationUploader {
 
-	static let shared = DocsTranslationUploader()
+    static let shared = DocsTranslationUploader()
 
-	/// The target repo to check for existing translations.
-	private let targetRepo = "meshtastic/meshtastic"
+    /// Docs site repo (read-only checks, no auth needed — public repo).
+    private let docsRepo = "meshtastic/meshtastic"
 
-	/// Base path in the repo where translations are stored.
-	private let translationsBasePath = "docs/i18n"
+    /// This repo (write — commits translated files here).
+    private let appRepo = "meshtastic/Meshtastic-Apple"
 
-	/// GitHub API base URL.
-	private let apiBase = "https://api.github.com"
+    /// Path prefix in the docs site where translations live.
+    private let docsTranslationsPath = "docs/i18n"
 
-	private var inFlightChecks: Set<String> = []
+    /// Path prefix in this repo where translations are staged.
+    private let appTranslationsPath = "translations"
 
-	private init() {}
+    private let apiBase = "https://api.github.com"
 
-	// MARK: - Public API
+    /// Tracks version+language combos already uploaded this session.
+    private var uploadedThisSession: Set<String> = []
 
-	/// Checks if translations exist on the docs site for the given version + language.
-	func translationsExist(languageCode: String, appVersion: String) async -> Bool {
-		let dirPath = "\(translationsBasePath)/\(languageCode)/\(appVersion)"
-		do {
-			let exists = try await directoryExistsInRepo(path: dirPath)
-			if exists {
-				Logger.docs.info("DocsTranslationUploader: Translations exist at \(dirPath, privacy: .public)")
-			}
-			return exists
-		} catch {
-			Logger.docs.error("DocsTranslationUploader: Error checking repo: \(error.localizedDescription, privacy: .public)")
-			return false
-		}
-	}
+    private init() {}
 
-	/// Checks if there's already an open PR for this version + language.
-	func openPRExists(languageCode: String, appVersion: String) async -> Bool {
-		let branchName = "translations/\(languageCode)/\(appVersion)"
-		do {
-			return try await openPRExistsInRepo(branch: branchName)
-		} catch {
-			Logger.docs.error("DocsTranslationUploader: Error checking PRs: \(error.localizedDescription, privacy: .public)")
-			return false
-		}
-	}
+    // MARK: - Public API
 
-	/// Saves translated markdown files to the local translations directory.
-	/// These files are committed to the repo and picked up by the GitHub Action.
-	func saveTranslationsLocally(
-		languageCode: String,
-		appVersion: String,
-		pages: [DocPage]
-	) async -> Int? {
-		let key = "\(appVersion)/\(languageCode)"
-		guard !inFlightChecks.contains(key) else { return nil }
-		inFlightChecks.insert(key)
-		defer { inFlightChecks.remove(key) }
+    /// Called automatically after prefetch completes for a language.
+    /// Checks docs site for existing translations, then commits new ones to this repo.
+    func uploadIfNeeded(
+        languageCode: String,
+        pages: [DocPage]
+    ) async {
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+        let key = "\(languageCode)/\(appVersion)"
 
-		// Check if translations already exist upstream
-		let exists = await translationsExist(languageCode: languageCode, appVersion: appVersion)
-		if exists { return nil }
+        guard !uploadedThisSession.contains(key) else { return }
 
-		let prExists = await openPRExists(languageCode: languageCode, appVersion: appVersion)
-		if prExists {
-			Logger.docs.info("DocsTranslationUploader: PR already open for \(key, privacy: .public)")
-			return nil
-		}
+        // 1. Check if docs site already has these translations (no auth needed)
+        let alreadyOnDocsSite = await checkDocsRepoHasTranslations(
+            languageCode: languageCode,
+            appVersion: appVersion
+        )
+        if alreadyOnDocsSite {
+            uploadedThisSession.insert(key)
+            return
+        }
 
-		var savedCount = 0
-		for page in pages {
-			guard let translatedMd = await getTranslatedMarkdown(for: page, languageCode: languageCode) else {
-				continue
-			}
+        // 2. Check if this repo already has them staged
+        let alreadyStaged = await checkAppRepoHasTranslations(
+            languageCode: languageCode,
+            appVersion: appVersion
+        )
+        if alreadyStaged {
+            uploadedThisSession.insert(key)
+            return
+        }
 
-			let outputDir = translationsDirectory(languageCode: languageCode, appVersion: appVersion, section: page.section.rawValue)
-			try? FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
+        // 3. Get token for writing to this repo
+        guard let token = loadGitHubToken() else {
+            Logger.docs.info("DocsTranslationUploader: No GitHub token configured — skipping auto-upload")
+            return
+        }
 
-			let outputFile = outputDir.appendingPathComponent("\(page.id).md")
-			do {
-				try translatedMd.write(to: outputFile, atomically: true, encoding: .utf8)
-				savedCount += 1
-			} catch {
-				Logger.docs.error("DocsTranslationUploader: Failed to save \(page.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
-			}
-		}
+        // 4. Commit translated files to this repo
+        Logger.docs.info("DocsTranslationUploader: Uploading \(languageCode, privacy: .public) translations for v\(appVersion, privacy: .public)")
 
-		Logger.docs.info("DocsTranslationUploader: Saved \(savedCount, privacy: .public) files for \(key, privacy: .public)")
-		return savedCount
-	}
+        var uploadedCount = 0
+        for page in pages {
+            guard let translatedMd = await getTranslatedMarkdown(for: page, languageCode: languageCode) else {
+                continue
+            }
 
-	/// Local translations directory for a version + language + section.
-	func translationsDirectory(languageCode: String, appVersion: String, section: String) -> URL {
-		let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-			.appendingPathComponent("translations", isDirectory: true)
-		return base
-			.appendingPathComponent(languageCode, isDirectory: true)
-			.appendingPathComponent(appVersion, isDirectory: true)
-			.appendingPathComponent(section, isDirectory: true)
-	}
+            let filePath = "\(appTranslationsPath)/\(languageCode)/\(appVersion)/\(page.section.rawValue)/\(page.id).md"
+            do {
+                try await commitFile(
+                    repo: appRepo,
+                    path: filePath,
+                    content: translatedMd,
+                    message: "Add \(languageCode) translation for \(page.id) (v\(appVersion))",
+                    token: token
+                )
+                uploadedCount += 1
+            } catch {
+                Logger.docs.error("DocsTranslationUploader: Failed to upload \(page.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            }
+        }
 
-	// MARK: - Cache Access
+        if uploadedCount > 0 {
+            Logger.docs.info("DocsTranslationUploader: Committed \(uploadedCount, privacy: .public) files for \(key, privacy: .public)")
+        }
+        uploadedThisSession.insert(key)
+    }
 
-	private func getTranslatedMarkdown(for page: DocPage, languageCode: String) async -> String? {
-		let sourceURL = page.markdownURL ?? page.htmlURL
-		guard let sourceHash = TranslationCache.sha256Hash(ofFileAt: sourceURL) else { return nil }
-		let sourceFile = "\(page.section.rawValue)/\(page.id).\(page.markdownURL != nil ? "md" : "html")"
-		guard let cachedURL = await TranslationCache.shared.retrieve(
-			sourceFile: sourceFile,
-			languageCode: languageCode,
-			currentHash: sourceHash
-		) else { return nil }
-		return try? String(contentsOf: cachedURL, encoding: .utf8)
-	}
+    // MARK: - Read-Only Checks (No Auth)
 
-	// MARK: - GitHub API (Read-Only, No Auth)
+    private func checkDocsRepoHasTranslations(languageCode: String, appVersion: String) async -> Bool {
+        let path = "\(docsTranslationsPath)/\(languageCode)/\(appVersion)"
+        return await directoryExists(repo: docsRepo, path: path)
+    }
 
-	private func directoryExistsInRepo(path: String) async throws -> Bool {
-		let url = URL(string: "\(apiBase)/repos/\(targetRepo)/contents/\(path)")!
-		var request = URLRequest(url: url)
-		request.setValue("application/vnd.github.v3+json", forHTTPHeaderField: "Accept")
-		let (_, response) = try await URLSession.shared.data(for: request)
-		return (response as? HTTPURLResponse)?.statusCode == 200
-	}
+    private func checkAppRepoHasTranslations(languageCode: String, appVersion: String) async -> Bool {
+        let path = "\(appTranslationsPath)/\(languageCode)/\(appVersion)"
+        return await directoryExists(repo: appRepo, path: path)
+    }
 
-	private func openPRExistsInRepo(branch: String) async throws -> Bool {
-		let owner = targetRepo.split(separator: "/").first ?? "meshtastic"
-		let encoded = branch.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? branch
-		let url = URL(string: "\(apiBase)/repos/\(targetRepo)/pulls?head=\(owner):\(encoded)&state=open")!
-		var request = URLRequest(url: url)
-		request.setValue("application/vnd.github.v3+json", forHTTPHeaderField: "Accept")
-		let (data, _) = try await URLSession.shared.data(for: request)
-		let prs = try JSONDecoder().decode([GitHubPRStub].self, from: data)
-		return !prs.isEmpty
-	}
-}
+    private func directoryExists(repo: String, path: String) async -> Bool {
+        guard let url = URL(string: "\(apiBase)/repos/\(repo)/contents/\(path)") else { return false }
+        var request = URLRequest(url: url)
+        request.setValue("application/vnd.github.v3+json", forHTTPHeaderField: "Accept")
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            return (response as? HTTPURLResponse)?.statusCode == 200
+        } catch {
+            return false
+        }
+    }
 
-private struct GitHubPRStub: Decodable {
-	let number: Int
+    // MARK: - Write Operations (Token Required)
+
+    private func commitFile(repo: String, path: String, content: String, message: String, token: String) async throws {
+        guard let url = URL(string: "\(apiBase)/repos/\(repo)/contents/\(path)") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/vnd.github.v3+json", forHTTPHeaderField: "Accept")
+
+        let base64 = Data(content.utf8).base64EncodedString()
+        let body: [String: String] = [
+            "message": message,
+            "content": base64
+        ]
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+        guard statusCode == 200 || statusCode == 201 else {
+            throw UploadError.commitFailed(path, statusCode)
+        }
+    }
+
+    // MARK: - Cache Access
+
+    private func getTranslatedMarkdown(for page: DocPage, languageCode: String) async -> String? {
+        let sourceURL = page.markdownURL ?? page.htmlURL
+        guard let sourceHash = TranslationCache.sha256Hash(ofFileAt: sourceURL) else { return nil }
+        let ext = page.markdownURL != nil ? "md" : "html"
+        let sourceFile = "\(page.section.rawValue)/\(page.id).\(ext)"
+        guard let cachedURL = await TranslationCache.shared.retrieve(
+            sourceFile: sourceFile,
+            languageCode: languageCode,
+            currentHash: sourceHash
+        ) else { return nil }
+        return try? String(contentsOf: cachedURL, encoding: .utf8)
+    }
+
+    // MARK: - Token
+
+    private func loadGitHubToken() -> String? {
+        // Read from Secrets.json (injected by Xcode Cloud ci_pre_xcodebuild.sh)
+        guard let url = Bundle.main.url(forResource: "secrets", withExtension: "json", subdirectory: "SupportingFiles"),
+              let data = try? Data(contentsOf: url),
+              let json = try? JSONDecoder().decode([String: String].self, from: data),
+              let token = json["TRANSLATIONS_GITHUB_TOKEN"],
+              !token.isEmpty else {
+            return nil
+        }
+        return token
+    }
+
+    // MARK: - Errors
+
+    enum UploadError: LocalizedError {
+        case commitFailed(String, Int)
+
+        var errorDescription: String? {
+            switch self {
+            case .commitFailed(let path, let code):
+                return "Failed to commit '\(path)' (HTTP \(code))"
+            }
+        }
+    }
 }
