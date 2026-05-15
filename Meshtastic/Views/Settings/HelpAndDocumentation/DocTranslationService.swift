@@ -76,8 +76,14 @@ actor DocTranslationService {
 	/// Generates a translated search index for all pages by translating titles and extracting
 	/// keywords from cached translated markdown. Stores the result in `DocBundle`.
 	func generateSearchIndex(for languageCode: String) async {
-		let pages = DocBundle.shared.loadEnglishPages()
+		let pages = await DocBundle.shared.loadEnglishPages()
 		var entries: [TranslatedSearchEntry] = []
+
+		// Pre-translate section names and UI chrome so they end up in the cache / nav-labels
+		let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+		for source in chromeStrings {
+			_ = await translatedUIString(source, targetLanguage: languageCode)
+		}
 
 		for page in pages {
 			let translatedTitle = await translatedUIString(page.title, targetLanguage: languageCode)
@@ -107,7 +113,7 @@ actor DocTranslationService {
 			))
 		}
 
-		DocBundle.shared.importSearchIndex(entries, for: languageCode)
+		await DocBundle.shared.importSearchIndex(entries, for: languageCode)
 
 		// Write rendered index.json so DocBundle can load translated pages on next launch
 		await TranslationCache.shared.storeRenderedIndex(entries, languageCode: languageCode)
@@ -116,8 +122,8 @@ actor DocTranslationService {
 	}
 
 	/// Exports the current translated search index for a language as JSON data.
-	func exportSearchIndex(for languageCode: String) -> [TranslatedSearchEntry]? {
-		DocBundle.shared.searchIndex(for: languageCode)
+	func exportSearchIndex(for languageCode: String) async -> [TranslatedSearchEntry]? {
+		await DocBundle.shared.searchIndex(for: languageCode)
 	}
 
 	/// Extracts top keywords from translated markdown text (lowercase, 3+ chars, deduped, top 30).
@@ -342,7 +348,7 @@ actor DocTranslationService {
 		let languageCode = currentLanguageCode()
 		let task = Task<Void, Never> {
 		// Always use English pages for source material (markdown URLs point to bundle)
-		let pages = DocBundle.shared.loadEnglishPages().filter { $0.id != currentPageId }
+		let pages = await DocBundle.shared.loadEnglishPages().filter { $0.id != currentPageId }
 
 		// Bulk-download community translations first (fast, no on-device model needed)
 		let communityCount = await CommunityTranslationFetcher.shared.prefetchAll(
@@ -368,7 +374,7 @@ actor DocTranslationService {
 		if !Task.isCancelled && languageCode != "en" {
 			let participateInDistributedTranslations = UserDefaults.standard.object(forKey: "participateInDistributedTranslations") as? Bool ?? true
 			if participateInDistributedTranslations {
-				let allPages = DocBundle.shared.loadEnglishPages()
+				let allPages = await DocBundle.shared.loadEnglishPages()
 				Task.detached(priority: .background) {
 					await DocsTranslationUploader.shared.uploadIfNeeded(
 						languageCode: languageCode,

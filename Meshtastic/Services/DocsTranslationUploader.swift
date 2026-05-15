@@ -167,7 +167,7 @@ actor DocsTranslationUploader {
 
 	// MARK: - Nav Labels
 
-	/// Uploads a `nav-labels.json` with translated page titles and section names.
+	/// Uploads a `nav-labels.json` with translated page titles, section names, and UI chrome.
 	private func uploadNavLabels(
 		languageCode: String,
 		appVersion: String,
@@ -176,6 +176,12 @@ actor DocsTranslationUploader {
 	) async {
 		let filePath = "apple-apps/\(languageCode)/\(appVersion)/nav-labels.json"
 		guard !uploadedFilesThisSession.contains(filePath) else { return }
+
+		// Ensure section names and UI chrome strings are translated and cached
+		let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+		for source in chromeStrings {
+			_ = await DocTranslationService.shared.translatedUIString(source, targetLanguage: languageCode)
+		}
 
 		// Collect translated labels from the UI string cache
 		let labels = await DocTranslationService.shared.exportUIStringCache(for: languageCode)

@@ -80,7 +80,8 @@ enum MarkdownConverter {
 		} else {
 			cssHref = "../assets/docs.css"
 		}
-		let banner = "<div class=\"pre-release-banner\">⚠️ <strong>Pre-release</strong> — subject to change</div>"
+		let hasBanner = body.contains("pre-release-banner")
+		let banner = hasBanner ? "" : "<div class=\"pre-release-banner\">⚠️ <strong>Pre-release</strong> — subject to change</div>"
 		return "<!DOCTYPE html>\n<html lang=\"\(languageCode)\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>\(escapeHTML(title))</title>\n  <link rel=\"stylesheet\" href=\"\(cssHref)\">\n</head>\n<body data-page=\"\(pageId)\">\n\(banner)\(body)</body>\n</html>"
 	}
 
@@ -96,6 +97,7 @@ enum MarkdownConverter {
 		} else {
 			body = html
 		}
+		// Body already contains the banner from wrapInHTMLDocument — pass through without adding another
 		return wrapInHTMLDocumentForFile(body, title: title, pageId: pageId, languageCode: languageCode)
 	}
 

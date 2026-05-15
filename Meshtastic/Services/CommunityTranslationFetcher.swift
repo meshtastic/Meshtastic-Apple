@@ -26,9 +26,6 @@ actor CommunityTranslationFetcher {
 	private var feedFetchTask: Task<TranslationFeed?, Never>?
 	private var downloadedPages: Set<String> = []
 
-	/// True while a community folder build is in progress — gates on-device translation.
-	private(set) var isBuildingFolder = false
-
 	/// True while buildTranslatedFolder is actively downloading/processing.
 	/// Other translation services should check this and wait or skip.
 	private(set) var isBuildingFolder = false
@@ -180,7 +177,7 @@ actor CommunityTranslationFetcher {
 
 		isBuildingFolder = true
 		defer { isBuildingFolder = false }
-		let englishPages = DocBundle.shared.loadEnglishPages()
+		let englishPages = await DocBundle.shared.loadEnglishPages()
 		guard !englishPages.isEmpty else { return false }
 
 		guard let feed = await getFeed(),
@@ -223,7 +220,7 @@ actor CommunityTranslationFetcher {
 
 		// Download search index and write as rendered index.json
 		await fetchSearchIndex(languageCode: languageCode, translationSet: translationSet)
-		if let searchEntries = DocBundle.shared.searchIndex(for: languageCode) {
+		if let searchEntries = await DocBundle.shared.searchIndex(for: languageCode) {
 			await TranslationCache.shared.storeRenderedIndex(searchEntries, languageCode: languageCode)
 		} else {
 			// Build a basic index from nav labels
@@ -266,7 +263,7 @@ actor CommunityTranslationFetcher {
 			  let entries = try? JSONDecoder().decode([TranslatedSearchEntry].self, from: data),
 			  !entries.isEmpty else { return }
 
-		DocBundle.shared.importSearchIndex(entries, for: languageCode)
+		await DocBundle.shared.importSearchIndex(entries, for: languageCode)
 	}
 
 	// MARK: - Feed (index.json)

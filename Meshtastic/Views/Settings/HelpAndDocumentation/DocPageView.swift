@@ -12,10 +12,13 @@ private struct DocWebView: UIViewRepresentable {
 	let htmlString: String?
 	let baseURL: URL?
 
-	// Root directory — grants WKWebView read access to all sibling pages and assets.
+	// Root of the bundled docs directory — grants WKWebView read access to all sibling pages and assets.
 	private var docsRoot: URL {
 		if let htmlURL {
-			return htmlURL.deletingLastPathComponent().deletingLastPathComponent()
+			// For translated files in Application Support, go up to the html/ root
+			// For bundled files, go up to docs/ root
+			let parent = htmlURL.deletingLastPathComponent().deletingLastPathComponent()
+			return parent
 		}
 		if let baseURL {
 			return baseURL.deletingLastPathComponent()
@@ -36,10 +39,11 @@ private struct DocWebView: UIViewRepresentable {
 
 	func updateUIView(_ webView: WKWebView, context: Context) {
 		if let htmlString {
+			// Translated content — load as HTML string with bundle base URL for CSS/images
 			let currentContent = webView.url?.absoluteString ?? ""
 			if currentContent.contains("translated") { return }
 			webView.loadHTMLString(htmlString, baseURL: baseURL)
-			Logger.docs.debug("DocWebView loading translated HTML string")
+			Logger.docs.debug("DocWebView loading translated content")
 		} else if let htmlURL {
 			guard webView.url != htmlURL else { return }
 			webView.loadFileURL(htmlURL, allowingReadAccessTo: docsRoot)
@@ -62,18 +66,28 @@ private struct DocWebView: UIViewRepresentable {
 
 		func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction) async -> WKNavigationActionPolicy {
 			guard let url = action.request.url else { return .allow }
+
 			if url.isFileURL {
-				return url.path.hasPrefix(docsRoot.path) ? .allow : .cancel
+				if url.path.hasPrefix(docsRoot.path) {
+					return .allow
+				}
+				Logger.docs.warning("Blocked file URL outside docs bundle: \(url.path)")
+				return .cancel
 			}
+
+			// Allow about:blank (used by loadHTMLString)
 			if url.scheme == "about" { return .allow }
+
 			if url.scheme == "https" || url.scheme == "http" {
 				await UIApplication.shared.open(url)
 				return .cancel
 			}
+
 			if url.scheme == "meshtastic" {
 				await UIApplication.shared.open(url)
 				return .cancel
 			}
+
 			return .cancel
 		}
 
@@ -89,21 +103,21 @@ struct DocPageView: View {
 
 	let page: DocPage
 
-	/// Pre-rendered HTML file on disk — CSS resolves via absolute bundle URL embedded in file.
 	@State private var renderedFileURL: URL?
-	/// Translated HTML string used while rendered file is being written.
 	@State private var translatedHTML: String?
 	@State private var isTranslating = false
 	@State private var translationTask: Task<Void, Never>?
 	@State private var translatedTitle: String?
 
 	private var translatedBaseURL: URL {
+		// Keep relative links like ../assets/docs.css and ../assets/screenshots/... working.
 		page.htmlURL.deletingLastPathComponent()
 	}
 
 	var body: some View {
 		ZStack {
 			if let renderedFileURL {
+				// Best path: pre-rendered file on disk, loaded with loadFileURL — CSS works perfectly
 				DocWebView(htmlURL: renderedFileURL, htmlString: nil, baseURL: nil)
 			} else if let translatedHTML {
 				DocWebView(htmlURL: nil, htmlString: translatedHTML, baseURL: translatedBaseURL)
@@ -135,12 +149,12 @@ struct DocPageView: View {
 		}
 		.onReceive(NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)) { _ in
 			translationTask?.cancel()
-			renderedFileURL = nil
 			translatedHTML = nil
 			translatedTitle = nil
 			startTranslation()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: DocTranslationService.languageBecameAvailableNotification)) { _ in
+			// Language pack just installed — retry title if it wasn't translated yet
 			if translatedTitle == nil {
 				let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
 				guard languageCode != "en" else { return }
@@ -161,8 +175,14 @@ struct DocPageView: View {
 		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
 		guard languageCode != "en" else { return }
 
-		translationTask = Task.detached(priority: .userInitiated) {
+		// If DocBundle already loaded from translated folder, htmlURL points to translated file
+		if DocBundle.shared.loadedLanguage != "en" {
+			// Title is already translated in the page object
+			translatedTitle = page.title
+			return
+		}
 
+		translationTask = Task.detached(priority: .userInitiated) {
 			// 1. Check for a pre-rendered HTML file on disk (fastest, CSS resolves perfectly)
 			if let fileURL = await TranslationCache.shared.renderedHTMLFileURL(for: page, languageCode: languageCode) {
 				let title = await DocTranslationService.shared.translatedUIString(page.title, targetLanguage: languageCode)
@@ -189,7 +209,9 @@ struct DocPageView: View {
 
 			await MainActor.run {
 				isTranslating = false
-				if let html { translatedHTML = html }
+				if let html {
+					translatedHTML = html
+				}
 				if !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, title != page.title {
 					translatedTitle = title
 				}

@@ -342,28 +342,4 @@ final class DocBundle {
 	func searchIndex(for languageCode: String) -> [TranslatedSearchEntry]? {
 		translatedSearchIndices[languageCode]
 	}
-
-	/// Returns English pages from bundle — used as source for translation and upload.
-	func loadEnglishPages() -> [DocPage] {
-		guard let indexURL = Bundle.main.url(forResource: "index", withExtension: "json", subdirectory: "docs"),
-			  let data = try? Data(contentsOf: indexURL),
-			  let entries = try? JSONDecoder().decode([KeywordIndexEntry].self, from: data) else {
-			return []
-		}
-		return entries.compactMap { entry in
-			guard let section = DocSection(rawValue: entry.section),
-				  let htmlURL = Bundle.main.url(forResource: entry.id, withExtension: "html", subdirectory: "docs/\(section.rawValue)") else {
-				return nil
-			}
-			return DocPage(
-				id: entry.id,
-				title: entry.title.htmlEntityDecoded,
-				section: section,
-				htmlURL: htmlURL,
-				keywords: entry.keywords,
-				charCount: entry.charCount,
-				navOrder: entry.navOrder ?? 999
-			)
-		}
-	}
 }
