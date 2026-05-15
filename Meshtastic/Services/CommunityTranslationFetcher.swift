@@ -26,6 +26,13 @@ actor CommunityTranslationFetcher {
 	private var feedFetchTask: Task<TranslationFeed?, Never>?
 	private var downloadedPages: Set<String> = []
 
+	/// True while a community folder build is in progress — gates on-device translation.
+	private(set) var isBuildingFolder = false
+
+	/// True while buildTranslatedFolder is actively downloading/processing.
+	/// Other translation services should check this and wait or skip.
+	private(set) var isBuildingFolder = false
+
 	private init() {}
 
 	// MARK: - Feed Model
@@ -159,6 +166,84 @@ actor CommunityTranslationFetcher {
 			  !labels.isEmpty else { return }
 
 		await DocTranslationService.shared.importUIStringCache(labels, for: languageCode)
+	}
+
+	// MARK: - Build Translated Folder
+
+	/// Downloads all community translations and builds the rendered HTML folder
+	/// so DocBundle.load() can use it directly. Returns true if a complete folder was built.
+	func buildTranslatedFolder(languageCode: String) async -> Bool {
+		// Check if rendered folder already exists
+		if await TranslationCache.shared.renderedHTMLRootIfReady(for: languageCode) != nil {
+			return true
+		}
+
+		isBuildingFolder = true
+		defer { isBuildingFolder = false }
+		let englishPages = DocBundle.shared.loadEnglishPages()
+		guard !englishPages.isEmpty else { return false }
+
+		guard let feed = await getFeed(),
+			  let translationSet = bestMatch(for: languageCode, in: feed) else {
+			return false
+		}
+
+		// Download all pages and render HTML
+		var renderedCount = 0
+		for page in englishPages {
+			let mdFile = "\(page.section.rawValue)/\(page.id).md"
+			guard translationSet.pages.contains(mdFile) else { continue }
+
+			let remotePath = "\(languageCode)/\(translationSet.appVersion)/\(mdFile)"
+			guard let markdown = await downloadFile(remotePath: remotePath) else { continue }
+
+			// Store in markdown cache
+			let sourceFile = "\(page.section.rawValue)/\(page.id).md"
+			let sourceURL = page.markdownURL ?? page.htmlURL
+			if let sourceHash = TranslationCache.sha256Hash(ofFileAt: sourceURL) {
+				await TranslationCache.shared.store(
+					translatedMarkdown: markdown,
+					sourceFile: sourceFile,
+					languageCode: languageCode,
+					contentHash: sourceHash
+				)
+			}
+
+			// Convert to HTML and write to rendered folder
+			let htmlBody = MarkdownConverter.convert(markdown)
+			let html = MarkdownConverter.wrapInHTMLDocument(
+				htmlBody, title: page.title, pageId: page.id,
+				languageCode: languageCode
+			)
+			await TranslationCache.shared.storeRenderedHTML(html, page: page, languageCode: languageCode)
+			renderedCount += 1
+		}
+
+		guard renderedCount > 0 else { return false }
+
+		// Download search index and write as rendered index.json
+		await fetchSearchIndex(languageCode: languageCode, translationSet: translationSet)
+		if let searchEntries = DocBundle.shared.searchIndex(for: languageCode) {
+			await TranslationCache.shared.storeRenderedIndex(searchEntries, languageCode: languageCode)
+		} else {
+			// Build a basic index from nav labels
+			await fetchNavLabels(languageCode: languageCode, translationSet: translationSet)
+			let navLabels = await DocTranslationService.shared.exportUIStringCache(for: languageCode)
+			var entries: [TranslatedSearchEntry] = []
+			for page in englishPages {
+				let title = navLabels[page.title] ?? page.title
+				entries.append(TranslatedSearchEntry(
+					id: page.id,
+					section: page.section.rawValue,
+					title: title,
+					keywords: page.keywords
+				))
+			}
+			await TranslationCache.shared.storeRenderedIndex(entries, languageCode: languageCode)
+		}
+
+		Logger.docs.info("CommunityTranslationFetcher: Built translated folder for \(languageCode, privacy: .public) — \(renderedCount, privacy: .public) pages")
+		return true
 	}
 
 	// MARK: - Search Index
