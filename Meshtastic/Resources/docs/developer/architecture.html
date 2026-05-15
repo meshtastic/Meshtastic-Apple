@@ -74,7 +74,42 @@
 <h2>Persistence</h2>
 <p>SwiftData is the sole persistence layer. <code>PersistenceController.shared</code> owns the <code>ModelContainer</code>. Views use <code>@Environment(\.modelContext)</code> or <code>@Query</code>. Background writes use the <code>MeshPackets</code> <code>@ModelActor</code>.</p>
 <p>Model types are defined with <code>@Model</code> in <code>Meshtastic/Model/</code>. Schema evolution uses <code>VersionedSchema</code> and <code>SchemaMigrationPlan</code> in <code>MeshtasticSchema.swift</code>.</p>
+<h2>Services</h2>
+<p>Application services that are not tied to radio connectivity live in <code>Meshtastic/Services/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DocTranslationService.swift</code></td>
+<td>On-device documentation translation using the Apple Translation framework (primary) with FoundationModels fallback. Detects device language, translates bundled English docs pages, and manages background prefetch. iOS 26+.</td>
+</tr>
+<tr>
+<td><code>TranslationCache.swift</code></td>
+<td>File-based cache for translated <code>.md</code> content stored in Application Support. Tracks content hashes for staleness detection and enforces a 50 MB per-language LRU eviction policy.</td>
+</tr>
+</tbody>
+</table>
 <h2>Protobufs</h2>
 <p>The <code>MeshtasticProtobufs</code> Swift Package (<code>MeshtasticProtobufs/Package.swift</code>) wraps protobuf-generated Swift sources. Regenerate with <code>./scripts/gen_protos.sh</code> after updating the <code>protobufs/</code> submodule.</p>
+<h2>External Swift Packages</h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/meshtastic/TAKPacket-SDK">TAKPacket-SDK</a></td>
+<td>TAK V2 wire format on <code>ATAK_PLUGIN_V2 = port 78</code>. Exposes <code>CotXmlParser</code>, <code>CotXmlBuilder</code>, and <code>TakCompressor</code> (zstd dictionary compression). Pinned in <code>Meshtastic.xcworkspace/.../Package.resolved</code>. See <a href="tak-protocol.html">TAK Protocol</a>.</td>
+</tr>
+</tbody>
+</table>
 </body>
 </html>

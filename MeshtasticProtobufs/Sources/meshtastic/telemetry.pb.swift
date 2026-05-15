@@ -228,6 +228,18 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   ///
   /// SHT family of sensors for temperature and humidity
   case shtxx // = 50
+
+  ///
+  /// DS248X Bridge for one-wire temperature sensors
+  case ds248X // = 51
+
+  ///
+  /// MMC5983MA 3-Axis Digital Magnetic Sensor
+  case mmc5983Ma // = 52
+
+  ///
+  /// ICM-42607-P 6‑Axis IMU
+  case icm42607P // = 53
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -287,6 +299,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 48: self = .stc31
     case 49: self = .scd30
     case 50: self = .shtxx
+    case 51: self = .ds248X
+    case 52: self = .mmc5983Ma
+    case 53: self = .icm42607P
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -344,6 +359,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .stc31: return 48
     case .scd30: return 49
     case .shtxx: return 50
+    case .ds248X: return 51
+    case .mmc5983Ma: return 52
+    case .icm42607P: return 53
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -401,6 +419,9 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .stc31,
     .scd30,
     .shtxx,
+    .ds248X,
+    .mmc5983Ma,
+    .icm42607P,
   ]
 
 }
@@ -728,6 +749,13 @@ public struct EnvironmentMetrics: @unchecked Sendable {
   public var hasSoilTemperature: Bool {return _storage._soilTemperature != nil}
   /// Clears the value of `soilTemperature`. Subsequent reads from it will return its default value.
   public mutating func clearSoilTemperature() {_uniqueStorage()._soilTemperature = nil}
+
+  ///
+  /// One-wire temperature (*C)
+  public var oneWireTemperature: [Float] {
+    get {return _storage._oneWireTemperature}
+    set {_uniqueStorage()._oneWireTemperature = newValue}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1687,7 +1715,7 @@ public struct SEN5XState: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0\u{1}HDC1080\0\u{1}SHT21\0\u{1}STC31\0\u{1}SCD30\0\u{1}SHTXX\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0\u{1}HDC1080\0\u{1}SHT21\0\u{1}STC31\0\u{1}SCD30\0\u{1}SHTXX\0\u{1}DS248X\0\u{1}MMC5983MA\0\u{1}ICM42607P\0")
 }
 
 extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -1746,7 +1774,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EnvironmentMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}temperature\0\u{3}relative_humidity\0\u{3}barometric_pressure\0\u{3}gas_resistance\0\u{1}voltage\0\u{1}current\0\u{1}iaq\0\u{1}distance\0\u{1}lux\0\u{3}white_lux\0\u{3}ir_lux\0\u{3}uv_lux\0\u{3}wind_direction\0\u{3}wind_speed\0\u{1}weight\0\u{3}wind_gust\0\u{3}wind_lull\0\u{1}radiation\0\u{3}rainfall_1h\0\u{3}rainfall_24h\0\u{3}soil_moisture\0\u{3}soil_temperature\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}temperature\0\u{3}relative_humidity\0\u{3}barometric_pressure\0\u{3}gas_resistance\0\u{1}voltage\0\u{1}current\0\u{1}iaq\0\u{1}distance\0\u{1}lux\0\u{3}white_lux\0\u{3}ir_lux\0\u{3}uv_lux\0\u{3}wind_direction\0\u{3}wind_speed\0\u{1}weight\0\u{3}wind_gust\0\u{3}wind_lull\0\u{1}radiation\0\u{3}rainfall_1h\0\u{3}rainfall_24h\0\u{3}soil_moisture\0\u{3}soil_temperature\0\u{3}one_wire_temperature\0")
 
   fileprivate class _StorageClass {
     var _temperature: Float? = nil
@@ -1771,6 +1799,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     var _rainfall24H: Float? = nil
     var _soilMoisture: UInt32? = nil
     var _soilTemperature: Float? = nil
+    var _oneWireTemperature: [Float] = []
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -1803,6 +1832,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       _rainfall24H = source._rainfall24H
       _soilMoisture = source._soilMoisture
       _soilTemperature = source._soilTemperature
+      _oneWireTemperature = source._oneWireTemperature
     }
   }
 
@@ -1843,6 +1873,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         case 20: try { try decoder.decodeSingularFloatField(value: &_storage._rainfall24H) }()
         case 21: try { try decoder.decodeSingularUInt32Field(value: &_storage._soilMoisture) }()
         case 22: try { try decoder.decodeSingularFloatField(value: &_storage._soilTemperature) }()
+        case 23: try { try decoder.decodeRepeatedFloatField(value: &_storage._oneWireTemperature) }()
         default: break
         }
       }
@@ -1921,6 +1952,9 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       try { if let v = _storage._soilTemperature {
         try visitor.visitSingularFloatField(value: v, fieldNumber: 22)
       } }()
+      if !_storage._oneWireTemperature.isEmpty {
+        try visitor.visitPackedFloatField(value: _storage._oneWireTemperature, fieldNumber: 23)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1952,6 +1986,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         if _storage._rainfall24H != rhs_storage._rainfall24H {return false}
         if _storage._soilMoisture != rhs_storage._soilMoisture {return false}
         if _storage._soilTemperature != rhs_storage._soilTemperature {return false}
+        if _storage._oneWireTemperature != rhs_storage._oneWireTemperature {return false}
         return true
       }
       if !storagesAreEqual {return false}

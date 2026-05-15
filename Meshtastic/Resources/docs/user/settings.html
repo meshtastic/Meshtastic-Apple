@@ -25,7 +25,7 @@
 <tbody>
 <tr>
 <td>Region</td>
-<td>Your geographical region. <strong>Must be set correctly</strong> — using the wrong region is illegal and prevents communication with local nodes.</td>
+<td>Your geographical region. <strong>Must be set correctly</strong> — using the wrong region is illegal and prevents communication with local nodes. Available regions include the standard set plus Nepal 865MHz, Brazil 902MHz, ITU Region 1 Amateur 2m, ITU Region 2/3 Amateur 2m, and the EU 866 / 874 / 917 / 868-narrow bands.</td>
 </tr>
 <tr>
 <td>Modem Preset</td>
@@ -122,13 +122,13 @@
 <h3>How It Works</h3>
 <ul>
 <li><strong>Language detection</strong>: The app reads your device's primary language setting each time you open a documentation page.</li>
-<li><strong>On-device translation</strong>: Pages are translated using Apple's on-device Translation framework. If a language is not supported by the Translation framework, the app falls back to the on-device Foundation model.</li>
+<li><strong>On-device translation</strong>: Pages are translated using Apple's on-device Translation framework (iOS 26+). If a language is not supported by the Translation framework, the app falls back to the on-device Foundation model (iOS 26+ only).</li>
 <li><strong>No network required</strong>: After initial translation, all content is available offline.</li>
 <li><strong>Caching</strong>: Translated pages are stored locally so they load instantly on subsequent visits.</li>
 <li><strong>Background prefetch</strong>: After the current page is translated, remaining pages are translated in the background at low priority.</li>
 </ul>
 <h3>Fallback to English</h3>
-<p>If translation is unavailable (older iOS version, unsupported language, or model not downloaded), the original English documentation is displayed. The app never shows blank or broken pages.</p>
+<p>If translation is unavailable (older than iOS 26, unsupported language, or language pack not downloaded), the original English documentation is displayed. The app never shows blank or broken pages.</p>
 <h3>Cache Management</h3>
 <ul>
 <li>Translated files are stored in Application Support and persist across app launches.</li>

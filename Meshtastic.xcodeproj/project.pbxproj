@@ -7,6 +7,8 @@
     objects = {
 
 /* Begin PBXBuildFile section */
+10794B232F8713CB000CA23F /* MeshtasticTAK in Frameworks */ = {isa = PBXBuildFile; productRef = 10794B222F8713CB000CA23F /* MeshtasticTAK */; };
+10794B252F8C2C90000CA23F /* RouteDataPackageGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10794B242F8C2C90000CA23F /* RouteDataPackageGenerator.swift */; };
         0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */; };
         102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
         102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
@@ -529,6 +531,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+10794B242F8C2C90000CA23F /* RouteDataPackageGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDataPackageGenerator.swift; sourceTree = "<group>"; };
         01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
         05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchemaV1.swift; sourceTree = "<group>"; };
         0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
@@ -1150,6 +1153,7 @@
                 102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */,
                 2315D1A82EEF2ED400E0FAE7 /* SwiftDraw in Frameworks */,
                 DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
+                10794B232F8713CB000CA23F /* MeshtasticTAK in Frameworks */,
                 2388EC382EDF88E900F6F982 /* NordicDFU in Frameworks */,
                 10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */,
             );
@@ -1624,6 +1628,7 @@
                 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */,
                 01028778B8BFD81F7A039593 /* TAKConnection.swift */,
                 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */,
+                10794B242F8C2C90000CA23F /* RouteDataPackageGenerator.swift */,
                 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */,
                 9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */,
                 3F203877F307073096C89179 /* FountainCodec.swift */,
@@ -2299,6 +2304,7 @@
             name = Meshtastic;
             packageProductDependencies = (
                 DD0D3D212A55CEB10066DB71 /* CocoaMQTT */,
+                10794B222F8713CB000CA23F /* MeshtasticTAK */,
                 25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */,
                 102B5EAA2E172F41003D191E /* DatadogCore */,
                 102B5EAC2E172F41003D191E /* DatadogCrashReporting */,
@@ -2379,6 +2385,7 @@
             mainGroup = DDC2E14B26CE248E0042C5E4;
             packageReferences = (
                 DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */,
+                10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */,
                 25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
                 259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
                 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
@@ -2912,6 +2919,7 @@
                 B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */,
                 2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */,
                 300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */,
+                10794B252F8C2C90000CA23F /* RouteDataPackageGenerator.swift in Sources */,
                 E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */,
                 FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */,
                 A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */,
@@ -3464,6 +3472,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
+            isa = XCRemoteSwiftPackageReference;
+            repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
+            requirement = {
+                kind = upToNextMinorVersion;
+                minimumVersion = 0.2.2;
+            };
+        };
         102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
             isa = XCRemoteSwiftPackageReference;
             repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
@@ -3516,6 +3532,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+10794B222F8713CB000CA23F /* MeshtasticTAK */ = {
+            isa = XCSwiftPackageProductDependency;
+            package = 10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */;
+            productName = MeshtasticTAK;
+        };
         102B5EAA2E172F41003D191E /* DatadogCore */ = {
             isa = XCSwiftPackageProductDependency;
             package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;

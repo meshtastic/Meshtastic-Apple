@@ -1,5 +1,5 @@
 {
-  "originHash" : "06a68adb2cdded203acbad9556c4c462860c16575b47249dba8b2b7ac29da955",
+  "originHash" : "0b65353a66780c944466d8744b2574142804eb3901236a34bd50fd8778e576f7",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -107,6 +107,15 @@
       "state" : {
         "revision" : "17d55c17540f3eb10685058e803d7ae73d9bf9d3",
         "version" : "0.25.3"
+      }
+    },
+    {
+      "identity" : "takpacket-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/meshtastic/TAKPacket-SDK.git",
+      "state" : {
+        "revision" : "a44a7358e477dab54fca500021a1b3333bb5b9a8",
+        "version" : "0.2.2"
       }
     },
     {

@@ -423,7 +423,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	func didReceive(_ event: ConnectionEvent) async {
 		packetsReceived += 1
-		
+
 		switch event {
 		case .data(let fromRadio):
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
@@ -592,19 +592,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					// Broadcast waypoint to TAK clients
 					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
 						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")
-						// Ensure bridge is initialized before calling (not optional chaining, or lazy init won't run)
 						let server = TAKServerManager.shared
-						if server.meshToCotEnabled && server.isRunning && !server.connectedClients.isEmpty {
-							// Force bridge initialization if needed
-							if server.bridge == nil {
-								Logger.tak.info("Initializing bridge on demand")
-								let bridge = TAKMeshtasticBridge(
-									accessoryManager: AccessoryManager.shared,
-									takServerManager: server
-								)
-								bridge.context = AccessoryManager.shared.context
-								server.bridge = bridge
-							}
+						if server.ensureBridgeReadyForMeshToCot() {
 							await server.bridge?.broadcastMeshWaypointToTAK(waypoint: waypoint, from: packet.from)
 						} else {
 							Logger.tak.info("Waypoint broadcast skipped: server not ready or no clients")
@@ -702,6 +691,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.services.info("MAX PORT NUM OF 511")
 				case .atakPlugin:
 					handleATAKPluginPacket(packet)
+				case .atakPluginV2:
+					handleATAKPluginV2Packet(packet)
 				case .powerstressApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .reticulumTunnelApp:
@@ -714,6 +705,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received Group Alarm App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .lorawanBridge:
 					Logger.mesh.info("🕸️ MESH PACKET received for LoRaWAN Bridge UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .remoteShellApp:
+					Logger.mesh.info("🕸️ MESH PACKET received for Remote Shell UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .unknownApp:
 					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
@@ -830,11 +823,42 @@ extension AccessoryManager {
 	}
 
 	func checkIsVersionSupported(forVersion: String) -> Bool {
-		let myVersion = connectedVersion ?? "0.0.0"
-		let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||
-		forVersion.compare(myVersion, options: .numeric) == .orderedAscending ||
-		forVersion.compare(myVersion, options: .numeric) == .orderedSame
-		return supportedVersion
+		// Prefer the live `connectedVersion` (full string including build hash,
+		// e.g. "2.8.0.3a0c08b"). Fall back to the persisted UserDefaults value
+		// (stripped of trailing hash, e.g. "2.8.0") because
+		// `activeConnection?.device.firmwareVersion` is briefly nil during
+		// reconnects before `handleDeviceMetadata` repopulates it — using only
+		// `connectedVersion` in that window collapses `myVersion` to "0.0.0"
+		// and incorrectly returns false for every capability check.
+		let storedVersion = UserDefaults.firmwareVersion
+		let myVersion: String
+		if let live = connectedVersion, !live.isEmpty {
+			myVersion = live
+		} else if storedVersion != "0.0.0" {
+			myVersion = storedVersion
+		} else {
+			// No firmware info at all — be permissive (matches the prior
+			// "first-launch" behavior; newer firmware is the common case).
+			return true
+		}
+
+		let comparison = forVersion.compare(myVersion, options: .numeric)
+		return comparison == .orderedAscending || comparison == .orderedSame
+	}
+
+	/// Whether the connected radio supports the v2 TAK port (ATAK_PLUGIN_V2 = 78)
+	/// with TAKPacketV2 + zstd dictionary compression via TAKPacket-SDK.
+	///
+	/// Firmware **>= 2.8.0** supports v2 (full typed CoT payloads — PLI, GeoChat,
+	/// DrawnShape, Marker, Route, Aircraft, Casevac, Emergency, Task — under
+	/// the 237 B LoRa MTU). Firmware **<= 2.7.x** falls back to the legacy
+	/// ATAK_PLUGIN port (72) with the original `TAKPacket` schema, which only
+	/// supports PLI and GeoChat (no shapes, markers, routes, etc.).
+	///
+	/// Returns `true` when the firmware version is unknown (radio not yet
+	/// handshook) since v2 is now the predominant firmware in the field.
+	var supportsTAKv2: Bool {
+		checkIsVersionSupported(forVersion: "2.8.0")
 	}
 }
 
