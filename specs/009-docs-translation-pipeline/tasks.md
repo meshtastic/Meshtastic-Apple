@@ -122,6 +122,8 @@
 - [x] T039 Add `TranslatedSearchEntry` model to `DocModels.swift` and translated search index storage to `DocBundle`
 - [x] T040 Add `generateSearchIndex(for:)` and `extractKeywords(from:)` to `DocTranslationService` — generates translated keyword index after prefetch
 - [x] T041 Update `DocBrowserView` search filtering to match against translated keywords from search index
+- [x] T042 Add `clearAll()` to `TranslationCache` and wire into "Clear App Data" button in `AppSettings.swift`
+- [x] T043 Move "Participate in Distributed Translations" toggle to its own section at the bottom of `AppSettings.swift`
 
 ---
 
@@ -168,9 +170,9 @@
 
 ## Notes
 
-- Feature is **fully implemented** (T001–T020, T023–T027, T028–T041 complete)
+- Feature is **fully implemented** (T001–T020, T023–T027, T028–T043 complete)
 - T021–T022 are out of scope (external `meshtastic/translations` repo)
-- 39 of 39 in-scope tasks complete
+- 41 of 41 in-scope tasks complete
 - The system forms a **crowd-sourced translation loop**:
   1. Community translations download from GitHub Pages CDN (`CommunityTranslationFetcher`)
   2. On-device translation as fallback for missing languages/versions
