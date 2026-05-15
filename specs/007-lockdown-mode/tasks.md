@@ -62,12 +62,12 @@ Must complete before any user-story phase begins.
 
 **Goal**: A connected node reporting `LOCKED` triggers a passphrase sheet; a correct passphrase unlocks the session.
 
-- [ ] T011 [US-1] Create `Meshtastic/Views/Lockdown/LockdownSheet.swift`:
+- [x] T011 [US-1] Create `Meshtastic/Views/Lockdown/LockdownSheet.swift`:
   - `struct LockdownSheet: View` that switches on `coordinator.state` and renders the appropriate sub-view
   - `LockedSheetContent` — `SecureField` for passphrase, optional `TextField`s for "Boots remaining" (UInt) and "Hours valid" (UInt), Submit button (disabled when passphrase empty / > 32 bytes / coordinator's `myNodeNum` not yet known)
   - On Submit, compute `validUntilEpoch = hoursValid > 0 ? UInt32(Date().timeIntervalSince1970) + hoursValid * 3600 : 0` and call `coordinator.submitPassphrase(...)`
-- [ ] T012 [US-1] In `Meshtastic/Views/ContentView.swift`, observe `@EnvironmentObject var lockdown: LockdownCoordinator`; present `LockdownSheet()` as a `.fullScreenCover` when `state` ∈ `{ .needsProvision, .locked, .unlockFailed, .unlockBackoff }` (and dismiss on `.unlocked` / `.lockNowAcknowledged` / `.none`). Use a derived binding so the cover can't be swipe-dismissed.
-- [ ] T013 [US-1] In `MeshtasticTests/Helpers/LockdownCoordinatorTests.swift`:
+- [x] T012 [US-1] In `Meshtastic/Views/ContentView.swift`, observe `@EnvironmentObject var lockdown: LockdownCoordinator`; present `LockdownSheet()` as a `.fullScreenCover` when `state` ∈ `{ .needsProvision, .locked, .unlockFailed, .unlockBackoff }` (and dismiss on `.unlocked` / `.lockNowAcknowledged` / `.none`). Use a derived binding so the cover can't be swipe-dismissed.
+- [x] T013 [US-1] In `MeshtasticTests/Helpers/LockdownCoordinatorTests.swift`:
   - `testHandle_locked_withoutCachedPassphrase_transitionsToLocked()`
   - `testHandle_locked_withCachedPassphrase_autoReplaysSilently()` (asserts `sender.sendLockdownAuth` was called and state stayed `.none`-ish, not `.locked`)
   - `testSubmitPassphrase_thenHandleUnlocked_transitionsToUnlocked_andSavesPassphrase()`
@@ -83,13 +83,13 @@ Must complete before any user-story phase begins.
 
 **Goal**: A connected node reporting `NEEDS_PROVISION` triggers a creation sheet; submission persists a passphrase and unlocks the session.
 
-- [ ] T014 [US-2] Extend `LockdownSheet.swift` (created in T011) with a `NeedsProvisionSheetContent` variant:
+- [x] T014 [US-2] Extend `LockdownSheet.swift` (created in T011) with a `NeedsProvisionSheetContent` variant:
   - Hint text: "First-time setup — pick a passphrase you can re-enter"
   - Same Submit semantics as `LockedSheetContent`, just different title/copy
-- [ ] T015 [US-2] In `MeshtasticTests/Helpers/LockdownCoordinatorTests.swift`:
+- [x] T015 [US-2] In `MeshtasticTests/Helpers/LockdownCoordinatorTests.swift`:
   - `testHandle_needsProvision_transitionsToNeedsProvision()`
   - `testSubmitPassphrase_fromNeedsProvision_sendsAuthAndCachesOnUnlocked()`
-- [ ] T016 [US-2] [P] Add `Localizable.xcstrings` entries for the provisioning UI: title, hint, button labels, validation message.
+- [x] T016 [US-2] [P] Add `Localizable.xcstrings` entries for the provisioning UI: title, hint, button labels, validation message.
 
 **Checkpoint**: quickstart §US-2 runs to completion.
 
@@ -99,10 +99,10 @@ Must complete before any user-story phase begins.
 
 **Goal**: An operator can re-lock an unlocked device with a single action from `Settings → Security`.
 
-- [ ] T017 [US-3] In `Meshtastic/Views/Settings/Config/SecurityConfig.swift`, add a "Lock Now" row gated on `coordinator.state == .unlocked`. Tapping shows a `.alert` confirming the action; the confirm action calls `coordinator.lockNow()`.
-- [ ] T018 [US-3] Extend `LockdownCoordinator` to handle the disconnect-as-ack race: in `onDisconnect()`, if `pendingLockNow == true`, transition to `.lockNowAcknowledged` (clearing the flag), then to `.none` after a short delay so the UI can show a confirmation toast before navigating away.
-- [ ] T019 [US-3] In `MeshtasticApp.swift` (or wherever `BluetoothManager` lives), watch `coordinator.state`; when it transitions to `.lockNowAcknowledged`, call `bluetoothManager.disconnect()`.
-- [ ] T020 [US-3] In `MeshtasticTests/Helpers/LockdownCoordinatorTests.swift`:
+- [x] T017 [US-3] In `Meshtastic/Views/Settings/Config/SecurityConfig.swift`, add a "Lock Now" row gated on `coordinator.state == .unlocked`. Tapping shows a `.alert` confirming the action; the confirm action calls `coordinator.lockNow()`.
+- [x] T018 [US-3] Extend `LockdownCoordinator` to handle the disconnect-as-ack race: in `onDisconnect()`, if `pendingLockNow == true`, transition to `.lockNowAcknowledged` (clearing the flag), then to `.none` after a short delay so the UI can show a confirmation toast before navigating away.
+- [x] T019 [US-3] In `MeshtasticApp.swift` (or wherever `BluetoothManager` lives), watch `coordinator.state`; when it transitions to `.lockNowAcknowledged`, call `bluetoothManager.disconnect()`.
+- [x] T020 [US-3] In `MeshtasticTests/Helpers/LockdownCoordinatorTests.swift`:
   - `testLockNow_setsPendingLockNow_andSendsEmptyPassphraseAuth()`
   - `testHandle_locked_withPendingLockNow_transitionsToLockNowAcknowledged()`
   - `testOnDisconnect_withPendingLockNow_transitionsToLockNowAcknowledged()`
@@ -117,11 +117,11 @@ Must complete before any user-story phase begins.
 
 > Auto-replay logic already lands in `LockdownCoordinator.handle(_:)` during T006. This phase adds the explicit tests, the cache-failure UX path, and the "Forget Stored Passphrase" affordance.
 
-- [ ] T021 [US-4] In `SecurityConfig.swift`, add a "Forget Stored Passphrase" row visible when a cache entry exists for the connected peripheral; calls `coordinator.forgetCachedPassphrase()` and shows a brief confirmation.
-- [ ] T022 [US-4] In `MeshtasticTests/Helpers/LockdownCoordinatorTests.swift`:
+- [x] T021 [US-4] In `SecurityConfig.swift`, add a "Forget Stored Passphrase" row visible when a cache entry exists for the connected peripheral; calls `coordinator.forgetCachedPassphrase()` and shows a brief confirmation.
+- [x] T022 [US-4] In `MeshtasticTests/Helpers/LockdownCoordinatorTests.swift`:
   - `testHandle_unlockFailed_withWasAutoAttempt_clearsCacheAndTransitionsToLocked()`
   - `testHandle_unlockFailed_withWasAutoAttempt_andBackoff_preservesCacheAndTransitionsToBackoff()`
-- [ ] T023 [US-4] In `MeshtasticTests/Helpers/LockdownPassphraseStoreTests.swift`:
+- [x] T023 [US-4] In `MeshtasticTests/Helpers/LockdownPassphraseStoreTests.swift`:
   - `testSaveThenRead_roundtripsPassphraseAndTTL()`
   - `testDelete_removesEntry()`
   - `testRead_returnsNilForUnknownPeripheral()`
@@ -134,7 +134,7 @@ Must complete before any user-story phase begins.
 
 **Goal**: Display `boots_remaining` and `valid_until_epoch` while unlocked.
 
-- [ ] T024 [US-5] In `SecurityConfig.swift`, when `coordinator.state` is `.unlocked(let boots, let until)`, render two rows:
+- [x] T024 [US-5] In `SecurityConfig.swift`, when `coordinator.state` is `.unlocked(let boots, let until)`, render two rows:
   - "Boots remaining: {boots}"
   - If `until == 0`: "No time limit"; else: "Expires: {Date(timeIntervalSince1970: TimeInterval(until)).formatted(date: .abbreviated, time: .shortened)}"
 
@@ -144,9 +144,9 @@ Must complete before any user-story phase begins.
 
 ## Phase 8: Cross-cutting (Banner suppression + privacy + design)
 
-- [ ] T025 [P] Gate action-prompting banners on `lockdown.sessionAuthorized` so they don't appear when the user can't act on them. Audit completed (see `analysis.md` G5): the only currently-existing banner of this kind is the **region-unset** block at `Meshtastic/Views/Connect/Connect.swift:195` (gated by `isUnsetRegion`). Update its outer `if isUnsetRegion {` to `if isUnsetRegion && lockdown.sessionAuthorized {` (or, equivalently, suppress the assignment at lines 359-362 when the coordinator state is anything other than `.unlocked`). If new banners are added later, follow the same pattern.
-- [ ] T026 [P] Privacy audit: `grep -rni "passphrase" Meshtastic/ | grep -v Localizable | grep -v "//.*passphrase"` — confirm no `Logger`/`os_log`/`print` site touches the passphrase value.
-- [ ] T027 [P] Design-standards pass: SF Symbols (`lock.fill`, `lock.open.fill`, `lock.trianglebadge.exclamationmark`), Dynamic Type, VoiceOver labels, Reduce Motion respect. Reviewed against `https://raw.githubusercontent.com/meshtastic/design/refs/heads/master/standards/meshtastic_design_standards_latest.md`.
+- [x] T025 [P] Gate action-prompting banners on `lockdown.sessionAuthorized` so they don't appear when the user can't act on them. Audit completed (see `analysis.md` G5): the only currently-existing banner of this kind is the **region-unset** block at `Meshtastic/Views/Connect/Connect.swift:195` (gated by `isUnsetRegion`). Update its outer `if isUnsetRegion {` to `if isUnsetRegion && lockdown.sessionAuthorized {` (or, equivalently, suppress the assignment at lines 359-362 when the coordinator state is anything other than `.unlocked`). If new banners are added later, follow the same pattern.
+- [x] T026 [P] Privacy audit: `grep -rni "passphrase" Meshtastic/ | grep -v Localizable | grep -v "//.*passphrase"` — confirm no `Logger`/`os_log`/`print` site touches the passphrase value.
+- [x] T027 [P] Design-standards pass: SF Symbols (`lock.fill`, `lock.open.fill`, `lock.trianglebadge.exclamationmark`), Dynamic Type, VoiceOver labels, Reduce Motion respect. Reviewed against `https://raw.githubusercontent.com/meshtastic/design/refs/heads/master/standards/meshtastic_design_standards_latest.md`.
 
 ---
 
