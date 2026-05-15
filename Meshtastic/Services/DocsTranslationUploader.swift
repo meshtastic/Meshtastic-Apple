@@ -24,14 +24,11 @@ actor DocsTranslationUploader {
     /// Docs site repo (read-only checks, no auth needed — public repo).
     private let docsRepo = "meshtastic/meshtastic"
 
-    /// This repo (write — commits translated files here).
-    private let appRepo = "meshtastic/Meshtastic-Apple"
+    /// Dedicated translations repo (write — commits translated files here).
+    private let translationsRepo = "meshtastic/apple-translations"
 
     /// Path prefix in the docs site where translations live.
     private let docsTranslationsPath = "docs/i18n"
-
-    /// Path prefix in this repo where translations are staged.
-    private let appTranslationsPath = "translations"
 
     private let apiBase = "https://api.github.com"
 
@@ -63,8 +60,8 @@ actor DocsTranslationUploader {
             return
         }
 
-        // 2. Check if this repo already has them staged
-        let alreadyStaged = await checkAppRepoHasTranslations(
+        // 2. Check if translations repo already has them
+        let alreadyStaged = await checkTranslationsRepoHasFiles(
             languageCode: languageCode,
             appVersion: appVersion
         )
@@ -88,10 +85,10 @@ actor DocsTranslationUploader {
                 continue
             }
 
-            let filePath = "\(appTranslationsPath)/\(languageCode)/\(appVersion)/\(page.section.rawValue)/\(page.id).md"
+            let filePath = "\(languageCode)/\(appVersion)/\(page.section.rawValue)/\(page.id).md"
             do {
                 try await commitFile(
-                    repo: appRepo,
+                    repo: translationsRepo,
                     path: filePath,
                     content: translatedMd,
                     message: "Add \(languageCode) translation for \(page.id) (v\(appVersion))",
@@ -116,9 +113,9 @@ actor DocsTranslationUploader {
         return await directoryExists(repo: docsRepo, path: path)
     }
 
-    private func checkAppRepoHasTranslations(languageCode: String, appVersion: String) async -> Bool {
-        let path = "\(appTranslationsPath)/\(languageCode)/\(appVersion)"
-        return await directoryExists(repo: appRepo, path: path)
+    private func checkTranslationsRepoHasFiles(languageCode: String, appVersion: String) async -> Bool {
+        let path = "\(languageCode)/\(appVersion)"
+        return await directoryExists(repo: translationsRepo, path: path)
     }
 
     private func directoryExists(repo: String, path: String) async -> Bool {
