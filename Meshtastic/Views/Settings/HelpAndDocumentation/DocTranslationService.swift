@@ -323,6 +323,9 @@ actor DocTranslationService {
 			if lastAvailabilityStatusByLanguage[targetLanguage] != statusDescription {
 				Logger.docs.info("DocTranslationService: Translation availability for \(targetLanguage, privacy: .public): \(statusDescription, privacy: .public)")
 				lastAvailabilityStatusByLanguage[targetLanguage] = statusDescription
+				if status == .supported {
+					Logger.docs.info("DocTranslationService: Language \(targetLanguage, privacy: .public) supported but not installed — download via Settings > General > Language & Region > Translation Languages")
+				}
 			}
 
 			if status == .installed {
@@ -337,7 +340,7 @@ actor DocTranslationService {
 					}
 				}
 			} else if status == .supported {
-				Logger.docs.info("DocTranslationService: Language \(targetLanguage, privacy: .public) supported but not installed — download via Settings > General > Language & Region > Translation Languages")
+				// Already logged once via dedup block above
 			}
 		}
 		#endif
@@ -435,14 +438,14 @@ actor DocTranslationService {
 			if lastAvailabilityStatusByLanguage[targetLanguage] != statusDescription {
 				Logger.docs.info("DocTranslationService: Translation availability for \(targetLanguage, privacy: .public): \(statusDescription, privacy: .public)")
 				lastAvailabilityStatusByLanguage[targetLanguage] = statusDescription
+				if status == .supported {
+					Logger.docs.info("DocTranslationService: Language \(targetLanguage, privacy: .public) supported but not installed — download via Settings > General > Language & Region > Translation Languages")
+				} else if status != .installed {
+					Logger.docs.info("DocTranslationService: Translation framework does not support \(targetLanguage, privacy: .public)")
+				}
 			}
 
 			guard status == .installed else {
-				if status == .supported {
-					Logger.docs.info("DocTranslationService: Language \(targetLanguage, privacy: .public) supported but not installed — download via Settings > General > Language & Region > Translation Languages")
-				} else {
-					Logger.docs.info("DocTranslationService: Translation framework does not support \(targetLanguage, privacy: .public)")
-				}
 				return nil
 			}
 
