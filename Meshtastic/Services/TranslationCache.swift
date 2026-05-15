@@ -81,6 +81,19 @@ actor TranslationCache {
 
 	// MARK: - Manifest I/O
 
+	/// Removes all cached translations and resets the manifest.
+	func clearAll() {
+		do {
+			if fileManager.fileExists(atPath: cacheRoot.path) {
+				try fileManager.removeItem(at: cacheRoot)
+			}
+			manifest = TranslationCacheManifest(entries: [])
+			Logger.docs.info("TranslationCache: Cleared all cached translations")
+		} catch {
+			Logger.docs.error("TranslationCache: Failed to clear cache: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
 	private func loadManifest() {
 		guard fileManager.fileExists(atPath: manifestURL.path) else {
 			manifest = TranslationCacheManifest(entries: [])

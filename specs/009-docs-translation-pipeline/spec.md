@@ -180,6 +180,8 @@ meshtastic/translations/
 - **FR-016**: `DocTranslationService` MUST generate a translated search index after prefetch completes, extracting keywords from translated markdown and combining them with English keywords.
 - **FR-017**: `CommunityTranslationFetcher` MUST download `search-index.json` and import it into `DocBundle` for localized search.
 - **FR-018**: `DocBrowserView` search MUST match against both English keywords and translated keywords from the search index.
+- **FR-019**: The "Clear App Data" button in App Settings MUST clear the translation cache (`TranslationCache.clearAll()`) and UI string cache alongside the database reset.
+- **FR-020**: The "Participate in Distributed Translations" toggle MUST be in its own "Documentation Translations" section at the bottom of the App Settings form, defaulting to on. When off, auto-upload is skipped silently.
 
 ## Assumptions
 

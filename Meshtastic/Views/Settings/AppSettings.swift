@@ -62,13 +62,6 @@ struct AppSettings: View {
 					Text("Provide anonymous usage statistics and crash reports.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
-					Toggle(isOn: $participateInDistributedTranslations) {
-						Label("Participate in Distributed Translations", systemImage: "globe")
-					}
-					.tint(.accentColor)
-					Text("Upload on-device translated documentation to help improve translations for the community.")
-						.foregroundStyle(.secondary)
-						.font(.caption)
 					if showAutoConnect {
 						Toggle(isOn: autoconnectBinding) {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
@@ -204,6 +197,10 @@ struct AppSettings: View {
 							Task {
 								try await accessoryManager.disconnect()
 								
+								/// Clear translation cache
+								await TranslationCache.shared.clearAll()
+								await DocTranslationService.shared.clearUIStringCache()
+								
 								/// Delete any database backups too
 								if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
 									url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
@@ -237,6 +234,15 @@ struct AppSettings: View {
 						Label("Reset App Settings", systemImage: "arrow.counterclockwise.circle")
 							.foregroundColor(.red)
 					}
+				}
+				Section(header: Text("Documentation Translations")) {
+					Toggle(isOn: $participateInDistributedTranslations) {
+						Label("Participate in Distributed Translations", systemImage: "globe")
+					}
+					.tint(.accentColor)
+					Text("Upload on-device translated documentation to help improve translations for the community. Translated docs are shared anonymously so other users get instant translations without needing on-device models.")
+						.foregroundStyle(.secondary)
+						.font(idiom == .phone ? .caption : .callout)
 				}
 			}
 		}
