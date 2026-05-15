@@ -148,6 +148,20 @@ struct DocPageView: View {
 			translatedTitle = nil
 			startTranslation()
 		}
+		.onReceive(NotificationCenter.default.publisher(for: DocTranslationService.languageBecameAvailableNotification)) { _ in
+			// Language pack just installed — retry title if it wasn't translated yet
+			if translatedTitle == nil {
+				let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+				guard languageCode != "en" else { return }
+				Task {
+					await DocTranslationService.shared.clearUIStringCache()
+					let title = await DocTranslationService.shared.translatedUIString(page.title, targetLanguage: languageCode)
+					if !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, title != page.title {
+						await MainActor.run { translatedTitle = title }
+					}
+				}
+			}
+		}
 	}
 
 	// MARK: - Translation Loading

@@ -30,6 +30,10 @@ actor DocTranslationService {
 
 	static let shared = DocTranslationService()
 
+	/// Posted when a language transitions from `supported` to `installed`, signalling that
+	/// UI labels which previously failed translation should be retried.
+	static let languageBecameAvailableNotification = Notification.Name("DocTranslationServiceLanguageBecameAvailable")
+
 	/// Avoids spamming identical availability logs for each translated text segment.
 	private var lastAvailabilityStatusByLanguage: [String: String] = [:]
 	private var inFlightHTMLByCacheKey: [String: Task<String?, Never>] = [:]
@@ -40,6 +44,10 @@ actor DocTranslationService {
 
 	private init() {}
 
+	/// Clears cached UI string translations so they can be retried.
+	func clearUIStringCache() {
+		uiStringCache.removeAll()
+	}
 	// MARK: - Public API
 
 	/// Returns translated HTML string for the given page, or nil if English should be used.
@@ -321,10 +329,17 @@ actor DocTranslationService {
 			let statusDescription = String(describing: status)
 
 			if lastAvailabilityStatusByLanguage[targetLanguage] != statusDescription {
+				let previousStatus = lastAvailabilityStatusByLanguage[targetLanguage]
 				Logger.docs.info("DocTranslationService: Translation availability for \(targetLanguage, privacy: .public): \(statusDescription, privacy: .public)")
 				lastAvailabilityStatusByLanguage[targetLanguage] = statusDescription
 				if status == .supported {
 					Logger.docs.info("DocTranslationService: Language \(targetLanguage, privacy: .public) supported but not installed — download via Settings > General > Language & Region > Translation Languages")
+				}
+				// Language pack just finished downloading — notify views to retry UI labels
+				if status == .installed && previousStatus != nil {
+					Task { @MainActor in
+						NotificationCenter.default.post(name: DocTranslationService.languageBecameAvailableNotification, object: nil)
+					}
 				}
 			}
 
@@ -436,12 +451,18 @@ actor DocTranslationService {
 			let status = await availability.status(from: source, to: target)
 			let statusDescription = String(describing: status)
 			if lastAvailabilityStatusByLanguage[targetLanguage] != statusDescription {
+				let previousStatus = lastAvailabilityStatusByLanguage[targetLanguage]
 				Logger.docs.info("DocTranslationService: Translation availability for \(targetLanguage, privacy: .public): \(statusDescription, privacy: .public)")
 				lastAvailabilityStatusByLanguage[targetLanguage] = statusDescription
 				if status == .supported {
 					Logger.docs.info("DocTranslationService: Language \(targetLanguage, privacy: .public) supported but not installed — download via Settings > General > Language & Region > Translation Languages")
 				} else if status != .installed {
 					Logger.docs.info("DocTranslationService: Translation framework does not support \(targetLanguage, privacy: .public)")
+				}
+				if status == .installed && previousStatus != nil {
+					Task { @MainActor in
+						NotificationCenter.default.post(name: DocTranslationService.languageBecameAvailableNotification, object: nil)
+					}
 				}
 			}
 

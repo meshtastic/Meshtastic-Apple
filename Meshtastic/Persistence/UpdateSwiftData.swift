@@ -262,10 +262,10 @@ extension MeshPackets {
 					newNode.channel = Int32(packet.channel)
 				}
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
-					if nodeInfoMessage.hasHopsAway {
-						newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
-					}
 					newNode.favorite = nodeInfoMessage.isFavorite
+				}
+				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+					newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
 				}
 				
 				if let newUserMessage = try? User(serializedBytes: packet.decoded.payload) {
@@ -375,8 +375,7 @@ extension MeshPackets {
 				}
 				
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
-					
-					fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
+
 					fetchedNode[0].favorite = nodeInfoMessage.isFavorite
 					if nodeInfoMessage.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
