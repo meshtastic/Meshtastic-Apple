@@ -47,6 +47,19 @@ final class LockdownCoordinator: ObservableObject {
 		return false
 	}
 
+	/// `true` when the current state requires the user to act before they can
+	/// reach normal app surface. Non-lockdown firmware leaves state at .none,
+	/// which returns false here. Views use this to suppress action-prompting
+	/// banners that target config the user cannot reach. See FR-013.
+	var isBlockingSession: Bool {
+		switch state {
+		case .needsProvision, .locked, .unlockFailed, .unlockBackoff:
+			return true
+		case .none, .unlocked, .lockNowAcknowledged:
+			return false
+		}
+	}
+
 	// MARK: Collaborators
 
 	private weak var sender: LockdownSender?

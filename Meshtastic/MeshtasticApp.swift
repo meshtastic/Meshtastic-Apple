@@ -200,6 +200,14 @@ struct MeshtasticAppleApp: App {
 					]
 				)
 			}
+			.onChange(of: lockdownCoordinator.state) { _, newState in
+				// US-3: when the coordinator resolves to .lockNowAcknowledged
+				// (either via inbound LOCKED status or a BLE disconnect race),
+				// tear down the connection so the next reconnect re-auths.
+				if case .lockNowAcknowledged = newState {
+					Task { try? await accessoryManager.closeConnection() }
+				}
+			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
 			accessoryManager.isInBackground = (newScenePhase == .background)

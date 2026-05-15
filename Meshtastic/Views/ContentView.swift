@@ -15,14 +15,7 @@ struct ContentView: View {
 	/// (provision a passphrase, unlock, or wait out a backoff). The sheet is
 	/// non-dismissable; it only closes when the coordinator transitions to a
 	/// non-blocking state (.none, .unlocked, .lockNowAcknowledged).
-	private var isLockdownGateActive: Bool {
-		switch lockdown.state {
-		case .needsProvision, .locked, .unlockFailed, .unlockBackoff:
-			return true
-		case .none, .unlocked, .lockNowAcknowledged:
-			return false
-		}
-	}
+	private var isLockdownGateActive: Bool { lockdown.isBlockingSession }
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
