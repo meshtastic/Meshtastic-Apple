@@ -149,6 +149,7 @@ private struct PassphraseEntryContent: View {
 						.font(.caption)
 						.monospacedDigit()
 						.foregroundStyle(isPassphraseValid ? Color.secondary : Color.red)
+						.accessibilityLabel(Text("Passphrase length \(passphraseByteCount) of 32 bytes"))
 				}
 			}
 
@@ -187,6 +188,7 @@ private struct PassphraseEntryContent: View {
 					}
 				}
 				.disabled(!isSubmitEnabled)
+				.accessibilityHint(Text(isSubmitEnabled ? "" : "Enter a passphrase between 1 and 32 bytes."))
 				if !coordinatorReady {
 					Text("lockdown.connecting")
 						.font(.caption)
@@ -196,6 +198,7 @@ private struct PassphraseEntryContent: View {
 		}
 		.navigationTitle(titleKey)
 		.navigationBarTitleDisplayMode(.inline)
+		.dynamicTypeSize(...DynamicTypeSize.accessibility3)
 		.onAppear { passphraseFocused = true }
 		.onDisappear { passphrase = "" }
 	}
