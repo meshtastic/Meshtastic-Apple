@@ -12,11 +12,11 @@ import OSLog
 // MARK: - DocsTranslationUploader
 
 /// After all pages for a language are translated, automatically commits the translated
-/// markdown files to the `translations/` folder in Meshtastic-Apple. A GitHub Action
+/// markdown files to `meshtastic/translations`. A GitHub Action in that repo
 /// then picks them up and opens a PR on the docs site.
 ///
-/// Read-only checks against the public docs site repo need no auth.
-/// Write operations target Meshtastic-Apple using a fine-grained token from Secrets.json.
+/// Read-only checks against public repos need no auth.
+/// Write operations target meshtastic/translations using a fine-grained token from Secrets.json.
 actor DocsTranslationUploader {
 
     static let shared = DocsTranslationUploader()
@@ -25,15 +25,15 @@ actor DocsTranslationUploader {
     private let docsRepo = "meshtastic/meshtastic"
 
     /// Dedicated translations repo (write — commits translated files here).
-    private let translationsRepo = "meshtastic/apple-translations"
+    private let translationsRepo = "meshtastic/translations"
 
     /// Path prefix in the docs site where translations live.
     private let docsTranslationsPath = "docs/i18n"
 
     private let apiBase = "https://api.github.com"
 
-    /// Tracks version+language combos already uploaded this session.
-    private var uploadedThisSession: Set<String> = []
+    /// Tracks individual files already uploaded this session (per-file retry on failure).
+    private var uploadedFilesThisSession: Set<String> = []
 
     private init() {}
 
@@ -48,44 +48,40 @@ actor DocsTranslationUploader {
         let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
         let key = "\(languageCode)/\(appVersion)"
 
-        guard !uploadedThisSession.contains(key) else { return }
-
         // 1. Check if docs site already has these translations (no auth needed)
         let alreadyOnDocsSite = await checkDocsRepoHasTranslations(
             languageCode: languageCode,
             appVersion: appVersion
         )
-        if alreadyOnDocsSite {
-            uploadedThisSession.insert(key)
-            return
-        }
+        if alreadyOnDocsSite { return }
 
         // 2. Check if translations repo already has them
         let alreadyStaged = await checkTranslationsRepoHasFiles(
             languageCode: languageCode,
             appVersion: appVersion
         )
-        if alreadyStaged {
-            uploadedThisSession.insert(key)
-            return
-        }
+        if alreadyStaged { return }
 
-        // 3. Get token for writing to this repo
+        // 3. Get token for writing
         guard let token = loadGitHubToken() else {
             Logger.docs.info("DocsTranslationUploader: No GitHub token configured — skipping auto-upload")
             return
         }
 
-        // 4. Commit translated files to this repo
+        // 4. Commit translated files (per-file tracking allows retry of failures)
         Logger.docs.info("DocsTranslationUploader: Uploading \(languageCode, privacy: .public) translations for v\(appVersion, privacy: .public)")
 
         var uploadedCount = 0
         for page in pages {
+            let filePath = "\(languageCode)/\(appVersion)/\(page.section.rawValue)/\(page.id).md"
+
+            // Skip files already uploaded this session
+            guard !uploadedFilesThisSession.contains(filePath) else { continue }
+
             guard let translatedMd = await getTranslatedMarkdown(for: page, languageCode: languageCode) else {
                 continue
             }
 
-            let filePath = "\(languageCode)/\(appVersion)/\(page.section.rawValue)/\(page.id).md"
             do {
                 try await commitFile(
                     repo: translationsRepo,
@@ -94,6 +90,7 @@ actor DocsTranslationUploader {
                     message: "Add \(languageCode) translation for \(page.id) (v\(appVersion))",
                     token: token
                 )
+                uploadedFilesThisSession.insert(filePath)
                 uploadedCount += 1
             } catch {
                 Logger.docs.error("DocsTranslationUploader: Failed to upload \(page.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
@@ -103,7 +100,6 @@ actor DocsTranslationUploader {
         if uploadedCount > 0 {
             Logger.docs.info("DocsTranslationUploader: Committed \(uploadedCount, privacy: .public) files for \(key, privacy: .public)")
         }
-        uploadedThisSession.insert(key)
     }
 
     // MARK: - Read-Only Checks (No Auth)
