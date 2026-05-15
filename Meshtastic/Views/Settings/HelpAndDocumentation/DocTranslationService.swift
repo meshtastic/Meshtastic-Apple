@@ -32,7 +32,7 @@ actor DocTranslationService {
 
 	/// Posted when a language transitions from `supported` to `installed`, signalling that
 	/// UI labels which previously failed translation should be retried.
-	static let languageBecameAvailableNotification = Notification.Name("DocTranslationServiceLanguageBecameAvailable")
+	static let languageBecameAvailableNotification = Foundation.Notification.Name("DocTranslationServiceLanguageBecameAvailable")
 
 	/// Avoids spamming identical availability logs for each translated text segment.
 	private var lastAvailabilityStatusByLanguage: [String: String] = [:]
@@ -51,13 +51,18 @@ actor DocTranslationService {
 	// MARK: - Public API
 
 	/// Returns translated HTML string for the given page, or nil if English should be used.
+	/// Translates the markdown source, caches the translated `.md`, and converts to HTML.
 	func translatedHTMLString(for page: DocPage) async -> String? {
 		guard !isEnglish() else { return nil }
 
 		let languageCode = currentLanguageCode()
-		let sourceFile = "\(page.section.rawValue)/\(page.id).html"
 
-		guard let sourceHash = TranslationCache.sha256Hash(ofFileAt: page.htmlURL) else {
+		// Prefer markdown source; fall back to HTML if not bundled
+		let useMarkdown = page.markdownURL != nil
+		let sourceURL = page.markdownURL ?? page.htmlURL
+		let sourceFile = "\(page.section.rawValue)/\(page.id).\(useMarkdown ? "md" : "html")"
+
+		guard let sourceHash = TranslationCache.sha256Hash(ofFileAt: sourceURL) else {
 			Logger.docs.warning("DocTranslationService: Cannot hash source for \(page.id, privacy: .public)")
 			return nil
 		}
@@ -68,33 +73,65 @@ actor DocTranslationService {
 		}
 
 		let task = Task<String?, Never> {
-			// Check cache
-			if let cachedMdURL = await TranslationCache.shared.retrieve(
+			// Check cache for translated markdown
+			if let cachedURL = await TranslationCache.shared.retrieve(
 				sourceFile: sourceFile,
 				languageCode: languageCode,
 				currentHash: sourceHash
 			) {
 				Logger.docs.debug("DocTranslationService: Cache hit for \(page.id, privacy: .public) [\(languageCode, privacy: .public)]")
-				if let cachedHTML = try? String(contentsOf: cachedMdURL, encoding: .utf8) {
-					return cachedHTML
+				if let cachedContent = try? String(contentsOf: cachedURL, encoding: .utf8) {
+					if useMarkdown {
+						// Convert cached translated markdown to HTML
+						let htmlBody = MarkdownConverter.convert(cachedContent)
+						return MarkdownConverter.wrapInHTMLDocument(
+							htmlBody, title: page.title, pageId: page.id,
+							languageCode: languageCode
+						)
+					}
+					return cachedContent
 				}
 			}
 
 			Logger.docs.info("DocTranslationService: Translating \(page.id, privacy: .public) to \(languageCode, privacy: .public)")
 
-			guard let translatedHTML = await self.translate(page: page, targetLanguage: languageCode) else {
-				Logger.docs.warning("DocTranslationService: Translation failed for \(page.id, privacy: .public) [\(languageCode, privacy: .public)] — falling back to English")
-				return nil
+			if useMarkdown {
+				// Translate the markdown source
+				guard let translatedMd = await self.translateMarkdown(page: page, targetLanguage: languageCode) else {
+					Logger.docs.warning("DocTranslationService: Translation failed for \(page.id, privacy: .public) [\(languageCode, privacy: .public)] — falling back to English")
+					return nil
+				}
+
+				// Cache the translated markdown
+				await TranslationCache.shared.store(
+					translatedMarkdown: translatedMd,
+					sourceFile: sourceFile,
+					languageCode: languageCode,
+					contentHash: sourceHash
+				)
+
+				// Convert to HTML
+				let htmlBody = MarkdownConverter.convert(translatedMd)
+				return MarkdownConverter.wrapInHTMLDocument(
+					htmlBody, title: page.title, pageId: page.id,
+					languageCode: languageCode
+				)
+			} else {
+				// Legacy: translate HTML directly
+				guard let translatedHTML = await self.translate(page: page, targetLanguage: languageCode) else {
+					Logger.docs.warning("DocTranslationService: Translation failed for \(page.id, privacy: .public) [\(languageCode, privacy: .public)] — falling back to English")
+					return nil
+				}
+
+				await TranslationCache.shared.store(
+					translatedMarkdown: translatedHTML,
+					sourceFile: sourceFile,
+					languageCode: languageCode,
+					contentHash: sourceHash
+				)
+
+				return translatedHTML
 			}
-
-			await TranslationCache.shared.store(
-				translatedMarkdown: translatedHTML,
-				sourceFile: sourceFile,
-				languageCode: languageCode,
-				contentHash: sourceHash
-			)
-
-			return translatedHTML
 		}
 
 		inFlightHTMLByCacheKey[cacheKey] = task
@@ -290,6 +327,49 @@ actor DocTranslationService {
 	}
 
 	// MARK: - Translation Engine
+
+	/// Translates a markdown source file, preserving non-translatable segments.
+	private func translateMarkdown(page: DocPage, targetLanguage: String) async -> String? {
+		guard let mdURL = page.markdownURL,
+			  let mdContent = try? String(contentsOf: mdURL, encoding: .utf8) else {
+			return nil
+		}
+
+		let cleaned = MarkdownConverter.stripFrontMatter(mdContent)
+		let segments = segmentMarkdown(cleaned)
+		var translatedSegments: [String] = []
+
+		for segment in segments {
+			if segment.translatable && !segment.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+				if let translated = await translateText(segment.text, targetLanguage: targetLanguage) {
+					translatedSegments.append(translated)
+				} else {
+					translatedSegments.append(segment.text) // fallback to English
+				}
+			} else {
+				translatedSegments.append(segment.text)
+			}
+		}
+
+		return translatedSegments.joined()
+	}
+
+	/// Translates a single text string using the best available engine.
+	private func translateText(_ text: String, targetLanguage: String) async -> String? {
+		#if !targetEnvironment(macCatalyst)
+		if #available(iOS 26, *) {
+			if let viaTranslation = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
+				return viaTranslation
+			}
+		}
+		#endif
+		#if canImport(FoundationModels)
+		if #available(iOS 26, *) {
+			return await translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
+		}
+		#endif
+		return nil
+	}
 
 	private func translateUIText(_ text: String, targetLanguage: String) async -> String? {
 		#if !targetEnvironment(macCatalyst)

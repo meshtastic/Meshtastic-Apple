@@ -74,6 +74,15 @@ struct DocPage: Identifiable, Hashable {
 	let charCount: Int
 	let navOrder: Int
 
+	/// URL to the bundled English markdown source file.
+	var markdownURL: URL? {
+		Bundle.main.url(
+			forResource: id,
+			withExtension: "md",
+			subdirectory: "docs/markdown/\(section.rawValue)"
+		)
+	}
+
 	/// SF Symbol name for this page in the table of contents.
 	var systemImage: String {
 		switch id {
