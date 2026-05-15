@@ -73,7 +73,7 @@ actor DocsTranslationUploader {
 
         var uploadedCount = 0
         for page in pages {
-            let filePath = "\(languageCode)/\(appVersion)/\(page.section.rawValue)/\(page.id).md"
+            let filePath = "apple-apps/\(languageCode)/\(appVersion)/\(page.section.rawValue)/\(page.id).md"
 
             // Skip files already uploaded this session
             guard !uploadedFilesThisSession.contains(filePath) else { continue }
@@ -110,7 +110,7 @@ actor DocsTranslationUploader {
     }
 
     private func checkTranslationsRepoHasFiles(languageCode: String, appVersion: String) async -> Bool {
-        let path = "\(languageCode)/\(appVersion)"
+        let path = "apple-apps/\(languageCode)/\(appVersion)"
         return await directoryExists(repo: translationsRepo, path: path)
     }
 
