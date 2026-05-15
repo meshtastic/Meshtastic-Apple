@@ -5,19 +5,19 @@
 
 ## Summary
 
-Restructure on-device doc translation to operate on markdown source files (not HTML), convert to HTML via an enhanced on-device `MarkdownConverter`, and automatically commit translated `.md` files to `meshtastic/translations` (under `apple-apps/`) after background prefetch completes. Read-only checks against public repos need no auth; writes use a fine-grained PAT from Secrets.json.
+Restructure on-device doc translation to operate on markdown source files (not HTML), convert to HTML via an on-device `MarkdownConverter`, download existing community translations from a GitHub Pages CDN feed before falling back to on-device translation, and automatically commit translated `.md` files + `manifest.json` + `nav-labels.json` to `meshtastic/translations` (under `apple-apps/`) after background prefetch completes. The result is a crowd-sourced translation loop: each device contributes translations that benefit all future users via the CDN feed.
 
 ## Technical Context
 
 **Language/Version**: Swift (latest stable), Swift Concurrency (`async/await`, actors)  
-**Primary Dependencies**: SwiftUI, Translation framework (iOS 26+), FoundationModels (iOS 26+), WKWebView, URLSession (GitHub API)  
-**Storage**: Application Support (TranslationCache — file-based LRU), GitHub API (meshtastic/translations repo)  
+**Primary Dependencies**: SwiftUI, Translation framework (iOS 26+), FoundationModels (iOS 26+), WKWebView, URLSession (GitHub API + GitHub Pages CDN)  
+**Storage**: Application Support (TranslationCache — file-based LRU), GitHub API (meshtastic/translations repo), GitHub Pages CDN (index.json feed)  
 **Testing**: Swift Testing (`@Suite`, `@Test`, `#expect`, `#require`)  
 **Target Platform**: iOS 16+, iPadOS 16+, macOS (Catalyst). Translation features require iOS 26+.  
 **Project Type**: Mobile app (SwiftUI)  
 **Performance Goals**: Translation + upload must not impact UI responsiveness (background priority)  
-**Constraints**: 60 req/hour unauthenticated GitHub API limit; upload at `.background` priority; no user interaction required  
-**Scale/Scope**: 27 doc pages × N languages; per-file upload tracking
+**Constraints**: 60 req/hour unauthenticated GitHub API limit; upload at `.background` priority; no user interaction required; CDN downloads have no practical rate limit  
+**Scale/Scope**: 27 doc pages × N languages; per-file upload tracking; crowd-sourced loop
 
 ## Constitution Check
 
@@ -55,29 +55,30 @@ specs/009-docs-translation-pipeline/
 ```text
 Meshtastic/
 ├── Services/
-│   ├── MarkdownConverter.swift          # GFM markdown→HTML converter
-│   ├── DocsTranslationUploader.swift    # Auto-upload to meshtastic/translations
-│   ├── TranslationCache.swift           # Existing file-based LRU cache
-│   └── FoundationModelAvailability.swift # Existing FM backoff gate
+│   ├── MarkdownConverter.swift              # GFM markdown→HTML converter
+│   ├── DocsTranslationUploader.swift        # Auto-upload to meshtastic/translations (pages + manifest + nav-labels)
+│   ├── CommunityTranslationFetcher.swift    # Downloads community translations from GitHub Pages CDN feed
+│   ├── TranslationCache.swift               # Existing file-based LRU cache
+│   └── FoundationModelAvailability.swift    # Existing FM backoff gate
 ├── Views/Settings/HelpAndDocumentation/
-│   ├── DocTranslationService.swift      # Updated: markdown translation + upload trigger
-│   ├── DocModels.swift                  # Updated: DocPage.markdownURL
-│   ├── DocPageView.swift                # Existing (no changes for this feature)
-│   └── DocBrowserView.swift             # Existing (no changes for this feature)
+│   ├── DocTranslationService.swift          # Updated: markdown translation + community fetch + upload trigger
+│   ├── DocModels.swift                      # Updated: DocPage.markdownURL
+│   ├── DocPageView.swift                    # Existing (no changes for this feature)
+│   └── DocBrowserView.swift                 # Existing (no changes for this feature)
 ├── Resources/docs/
-│   ├── markdown/                        # Bundled English .md source files
+│   ├── markdown/                            # Bundled English .md source files
 │   │   ├── user/*.md
 │   │   └── developer/*.md
-│   ├── user/*.html                      # Existing built HTML
+│   ├── user/*.html                          # Existing built HTML
 │   ├── developer/*.html
 │   └── index.json
 scripts/
-└── build-docs.sh                        # Updated: copies .md files into bundle
+└── build-docs.sh                            # Updated: copies .md files into bundle
 ci_scripts/
-└── ci_pre_xcodebuild.sh                 # Updated: injects TRANSLATIONS_GITHUB_TOKEN
+└── ci_pre_xcodebuild.sh                     # Updated: injects TRANSLATIONS_GITHUB_TOKEN
 
 MeshtasticTests/
-└── MarkdownConverterTests.swift         # New: tests for markdown→HTML conversion
+└── MarkdownConverterTests.swift             # New: tests for markdown→HTML conversion
 ```
 
 **Structure Decision**: Services in `Meshtastic/Services/`, view-layer orchestration in `Views/Settings/HelpAndDocumentation/`, bundled resources in `Resources/docs/markdown/`. No new directories beyond what's already created.

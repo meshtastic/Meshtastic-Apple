@@ -31,6 +31,7 @@ struct AppSettings: View {
 	@AppStorage(NodeListPreferences.shouldShowChannel.rawValue) private var shouldShowChannel = true
 	@AppStorage(NodeListPreferences.shouldShowHops.rawValue) private var shouldShowHops = true
 	@AppStorage(NodeListPreferences.shouldShowSignal.rawValue) private var shouldShowSignal = true
+	@AppStorage("participateInDistributedTranslations") private var participateInDistributedTranslations = true
 
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
@@ -59,6 +60,13 @@ struct AppSettings: View {
 					}
 					.tint(.accentColor)
 					Text("Provide anonymous usage statistics and crash reports.")
+						.foregroundStyle(.secondary)
+						.font(.caption)
+					Toggle(isOn: $participateInDistributedTranslations) {
+						Label("Participate in Distributed Translations", systemImage: "globe")
+					}
+					.tint(.accentColor)
+					Text("Upload on-device translated documentation to help improve translations for the community.")
 						.foregroundStyle(.secondary)
 						.font(.caption)
 					if showAutoConnect {

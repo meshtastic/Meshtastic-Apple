@@ -63,6 +63,15 @@ struct KeywordIndexEntry: Codable {
 	let charCount: Int
 }
 
+// MARK: - TranslatedSearchEntry
+
+struct TranslatedSearchEntry: Codable {
+	let id: String
+	let section: String
+	let title: String
+	let keywords: [String]
+}
+
 // MARK: - DocPage
 
 struct DocPage: Identifiable, Hashable {
@@ -137,6 +146,9 @@ final class DocBundle {
 	static let shared = DocBundle()
 
 	private(set) var pages: [DocPage] = []
+
+	/// Translated keywords + titles keyed by language code, loaded from community or generated on-device.
+	private(set) var translatedSearchIndices: [String: [TranslatedSearchEntry]] = [:]
 
 	private init() {
 		// Lazily populated by load()
@@ -231,5 +243,16 @@ final class DocBundle {
 			}
 		}
 		return selected
+	}
+
+	/// Import a translated search index for a language.
+	func importSearchIndex(_ entries: [TranslatedSearchEntry], for languageCode: String) {
+		translatedSearchIndices[languageCode] = entries
+		Logger.docs.info("DocBundle: Imported \(entries.count) translated search entries for \(languageCode, privacy: .public)")
+	}
+
+	/// Export the translated search index for a language.
+	func searchIndex(for languageCode: String) -> [TranslatedSearchEntry]? {
+		translatedSearchIndices[languageCode]
 	}
 }

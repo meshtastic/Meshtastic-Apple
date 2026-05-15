@@ -11,6 +11,7 @@ import StoreKit
 import OSLog
 import SwiftDraw
 import UniformTypeIdentifiers
+import WebKit
 
 // 1. THE WRAPPER
 // Caches the resolved hardware so SwiftData re-evaluations don't flash the
@@ -182,13 +183,7 @@ private struct FirmwareContentView: View {
 			}
 			if let last = stables.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
-					ScrollView {
-						let processed = notes.replacingOccurrences(of: "\n", with: "\n\n")
-						Text((try? AttributedString(markdown: processed, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly))) ?? AttributedString(processed))
-							.font(.callout)
-							.padding()
-					}
-					.navigationTitle("\(last.versionId)")
+					FirmwareReleaseNotesView(markdown: notes, versionId: last.versionId)
 				}
 			}
 		case .alpha:
@@ -200,13 +195,7 @@ private struct FirmwareContentView: View {
 			}
 			if let last = alphas.last, let notes = last.releaseNotes {
 				NavigationLink("Release Notes") {
-					ScrollView {
-						let processed = notes.replacingOccurrences(of: "\n", with: "\n\n")
-						Text((try? AttributedString(markdown: processed, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly))) ?? AttributedString(processed))
-							.font(.callout)
-							.padding()
-					}
-					.navigationTitle("\(last.versionId)")
+					FirmwareReleaseNotesView(markdown: notes, versionId: last.versionId)
 				}
 			}
 		case .downloaded:
@@ -486,5 +475,111 @@ private struct FirmwareRow: View {
 		case .otaZip:
 			return Image("custom.bluetooth")
 		}
+	}
+}
+
+// MARK: - FirmwareReleaseNotesView
+
+/// Renders GitHub-flavoured markdown release notes using swift-markdown + WKWebView.
+struct FirmwareReleaseNotesView: View {
+	let markdown: String
+	let versionId: String
+
+	var body: some View {
+		FirmwareReleaseNotesWebView(html: renderedHTML)
+			.navigationTitle(versionId)
+			.navigationBarTitleDisplayMode(.inline)
+	}
+
+	private var renderedHTML: String {
+		let bodyHTML = MarkdownConverter.convert(markdown)
+		return """
+		<!DOCTYPE html>
+		<html>
+		<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<style>
+		:root { color-scheme: light dark; }
+		body {
+			font: -apple-system-body;
+			font-size: 15px;
+			padding: 16px;
+			margin: 0;
+			color: var(--text);
+			background: var(--bg);
+			--text: #1c1c1e;
+			--bg: #ffffff;
+			--code-bg: #f2f2f7;
+			--border: #c6c6c8;
+			--link: #007aff;
+		}
+		@media (prefers-color-scheme: dark) {
+			:root {
+				--text: #f2f2f7;
+				--bg: #1c1c1e;
+				--code-bg: #2c2c2e;
+				--border: #48484a;
+				--link: #0a84ff;
+			}
+		}
+		a { color: var(--link); }
+		h1 { font-size: 1.4em; }
+		h2 { font-size: 1.2em; }
+		h3 { font-size: 1.1em; }
+		code {
+			background: var(--code-bg);
+			padding: 2px 5px;
+			border-radius: 4px;
+			font-size: 0.9em;
+		}
+		pre { background: var(--code-bg); padding: 12px; border-radius: 8px; overflow-x: auto; }
+		pre code { background: none; padding: 0; }
+		table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+		th, td { border: 1px solid var(--border); padding: 8px; text-align: left; }
+		th { background: var(--code-bg); font-weight: 600; }
+		blockquote { border-left: 3px solid var(--border); margin: 12px 0; padding-left: 12px; color: var(--text); opacity: 0.8; }
+		ul, ol { padding-left: 24px; }
+		li { margin: 4px 0; }
+		img { max-width: 100%; }
+		.warning-callout, .important-callout, .tips-callout {
+			border-radius: 8px;
+			padding: 12px 16px;
+			margin: 12px 0;
+		}
+		.warning-callout {
+			background: rgba(255, 59, 48, 0.12);
+			border-left: 4px solid #ff3b30;
+		}
+		.important-callout {
+			background: rgba(175, 82, 222, 0.12);
+			border-left: 4px solid #af52de;
+		}
+		.tips-callout {
+			background: rgba(0, 122, 255, 0.12);
+			border-left: 4px solid #007aff;
+		}
+		</style>
+		</head>
+		<body>\(bodyHTML)</body>
+		</html>
+		"""
+	}
+}
+
+private struct FirmwareReleaseNotesWebView: UIViewRepresentable {
+	let html: String
+
+	func makeUIView(context: Context) -> WKWebView {
+		let config = WKWebViewConfiguration()
+		let webView = WKWebView(frame: .zero, configuration: config)
+		webView.isOpaque = false
+		webView.backgroundColor = .clear
+		webView.scrollView.backgroundColor = .clear
+		return webView
+	}
+
+	func updateUIView(_ webView: WKWebView, context: Context) {
+		webView.loadHTMLString(html, baseURL: nil)
 	}
 }

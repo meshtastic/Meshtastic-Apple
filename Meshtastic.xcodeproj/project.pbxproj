@@ -174,7 +174,11 @@
         AA003DOC0000002000000004 /* AIDocAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000004 /* AIDocAssistantView.swift */; };
         AA003DOC0000002000000006 /* DocTranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000006 /* DocTranslationService.swift */; };
         AA003DOC0000002000000007 /* TranslationCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000007 /* TranslationCache.swift */; };
-		AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003FM00000001000000001 /* FoundationModelAvailability.swift */; };
+        AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003FM00000001000000001 /* FoundationModelAvailability.swift */; };
+        AA009MDC0000002000000001 /* MarkdownConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA009MDC0000001000000001 /* MarkdownConverter.swift */; };
+        AA009DTU0000002000000001 /* DocsTranslationUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA009DTU0000001000000001 /* DocsTranslationUploader.swift */; };
+        AA009CTF0000002000000001 /* CommunityTranslationFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA009CTF0000001000000001 /* CommunityTranslationFetcher.swift */; };
+        AA009MCT0000002000000001 /* MarkdownConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA009MCT0000001000000001 /* MarkdownConverterTests.swift */; };
         AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000008 /* DocTranslationTests.swift */; };
         AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000005 /* DocBundleTests.swift */; };
         AA003DOC0000004000000001 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000005000000001 /* docs */; };
@@ -703,7 +707,11 @@
         AA003DOC0000001000000004 /* AIDocAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIDocAssistantView.swift; sourceTree = "<group>"; };
         AA003DOC0000001000000006 /* DocTranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationService.swift; sourceTree = "<group>"; };
         AA003DOC0000001000000007 /* TranslationCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TranslationCache.swift; path = Meshtastic/Services/TranslationCache.swift; sourceTree = "<group>"; };
-		AA003FM00000001000000001 /* FoundationModelAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FoundationModelAvailability.swift; path = Meshtastic/Services/FoundationModelAvailability.swift; sourceTree = "<group>"; };
+        AA003FM00000001000000001 /* FoundationModelAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FoundationModelAvailability.swift; path = Meshtastic/Services/FoundationModelAvailability.swift; sourceTree = "<group>"; };
+        AA009MDC0000001000000001 /* MarkdownConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MarkdownConverter.swift; path = Meshtastic/Services/MarkdownConverter.swift; sourceTree = "<group>"; };
+        AA009DTU0000001000000001 /* DocsTranslationUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DocsTranslationUploader.swift; path = Meshtastic/Services/DocsTranslationUploader.swift; sourceTree = "<group>"; };
+        AA009CTF0000001000000001 /* CommunityTranslationFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CommunityTranslationFetcher.swift; path = Meshtastic/Services/CommunityTranslationFetcher.swift; sourceTree = "<group>"; };
+        AA009MCT0000001000000001 /* MarkdownConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownConverterTests.swift; sourceTree = "<group>"; };
         AA003DOC0000001000000008 /* DocTranslationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationTests.swift; sourceTree = "<group>"; };
         AA003DOC0000001000000005 /* DocBundleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocBundleTests.swift; sourceTree = "<group>"; };
         AA003DOC0000005000000001 /* docs */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
@@ -1152,6 +1160,7 @@
                 102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */,
                 102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */,
                 2315D1A82EEF2ED400E0FAE7 /* SwiftDraw in Frameworks */,
+                AA009SMD0000000000000003 /* Markdown in Frameworks */,
                 DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
                 10794B232F8713CB000CA23F /* MeshtasticTAK in Frameworks */,
                 2388EC382EDF88E900F6F982 /* NordicDFU in Frameworks */,
@@ -1514,6 +1523,8 @@
                 DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */,
                 DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */,
                 DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */,
+                AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
+                AA003DOC0000001000000008 /* DocTranslationTests.swift */,
             );
             path = MeshtasticTests;
             sourceTree = "<group>";
@@ -2313,6 +2324,7 @@
                 10D109F32E2047D600536CE6 /* DatadogTrace */,
                 2388EC372EDF88E900F6F982 /* NordicDFU */,
                 2315D1A72EEF2ED400E0FAE7 /* SwiftDraw */,
+                AA009SMD0000000000000002 /* Markdown */,
             );
             productName = MeshtasticClient;
             productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
@@ -2392,6 +2404,7 @@
                 2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
                 2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */,
                 DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+                AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */,
             );
             productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
             projectDirPath = "";
@@ -2503,6 +2516,7 @@
                 1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */,
                 AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */,
                 AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */,
+                AA009MCT0000002000000001 /* MarkdownConverterTests.swift in Sources */,
                 AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
                 DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
                 25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
@@ -2587,7 +2601,10 @@
                 AA003DOC0000002000000004 /* AIDocAssistantView.swift in Sources */,
                 AA003DOC0000002000000006 /* DocTranslationService.swift in Sources */,
                 AA003DOC0000002000000007 /* TranslationCache.swift in Sources */,
-				AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */,
+                AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */,
+                AA009MDC0000002000000001 /* MarkdownConverter.swift in Sources */,
+                AA009DTU0000002000000001 /* DocsTranslationUploader.swift in Sources */,
+                AA009CTF0000002000000001 /* CommunityTranslationFetcher.swift in Sources */,
                 D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */,
                 C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */,
                 BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */,
@@ -3529,6 +3546,14 @@
                 minimumVersion = 2.0.0;
             };
         };
+        AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
+            isa = XCRemoteSwiftPackageReference;
+            repositoryURL = "https://github.com/swiftlang/swift-markdown";
+            requirement = {
+                kind = upToNextMajorVersion;
+                minimumVersion = 0.5.0;
+            };
+        };
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -3589,6 +3614,11 @@
             isa = XCSwiftPackageProductDependency;
             package = DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
             productName = CocoaMQTT;
+        };
+        AA009SMD0000000000000002 /* Markdown */ = {
+            isa = XCSwiftPackageProductDependency;
+            package = AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */;
+            productName = Markdown;
         };
 /* End XCSwiftPackageProductDependency section */
 

@@ -8,7 +8,20 @@ nav_order: 14
 
 Contributing translations to the Meshtastic Apple app helps make the project accessible to a wider audience. The app uses [string catalogs](https://developer.apple.com/documentation/xcode/localizing-and-varying-text-with-a-string-catalog) in Xcode to manage translations.
 
-## How to Contribute
+## Automatic Documentation Translation
+
+On devices running iOS 26 or later, the in-app documentation is automatically translated into your device language when you open the **Help & Docs** section. The translation pipeline works as follows:
+
+1. The app reads the bundled English markdown source files.
+2. Text segments are translated using Apple's Translation framework. If the Translation framework does not support your language, the app falls back to on-device FoundationModels.
+3. Translated markdown is cached locally so subsequent visits load instantly.
+4. The translated markdown is converted to HTML on-device and displayed in the docs viewer.
+
+After all documentation pages have been translated in the background, the app automatically uploads the translated markdown files to the [meshtastic/translations](https://github.com/meshtastic/translations) repository. This allows the community to review and improve machine-generated translations.
+
+> **Tip — English users** If your device language is English, no translation occurs and the bundled English documentation is displayed directly.
+
+## How to Contribute UI Translations
 
 If you would like to update the translations for an existing locale or add a new language, follow these steps:
 

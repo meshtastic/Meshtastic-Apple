@@ -37,13 +37,22 @@ struct DocBrowserView: View {
 			return bundle.pagesBySection()
 		}
 		let lowered = searchText.lowercased()
+		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+		let searchIndex = bundle.searchIndex(for: languageCode)
+		let searchEntryById = Dictionary(
+			(searchIndex ?? []).map { ($0.id, $0) },
+			uniquingKeysWith: { first, _ in first }
+		)
 		return DocSection.allCases.compactMap { section in
 			let matching = pages.filter { page in
 				let translatedTitle = translatedPageTitle(page).lowercased()
+				let translatedEntry = searchEntryById[page.id]
+				let translatedKeywords = translatedEntry?.keywords ?? []
 				return page.section == section && (
 					translatedTitle.contains(lowered) ||
 					page.title.lowercased().contains(lowered) ||
-					page.keywords.contains { $0.lowercased().contains(lowered) }
+					page.keywords.contains { $0.lowercased().contains(lowered) } ||
+					translatedKeywords.contains { $0.lowercased().contains(lowered) }
 				)
 			}
 			return matching.isEmpty ? nil : (section: section, pages: matching)

@@ -7,13 +7,14 @@
 //
 
 import Foundation
+import Markdown
 
 // MARK: - MarkdownConverter
 
-/// Converts GFM-compatible markdown to HTML matching the output of the `build-docs.sh` pipeline.
-/// Supports: headings, paragraphs, lists, code fences, inline code, tables, links, images,
-/// HTML passthrough (<picture>, <img>), blockquote callouts (tip/warning), bold, italic,
-/// strikethrough, and .md → .html link rewriting.
+/// Converts GFM-compatible markdown to HTML using swift-markdown (cmark-gfm).
+/// Handles all GFM features: tables, strikethrough, autolinks, task lists.
+/// Applies Meshtastic-specific post-processing: callout divs, .md → .html link rewriting,
+/// YAML front matter stripping, and Jekyll attribute removal.
 enum MarkdownConverter {
 
 	/// Strips YAML front matter (--- ... ---) and Jekyll inline attributes ({: .xxx }).
@@ -26,7 +27,6 @@ enum MarkdownConverter {
 				if line.trimmingCharacters(in: .whitespaces) == "---" { break }
 			}
 		}
-		// Remove Jekyll inline attributes like {: .foo }
 		lines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("{:") }
 		return lines.joined(separator: "\n")
 	}
@@ -34,146 +34,11 @@ enum MarkdownConverter {
 	/// Converts markdown string to HTML body content.
 	static func convert(_ markdown: String) -> String {
 		let cleaned = stripFrontMatter(markdown)
-		let lines = cleaned.components(separatedBy: "\n")
-		var html = ""
-		var i = 0
-		var inCodeBlock = false
-		var inTable = false
-		var tableHeaderDone = false
-		var inBlockquote = false
-		var blockquoteLines: [String] = []
-		var inList = false
+		let document = Document(parsing: cleaned, options: [.parseBlockDirectives, .parseMinimalDoxygen])
+		var html = HTMLConverter.convert(document)
 
-		while i < lines.count {
-			let line = lines[i]
-			let trimmed = line.trimmingCharacters(in: .whitespaces)
-
-			// Code fences
-			if trimmed.hasPrefix("```") {
-				if inCodeBlock {
-					html += "</code></pre>\n"
-					inCodeBlock = false
-				} else {
-					inCodeBlock = true
-					html += "<pre><code>"
-				}
-				i += 1
-				continue
-			}
-
-			if inCodeBlock {
-				html += escapeHTML(line) + "\n"
-				i += 1
-				continue
-			}
-
-			// Blockquotes
-			if trimmed.hasPrefix("> ") || trimmed == ">" {
-				if !inBlockquote {
-					inBlockquote = true
-					blockquoteLines = []
-				}
-				let content = trimmed.hasPrefix("> ") ? String(trimmed.dropFirst(2)) : ""
-				blockquoteLines.append(content)
-				i += 1
-				continue
-			} else if inBlockquote {
-				html += renderBlockquote(blockquoteLines)
-				inBlockquote = false
-				blockquoteLines = []
-				// Don't increment — process this line normally
-				continue
-			}
-
-			// HTML passthrough (picture, source, img, div)
-			if trimmed.hasPrefix("<picture") || trimmed.hasPrefix("<source") || trimmed.hasPrefix("</picture") ||
-				trimmed.hasPrefix("<img") || trimmed.hasPrefix("<div") || trimmed.hasPrefix("</div") {
-				html += line + "\n"
-				i += 1
-				continue
-			}
-
-			// Table detection
-			if trimmed.contains("|") && !trimmed.hasPrefix("```") {
-				if isTableSeparator(trimmed) {
-					// Header separator row — skip it, header already written
-					tableHeaderDone = true
-					i += 1
-					continue
-				}
-				if !inTable {
-					inTable = true
-					tableHeaderDone = false
-					html += "<table>\n<thead>\n"
-					html += renderTableRow(trimmed, isHeader: true)
-					html += "</thead>\n<tbody>\n"
-				} else {
-					html += renderTableRow(trimmed, isHeader: false)
-				}
-				i += 1
-				continue
-			} else if inTable {
-				html += "</tbody>\n</table>\n"
-				inTable = false
-				tableHeaderDone = false
-				continue
-			}
-
-			// Close list if we're no longer in one
-			if inList && !trimmed.hasPrefix("- ") && !trimmed.hasPrefix("* ") && !trimmed.isEmpty {
-				html += "</ul>\n"
-				inList = false
-			}
-
-			// Headings
-			if trimmed.hasPrefix("##### ") {
-				html += "<h5>\(processInline(String(trimmed.dropFirst(6))))</h5>\n"
-			} else if trimmed.hasPrefix("#### ") {
-				html += "<h4>\(processInline(String(trimmed.dropFirst(5))))</h4>\n"
-			} else if trimmed.hasPrefix("### ") {
-				html += "<h3>\(processInline(String(trimmed.dropFirst(4))))</h3>\n"
-			} else if trimmed.hasPrefix("## ") {
-				html += "<h2>\(processInline(String(trimmed.dropFirst(3))))</h2>\n"
-			} else if trimmed.hasPrefix("# ") {
-				html += "<h1>\(processInline(String(trimmed.dropFirst(2))))</h1>\n"
-			}
-			// Images
-			else if trimmed.hasPrefix("![") {
-				html += renderImage(trimmed)
-			}
-			// Unordered lists
-			else if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") {
-				if !inList {
-					html += "<ul>\n"
-					inList = true
-				}
-				html += "<li>\(processInline(String(trimmed.dropFirst(2))))</li>\n"
-			}
-			// Horizontal rule
-			else if trimmed == "---" || trimmed == "***" || trimmed == "___" {
-				html += "<hr>\n"
-			}
-			// Empty line
-			else if trimmed.isEmpty {
-				if inList {
-					html += "</ul>\n"
-					inList = false
-				}
-				html += "\n"
-			}
-			// Paragraph
-			else {
-				html += "<p>\(processInline(line))</p>\n"
-			}
-
-			i += 1
-		}
-
-		// Close any open blocks
-		if inCodeBlock { html += "</code></pre>\n" }
-		if inTable { html += "</tbody>\n</table>\n" }
-		if inList { html += "</ul>\n" }
-		if inBlockquote { html += renderBlockquote(blockquoteLines) }
+		// Post-process: convert blockquote callouts to styled divs
+		html = convertCallouts(html)
 
 		// Rewrite .md links to .html
 		html = html.replacingOccurrences(
@@ -185,128 +50,98 @@ enum MarkdownConverter {
 		return html
 	}
 
-	/// Wraps converted HTML body in a full HTML document with CSS link.
-	static func wrapInHTMLDocument(_ body: String, title: String, pageId: String, languageCode: String, cssHref: String = "../assets/docs.css") -> String {
-		"""
-		<!DOCTYPE html>
-		<html lang="\(languageCode)">
-		<head>
-		  <meta charset="UTF-8">
-		  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		  <title>\(title)</title>
-		  <link rel="stylesheet" href="\(cssHref)">
-		</head>
-		<body data-page="\(pageId)">
-		\(body)
-		</body>
-		</html>
-		"""
+	/// Wraps converted HTML body in a full HTML document with CSS link and optional pre-release banner.
+	static func wrapInHTMLDocument(
+		_ body: String,
+		title: String,
+		pageId: String,
+		languageCode: String,
+		cssHref: String = "../assets/docs.css",
+		includePreReleaseBanner: Bool = true
+	) -> String {
+		let banner = includePreReleaseBanner
+			? "<div class=\"pre-release-banner\">⚠️ <strong>Pre-release</strong> — subject to change</div>"
+			: ""
+		return "<!DOCTYPE html>\n<html lang=\"\(languageCode)\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>\(escapeHTML(title))</title>\n  <link rel=\"stylesheet\" href=\"\(cssHref)\">\n</head>\n<body data-page=\"\(pageId)\">\n\(banner)\(body)</body>\n</html>"
 	}
 
-	// MARK: - Inline Formatting
+	// MARK: - Callout Conversion
 
-	/// Processes inline markdown: bold, italic, strikethrough, code, links.
-	static func processInline(_ text: String) -> String {
-		var result = text
+	/// Converts `<blockquote>` elements containing **Tip/Note/Warning** patterns
+	/// into styled `<div class="tips-callout">` or `<div class="warning-callout">`.
+	private static func convertCallouts(_ html: String) -> String {
+		var result = html
 
-		// Inline code (must be first to prevent inner formatting)
+		// Tip callouts
 		result = result.replacingOccurrences(
-			of: #"`([^`]+)`"#,
-			with: "<code>$1</code>",
+			of: #"<blockquote>\s*<p>((?:(?!</p>).)*<strong>(?:(?!</strong>).)*[Tt]ip(?:(?!</strong>).)*</strong>(?:(?!</p>).)*)</p>\s*</blockquote>"#,
+			with: #"<div class="tips-callout"><p>$1</p></div>"#,
 			options: .regularExpression
 		)
 
-		// Bold + italic (***text***)
+		// Note callouts
 		result = result.replacingOccurrences(
-			of: #"\*\*\*(.+?)\*\*\*"#,
-			with: "<strong><em>$1</em></strong>",
+			of: #"<blockquote>\s*<p>((?:(?!</p>).)*<strong>(?:(?!</strong>).)*[Nn]ote(?:(?!</strong>).)*</strong>(?:(?!</p>).)*)</p>\s*</blockquote>"#,
+			with: #"<div class="tips-callout"><p>$1</p></div>"#,
 			options: .regularExpression
 		)
 
-		// Bold (**text**)
+		// Warning callouts
 		result = result.replacingOccurrences(
-			of: #"\*\*(.+?)\*\*"#,
-			with: "<strong>$1</strong>",
+			of: #"<blockquote>\s*<p>((?:(?!</p>).)*<strong>(?:(?!</strong>).)*[Ww]arning(?:(?!</strong>).)*</strong>(?:(?!</p>).)*)</p>\s*</blockquote>"#,
+			with: #"<div class="warning-callout"><p>$1</p></div>"#,
 			options: .regularExpression
 		)
 
-		// Italic (*text*)
-		result = result.replacingOccurrences(
-			of: #"\*(.+?)\*"#,
-			with: "<em>$1</em>",
-			options: .regularExpression
-		)
-
-		// Strikethrough (~~text~~)
-		result = result.replacingOccurrences(
-			of: #"~~(.+?)~~"#,
-			with: "<del>$1</del>",
-			options: .regularExpression
-		)
-
-		// Links [text](url)
-		result = result.replacingOccurrences(
-			of: #"\[([^\]]+)\]\(([^)]+)\)"#,
-			with: #"<a href="$2">$1</a>"#,
-			options: .regularExpression
-		)
+		// GitHub alert syntax: > [!WARNING], > [!IMPORTANT], > [!NOTE], > [!TIP], > [!CAUTION]
+		result = convertGitHubAlerts(result)
 
 		return result
 	}
 
-	// MARK: - Tables
+	// MARK: - Inline Processing (for translation segmentation)
 
-	private static func isTableSeparator(_ line: String) -> Bool {
-		let stripped = line.trimmingCharacters(in: .whitespaces)
-			.replacingOccurrences(of: "|", with: "")
-			.replacingOccurrences(of: "-", with: "")
-			.replacingOccurrences(of: ":", with: "")
-			.trimmingCharacters(in: .whitespaces)
-		return stripped.isEmpty && line.contains("|") && line.contains("-")
+	/// Converts GitHub-style alert blockquotes: `> [!WARNING]`, `> [!IMPORTANT]`, etc.
+	/// These render as `<blockquote><p>[!TYPE]\nContent</p></blockquote>` after swift-markdown parsing.
+	private struct GitHubAlert {
+		let pattern: String
+		let label: String
+		let cssClass: String
+		let icon: String
 	}
 
-	private static func renderTableRow(_ line: String, isHeader: Bool) -> String {
-		let cells = line.split(separator: "|", omittingEmptySubsequences: false)
-			.map { $0.trimmingCharacters(in: .whitespaces) }
-			.filter { !$0.isEmpty }
-		let tag = isHeader ? "th" : "td"
-		let cellsHTML = cells.map { "<\(tag)>\(processInline($0))</\(tag)>" }.joined()
-		return "<tr>\(cellsHTML)</tr>\n"
+	private static func convertGitHubAlerts(_ html: String) -> String {
+		let alertTypes: [GitHubAlert] = [
+			GitHubAlert(pattern: "WARNING", label: "Warning", cssClass: "warning-callout", icon: "⚠️"),
+			GitHubAlert(pattern: "CAUTION", label: "Caution", cssClass: "warning-callout", icon: "🔴"),
+			GitHubAlert(pattern: "IMPORTANT", label: "Important", cssClass: "important-callout", icon: "❗"),
+			GitHubAlert(pattern: "NOTE", label: "Note", cssClass: "tips-callout", icon: "ℹ️"),
+			GitHubAlert(pattern: "TIP", label: "Tip", cssClass: "tips-callout", icon: "💡"),
+		]
+
+		var result = html
+		for alert in alertTypes {
+			// Match blockquote containing [!TYPE] at the start of the first <p>
+			// Use [\s\S] instead of . to match across newlines
+			let regex = #"<blockquote>\s*\n?<p>\[!"# + alert.pattern + #"\]\s*"#
+				+ #"([\s\S]*?)</blockquote>"#
+			result = result.replacingOccurrences(
+				of: regex,
+				with: "<div class=\"\(alert.cssClass)\"><p><strong>\(alert.icon) \(alert.label)</strong> $1</div>",
+				options: .regularExpression
+			)
+		}
+		return result
 	}
 
-	// MARK: - Images
+	// MARK: - Inline Processing (for translation segmentation)
 
-	private static func renderImage(_ line: String) -> String {
-		let pattern = try? NSRegularExpression(pattern: #"!\[([^\]]*)\]\(([^)]+)\)"#)
-		let range = NSRange(line.startIndex..., in: line)
-		if let match = pattern?.firstMatch(in: line, range: range),
-		   let altRange = Range(match.range(at: 1), in: line),
-		   let srcRange = Range(match.range(at: 2), in: line) {
-			let alt = String(line[altRange])
-			let src = String(line[srcRange])
-			return "<img src=\"\(src)\" alt=\"\(alt)\">\n"
-		}
-		return "<p>\(processInline(line))</p>\n"
-	}
-
-	// MARK: - Blockquotes / Callouts
-
-	private static func renderBlockquote(_ lines: [String]) -> String {
-		let content = lines.joined(separator: "\n")
-		let processed = processInline(content)
-
-		// Check for tip/warning callout pattern
-		if content.range(of: #"\*\*[Tt]ip"#, options: .regularExpression) != nil {
-			return "<div class=\"tips-callout\"><p>\(processed)</p></div>\n"
-		}
-		if content.range(of: #"\*\*[Nn]ote"#, options: .regularExpression) != nil {
-			return "<div class=\"tips-callout\"><p>\(processed)</p></div>\n"
-		}
-		if content.range(of: #"\*\*[Ww]arning"#, options: .regularExpression) != nil {
-			return "<div class=\"warning-callout\"><p>\(processed)</p></div>\n"
-		}
-
-		return "<blockquote><p>\(processed)</p></blockquote>\n"
+	/// Processes inline markdown: bold, italic, strikethrough, code, links, inline images.
+	/// Used by translation segmentation — the main `convert()` uses swift-markdown's full renderer.
+	static func processInline(_ text: String) -> String {
+		let document = Document(parsing: text)
+		return HTMLConverter.convert(document)
+			.trimmingCharacters(in: .whitespacesAndNewlines)
 	}
 
 	// MARK: - Helpers
@@ -315,5 +150,162 @@ enum MarkdownConverter {
 		text.replacingOccurrences(of: "&", with: "&amp;")
 			.replacingOccurrences(of: "<", with: "&lt;")
 			.replacingOccurrences(of: ">", with: "&gt;")
+	}
+}
+
+// MARK: - HTMLConverter
+
+/// Walks a swift-markdown Document AST and emits HTML matching cmark-gfm output.
+private enum HTMLConverter {
+
+	static func convert(_ document: Document) -> String {
+		var visitor = HTMLVisitor()
+		return visitor.visitDocument(document)
+	}
+}
+
+// MARK: - HTMLVisitor
+
+private struct HTMLVisitor: MarkupVisitor {
+	typealias Result = String
+
+	mutating func defaultVisit(_ markup: any Markup) -> String {
+		markup.children.map { visit($0) }.joined()
+	}
+
+	mutating func visitDocument(_ document: Document) -> String {
+		document.children.map { visit($0) }.joined()
+	}
+
+	mutating func visitHeading(_ heading: Heading) -> String {
+		let content = heading.children.map { visit($0) }.joined()
+		return "<h\(heading.level)>\(content)</h\(heading.level)>\n"
+	}
+
+	mutating func visitParagraph(_ paragraph: Paragraph) -> String {
+		let content = paragraph.children.map { visit($0) }.joined()
+		return "<p>\(content)</p>\n"
+	}
+
+	mutating func visitText(_ text: Text) -> String {
+		escapeHTML(text.string)
+	}
+
+	mutating func visitEmphasis(_ emphasis: Emphasis) -> String {
+		let content = emphasis.children.map { visit($0) }.joined()
+		return "<em>\(content)</em>"
+	}
+
+	mutating func visitStrong(_ strong: Strong) -> String {
+		let content = strong.children.map { visit($0) }.joined()
+		return "<strong>\(content)</strong>"
+	}
+
+	mutating func visitStrikethrough(_ strikethrough: Strikethrough) -> String {
+		let content = strikethrough.children.map { visit($0) }.joined()
+		return "<del>\(content)</del>"
+	}
+
+	mutating func visitInlineCode(_ inlineCode: InlineCode) -> String {
+		"<code>\(escapeHTML(inlineCode.code))</code>"
+	}
+
+	mutating func visitCodeBlock(_ codeBlock: CodeBlock) -> String {
+		let lang = codeBlock.language ?? ""
+		let langAttr = lang.isEmpty ? "" : " class=\"language-\(escapeHTML(lang))\""
+		return "<pre><code\(langAttr)>\(escapeHTML(codeBlock.code))</code></pre>\n"
+	}
+
+	mutating func visitLink(_ link: Link) -> String {
+		let content = link.children.map { visit($0) }.joined()
+		let dest = link.destination ?? ""
+		return "<a href=\"\(dest)\">\(content)</a>"
+	}
+
+	mutating func visitImage(_ image: Image) -> String {
+		let alt = image.children.map { visit($0) }.joined()
+		let src = image.source ?? ""
+		return "<img src=\"\(src)\" alt=\"\(alt)\" />"
+	}
+
+	mutating func visitUnorderedList(_ unorderedList: UnorderedList) -> String {
+		let items = unorderedList.children.map { visit($0) }.joined()
+		return "<ul>\n\(items)</ul>\n"
+	}
+
+	mutating func visitOrderedList(_ orderedList: OrderedList) -> String {
+		let items = orderedList.children.map { visit($0) }.joined()
+		return "<ol>\n\(items)</ol>\n"
+	}
+
+	mutating func visitListItem(_ listItem: ListItem) -> String {
+		let content = listItem.children.map { visit($0) }.joined()
+			.trimmingCharacters(in: .whitespacesAndNewlines)
+		// For simple single-paragraph list items, unwrap the <p> tags
+		if listItem.childCount == 1,
+		   content.hasPrefix("<p>") && content.hasSuffix("</p>") {
+			let inner = String(content.dropFirst(3).dropLast(4))
+			return "<li>\(inner)</li>\n"
+		}
+		return "<li>\(content)</li>\n"
+	}
+
+	mutating func visitBlockQuote(_ blockQuote: BlockQuote) -> String {
+		let content = blockQuote.children.map { visit($0) }.joined()
+		return "<blockquote>\n\(content)</blockquote>\n"
+	}
+
+	mutating func visitThematicBreak(_ thematicBreak: ThematicBreak) -> String {
+		"<hr />\n"
+	}
+
+	mutating func visitHTMLBlock(_ htmlBlock: HTMLBlock) -> String {
+		htmlBlock.rawHTML
+	}
+
+	mutating func visitInlineHTML(_ inlineHTML: InlineHTML) -> String {
+		inlineHTML.rawHTML
+	}
+
+	mutating func visitSoftBreak(_ softBreak: SoftBreak) -> String {
+		"\n"
+	}
+
+	mutating func visitLineBreak(_ lineBreak: LineBreak) -> String {
+		"<br />\n"
+	}
+
+	mutating func visitTable(_ table: Table) -> String {
+		var result = "<table>\n"
+		let head = table.head
+		result += "<thead>\n<tr>\n"
+		for cell in head.cells {
+			var cellVisitor = HTMLVisitor()
+			let content = cell.children.map { cellVisitor.visit($0) }.joined()
+			result += "<th>\(content)</th>\n"
+		}
+		result += "</tr>\n</thead>\n"
+
+		result += "<tbody>\n"
+		for row in table.body.rows {
+			result += "<tr>\n"
+			for cell in row.cells {
+				var cellVisitor = HTMLVisitor()
+				let content = cell.children.map { cellVisitor.visit($0) }.joined()
+				result += "<td>\(content)</td>\n"
+			}
+			result += "</tr>\n"
+		}
+		result += "</tbody>\n</table>\n"
+		return result
+	}
+
+	// MARK: - Helpers
+
+	private func escapeHTML(_ text: String) -> String {
+		text.replacingOccurrences(of: "&", with: "&amp;")
+			.replacingOccurrences(of: "<", with: "&lt;")
+			.replacingOccurrences(of: ">", with: "&gt;")
+			.replacingOccurrences(of: "\"", with: "&quot;")
 	}
 }
