@@ -285,11 +285,100 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			Self.deleteOrphanedImages(context: context)
 			try? context.save()
 		}
-		
+
+		// PHASE 4: Import msh.to device links
+		await importDeviceLinks()
+
 		await MainActor.run {
 			self.isLoadingDeviceList = false
 		}
 
+	}
+
+	// MARK: - Device Links Import
+
+	/// Import msh.to urls.json short codes into DeviceLinkEntity
+	private func importDeviceLinks() async {
+		guard let bundledURL = Bundle.main.url(forResource: "urls", withExtension: "json"),
+			  let data = try? Data(contentsOf: bundledURL) else {
+			Logger.services.warning("Unable to load bundled urls.json for device links import")
+			return
+		}
+
+		let decoded: MshToUrlsFile
+		do {
+			decoded = try JSONDecoder().decode(MshToUrlsFile.self, from: data)
+		} catch {
+			Logger.services.error("Failed to decode urls.json: \(error.localizedDescription, privacy: .public)")
+			return
+		}
+
+		// Load marketplaces from separate file
+		var marketplaces: [String: MshToMarketplace] = [:]
+		if let mpURL = Bundle.main.url(forResource: "marketplaces", withExtension: "json"),
+		   let mpData = try? Data(contentsOf: mpURL),
+		   let mpDecoded = try? JSONDecoder().decode([String: MshToMarketplace].self, from: mpData) {
+			marketplaces = mpDecoded
+		}
+
+		await MainActor.run {
+			let context = container!.mainContext
+			var importedCount = 0
+			let importedShortCodes = Set(decoded.routes.map { $0.shortCode })
+
+			// Get all platformioTargets to determine vendor vs marketplace
+			let devicesDescriptor = FetchDescriptor<DeviceHardwareEntity>()
+			let platformioTargets = Set((try? context.fetch(devicesDescriptor))?.compactMap { $0.platformioTarget } ?? [])
+
+			for route in decoded.routes {
+				let code = route.shortCode
+				let isVendor = platformioTargets.contains(code)
+
+				// Determine marketplace regions for non-vendor links
+				var regions: [String]?
+				if !isVendor {
+					for (marketplace, config) in marketplaces {
+						let matches: Bool
+						if config.match == "prefix" {
+							matches = code.hasPrefix(marketplace)
+						} else {
+							matches = code.hasSuffix("_\(marketplace)") || code.hasSuffix("-\(marketplace)")
+						}
+						if matches {
+							regions = config.regions
+							break
+						}
+					}
+				}
+
+				var descriptor = FetchDescriptor<DeviceLinkEntity>(
+					predicate: #Predicate { $0.shortCode == code }
+				)
+				descriptor.fetchLimit = 1
+
+				if let existing = try? context.fetch(descriptor).first {
+					existing.originalUrl = route.originalUrl
+					existing.linkDescription = route.description
+					existing.isVendor = isVendor
+					existing.regions = regions
+				} else {
+					let entity = DeviceLinkEntity(shortCode: route.shortCode, originalUrl: route.originalUrl, linkDescription: route.description, isVendor: isVendor, regions: regions)
+					context.insert(entity)
+				}
+				importedCount += 1
+			}
+
+			// Delete orphaned links no longer in bundled file
+			let allLinksDescriptor = FetchDescriptor<DeviceLinkEntity>()
+			if let allLinks = try? context.fetch(allLinksDescriptor) {
+				for link in allLinks where !importedShortCodes.contains(link.shortCode) {
+					context.delete(link)
+				}
+			}
+
+			Logger.services.info("Device links import: \(importedCount, privacy: .public) short codes imported")
+			try? context.save()
+		}
 	}
 	
 	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType, context: ModelContext) {

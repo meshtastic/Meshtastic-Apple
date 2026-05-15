@@ -445,6 +445,14 @@ struct Settings: View {
 				}
 				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
+				NavigationLink(value: SettingsNavigationState.deviceLinks) {
+					Label {
+						Text("Device Links")
+					} icon: {
+						Image(systemName: "link")
+					}
+				}
+
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if accessoryManager.isConnected {
 						Section("Configure") {
@@ -598,6 +606,8 @@ struct Settings: View {
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
+				case .deviceLinks:
+					DeviceLinkDirectory()
 				case .tools:
 					if #available(iOS 18, *) {
 						Tools()

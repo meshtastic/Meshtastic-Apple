@@ -52,6 +52,7 @@ enum SettingsNavigationState: String {
 	case debugLogs
 	case appFiles
 	case firmwareUpdates
+	case deviceLinks
 	case tak
 	case takConfig
 	case tools
