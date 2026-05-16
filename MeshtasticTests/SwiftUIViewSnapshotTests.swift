@@ -1585,7 +1585,7 @@ struct AboutMeshtasticSnapshotTests {
 		let view = NavigationView {
 			AboutMeshtastic()
 		}
-		await assertViewSnapshot(of: view, width: 390, height: 700, named: "aboutMeshtastic", forDocs: true)
+		await assertViewSnapshot(of: view, width: 390, height: 700, named: "aboutMeshtastic")
 	}
 }
 
