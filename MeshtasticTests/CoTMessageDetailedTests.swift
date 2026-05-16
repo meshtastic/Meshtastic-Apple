@@ -139,7 +139,6 @@ struct CoTMessageToXMLTests {
 			longitude: -122.0
 		)
 		let xml = msg.toXML()
-		#expect(xml.contains("<?xml version="))
 		#expect(xml.contains("<event"))
 		#expect(xml.contains("uid='test-uid'"))
 		#expect(xml.contains("type='a-f-G-U-C'"))

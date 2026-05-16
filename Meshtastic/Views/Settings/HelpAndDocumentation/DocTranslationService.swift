@@ -40,7 +40,32 @@ actor DocTranslationService {
 	private var activePrefetchTask: Task<Void, Never>?
 	private var uiStringCache: [String: String] = [:]
 	private var inFlightUIStringByKey: [String: Task<String, Never>] = [:]
-	private var sharedLanguageModelSessionBox: Any?
+	/// Languages that use FoundationModels first (for register/formality steering).
+	/// All other languages use Translation Framework first, with FM as fallback.
+	private static let foundationModelsFirstLanguages: Set<String> = ["de"]
+
+	/// Per-language LanguageModelSession cache — typed as `Any?` to avoid
+	/// `#if canImport(FoundationModels)` wrapping at the property declaration site.
+	private var languageModelSessions: [String: Any] = [:]
+
+	// MARK: - Translation Progress
+
+	/// Tracks overall translation progress for UI display.
+	private(set) var translationProgress: TranslationProgress = .idle
+
+	enum TranslationProgress: Equatable {
+		case idle
+		case translating(completed: Int, total: Int, description: String)
+		case finished
+	}
+
+	/// Posted whenever `translationProgress` changes so views can observe.
+	static let translationProgressDidChange = Foundation.Notification.Name("DocTranslationServiceProgressDidChange")
+
+	private func updateProgress(_ progress: TranslationProgress) {
+		translationProgress = progress
+		NotificationCenter.default.post(name: Self.translationProgressDidChange, object: nil)
+	}
 
 	private init() {}
 
@@ -189,7 +214,6 @@ actor DocTranslationService {
 				Logger.docs.debug("DocTranslationService: Cache hit for \(page.id, privacy: .public) [\(languageCode, privacy: .public)]")
 				if let cachedContent = try? String(contentsOf: cachedURL, encoding: .utf8) {
 					if useMarkdown {
-						// Convert cached translated markdown to HTML
 						let htmlBody = MarkdownConverter.convert(cachedContent)
 						return MarkdownConverter.wrapInHTMLDocument(
 							htmlBody, title: page.title, pageId: page.id,
@@ -268,11 +292,16 @@ actor DocTranslationService {
 		}
 
 		inFlightHTMLByCacheKey[cacheKey] = task
-		let result = await task.value
+		var result = await task.value
 		inFlightHTMLByCacheKey[cacheKey] = nil
 
-		// Write a self-contained HTML file with absolute CSS URL for fast file-based reloads
-		if let html = result {
+		// Resolve relative image/asset paths to absolute bundle file:// URLs
+		// so loadHTMLString can display them (its sandbox doesn't resolve ../ paths)
+		if var html = result {
+			html = Self.resolveRelativeAssetPaths(in: html, relativeTo: page.htmlURL)
+			result = html
+
+			// Write a self-contained HTML file with absolute CSS URL for fast file-based reloads
 			await TranslationCache.shared.storeRenderedHTML(
 				MarkdownConverter.rewrapForFile(html, title: page.title, pageId: page.id, languageCode: languageCode),
 				page: page,
@@ -281,6 +310,42 @@ actor DocTranslationService {
 		}
 
 		return result
+	}
+
+	/// Returns cached translated HTML for a page without triggering translation.
+	/// Used by DocPageView to check if a translation is already available.
+	func translatedHTMLString(fromCacheOnly page: DocPage) async -> String? {
+		guard !isEnglish() else { return nil }
+
+		let languageCode = currentLanguageCode()
+		let useMarkdown = page.markdownURL != nil
+		let sourceURL = page.markdownURL ?? page.htmlURL
+		let sourceFile = "\(page.section.rawValue)/\(page.id).\(useMarkdown ? "md" : "html")"
+
+		guard let sourceHash = TranslationCache.sha256Hash(ofFileAt: sourceURL) else { return nil }
+
+		guard let cachedURL = await TranslationCache.shared.retrieve(
+			sourceFile: sourceFile,
+			languageCode: languageCode,
+			currentHash: sourceHash
+		),
+		let cachedContent = try? String(contentsOf: cachedURL, encoding: .utf8) else {
+			return nil
+		}
+
+		var html: String
+		if useMarkdown {
+			let htmlBody = MarkdownConverter.convert(cachedContent)
+			html = MarkdownConverter.wrapInHTMLDocument(
+				htmlBody, title: page.title, pageId: page.id,
+				languageCode: languageCode
+			)
+		} else {
+			html = cachedContent
+		}
+
+		html = Self.resolveRelativeAssetPaths(in: html, relativeTo: page.htmlURL)
+		return html
 	}
 
 	/// Returns a file URL to translated HTML for the given page, or nil if English should be used.
@@ -339,56 +404,173 @@ actor DocTranslationService {
 	}
 
 	/// Prefetch translations for all pages in background.
-	func prefetchAll(excluding currentPageId: String) async {
+	func prefetchAll() async {
 		if activePrefetchTask != nil { return }
 
 		// Don't run on-device translation while community download is building the folder
 		if await CommunityTranslationFetcher.shared.isBuildingFolder { return }
 
 		let languageCode = currentLanguageCode()
+		guard languageCode != "en" else { return }
+
 		let task = Task<Void, Never> {
 		// Always use English pages for source material (markdown URLs point to bundle)
-		let pages = await DocBundle.shared.loadEnglishPages().filter { $0.id != currentPageId }
+		let allPages = await DocBundle.shared.loadEnglishPages()
+		// Order: user guide first, then developer guide; within each section by nav_order (front matter)
+		let orderedPages: [DocPage] = DocSection.allCases.flatMap { section in
+			allPages.filter { $0.section == section }.sorted { $0.navOrder < $1.navOrder }
+		}
+
+		let totalPages = orderedPages.count
+		let uploadTotal = totalPages + 3 // pages + nav-labels.json + search-index.json + manifest.json
+		let participateInDistributedTranslations = UserDefaults.standard.object(forKey: "participateInDistributedTranslations") as? Bool ?? true
+
+		updateProgress(.translating(completed: 0, total: totalPages, description: orderedPages.first?.title ?? "Starting"))
 
 		// Bulk-download community translations first (fast, no on-device model needed)
 		let communityCount = await CommunityTranslationFetcher.shared.prefetchAll(
 			languageCode: languageCode,
-			pages: pages
+			pages: orderedPages
 		)
 		if communityCount > 0 {
 			Logger.docs.info("DocTranslationService: Pre-loaded \(communityCount, privacy: .public) community translations")
 		}
 
-		for page in pages {
-			try? await Task.sleep(nanoseconds: 100_000_000) // 100ms between pages
-			guard !Task.isCancelled else { return }
+		let minStepDuration: ContinuousClock.Duration = .milliseconds(150)
+
+		// Phase 1: page translations
+		for (index, page) in orderedPages.enumerated() {
+			let stepStart = ContinuousClock.now
+			guard !Task.isCancelled else {
+				updateProgress(.idle)
+				return
+			}
+			updateProgress(.translating(completed: index, total: totalPages, description: page.title))
 			_ = await translatedHTMLString(for: page)
+			_ = await translatedUIString(page.title, targetLanguage: languageCode)
+			updateProgress(.translating(completed: index + 1, total: totalPages, description: page.title))
+			let elapsed = ContinuousClock.now - stepStart
+			if elapsed < minStepDuration {
+				try? await Task.sleep(for: minStepDuration - elapsed)
+			}
 		}
 
-		// Generate translated search index after all pages are translated
-		if !Task.isCancelled && languageCode != "en" {
-			await self.generateSearchIndex(for: languageCode)
+		// Phase 2: nav labels — community fetch + chrome strings (no per-item delay),
+		// then per-page with 150 ms minimum so the phase is visible for ~4 s at 27 pages
+		if !Task.isCancelled {
+			await CommunityTranslationFetcher.shared.fetchNavLabels(languageCode: languageCode)
+			await CommunityTranslationFetcher.shared.fetchSearchIndex(languageCode: languageCode)
+			let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+			for source in chromeStrings {
+				guard !Task.isCancelled else { break }
+				_ = await translatedUIString(source, targetLanguage: languageCode)
+			}
+		}
+		for (index, page) in orderedPages.enumerated() {
+			guard !Task.isCancelled else { break }
+			let stepStart = ContinuousClock.now
+			updateProgress(.translating(completed: index, total: totalPages, description: "Nav Labels"))
+			_ = await translatedUIString(page.title, targetLanguage: languageCode)
+			updateProgress(.translating(completed: index + 1, total: totalPages, description: "Nav Labels"))
+			let elapsed = ContinuousClock.now - stepStart
+			if elapsed < minStepDuration {
+				try? await Task.sleep(for: minStepDuration - elapsed)
+			}
+		}
+
+		// Phase 3: search index — per-page with 150 ms minimum
+		var searchEntries: [TranslatedSearchEntry] = []
+		for (index, page) in orderedPages.enumerated() {
+			guard !Task.isCancelled else { break }
+			let stepStart = ContinuousClock.now
+			updateProgress(.translating(completed: index, total: totalPages, description: "Indexing Page"))
+			let translatedTitle = await translatedUIString(page.title, targetLanguage: languageCode)
+			var translatedKeywords: [String] = []
+			let sourceFile = "\(page.section.rawValue)/\(page.id).md"
+			let sourceURL = page.markdownURL ?? page.htmlURL
+			if let sourceHash = TranslationCache.sha256Hash(ofFileAt: sourceURL),
+			   let cachedURL = await TranslationCache.shared.retrieve(
+				sourceFile: sourceFile, languageCode: languageCode, currentHash: sourceHash
+			   ),
+			   let content = try? String(contentsOf: cachedURL, encoding: .utf8) {
+				translatedKeywords = Self.extractKeywords(from: content)
+			}
+			let combined = Array(Set(translatedKeywords + page.keywords)).sorted()
+			searchEntries.append(TranslatedSearchEntry(
+				id: page.id, section: page.section.rawValue,
+				title: translatedTitle, keywords: combined
+			))
+			updateProgress(.translating(completed: index + 1, total: totalPages, description: "Indexing Page"))
+			let elapsed = ContinuousClock.now - stepStart
+			if elapsed < minStepDuration {
+				try? await Task.sleep(for: minStepDuration - elapsed)
+			}
+		}
+		if !searchEntries.isEmpty {
+			await DocBundle.shared.importSearchIndex(searchEntries, for: languageCode)
+			await TranslationCache.shared.storeRenderedIndex(searchEntries, languageCode: languageCode)
+			Logger.docs.info("DocTranslationService: Generated search index for \(languageCode, privacy: .public) — \(searchEntries.count, privacy: .public) entries")
 		}
 
 		// Auto-upload translations after all pages are cached
-		if !Task.isCancelled && languageCode != "en" {
-			let participateInDistributedTranslations = UserDefaults.standard.object(forKey: "participateInDistributedTranslations") as? Bool ?? true
-			if participateInDistributedTranslations {
-				let allPages = await DocBundle.shared.loadEnglishPages()
-				Task.detached(priority: .background) {
-					await DocsTranslationUploader.shared.uploadIfNeeded(
-						languageCode: languageCode,
-						pages: allPages
-					)
+		if !Task.isCancelled, participateInDistributedTranslations {
+			updateProgress(.translating(completed: 0, total: uploadTotal, description: "Uploading"))
+			let result = await DocsTranslationUploader.shared.uploadIfNeeded(
+				languageCode: languageCode,
+				pages: allPages,
+				onProgress: { [self] fileName, completed, total in
+					await self.updateProgress(.translating(completed: completed, total: total, description: "Uploading \(fileName)"))
 				}
+			)
+			switch result {
+			case .uploaded(let count):
+				updateProgress(.translating(completed: uploadTotal, total: uploadTotal, description: "Uploaded \(count) files"))
+			case .alreadyExists:
+				updateProgress(.translating(completed: uploadTotal, total: uploadTotal, description: "Already shared"))
+			case .noToken:
+				updateProgress(.translating(completed: uploadTotal, total: uploadTotal, description: "No upload token"))
+			}
+			let stepStart = ContinuousClock.now
+			let elapsed = ContinuousClock.now - stepStart
+			if elapsed < minStepDuration {
+				try? await Task.sleep(for: minStepDuration - elapsed)
 			}
 		}
+
+		NotificationCenter.default.post(name: Self.navLabelsDidFinishNotification, object: nil)
+		updateProgress(.finished)
 		}
 
 		activePrefetchTask = task
 		await task.value
 		activePrefetchTask = nil
 	}
+
+	/// Translate navigation labels and UI chrome strings.
+	/// Called after all page translations are complete.
+	private func translateNavLabels(languageCode: String, pages: [DocPage]) async {
+		// Try to fetch community nav labels and search index first
+		await CommunityTranslationFetcher.shared.fetchNavLabels(languageCode: languageCode)
+		await CommunityTranslationFetcher.shared.fetchSearchIndex(languageCode: languageCode)
+
+		// Translate all nav chrome strings
+		let chromeStrings = ["Help & Docs", "Search docs"] + DocSection.allCases.map(\.displayName)
+		for source in chromeStrings {
+			guard !Task.isCancelled else { return }
+			_ = await translatedUIString(source, targetLanguage: languageCode)
+		}
+
+		// Translate all page titles
+		for page in pages {
+			guard !Task.isCancelled else { return }
+			_ = await translatedUIString(page.title, targetLanguage: languageCode)
+		}
+
+		Logger.docs.info("DocTranslationService: Nav labels translation complete")
+	}
+
+	/// Posted when nav label translations complete so DocBrowserView can refresh.
+	static let navLabelsDidFinishNotification = Foundation.Notification.Name("DocTranslationServiceNavLabelsDidFinish")
 
 	#if !targetEnvironment(macCatalyst)
 	/// Translate a page using a provided TranslationSession (from .translationTask modifier).
@@ -498,6 +680,43 @@ actor DocTranslationService {
 		return translated
 	}
 
+	// MARK: - Asset Path Resolution
+
+	/// Resolves relative paths (../assets/...) in HTML to absolute file:// URLs
+	/// so that loadHTMLString can display images without file access issues.
+	static func resolveRelativeAssetPaths(in html: String, relativeTo pageHTMLURL: URL) -> String {
+		let pageDir = pageHTMLURL.deletingLastPathComponent()
+		var result = html
+
+		// Resolve src="..." attributes (img tags, source srcset)
+		let srcPattern = try? NSRegularExpression(pattern: #"(src|srcset)=\"(\.\./[^\"]+)\""#)
+		if let matches = srcPattern?.matches(in: result, range: NSRange(result.startIndex..., in: result)) {
+			for match in matches.reversed() {
+				guard let attrRange = Range(match.range(at: 1), in: result),
+					  let pathRange = Range(match.range(at: 2), in: result),
+					  let fullRange = Range(match.range, in: result) else { continue }
+				let attr = String(result[attrRange])
+				let relativePath = String(result[pathRange])
+				let absoluteURL = pageDir.appendingPathComponent(relativePath).standardized
+				result.replaceSubrange(fullRange, with: "\(attr)=\"\(absoluteURL.absoluteString)\"")
+			}
+		}
+
+		// Also resolve href="..." for CSS
+		let hrefPattern = try? NSRegularExpression(pattern: #"href=\"(\.\./[^\"]+\.css)\""#)
+		if let matches = hrefPattern?.matches(in: result, range: NSRange(result.startIndex..., in: result)) {
+			for match in matches.reversed() {
+				guard let pathRange = Range(match.range(at: 1), in: result),
+					  let fullRange = Range(match.range, in: result) else { continue }
+				let relativePath = String(result[pathRange])
+				let absoluteURL = pageDir.appendingPathComponent(relativePath).standardized
+				result.replaceSubrange(fullRange, with: "href=\"\(absoluteURL.absoluteString)\"")
+			}
+		}
+
+		return result
+	}
+
 	// MARK: - Locale Detection
 
 	private func isEnglish() -> Bool {
@@ -524,7 +743,20 @@ actor DocTranslationService {
 
 		for segment in segments {
 			if segment.translatable && !segment.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-				if let translated = await translateText(segment.text, targetLanguage: targetLanguage) {
+				// Strip trailing newline before sending to translation engine, then restore it.
+				// Translation APIs often strip trailing whitespace, which collapses the blank line
+				// before tables and breaks GFM table parsing in swift-markdown.
+				let hadTrailingNewline = segment.text.hasSuffix("\n")
+				let textToTranslate = hadTrailingNewline ? String(segment.text.dropLast()) : segment.text
+				if var translated = await translateText(textToTranslate, targetLanguage: targetLanguage) {
+					if segment.isTableCell {
+						// Sanitize: pipes and newlines would break table structure
+						translated = translated.replacingOccurrences(of: "|", with: "\\|")
+						translated = translated.replacingOccurrences(of: "\n", with: " ")
+					}
+					if hadTrailingNewline && !segment.isTableCell {
+						translated += "\n"
+					}
 					translatedSegments.append(translated)
 				} else {
 					translatedSegments.append(segment.text) // fallback to English
@@ -539,34 +771,60 @@ actor DocTranslationService {
 
 	/// Translates a single text string using the best available engine.
 	private func translateText(_ text: String, targetLanguage: String) async -> String? {
-		#if !targetEnvironment(macCatalyst)
-		if #available(iOS 26, *) {
-			if let viaTranslation = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
-				return viaTranslation
+		if Self.foundationModelsFirstLanguages.contains(targetLanguage) {
+			#if canImport(FoundationModels)
+			if #available(iOS 26, *),
+			   let viaFM = await translateWithFoundationModels(text: text, targetLanguage: targetLanguage) {
+				return viaFM
 			}
+			#endif
+			#if !targetEnvironment(macCatalyst)
+			if #available(iOS 26, *) {
+				return await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage)
+			}
+			#endif
+		} else {
+			#if !targetEnvironment(macCatalyst)
+			if #available(iOS 26, *),
+			   let viaTF = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
+				return viaTF
+			}
+			#endif
+			#if canImport(FoundationModels)
+			if #available(iOS 26, *) {
+				return await translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
+			}
+			#endif
 		}
-		#endif
-		#if canImport(FoundationModels)
-		if #available(iOS 26, *) {
-			return await translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
-		}
-		#endif
 		return nil
 	}
 
 	private func translateUIText(_ text: String, targetLanguage: String) async -> String? {
-		#if !targetEnvironment(macCatalyst)
-		if #available(iOS 26, *) {
-			if let viaTranslation = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
-				return viaTranslation
+		if Self.foundationModelsFirstLanguages.contains(targetLanguage) {
+			#if canImport(FoundationModels)
+			if #available(iOS 26, *),
+			   let viaFM = await translateWithFoundationModels(text: text, targetLanguage: targetLanguage) {
+				return viaFM
 			}
+			#endif
+			#if !targetEnvironment(macCatalyst)
+			if #available(iOS 26, *) {
+				return await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage)
+			}
+			#endif
+		} else {
+			#if !targetEnvironment(macCatalyst)
+			if #available(iOS 26, *),
+			   let viaTF = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
+				return viaTF
+			}
+			#endif
+			#if canImport(FoundationModels)
+			if #available(iOS 26, *) {
+				return await translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
+			}
+			#endif
 		}
-		#endif
-		#if canImport(FoundationModels)
-		if #available(iOS 26, *) {
-			return await translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
-		}
-		#endif
 		return nil
 	}
 
@@ -581,7 +839,17 @@ actor DocTranslationService {
 
 	/// Translates only text nodes, preserving the original HTML structure and attributes.
 	private func translateHTMLDocument(_ html: String, targetLanguage: String) async -> String? {
-		var translateSegment: ((String) async -> String?)?
+		let useFoundationModelsFirst = Self.foundationModelsFirstLanguages.contains(targetLanguage)
+		var fmSegment: ((String) async -> String?)?
+		var tfSegment: ((String) async -> String?)?
+
+		#if canImport(FoundationModels)
+		if #available(iOS 26, *) {
+			fmSegment = { text in
+				await self.translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
+			}
+		}
+		#endif
 
 		#if !targetEnvironment(macCatalyst)
 		if #available(iOS 26, *) {
@@ -608,7 +876,7 @@ actor DocTranslationService {
 
 			if status == .installed {
 				let session = TranslationSession(installedSource: source, target: target)
-				translateSegment = { text in
+				tfSegment = { [self] text in
 					do {
 						let response = try await session.translate(text)
 						return response.targetText
@@ -623,14 +891,7 @@ actor DocTranslationService {
 		}
 		#endif
 
-		#if canImport(FoundationModels)
-		if translateSegment == nil, #available(iOS 26, *) {
-			translateSegment = { text in
-				await self.translateWithFoundationModels(text: text, targetLanguage: targetLanguage)
-			}
-		}
-		#endif
-
+		let translateSegment = useFoundationModelsFirst ? (fmSegment ?? tfSegment) : (tfSegment ?? fmSegment)
 		guard let translateSegment else { return nil }
 
 		let tagRegex = try? NSRegularExpression(pattern: "<[^>]+>")
@@ -752,23 +1013,26 @@ actor DocTranslationService {
 
 		do {
 			let languageName = Locale.current.localizedString(forLanguageCode: targetLanguage) ?? targetLanguage
-			let prompt = """
-			Translate the following text from English to \(languageName). \
-			Preserve spacing and punctuation. Output only the translated text.
-
-			\(text)
-			"""
 
 			let session: LanguageModelSession
-			if let cached = sharedLanguageModelSessionBox as? LanguageModelSession {
+			if let cached = languageModelSessions[targetLanguage] as? LanguageModelSession {
 				session = cached
 			} else {
-				let created = LanguageModelSession()
-				sharedLanguageModelSessionBox = created
+				let instructions = """
+					You are a technical documentation translator. \
+					Translate text from English to \(languageName). \
+					Always use informal register: in German use du/dich/dir/dein/deine (never Sie/Ihnen/Ihr); \
+					in French use tu/toi/ton/ta/tes (never vous/votre); \
+					in Spanish use tú/te/tu/tus (never usted/su). \
+					Preserve all markdown syntax, code spans, URLs, HTML tags, and special characters exactly. \
+					Output only the translated text — no explanations, no preamble.
+					"""
+				let created = LanguageModelSession(instructions: instructions)
+				languageModelSessions[targetLanguage] = created
 				session = created
 			}
 
-			let response = try await session.respond(to: prompt)
+			let response = try await session.respond(to: text)
 			return response.content
 		} catch {
 			await FoundationModelAvailability.shared.reportFailure(error)
@@ -783,6 +1047,7 @@ actor DocTranslationService {
 	private struct MarkdownSegment {
 		let text: String
 		let translatable: Bool
+		var isTableCell: Bool = false
 	}
 
 	/// Splits a line into translatable text and non-translatable inline code spans.
@@ -834,21 +1099,45 @@ actor DocTranslationService {
 
 	/// If text starts with a blockquote callout prefix like `> **Warning — ` or `> **Tip — `,
 	/// split the prefix as non-translatable so the keyword isn't translated.
+	/// The closing `**` of the title is also protected so translation engines cannot
+	/// insert a space before it (which would break bold rendering and callout detection).
 	private func segmentCalloutPrefix(_ text: String) -> [MarkdownSegment] {
 		// Match patterns like "> **Warning — ", "> **Tip — ", "> **Note — ", "> **Caution — ", "> **Important — "
 		let calloutPattern = #"^(>\s*\*\*(?:Warning|Tip|Note|Caution|Important)\s*[-—–]\s*)"#
-		if let regex = try? NSRegularExpression(pattern: calloutPattern),
-		   let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
-		   let range = Range(match.range(at: 1), in: text) {
-			let prefix = String(text[range])
-			let rest = String(text[range.upperBound...])
-			var result = [MarkdownSegment(text: prefix, translatable: false)]
-			if !rest.isEmpty {
-				result.append(MarkdownSegment(text: rest, translatable: true))
-			}
-			return result
+		guard let regex = try? NSRegularExpression(pattern: calloutPattern),
+			  let prefixMatch = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+			  let prefixRange = Range(prefixMatch.range(at: 1), in: text) else {
+			return [MarkdownSegment(text: text, translatable: true)]
 		}
-		return [MarkdownSegment(text: text, translatable: true)]
+
+		let prefix = String(text[prefixRange])           // e.g. "> **Tip — "
+		let afterPrefix = String(text[prefixRange.upperBound...])
+
+		// Find the closing ** — protect it so translators cannot add a space before it.
+		if let closingRange = afterPrefix.range(of: "**") {
+			let title = String(afterPrefix[..<closingRange.lowerBound])    // translatable title text
+			let closing = String(afterPrefix[closingRange])                 // "**" — non-translatable
+			let body = String(afterPrefix[closingRange.upperBound...])      // optional body text
+
+			var segments: [MarkdownSegment] = [MarkdownSegment(text: prefix, translatable: false)]
+			if !title.isEmpty {
+				segments.append(MarkdownSegment(text: title, translatable: true))
+			}
+			segments.append(MarkdownSegment(text: closing, translatable: false))
+			if !body.trimmingCharacters(in: .whitespaces).isEmpty {
+				segments.append(MarkdownSegment(text: body, translatable: true))
+			} else if !body.isEmpty {
+				segments.append(MarkdownSegment(text: body, translatable: false))
+			}
+			return segments
+		}
+
+		// No closing ** on this line — preserve prefix, translate the rest.
+		var result = [MarkdownSegment(text: prefix, translatable: false)]
+		if !afterPrefix.isEmpty {
+			result.append(MarkdownSegment(text: afterPrefix, translatable: true))
+		}
+		return result
 	}
 
 	/// Returns true if the line is a GFM table separator (e.g. `|---|---|`).
@@ -859,7 +1148,9 @@ actor DocTranslationService {
 	/// Returns true if the trimmed cell content is an image reference or empty.
 	private func isCellNonTranslatable(_ cell: String) -> Bool {
 		let t = cell.trimmingCharacters(in: .whitespaces)
-		return t.isEmpty || t.hasPrefix("![") || t.hasPrefix("<img")
+		// A cell that is entirely a backtick code span (e.g. `foo.swift`) must not be translated.
+		let isCodeSpan = t.count >= 2 && t.hasPrefix("`") && t.hasSuffix("`")
+		return t.isEmpty || t.hasPrefix("![") || t.hasPrefix("<img") || isCodeSpan
 	}
 
 	/// Splits a markdown table row into segments: pipe delimiters and image cells are
@@ -883,7 +1174,17 @@ actor DocTranslationService {
 			if isCellNonTranslatable(cellTrimmed) {
 				segments.append(MarkdownSegment(text: cellTrimmed, translatable: false))
 			} else {
-				segments.append(MarkdownSegment(text: cellTrimmed, translatable: true))
+				// Split on inline code spans so backtick content is preserved verbatim.
+				var inlineSegs = segmentInlineCode(cellTrimmed)
+				// segmentInlineCode appends a trailing "\n" — strip it for table cells.
+				if !inlineSegs.isEmpty {
+					let last = inlineSegs[inlineSegs.count - 1]
+					let trimmedText = last.text.hasSuffix("\n") ? String(last.text.dropLast()) : last.text
+					inlineSegs[inlineSegs.count - 1] = MarkdownSegment(text: trimmedText, translatable: last.translatable)
+				}
+				segments.append(contentsOf: inlineSegs.map { seg in
+					MarkdownSegment(text: seg.text, translatable: seg.translatable, isTableCell: seg.translatable)
+				})
 			}
 			if index < cells.count - 1 {
 				segments.append(MarkdownSegment(text: " | ", translatable: false))

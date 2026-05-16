@@ -47,7 +47,7 @@ struct RegionCodesTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(RegionCodes.allCases.count == 25)
+		#expect(RegionCodes.allCases.count == 33)
 	}
 
 	@Test func eu433_hasDutyCycle10() {
@@ -106,7 +106,7 @@ struct ModemPresetsTests {
 	}
 
 	@Test func totalCaseCount() {
-		#expect(ModemPresets.allCases.count == 9)
+		#expect(ModemPresets.allCases.count == 13)
 	}
 }
 

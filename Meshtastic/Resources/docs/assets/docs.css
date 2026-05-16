@@ -240,7 +240,10 @@ td img[src$="gradientMeter.png"] {
 body[data-page="telemetry"] td img[src$="humidityWithDew.png"],
 body[data-page="telemetry"] td img[src$="humidityNoDew.png"],
 body[data-page="telemetry"] td img[src$="pressureHigh.png"],
-body[data-page="telemetry"] td img[src$="pressureLow.png"] {
+body[data-page="telemetry"] td img[src$="pressureLow.png"],
+body[data-page="telemetry"] td img[src$="windFull.png"],
+body[data-page="telemetry"] td img[src$="windMinimal.png"],
+body[data-page="telemetry"] td img[src$="radiation.png"] {
     height: 132px;
     border-radius: 8px;
 }

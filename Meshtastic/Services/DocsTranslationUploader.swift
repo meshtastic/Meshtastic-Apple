@@ -8,6 +8,7 @@
 
 import Foundation
 import OSLog
+import Security
 
 // MARK: - DocsTranslationUploader
 
@@ -16,7 +17,9 @@ import OSLog
 /// then picks them up and opens a PR on the docs site.
 ///
 /// Read-only checks against public repos need no auth.
-/// Write operations target meshtastic/translations using a fine-grained token from Secrets.json.
+/// Write operations target meshtastic/translations using a fine-grained token
+/// loaded from the device Keychain (primary) or bundled `secrets.json` (fallback,
+/// auto-migrated to Keychain on first use).
 actor DocsTranslationUploader {
 
 	static let shared = DocsTranslationUploader()
@@ -43,8 +46,11 @@ actor DocsTranslationUploader {
 	/// Checks docs site for existing translations, then commits new ones to this repo.
 	func uploadIfNeeded(
 		languageCode: String,
-		pages: [DocPage]
-	) async {
+		pages: [DocPage],
+		onProgress: (@Sendable (String, Int, Int) async -> Void)? = nil
+	) async -> UploadResult {
+		let uploadTotal = pages.count + 3
+		var uploadCompleted = 0
 		let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
 		let key = "\(languageCode)/\(appVersion)"
 
@@ -53,19 +59,19 @@ actor DocsTranslationUploader {
 			languageCode: languageCode,
 			appVersion: appVersion
 		)
-		if alreadyOnDocsSite { return }
+		if alreadyOnDocsSite { return .alreadyExists }
 
 		// 2. Check if translations repo already has them
 		let alreadyStaged = await checkTranslationsRepoHasFiles(
 			languageCode: languageCode,
 			appVersion: appVersion
 		)
-		if alreadyStaged { return }
+		if alreadyStaged { return .alreadyExists }
 
 		// 3. Get token for writing
 		guard let token = loadGitHubToken() else {
 			Logger.docs.info("DocsTranslationUploader: No GitHub token configured — skipping auto-upload")
-			return
+			return .noToken
 		}
 
 		// 4. Commit translated files (per-file tracking allows retry of failures)
@@ -74,55 +80,64 @@ actor DocsTranslationUploader {
 		var uploadedCount = 0
 		for page in pages {
 			let filePath = "apple-apps/\(languageCode)/\(appVersion)/\(page.section.rawValue)/\(page.id).md"
+			let fileName = "\(page.id).md"
 
-			// Skip files already uploaded this session
-			guard !uploadedFilesThisSession.contains(filePath) else { continue }
-
-			guard let translatedMd = await getTranslatedMarkdown(for: page, languageCode: languageCode) else {
-				continue
+			if !uploadedFilesThisSession.contains(filePath),
+			   let translatedMd = await getTranslatedMarkdown(for: page, languageCode: languageCode) {
+				do {
+					try await commitFile(
+						repo: translationsRepo,
+						path: filePath,
+						content: translatedMd,
+						message: "Add \(languageCode) translation for \(page.id) (v\(appVersion))",
+						token: token
+					)
+					uploadedFilesThisSession.insert(filePath)
+					uploadedCount += 1
+				} catch {
+					Logger.docs.error("DocsTranslationUploader: Failed to upload \(page.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
+				}
 			}
-
-			do {
-				try await commitFile(
-					repo: translationsRepo,
-					path: filePath,
-					content: translatedMd,
-					message: "Add \(languageCode) translation for \(page.id) (v\(appVersion))",
-					token: token
-				)
-				uploadedFilesThisSession.insert(filePath)
-				uploadedCount += 1
-			} catch {
-				Logger.docs.error("DocsTranslationUploader: Failed to upload \(page.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
-			}
+			uploadCompleted += 1
+			await onProgress?(fileName, uploadCompleted, uploadTotal)
 		}
 
 		if uploadedCount > 0 {
 			Logger.docs.info("DocsTranslationUploader: Committed \(uploadedCount, privacy: .public) files for \(key, privacy: .public)")
 		}
 
-		// 5. If every page was uploaded (this session or just now), commit a manifest
-		let allPaths = pages.map { "apple-apps/\(languageCode)/\(appVersion)/\($0.section.rawValue)/\($0.id).md" }
-		let allUploaded = allPaths.allSatisfy { uploadedFilesThisSession.contains($0) }
-		if allUploaded {
-			await uploadManifest(
-				languageCode: languageCode,
-				appVersion: appVersion,
-				pages: pages,
-				token: token
-			)
+		// 5. If any pages were newly uploaded this session, commit supplementary files.
+		// Manifest is committed LAST — it's the file used by checkTranslationsRepoHasFiles()
+		// to validate that the upload is complete.
+		if uploadedCount > 0 {
 			await uploadNavLabels(
 				languageCode: languageCode,
 				appVersion: appVersion,
 				pages: pages,
 				token: token
 			)
+			uploadCompleted += 1
+			await onProgress?("nav-labels.json", uploadCompleted, uploadTotal)
+
 			await uploadSearchIndex(
 				languageCode: languageCode,
 				appVersion: appVersion,
 				token: token
 			)
+			uploadCompleted += 1
+			await onProgress?("search-index.json", uploadCompleted, uploadTotal)
+
+			await uploadManifest(
+				languageCode: languageCode,
+				appVersion: appVersion,
+				pages: pages,
+				token: token
+			)
+			uploadCompleted += 1
+			await onProgress?("manifest.json", uploadCompleted, uploadTotal)
 		}
+
+		return .uploaded(count: uploadCompleted)
 	}
 
 	// MARK: - Manifest
@@ -316,29 +331,67 @@ actor DocsTranslationUploader {
 			languageCode: languageCode,
 			currentHash: sourceHash
 		) else { return nil }
-		return try? String(contentsOf: cachedURL, encoding: .utf8)
+		guard let raw = try? String(contentsOf: cachedURL, encoding: .utf8) else { return nil }
+		return raw
 	}
 
 	// MARK: - Token
 
 	private func loadGitHubToken() -> String? {
-		// 1. Environment variable (for local testing via Xcode scheme)
-		if let envToken = ProcessInfo.processInfo.environment["TRANSLATIONS_GITHUB_TOKEN"],
-		   !envToken.isEmpty {
-			return envToken
-		}
-		// 2. Secrets.json (injected by Xcode Cloud ci_pre_xcodebuild.sh)
-		if let url = Bundle.main.url(forResource: "secrets", withExtension: "json", subdirectory: "SupportingFiles"),
-		   let data = try? Data(contentsOf: url),
-		   let json = try? JSONDecoder().decode([String: String].self, from: data),
-		   let token = json["TRANSLATIONS_GITHUB_TOKEN"],
+		// 1. Keychain (secure, device-local, never committed)
+		let query: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: "com.meshtastic.translations",
+			kSecAttrAccount as String: "github-token",
+			kSecReturnData as String: true,
+			kSecMatchLimit as String: kSecMatchLimitOne
+		]
+		var result: AnyObject?
+		if SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+		   let data = result as? Data,
+		   let token = String(data: data, encoding: .utf8),
 		   !token.isEmpty {
 			return token
 		}
+
+		// 2. Bundled secrets.json (CI injects via ci_pre_xcodebuild.sh, local dev via SupportingFiles/)
+		if let url = Bundle.main.url(forResource: "secrets", withExtension: "json"),
+		   let data = try? Data(contentsOf: url),
+		   let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+		   let token = dict["TRANSLATIONS_GITHUB_TOKEN"],
+		   !token.isEmpty {
+			// Migrate to device Keychain so future launches don't need the bundle file
+			saveTokenToKeychain(token)
+			Logger.docs.info("DocsTranslationUploader: Migrated token from secrets.json to device Keychain")
+			return token
+		}
+
 		return nil
 	}
 
+	/// Saves a GitHub token to the device's Keychain.
+	private func saveTokenToKeychain(_ token: String) {
+		let tokenData = Data(token.utf8)
+		let query: [String: Any] = [
+			kSecClass as String: kSecClassGenericPassword,
+			kSecAttrService as String: "com.meshtastic.translations",
+			kSecAttrAccount as String: "github-token"
+		]
+		// Delete any existing entry first
+		SecItemDelete(query as CFDictionary)
+		// Add the new token
+		var attributes = query
+		attributes[kSecValueData as String] = tokenData
+		SecItemAdd(attributes as CFDictionary, nil)
+	}
+
 	// MARK: - Errors
+
+	enum UploadResult {
+		case uploaded(count: Int)
+		case alreadyExists
+		case noToken
+	}
 
 	enum UploadError: LocalizedError {
 		case commitFailed(String, Int)

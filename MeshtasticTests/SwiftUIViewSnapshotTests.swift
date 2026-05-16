@@ -371,37 +371,37 @@ struct CompactWidgetSnapshotTests {
 
 	@Test("Humidity with dew point")
 	func humidityWithDew() async {
-		await assertViewSnapshot(of: HumidityCompactWidget(humidity: 65, dewPoint: "18°"), width: 180, named: "humidityWithDew", forDocs: true)
+		await assertViewSnapshot(of: HumidityCompactWidget(humidity: 65, dewPoint: "18°"), width: 180, height: 180, named: "humidityWithDew", forDocs: true)
 	}
 
 	@Test("Humidity without dew point")
 	func humidityNoDew() async {
-		await assertViewSnapshot(of: HumidityCompactWidget(humidity: 42, dewPoint: nil), width: 180, named: "humidityNoDew", forDocs: true)
+		await assertViewSnapshot(of: HumidityCompactWidget(humidity: 42, dewPoint: nil), width: 180, height: 180, named: "humidityNoDew", forDocs: true)
 	}
 
 	@Test("Pressure low")
 	func pressureLow() async {
-		await assertViewSnapshot(of: PressureCompactWidget(pressure: "1004.76", unit: "hPA", low: true), width: 180, named: "pressureLow", forDocs: true)
+		await assertViewSnapshot(of: PressureCompactWidget(pressure: "1004.76", unit: "hPA", low: true), width: 180, height: 180, named: "pressureLow", forDocs: true)
 	}
 
 	@Test("Pressure high")
 	func pressureHigh() async {
-		await assertViewSnapshot(of: PressureCompactWidget(pressure: "1024.50", unit: "hPA", low: false), width: 180, named: "pressureHigh", forDocs: true)
+		await assertViewSnapshot(of: PressureCompactWidget(pressure: "1024.50", unit: "hPA", low: false), width: 180, height: 180, named: "pressureHigh", forDocs: true)
 	}
 
 	@Test("Wind full")
 	func windFull() async {
-		await assertViewSnapshot(of: WindCompactWidget(speed: "12 mph", gust: "15 mph", direction: "SW"), width: 180, named: "windFull", forDocs: true)
+		await assertViewSnapshot(of: WindCompactWidget(speed: "12 mph", gust: "15 mph", direction: "SW"), width: 180, height: 180, named: "windFull", forDocs: true)
 	}
 
 	@Test("Wind minimal")
 	func windMinimal() async {
-		await assertViewSnapshot(of: WindCompactWidget(speed: "8 mph", gust: nil, direction: nil), width: 180, named: "windMinimal", forDocs: true)
+		await assertViewSnapshot(of: WindCompactWidget(speed: "8 mph", gust: nil, direction: nil), width: 180, height: 180, named: "windMinimal", forDocs: true)
 	}
 
 	@Test("Radiation")
 	func radiation() async {
-		await assertViewSnapshot(of: RadiationCompactWidget(radiation: "15", unit: "µR/hr"), width: 180, named: "radiation", forDocs: true)
+		await assertViewSnapshot(of: RadiationCompactWidget(radiation: "15", unit: "µR/hr"), width: 180, height: 180, named: "radiation", forDocs: true)
 	}
 }
 
@@ -1898,7 +1898,7 @@ struct TAKIdentitySectionSnapshotTests {
 	private func makeTAKNode() -> NodeInfoEntity {
 		let context = sharedModelContainer.mainContext
 		let node = NodeInfoEntity()
-		node.num = 0x_DEAD_BEEF
+		node.num = 0xDEAD_BEEF
 		context.insert(node)
 
 		let user = UserEntity()

@@ -387,7 +387,7 @@
             "not",
             "name"
         ],
-        "charCount": 4717
+        "charCount": 4716
     },
     {
         "id": "signal-meter",
@@ -582,7 +582,7 @@
             "uses",
             "time"
         ],
-        "charCount": 4817
+        "charCount": 4793
     },
     {
         "id": "watch",
@@ -669,37 +669,37 @@
         "navOrder": 1,
         "keywords": [
             "swift",
+            "meshtastic",
             "router",
             "accessorymanager",
-            "meshtastic",
+            "translated",
             "appstate",
             "tab",
-            "tak",
-            "package",
+            "json",
+            "html",
+            "file",
             "environmentobject",
             "wraps",
+            "via",
             "use",
             "url",
+            "translations",
+            "translation",
             "shared",
             "services",
             "radio",
             "model",
+            "links",
             "instantiates",
-            "file",
+            "from",
+            "files",
             "device",
             "deep",
             "connectivity",
             "ble",
-            "app",
-            "views",
-            "view",
-            "var",
-            "translation",
-            "tcp",
-            "swiftdata",
-            "struct"
+            "app"
         ],
-        "charCount": 3580
+        "charCount": 4462
     },
     {
         "id": "carplay",

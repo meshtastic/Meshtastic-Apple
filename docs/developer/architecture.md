@@ -70,6 +70,7 @@ Application services that are not tied to radio connectivity live in `Meshtastic
 | `TranslationCache.swift` | File-based cache for translated `.md` content stored in Application Support. Tracks content hashes for staleness detection and enforces a 50 MB per-language LRU eviction policy. |
 | `MarkdownConverter.swift` | GFM-compatible markdown→HTML converter. Supports headings, paragraphs, lists, code fences, inline code, tables, links, images, HTML passthrough (`<picture>`, `<img>`), blockquote callouts (tip/warning), bold, italic, strikethrough, horizontal rules, and `.md` → `.html` link rewriting. Strips YAML front matter and Jekyll inline attributes. |
 | `DocsTranslationUploader.swift` | Automatically commits translated `.md` files to `meshtastic/translations` repo after background prefetch completes. Performs read-only checks against `meshtastic/meshtastic` and `meshtastic/translations` (no auth), then commits via GitHub Contents API using a fine-grained PAT from `Secrets.json`. Per-file tracking enables retry of failed uploads. |
+| `CommunityTranslationFetcher.swift` | Downloads existing community translations from the GitHub Pages CDN feed (`index.json`) before falling back to on-device translation. Fetches `nav-labels.json` and `search-index.json` for translated UI strings and search keywords. Builds a pre-rendered translated folder so `DocBundle` can load translated pages directly. |
 
 ## Protobufs
 
