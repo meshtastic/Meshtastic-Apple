@@ -152,7 +152,7 @@ enum MarkdownConverter {
 			GitHubAlert(pattern: "CAUTION", label: "Caution", cssClass: "warning-callout", icon: "🔴"),
 			GitHubAlert(pattern: "IMPORTANT", label: "Important", cssClass: "important-callout", icon: "❗"),
 			GitHubAlert(pattern: "NOTE", label: "Note", cssClass: "tips-callout", icon: "ℹ️"),
-			GitHubAlert(pattern: "TIP", label: "Tip", cssClass: "tips-callout", icon: "💡"),
+			GitHubAlert(pattern: "TIP", label: "Tip", cssClass: "tips-callout", icon: "💡")
 		]
 
 		var result = html

@@ -193,7 +193,7 @@ struct DocPageView: View {
 					}
 				}
 				Task.detached(priority: .utility) {
-					await DocTranslationService.shared.prefetchAll(excluding: page.id)
+					await DocTranslationService.shared.prefetchAll()
 				}
 				return
 			}
@@ -226,7 +226,7 @@ struct DocPageView: View {
 					}
 				}
 				Task.detached(priority: .utility) {
-					await DocTranslationService.shared.prefetchAll(excluding: page.id)
+					await DocTranslationService.shared.prefetchAll()
 				}
 			}
 		}

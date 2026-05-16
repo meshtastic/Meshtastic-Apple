@@ -107,4 +107,5 @@ If translation is unavailable (older than iOS 26, unsupported language, or langu
 - A 50 MB per-language limit is enforced using least-recently-used eviction.
 - When the English source documentation is updated (new app version), stale translations are automatically regenerated.
 
-> **Tip — Language change**: If you change your device language while the app is open, documentation pages automatically reload in the new language.
+> **Tip — Language change**
+> If you change your device language while the app is open, documentation pages automatically reload in the new language.

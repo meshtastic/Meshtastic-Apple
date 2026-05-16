@@ -176,7 +176,21 @@ The app ships a complete offline documentation system (feature `003-app-docs-mar
   `cmark-gfm` is invoked with `--unsafe` so raw HTML passes through to both the Jekyll site and the in-app `WKWebView` renderer.
 - **Icons in tables**: Use `![icon](../assets/screenshots/NAME.png)` inside a markdown table with at minimum `| Icon | Description |` columns. Do not use standalone `![]()` blocks for icon references — use tables (FR-032).
 - **Icon snapshots**: Use `transparent: true`, plain `Image` views (not `Button`/wrapper components), `.font(.title).padding(2)`. Connection-status icons use `systemOrange`. Lock icons use portrait canvas widths (`lockClosed/Open/Red` → `width: 30`).
-- **Callout blocks**: Use `> **Tip — …**` and `> **Warning — …**` blockquote syntax — the build script converts these to styled `<div class="tips-callout">` / `<div class="warning-callout">` elements.
+- **Callout blocks**: Always use the **two-line format** — title on the first `>` line, body on one or more continuation `>` lines:
+  ```markdown
+  > **Tip — Short title**
+  > Body text here. Can span multiple sentences.
+
+  > **Warning — Short title**
+  > Body text here.
+  ```
+  The build script and on-device `MarkdownConverter` both detect `<strong>…Tip…</strong>` / `<strong>…Warning…</strong>` inside a `<blockquote>` and convert them to styled `<div class="tips-callout">` / `<div class="warning-callout">` elements.
+
+  **Rules for translation safety** (the translation pipeline segments callouts):
+  - Keep the title short (3–6 words). Long titles are awkward in all languages.
+  - Never put the body inline on the same line as the title (e.g. `> **Tip — Title** body here` or `> **Tip — Title**: body here`). Use the two-line format.
+  - Do not use a `: ` separator between title and body — use the two-line format instead.
+  - The `**` closing the title must be immediately adjacent to the last word (no trailing space): `> **Tip — Title**` ✓, `> **Tip — Title **` ✗.
 - **After editing any `.md` file under `docs/`**, regenerate the bundled HTML and commit it:
   ```bash
   bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta

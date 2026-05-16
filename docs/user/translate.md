@@ -19,7 +19,8 @@ On devices running iOS 26 or later, the in-app documentation is automatically tr
 
 After all documentation pages have been translated in the background, the app automatically uploads the translated markdown files to the [meshtastic/translations](https://github.com/meshtastic/translations) repository. This allows the community to review and improve machine-generated translations.
 
-> **Tip — English users** If your device language is English, no translation occurs and the bundled English documentation is displayed directly.
+> **Tip — English users**
+> If your device language is English, no translation occurs and the bundled English documentation is displayed directly.
 
 ## How to Contribute UI Translations
 
@@ -33,6 +34,7 @@ If you would like to update the translations for an existing locale or add a new
 
 Your contribution will be reviewed, and upon approval, your translation will be included in the next release of the Meshtastic Apple app.
 
-> **Tip — New language?** If you are adding a language not yet present in the project, open the Xcode project settings, go to **Info → Localizations**, and add the new locale before editing `Localizable.xcstrings`.
+> **Tip — New language?**
+> If you are adding a language not yet present in the project, open the Xcode project settings, go to **Info → Localizations**, and add the new locale before editing `Localizable.xcstrings`.
 
 Thank you for helping expand the reach of Meshtastic!

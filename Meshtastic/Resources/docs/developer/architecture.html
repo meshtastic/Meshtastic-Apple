@@ -86,30 +86,27 @@
 <tbody>
 <tr>
 <td><code>DocTranslationService.swift</code></td>
-<td>On-device documentation translation using the Apple Translation framework (primary) with FoundationModels fallback. Detects device language, translates bundled English docs pages, and manages background prefetch. iOS 26+.</td>
+<td>On-device documentation translation using the Apple Translation framework (primary) with FoundationModels fallback. Translates bundled English markdown source files, caches translated <code>.md</code>, converts to HTML via <code>MarkdownConverter</code>, and triggers auto-upload after prefetch. iOS 26+.</td>
 </tr>
 <tr>
 <td><code>TranslationCache.swift</code></td>
 <td>File-based cache for translated <code>.md</code> content stored in Application Support. Tracks content hashes for staleness detection and enforces a 50 MB per-language LRU eviction policy.</td>
 </tr>
+<tr>
+<td><code>MarkdownConverter.swift</code></td>
+<td>GFM-compatible markdown→HTML converter. Supports headings, paragraphs, lists, code fences, inline code, tables, links, images, HTML passthrough (<code>&lt;picture&gt;</code>, <code>&lt;img&gt;</code>), blockquote callouts (tip/warning), bold, italic, strikethrough, horizontal rules, and <code>.md</code> → <code>.html</code> link rewriting. Strips YAML front matter and Jekyll inline attributes.</td>
+</tr>
+<tr>
+<td><code>DocsTranslationUploader.swift</code></td>
+<td>Automatically commits translated <code>.md</code> files to <code>meshtastic/translations</code> repo after background prefetch completes. Performs read-only checks against <code>meshtastic/meshtastic</code> and <code>meshtastic/translations</code> (no auth), then commits via GitHub Contents API using a fine-grained PAT from <code>Secrets.json</code>. Per-file tracking enables retry of failed uploads.</td>
+</tr>
+<tr>
+<td><code>CommunityTranslationFetcher.swift</code></td>
+<td>Downloads existing community translations from the GitHub Pages CDN feed (<code>index.json</code>) before falling back to on-device translation. Fetches <code>nav-labels.json</code> and <code>search-index.json</code> for translated UI strings and search keywords. Builds a pre-rendered translated folder so <code>DocBundle</code> can load translated pages directly.</td>
+</tr>
 </tbody>
 </table>
 <h2>Protobufs</h2>
 <p>The <code>MeshtasticProtobufs</code> Swift Package (<code>MeshtasticProtobufs/Package.swift</code>) wraps protobuf-generated Swift sources. Regenerate with <code>./scripts/gen_protos.sh</code> after updating the <code>protobufs/</code> submodule.</p>
-<h2>External Swift Packages</h2>
-<table>
-<thead>
-<tr>
-<th>Package</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://github.com/meshtastic/TAKPacket-SDK">TAKPacket-SDK</a></td>
-<td>TAK V2 wire format on <code>ATAK_PLUGIN_V2 = port 78</code>. Exposes <code>CotXmlParser</code>, <code>CotXmlBuilder</code>, and <code>TakCompressor</code> (zstd dictionary compression). Pinned in <code>Meshtastic.xcworkspace/.../Package.resolved</code>. See <a href="tak-protocol.html">TAK Protocol</a>.</td>
-</tr>
-</tbody>
-</table>
 </body>
 </html>

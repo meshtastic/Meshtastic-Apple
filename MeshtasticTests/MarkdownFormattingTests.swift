@@ -138,7 +138,7 @@ struct InsertDelimitersTests {
 		#expect(result.text == "hello ****")
 		#expect(result.selectedRange.lowerBound == result.selectedRange.upperBound)
 		// Cursor should be between the ** pairs
-		let cursorOffset = text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
+		let cursorOffset = result.text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
 		#expect(cursorOffset == 8) // "hello " (6) + "**" (2) = 8
 	}
 
@@ -147,7 +147,7 @@ struct InsertDelimitersTests {
 		let text = ""
 		let result = insertDelimiters(in: text, at: text.startIndex, style: .italic)
 		#expect(result.text == "**")
-		let cursorOffset = text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
+		let cursorOffset = result.text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
 		#expect(cursorOffset == 1) // After the opening *
 	}
 
@@ -157,7 +157,7 @@ struct InsertDelimitersTests {
 		let midIndex = text.index(text.startIndex, offsetBy: 6) // after "hello "
 		let result = insertDelimiters(in: text, at: midIndex, style: .code)
 		#expect(result.text == "hello ``world")
-		let cursorOffset = text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
+		let cursorOffset = result.text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
 		#expect(cursorOffset == 7) // "hello `" = 7
 	}
 
@@ -166,7 +166,7 @@ struct InsertDelimitersTests {
 		let text = "test"
 		let result = insertDelimiters(in: text, at: text.endIndex, style: .strikethrough)
 		#expect(result.text == "test~~~~")
-		let cursorOffset = text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
+		let cursorOffset = result.text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
 		#expect(cursorOffset == 6) // "test~~" = 6
 	}
 
@@ -175,7 +175,7 @@ struct InsertDelimitersTests {
 		let text = "hello"
 		let result = insertDelimiters(in: text, at: text.startIndex, style: .bold)
 		#expect(result.text == "****hello")
-		let cursorOffset = text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
+		let cursorOffset = result.text.distance(from: result.text.startIndex, to: result.selectedRange.lowerBound)
 		#expect(cursorOffset == 2) // "**" = 2
 	}
 }

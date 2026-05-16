@@ -77,38 +77,41 @@ struct DocBrowserView: View {
 					description: Text("The documentation bundle could not be loaded.")
 				)
 			} else {
-				List {
+				VStack(spacing: 0) {
 					if let translationProgress {
-						Section {
-							HStack(spacing: 12) {
-								ProgressView()
-									.controlSize(.large)
-								VStack(alignment: .leading, spacing: 2) {
-									Text("Translation in progress…")
-										.font(.headline)
-									Text(translationProgress)
-										.font(.caption)
-										.foregroundStyle(.secondary)
+						HStack(spacing: 12) {
+							ProgressView()
+								.controlSize(.regular)
+							VStack(alignment: .leading, spacing: 2) {
+								Text("Translation in progress…")
+									.font(.headline)
+								Text(translationProgress)
+									.font(.caption)
+									.foregroundStyle(.secondary)
+							}
+							Spacer()
+						}
+						.padding(.horizontal)
+						.padding(.vertical, 10)
+						.background(.bar)
+					}
+					List {
+						ForEach(filteredSections, id: \.section) { item in
+							Section(translatedSectionName(item.section)) {
+								ForEach(item.pages) { page in
+								NavigationLink {
+									DocPageView(page: page)
+								} label: {
+									pageLabel(page)
+									}
+									.accessibilityLabel(translatedPageTitle(page))
+									.accessibilityHint("Opens \(translatedPageTitle(page)) documentation")
 								}
 							}
-							.listRowBackground(Color.clear)
 						}
 					}
-					ForEach(filteredSections, id: \.section) { item in
-						Section(translatedSectionName(item.section)) {
-							ForEach(item.pages) { page in
-							NavigationLink {
-								DocPageView(page: page)
-							} label: {
-								pageLabel(page)
-								}
-								.accessibilityLabel(translatedPageTitle(page))
-								.accessibilityHint("Opens \(translatedPageTitle(page)) documentation")
-							}
-						}
-					}
+					.listStyle(.insetGrouped)
 				}
-				.listStyle(.insetGrouped)
 			}
 		}
 		.navigationTitle(translatedNavigationTitle)

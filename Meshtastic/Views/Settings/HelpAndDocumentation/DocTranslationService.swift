@@ -1099,21 +1099,45 @@ actor DocTranslationService {
 
 	/// If text starts with a blockquote callout prefix like `> **Warning — ` or `> **Tip — `,
 	/// split the prefix as non-translatable so the keyword isn't translated.
+	/// The closing `**` of the title is also protected so translation engines cannot
+	/// insert a space before it (which would break bold rendering and callout detection).
 	private func segmentCalloutPrefix(_ text: String) -> [MarkdownSegment] {
 		// Match patterns like "> **Warning — ", "> **Tip — ", "> **Note — ", "> **Caution — ", "> **Important — "
 		let calloutPattern = #"^(>\s*\*\*(?:Warning|Tip|Note|Caution|Important)\s*[-—–]\s*)"#
-		if let regex = try? NSRegularExpression(pattern: calloutPattern),
-		   let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
-		   let range = Range(match.range(at: 1), in: text) {
-			let prefix = String(text[range])
-			let rest = String(text[range.upperBound...])
-			var result = [MarkdownSegment(text: prefix, translatable: false)]
-			if !rest.isEmpty {
-				result.append(MarkdownSegment(text: rest, translatable: true))
-			}
-			return result
+		guard let regex = try? NSRegularExpression(pattern: calloutPattern),
+			  let prefixMatch = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+			  let prefixRange = Range(prefixMatch.range(at: 1), in: text) else {
+			return [MarkdownSegment(text: text, translatable: true)]
 		}
-		return [MarkdownSegment(text: text, translatable: true)]
+
+		let prefix = String(text[prefixRange])           // e.g. "> **Tip — "
+		let afterPrefix = String(text[prefixRange.upperBound...])
+
+		// Find the closing ** — protect it so translators cannot add a space before it.
+		if let closingRange = afterPrefix.range(of: "**") {
+			let title = String(afterPrefix[..<closingRange.lowerBound])    // translatable title text
+			let closing = String(afterPrefix[closingRange])                 // "**" — non-translatable
+			let body = String(afterPrefix[closingRange.upperBound...])      // optional body text
+
+			var segments: [MarkdownSegment] = [MarkdownSegment(text: prefix, translatable: false)]
+			if !title.isEmpty {
+				segments.append(MarkdownSegment(text: title, translatable: true))
+			}
+			segments.append(MarkdownSegment(text: closing, translatable: false))
+			if !body.trimmingCharacters(in: .whitespaces).isEmpty {
+				segments.append(MarkdownSegment(text: body, translatable: true))
+			} else if !body.isEmpty {
+				segments.append(MarkdownSegment(text: body, translatable: false))
+			}
+			return segments
+		}
+
+		// No closing ** on this line — preserve prefix, translate the rest.
+		var result = [MarkdownSegment(text: prefix, translatable: false)]
+		if !afterPrefix.isEmpty {
+			result.append(MarkdownSegment(text: afterPrefix, translatable: true))
+		}
+		return result
 	}
 
 	/// Returns true if the line is a GFM table separator (e.g. `|---|---|`).

@@ -66,20 +66,20 @@ struct DocBundleTests {
 
 	// MARK: - DocBundle.retrievePages token budget
 
-	@Test func retrievePagesReturnsEmptyForBlankQuery() {
+	@Test @MainActor func retrievePagesReturnsEmptyForBlankQuery() {
 		let bundle = DocBundle.shared
 		let result = bundle.retrievePages(for: "")
 		#expect(result.isEmpty)
 	}
 
-	@Test func retrievePagesRespectsTokenBudget() {
+	@Test @MainActor func retrievePagesRespectsTokenBudget() {
 		// Token budget of 0 should always return empty
 		let bundle = DocBundle.shared
 		let result = bundle.retrievePages(for: "bluetooth connect mesh", maxPages: 5, tokenBudget: 0)
 		#expect(result.isEmpty)
 	}
 
-	@Test func retrievePagesMaxPagesLimit() {
+	@Test @MainActor func retrievePagesMaxPagesLimit() {
 		let bundle = DocBundle.shared
 		// maxPages: 1 should return at most 1 result
 		let result = bundle.retrievePages(for: "bluetooth mesh radio connect", maxPages: 1, tokenBudget: 10000)
@@ -95,7 +95,7 @@ struct DocBundleTests {
 
 	// MARK: - Keyword scoring (AI retrieval)
 
-	@Test func retrievePagesKeywordScoringPicksRelevantPage() {
+	@Test @MainActor func retrievePagesKeywordScoringPicksRelevantPage() {
 		// Build a synthetic DocBundle-like scenario using retrievePages.
 		// When the bundle has no pages (test target), result will be empty — that's still a valid test for no crash.
 		let bundle = DocBundle.shared
@@ -104,7 +104,7 @@ struct DocBundleTests {
 		#expect(result.count <= 3, "Should never return more than maxPages results")
 	}
 
-	@Test func retrievePagesTokenBudgetReducesResults() {
+	@Test @MainActor func retrievePagesTokenBudgetReducesResults() {
 		let bundle = DocBundle.shared
 		let fullBudget = bundle.retrievePages(for: "bluetooth mesh radio", maxPages: 5, tokenBudget: 100000)
 		let smallBudget = bundle.retrievePages(for: "bluetooth mesh radio", maxPages: 5, tokenBudget: 10)
