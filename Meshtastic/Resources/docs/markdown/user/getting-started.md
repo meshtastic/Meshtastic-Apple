@@ -48,10 +48,6 @@ Send your first message by tapping the **Messages** tab and selecting the primar
 
 Visit **Settings → LoRa** to verify your region code matches your location. Using the wrong region is illegal and will prevent communication with other nodes in your area.
 
-## About Meshtastic
-
-![About Meshtastic](../assets/screenshots/aboutMeshtastic.png)
-
 ## Next Steps
 
 - [Bluetooth Device Connection](bluetooth.md) — manage multiple radios
