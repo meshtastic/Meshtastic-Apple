@@ -7,27 +7,10 @@ struct DocBrowserView: View {
 
 	@State private var searchText = ""
 	@State private var isAIPresented = false
-	@State private var translatedLabels: [String: String] = DocBrowserView.loadPersistedLabels()
+	@State private var translatedLabels: [String: String] = [:]
 	@State private var labelTranslationTask: Task<Void, Never>?
-
-	private static let labelsKey = "DocBrowserTranslatedLabels"
-	private static let labelsLanguageKey = "DocBrowserTranslatedLabelsLanguage"
-
-	private static func loadPersistedLabels() -> [String: String] {
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
-		guard languageCode != "en",
-			  UserDefaults.standard.string(forKey: labelsLanguageKey) == languageCode,
-			  let dict = UserDefaults.standard.dictionary(forKey: labelsKey) as? [String: String] else {
-			return [:]
-		}
-		return dict
-	}
-
-	private func persistLabels() {
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
-		UserDefaults.standard.set(translatedLabels, forKey: Self.labelsKey)
-		UserDefaults.standard.set(languageCode, forKey: Self.labelsLanguageKey)
-	}
+	@State private var translationProgress: String?
+	@State private var prefetchTask: Task<Void, Never>?
 
 	private let bundle = DocBundle.shared
 
@@ -95,6 +78,22 @@ struct DocBrowserView: View {
 				)
 			} else {
 				List {
+					if let translationProgress {
+						Section {
+							HStack(spacing: 12) {
+								ProgressView()
+									.controlSize(.large)
+								VStack(alignment: .leading, spacing: 2) {
+									Text("Translation in progress…")
+										.font(.headline)
+									Text(translationProgress)
+										.font(.caption)
+										.foregroundStyle(.secondary)
+								}
+							}
+							.listRowBackground(Color.clear)
+						}
+					}
 					ForEach(filteredSections, id: \.section) { item in
 						Section(translatedSectionName(item.section)) {
 							ForEach(item.pages) { page in
@@ -138,8 +137,8 @@ struct DocBrowserView: View {
 				// Already have translated folder — just translate the few UI chrome strings
 				startLabelTranslations()
 			} else {
-				// Try downloading community translations first, then fall back to on-device
-				Task {
+				// Try downloading community translations first, then start full prefetch
+				prefetchTask = Task {
 					let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
 					if languageCode != "en" {
 						let built = await CommunityTranslationFetcher.shared.buildTranslatedFolder(languageCode: languageCode)
@@ -148,8 +147,12 @@ struct DocBrowserView: View {
 								bundle.load()
 							}
 						}
+						// Start full translation pipeline: dev docs → user docs → nav labels
+						if !isUsingTranslatedFolder {
+							await DocTranslationService.shared.prefetchAll()
+						}
 					}
-					// Only now start label translations for any remaining UI strings
+					// Refresh nav labels from cache after prefetch completes
 					await MainActor.run {
 						startLabelTranslations()
 					}
@@ -157,9 +160,37 @@ struct DocBrowserView: View {
 			}
 			Logger.docs.debug("DocBrowserView appeared — \(pages.count) pages loaded")
 		}
+		.onDisappear {
+			prefetchTask?.cancel()
+		}
+		.onReceive(NotificationCenter.default.publisher(for: DocTranslationService.translationProgressDidChange)) { _ in
+			Task {
+				let progress = await DocTranslationService.shared.translationProgress
+				await MainActor.run {
+					switch progress {
+					case .idle:
+						translationProgress = nil
+					case .translating(let completed, let total, let description):
+						translationProgress = "\(description) - \(completed)/\(total)"
+						// Refresh labels from cache so titles appear as pages complete
+						startLabelTranslations()
+					case .finished:
+						// Pause so the final upload result is visible before dismissal
+						Task {
+							try? await Task.sleep(nanoseconds: 10_000_000_000)
+							await MainActor.run {
+								translationProgress = nil
+							}
+						}
+					}
+				}
+			}
+		}
+		.onReceive(NotificationCenter.default.publisher(for: DocTranslationService.navLabelsDidFinishNotification)) { _ in
+			startLabelTranslations()
+		}
 		.onReceive(NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)) { _ in
 			translatedLabels = [:]
-			UserDefaults.standard.removeObject(forKey: Self.labelsKey)
 			startLabelTranslations()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: DocTranslationService.languageBecameAvailableNotification)) { _ in
@@ -192,16 +223,13 @@ struct DocBrowserView: View {
 		labelTranslationTask = Task(priority: .userInitiated) {
 			let service = DocTranslationService.shared
 
-			// Try to fetch community nav labels and search index first (fast CDN download)
+			// Try to fetch community nav labels and search index (fast CDN download)
 			await CommunityTranslationFetcher.shared.fetchNavLabels(languageCode: languageCode)
 			await CommunityTranslationFetcher.shared.fetchSearchIndex(languageCode: languageCode)
 
-			// Check if community labels populated the UI string cache
-			// Re-snapshot existing labels after community fetch
 			let postFetchLabels = await MainActor.run { translatedLabels }
 
-			// Pre-populate from community cache before on-device translation
-			var immediateUpdates: [String: String] = [:]
+			var updates: [String: String] = [:]
 
 			// All candidate keys
 			var allKeys: [(key: String, source: String)] = [
@@ -215,49 +243,19 @@ struct DocBrowserView: View {
 				allKeys.append(("page:\(page.id)", page.title))
 			}
 
-			// Filter to only keys that still need translation
-			var keysToTranslate: [(key: String, source: String)] = []
+			// Only read from cache — do not trigger on-device translation
 			for item in allKeys {
 				if postFetchLabels[item.key] != nil { continue }
 				if let cached = await service.cachedUIString(item.source, targetLanguage: languageCode) {
-					immediateUpdates[item.key] = cached
-				} else {
-					keysToTranslate.append(item)
+					updates[item.key] = cached
 				}
 			}
 
-			// Apply any labels resolved from community cache immediately
-			if !immediateUpdates.isEmpty && !Task.isCancelled {
+			if !updates.isEmpty && !Task.isCancelled {
 				await MainActor.run {
-					for (key, value) in immediateUpdates {
+					for (key, value) in updates {
 						translatedLabels[key] = value
 					}
-					persistLabels()
-				}
-			}
-
-			guard !keysToTranslate.isEmpty else { return }
-
-			// Translate incrementally — update the UI as each result arrives
-			await withTaskGroup(of: (String, String).self) { group in
-				for item in keysToTranslate {
-					group.addTask {
-						let translated = await service.translatedUIString(item.source, targetLanguage: languageCode)
-						return (item.key, translated)
-					}
-				}
-
-				for await (key, value) in group {
-					guard !Task.isCancelled else { return }
-					await MainActor.run {
-						translatedLabels[key] = value
-					}
-				}
-			}
-
-			if !Task.isCancelled {
-				await MainActor.run {
-					persistLabels()
 				}
 			}
 		}
