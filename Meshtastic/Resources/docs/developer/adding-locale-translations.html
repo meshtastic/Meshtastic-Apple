@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adding or Completing Locale Translations</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="adding-locale-translations">
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Adding or Completing Locale Translations</h1>
+<p>This guide describes exactly how to add missing machine translations for a locale in <code>Localizable.xcstrings</code> using <a href="https://github.com/JoshuaSullivan/local-localizer">local-localizer</a> — an on-device Apple Intelligence tool that requires no API keys or network access.</p>
+<h2>Prerequisites</h2>
+<ul>
+<li>macOS 26 or later with Apple Silicon</li>
+<li>Apple Intelligence enabled (System Settings → Apple Intelligence &amp; Siri)</li>
+<li>Xcode 26 toolchain</li>
+<li>The locale you are targeting must already have <strong>some</strong> existing translated strings to use as a tone reference</li>
+</ul>
+<hr />
+<h2>Step 1 — Create a feature branch</h2>
+<pre><code class="language-bash">git checkout main &amp;&amp; git pull
+git checkout -b translations/&lt;locale-name&gt;
+# e.g. git checkout -b translations/chinese-traditional
+</code></pre>
+<hr />
+<h2>Step 2 — Audit what is missing</h2>
+<p>Run this script to count how many strings are missing or in <code>needs_review</code> for the target locale:</p>
+<pre><code class="language-bash">python3 - &lt;&lt;'EOF'
+import json
+
+LANG = &quot;zh-Hant-TW&quot;   # &lt;-- change to your target locale
+
+with open(&quot;Localizable.xcstrings&quot;, encoding=&quot;utf-8&quot;) as f:
+    data = json.load(f)
+
+strings = data.get(&quot;strings&quot;, {})
+missing, total = [], 0
+for key, val in strings.items():
+    if not key:
+        continue
+    total += 1
+    locs = val.get(&quot;localizations&quot;, {})
+    if LANG not in locs:
+        missing.append(key)
+    else:
+        loc = locs[LANG]
+        if &quot;stringUnit&quot; in loc and loc[&quot;stringUnit&quot;].get(&quot;state&quot;) not in (&quot;translated&quot;,):
+            missing.append(key)
+
+print(f&quot;Total keys : {total}&quot;)
+print(f&quot;Missing    : {len(missing)}&quot;)
+EOF
+</code></pre>
+<hr />
+<h2>Step 3 — Sample existing translations to assess tone</h2>
+<p>Before generating new strings it is important to understand the register and style of what is already there. Run:</p>
+<pre><code class="language-bash">python3 - &lt;&lt;'EOF'
+import json
+
+LANG = &quot;zh-Hant-TW&quot;
+
+with open(&quot;Localizable.xcstrings&quot;, encoding=&quot;utf-8&quot;) as f:
+    data = json.load(f)
+
+samples = []
+for key, val in data[&quot;strings&quot;].items():
+    if not key:
+        continue
+    locs = val.get(&quot;localizations&quot;, {})
+    if LANG in locs:
+        unit = locs[LANG].get(&quot;stringUnit&quot;, {})
+        if unit.get(&quot;state&quot;) == &quot;translated&quot;:
+            samples.append((key, unit.get(&quot;value&quot;, &quot;&quot;)))
+    if len(samples) &gt;= 30:
+        break
+
+for k, v in samples:
+    print(f&quot;EN: {k}&quot;)
+    print(f&quot;{LANG}: {v}\n&quot;)
+EOF
+</code></pre>
+<p>Use the output to decide the appropriate <code>--tone</code> value (<code>professional</code>, <code>formal</code>, <code>informal</code>, <code>polite</code>, <code>neutral</code>).</p>
+<hr />
+<h2>Step 4 — Create a glossary file</h2>
+<p>Create <code>scripts/&lt;locale&gt;-glossary.json</code> to:</p>
+<ul>
+<li>Prevent brand and technical terms from being translated</li>
+<li>Set the tone for the locale</li>
+</ul>
+<p>Example for <code>zh-Hant-TW</code>:</p>
+<pre><code class="language-json">{
+  &quot;doNotTranslate&quot;: [
+    &quot;Meshtastic&quot;,
+    &quot;LoRa&quot;,
+    &quot;MQTT&quot;,
+    &quot;BLE&quot;,
+    &quot;GPS&quot;,
+    &quot;TAK&quot;,
+    &quot;CoT&quot;,
+    &quot;PKC&quot;,
+    &quot;SNR&quot;,
+    &quot;GPIO&quot;,
+    &quot;DFU&quot;,
+    &quot;API&quot;,
+    &quot;Wi-Fi&quot;,
+    &quot;Bluetooth&quot;,
+    &quot;IAQ&quot;,
+    &quot;ATAK&quot;,
+    &quot;WinTAK&quot;,
+    &quot;mPWRD-OS&quot;,
+    &quot;iOS&quot;,
+    &quot;macOS&quot;,
+    &quot;CarPlay&quot;,
+    &quot;SiriKit&quot;
+  ],
+  &quot;tone&quot;: {
+    &quot;default&quot;: &quot;professional&quot;,
+    &quot;zh-Hant-TW&quot;: &quot;professional&quot;
+  }
+}
+</code></pre>
+<p>Adjust the <code>doNotTranslate</code> list and <code>tone</code> based on the locale. For European languages, <code>formal</code> selects the polite second-person form (Sie/vous/Lei/usted). For Japanese/Korean, use <code>polite</code>.</p>
+<hr />
+<h2>Step 5 — Install local-localizer</h2>
+<pre><code class="language-bash">git clone https://github.com/JoshuaSullivan/local-localizer.git ~/Source/local-localizer
+cd ~/Source/local-localizer
+swift build -c release
+mkdir -p ~/bin
+cp .build/release/local-localizer ~/bin/local-localizer
+</code></pre>
+<blockquote>
+<p>Make sure <code>~/bin</code> is on your <code>PATH</code>, or call the binary with its full path.</p>
+</blockquote>
+<hr />
+<h2>Step 6 — Do a dry run</h2>
+<p>Always verify the work plan before translating:</p>
+<pre><code class="language-bash">cd /path/to/Meshtastic-Apple
+~/bin/local-localizer Localizable.xcstrings \
+  --locales zh-Hant-TW \
+  --glossary scripts/zh-Hant-TW-glossary.json \
+  --dry-run
+</code></pre>
+<p>Check that:</p>
+<ul>
+<li>The key count matches your audit from Step 2</li>
+<li>No unexpected keys are listed (e.g. keys you expected to be skipped)</li>
+</ul>
+<hr />
+<h2>Step 7 — Run the translation</h2>
+<pre><code class="language-bash">~/bin/local-localizer Localizable.xcstrings \
+  --locales zh-Hant-TW \
+  --glossary scripts/zh-Hant-TW-glossary.json
+</code></pre>
+<blockquote>
+<p><strong>Do not pass <code>--state translated</code>.</strong> The default state is <code>needs_review</code>, which is correct for machine translations — it signals to native speakers that the strings need human review before shipping.</p>
+</blockquote>
+<p>This runs entirely on-device using Apple Intelligence. Expect roughly 1–2 seconds per string. For ~500 strings, allow 10–20 minutes. The process writes results to the file incrementally so it is safe to interrupt and resume.</p>
+<hr />
+<h2>Step 8 — Verify results</h2>
+<p>After completion, verify full coverage and that all new strings are <code>needs_review</code>:</p>
+<pre><code class="language-bash">python3 - &lt;&lt;'EOF'
+import json
+
+LANG = &quot;zh-Hant-TW&quot;
+
+with open(&quot;Localizable.xcstrings&quot;, encoding=&quot;utf-8&quot;) as f:
+    data = json.load(f)
+
+missing, needs_review, translated = [], 0, 0
+for key, val in data[&quot;strings&quot;].items():
+    if not key:
+        continue
+    locs = val.get(&quot;localizations&quot;, {})
+    if LANG not in locs:
+        missing.append(key)
+    else:
+        loc = locs[LANG]
+        if &quot;stringUnit&quot; in loc:
+            state = loc[&quot;stringUnit&quot;].get(&quot;state&quot;)
+            if state == &quot;translated&quot;:
+                translated += 1
+            elif state == &quot;needs_review&quot;:
+                needs_review += 1
+            else:
+                missing.append(key)
+        elif &quot;variations&quot; in loc:
+            translated += 1  # plural variations are always fine
+
+print(f&quot;Confirmed translated : {translated}&quot;)
+print(f&quot;Needs review         : {needs_review}&quot;)
+print(f&quot;Still missing        : {len(missing)}&quot;)
+if missing:
+    print(&quot;Missing keys:&quot;, missing)
+EOF
+</code></pre>
+<p>Expected output: <code>Still missing: 0</code>. If any keys remain, add them manually (common for plural-only variation entries or strings containing unsupported characters).</p>
+<hr />
+<h2>Step 9 — Verify pre-existing strings are unchanged</h2>
+<p>Confirm that the pre-existing <code>translated</code> strings were not downgraded to <code>needs_review</code> by comparing against the previous commit:</p>
+<pre><code class="language-bash">python3 - &lt;&lt;'EOF'
+import json, subprocess
+
+LANG = &quot;zh-Hant-TW&quot;
+
+old = json.loads(subprocess.check_output([&quot;git&quot;, &quot;show&quot;, &quot;HEAD:Localizable.xcstrings&quot;]))
+with open(&quot;Localizable.xcstrings&quot;, encoding=&quot;utf-8&quot;) as f:
+    new = json.load(f)
+
+regressions = []
+for key, val in old[&quot;strings&quot;].items():
+    locs = val.get(&quot;localizations&quot;, {})
+    if LANG in locs:
+        old_state = locs[LANG].get(&quot;stringUnit&quot;, {}).get(&quot;state&quot;)
+        new_state = new[&quot;strings&quot;].get(key, {}).get(&quot;localizations&quot;, {}).get(LANG, {}).get(&quot;stringUnit&quot;, {}).get(&quot;state&quot;)
+        if old_state == &quot;translated&quot; and new_state != &quot;translated&quot;:
+            regressions.append(key)
+
+print(f&quot;Regressions (translated → other): {len(regressions)}&quot;)
+if regressions:
+    print(regressions[:20])
+EOF
+</code></pre>
+<hr />
+<h2>Step 10 — Commit and open a PR</h2>
+<pre><code class="language-bash">git add Localizable.xcstrings scripts/&lt;locale&gt;-glossary.json
+git commit -m &quot;Add &lt;Language&gt; (&lt;locale&gt;) localisation strings
+
+Add &lt;N&gt; missing &lt;Language&gt; translations to Localizable.xcstrings covering
+all user-visible strings. Translations generated using local-localizer with
+Apple on-device Foundation Models. All machine-translated strings are marked
+needs_review for native speaker review.&quot;
+
+git push -u origin translations/&lt;locale-name&gt;
+gh pr create --base main \
+  --title &quot;Add &lt;Language&gt; (&lt;locale&gt;) localisation strings&quot; \
+  --body &quot;...&quot;
+</code></pre>
+<h3>PR description checklist</h3>
+<ul>
+<li>State how many strings were added and how many were already translated</li>
+<li>Note that all machine translations are <code>needs_review</code></li>
+<li>Link to local-localizer and mention on-device (no API key, no network)</li>
+<li>Invite native speakers to review</li>
+</ul>
+<hr />
+<h2>Notes and caveats</h2>
+<ul>
+<li><strong>Always have a native speaker review.</strong> <code>needs_review</code> state in Xcode flags the strings for review before shipping.</li>
+<li><strong>Plural variation entries</strong> (keys with <code>%lld</code> generating <code>one</code>/<code>other</code>/<code>few</code> etc.) are handled automatically by local-localizer for <code>.xcstrings</code> files. Chinese/Japanese/Korean only need <code>other</code>.</li>
+<li><strong>Do not use <code>--overwrite</code></strong> unless you specifically want to re-translate already-confirmed <code>translated</code> strings.</li>
+<li><strong>Format specifiers</strong> (<code>%@</code>, <code>%lld</code>, <code>%d</code>) are preserved by local-localizer's built-in placeholder protection.</li>
+<li><strong>The glossary file</strong> should be committed alongside the translation so the same settings can be used for future re-runs when new strings are added.</li>
+</ul>
+</body>
+</html>
