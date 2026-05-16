@@ -24,7 +24,11 @@ After all documentation pages have been translated in the background, the app au
 
 ## How to Contribute UI Translations
 
-If you would like to update the translations for an existing locale or add a new language, follow these steps:
+The preferred process for adding or completing a locale is to generate machine translations using [local-localizer](https://github.com/JoshuaSullivan/local-localizer) (Apple on-device Intelligence — no API keys or network required), mark them `needs_review`, and then have a native speaker review and confirm each string.
+
+See the [Adding Locale Translations](../developer/adding-locale-translations.md) developer guide for the full step-by-step process.
+
+If you prefer to translate strings manually in Xcode:
 
 1. Fork the [Meshtastic-Apple repository](https://github.com/meshtastic/Meshtastic-Apple/tree/main) to your GitHub account.
 2. Clone the project and open `Meshtastic.xcworkspace` in Xcode.
