@@ -717,7 +717,7 @@ extension AccessoryManager {
 
 	}
 
-	public func requestStoreAndForwardClientHistory(fromUser: UserEntity, toUser: UserEntity) async throws {
+	public func requestStoreAndForwardClientHistory(fromUser: UserEntity, toUser: UserEntity, channel: Int32) async throws {
 
 		/// send a request for ClientHistory with a time period matching the heartbeat
 		var sfPacket = StoreAndForward()
@@ -730,6 +730,7 @@ extension AccessoryManager {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
 		var dataMessage = DataMessage()
 		guard let sfData: Data = try? sfPacket.serializedData() else {
 			throw AccessoryError.ioFailed("requestStoreAndForwardClientHistory: Unable to serialize data packet")
