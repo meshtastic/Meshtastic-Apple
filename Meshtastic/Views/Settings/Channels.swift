@@ -182,7 +182,6 @@ struct Channels: View {
 						downlink = false
 
 						let newChannel = ChannelEntity()
-						context.insert(newChannel)
 						newChannel.id = channelIndex
 						newChannel.index = channelIndex
 						newChannel.uplinkEnabled = uplink
@@ -250,6 +249,9 @@ struct Channels: View {
 							}
 							node.myInfo?.channels = uniqueChannels.values.sorted { $0.index < $1.index }
 						if channel.role != Channel.Role.disabled {
+							if let selected = selectedChannel, selected.modelContext == nil {
+								context.insert(selected)
+							}
 							do {
 								try context.save()
 								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
