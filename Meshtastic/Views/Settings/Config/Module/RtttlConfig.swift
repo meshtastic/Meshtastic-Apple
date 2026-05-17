@@ -13,7 +13,7 @@ struct RtttlConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -67,14 +67,11 @@ struct RtttlConfig: View {
 			}
 		}
 		.navigationTitle("Ringtone Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a RtttlConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

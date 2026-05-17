@@ -14,7 +14,7 @@ struct NetworkConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State var hasChanges: Bool = false
 	@State var wifiEnabled = false
@@ -38,7 +38,7 @@ struct NetworkConfig: View {
 							Label("Enabled", systemImage: "wifi")
 							Text("Enabling WiFi will disable the bluetooth connection to the app.")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 						
 						HStack {
 							Label("SSID", systemImage: "network")
@@ -125,11 +125,11 @@ struct NetworkConfig: View {
 			}
 		}
 		.navigationTitle("Network Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			}
-		)
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onAppear {
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if accessoryManager.isConnected && node?.networkConfig == nil {

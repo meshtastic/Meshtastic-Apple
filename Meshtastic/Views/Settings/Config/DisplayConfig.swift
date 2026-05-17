@@ -15,7 +15,7 @@ struct DisplayConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State var hasChanges = false
 	@State var screenOnSeconds = 0
@@ -63,7 +63,6 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 			}
 			Section(header: Text("Timing and Overrides")) {
 				VStack(alignment: .leading) {
@@ -76,7 +75,6 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 				
 				VStack(alignment: .leading) {
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
@@ -89,19 +87,18 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 				
 				Toggle(isOn: $wakeOnTapOrMotion) {
 					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
 					Text("Requires that there be an accelerometer on your device.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $flipScreen) {
 					Label("Flip Screen", systemImage: "pip.swap")
 					Text("Flip screen vertically")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				VStack(alignment: .leading) {
 					Picker("Display Mode", selection: $displayMode ) {
@@ -113,7 +110,6 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 				VStack(alignment: .leading) {
 					Picker("OLED Type", selection: $oledType ) {
 						ForEach(OledTypes.allCases) { ot in
@@ -124,7 +120,6 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.displayConfig == nil)
@@ -158,12 +153,11 @@ struct DisplayConfig: View {
 			}
 		}
 		.navigationTitle("Display Config")
-		.navigationBarItems(
-			trailing: ZStack {
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-				
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a DisplayConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

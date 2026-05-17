@@ -15,7 +15,7 @@ struct RangeTestConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -57,7 +57,7 @@ struct RangeTestConfig: View {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "figure.walk")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.listRowSeparator(.visible)
 				UpdateIntervalPicker(
 					config: .rangeTestSender,
@@ -73,7 +73,7 @@ struct RangeTestConfig: View {
 					Label("Save", systemImage: "square.and.arrow.down.fill")
 					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
 				
 			}
@@ -101,14 +101,11 @@ struct RangeTestConfig: View {
 					}
 				}}}
 		.navigationTitle("Range Test Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a RangeTestModuleConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

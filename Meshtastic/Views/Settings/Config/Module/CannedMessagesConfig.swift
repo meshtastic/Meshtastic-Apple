@@ -12,7 +12,7 @@ struct CannedMessagesConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var hasMessagesChanges = false
@@ -47,20 +47,19 @@ struct CannedMessagesConfig: View {
 					
 					Label("Enabled", systemImage: "list.bullet.rectangle.fill")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $sendBell) {
 					
 					Label("Send Bell", systemImage: "bell")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Picker("Configuration Presets", selection: $configPreset ) {
 					ForEach(ConfigPresets.allCases) { cp in
 						Text(cp.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.padding(.top, 10)
 				.padding(.bottom, 10)
 			}
@@ -90,13 +89,13 @@ struct CannedMessagesConfig: View {
 					
 					Label("Rotary 1", systemImage: "dial.min")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.disabled(updown1Enabled)
 				Toggle(isOn: $updown1Enabled) {
 					
 					Label("Up Down 1", systemImage: "arrow.up.arrow.down")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.disabled(rotary1Enabled)
 			}
 			.disabled(configPreset > 0)
@@ -111,7 +110,6 @@ struct CannedMessagesConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder A port.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -126,7 +124,6 @@ struct CannedMessagesConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder B port.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -141,7 +138,6 @@ struct CannedMessagesConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder Press port.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -154,7 +150,6 @@ struct CannedMessagesConfig: View {
 						Text(iec.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.padding(.top, 10)
 				.padding(.bottom, 10)
 				Picker("Counter Clockwise Rotary Event", selection: $inputbrokerEventCcw ) {
@@ -162,7 +157,6 @@ struct CannedMessagesConfig: View {
 						Text(iec.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.padding(.top, 10)
 				.padding(.bottom, 10)
 				Picker("Encoder Press Event", selection: $inputbrokerEventPress ) {
@@ -170,7 +164,6 @@ struct CannedMessagesConfig: View {
 						Text(iec.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.padding(.top, 10)
 				.padding(.bottom, 10)
 			}
@@ -244,14 +237,11 @@ struct CannedMessagesConfig: View {
 			}
 		}
 		.navigationTitle("Canned Messages Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

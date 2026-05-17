@@ -15,7 +15,7 @@ struct DeviceConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
@@ -76,7 +76,6 @@ struct DeviceConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 				
 				VStack(alignment: .leading) {
 					Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
@@ -100,19 +99,19 @@ struct DeviceConfig: View {
 					Label("Double Tap as Button", systemImage: "hand.tap")
 					Text("Treat double tap on supported accelerometers as a user button press.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $tripleClickAsAdHocPing) {
 					Label("Triple Click Ad Hoc Ping", systemImage: "mappin")
 					Text("Send a position on the primary channel when the user button is triple clicked.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $ledHeartbeatEnabled) {
 					Label("LED Heartbeat", systemImage: "waveform.path.ecg")
 					Text("Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 			}
 			Section(header: Text("Debug")) {
 				VStack(alignment: .leading) {
@@ -147,7 +146,6 @@ struct DeviceConfig: View {
 						}
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				Picker("Buzzer GPIO", selection: $buzzerGPIO) {
 					ForEach(0..<49) {
 						if $0 == 0 {
@@ -157,7 +155,6 @@ struct DeviceConfig: View {
 						}
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.deviceConfig == nil)
@@ -307,12 +304,11 @@ struct DeviceConfig: View {
 				}
 			}
 			.navigationTitle("Device Config")
-			.navigationBarItems(
-				trailing: ZStack {
-					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-					
-				}
-			)
+			.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		} // end Form
 		} // end else
 		} // end Group

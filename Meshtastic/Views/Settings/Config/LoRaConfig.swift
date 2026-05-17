@@ -29,7 +29,7 @@ struct LoRaConfig: View {
 	@Environment(\.dismiss) private var goBack
 	@FocusState var focusedField: Field?
 
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 
 	@State var hasChanges = false
 	@State var region: Int = 0
@@ -71,12 +71,11 @@ struct LoRaConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 
 				Toggle(isOn: $usePreset) {
 					Label("Use Preset", systemImage: "list.bullet.rectangle")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 
 				if usePreset {
 					VStack(alignment: .leading) {
@@ -87,7 +86,6 @@ struct LoRaConfig: View {
 								Text(m.description)
 							}
 						}
-						.pickerStyle(DefaultPickerStyle())
 						.fixedSize()
 						Text("Available modem presets, default is Long Fast.")
 							.foregroundColor(.gray)
@@ -100,16 +98,16 @@ struct LoRaConfig: View {
 				Toggle(isOn: $ignoreMqtt) {
 					Label("Ignore MQTT", systemImage: "server.rack")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Toggle(isOn: $okToMqtt) {
 					Label("Ok to MQTT", systemImage: "network")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 
 				Toggle(isOn: $txEnabled) {
 					Label("Transmit Enabled", systemImage: "waveform.path")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 
 				 if !usePreset {
 					 HStack {
@@ -148,7 +146,6 @@ struct LoRaConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 
 				VStack(alignment: .leading) {
 					HStack {
@@ -167,7 +164,7 @@ struct LoRaConfig: View {
 				Toggle(isOn: $rxBoostedGain) {
 					Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 
 				HStack {
 					Label("Frequency Override", systemImage: "waveform.path.ecg")
@@ -223,12 +220,11 @@ struct LoRaConfig: View {
 			}
 		}
 		.navigationTitle("LoRa Config")
-		.navigationBarItems(
-			trailing: ZStack {
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

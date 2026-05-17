@@ -13,7 +13,7 @@ struct BluetoothConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State var hasChanges = false
 	@State var enabled = true
 	@State var mode = 0
@@ -33,13 +33,12 @@ struct BluetoothConfig: View {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "antenna.radiowaves.left.and.right")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Picker("Pairing Mode", selection: $mode ) {
 					ForEach(BluetoothModes.allCases) { bm in
 						Text(bm.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				if mode == 1 {
 					HStack {
 						Label("Fixed Pin", systemImage: "wallet.pass")
@@ -93,12 +92,11 @@ struct BluetoothConfig: View {
 			}
 		}
 		.navigationTitle("Bluetooth Config")
-		.navigationBarItems(
-			trailing: ZStack {
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-				
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

@@ -19,7 +19,7 @@ struct SecurityConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State var hasChanges = false
 	@State var publicKey = ""
@@ -200,12 +200,12 @@ struct SecurityConfig: View {
 					Label("Serial Console", systemImage: "terminal")
 					Text("Serial Console over the Stream API.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Toggle(isOn: $debugLogApiEnabled) {
 					Label("Debug Logs", systemImage: "ant.fill")
 					Text("Output live debug logging over serial, view and export position-redacted device logs over Bluetooth.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 			}
 			if adminKey.length > 0 || UserDefaults.enableAdministration {
 				Section(header: Text("Administration")) {
@@ -213,7 +213,7 @@ struct SecurityConfig: View {
 						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 						Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 			}
 		}
@@ -281,9 +281,11 @@ struct SecurityConfig: View {
 		}
 		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Security Config")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onChange(of: node) { _, _ in
 			setSecurityValues()
 		}

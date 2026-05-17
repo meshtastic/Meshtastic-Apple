@@ -14,7 +14,7 @@ struct MQTTConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	@State var enabled = false
@@ -57,14 +57,14 @@ struct MQTTConfig: View {
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "dot.radiowaves.up.forward")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					Toggle(isOn: $proxyToClientEnabled) {
 						
 						Label("MQTT Client Proxy", systemImage: "iphone.radiowaves.left.and.right")
 						Text("Utilizes the network connection on your phone to connect to MQTT.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
@@ -76,20 +76,20 @@ struct MQTTConfig: View {
 							}
 							
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 					
 					Toggle(isOn: $encryptionEnabled) {
 						Label("Encryption Enabled", systemImage: "lock.icloud")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					if !proxyToClientEnabled {
 						Toggle(isOn: $jsonEnabled) {
 							Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
 							Text("JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 				}
 				
@@ -100,7 +100,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.font(.caption)
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					if mapReportingEnabled {
 						Text("Consent to Share Unencrypted Node Data via MQTT")
 						Text("By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions.")
@@ -114,7 +114,7 @@ struct MQTTConfig: View {
 								.foregroundColor(.gray)
 								.font(.callout)
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 					if mapReportingEnabled && mapReportingOptIn {
 						UpdateIntervalPicker(
@@ -236,7 +236,7 @@ struct MQTTConfig: View {
 								Label("TLS Enabled", systemImage: "checkmark.shield.fill")
 								Text("TLS is required for the public Meshtastic MQTT server.")
 							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.tint(.accentColor)
 							.disabled(true)
 						}
 					} else {
@@ -244,7 +244,7 @@ struct MQTTConfig: View {
 							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
 							Text("Your MQTT Server must support TLS.")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 				}
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
@@ -354,14 +354,11 @@ struct MQTTConfig: View {
 			}
 		}
 		.navigationTitle("MQTT Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a MqttModuleConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

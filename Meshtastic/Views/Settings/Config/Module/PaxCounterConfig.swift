@@ -29,7 +29,7 @@ struct PaxCounterConfig: View {
 					Label("Enabled", systemImage: "figure.walk.motion")
 					Text("When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.listRowSeparator(.visible)
 				if enabled {
 					UpdateIntervalPicker(
@@ -77,12 +77,11 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.navigationTitle("PAX Counter Config")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(
-				deviceConnected: accessoryManager.isConnected,
-				name: "\(accessoryManager.activeConnection?.device.shortName ?? "?")"
-			)
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.onFirstAppear {
 			// Need to request a PaxCounterModuleConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

@@ -36,12 +36,12 @@ struct PowerConfig: View {
 						Label("Power Saving", systemImage: "bolt")
 						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 				Toggle(isOn: $shutdownOnPowerLoss) {
 					Label("Shutdown on Power Loss", systemImage: "power")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				if shutdownOnPowerLoss {
 					UpdateIntervalPicker(
 						config: .all,
@@ -57,7 +57,7 @@ struct PowerConfig: View {
 					Toggle(isOn: $adcOverride) {
 						Text("ADC Override")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 
 					if adcOverride {
 						HStack {
@@ -110,10 +110,11 @@ struct PowerConfig: View {
 			}
 		}
 		.navigationTitle("Power Config")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {
 				Spacer()
