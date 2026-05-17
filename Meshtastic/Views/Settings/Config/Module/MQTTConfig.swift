@@ -147,7 +147,7 @@ struct MQTTConfig: View {
 							.onChange(of: root) {
 								var totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
-								while totalBytes > 30 {
+								while totalBytes > 31 {
 									root = String(root.dropLast())
 									totalBytes = root.utf8.count
 								}
@@ -185,7 +185,7 @@ struct MQTTConfig: View {
 							.onChange(of: address) {
 								var totalBytes = address.utf8.count
 								// Only mess with the value if it is too big
-								while totalBytes > 62 {
+								while totalBytes > 63 {
 									address = String(address.dropLast())
 									totalBytes = address.utf8.count
 								}
@@ -203,7 +203,7 @@ struct MQTTConfig: View {
 								.onChange(of: username) {
 									var totalBytes = username.utf8.count
 									// Only mess with the value if it is too big
-									while totalBytes > 62 {
+									while totalBytes > 63 {
 										username = String(username.dropLast())
 										totalBytes = username.utf8.count
 									}
@@ -220,7 +220,7 @@ struct MQTTConfig: View {
 								.onChange(of: password) {
 									var totalBytes = password.utf8.count
 									// Only mess with the value if it is too big
-									while totalBytes > 30 {
+									while totalBytes > 31 {
 										password = String(password.dropLast())
 										totalBytes = password.utf8.count
 									}
