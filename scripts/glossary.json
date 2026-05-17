@@ -24,7 +24,7 @@
     "SiriKit"
   ],
   "tone": {
-    "default": "formal",
-    "fr": "formal"
+    "default": "informal",
+    "pt-BR": "informal"
   }
 }
