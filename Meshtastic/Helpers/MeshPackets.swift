@@ -876,7 +876,7 @@ actor MeshPackets {
 									let manager = LocalNotificationManager()
 									manager.notifications = [
 										Notification(
-											id: ("notification.id.\(UUID().uuidString)"),
+											id: ("notification.lowbattery.\(packet.from)"),
 											title: "Critically Low Battery!",
 											subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
 											content: "Time to charge your radio, there is \(telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator)% battery remaining.",
