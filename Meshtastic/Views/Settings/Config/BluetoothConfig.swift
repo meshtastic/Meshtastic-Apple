@@ -46,19 +46,16 @@ struct BluetoothConfig: View {
 						TextField("Fixed Pin", text: $fixedPin)
 							.foregroundColor(.gray)
 							.onChange(of: fixedPin) {
-								// Don't let the first character be 0 because it will get stripped when saving a UInt32
-								if fixedPin.first == "0" {
-									fixedPin = fixedPin.replacing("0", with: "")
-								}
+								// Only allow numeric characters
+								let filtered = fixedPin.filter(\.isNumber)
+								// Strip leading zeros since the protobuf value is a UInt32
+								let trimmed = String(filtered.drop(while: { $0 == "0" }))
 								// Require that pin is no more than 6 numbers and no less than 6 numbers
-								if fixedPin.utf8.count == pinLength {
-									shortPin = false
-								} else if fixedPin.utf8.count > pinLength {
-									shortPin = false
-									fixedPin = String(fixedPin.prefix(pinLength))
-								} else if fixedPin.utf8.count < pinLength {
-									shortPin = true
+								let clamped = String(trimmed.prefix(pinLength))
+								if fixedPin != clamped {
+									fixedPin = clamped
 								}
+								shortPin = clamped.count < pinLength
 							}
 							.foregroundColor(.gray)
 					}
