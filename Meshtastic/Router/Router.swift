@@ -178,8 +178,12 @@ class Router: ObservableObject {
 
 	func popToRoot(tab: NavigationState.Tab) {
 		switch tab {
+		case .messages:
+			messagesState = nil
 		case .nodes:
 			selectedNodeNum = nil
+		case .map:
+			mapState = nil
 		case .settings:
 			settingsPath = []
 		default:
