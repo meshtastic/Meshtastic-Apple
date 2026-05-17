@@ -142,31 +142,13 @@ struct NetworkConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.networkConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired network config requesting via PKI admin")
-										try await accessoryManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Network config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.networkConfig == nil },
+				request: accessoryManager.requestNetworkConfig
+			)
 		}
 		.onChange(of: wifiEnabled) { _, newEnabled in
 			if newEnabled != node?.networkConfig?.wifiEnabled { hasChanges = true }

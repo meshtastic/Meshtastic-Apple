@@ -133,31 +133,13 @@ struct SerialConfig: View {
 				}
 			}
 			.onFirstAppear {
-				// Need to request a SerialModuleConfig from the remote node before allowing changes
-				if let deviceNum = accessoryManager.activeDeviceNum, let node {
-					let connectedNode = getNodeInfo(id: deviceNum, context: context)
-					if let connectedNode {
-						if node.num != deviceNum {
-							if UserDefaults.enableAdministration && node.num != deviceNum {
-								/// 2.5 Administration with session passkey
-								let expiration = node.sessionExpiration ?? Date()
-								if expiration < Date() || node.serialConfig == nil {
-									Task {
-										do {
-											Logger.mesh.info("⚙️ Empty or expired serial module config requesting via PKI admin")
-											try await accessoryManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-										} catch {
-											Logger.mesh.info("🚨 Request for serial module config failed")
-										}
-									}
-								}
-							} else {
-								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-							}
-						}
-					}
-				}
+				requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.serialConfig == nil },
+					request: accessoryManager.requestSerialModuleConfig
+				)
 			}
 			.onChange(of: enabled) { oldEnabled, newEnabled in
 				if oldEnabled != newEnabled && newEnabled != node?.serialConfig?.enabled ?? false { hasChanges = true }

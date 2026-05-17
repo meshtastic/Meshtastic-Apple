@@ -136,32 +136,15 @@ struct PowerConfig: View {
 					architecture = arch
 				}
 			}
-			
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.powerConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired power config requesting via PKI admin")
-										try await accessoryManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Power config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.powerConfig == nil },
+				request: accessoryManager.requestPowerConfig
+			)
 		}
 		.onChange(of: isPowerSaving) { oldIsPowerSaving, newIsPowerSaving in
 			if oldIsPowerSaving != newIsPowerSaving && newIsPowerSaving != node?.powerConfig?.isPowerSaving { hasChanges = true }

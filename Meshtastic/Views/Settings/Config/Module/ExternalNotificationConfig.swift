@@ -184,31 +184,13 @@ struct ExternalNotificationConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a ExternalNotificationModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.externalNotificationConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired external notificaiton module config requesting via PKI admin")
-										try await accessoryManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Unable to send external ntoification module config request")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.externalNotificationConfig == nil },
+				request: accessoryManager.requestExternalNotificationModuleConfig
+			)
 		}
 		.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.externalNotificationConfig?.enabled { hasChanges = true }

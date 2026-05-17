@@ -88,31 +88,13 @@ struct AmbientLightingConfig: View {
 	}
 }
 		.onFirstAppear {
-			// Need to request a Ambient Lighting Config from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.ambientLightingConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired ambient lighting module config requesting via PKI admin")
-										try await accessoryManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Unable to send  ambient lighting config request")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.ambientLightingConfig == nil },
+				request: accessoryManager.requestAmbientLightingConfig
+			)
 		}
 		.onChange(of: ledState) { _, newLedState in
 			if newLedState != node?.ambientLightingConfig?.ledState { hasChanges = true }

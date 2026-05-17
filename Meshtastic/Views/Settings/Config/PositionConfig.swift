@@ -399,31 +399,15 @@ struct PositionConfig: View {
 }
 		.onFirstAppear {
 			supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.positionConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired position config requesting via PKI admin")
-										try await accessoryManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Position config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.positionConfig == nil },
+				request: accessoryManager.requestPositionConfig
+			)
 		}
 		.onChange(of: fixedPosition) { _, newFixed in
 			if supportedVersion {

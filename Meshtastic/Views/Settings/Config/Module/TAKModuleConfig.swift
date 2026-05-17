@@ -132,26 +132,13 @@ struct TAKModuleConfig: View {
 			}
 		}
 		.onFirstAppear {
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode, node.num != deviceNum {
-					if UserDefaults.enableAdministration {
-						let expiration = node.sessionExpiration ?? Date()
-						if expiration < Date() || node.takConfig == nil {
-							Task {
-								do {
-									Logger.mesh.info("⚙️ Empty or expired TAK module config requesting via PKI admin")
-									try await accessoryManager.requestTAKModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-								} catch {
-									Logger.mesh.info("🚨 TAK module config request failed: \(error.localizedDescription)")
-								}
-							}
-						}
-					} else {
-						Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.takConfig == nil },
+				request: accessoryManager.requestTAKModuleConfig
+			)
 		}
 		.onChange(of: team) { _, newTeam in
 			if newTeam != Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue)) {

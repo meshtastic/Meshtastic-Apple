@@ -162,31 +162,13 @@ struct TelemetryConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != deviceNum {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.telemetryConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired telemetry module config requesting via PKI admin")
-										try await accessoryManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Telemetry module config request failed: \(error.localizedDescription)")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.telemetryConfig == nil },
+				request: accessoryManager.requestTelemetryModuleConfig
+			)
 		}
 		.onChange(of: deviceUpdateInterval.intValue) { _, newDeviceInterval in
 			if newDeviceInterval != node?.telemetryConfig?.deviceUpdateInterval ?? -1 { hasChanges = true }
@@ -212,9 +194,10 @@ struct TelemetryConfig: View {
 		.onChange(of: powerScreenEnabled) { _, newPowerScreenEnabled in
 			if newPowerScreenEnabled != node?.telemetryConfig?.powerScreenEnabled { hasChanges = true	}
 		}
-		.onChange(of: deviceTelemetryEnabled) { _, newDeviceTelemetryEnabled in
-			if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
-				if newDeviceTelemetryEnabled != node?.telemetryConfig?.deviceTelemetryEnabled { hasChanges = true }
+		.onChange(of: deviceTelemetryEnabled) { _, newValue in
+			let supportsToggle = accessoryManager.checkIsVersionSupported(forVersion: "2.7.12")
+			if supportsToggle && newValue != node?.telemetryConfig?.deviceTelemetryEnabled {
+				hasChanges = true
 			}
 		}
 		

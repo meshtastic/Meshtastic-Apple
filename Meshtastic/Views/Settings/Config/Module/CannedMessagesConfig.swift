@@ -243,31 +243,13 @@ struct CannedMessagesConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.cannedMessageConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired canned messages module config requesting via PKI admin")
-										try await accessoryManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Unable to send canned message module config request")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.cannedMessageConfig == nil },
+				request: accessoryManager.requestCannedMessagesModuleConfig
+			)
 		}
 		.onChange(of: configPreset) { _, newPreset in
 			

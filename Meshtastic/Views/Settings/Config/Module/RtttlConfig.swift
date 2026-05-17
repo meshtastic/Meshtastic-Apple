@@ -73,31 +73,13 @@ struct RtttlConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a RtttlConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.rtttlConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired ringtone module config requesting via PKI admin")
-										try await accessoryManager.requestRtttlConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Request for ringtone module config failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.rtttlConfig == nil },
+				request: accessoryManager.requestRtttlConfig
+			)
 		}
 		.onChange(of: ringtone) { _, newRingtone in
 			if node != nil && node!.rtttlConfig != nil {
