@@ -132,7 +132,7 @@ struct LoRaConfig: View {
 						 Picker("Coding Rate", selection: $codingRate) {
 							 ForEach(5..<9) {
 								 Text("\($0)")
-									 .tag($0 == 8 ? 0 : $0)
+									 .tag($0)
 							 }
 						 }
 					 }
@@ -314,7 +314,8 @@ struct LoRaConfig: View {
 		self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 		self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
 		self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
-		self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
+		let loadedCodingRate = Int(node?.loRaConfig?.codingRate ?? 0)
+		self.codingRate = loadedCodingRate == 0 ? 5 : loadedCodingRate
 		self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
