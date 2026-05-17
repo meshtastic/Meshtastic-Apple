@@ -51,7 +51,7 @@ struct MeshMap: View {
 	/// Track whether a detached Mesh Map window is currently open.
 	@State private var isMapWindowOpen = false
 
-	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true },
+	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true },
 		   sort: \PositionEntity.time, order: .reverse)
 	private var allLatestPositions: [PositionEntity]
 
