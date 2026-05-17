@@ -142,7 +142,7 @@ extension MeshPackets {
 		}
 	}
 	
-	public func clearDatabase(includeRoutes: Bool) {
+	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) {
 		// Delete entities that are on the inverse side of many-to-many
 		// relationships first to avoid constraint trigger violations.
 		do {
@@ -150,6 +150,16 @@ extension MeshPackets {
 			try modelContext.delete(model: DeviceHardwareImageEntity.self)
 		} catch {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+		}
+
+		// Collect favorite node IDs before the delete loop so we can
+		// skip related entities that belong to preserved nodes.
+		var favoriteNodeNums: Set<Int64> = []
+		if preserveFavorites {
+			let favDescriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.favorite == true }
+			)
+			favoriteNodeNums = Set((try? modelContext.fetch(favDescriptor))?.map(\.num) ?? [])
 		}
 
 		let allModels: [any PersistentModel.Type] = MeshtasticSchema.allModels
@@ -160,6 +170,39 @@ extension MeshPackets {
 			}
 			if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
 				continue // already deleted above
+			}
+			if preserveFavorites && modelType == NodeInfoEntity.self {
+				// Keep favorited nodes so the device and app stay in sync when the
+				// firmware is told to preserve favorites (nodedbReset = true).
+				let descriptor = FetchDescriptor<NodeInfoEntity>(
+					predicate: #Predicate<NodeInfoEntity> { node in
+						node.favorite == false
+					}
+				)
+				do {
+					let nonFavorites = try modelContext.fetch(descriptor)
+					for node in nonFavorites {
+						modelContext.delete(node)
+					}
+				} catch {
+					Logger.data.error("\(error.localizedDescription, privacy: .public)")
+				}
+				continue
+			}
+			if preserveFavorites && modelType == UserEntity.self {
+				// Only delete users not belonging to favorite nodes.
+				do {
+					let allUsers = try modelContext.fetch(FetchDescriptor<UserEntity>())
+					for user in allUsers {
+						if let userNodeNum = user.userNode?.num, favoriteNodeNums.contains(userNodeNum) {
+							continue
+						}
+						modelContext.delete(user)
+					}
+				} catch {
+					Logger.data.error("\(error.localizedDescription, privacy: .public)")
+				}
+				continue
 			}
 			do {
 				try modelContext.delete(model: modelType)
