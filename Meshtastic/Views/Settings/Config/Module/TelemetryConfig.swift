@@ -14,7 +14,7 @@ struct TelemetryConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -38,7 +38,7 @@ struct TelemetryConfig: View {
 						Label("Broadcast Device Metrics", systemImage: "wifi")
 						Text("Enable broadcasting device metrics to the mesh network. When disabled, metrics are only sent to connected clients.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					if deviceTelemetryEnabled {
 						UpdateIntervalPicker(
@@ -74,7 +74,7 @@ struct TelemetryConfig: View {
 				Toggle(isOn: $environmentMeasurementEnabled) {
 					Label("Environment Metrics Enabled", systemImage: "chart.xyaxis.line")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				if environmentMeasurementEnabled {
 					UpdateIntervalPicker(
@@ -91,19 +91,19 @@ struct TelemetryConfig: View {
 					Toggle(isOn: $environmentScreenEnabled) {
 						Label("Show on device screen", systemImage: "display")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					Toggle(isOn: $environmentDisplayFahrenheit) {
 						Label("Display Fahrenheit", systemImage: "thermometer")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 			}
 			Section(header: Text("Power Sensor Options")) {
 				Toggle(isOn: $powerMeasurementEnabled) {
 					Label("Enabled", systemImage: "bolt")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				if powerMeasurementEnabled {
 					UpdateIntervalPicker(
@@ -119,7 +119,7 @@ struct TelemetryConfig: View {
 					Toggle(isOn: $powerScreenEnabled) {
 						Label("Power Screen", systemImage: "tv")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 			}
 		}
@@ -156,12 +156,11 @@ struct TelemetryConfig: View {
 			}
 		}
 		.navigationTitle("Telemetry Config")
-		.navigationBarItems(
-			trailing: ZStack {
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-				
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

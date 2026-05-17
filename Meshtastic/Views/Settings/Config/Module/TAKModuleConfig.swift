@@ -59,7 +59,6 @@ struct TAKModuleConfig: View {
 							Text(teamTitle(teamOption)).tag(teamOption.rawValue)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text(teamHelpText(selectedTeam))
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -71,7 +70,6 @@ struct TAKModuleConfig: View {
 							Text(roleTitle(roleOption)).tag(roleOption.rawValue)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text(roleHelpText(selectedRole))
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -109,14 +107,11 @@ struct TAKModuleConfig: View {
 			}
 		}
 		.navigationTitle("TAK Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onAppear {
 			// Need to request a TAKModuleConfig from the connected node before allowing changes.
 			if let deviceNum = accessoryManager.activeDeviceNum,

@@ -13,7 +13,7 @@ struct StoreForwardConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	/// Enable the Store and Forward Module
@@ -38,7 +38,7 @@ struct StoreForwardConfig: View {
 					Label("Enabled", systemImage: "envelope.arrow.triangle.branch")
 					Text("Enables the store and forward module.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 			}
 			
 			if enabled {
@@ -54,7 +54,6 @@ struct StoreForwardConfig: View {
 						Text("75").tag(75)
 						Text("100").tag(100)
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Picker("History Return Max", selection: $historyReturnMax) {
 						Text("Unset").tag(0)
 						Text("25").tag(25)
@@ -62,7 +61,6 @@ struct StoreForwardConfig: View {
 						Text("75").tag(75)
 						Text("100").tag(100)
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Picker("History Return Window", selection: $historyReturnWindow) {
 						Text("Unset").tag(0)
 						Text("One Minute").tag(60)
@@ -73,7 +71,6 @@ struct StoreForwardConfig: View {
 						Text("One Hour").tag(3600)
 						Text("Two Hours").tag(7200)
 					}
-					.pickerStyle(DefaultPickerStyle())
 				}
 				
 				Section(header: Text("Server Option")) {
@@ -81,7 +78,7 @@ struct StoreForwardConfig: View {
 						Label("Server", systemImage: "server.rack")
 						Text("Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					if isServer {
 						Text("Store and forward servers require an ESP32 device with PSRAM or Linux Native.")
 							.foregroundColor(.gray)
@@ -130,14 +127,11 @@ struct StoreForwardConfig: View {
 			}
 		}
 		.navigationTitle("Store & Forward Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
 			// Need to request a StoreForwardModuleConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {

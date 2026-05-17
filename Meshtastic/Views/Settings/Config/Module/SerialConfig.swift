@@ -14,7 +14,7 @@ struct SerialConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -38,27 +38,25 @@ struct SerialConfig: View {
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "terminal")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					Toggle(isOn: $echo) {
 						Label("Echo", systemImage: "repeat")
 						Text("If set, any packets you send will be echoed back to your device.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					Picker("Baud", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in
 							Text(sbr.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					Picker("Timeout", selection: $timeout ) {
 						ForEach(SerialTimeoutIntervals.allCases) { sti in
 							Text(sti.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
 					Text("The amount of time to wait before we consider your packet as done.")
 						.foregroundColor(.gray)
@@ -69,7 +67,6 @@ struct SerialConfig: View {
 							Text(smt.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 				}
 				Section(header: Text("GPIO")) {
 					
@@ -82,7 +79,6 @@ struct SerialConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.visible)
 					
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
@@ -94,7 +90,6 @@ struct SerialConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
 					Text("Set the GPIO pins for RXD and TXD.")
 						.foregroundColor(.gray)
@@ -132,14 +127,11 @@ struct SerialConfig: View {
 				}
 			}
 			.navigationTitle("Serial Config")
-			.navigationBarItems(
-				trailing: ZStack {
-					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?"
-					)
+			.toolbar {
+				ToolbarItem(placement: .topBarTrailing) {
+					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 				}
-			)
+			}
 			.onFirstAppear {
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
 				if let deviceNum = accessoryManager.activeDeviceNum, let node {

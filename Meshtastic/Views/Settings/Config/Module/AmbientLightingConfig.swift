@@ -14,7 +14,7 @@ struct AmbientLightingConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -32,7 +32,7 @@ struct AmbientLightingConfig: View {
 					Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
 					Text("The state of the LED (on/off)")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				HStack {
 					Image(systemName: "eyedropper")
@@ -82,11 +82,11 @@ struct AmbientLightingConfig: View {
 				}
 			}}
 		.navigationTitle("Ambient Lighting Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			}
-		)
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onFirstAppear {
 			// Need to request a Ambient Lighting Config from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {
