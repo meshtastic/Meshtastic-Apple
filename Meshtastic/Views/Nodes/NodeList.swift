@@ -331,6 +331,12 @@ private struct FilteredNodeList: View {
 				TraceRouteButton(
 					node: node
 				)
+				if node.isStoreForwardRouter {
+					ClientHistoryButton(
+						connectedNode: connectedNode,
+						node: node
+					)
+				}
 				IgnoreNodeButton(
 					node: node
 				)
