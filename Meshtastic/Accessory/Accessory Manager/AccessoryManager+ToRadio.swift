@@ -166,8 +166,9 @@ extension AccessoryManager {
 					nodeMeshPacket.decoded = dataNodeMessage
 
 					// Update local database with the new node info
-					// FUTURE: after https://github.com/meshtastic/firmware/pull/8495 is merged, `favorite: true` becomes `favorite: (connectedDeviceRole != DeviceRoles.clientBase)`
-					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: true)
+					// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
+					let shouldFavorite = connectedDeviceRole != .clientBase
+					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite)
 				}
 			} catch {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
