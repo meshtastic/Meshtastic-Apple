@@ -25,7 +25,7 @@ struct PositionFlags: OptionSet {
 
 struct PositionConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
@@ -532,7 +532,6 @@ struct PositionConfig: View {
 			try context.save()
 			Logger.data.info("💾 Updated Position Config with Fixed Position = true")
 		} catch {
-			context.rollback()
 			let nsError = error as NSError
 			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
 		}
@@ -548,17 +547,20 @@ struct PositionConfig: View {
 				Logger.mesh.error("Remove Fixed Position Failed")
 			}
 		}
-		let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
-		mutablePositions?.removeAllObjects()
-		node?.positions = mutablePositions
+		node?.positions = []
 		node?.positionConfig?.fixedPosition = false
 		do {
 			try context.save()
 			Logger.data.info("💾 Updated Position Config with Fixed Position = false")
 		} catch {
-			context.rollback()
 			let nsError = error as NSError
 			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
 		}
 	}
+}
+
+#Preview {
+	PositionConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

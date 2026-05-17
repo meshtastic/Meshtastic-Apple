@@ -10,7 +10,7 @@ import OSLog
 import SwiftUI
 
 struct BluetoothConfig: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
@@ -146,4 +146,10 @@ struct BluetoothConfig: View {
 		self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	BluetoothConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

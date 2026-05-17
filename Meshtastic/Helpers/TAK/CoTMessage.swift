@@ -75,6 +75,13 @@ struct CoTMessage: Identifiable, Sendable {
 	/// Used to preserve generic CoT elements (colors, shapes, labels, etc.)
 	var rawDetailXML: String?
 
+	/// The complete original `<event>...</event>` XML as received from the
+	/// TAK client. Preferred over `toXML()` for the SDK compression path
+	/// because `toXML()` loses shape geometry (`<link point="..."/>`
+	/// vertices) that the app's parser treats as "known" elements but has
+	/// no field to store.
+	var sourceEventXml: String?
+
 	// MARK: - Initialization
 
 	init(
@@ -131,7 +138,8 @@ struct CoTMessage: Identifiable, Sendable {
 		team: String = "Cyan",
 		role: String = "Team Member",
 		battery: Int = 100,
-		staleMinutes: Int = 10
+		staleMinutes: Int = 10,
+		remarks: String? = nil
 	) -> CoTMessage {
 		let now = Date()
 		return CoTMessage(
@@ -149,7 +157,8 @@ struct CoTMessage: Identifiable, Sendable {
 			contact: CoTContact(callsign: callsign, endpoint: "0.0.0.0:4242:tcp"),
 			group: CoTGroup(name: team, role: role),
 			status: CoTStatus(battery: battery),
-			track: CoTTrack(speed: speed, course: course)
+			track: CoTTrack(speed: speed, course: course),
+			remarks: remarks
 		)
 	}
 
@@ -279,17 +288,23 @@ struct CoTMessage: Identifiable, Sendable {
 
 	// MARK: - XML Generation
 
-	/// Generate CoT XML string for transmission to TAK clients
-	func toXML() -> String {
-		let dateFormatter = ISO8601DateFormatter()
-		dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+	/// Generate CoT XML string for transmission to TAK clients.
+	///
+	/// **Important:** the output must NOT include an `<?xml ... ?>` declaration. The CoT TCP
+	/// streaming protocol used by ATAK / iTAK / WinTAK is a continuous sequence of `<event>`
+	/// elements concatenated together; an XML declaration is only legal at the very start
+	/// of a document and the client will drop the connection as malformed the moment it
+	/// sees a second declaration mid-stream.
+	private static let xmlDateFormatStyle = Date.ISO8601FormatStyle(includingFractionalSeconds: true, timeZone: TimeZone(secondsFromGMT: 0)!)
 
-		var cot = "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
-		cot += "<event version='2.0' uid='\(uid.xmlEscaped)' "
+	func toXML() -> String {
+		let dateFormatter = Self.xmlDateFormatStyle
+
+		var cot = "<event version='2.0' uid='\(uid.xmlEscaped)' "
 		cot += "type='\(type)' "
-		cot += "time='\(dateFormatter.string(from: time))' "
-		cot += "start='\(dateFormatter.string(from: start))' "
-		cot += "stale='\(dateFormatter.string(from: stale))' "
+		cot += "time='\(time.formatted(dateFormatter))' "
+		cot += "start='\(start.formatted(dateFormatter))' "
+		cot += "stale='\(stale.formatted(dateFormatter))' "
 		cot += "how='\(how)'>"
 		cot += "<point lat='\(latitude)' lon='\(longitude)' "
 		cot += "hae='\(hae)' ce='\(ce)' le='\(le)'/>"
@@ -350,7 +365,7 @@ struct CoTMessage: Identifiable, Sendable {
 			cot += "<__serverdestination destinations='0.0.0.0:4242:tcp:\(senderUid.xmlEscaped)'/>"
 			cot += "<remarks source='BAO.F.ATAK.\(senderUid.xmlEscaped)' "
 			cot += "to='\(chat.chatroom.xmlEscaped)' "
-			cot += "time='\(dateFormatter.string(from: time))'>"
+			cot += "time='\(time.formatted(dateFormatter))'>"
 			cot += "\(chat.message.xmlEscaped)</remarks>"
 		} else if let remarks, !remarks.isEmpty {
 			cot += "<remarks>\(remarks.xmlEscaped)</remarks>"
@@ -389,31 +404,17 @@ struct CoTGroup: Sendable, Equatable {
 	var name: String
 	/// Role name (e.g., "Team Member", "Team Lead")
 	var role: String
-
-	init(name: String, role: String) {
-		self.name = name
-		self.role = role
-	}
 }
 
 /// Device status for a CoT event
 struct CoTStatus: Sendable, Equatable {
 	var battery: Int
-
-	init(battery: Int) {
-		self.battery = battery
-	}
 }
 
 /// Movement track for a CoT event
 struct CoTTrack: Sendable, Equatable {
 	var speed: Double
 	var course: Double
-
-	init(speed: Double, course: Double) {
-		self.speed = speed
-		self.course = course
-	}
 }
 
 /// Chat message details for a CoT event

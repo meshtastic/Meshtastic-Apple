@@ -11,7 +11,7 @@ import MapKit
 
 struct NodeInfoItem: View {
 
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 
 	var body: some View {
 
@@ -22,15 +22,15 @@ struct NodeInfoItem: View {
 			VStack(alignment: .center) {
 				CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
 			}
-			if node.user != nil {
+			if let user = node.user {
 				Divider()
 				VStack {
-					Image(node.user!.hwModel ?? "unset".localized)
+					Image(user.hwModel ?? "unset".localized)
 						.resizable()
 						.aspectRatio(contentMode: .fit)
 						.frame(width: 75, height: 75)
 						.cornerRadius(5)
-					Text(String(node.user!.hwModel ?? "unset".localized))
+					Text(String(user.hwModel ?? "unset".localized))
 						.font(.caption2).fixedSize()
 				}
 			}
@@ -48,10 +48,10 @@ struct NodeInfoItem: View {
 						.font(.caption2)
 				}
 			}
-			let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-			if deviceMetrics?.count ?? 0 >= 1 {
+			let deviceMetrics = node.telemetries.filter { $0.metricsType == 0 }
+			if deviceMetrics.count >= 1 {
 				Divider()
-				let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+				let mostRecent = deviceMetrics.last
 				VStack(alignment: .center) {
 					BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
 					if mostRecent?.voltage ?? 0 > 0 {

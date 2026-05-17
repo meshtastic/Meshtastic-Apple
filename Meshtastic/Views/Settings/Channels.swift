@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 4/8/22.
 //
 
-import CoreData
+import SwiftData
 import MapKit
 import MeshtasticProtobufs
 import OSLog
@@ -22,13 +22,13 @@ func generateChannelKey(size: Int) -> String {
 
 struct Channels: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
 	@Environment(\.colorScheme) private var colorScheme
 
-	var node: NodeInfoEntity?
+	@Bindable var node: NodeInfoEntity
 
 	@State var hasChanges = false
 	@State var hasValidKey = true
@@ -50,13 +50,31 @@ struct Channels: View {
 	@State var minimumVersion = "2.2.24"
 	@State private var showingHelp = false
 
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
-						  NSSortDescriptor(key: "lastHeard", ascending: false),
-						  NSSortDescriptor(key: "user.longName", ascending: true)],
-		animation: .default)
+	private var displayChannels: [ChannelEntity] {
+		guard let channels = node.myInfo?.channels else { return [] }
+		var byIndex: [Int32: ChannelEntity] = [:]
+		for channel in channels {
+			byIndex[channel.index] = channel
+		}
+		return byIndex.values.sorted { $0.index < $1.index }
+	}
 
-	var nodes: FetchedResults<NodeInfoEntity>
+	private func normalizeDuplicateChannelsIfNeeded() {
+		guard let channels = node.myInfo?.channels else { return }
+		var uniqueChannels: [Int32: ChannelEntity] = [:]
+		for channel in channels {
+			uniqueChannels[channel.index] = channel
+		}
+		let deduped = uniqueChannels.values.sorted { $0.index < $1.index }
+		guard deduped.count != channels.count else { return }
+		node.myInfo?.channels = deduped
+		do {
+			try context.save()
+			Logger.data.info("💾 Normalized duplicate channels for node \(self.node.num, privacy: .public)")
+		} catch {
+			Logger.data.error("Failed normalizing duplicate channels: \(error.localizedDescription, privacy: .public)")
+		}
+	}
 
 	var body: some View {
 
@@ -65,8 +83,8 @@ struct Channels: View {
 				TipView(CreateChannelsTip(), arrowEdge: .bottom)
 					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 					.listRowSeparator(.hidden)
-				if node != nil && node?.myInfo != nil {
-					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
+				if node.myInfo != nil {
+					ForEach(displayChannels, id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
@@ -145,6 +163,45 @@ struct Channels: View {
 						}
 					}
 				}
+				if (node.myInfo?.channels.count ?? 0) < 8 {
+					Button {
+						let channelIndexes = node.myInfo?.channels.compactMap({ ch -> Int in
+							return Int(ch.index)
+						})
+						let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
+						channelKeySize = 16
+						let key = generateChannelKey(size: channelKeySize)
+						channelName = ""
+						channelIndex = Int32(firstChannelIndex)
+						channelRole = 2
+						channelKey = key
+						positionsEnabled = false
+						preciseLocation = false
+						positionPrecision = 0
+						uplink = false
+						downlink = false
+
+						let newChannel = ChannelEntity()
+						newChannel.id = channelIndex
+						newChannel.index = channelIndex
+						newChannel.uplinkEnabled = uplink
+						newChannel.downlinkEnabled = downlink
+						newChannel.name = channelName
+						newChannel.role = Int32(channelRole)
+						newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
+						newChannel.positionPrecision = Int32(positionPrecision)
+						selectedChannel = newChannel
+						hasChanges = true
+
+					} label: {
+						Label("Add Channel", systemImage: "plus.square")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.frame(maxWidth: .infinity)
+					.padding(.vertical, 8)
+				}
 			}
 			.sheet(item: $selectedChannel) { _ in
 				#if targetEnvironment(macCatalyst)
@@ -177,23 +234,28 @@ struct Channels: View {
 							selectedChannel!.downlinkEnabled = downlink
 							selectedChannel!.positionPrecision = Int32(positionPrecision)
 
-							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
+							guard var channels = node.myInfo?.channels else {
 								return
 							}
-							if mutableChannels.contains(selectedChannel as Any) {
-								let replaceChannel = mutableChannels.first(where: { selectedChannel?.psk == ($0 as AnyObject).psk && selectedChannel?.name == ($0 as AnyObject).name})
-								mutableChannels.replaceObject(at: mutableChannels.index(of: replaceChannel as Any), with: selectedChannel as Any)
+							if let idx = channels.firstIndex(where: { $0.index == selectedChannel?.index }) {
+								channels[idx] = selectedChannel!
 							} else {
-								mutableChannels.add(selectedChannel as Any)
+								channels.append(selectedChannel!)
 							}
-							node?.myInfo?.channels = mutableChannels.copy() as? NSOrderedSet
-							context.refresh(selectedChannel!, mergeChanges: true)
+
+							var uniqueChannels: [Int32: ChannelEntity] = [:]
+							for channel in channels {
+								uniqueChannels[channel.index] = channel
+							}
+							node.myInfo?.channels = uniqueChannels.values.sorted { $0.index < $1.index }
 						if channel.role != Channel.Role.disabled {
+							if let selected = selectedChannel, selected.modelContext == nil {
+								context.insert(selected)
+							}
 							do {
 								try context.save()
 								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
 							} catch {
-								context.rollback()
 								let nsError = error as NSError
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
 							}
@@ -202,28 +264,34 @@ struct Channels: View {
 							for object in objects {
 								context.delete(object)
 							}
-							for node in nodes where node.channel == channel.index {
-								context.delete(node)
+							let channelIdx = channel.index
+							var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(
+								predicate: #Predicate { $0.channel == channelIdx }
+							)
+							nodeDescriptor.fetchLimit = 100
+							if let matchingNodes = try? context.fetch(nodeDescriptor) {
+								for matchingNode in matchingNodes {
+									context.delete(matchingNode)
+								}
 							}
 							context.delete(selectedChannel!)
 							do {
 								try context.save()
 								Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
 							} catch {
-								context.rollback()
 								let nsError = error as NSError
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
 							}
 						}
 						Task {
-							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node.user!, toUser: node.user!)
 							Task { @MainActor in
 								selectedChannel = nil
 								channelName = ""
 								channelRole	= 2
 								hasChanges = false
 							}
-							accessoryManager.mqttManager.connectFromConfigSettings(node: node!)
+							accessoryManager.mqttManager.connectFromConfigSettings(node: node)
 						}
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
@@ -245,45 +313,6 @@ struct Channels: View {
 					.padding(.bottom)
 					#endif
 				}
-			}
-			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
-
-				Button {
-					let channelIndexes = node?.myInfo?.channels?.compactMap({(ch) -> Int in
-						return (ch as AnyObject).index
-					})
-					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
-					channelKeySize = 16
-					let key = generateChannelKey(size: channelKeySize)
-					channelName = ""
-					channelIndex = Int32(firstChannelIndex)
-					channelRole = 2
-					channelKey = key
-					positionsEnabled = false
-					preciseLocation = false
-					positionPrecision = 0
-					uplink = false
-					downlink = false
-
-					let newChannel = ChannelEntity(context: context)
-					newChannel.id = channelIndex
-					newChannel.index = channelIndex
-					newChannel.uplinkEnabled = uplink
-					newChannel.downlinkEnabled = downlink
-					newChannel.name = channelName
-					newChannel.role = Int32(channelRole)
-					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
-					newChannel.positionPrecision = Int32(positionPrecision)
-					selectedChannel = newChannel
-					hasChanges = true
-
-				} label: {
-					Label("Add Channel", systemImage: "plus.square")
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
 			}
 		}
 		.sheet(isPresented: $showingHelp) {
@@ -310,6 +339,9 @@ struct Channels: View {
 		}
 		.padding(.bottom, 5)
 		.navigationTitle("Channels")
+		.onAppear {
+			normalizeDuplicateChannelsIfNeeded()
+		}
 		.navigationBarItems(trailing:
 		ZStack {
 			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")

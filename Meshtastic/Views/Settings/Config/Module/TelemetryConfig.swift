@@ -10,7 +10,7 @@ import SwiftUI
 
 struct TelemetryConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -240,4 +240,10 @@ struct TelemetryConfig: View {
 		
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	TelemetryConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

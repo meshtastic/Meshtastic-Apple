@@ -99,3 +99,10 @@ struct MetricsColumnDetail: View {
 		.interactiveDismissDisabled(false)
 	}
 }
+
+#Preview {
+	MetricsColumnDetail(
+		columnList: MetricsColumnList(columns: []),
+		seriesList: MetricsSeriesList()
+	)
+}

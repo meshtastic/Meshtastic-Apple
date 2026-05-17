@@ -1,0 +1,52 @@
+{
+  "doNotTranslate": [
+    "Meshtastic",
+    "LoRa",
+    "MQTT",
+    "BLE",
+    "GPS",
+    "TAK",
+    "CoT",
+    "PKC",
+    "SNR",
+    "GPIO",
+    "DFU",
+    "API",
+    "Wi-Fi",
+    "Bluetooth",
+    "IAQ",
+    "ATAK",
+    "WinTAK",
+    "mPWRD-OS",
+    "iOS",
+    "macOS",
+    "CarPlay",
+    "SiriKit"
+  ],
+  "tone": {
+    "default": "professional",
+    "_comment": "Tone settings recorded from each machine translation run. Community-contributed locales (da, he, pl, ru, se, sr) predate the machine translation pipeline and have no tone setting.",
+    "de": "informal",
+    "es": "professional",
+    "fr": "professional",
+    "it": "professional",
+    "ja": "professional",
+    "ko": "professional",
+    "pt-BR": "informal",
+    "zh-Hans": "professional",
+    "zh-Hant": "professional",
+    "zh-Hant-TW": "professional"
+  },
+  "toneNotes": {
+    "de": "du-form (informal) — appropriate for a technical consumer app (PR #1799)",
+    "es": "professional — default; no explicit tone specified in PR #1805",
+    "fr": "professional — default; no explicit tone specified in PR #1807",
+    "it": "professional — default; no explicit tone specified in PR #1804",
+    "ja": "professional — default; no explicit tone specified in PR #1806",
+    "ko": "professional — formal 합쇼체 register appropriate for an IT publication (PR #1812)",
+    "pt-BR": "informal — você register matching the friendly Brazilian Meshtastic community voice at meshbrasil.com (PR #1808)",
+    "zh-Hans": "professional — default; no explicit tone specified in PR #1800. Appropriate for mainland Chinese consumer software audience.",
+    "zh-Hant": "professional — default; no explicit tone specified in PR #1809",
+    "zh-Hant-TW": "professional — explicitly stated in PR #1803: tone extracted from 745 pre-existing confirmed translations, consistent professional register"
+  }
+}

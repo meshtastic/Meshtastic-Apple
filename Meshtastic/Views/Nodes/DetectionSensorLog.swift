@@ -6,25 +6,38 @@
 //
 
 import SwiftUI
+import SwiftData
 import Charts
 import MeshtasticProtobufs
 import OSLog
 
 struct DetectionSensorLog: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
-	@ObservedObject var node: NodeInfoEntity
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "messageTimestamp", ascending: false)],
-				  predicate: NSPredicate(format: "portNum == %d", Int32(PortNum.detectionSensorApp.rawValue)), animation: .none)
-	private var detections: FetchedResults<MessageEntity>
+	@Bindable var node: NodeInfoEntity
+	@Query private var detections: [MessageEntity]
+
+	init(node: NodeInfoEntity) {
+		self.node = node
+		let nodeNum = node.user?.num ?? 0
+		let portNum: Int32 = 10
+		let sevenDaysAgoTimestamp = Int32((Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast).timeIntervalSince1970)
+		_detections = Query(
+			filter: #Predicate<MessageEntity> {
+				$0.portNum == portNum && $0.messageTimestamp >= sevenDaysAgoTimestamp && $0.fromUser?.num == nodeNum
+			},
+			sort: \MessageEntity.messageTimestamp,
+			order: .reverse
+		)
+	}
 
 	var body: some View {
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
 		let chartData = detections
-			.filter { $0.timestamp >= oneDayAgo! && $0.fromUser?.num ?? -1 == node.user?.num ?? 0 }
+			.filter { $0.timestamp >= oneDayAgo! }
 			.sorted { $0.timestamp < $1.timestamp }
 
 		VStack {
@@ -62,8 +75,6 @@ struct DetectionSensorLog: View {
 				}
 				.frame(minHeight: 250)
 			}
-			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
 				Table(detections) {
@@ -72,7 +83,7 @@ struct DetectionSensorLog: View {
 					}
 
 					TableColumn("Timestamp") { d in
-						Text(d.timestamp.formattedDate(format: dateFormatString))
+						Text(d.timestamp.formatted(date: .numeric, time: .shortened))
 					}
 					.width(min: 180)
 				}
@@ -91,11 +102,11 @@ struct DetectionSensorLog: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-						ForEach(detections.filter( {$0.fromUser?.num ?? -1 == node.user?.num ?? 0})) { d in
+						ForEach(detections) { d in
 							GridRow {
 								Text(d.messagePayload ?? "Detected")
 									.font(.caption)
-								Text(d.timestamp.formattedDate(format: dateFormatString))
+								Text(d.timestamp.formatted(date: .numeric, time: .shortened))
 									.font(.caption)
 							}
 						}
@@ -128,7 +139,7 @@ struct DetectionSensorLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("Detection Sensor Log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Detection Sensor Log".localized) \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -141,3 +152,18 @@ struct DetectionSensorLog: View {
 		)
 	}
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let user = UserEntity()
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	DetectionSensorLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
+}
+*/

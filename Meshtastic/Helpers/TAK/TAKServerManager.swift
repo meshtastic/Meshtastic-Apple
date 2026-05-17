@@ -10,6 +10,44 @@ import Network
 import OSLog
 import Combine
 import SwiftUI
+import SwiftData
+import MeshtasticProtobufs
+
+enum TAKServerError: LocalizedError {
+	case noServerCertificate
+	case noClientCACertificate
+	case tlsConfigurationFailed
+	case listenerFailed(String)
+	case clientNotFound
+	case notRunning
+	case primaryChannelInvalid(String)
+
+	var errorDescription: String? {
+		switch self {
+		case .noServerCertificate:
+			return "No server certificate configured. Import a .p12 file with the server certificate and private key."
+		case .noClientCACertificate:
+			return "No client CA certificate configured. Import the CA certificate (.pem) used to sign client certificates."
+		case .tlsConfigurationFailed:
+			return "Failed to configure TLS settings."
+		case .listenerFailed(let reason):
+			return "Failed to start listener: \(reason)"
+		case .clientNotFound:
+			return "Client not found"
+		case .notRunning:
+			return "TAK Server is not running"
+		case .primaryChannelInvalid(let reason):
+			return reason
+		}
+	}
+}
+
+struct PrimaryChannelIssue: Identifiable {
+	let id = UUID()
+	let title: String
+	let description: String
+	let canAutoFix: Bool
+}
 
 /// Manages the TAK Server lifecycle, TLS connections, and client management
 /// Runs on MainActor for thread safety, following the AccessoryManager pattern
@@ -23,6 +61,14 @@ final class TAKServerManager: ObservableObject {
 	@Published private(set) var isRunning = false
 	@Published private(set) var connectedClients: [TAKClientInfo] = []
 	@Published var lastError: String?
+	@Published private(set) var primaryChannelIssues: [PrimaryChannelIssue] = []
+	@Published private(set) var readOnlyMode = false
+	
+	/// User toggle for read-only mode - locked to true if channel has issues
+	@AppStorage("takServerReadOnly") var userReadOnlyMode = false
+	
+	/// Enable Mesh to CoT converter - bridges Meshtastic packets to TAK format
+	@AppStorage("takServerMeshToCot") var meshToCotEnabled = false
 
 	// MARK: - Configuration (persisted via AppStorage)
 
@@ -62,6 +108,27 @@ final class TAKServerManager: ObservableObject {
 	private var connectionTasks: [ObjectIdentifier: Task<Void, Never>] = [:]
 	private let queue = DispatchQueue(label: "tak.server", qos: .userInitiated)
 
+	// Offline message queue — buffers mesh-originated CoT messages when no TAK
+	// clients are connected, then drains them when a client reconnects. Entries
+	// expire after offlineQueueTTL to avoid delivering stale situational data.
+	//
+	// Both parsed CoT messages (the `broadcast(_:)` path) and raw XML payloads
+	// (the `broadcastRawXml(_:)` path used for V2 shapes / routes / markers
+	// where detail elements survive only as wire bytes) get queued. Raw XML is
+	// kept verbatim instead of being re-parsed to preserve <link point="..."/>
+	// vertices and other elements that CoTMessage strips.
+	private enum QueuedPayload {
+		case message(CoTMessage)
+		case rawXml(String)
+	}
+	private struct QueuedMessage {
+		let payload: QueuedPayload
+		let enqueuedAt: Date
+	}
+	private var offlineQueue: [QueuedMessage] = []
+	private let offlineQueueTTL: TimeInterval = 5 * 60  // 5 minutes
+	private let offlineQueueMaxSize = 50
+
 	private init() {}
 
 	// MARK: - Initialization
@@ -89,6 +156,103 @@ final class TAKServerManager: ObservableObject {
 		}
 	}
 
+	// MARK: - Primary Channel Validation
+
+	/// Check the primary channel for validity
+	/// Returns true if the primary channel is valid for TAK server operation
+	func checkPrimaryChannelValidity() {
+		let context = PersistenceController.shared.context
+		var descriptor = FetchDescriptor<MyInfoEntity>()
+		descriptor.fetchLimit = 1
+		
+		var issues: [PrimaryChannelIssue] = []
+		var isValid = true
+		
+		do {
+			let myInfos = try context.fetch(descriptor)
+			guard let myInfo = myInfos.first,
+				  let primaryChannel = myInfo.channels.first(where: { $0.index == 0 || $0.role == 1 }) else {
+				issues.append(PrimaryChannelIssue(
+					title: "No Primary Channel",
+					description: "No primary channel found on device",
+					canAutoFix: false
+				))
+				isValid = false
+				updateChannelStatus(issues: issues, isValid: isValid)
+				return
+			}
+			
+		let channelName = primaryChannel.name ?? ""
+		let channelPsk = primaryChannel.psk ?? Data()
+		let pskBase64 = channelPsk.base64EncodedString()
+		
+		if channelName.isEmpty {
+			issues.append(PrimaryChannelIssue(
+				title: "Unnamed Primary Channel",
+				description: "TAK Server requires a private channel. Please set up a dedicated TAK channel (name 'TAK' recommended). Tap the button below to auto-configure.",
+				canAutoFix: true
+			))
+			isValid = false
+		}
+		
+		// Use byte length for encryption strength checks (not Base64 string length)
+		let pskBytes = channelPsk.count
+		if pskBytes == 0 {
+			issues.append(PrimaryChannelIssue(
+				title: "Public Channel Not Supported",
+				description: "TAK Server requires a private channel with encryption. Public channels expose your location and messages. Tap the button below to set up a private TAK channel.",
+				canAutoFix: true
+			))
+			isValid = false
+		} else if channelPsk == Data([0x01]) {
+			// Default key is single byte 0x01
+			issues.append(PrimaryChannelIssue(
+				title: "Default Encryption Key",
+				description: "TAK Server requires a unique private channel key. The default key is not secure. Tap the button below to set up a proper private TAK channel.",
+				canAutoFix: true
+			))
+			isValid = false
+		} else if pskBytes < 16 {
+			// Less than 128-bit (16 bytes)
+			issues.append(PrimaryChannelIssue(
+				title: "Weak Encryption Key",
+				description: "TAK Server requires at least 128-bit encryption for your privacy. Tap the button below to set up a secure private TAK channel.",
+				canAutoFix: true
+			))
+			isValid = false
+		}
+			
+			updateChannelStatus(issues: issues, isValid: isValid)
+			
+		} catch {
+			Logger.tak.error("Failed to fetch MyInfo for channel validation: \(error.localizedDescription)")
+			issues.append(PrimaryChannelIssue(
+				title: "Error Checking Channel",
+				description: "Could not verify primary channel settings",
+				canAutoFix: false
+			))
+			updateChannelStatus(issues: issues, isValid: false)
+		}
+	}
+	
+	private func updateChannelStatus(issues: [PrimaryChannelIssue], isValid: Bool) {
+		primaryChannelIssues = issues
+		readOnlyMode = !isValid
+		
+		if !isValid {
+			userReadOnlyMode = true
+		}
+		
+		if !isValid && isRunning {
+			Logger.tak.warning("TAK Server running in read-only mode due to primary channel issues")
+		}
+	}
+	
+	/// Check if TAK client messages should be forwarded to mesh
+	var shouldForwardTAKToMesh: Bool {
+		return !userReadOnlyMode
+	}
+
 	// MARK: - Server Lifecycle
 
 	/// Start the TAK server (TLS or TCP based on configuration)
@@ -97,6 +261,8 @@ final class TAKServerManager: ObservableObject {
 			Logger.tak.info("TAK Server already running")
 			return
 		}
+
+		checkPrimaryChannelValidity()
 
 		let mode = useTLS ? "TLS" : "TCP"
 		Logger.tak.info("Starting TAK Server on port \(self.port) (\(mode) mode)")
@@ -332,7 +498,15 @@ final class TAKServerManager: ObservableObject {
 		switch event {
 		case .connected(let clientInfo):
 			connectedClients.append(clientInfo)
-			Logger.tak.info("TAK client connected: \(clientInfo.displayName)")
+			Logger.tak.info("TAK client connected: \(clientInfo.displayName) (total connected: \(self.connections.count))")
+
+			// Drain any messages that arrived while no clients were connected
+			await drainOfflineQueue()
+
+			// Send all mesh node positions to the newly connected client
+			if meshToCotEnabled {
+				await ensureBridge().broadcastAllNodesToTAK()
+			}
 
 		case .clientInfoUpdated(let clientInfo):
 			// Update the client info in our list
@@ -340,10 +514,26 @@ final class TAKServerManager: ObservableObject {
 				connectedClients[index] = clientInfo
 			}
 
-		case .message(let cotMessage):
+		case .message(let cotMessage, let clientInfo):
 			Logger.tak.info("Received CoT from TAK client: \(cotMessage.type)")
-			// Forward to Meshtastic mesh via bridge
-			await bridge?.sendToMesh(cotMessage)
+			// Forward to Meshtastic mesh via bridge (lazily create if needed)
+			let activeBridge = ensureBridge()
+			await activeBridge.sendToMesh(cotMessage, clientInfo: clientInfo)
+			// Also fan out to OTHER connected TAK clients on this server, so
+			// e.g. an ATAK client on the same in-app TAK Server sees chats and
+			// PLIs from a peer iTAK client without having to wait for the
+			// message to round-trip through the mesh (which won't happen at
+			// all — radios don't echo to sender, so without this fan-out
+			// co-located clients can't see each other). Prefer the original
+			// raw XML the client sent so detail elements (chatgrp,
+			// serverdestination, link, remarks) survive intact; fall back to
+			// the parsed CoTMessage if for some reason the raw XML wasn't
+			// captured.
+			if let rawXml = cotMessage.sourceEventXml {
+				await broadcastRawXml(rawXml, except: connectionId)
+			} else {
+				await broadcast(cotMessage, except: connectionId)
+			}
 
 		case .disconnected:
 			await removeConnection(connectionId)
@@ -366,21 +556,150 @@ final class TAKServerManager: ObservableObject {
 
 	// MARK: - Message Distribution
 
-	/// Broadcast a CoT message to all connected TAK clients
-	func broadcast(_ cotMessage: CoTMessage) async {
-		guard !connections.isEmpty else { return }
+	/// Broadcast a CoT message to all connected TAK clients.
+	/// When no clients are connected, queues the message for delivery
+	/// when a client reconnects (up to 5-minute TTL, max 50 messages).
+	///
+	/// `except` skips a specific connection — used by the local fan-out
+	/// path to avoid echoing a client's own message back to itself.
+	func broadcast(_ cotMessage: CoTMessage, except sender: ObjectIdentifier? = nil) async {
+		// If `sender` is set, only `enqueueOffline` if there are no OTHER
+		// connections — a message from the sole connected client doesn't
+		// need to be queued because there is nobody to deliver it to.
+		let recipientCount = connections.keys.filter { $0 != sender }.count
+		let totalCount = connections.count
+		guard recipientCount > 0 else {
+			if sender == nil {
+				enqueueOffline(.message(cotMessage))
+				Logger.tak.info("Queued CoT for offline delivery (0 TAK clients connected): \(cotMessage.type)")
+			} else {
+				Logger.tak.info("CoT fan-out skipped: sender is the only connected TAK client (total=\(totalCount), type=\(cotMessage.type))")
+			}
+			return
+		}
 
-		Logger.tak.info("Broadcasting CoT to \(self.connections.count) TAK client(s): \(cotMessage.type)")
+		Logger.tak.info("Broadcasting CoT to \(recipientCount) TAK client(s) (total=\(totalCount), excludingSender=\(sender != nil)): \(cotMessage.type)")
 
-		for (connectionId, connection) in connections {
+		// Snapshot the entry set up front so we never observe a mutation made
+		// by `removeConnection(_:)` (which `await`s on `TAKConnection.endpoint`
+		// and therefore lets other `@MainActor` work reenter) while iterating.
+		// Failed IDs are collected and removed after the loop completes.
+		let entries = Array(connections)
+		var failed: [ObjectIdentifier] = []
+		for (connectionId, connection) in entries where connectionId != sender {
 			do {
 				try await connection.send(cotMessage)
 			} catch {
 				Logger.tak.error("Failed to send to TAK client: \(error.localizedDescription)")
-				// Remove failed connection
-				await removeConnection(connectionId)
+				failed.append(connectionId)
 			}
 		}
+		for connectionId in failed {
+			await removeConnection(connectionId)
+		}
+	}
+
+	/// Broadcast raw CoT XML verbatim to TAK clients, bypassing CoTMessage
+	/// parsing which strips shape detail elements (vertices, colors, stroke).
+	/// When no clients are connected, queues the XML for delivery on
+	/// reconnect — V2 routes/shapes are intentionally forwarded through
+	/// this path to preserve detail, so dropping them when offline would
+	/// defeat the point of the parallel offline queue on `broadcast(_:)`.
+	///
+	/// `except` skips a specific connection — used by the local fan-out
+	/// path to avoid echoing a client's own message back to itself.
+	func broadcastRawXml(_ xml: String, except sender: ObjectIdentifier? = nil) async {
+		let recipientCount = connections.keys.filter { $0 != sender }.count
+		let totalCount = connections.count
+		guard recipientCount > 0 else {
+			if sender == nil {
+				enqueueOffline(.rawXml(xml))
+				Logger.tak.info("Queued raw XML for offline delivery (0 TAK clients connected)")
+			} else {
+				Logger.tak.info("Raw XML fan-out skipped: sender is the only connected TAK client (total=\(totalCount))")
+			}
+			return
+		}
+		Logger.tak.info("Broadcasting raw XML to \(recipientCount) TAK client(s) (total=\(totalCount), excludingSender=\(sender != nil))")
+		// Same defensive snapshot + post-loop removal as `broadcast(_:)`.
+		let entries = Array(connections)
+		var failed: [ObjectIdentifier] = []
+		for (connectionId, connection) in entries where connectionId != sender {
+			do {
+				try await connection.sendRawXML(xml)
+			} catch {
+				Logger.tak.error("Failed to send raw XML to TAK client: \(error.localizedDescription)")
+				failed.append(connectionId)
+			}
+		}
+		for connectionId in failed {
+			await removeConnection(connectionId)
+		}
+	}
+
+	/// Append a payload to the offline queue, pruning expired entries first
+	/// and enforcing the max-size cap by dropping the oldest entry.
+	private func enqueueOffline(_ payload: QueuedPayload) {
+		let cutoff = Date().addingTimeInterval(-offlineQueueTTL)
+		offlineQueue.removeAll { $0.enqueuedAt < cutoff }
+		if offlineQueue.count >= offlineQueueMaxSize {
+			offlineQueue.removeFirst()
+		}
+		offlineQueue.append(QueuedMessage(payload: payload, enqueuedAt: Date()))
+	}
+
+	/// Drain any queued messages to newly connected TAK clients.
+	private func drainOfflineQueue() async {
+		let cutoff = Date().addingTimeInterval(-offlineQueueTTL)
+		let valid = offlineQueue.filter { $0.enqueuedAt >= cutoff }
+		offlineQueue.removeAll()
+		guard !valid.isEmpty else { return }
+		Logger.tak.info("Draining \(valid.count) queued message(s) to reconnected TAK client")
+		for queued in valid {
+			switch queued.payload {
+			case .message(let msg):
+				await broadcast(msg)
+			case .rawXml(let xml):
+				await broadcastRawXml(xml)
+			}
+		}
+	}
+	
+	/// Ensure bridge is initialized and ready for mesh-to-CoT broadcasting
+	/// Returns true if broadcasting is possible (meshToCotEnabled and server running).
+	/// Call this before any mesh-to-CoT broadcast operations.
+	///
+	/// We deliberately do NOT gate on `!connectedClients.isEmpty` here. The
+	/// callers (`AccessoryManager` handlers for positions, text messages, and
+	/// waypoints) rely on this method as their entry point into the bridge —
+	/// if it returns false when no client is connected, the message is dropped
+	/// before `broadcast(_:)` ever gets a chance to enqueue it for offline
+	/// delivery. The whole point of the offline queue is to absorb traffic
+	/// that arrives between server start and the first TAK client connecting;
+	/// `broadcast(_:)` / `broadcastRawXml(_:)` already enqueue when
+	/// `connectedClients` is empty, so we hand them the call unconditionally.
+	func ensureBridgeReadyForMeshToCot() -> Bool {
+		guard meshToCotEnabled, isRunning else { return false }
+		ensureBridge()
+		return true
+	}
+
+	/// Lazily create the TAK bridge if it does not already exist.
+	/// Used by both mesh-to-CoT broadcasts and CoT-to-mesh forwarding so that
+	/// the bridge always exists whenever it is needed, regardless of whether
+	/// AccessoryManager.initializeTAKBridge() has already fired.
+	@discardableResult
+	func ensureBridge() -> TAKMeshtasticBridge {
+		if let bridge { return bridge }
+		Logger.tak.info("Lazily initializing TAK bridge")
+		let accessoryManager = AccessoryManager.shared
+		let newBridge = TAKMeshtasticBridge(
+			accessoryManager: accessoryManager,
+			takServerManager: self
+		)
+		newBridge.context = accessoryManager.context
+		bridge = newBridge
+		return newBridge
 	}
 
 	/// Send a CoT message to a specific client
@@ -400,6 +719,110 @@ final class TAKServerManager: ObservableObject {
 		throw TAKServerError.clientNotFound
 	}
 
+	// MARK: - Auto-fix Primary Channel
+
+	/// Automatically fix the primary channel to TAK-compatible settings
+	/// Sets: Name="TAK", 256-bit AES key, preserves existing LoRa channel
+	/// Returns true if successful
+	func autoFixPrimaryChannel() async -> Bool {
+		let accessoryManager = AccessoryManager.shared
+
+		guard accessoryManager.isConnected else {
+			Logger.tak.error("Cannot fix channel: Not connected to device")
+			return false
+		}
+
+		Logger.tak.info("Auto-fixing primary channel for TAK compatibility")
+
+		let context = PersistenceController.shared.context
+
+		guard let connectedNodeNum = accessoryManager.activeDeviceNum else {
+			Logger.tak.error("Cannot fix channel: No active device number")
+			return false
+		}
+
+		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
+			  let user = connectedNode.user else {
+			Logger.tak.error("Cannot fix channel: No connected node or user found")
+			return false
+		}
+
+		var descriptor = FetchDescriptor<MyInfoEntity>()
+		descriptor.fetchLimit = 1
+
+		do {
+			let myInfos = try context.fetch(descriptor)
+			guard let myInfo = myInfos.first,
+				  let primaryChannel = myInfo.channels.first(where: { $0.index == 0 || $0.role == 1 }) else {
+				Logger.tak.error("Cannot fix channel: No primary channel found")
+				return false
+			}
+
+			let newKey = generateChannelKey(size: 32)
+			guard let newPsk = Data(base64Encoded: newKey) else {
+				Logger.tak.error("Failed to decode generated channel key; aborting primary channel fix")
+				return false
+			}
+
+			primaryChannel.name = "TAK"
+			primaryChannel.psk = newPsk
+			primaryChannel.role = 1
+			primaryChannel.index = 0
+
+			if let idx = myInfo.channels.firstIndex(of: primaryChannel), idx != 0 {
+				myInfo.channels.remove(at: idx)
+				myInfo.channels.insert(primaryChannel, at: 0)
+			}
+
+			try context.save()
+
+			var channel = Channel()
+			channel.index = 0
+			channel.role = .primary
+			channel.settings.name = "TAK"
+			channel.settings.psk = newPsk
+			channel.settings.uplinkEnabled = primaryChannel.uplinkEnabled
+			channel.settings.downlinkEnabled = primaryChannel.downlinkEnabled
+			channel.settings.moduleSettings.positionPrecision = UInt32(primaryChannel.positionPrecision)
+
+			try await accessoryManager.saveChannel(channel: channel, fromUser: user, toUser: user)
+
+			Logger.tak.info("Successfully fixed primary channel: name=TAK, key=256-bit")
+
+			// Also set LoRa modem preset to shortFast for optimal TAK performance
+			var loraConfig = Config.LoRaConfig()
+			loraConfig.modemPreset = .shortFast
+			loraConfig.usePreset = true
+			loraConfig.txEnabled = true
+			loraConfig.hopLimit = 3
+			
+			// Get current LoRa config to preserve other settings
+			if let currentLoRa = connectedNode.loRaConfig {
+				loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(currentLoRa.regionCode)) ?? .unset
+				loraConfig.channelNum = UInt32(currentLoRa.channelNum)
+				loraConfig.txPower = Int32(currentLoRa.txPower)
+				loraConfig.bandwidth = UInt32(currentLoRa.bandwidth)
+				loraConfig.codingRate = UInt32(currentLoRa.codingRate)
+				loraConfig.spreadFactor = UInt32(currentLoRa.spreadFactor)
+			}
+			
+			do {
+				try await accessoryManager.saveLoRaConfig(config: loraConfig, fromUser: user, toUser: user)
+				Logger.tak.info("Successfully set LoRa modem preset to shortFast")
+			} catch {
+				Logger.tak.warning("Failed to set LoRa modem preset: \(error.localizedDescription)")
+			}
+
+			checkPrimaryChannelValidity()
+
+			return true
+
+		} catch {
+			Logger.tak.error("Failed to fix primary channel: \(error.localizedDescription)")
+			return false
+		}
+	}
+
 	// MARK: - Status
 
 	/// Get server status description
@@ -411,34 +834,6 @@ final class TAKServerManager: ObservableObject {
 			return "Error: \(error)"
 		} else {
 			return "Stopped"
-		}
-	}
-}
-
-// MARK: - Server Errors
-
-enum TAKServerError: LocalizedError {
-	case noServerCertificate
-	case noClientCACertificate
-	case tlsConfigurationFailed
-	case listenerFailed(String)
-	case clientNotFound
-	case notRunning
-
-	var errorDescription: String? {
-		switch self {
-		case .noServerCertificate:
-			return "No server certificate configured. Import a .p12 file with the server certificate and private key."
-		case .noClientCACertificate:
-			return "No client CA certificate configured. Import the CA certificate (.pem) used to sign client certificates."
-		case .tlsConfigurationFailed:
-			return "Failed to configure TLS settings."
-		case .listenerFailed(let reason):
-			return "Failed to start listener: \(reason)"
-		case .clientNotFound:
-			return "Client not found"
-		case .notRunning:
-			return "TAK Server is not running"
 		}
 	}
 }

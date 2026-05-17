@@ -5,13 +5,13 @@
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
 import MeshtasticProtobufs
-import CoreData
+import SwiftData
 import OSLog
 import SwiftUI
 
 struct RangeTestConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -23,7 +23,7 @@ struct RangeTestConfig: View {
 	@State var save = false
 	@State private var sender: UpdateInterval = UpdateInterval(from: 0)
 	private var isPrimaryChannelPublic: Bool {
-		guard let channels = node?.myInfo?.channels?.array as? [ChannelEntity] else {
+		guard let channels = node?.myInfo?.channels else {
 			return false
 		}
 		// Treat the primary channel on this node as "public" when it is effectively unencrypted
@@ -35,11 +35,24 @@ struct RangeTestConfig: View {
 		return hexLen < 3
 	}
 
-	
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
-			
+
+			if isPrimaryChannelPublic {
+				Section {
+					Label("Range test requires an encrypted private channel. The primary channel on this node is using a default or empty key.", systemImage: "lock.open.fill")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
+			} else if accessoryManager.isConnected && node != nil && node?.rangeTestConfig == nil {
+				Section {
+					Label("Range test configuration has not been received from the radio. Try reconnecting to the device.", systemImage: "exclamationmark.triangle.fill")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
+			}
+
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "figure.walk")
@@ -101,7 +114,19 @@ struct RangeTestConfig: View {
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {
 				let connectedNode = getNodeInfo(id: deviceNum, context: context)
 				if let connectedNode {
-					if node.num != deviceNum {
+					if node.num == deviceNum {
+						// Connected node: request config if it was not delivered during initial connection
+						if node.rangeTestConfig == nil {
+							Task {
+								do {
+									Logger.mesh.info("⚙️ Range test module config missing for connected node, requesting")
+									try await accessoryManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+								} catch {
+									Logger.mesh.error("🚨 Request range test module config failed for connected node")
+								}
+							}
+						}
+					} else {
 						if UserDefaults.enableAdministration && node.num != connectedNode.num {
 							/// 2.5 Administration with session passkey
 							let expiration = node.sessionExpiration ?? Date()
@@ -142,4 +167,10 @@ struct RangeTestConfig: View {
 		self.sender = UpdateInterval(from: Int(node?.rangeTestConfig?.sender ?? 0))
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	RangeTestConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

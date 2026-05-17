@@ -10,7 +10,7 @@ import SwiftUI
 import OSLog
 
 struct PaxCounterConfig: View {
-	@Environment(\.managedObjectContext) private var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -122,4 +122,10 @@ struct PaxCounterConfig: View {
 		enabled = node?.paxCounterConfig?.enabled ?? enabled
 		paxcounterUpdateInterval = UpdateInterval(from: Int(node?.paxCounterConfig?.updateInterval ?? 1800))
 	}
+}
+
+#Preview {
+	PaxCounterConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

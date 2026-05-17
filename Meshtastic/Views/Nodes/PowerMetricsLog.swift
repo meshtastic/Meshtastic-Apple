@@ -12,9 +12,9 @@ import OSLog
 
 struct PowerMetricsLog: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
@@ -27,8 +27,7 @@ struct PowerMetricsLog: View {
 	@State private var channelSelection = 0
 
 	var powerMetrics: [TelemetryEntity] {
-		let telemetries = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 2"))
-		return (telemetries?.reversed() as? [TelemetryEntity]) ?? []
+		return node.telemetries.filter { $0.metricsType == 2 }.reversed()
 	}
 
 	var minMax: (min: Double, max: Double) {
@@ -55,8 +54,8 @@ struct PowerMetricsLog: View {
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 
 				let chartData = powerMetrics
-					.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
-					.sorted { $0.time! < $1.time! }
+					.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+					.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(powerMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 
@@ -115,14 +114,11 @@ struct PowerMetricsLog: View {
 						.chartLegend(position: .automatic, alignment: .bottom)
 					}
 				}
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
-
 				if idiom == .phone {
 					Table(powerMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Timestamp") { m in
 							HStack {
-								Text(m.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+								Text(m.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 								Spacer()
 								HStack {
 									VStack {
@@ -213,7 +209,7 @@ struct PowerMetricsLog: View {
 						}
 						.width(min: 75)
 						TableColumn("Timestamp") { dm in
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+							Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 
@@ -284,7 +280,7 @@ struct PowerMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("Power Metrics Log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Power Metrics Log".localized) \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -297,3 +293,18 @@ struct PowerMetricsLog: View {
 		)
 	}
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let user = UserEntity()
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	PowerMetricsLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
+}
+*/

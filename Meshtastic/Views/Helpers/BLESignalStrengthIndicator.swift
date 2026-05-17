@@ -94,3 +94,11 @@ enum BLESignalStrength: Int {
     case normal = 1
     case strong = 2
 }
+
+#Preview {
+	HStack(spacing: 16) {
+		SignalStrengthIndicator(signalStrength: .weak)
+		SignalStrengthIndicator(signalStrength: .normal)
+		SignalStrengthIndicator(signalStrength: .strong)
+	}
+}

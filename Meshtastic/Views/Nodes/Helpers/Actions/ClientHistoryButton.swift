@@ -16,7 +16,8 @@ struct ClientHistoryButton: View {
 				do {
 					try await accessoryManager.requestStoreAndForwardClientHistory(
 						fromUser: connectedNode.user!,
-						toUser: node.user!
+						toUser: node.user!,
+						channel: node.channel
 					)
 					Task { @MainActor in
 						isPresentingAlert = true
@@ -40,3 +41,15 @@ struct ClientHistoryButton: View {
 		}
     }
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let connectedNode = NodeInfoEntity()
+	connectedNode.num = 987654321
+	ClientHistoryButton(connectedNode: connectedNode, node: node)
+		.environmentObject(AccessoryManager.shared)
+}
+*/

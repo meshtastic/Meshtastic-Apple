@@ -10,7 +10,7 @@ import SwiftUI
 
 struct SerialConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -204,4 +204,10 @@ struct SerialConfig: View {
 		self.overrideConsoleSerialPort = false // node?.serialConfig?.overrideConsoleSerialPort ?? false
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	SerialConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

@@ -10,8 +10,20 @@ import CoreLocation
 import Foundation
 
 struct NodeListItem: View {
-	
-	private var accessibilityDescription: String {
+
+	private static let relativeDateFormatter: RelativeDateTimeFormatter = {
+		let f = RelativeDateTimeFormatter()
+		f.unitsStyle = .full
+		return f
+	}()
+
+	private static let distanceFormatter: LengthFormatter = {
+		let f = LengthFormatter()
+		f.unitStyle = .medium
+		return f
+	}()
+
+	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
 			desc = shortName.formatNodeNameForVoiceOver()
@@ -26,10 +38,8 @@ struct NodeListItem: View {
 		if node.favorite {
 			desc += ", favorite"
 		}
-		if node.lastHeard != nil {
-			let formatter = RelativeDateTimeFormatter()
-			formatter.unitsStyle = .full
-			let relative = formatter.localizedString(for: node.lastHeard!, relativeTo: Date())
+		if let lastHeard = node.lastHeard {
+			let relative = Self.relativeDateFormatter.localizedString(for: lastHeard, relativeTo: Date())
 			desc += ", last heard " + relative
 		}
 		if node.isOnline {
@@ -44,7 +54,7 @@ struct NodeListItem: View {
 		if node.hopsAway > 0 {
 			desc += ", \(node.hopsAway) hops away"
 		}
-		if let battery = node.latestDeviceMetrics?.batteryLevel {
+		if let battery = cachedMetrics?.batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -53,12 +63,10 @@ struct NodeListItem: View {
 				desc += ", battery \(battery)%"
 			}
 		}
-		if !isDirectlyConnected, let (lastPosition, myCoord) = locationData {
+		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
 			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
 			let metersAway = nodeCoord.distance(from: myCoord)
-			let distanceFormatter = LengthFormatter()
-			distanceFormatter.unitStyle = .medium
-			let formattedDistance = distanceFormatter.string(fromMeters: metersAway)
+			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
 			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
 			let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
 			let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
@@ -88,7 +96,7 @@ struct NodeListItem: View {
 		return desc
 	}
 	
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -109,7 +117,7 @@ struct NodeListItem: View {
 	}
 	
 	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.positions?.lastObject as? PositionEntity else {
+		guard let lastPostion = node.latestPosition else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
@@ -125,13 +133,22 @@ struct NodeListItem: View {
 	}
 	
 	var body: some View {
+		// Cache all expensive computed properties ONCE to avoid repeated FetchDescriptor queries
+		let cachedMetrics = node.latestDeviceMetrics
+		let cachedLocationData = locationData
+		let cachedHasPositions = node.hasPositions
+		let cachedHasDeviceMetrics = cachedMetrics != nil
+		let cachedHasEnvironmentMetrics = node.hasEnvironmentMetrics
+		let cachedHasDetectionSensorMetrics = node.hasDetectionSensorMetrics
+		let cachedHasTraceRoutes = node.hasTraceRoutes
+		let cachedHasLogs = cachedHasPositions || cachedHasEnvironmentMetrics || cachedHasDetectionSensorMetrics || cachedHasTraceRoutes
 		LazyVStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 						.padding(.trailing, 5)
-					if node.latestDeviceMetrics != nil {
-						BatteryCompact(batteryLevel: node.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+					if let batteryLevel = cachedMetrics?.batteryLevel {
+						BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 							.padding(.trailing, 5)
 					}
 				}
@@ -156,7 +173,7 @@ struct NodeListItem: View {
 					if node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 						IconAndText(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 									imageColor: node.isOnline ? .green : .orange,
-									text: node.lastHeard?.formatted() ?? "Unknown Age".localized)
+							text: node.lastHeard?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 					}
 					let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 					IconAndText(systemName: role?.systemName ?? "figure",
@@ -172,9 +189,9 @@ struct NodeListItem: View {
 									text: "Store & Forward".localized)
 					}
 					
-					if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
+					if connectedNode != node.num {
 						HStack {
-							if let (lastPostion, myCoord) = locationData {
+							if let (lastPostion, myCoord) = cachedLocationData {
 								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 								let metersAway = nodeCoord.distance(from: myCoord)
 								Image(systemName: "lines.measurement.horizontal")
@@ -209,22 +226,22 @@ struct NodeListItem: View {
 										text: "MQTT")
 						}
 					}
-					if node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes {
+					if cachedHasLogs {
 						HStack {
 							IconAndText(systemName: "scroll", text: "Logs:")
-							if node.hasDeviceMetrics {
+							if cachedHasDeviceMetrics {
 								DefaultIcon(systemName: "flipphone")
 							}
-							if node.hasPositions {
+							if cachedHasPositions {
 								DefaultIcon(systemName: "mappin.and.ellipse")
 							}
-							if node.hasEnvironmentMetrics {
+							if cachedHasEnvironmentMetrics {
 								DefaultIcon(systemName: "cloud.sun.rain")
 							}
-							if node.hasDetectionSensorMetrics {
+							if cachedHasDetectionSensorMetrics {
 								DefaultIcon(systemName: "sensor")
 							}
-							if node.hasTraceRoutes {
+							if cachedHasTraceRoutes {
 								DefaultIcon(systemName: "signpost.right.and.left")
 							}
 						}
@@ -238,17 +255,17 @@ struct NodeListItem: View {
 					} else {
 						if node.snr != 0 && !node.viaMqtt {
 							LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: modemPreset, compact: true)
-								.padding(.top, node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes ? 0 : 15)
+								.padding(.top, cachedHasLogs ? 0 : 15)
 						}
 					}
 				}
 				.frame(maxWidth: .infinity, alignment: .leading)
 			}
 		}
-		.padding(.top, 4)
-		.padding(.bottom, 4)
+		.padding(.top, 3)
+		.padding(.bottom, 3)
 		.accessibilityElement(children: .ignore)
-		.accessibilityLabel(accessibilityDescription)
+		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
 	}
 }
 
@@ -294,13 +311,10 @@ struct IconAndText: View {
 }
 
 #Preview {
-	VStack(alignment: .leading) {
-		IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill", text: "foo")
-		IconAndText(systemName: "antenna.radiowaves.left.and.right.circle", text: "bar")
+	List {
 		NodeListItem(node: {
-			let context = PersistenceController.preview.container.viewContext
-			let nodeInfo = NodeInfoEntity(context: context)
-			let user = UserEntity(context: context)
+			let nodeInfo = NodeInfoEntity()
+			let user = UserEntity()
 			user.longName = "Test User"
 			user.shortName = "TU"
 			nodeInfo.user = user

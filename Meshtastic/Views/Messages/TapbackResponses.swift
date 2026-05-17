@@ -2,7 +2,7 @@ import SwiftUI
 import OSLog
 
 struct TapbackResponses: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 
 	let message: MessageEntity
 	let onRead: () -> Void
@@ -13,10 +13,11 @@ struct TapbackResponses: View {
 		if !tapbacks.isEmpty {
 			VStack(alignment: .trailing) {
 				HStack {
-					ForEach( tapbacks ) { (tapback: MessageEntity) in
+					ForEach(tapbacks) { (tapback: MessageEntity) in
 						VStack {
-							let image = tapback.messagePayload!.image(fontSize: 20)
-							Image(uiImage: image!).font(.caption)
+							if let payload = tapback.messagePayload, let image = payload.image(fontSize: 20) {
+								Image(uiImage: image).font(.caption)
+							}
 							Text("\(tapback.fromUser?.shortName ?? "?")")
 								.font(.caption2)
 								.foregroundColor(.gray)

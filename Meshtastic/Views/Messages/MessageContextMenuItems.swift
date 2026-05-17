@@ -1,18 +1,24 @@
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 
 struct MessageContextMenuItems: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
 	@Binding var isShowingDeleteConfirmation: Bool
-	@Binding var isShowingTapbackInput: Bool
+	let onTapback: () -> Void
 	let onReply: () -> Void
-	@State var relayDisplay: String? = nil
+	let canTranslate: Bool
+	let hasTranslatedText: Bool
+	let isShowingTranslatedText: Bool
+	let onTranslate: () -> Void
+	let onToggleTranslatedText: () -> Void
+	let onClearTranslation: () -> Void
+	@State var relayDisplay: String?
 
 	var body: some View {
 		VStack {
@@ -32,14 +38,33 @@ struct MessageContextMenuItems: View {
 
 		Button("Tapback") {
 			// The context menu needs a moment to dismiss before the focus state can be changed.
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-				isShowingTapbackInput = true
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+				onTapback()
 			}
 		}
 
 		Button(action: onReply) {
 			Text("Reply")
 			Image(systemName: "arrowshape.turn.up.left")
+		}
+
+		if canTranslate {
+			Button(action: onTranslate) {
+				Text("Translate")
+				Image(systemName: "translate")
+			}
+		}
+
+		if hasTranslatedText {
+			Button(action: onToggleTranslatedText) {
+				Text(isShowingTranslatedText ? "Show Original" : "Show Translation")
+				Image(systemName: isShowingTranslatedText ? "text.bubble" : "globe")
+			}
+
+			Button(role: .destructive, action: onClearTranslation) {
+				Text("Clear Translation")
+				Image(systemName: "trash")
+			}
 		}
 
 		Button {
@@ -56,10 +81,9 @@ struct MessageContextMenuItems: View {
 			let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 
 			// Compute a relay display string if relayNode is present
-			
 
 			VStack {
-				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))")
+				Text("\(messageDate.formatted(date: .numeric, time: .standard))")
 					.foregroundColor(.gray)
 			}
 
@@ -73,7 +97,7 @@ struct MessageContextMenuItems: View {
 			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) && message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
-					Text("RSSI \(String(format: "%.2f", message.rssi)) dBm")
+					Text("RSSI \(message.rssi) dBm")
 				}
 			} else if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) {
 				VStack {
@@ -98,7 +122,7 @@ struct MessageContextMenuItems: View {
 
 			if isCurrentUser {
 				if let sixMonthsAgo, ackDate >= sixMonthsAgo {
-					Text("Ack Time: \(ackDate.formattedDate(format: MessageText.timeFormatString))")
+					Text("Ack Time: \(ackDate.formatted(date: .omitted, time: .standard))")
 						.foregroundColor(.gray)
 				}
 			}
@@ -124,7 +148,7 @@ struct MessageContextMenuItems: View {
 }
 
 private extension MessageDestination {
-	var managedObject: NSManagedObject {
+	var persistentModel: any PersistentModel {
 		switch self {
 		case let .user(user): return user
 		case let .channel(channel): return channel

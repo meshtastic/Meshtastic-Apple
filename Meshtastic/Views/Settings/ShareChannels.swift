@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 4/8/22.
 //
 import SwiftUI
-import CoreData
+import SwiftData
 import CoreImage.CIFilterBuiltins
 import MeshtasticProtobufs
 import TipKit
@@ -33,7 +33,7 @@ struct QrCodeImage {
 
 struct ShareChannels: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var dismiss
 	@State var channelSet: ChannelSet = ChannelSet()
@@ -78,21 +78,21 @@ struct ShareChannels: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-						ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
+						ForEach(node?.myInfo?.channels ?? [], id: \.self) { (channel: ChannelEntity) in
 							GridRow {
 								Spacer()
 								if channel.index == 0 {
 									Toggle("Channel 0 Included", isOn: $includeChannel0)
 										.toggleStyle(.switch)
 										.labelsHidden()
-									Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
+									Text(((channel.name?.isEmpty ?? true ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
 									ChannelLock(channel: channel)
 								} else if channel.index == 1 && channel.role > 0 {
 									Toggle("Channel 1 Included", isOn: $includeChannel1)
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+											Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -105,7 +105,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -118,7 +118,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -131,7 +131,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -144,7 +144,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -157,7 +157,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -170,7 +170,7 @@ struct ShareChannels: View {
 										.toggleStyle(.switch)
 										.labelsHidden()
 										.disabled(channel.role == 1)
-									Text(((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
+									Text(((channel.name?.isEmpty ?? true ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)").camelCaseToWords()).fixedSize()
 									if channel.psk?.hexDescription.count ??  0 <  3 {
 										Image(systemName: "lock.slash.fill")
 											.foregroundColor(.red)
@@ -285,8 +285,8 @@ struct ShareChannels: View {
 		loRaConfig.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
 		loRaConfig.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
 		channelSet.loraConfig = loRaConfig
-		if node?.myInfo?.channels != nil && node?.myInfo?.channels?.count ?? 0 > 0 {
-			for ch in node?.myInfo?.channels?.array as? [ChannelEntity] ?? [] where ch.role > 0 {
+		if node?.myInfo != nil && (node?.myInfo?.channels.count ?? 0) > 0 {
+			for ch in node?.myInfo?.channels ?? [] where ch.role > 0 {
 				var includeChannel = false
 				switch ch.index {
 				case 0:

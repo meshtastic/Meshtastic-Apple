@@ -5,6 +5,8 @@
 //  Created by Ben on 8/20/23.
 //
 
+#if os(iOS)
+import Intents
 import SwiftUI
 import OSLog
 
@@ -13,6 +15,9 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 	var router: Router?
 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+		guard NSClassFromString("XCTestCase") == nil && ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
+			return true
+		}
 		Logger.services.info("🚀 [App] Meshtstic Apple App launched!")
 		// Default User Default Values
 		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])
@@ -29,8 +34,22 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		Task { @MainActor in
 			TAKServerManager.shared.initializeOnStartup()
 		}
+		// Request Siri authorization so intent donations work and CarPlay messaging is available.
+		#if !targetEnvironment(macCatalyst)
+		INPreferences.requestSiriAuthorization { status in
+			Logger.services.info("Siri authorization status: \(String(describing: status))")
+		}
+		#endif
 		return true
 	}
+
+	// MARK: - SiriKit Intent Handling
+
+	/// Routes incoming SiriKit intents to the appropriate handler for CarPlay and Siri messaging support.
+	func application(_ application: UIApplication, handlerFor intent: INIntent) -> Any? {
+		IntentHandler().handler(for: intent)
+	}
+
 	// Lets us show the notification in the app in the foreground
 	func userNotificationCenter(
 		_ center: UNUserNotificationCenter,
@@ -122,3 +141,4 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		completionHandler()
 	}
 }
+#endif

@@ -4,13 +4,13 @@
 //
 //  Copyright (c) Garth Vander Houwen 6/27/22.
 //
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import SwiftUI
 
 struct UserConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -234,11 +234,11 @@ struct UserConfig: View {
 			if oldIsUnmessagable != newIsUnmessagable && newIsUnmessagable != node?.user?.unmessagable ?? true { hasChanges = true }
 		}
 		.onChange(of: isLicensed) { _, newIsLicensed in
-			if node != nil && node!.user != nil {
-				if newIsLicensed != node?.user!.isLicensed {
+			if let user = node?.user {
+				if newIsLicensed != user.isLicensed {
 					hasChanges = true
 					if newIsLicensed {
-						if node?.user?.longName?.count ?? 0 > 8 {
+						if user.longName?.count ?? 0 > 8 {
 							longName = ""
 						}
 					}
@@ -252,4 +252,10 @@ struct UserConfig: View {
 			if isLicensed { hasChanges = true }
 		}
 	}
+}
+
+#Preview {
+	UserConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

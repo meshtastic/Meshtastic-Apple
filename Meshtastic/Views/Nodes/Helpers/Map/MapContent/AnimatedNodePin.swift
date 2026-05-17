@@ -51,6 +51,14 @@ struct AnimatedNodePin: View, Equatable {
 	}
 }
 
+#Preview {
+	VStack(spacing: 20) {
+		AnimatedNodePin(nodeColor: .systemBlue, shortName: "TN", hasDetectionSensorMetrics: false, isOnline: true, calculatedDelay: 0.0)
+		AnimatedNodePin(nodeColor: .systemGreen, shortName: "AB", hasDetectionSensorMetrics: true, isOnline: true, calculatedDelay: 0.2)
+		AnimatedNodePin(nodeColor: .systemRed, shortName: "XY", hasDetectionSensorMetrics: false, isOnline: false, calculatedDelay: 0.0)
+	}
+}
+
 struct PulsingCircle: View {
 	let nodeColor: UIColor
 	let calculatedDelay: Double
@@ -58,15 +66,18 @@ struct PulsingCircle: View {
 
 	var body: some View {
 		Circle()
-			.fill(Color(nodeColor.lighter()).opacity(0.4))
-			.frame(width: 55, height: 55)
-			.scaleEffect(isPulsing ? 1.2 : 0.8)
+			.fill(Color(nodeColor.lighter()).opacity(0.3))
+			.frame(width: 50, height: 50)
+			.scaleEffect(isPulsing ? 1.1 : 0.9)
 			.animation(
-				.easeInOut(duration: 0.8).repeatForever(autoreverses: true).delay(calculatedDelay),
+				.easeInOut(duration: 1.2).repeatForever(autoreverses: true).delay(calculatedDelay),
 				value: isPulsing
 			)
 			.onAppear {
 				isPulsing = true
+			}
+			.onDisappear {
+				isPulsing = false
 			}
 	}
 }

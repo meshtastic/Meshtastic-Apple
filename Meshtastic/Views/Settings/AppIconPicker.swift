@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AppIconPicker: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@Binding var isPresenting: Bool
 	@State private var didError = false
 	@State private var errorDetails: String?

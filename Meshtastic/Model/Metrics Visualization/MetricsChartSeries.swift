@@ -59,7 +59,7 @@ class MetricsChartSeries: ObservableObject {
 		@ChartContentBuilder chartBody: @escaping (MetricsChartSeries, ClosedRange<Float>?, Date, Value) -> ChartBody?
 	) {
 
-		// This works because TelemetryEntity is an NSManagedObject and derrived from NSObject
+		// This works because TelemetryEntity is an @Model and conforms to PersistentModel
 		self.id = id
 		self.name = name
 		self.abbreviatedName = abbreviatedName
@@ -72,8 +72,11 @@ class MetricsChartSeries: ObservableObject {
 		// This is a less elegant form of type erasure, but doesn't require a new Any-type
 		self.foregroundStyle = { range in foregroundStyle(range).map({ AnyShapeStyle($0) }) }
 		self.chartBodyClosure = { series, range, entity in
-			AnyChartContent(
-				chartBody(series, range, entity.time!, entity[keyPath: keyPath]))
+			if let time = entity.time {
+				return AnyChartContent(
+					chartBody(series, range, time, entity[keyPath: keyPath]))
+			}
+			return nil
 		}
 		self.valueClosure = { te in
 			if let conversion {

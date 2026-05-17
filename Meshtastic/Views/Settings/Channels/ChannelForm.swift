@@ -250,3 +250,21 @@ struct ChannelForm: View {
 		}
 	}
 }
+
+#Preview {
+	ChannelForm(
+		channelIndex: .constant(0),
+		channelName: .constant("LongFast"),
+		channelKeySize: .constant(32),
+		channelKey: .constant("AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE="),
+		channelRole: .constant(1),
+		uplink: .constant(false),
+		downlink: .constant(false),
+		positionPrecision: .constant(14),
+		preciseLocation: .constant(false),
+		positionsEnabled: .constant(true),
+		hasChanges: .constant(false),
+		hasValidKey: .constant(true),
+		supportedVersion: .constant(true)
+	)
+}

@@ -8,7 +8,8 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
-import CoreData
+import SwiftData
+import MeshtasticProtobufs
 
 enum CertificateImportType {
 	case p12
@@ -16,16 +17,15 @@ enum CertificateImportType {
 }
 
 struct TAKServerConfig: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(keyPath: \ChannelEntity.index, ascending: true)],
-		predicate: NSPredicate(format: "role > 0"),
-		animation: .default
-	) private var channels: FetchedResults<ChannelEntity>
+	@Query(filter: #Predicate<ChannelEntity> { $0.role > 0 },
+		   sort: \ChannelEntity.index)
+	private var channels: [ChannelEntity]
 
 	@StateObject private var takServer = TAKServerManager.shared
+	@Environment(\.dismiss) private var dismiss
 	@State private var showingFileImporter = false
 	@State private var importType: CertificateImportType = .p12
 	@State private var p12Password = ""
@@ -35,17 +35,41 @@ struct TAKServerConfig: View {
 	@State private var showingImportError = false
 	@State private var showingFileExporter = false
 	@State private var dataPackageURL: URL?
+	@State private var showingFixWarning = false
+	@State private var isFixingChannel = false
+	@State private var showShareChannels = false
+	@State private var showShareChannelsAlert = false
+	@State private var connectedNode: NodeInfoEntity?
+	@State private var isWarningExpanded = true
 
 	private let certManager = TAKCertificateManager.shared
 
 	var body: some View {
 		Form {
+			if !takServer.primaryChannelIssues.isEmpty {
+				primaryChannelWarningSection
+			}
+			TAKIdentitySection(node: connectedNode)
 			serverStatusSection
 			serverConfigSection
 			certificatesSection
 			dataPackageSection
 		}
 		.navigationTitle("TAK Server")
+		.onAppear {
+			takServer.checkPrimaryChannelValidity()
+			if let nodeNum = accessoryManager.activeDeviceNum {
+				connectedNode = getNodeInfo(id: nodeNum, context: context)
+			}
+		}
+		.alert("Fix Primary Channel?", isPresented: $showingFixWarning) {
+			Button("Cancel", role: .cancel) {}
+			Button("Fix Channel", role: .destructive) {
+				fixPrimaryChannel()
+			}
+		} message: {
+			Text("This will change your primary channel to:\n• Name: TAK\n• Encryption: New 256-bit AES key\n• LoRa preset: Short Fast (recommended for TAK)\n\nThis is required for TAK Server to work properly. Any existing channel sharing links will become invalid.")
+		}
 		.fileImporter(
 			isPresented: $showingFileImporter,
 			allowedContentTypes: importType == .p12 ? [UTType(filenameExtension: "p12") ?? .pkcs12, .pkcs12] : [UTType(filenameExtension: "pem") ?? .plainText],
@@ -75,6 +99,14 @@ struct TAKServerConfig: View {
 		} message: {
 			Text(importError ?? "Unknown error")
 		}
+		.alert("Channel Fixed!", isPresented: $showShareChannelsAlert) {
+			Button("Share with TAK Buddies") {
+				showShareChannels = true
+			}
+			Button("Later", role: .cancel) {}
+		} message: {
+			Text("Your channel has been configured for TAK. To share the QR code: go to Settings > Share QR Code")
+		}
 		.fileExporter(
 			isPresented: $showingFileExporter,
 			document: dataPackageURL.map { ZipDocument(url: $0) },
@@ -93,6 +125,65 @@ struct TAKServerConfig: View {
 				try? FileManager.default.removeItem(at: sourceURL)
 			}
 			dataPackageURL = nil
+		}
+		.navigationDestination(isPresented: $showShareChannels) {
+			if let node = connectedNode {
+				ShareChannels(node: node)
+			}
+		}
+	}
+
+	// MARK: - Primary Channel Warning Section
+
+	private var primaryChannelWarningSection: some View {
+		Section {
+			DisclosureGroup(isExpanded: $isWarningExpanded) {
+				VStack(alignment: .leading, spacing: 12) {
+					if takServer.readOnlyMode {
+						Text("Your primary channel is using the default settings (no name or default encryption key). TAK Server is running in read-only mode.")
+							.font(.subheadline)
+							.foregroundColor(.secondary)
+					}
+
+					Text("You can fix this yourself by changing your primary channel:")
+						.font(.subheadline)
+
+					VStack(alignment: .leading, spacing: 4) {
+						Label("Set a channel name", systemImage: "1.circle.fill")
+						Label("Use a 256-bit encryption key", systemImage: "2.circle.fill")
+					}
+					.font(.caption)
+					.foregroundColor(.secondary)
+
+					Divider()
+
+					Button {
+						showingFixWarning = true
+					} label: {
+						Label("Auto-Fix Channel", systemImage: "wand.and.stars")
+							.frame(maxWidth: .infinity)
+					}
+					.buttonStyle(.borderedProminent)
+					.controlSize(.large)
+					.disabled(isFixingChannel)
+
+					Text("Or fix it yourself in Channels settings, then return here.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+						.multilineTextAlignment(.center)
+						.frame(maxWidth: .infinity)
+				}
+				.padding(.vertical, 8)
+			} label: {
+				HStack {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.foregroundColor(.orange)
+					Text("TAK Cannot Be Used on Public Channel")
+						.font(.headline)
+				}
+			}
+		} header: {
+			Text("Warning")
 		}
 	}
 
@@ -118,6 +209,19 @@ struct TAKServerConfig: View {
 					Image(systemName: "exclamationmark.triangle.fill")
 						.foregroundColor(.orange)
 					Text(error)
+						.font(.caption)
+						.foregroundColor(.orange)
+				}
+			}
+
+			if let node = connectedNode,
+			   let role = node.user?.role,
+			   let deviceRole = DeviceRoles(rawValue: Int(role)),
+			   deviceRole != .tak && deviceRole != .takTracker {
+				HStack {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.foregroundColor(.orange)
+					Text("Device role is \"\(deviceRole.name)\". Consider setting to TAK or TAK Tracker for optimal operation.")
 						.font(.caption)
 						.foregroundColor(.orange)
 				}
@@ -150,6 +254,26 @@ struct TAKServerConfig: View {
 					.foregroundColor(.secondary)
 			}
 
+			Toggle(isOn: $takServer.userReadOnlyMode) {
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Read-Only Mode")
+					Text("Meshtastic -> TAK works, TAK -> Meshtastic blocked")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.disabled(takServer.readOnlyMode)
+
+			Toggle(isOn: $takServer.meshToCotEnabled) {
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Mesh to CoT Converter")
+					Text("Bridge Meshtastic positions, nodes, waypoints, and messages to TAK/CoT format")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}
+			}
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			if !channels.isEmpty {
 				Picker(selection: $takServer.channel) {
 					ForEach(channels, id: \.index) { channel in
@@ -300,9 +424,7 @@ struct TAKServerConfig: View {
 		}
 	}
 
-
 	// MARK: - Channel Label
-
 	@ViewBuilder
 	private func channelLabel(_ channel: ChannelEntity) -> some View {
 		if channel.name?.isEmpty ?? false {
@@ -387,6 +509,23 @@ struct TAKServerConfig: View {
 		}
 	}
 
+	private func fixPrimaryChannel() {
+		isFixingChannel = true
+		Task {
+			let success = await takServer.autoFixPrimaryChannel()
+			await MainActor.run {
+				isFixingChannel = false
+				if success {
+					takServer.userReadOnlyMode = false
+					showShareChannelsAlert = true
+				} else {
+					importError = "Failed to fix primary channel. Make sure you are connected to a device."
+					showingImportError = true
+				}
+			}
+		}
+	}
+
 	// MARK: - Data Package Generation
 
 	private func generateAndShareDataPackage() {
@@ -422,5 +561,240 @@ struct ZipDocument: FileDocument {
 
 	func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
 		FileWrapper(regularFileWithContents: data)
+	}
+}
+
+// MARK: - TAK Identity Section (firmware module config: team / role)
+//
+// Embedded at the top of the TAK Server screen so users can configure the
+// firmware-level Team color and Member Role (sent on the wire with every PLI)
+// in the same place as the in-app TAK Server controls. Replaces the separate
+// TAKModuleConfig screen for the common path; TAKModuleConfig still exists
+// for nodes that aren't the locally-connected one.
+
+struct TAKIdentitySection: View {
+	@Environment(\.modelContext) private var context
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+
+	let node: NodeInfoEntity?
+
+	@State private var team: Int = Int(Team.unspecifedColor.rawValue)
+	@State private var role: Int = Int(MemberRole.unspecifed.rawValue)
+	@State private var hasChanges: Bool = false
+	@State private var isSaving: Bool = false
+	@State private var saveError: String?
+
+	private var selectedTeam: Team { Team(rawValue: team) ?? .unspecifedColor }
+	private var selectedRole: MemberRole { MemberRole(rawValue: role) ?? .unspecifed }
+
+	private var deviceRole: DeviceRoles? {
+		guard let raw = node?.deviceConfig?.role ?? node?.user?.role else { return nil }
+		return DeviceRoles(rawValue: Int(raw))
+	}
+
+	private var canEdit: Bool { accessoryManager.isConnected && node?.takConfig != nil }
+
+	var body: some View {
+		Section(header: Text("TAK Identity")) {
+			if let deviceRole, deviceRole != .tak && deviceRole != .takTracker {
+				Text("These settings only apply when the device role is TAK or TAK Tracker.")
+					.font(.callout)
+					.foregroundColor(.orange)
+			}
+
+			if accessoryManager.isConnected, node?.takConfig == nil {
+				HStack(spacing: 12) {
+					ProgressView()
+					Text("Loading TAK config from the node.")
+						.foregroundColor(.secondary)
+				}
+			}
+
+			VStack(alignment: .leading) {
+				Picker("Team", selection: $team) {
+					ForEach(Team.allCases, id: \.rawValue) { teamOption in
+						Text(Self.teamTitle(teamOption)).tag(teamOption.rawValue)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text(Self.teamHelpText(selectedTeam))
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+
+			VStack(alignment: .leading) {
+				Picker("Role", selection: $role) {
+					ForEach(MemberRole.allCases, id: \.rawValue) { roleOption in
+						Text(Self.roleTitle(roleOption)).tag(roleOption.rawValue)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text(Self.roleHelpText(selectedRole))
+					.foregroundColor(.gray)
+					.font(.callout)
+			}
+
+			if hasChanges {
+				Button {
+					Task { await saveIdentity() }
+				} label: {
+					HStack {
+						if isSaving {
+							ProgressView()
+								.padding(.trailing, 4)
+						}
+						Text(isSaving ? "Saving…" : "Save TAK Identity")
+					}
+					.frame(maxWidth: .infinity)
+				}
+				.disabled(isSaving)
+			}
+
+			if let saveError {
+				Text(saveError)
+					.foregroundColor(.red)
+					.font(.callout)
+			}
+		}
+		.disabled(!canEdit)
+		.onAppear {
+			resyncFromNode()
+			requestTakConfigIfNeeded()
+		}
+		.onChange(of: node?.takConfig?.team) { _, _ in resyncFromNode() }
+		.onChange(of: node?.takConfig?.role) { _, _ in resyncFromNode() }
+		.onChange(of: accessoryManager.isConnected) { _, isConnected in
+			if isConnected { requestTakConfigIfNeeded() }
+		}
+		.onChange(of: team) { _, newTeam in
+			hasChanges = newTeam != Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue))
+				|| role != Int(node?.takConfig?.role ?? Int32(MemberRole.unspecifed.rawValue))
+		}
+		.onChange(of: role) { _, newRole in
+			hasChanges = team != Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue))
+				|| newRole != Int(node?.takConfig?.role ?? Int32(MemberRole.unspecifed.rawValue))
+		}
+	}
+
+	// Without this, a first-time user with no prior TAK config on the node
+	// sees a perma-spinner: the section is `.disabled(!canEdit)` while
+	// takConfig is nil, but nothing ever fires the admin request. The old
+	// `TAKModuleConfig` screen did this in `.onAppear`; mirror the behavior
+	// here so the embedded section converges on the same payload.
+	private func requestTakConfigIfNeeded() {
+		guard accessoryManager.isConnected,
+			  let deviceNum = accessoryManager.activeDeviceNum,
+			  let node,
+			  node.num == deviceNum,
+			  node.takConfig == nil,
+			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
+			  let fromUser = connectedNode.user,
+			  let toUser = node.user else { return }
+		Task {
+			do {
+				Logger.mesh.info("⚙️ TAKIdentitySection: requesting empty TAK module config from node")
+				try await accessoryManager.requestTAKModuleConfig(fromUser: fromUser, toUser: toUser)
+			} catch {
+				Logger.mesh.error("🚨 TAKIdentitySection: TAK module config request failed: \(error.localizedDescription)")
+			}
+		}
+	}
+
+	private func resyncFromNode() {
+		team = Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue))
+		role = Int(node?.takConfig?.role ?? Int32(MemberRole.unspecifed.rawValue))
+		hasChanges = false
+	}
+
+	@MainActor
+	private func saveIdentity() async {
+		// Resolve the local (sender) and target (receiver) users separately so
+		// the user gets a precise message when any of these lookups fails.
+		// All three guards trigger only when the UI was already showing as
+		// connected (otherwise the pickers are disabled), so a generic
+		// "Not connected" was misleading — these failures mean the node
+		// metadata isn't yet populated in SwiftData even though the link is up.
+		guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context) else {
+			saveError = "Local node info unavailable — try reconnecting."
+			return
+		}
+		guard let fromUser = connectedNode.user else {
+			saveError = "Local node has no user record yet."
+			return
+		}
+		guard let toUser = node?.user else {
+			saveError = "Target node has no user record yet."
+			return
+		}
+
+		isSaving = true
+		saveError = nil
+
+		var config = ModuleConfig.TAKConfig()
+		config.team = selectedTeam
+		config.role = selectedRole
+
+		do {
+			_ = try await accessoryManager.saveTAKModuleConfig(config: config, fromUser: fromUser, toUser: toUser)
+			hasChanges = false
+		} catch {
+			Logger.mesh.error("🚨 TAK Identity save failed: \(error.localizedDescription)")
+			saveError = error.localizedDescription
+		}
+		isSaving = false
+	}
+
+	// MARK: Display helpers (duplicated from TAKModuleConfig to keep this view self-contained)
+
+	fileprivate static func teamTitle(_ team: Team) -> String {
+		switch team {
+		case .unspecifedColor: return "Default (Cyan)"
+		case .white: return "White"
+		case .yellow: return "Yellow"
+		case .orange: return "Orange"
+		case .magenta: return "Magenta"
+		case .red: return "Red"
+		case .maroon: return "Maroon"
+		case .purple: return "Purple"
+		case .darkBlue: return "Dark Blue"
+		case .blue: return "Blue"
+		case .cyan: return "Cyan"
+		case .teal: return "Teal"
+		case .green: return "Green"
+		case .darkGreen: return "Dark Green"
+		case .brown: return "Brown"
+		case .UNRECOGNIZED: return "Unknown"
+		}
+	}
+
+	fileprivate static func roleTitle(_ role: MemberRole) -> String {
+		switch role {
+		case .unspecifed: return "Default (Team Member)"
+		case .teamMember: return "Team Member"
+		case .teamLead: return "Team Lead"
+		case .hq: return "HQ"
+		case .sniper: return "Sniper"
+		case .medic: return "Medic"
+		case .forwardObserver: return "Forward Observer"
+		case .rto: return "RTO"
+		case .k9: return "K9"
+		case .UNRECOGNIZED: return "Unknown"
+		}
+	}
+
+	fileprivate static func teamHelpText(_ team: Team) -> String {
+		switch team {
+		case .unspecifedColor: return "Default uses Cyan."
+		case .UNRECOGNIZED: return "Unknown team color."
+		default: return "Shown to TAK clients as the \(teamTitle(team)) team color."
+		}
+	}
+
+	fileprivate static func roleHelpText(_ role: MemberRole) -> String {
+		switch role {
+		case .unspecifed: return "Default uses Team Member."
+		case .UNRECOGNIZED: return "Unknown TAK role."
+		default: return "Shown to TAK clients as the \(roleTitle(role)) role."
+		}
 	}
 }

@@ -8,6 +8,10 @@ class GeoJSONOverlayManager {
 	private init() {}
 
 	private var featureCollection: GeoJSONFeatureCollection?
+	// Cache the last styled-features result keyed by the enabled-configs set.
+	// GeoJSONStyledFeature instances have stable UUIDs once created, so SwiftUI's
+	// ForEach diffing correctly skips unchanged overlays between renders.
+	private var styledFeaturesCache: (configs: Set<UUID>, features: [GeoJSONStyledFeature])?
 
 	/// Load raw GeoJSON feature collection from user uploads
 	func loadFeatureCollection() -> GeoJSONFeatureCollection? {
@@ -24,36 +28,35 @@ class GeoJSONOverlayManager {
 		return nil
 	}
 
-	/// Load styled features for specific enabled configs
+	/// Load styled features for specific enabled configs.
+	/// Results are cached per unique `enabledConfigs` set — file I/O and JSON decoding
+	/// only happen when the set changes, not on every map render.
 	func loadStyledFeaturesForConfigs(_ enabledConfigs: Set<UUID>) -> [GeoJSONStyledFeature] {
-		// Get files that match the enabled configs
-		let enabledFiles = MapDataManager.shared.getUploadedFiles().filter { enabledConfigs.contains($0.id) }
+		if let cache = styledFeaturesCache, cache.configs == enabledConfigs {
+			return cache.features
+		}
 
+		let enabledFiles = MapDataManager.shared.getUploadedFiles().filter { enabledConfigs.contains($0.id) }
 		guard !enabledFiles.isEmpty else {
+			styledFeaturesCache = (configs: enabledConfigs, features: [])
 			return []
 		}
 
-		// Load feature collection from enabled files only
 		guard let collection = MapDataManager.shared.loadFeatureCollectionForFiles(enabledFiles) else {
+			styledFeaturesCache = (configs: enabledConfigs, features: [])
 			return []
 		}
 
 		var styledFeatures: [GeoJSONStyledFeature] = []
-
 		for feature in collection.features {
-			// Skip invisible features
-			guard feature.isVisible else {
-				continue
-			}
-
-			let layerId = feature.layerId ?? "default"
-			let styledFeature = GeoJSONStyledFeature(
+			guard feature.isVisible else { continue }
+			styledFeatures.append(GeoJSONStyledFeature(
 				feature: feature,
-				overlayId: layerId
-			)
-			styledFeatures.append(styledFeature)
+				overlayId: feature.layerId ?? "default"
+			))
 		}
 
+		styledFeaturesCache = (configs: enabledConfigs, features: styledFeatures)
 		return styledFeatures
 	}
 
@@ -106,9 +109,10 @@ class GeoJSONOverlayManager {
 		return Array(layerIds).sorted()
 	}
 
-	/// Clear cached data (useful for testing or memory management)
+	/// Clear cached data (called when files are added, deleted, or toggled).
 	func clearCache() {
 		featureCollection = nil
+		styledFeaturesCache = nil
 	}
 
 	/// Check if user-uploaded data is available (regardless of active state)

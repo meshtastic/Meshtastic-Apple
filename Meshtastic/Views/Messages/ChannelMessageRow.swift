@@ -1,14 +1,15 @@
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import SwiftUI
 
 struct ChannelMessageRow: View {
 	@EnvironmentObject var appState: AppState
+	@Environment(\.modelContext) private var context
 	
 	// Core Data object observed for changes (like Tapbacks being received)
-	@ObservedObject var message: MessageEntity
+	@Bindable var message: MessageEntity
 	
-	let allMessages: FetchedResults<MessageEntity> // The full list for reply lookup
+	let allMessages: [MessageEntity] // The full list for reply lookup
 	let previousMessage: MessageEntity?
 	let preferredPeripheralNum: Int
 	let channel: ChannelEntity
@@ -18,13 +19,14 @@ struct ChannelMessageRow: View {
 	@Binding var messageToHighlight: Int64
 	let scrollView: ScrollViewProxy
 	let onInteractionComplete: () -> Void
+	let onTapback: (MessageEntity) -> Void
 
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
 	}
 	
-	init(message: MessageEntity, 
-		 allMessages: FetchedResults<MessageEntity>,
+	init(message: MessageEntity,
+		 allMessages: [MessageEntity],
 		 previousMessage: MessageEntity?,
 		 preferredPeripheralNum: Int,
 		 channel: ChannelEntity,
@@ -32,9 +34,10 @@ struct ChannelMessageRow: View {
 		 messageFieldFocused: FocusState<Bool>.Binding,
 		 messageToHighlight: Binding<Int64>,
 		 scrollView: ScrollViewProxy,
-		 onInteractionComplete: @escaping () -> Void) {
+		 onInteractionComplete: @escaping () -> Void,
+		 onTapback: @escaping (MessageEntity) -> Void) {
 		// Initialize ObservedObject with the concrete instance
-		self._message = ObservedObject(initialValue: message)
+		self.message = message
 		self.allMessages = allMessages
 		self.previousMessage = previousMessage
 		self.preferredPeripheralNum = preferredPeripheralNum
@@ -44,6 +47,7 @@ struct ChannelMessageRow: View {
 		self._messageToHighlight = messageToHighlight
 		self.scrollView = scrollView
 		self.onInteractionComplete = onInteractionComplete
+		self.onTapback = onTapback
 	}
 
 	var body: some View {
@@ -80,7 +84,7 @@ struct ChannelMessageRow: View {
 							}
 						}
 					} label: {
-						Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+						Text(messageReply?.displayedPayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
 							.padding(10)
 							.overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.blue, lineWidth: 0.5))
 						Image(systemName: "arrowshape.turn.up.left.fill")
@@ -95,13 +99,11 @@ struct ChannelMessageRow: View {
 				if isCurrentUser { Spacer(minLength: 50) }
 				// Node Detail Tap
 				if !isCurrentUser {
-					CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 50)
-						.onTapGesture(count: 2) {
-							if let nodeNum = message.fromUser?.num {
-								appState.router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
-							}
-						}
-						.padding(.all, 5).offset(y: -7)
+					NavigationLink(value: Int64(message.fromUser?.num ?? 0)) {
+						CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 50)
+					}
+					.buttonStyle(.plain)
+					.padding(.all, 5).offset(y: -7)
 				}
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {
@@ -122,6 +124,8 @@ struct ChannelMessageRow: View {
 						) {
 							self.replyMessageId = message.messageId
 							self.messageFieldFocused = true
+						} onTapback: {
+							onTapback(message)
 						}
 						
 						if isCurrentUser && message.canRetry {

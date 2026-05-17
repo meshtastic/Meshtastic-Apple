@@ -6,13 +6,13 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import TipKit
 
 struct UserList: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var editingFilters = false
 	@State private var showingHelp = false
@@ -67,40 +67,80 @@ struct UserList: View {
 	}
 }
 
-fileprivate struct FilteredUserList: View {
+private struct FilteredUserList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 
-	@FetchRequest private var users: FetchedResults<UserEntity>
+	@Query(sort: [SortDescriptor(\UserEntity.lastMessage, order: .reverse),
+				  SortDescriptor(\UserEntity.longName)])
+	private var allUsers: [UserEntity]
 	@Binding var userSelection: UserEntity?
 	@Binding var node: NodeInfoEntity?
 
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	@State private var userToDeleteMessages: UserEntity?
+	private var filters: NodeFilterParameters
 
 	init(withFilters: NodeFilterParameters, node: Binding<NodeInfoEntity?>, userSelection: Binding<UserEntity?>) {
-		let request: NSFetchRequest<UserEntity> = UserEntity.fetchRequest()
-		request.sortDescriptors = [
-			NSSortDescriptor(key: "lastMessage", ascending: false),
-			NSSortDescriptor(key: "userNode.favorite", ascending: false),
-			NSSortDescriptor(key: "pkiEncrypted", ascending: false),
-			NSSortDescriptor(key: "userNode.lastHeard", ascending: false),
-			NSSortDescriptor(key: "longName", ascending: true)
-		]
-		request.predicate = withFilters.buildPredicate()
-		self._users = FetchRequest(fetchRequest: request)
+		self.filters = withFilters
 		self._node = node
 		self._userSelection = userSelection
+	}
+
+	private var users: [UserEntity] {
+		allUsers.filter { filters.matches(user: $0) }
+	}
+
+	// MARK: - Precomputed message info cache
+
+	/// Batch-fetch most recent messages and unread counts for all visible users in two queries
+	/// instead of 2N individual queries (one per row).
+	private var messageInfo: [Int64: (mostRecent: MessageEntity?, unreadCount: Int)] {
+		let userNums = Set(users.map(\.num))
+		guard !userNums.isEmpty else { return [:] }
+
+		// Fetch all non-emoji, non-admin messages for visible users in one query
+		let detectionSensorPortNum: Int32 = 10
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+			},
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+		)
+		let allMessages = (try? context.fetch(descriptor)) ?? []
+
+		var result: [Int64: (mostRecent: MessageEntity?, unreadCount: Int)] = [:]
+		for num in userNums {
+			result[num] = (mostRecent: nil, unreadCount: 0)
+		}
+		for message in allMessages {
+			let fromNum = message.fromUser?.num
+			let toNum = message.toUser?.num
+			// Check if this message belongs to any of the visible users
+			for num in [fromNum, toNum].compactMap({ $0 }) where userNums.contains(num) {
+				var entry = result[num]!
+				if entry.mostRecent == nil {
+					entry.mostRecent = message
+				}
+				if !message.read {
+					entry.unreadCount += 1
+				}
+				result[num] = entry
+			}
+		}
+		return result
 	}
 
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
+		let cachedInfo = messageInfo
 
 		List(users, selection: $userSelection) { user in
-			let mostRecent = user.mostRecentMessage
+			let info = cachedInfo[user.num]
+			let mostRecent = info?.mostRecent
 			let hasMessages = mostRecent != nil
-			let hasUnreadMessages = user.unreadMessages > 0
+			let hasUnreadMessages = (info?.unreadCount ?? 0) > 0
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
@@ -143,28 +183,28 @@ fileprivate struct FilteredUserList: View {
 								if lastMessageDay == currentDay {
 									Text(lastMessageTime, style: .time )
 										.font(.footnote)
-										.foregroundColor(.secondary)
+										.foregroundColor(.onSurfaceVariant)
 								} else if lastMessageDay == (currentDay - 1) {
 									Text("Yesterday")
 										.font(.footnote)
-										.foregroundColor(.secondary)
+										.foregroundColor(.onSurfaceVariant)
 								} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
 									Text(lastMessageTime.formattedDate(format: dateFormatString))
 										.font(.footnote)
-										.foregroundColor(.secondary)
+										.foregroundColor(.onSurfaceVariant)
 								} else if lastMessageDay < (currentDay - 1800) {
 									Text(lastMessageTime.formattedDate(format: dateFormatString))
 										.font(.footnote)
-										.foregroundColor(.secondary)
+										.foregroundColor(.onSurfaceVariant)
 								}
 							}
 						}
 
 						if hasMessages {
 							HStack(alignment: .top) {
-								Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+									Text(LocalizedStringKey(mostRecent?.messagePayload ?? " "))
 									.font(.footnote)
-									.foregroundColor(.secondary)
+									.foregroundColor(.onSurfaceVariant)
 							}
 						}
 					}
@@ -175,24 +215,23 @@ fileprivate struct FilteredUserList: View {
 				}
 				.contextMenu {
 					Button {
-						if node != nil && !(user.userNode?.favorite ?? false) {
-							user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+						guard let userNode = user.userNode, let node else { return }
+						if !(userNode.favorite) {
+							userNode.favorite = true
 							Task {
-								try await accessoryManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+								try await accessoryManager.setFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
 								Logger.data.info("Favorited a node")
 							}
 						} else {
-							user.userNode?.favorite = !(user.userNode?.favorite ?? false)
+							userNode.favorite = false
 							Task {
-								try await accessoryManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+								try await accessoryManager.removeFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
 								Logger.data.info("Unfavorited a node")
 							}
 						}
-						context.refresh(user, mergeChanges: true)
 						do {
 							try context.save()
 						} catch {
-							context.rollback()
 							Logger.data.error("Save Node Favorite Error")
 						}
 					} label: {
@@ -203,7 +242,6 @@ fileprivate struct FilteredUserList: View {
 						do {
 							try context.save()
 						} catch {
-							context.rollback()
 							Logger.data.error("Save User Mute Error")
 						}
 					} label: {
@@ -225,8 +263,9 @@ fileprivate struct FilteredUserList: View {
 				) {
 					Button(role: .destructive) {
 						Task {
-							await MeshPackets.shared.deleteUserMessages(user: userToDeleteMessages!)
-							context.refresh(node!.user!, mergeChanges: true)
+							if let userToDelete = userToDeleteMessages {
+								await MeshPackets.shared.deleteUserMessages(user: userToDelete)
+							}
 						}
 					} label: {
 						Text("Delete")
@@ -239,90 +278,85 @@ fileprivate struct FilteredUserList: View {
 	}
 }
 fileprivate extension NodeFilterParameters {
-	func buildPredicate() -> NSPredicate? {
-		var predicates: [NSPredicate] = []
-		// Search text predicates
+	/// In-memory filter matching for use with @Query results
+	func matches(user: UserEntity) -> Bool {
+		// Search text
 		if !searchText.isEmpty {
-			let searchPredicates = ["userId", "numString", "hwModel", "hwDisplayName", "longName", "shortName"].map { property in
-				return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
-			}
-			let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
-			predicates.append(textSearchPredicate)
+			let text = searchText.lowercased()
+			let matchesSearch = [user.userId, user.numString, user.hwModel, user.hwDisplayName, user.longName, user.shortName]
+				.compactMap { $0?.lowercased() }
+				.contains { $0.contains(text) }
+			if !matchesSearch { return false }
 		}
 		// Mqtt and lora
 		if !(viaLora && viaMqtt) {
 			if viaLora {
-				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
-				predicates.append(loraPredicate)
+				if user.userNode?.viaMqtt == true { return false }
 			} else {
-				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
-				predicates.append(mqttPredicate)
+				if user.userNode?.viaMqtt != true { return false }
 			}
 		}
 		// Roles
-		if roleFilter && deviceRoles.count > 0 {
-			var rolesArray: [NSPredicate] = []
-			for dr in deviceRoles {
-				let deviceRolePredicate = NSPredicate(format: "role == %i", Int32(dr))
-				rolesArray.append(deviceRolePredicate)
-			}
-			let compoundPredicate = NSCompoundPredicate(type: .or, subpredicates: rolesArray)
-			predicates.append(compoundPredicate)
+		if roleFilter && !deviceRoles.isEmpty {
+			let userRole = Int(user.role)
+			if !deviceRoles.contains(userRole) { return false }
 		}
 		// Hops Away
 		if hopsAway == 0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
-			predicates.append(hopsAwayPredicate)
-		} else if hopsAway > -1.0 {
-			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway > 0 AND userNode.hopsAway <= %i", Int32(hopsAway))
-			predicates.append(hopsAwayPredicate)
+			if user.userNode?.hopsAway != 0 { return false }
+		} else if hopsAway > -1 {
+			let nodeHops = user.userNode?.hopsAway ?? 0
+			if nodeHops <= 0 || nodeHops > Int32(hopsAway) { return false }
 		}
 		// Online
 		if isOnline {
-			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -120, to: Date())! as NSDate)
-			predicates.append(isOnlinePredicate)
-		}
-		// Encrypted
-		if isPkiEncrypted {
-			let isPkiEncryptedPredicate = NSPredicate(format: "pkiEncrypted == YES")
-			predicates.append(isPkiEncryptedPredicate)
+			let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date()) ?? Date.distantPast
+			if let lastHeard = user.userNode?.lastHeard, lastHeard < twoHoursAgo { return false }
+			if user.userNode?.lastHeard == nil { return false }
 		}
 		// Favorites
 		if isFavorite {
-			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
-			predicates.append(isFavoritePredicate)
+			if user.userNode?.favorite != true { return false }
 		}
-		// Distance
+		// Distance — only apply when we have a valid, precise phone GPS fix
 		if distanceFilter {
-			if let pointOfInterest = LocationsHandler.currentLocation {
-				if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude && pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-					let d: Double = maxDistance * 1.1
-					let r: Double = 6371009
-					let meanLatitidue = pointOfInterest.latitude * .pi / 180
-					let deltaLatitude = d / r * 180 / .pi
-					let deltaLongitude = d / (r * cos(meanLatitidue)) * 180 / .pi
-					let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
-					let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
-					let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
-					let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-					let distancePredicate = NSPredicate(format: "(SUBQUERY(userNode.positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude, minLatitude, maxLatitude)
-					predicates.append(distancePredicate)
+		if let poi = LocationsHandler.currentPreciseLocation {
+				let d = maxDistance * 1.1
+				let r: Double = 6371009
+				let meanLat = poi.latitude * .pi / 180
+				let deltaLat = d / r * 180 / .pi
+				let deltaLon = d / (r * cos(meanLat)) * 180 / .pi
+				let minLatI = Int32((poi.latitude - deltaLat) * 1e7)
+				let maxLatI = Int32((poi.latitude + deltaLat) * 1e7)
+				let minLonI = Int32((poi.longitude - deltaLon) * 1e7)
+				let maxLonI = Int32((poi.longitude + deltaLon) * 1e7)
+				if let nodeNum = user.userNode?.num, let ctx = user.modelContext {
+					let descriptor = FetchDescriptor<PositionEntity>(
+						predicate: #Predicate<PositionEntity> {
+							$0.nodePosition?.num == nodeNum && $0.latest == true
+							&& $0.latitudeI >= minLatI && $0.latitudeI <= maxLatI
+							&& $0.longitudeI >= minLonI && $0.longitudeI <= maxLonI
+						}
+					)
+					let count = (try? ctx.fetchCount(descriptor)) ?? 0
+					if count == 0 { return false }
+				} else {
+					return false
 				}
 			}
 		}
-		// Always apply unmessagable and connected node filters
-		// Show unmessagable nodes only if they have messages, otherwise hide them
-		let unmessagablePredicate = NSPredicate(format: "unmessagable == NO")
-		let hasMessagesPredicate = NSPredicate(format: "receivedMessages.@count > 0 OR sentMessages.@count > 0")
-		let isUnmessagablePredicate = NSCompoundPredicate(type: .or, subpredicates: [unmessagablePredicate, hasMessagesPredicate])
-		predicates.append(isUnmessagablePredicate)
-		let isIgnoredPredicate = NSPredicate(format: "userNode.ignored == NO")
-		predicates.append(isIgnoredPredicate)
-		let isConnectedNodePredicate = NSPredicate(format: "NOT (numString CONTAINS %@)", String(UserDefaults.preferredPeripheralNum))
-		predicates.append(isConnectedNodePredicate)
-
-		// Combine all predicates
-		let finalPredicate = predicates.isEmpty ? NSPredicate(value: true) : NSCompoundPredicate(type: .and, subpredicates: predicates)
-		return finalPredicate
+		// Unmessagable filter
+		if user.unmessagable {
+			if user.lastMessage == nil { return false }
+		}
+		// Ignored
+		if user.userNode?.ignored == true { return false }
+		// Encrypted
+		if isPkiEncrypted {
+			if !user.pkiEncrypted { return false }
+		}
+		// Connected node
+		if user.numString == String(UserDefaults.preferredPeripheralNum) { return false }
+		return true
 	}
 }

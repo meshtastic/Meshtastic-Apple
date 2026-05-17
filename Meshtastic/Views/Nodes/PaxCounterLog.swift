@@ -11,7 +11,7 @@ import OSLog
 
 struct PaxCounterLog: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@State private var isPresentingClearLogConfirm: Bool = false
@@ -21,71 +21,75 @@ struct PaxCounterLog: View {
 	@State private var bleChartColor: Color = .blue
 	@State private var wifiChartColor: Color = .orange
 	@State private var paxChartColor: Color = .green
-	@ObservedObject  var node: NodeInfoEntity
+	@Bindable  var node: NodeInfoEntity
+
+	@ViewBuilder
+	private func paxChart(chartData: [PaxCounterEntity], maxValue: Int32) -> some View {
+		Chart {
+			ForEach(chartData, id: \.self) { point in
+				if let pointTime = point.time {
+					Plot {
+						PointMark(
+							x: .value("x", pointTime),
+							y: .value("y", (point.wifi + point.ble))
+						)
+					}
+					.accessibilityLabel("Total PAX")
+					.accessibilityValue("X: \(pointTime), Y: \(point.wifi + point.ble)")
+					.foregroundStyle(paxChartColor)
+					.interpolationMethod(.cardinal)
+
+					Plot {
+						PointMark(
+							x: .value("x", pointTime),
+							y: .value("y", point.wifi)
+						)
+					}
+					.accessibilityLabel("WiFi")
+					.accessibilityValue("X: \(pointTime), Y: \(point.wifi)")
+					.foregroundStyle(wifiChartColor)
+
+					Plot {
+						PointMark(
+							x: .value("x", pointTime),
+							y: .value("y", point.ble)
+						)
+					}
+					.accessibilityLabel("BLE")
+					.accessibilityValue("X: \(pointTime), Y: \(point.ble)")
+					.foregroundStyle(bleChartColor)
+				}
+			}
+		}
+		.chartXAxis(content: {
+			AxisMarks(position: .top)
+		})
+		.chartXAxis(.automatic)
+		.chartYScale(domain: 0...maxValue)
+		.chartForegroundStyleScale([
+			"BLE".localized: .blue,
+			"WiFi".localized: .orange,
+			"Total PAX".localized: .green
+		])
+		.chartLegend(position: .automatic, alignment: .bottom)
+	}
 
 	var body: some View {
 		VStack {
 			if node.hasPax {
 
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-				let pax = node.pax?.reversed() as? [PaxCounterEntity] ?? []
+				let pax = Array(node.pax.reversed())
 				let chartData = pax
-						.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
-						.sorted { $0.time! < $1.time! }
+						.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+						.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 				let maxValue = (chartData.map { $0.wifi }.max() ?? 0) + (chartData.map { $0.ble }.max() ?? 0) + 5
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(pax.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-
-						Chart {
-							ForEach(chartData, id: \.self) { point in
-								Plot {
-									PointMark(
-										x: .value("x", point.time!),
-										y: .value("y", (point.wifi + point.ble))
-									)
-								}
-								.accessibilityLabel("Total PAX")
-								.accessibilityValue("X: \(point.time!), Y: \(point.wifi + point.ble)")
-								.foregroundStyle(paxChartColor)
-								.interpolationMethod(.cardinal)
-
-								Plot {
-									PointMark(
-										x: .value("x", point.time!),
-										y: .value("y", point.wifi)
-									)
-								}
-								.accessibilityLabel("WiFi")
-								.accessibilityValue("X: \(point.time!), Y: \(point.wifi)")
-								.foregroundStyle(wifiChartColor)
-
-								Plot {
-									PointMark(
-										x: .value("x", point.time!),
-										y: .value("y", point.ble)
-									)
-								}
-								.accessibilityLabel("BLE")
-								.accessibilityValue("X: \(point.time!), Y: \(point.ble)")
-								.foregroundStyle(bleChartColor)
-							}
-						}
-						.chartXAxis(content: {
-							AxisMarks(position: .top)
-						})
-						.chartXAxis(.automatic)
-						.chartYScale(domain: 0...maxValue)
-						.chartForegroundStyleScale([
-							"BLE".localized: .blue,
-							"WiFi".localized: .orange,
-							"Total PAX".localized: .green
-						])
-						.chartLegend(position: .automatic, alignment: .bottom)
+						paxChart(chartData: chartData, maxValue: maxValue)
 					}
 					.frame(minHeight: 250)
 				}
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 				if UIScreen.main.bounds.size.width > 768 && (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
 					// Add a table for mac and ipad
 					Table(pax) {
@@ -105,7 +109,7 @@ struct PaxCounterLog: View {
 							Text(components)
 						}
 						TableColumn("Timestamp") { pc in
-							Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+							Text(pc.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -149,7 +153,7 @@ struct PaxCounterLog: View {
 									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
 									Text(components)
 										.font(.caption)
-									Text(pc.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+									Text(pc.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 										.font(.caption)
 								}
 							}
@@ -211,7 +215,7 @@ struct PaxCounterLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("paxcounter.log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("paxcounter.log".localized) \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -224,3 +228,18 @@ struct PaxCounterLog: View {
 		)
 	}
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let user = UserEntity()
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	PaxCounterLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
+}
+*/

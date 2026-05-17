@@ -1,4 +1,4 @@
-import CoreData
+import SwiftData
 import SwiftUI
 import OSLog
 
@@ -59,3 +59,15 @@ struct ExchangeUserInfoButton: View {
 		}
 	}
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let connectedNode = NodeInfoEntity()
+	connectedNode.num = 987654321
+	ExchangeUserInfoButton(node: node, connectedNode: connectedNode)
+		.environmentObject(AccessoryManager.shared)
+}
+*/

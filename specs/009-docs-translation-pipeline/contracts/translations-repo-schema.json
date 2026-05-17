@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Translations Repo File Structure",
+  "description": "Schema for files committed to meshtastic/translations by DocsTranslationUploader",
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "pattern": "^apple-apps/[a-z]{2,3}/[0-9]+\\.[0-9]+\\.[0-9]+/(user|developer)/[a-z0-9-]+\\.md$",
+      "description": "File path in the translations repo: apple-apps/{lang}/{version}/{section}/{page}.md"
+    },
+    "content": {
+      "type": "string",
+      "description": "Translated markdown content (GFM format)"
+    },
+    "commit_message": {
+      "type": "string",
+      "pattern": "^Add [a-z]{2,3} translation for .+ \\(v[0-9]+\\.[0-9]+\\.[0-9]+\\)$",
+      "description": "Commit message format: 'Add {lang} translation for {page} (v{version})'"
+    }
+  },
+  "examples": [
+    {
+      "path": "apple-apps/fr/2.7.13/user/getting-started.md",
+      "commit_message": "Add fr translation for getting-started (v2.7.13)"
+    }
+  ]
+}

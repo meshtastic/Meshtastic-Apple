@@ -1,4 +1,4 @@
-import CoreData
+import SwiftData
 import SwiftUI
 
 struct ExchangePositionsButton: View {
@@ -61,3 +61,15 @@ struct ExchangePositionsButton: View {
 		}
     }
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let connectedNode = NodeInfoEntity()
+	connectedNode.num = 987654321
+	ExchangePositionsButton(node: node, connectedNode: connectedNode)
+		.environmentObject(AccessoryManager.shared)
+}
+*/

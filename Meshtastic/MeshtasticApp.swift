@@ -1,86 +1,85 @@
 // Copyright (C) 2022 Garth Vander Houwen
 
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import TipKit
 import MeshtasticProtobufs
+import WatchConnectivity
 import DatadogCore
 import DatadogCrashReporting
 import DatadogRUM
 import DatadogTrace
 import DatadogLogs
-import DatadogSessionReplay
 
 @main
 struct MeshtasticAppleApp: App {
 
+#if os(iOS)
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) private var appDelegate
+#endif
 	@StateObject var appState: AppState
 	@StateObject private var lockdownCoordinator: LockdownCoordinator
-	private let persistenceController: PersistenceController
+	private let persistenceController: PersistenceController?
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
 	@State var saveChannelLink: SaveChannelLinkData?
 	@State var incomingUrl: URL?
 
+	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+
 	init() {
 
-		let persistenceController = PersistenceController.shared
+		let persistenceController: PersistenceController? = Self.isRunningTests ? nil : PersistenceController.shared
 
 		let appState = AppState(
 			router: Router()
 		)
-		// Initialize Datadog
-		// RUM Client Tokens are NOT secret
-		let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
-		let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
-		var environment = "AppStore"
+
+		if !Self.isRunningTests {
+			// Initialize Datadog
+			// RUM Client Tokens are NOT secret
+			let appID = "79fe92a9-74c9-4c8f-ba63-6308384ecfa9"
+			let clientToken = "pub4427bea20dbdb08a6af68034de22cd3b"
+			var environment = "AppStore"
 
 #if DEBUG
-		environment = "Local"
+			environment = "Local"
 #else
-		if Bundle.main.isTestFlight {
-			environment = "TestFlight"
-		}
+			if Bundle.main.isTestFlight {
+				environment = "TestFlight"
+			}
 #endif
 
-		Datadog.initialize(
-			with: Datadog.Configuration(
-				clientToken: clientToken,
-				env: environment,
-				site: .us5
-			),
-			trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted
-		)
-		DatadogCrashReporting.CrashReporting.enable()
-		Logs.enable()
-		Trace.enable(
-			with: Trace.Configuration(
-				sampleRate: 100, networkInfoEnabled: true // 100% sampling for development/testing, reduce for production
+			Datadog.initialize(
+				with: Datadog.Configuration(
+					clientToken: clientToken,
+					env: environment,
+					site: .us5
+				),
+				trackingConsent: UserDefaults.usageDataAndCrashReporting ? .granted : .notGranted
 			)
-		)
+			DatadogCrashReporting.CrashReporting.enable()
+			Logs.enable()
+			Trace.enable(
+				with: Trace.Configuration(
+					sampleRate: 20, networkInfoEnabled: true
+				)
+			)
 
-		RUM.enable(
-			with: RUM.Configuration(
+			var rumConfig = RUM.Configuration(
 				applicationID: appID,
 				swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
 				swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
 				trackBackgroundEvents: true
 			)
-		)
-		if Bundle.main.isTestFlight {
-			SessionReplay.enable(
-				with: SessionReplay.Configuration(
-					replaySampleRate: 100,
-					textAndInputPrivacyLevel: .maskSensitiveInputs,
-					imagePrivacyLevel: .maskNone,
-					touchPrivacyLevel: .show,
-					startRecordingImmediately: true,
-					featureFlags: [.swiftui: true]
-				)
-			)
+			// Disable expensive continuous monitoring to reduce idle CPU (~15% savings)
+			rumConfig.longTaskThreshold = nil  // Disables LongTaskObserver CFRunLoop hook
+			rumConfig.vitalsUpdateFrequency = nil    // Disables VitalRefreshRateReader display link
+			RUM.enable(with: rumConfig)
+
 		}
+
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 
@@ -96,20 +95,27 @@ struct MeshtasticAppleApp: App {
 
 		self.persistenceController = persistenceController
 		// Wire up router
+#if os(iOS)
 		self.appDelegate.router = appState.router
-
-		// Initialize map data manager
-		MapDataManager.shared.initialize()
-#if DEBUG
-		// Show tips in development
-		try? Tips.resetDatastore()
 #endif
-		if !UserDefaults.firstLaunch {
-			// If this is first launch, we will show onboarding screens which
-			// Step through the authorization process. Do not start discovery
-			// unitl this workflow completes, otherwise the discovery process
-			// may trigger permission dialogs too soon.
-			accessoryManager.startDiscovery()
+
+		if !Self.isRunningTests {
+			// Initialize map data manager
+			MapDataManager.shared.initialize()
+
+			// Initialize WatchConnectivity session
+			_ = WatchSessionManager.shared
+#if DEBUG
+			// Show tips in development
+			try? Tips.resetDatastore()
+#endif
+			if !UserDefaults.firstLaunch {
+				// If this is first launch, we will show onboarding screens which
+				// Step through the authorization process. Do not start discovery
+				// unitl this workflow completes, otherwise the discovery process
+				// may trigger permission dialogs too soon.
+				accessoryManager.startDiscovery()
+			}
 		}
 	}
 
@@ -145,60 +151,70 @@ struct MeshtasticAppleApp: App {
 	
 	var body: some Scene {
 		WindowGroup {
-			ContentView(
-				appState: appState,
-				router: appState.router
-			)
-			.sheet(item: $saveChannelLink
-			) { link in
-				SaveChannelQRCode(
-					channelSetLink: link.data,
-					addChannels: link.add, // <-- Uses the now reliable 'add' boolean
-					accessoryManager: accessoryManager				)
-				.presentationDetents([.large])
-				.presentationDragIndicator(.visible)
-			}
-			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-				Logger.mesh.debug("URL received \(userActivity, privacy: .public)")
-				self.incomingUrl = userActivity.webpageURL
-				self.saveChannelLink = nil
+			if Self.isRunningTests {
+				Color.clear
+			} else {
+				ContentView(
+					appState: appState,
+					router: appState.router
+				)
+				.sheet(item: $saveChannelLink
+				) { link in
+					SaveChannelQRCode(
+						channelSetLink: link.data,
+						addChannels: link.add, // <-- Uses the now reliable 'add' boolean
+						accessoryManager: accessoryManager				)
+					.presentationDetents([.large])
+					.presentationDragIndicator(.visible)
+				}
+				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+					Logger.mesh.debug("URL received \(userActivity, privacy: .public)")
+					self.incomingUrl = userActivity.webpageURL
+					self.saveChannelLink = nil
 
-				if let url = userActivity.webpageURL {
-					if url.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
-						ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
-					} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") == true {
-						// **Consolidated Call for User Activity**
-						handleChannelLinkURL(url, fromActivity: true)
+					if let url = userActivity.webpageURL {
+						if url.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
+							ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
+						} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") == true {
+							// **Consolidated Call for User Activity**
+							handleChannelLinkURL(url, fromActivity: true)
+						}
+					}
+
+					if self.saveChannelLink != nil {
+						Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString), privacy: .public)")
 					}
 				}
-
-				if self.saveChannelLink != nil {
-					Logger.mesh.debug("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString), privacy: .public)")
+				.onOpenURL(perform: { (url) in
+					Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
+					self.incomingUrl = url
+					
+					if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
+						ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
+					} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
+						// **Consolidated Call for Open URL**
+						handleChannelLinkURL(url, fromActivity: false)
+					} else if url.absoluteString.lowercased().contains("meshtastic:///") {
+						appState.router.route(url: url)
+					}
+				})
+				.task {
+					try? Tips.configure(
+						[
+							// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
+							.datastoreLocation(.applicationDefault),
+							// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
+							// You can adjust this on per tip level as well
+							.displayFrequency(.immediate)
+						]
+					)
 				}
-			}
-			.onOpenURL(perform: { (url) in
-				Logger.mesh.debug("Some sort of URL was received \(url, privacy: .public)")
-				self.incomingUrl = url
-				
-				if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
-					ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
-				} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
-					// **Consolidated Call for Open URL**
-					handleChannelLinkURL(url, fromActivity: false)
-				} else if url.absoluteString.lowercased().contains("meshtastic:///") {
-					appState.router.route(url: url)
-				}
-			})
-			.task {
-				try? Tips.configure(
-					[
-						// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
-						.datastoreLocation(.applicationDefault),
-						// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
-						// You can adjust this on per tip level as well
-						.displayFrequency(.immediate)
-					]
-				)
+				.modelContainer(persistenceController!.container)
+				.environmentObject(appState)
+				.environmentObject(accessoryManager)
+				.environmentObject(appState.router)
+				.environmentObject(MeshtasticAPI.shared)
+				.tint(.accentColor)
 			}
 			.onChange(of: lockdownCoordinator.state) { _, newState in
 				// US-3: when the coordinator resolves to .lockNowAcknowledged
@@ -210,36 +226,50 @@ struct MeshtasticAppleApp: App {
 			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
+			guard !Self.isRunningTests else { return }
 			accessoryManager.isInBackground = (newScenePhase == .background)
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")
-				// Stop Session Replay when app goes to background to prevent crashes
-				// from accessing SwiftUI view hierarchy while backgrounded
-				SessionReplay.stopRecording()
 				accessoryManager.appDidEnterBackground()
 				do {
-					try persistenceController.container.viewContext.save()
-					Logger.services.info("💾 [App] Saved CoreData ViewContext when the app went to the background.")
+					try persistenceController!.container.mainContext.save()
+					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
 
 				} catch {
 
-					Logger.services.error("💥 [App] Failed to save viewContext when the app goes to the background.")
+					Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
 				}
 			case .inactive:
 				Logger.services.info("🎬 [App] Scene is inactive")
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
-				// Resume Session Replay when app becomes active
-				SessionReplay.startRecording()
 				accessoryManager.appDidBecomeActive()
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}
 		}
-		.environment(\.managedObjectContext, persistenceController.container.viewContext)
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
 		.environmentObject(lockdownCoordinator)
+		.environmentObject(appState.router)
+		.environmentObject(MeshtasticAPI.shared)
+
+		WindowGroup("Mesh Map", id: "meshmap-window") {
+			if !Self.isRunningTests {
+				MapWindow()
+					.modelContainer(persistenceController!.container)
+					.environmentObject(appState)
+					.environmentObject(accessoryManager)
+					.environmentObject(lockdownCoordinator)
+					.environmentObject(appState.router)
+					.environmentObject(MeshtasticAPI.shared)
+			}
+		}
+		.handlesExternalEvents(matching: [])
+		.windowResizability(.contentMinSize)
+		#if os(visionOS)
+		.windowStyle(.plain)
+		#endif
 	}
 }

@@ -16,6 +16,6 @@
 - [ ] My code adheres to the project's coding and style guidelines.
 - [ ] I have conducted a self-review of my code.
 - [ ] I have commented my code, particularly in complex areas.
-- [ ] I have verified whether these changes require an update to existing documentation or if new documentation is needed, and created an issue in the [docs repo](http://github.com/meshtastic/meshtastic/issues) if applicable.
+- [ ] I have verified whether these changes require updates to the in-app documentation under `docs/user/` or `docs/developer/`, and updated accordingly (see [copilot-instructions.md](../.github/copilot-instructions.md#in-app-documentation) for the view → doc page mapping). If no doc update is needed, add the **`skip-docs-check`** label.
 - [ ] I have tested the change to ensure that it works as intended.
 

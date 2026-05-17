@@ -1,0 +1,30 @@
+{
+  "doNotTranslate": [
+    "Meshtastic",
+    "LoRa",
+    "MQTT",
+    "BLE",
+    "GPS",
+    "TAK",
+    "CoT",
+    "PKC",
+    "SNR",
+    "GPIO",
+    "DFU",
+    "API",
+    "Wi-Fi",
+    "Bluetooth",
+    "IAQ",
+    "ATAK",
+    "WinTAK",
+    "mPWRD-OS",
+    "iOS",
+    "macOS",
+    "CarPlay",
+    "SiriKit"
+  ],
+  "tone": {
+    "default": "professional",
+    "zh-Hant-TW": "professional"
+  }
+}

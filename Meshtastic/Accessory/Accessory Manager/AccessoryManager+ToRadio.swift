@@ -8,6 +8,7 @@
 import Foundation
 import MeshtasticProtobufs
 import OSLog
+@preconcurrency import SwiftData
 
 extension AccessoryManager {
 
@@ -165,8 +166,9 @@ extension AccessoryManager {
 					nodeMeshPacket.decoded = dataNodeMessage
 
 					// Update local database with the new node info
-					// FUTURE: after https://github.com/meshtastic/firmware/pull/8495 is merged, `favorite: true` becomes `favorite: (connectedDeviceRole != DeviceRoles.clientBase)`
-					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: true)
+					// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
+					let shouldFavorite = connectedDeviceRole != .clientBase
+					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite)
 				}
 			} catch {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
@@ -280,8 +282,7 @@ extension AccessoryManager {
 			return
 		}
 
-			let messageUsers = UserEntity.fetchRequest()
-			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
+			let messageUsers = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == fromUserNum || $0.num == toUserNum })
 
 			do {
 				let fetchedUsers = try context.fetch(messageUsers)
@@ -290,7 +291,8 @@ extension AccessoryManager {
 					Logger.data.error("🚫 Message Users Not Found, Fail")
 					throw AccessoryError.ioFailed("🚫 Message Users Not Found, Fail")
 				} else if fetchedUsers.count >= 1 {
-					let newMessage = MessageEntity(context: context)
+					let newMessage = MessageEntity()
+					context.insert(newMessage)
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
@@ -340,7 +342,6 @@ extension AccessoryManager {
 									let contactString = try contact.serializedData().base64EncodedString()
 									try? await am.addContactFromURL(base64UrlString: contactString)
 									try context.save()
-									user.objectWillChange.send()
 								} catch {
 									Logger.services.error("Error inserting new contact and resending encrypted send failed message: \(error)")
 								}
@@ -376,9 +377,13 @@ extension AccessoryManager {
 					do {
 						try context.save()
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
-
+						// Donate outgoing message to SiriKit for CarPlay
+						if !isEmoji {
+							#if os(iOS)
+							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel)
+							#endif
+						}
 					} catch {
-						context.rollback()
 						let nsError = error as NSError
 						Logger.data.error("Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError, privacy: .public)")
 						throw error
@@ -454,8 +459,7 @@ extension AccessoryManager {
 			var i: Int32 = 0
 
 			if addChannels {
-				let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(deviceNum))
+				let fetchMyInfoRequest = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
 
 				let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 				if fetchedMyInfo.count != 1 {
@@ -464,7 +468,7 @@ extension AccessoryManager {
 				
 				// We are trying to add a channel so lets get the last index
 				myInfo = fetchedMyInfo[0]
-				i = Int32(myInfo.channels?.count ?? -1)
+				i = Int32(myInfo.channels.count)
 				
 				// Bail out if the index is negative or bigger than our max of 8
 				if i < 0 || i > 8 {
@@ -475,12 +479,8 @@ extension AccessoryManager {
 			for cs in channelSet.settings {
 
 				if addChannels {
-					guard let mutableChannels = myInfo.channels?.mutableCopy() as? NSMutableOrderedSet else {
-						throw AccessoryError.appError("No channels or channel")
-					}
-					
-					// Bail out if there are no channels or if the same channel name already exists
-					if mutableChannels.first(where: { ($0 as AnyObject).name == cs.name }) is ChannelEntity {
+					// Bail out if the same channel name already exists
+					if myInfo.channels.first(where: { $0.name == cs.name }) != nil {
 						throw AccessoryError.appError("Channel already exists")
 					}
 				}
@@ -517,6 +517,32 @@ extension AccessoryManager {
 				let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
 				try await send(toRadio, debugDescription: logString)
 				await MeshPackets.shared.channelPacket(channel: chan, fromNum: self.activeDeviceNum ?? 0)
+			}
+			if !addChannels {
+				// Save the LoRa Config and the device will reboot
+				var adminPacket = AdminMessage()
+				adminPacket.setConfig.lora = channelSet.loraConfig
+				adminPacket.setConfig.lora.configOkToMqtt = okToMQTT // Preserve users okToMQTT choice
+				var meshPacket: MeshPacket = MeshPacket()
+				meshPacket.to = UInt32(deviceNum)
+				meshPacket.from	= UInt32(deviceNum)
+				meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+				meshPacket.priority =  MeshPacket.Priority.reliable
+				meshPacket.wantAck = true
+				meshPacket.channel = 0
+				var dataMessage = DataMessage()
+				guard let adminData: Data = try? adminPacket.serializedData() else {
+					throw AccessoryError.ioFailed("sendReboot: Unable to serialize Admin packet")
+				}
+				dataMessage.payload = adminData
+				dataMessage.portnum = PortNum.adminApp
+				meshPacket.decoded = dataMessage
+				var toRadio: ToRadio!
+				toRadio = ToRadio()
+				toRadio.packet = meshPacket
+				
+				let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
+				try await send(toRadio, debugDescription: logString)
 			}
 			if !addChannels {
 				// Save the LoRa Config and the device will reboot
@@ -616,9 +642,9 @@ extension AccessoryManager {
 				wayPointEntity.expire = nil
 			}
 			if waypoint.lockedTo > 0 {
-				wayPointEntity.locked = Int64(waypoint.lockedTo)
+				wayPointEntity.locked = true
 			} else {
-				wayPointEntity.locked = 0
+				wayPointEntity.locked = false
 			}
 			if wayPointEntity.created == nil {
 				wayPointEntity.created = Date()
@@ -629,7 +655,6 @@ extension AccessoryManager {
 				try context.save()
 				Logger.data.info("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum.toHex(), privacy: .public)")
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError, privacy: .public)")
 			}
@@ -664,14 +689,11 @@ extension AccessoryManager {
 		let logString = String.localizedStringWithFormat("Sent a TraceRoute Packet from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
 		try await send(toRadio, debugDescription: logString)
 
-			let traceRoute = TraceRouteEntity(context: context)
-			let nodes = NodeInfoEntity.fetchRequest()
+			let traceRoute = TraceRouteEntity()
+			context.insert(traceRoute)
+			traceRoute.sent = true
 			// TODO: Not sure what's going on here. We always have a fromNodeNum
-			// if let connectedNum = fromNodeNum {
-			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, fromNodeNum])
-			// } else {
-			//	nodes.predicate = NSPredicate(format: "num == %@", destNum)
-			// }
+			let nodes = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == destNum || $0.num == fromNodeNum })
 			do {
 				let fetchedNodes = try context.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
@@ -682,7 +704,6 @@ extension AccessoryManager {
 					try context.save()
 					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "Unknown".localized), privacy: .public)")
 				} catch {
-					context.rollback()
 					let nsError = error as NSError
 					Logger.data.error("Error Updating Core Data BluetoothConfigEntity: \(nsError, privacy: .public)")
 				}
@@ -696,7 +717,7 @@ extension AccessoryManager {
 
 	}
 
-	public func requestStoreAndForwardClientHistory(fromUser: UserEntity, toUser: UserEntity) async throws {
+	public func requestStoreAndForwardClientHistory(fromUser: UserEntity, toUser: UserEntity, channel: Int32) async throws {
 
 		/// send a request for ClientHistory with a time period matching the heartbeat
 		var sfPacket = StoreAndForward()
@@ -709,6 +730,7 @@ extension AccessoryManager {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
 		var dataMessage = DataMessage()
 		guard let sfData: Data = try? sfPacket.serializedData() else {
 			throw AccessoryError.ioFailed("requestStoreAndForwardClientHistory: Unable to serialize data packet")
@@ -800,7 +822,6 @@ extension AccessoryManager {
 				context.delete(node)
 				try context.save()
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("🚫 Error deleting node from core data: \(nsError, privacy: .public)")
 			}
@@ -834,7 +855,7 @@ extension AccessoryManager {
 			throw AccessoryError.ioFailed("removeNode: Unable to serialize admin packet")
 		}
 
-		let messageDescription = "🛎️ [Device Metadata] Requested for node \(toUser?.longName ?? "#\(toUserNum)") by \(fromUser?.longName ?? "#\(fromUser)")"
+		let messageDescription = "🛎️ [Device Metadata] Requested for node \(toUser?.longName ?? "#\(toUserNum)") by \(fromUser?.longName ?? "#\(fromUserNum)")"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 		return Int64(meshPacket.id)
 	}
@@ -1445,9 +1466,18 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity) async throws {
+	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, mode: OTAMode, otaHash: Data) async throws {
 		var adminPacket = AdminMessage()
-		adminPacket.rebootOtaSeconds = 5
+		var otaRequest = AdminMessage.OTAEvent()
+		
+		guard otaHash.count == 32 else {
+			throw AccessoryError.ioFailed("sendRebootOta: Unable to serialize admin packet")
+		}
+
+		otaRequest.otaHash = otaHash
+		otaRequest.rebootOtaMode = mode
+		adminPacket.otaRequest = otaRequest
+		
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}
@@ -1820,6 +1850,34 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
+	public func requestTAKModuleConfig(fromUser: UserEntity, toUser: UserEntity) async throws {
+
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.takConfig
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("requestTAKModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛎️ Requested TAK Module Config for node: \(toUser.longName ?? "unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+	}
+
 	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) async throws {
 		var adminPacket = AdminMessage()
 		adminPacket.nodedbReset = true
@@ -1929,6 +1987,36 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
 		await MeshPackets.shared.upsertTelemetryModuleConfigPacket(config: config, nodeNum: toUser.num)
+
+		return Int64(meshPacket.id)
+	}
+
+	public func saveTAKModuleConfig(config: ModuleConfig.TAKConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.tak = config
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("saveTAKModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved TAK Module Config for \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+
+		await MeshPackets.shared.upsertTAKModuleConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}

@@ -5,10 +5,10 @@ import SwiftProtobuf
 import MapKit
 import DatadogCore
 import OSLog
+import SwiftData
 
 struct AppSettings: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
@@ -20,7 +20,19 @@ struct AppSettings: View {
 	@AppStorage("environmentEnableWeatherKit") private var  environmentEnableWeatherKit: Bool = true
 	@AppStorage("enableAdministration") private var  enableAdministration: Bool = false
 	@AppStorage("usageDataAndCrashReporting") private var usageDataAndCrashReporting: Bool = true
-	
+	// Node Layout Preferences
+	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
+	@AppStorage(NodeListPreferences.shouldShowLocation.rawValue) private var shouldShowLocation = true
+	@AppStorage(NodeListPreferences.shouldShowPower.rawValue) private var shouldShowPower = true
+	@AppStorage(NodeListPreferences.shouldShowTelemetry.rawValue) private var shouldShowTelemetry = true
+	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard = true
+	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative = false
+	@AppStorage(NodeListPreferences.shouldShowRole.rawValue) private var shouldShowRole = true
+	@AppStorage(NodeListPreferences.shouldShowChannel.rawValue) private var shouldShowChannel = true
+	@AppStorage(NodeListPreferences.shouldShowHops.rawValue) private var shouldShowHops = true
+	@AppStorage(NodeListPreferences.shouldShowSignal.rawValue) private var shouldShowSignal = true
+	@AppStorage("participateInDistributedTranslations") private var participateInDistributedTranslations = true
+
 	let autoconnectBinding = Binding<Bool>(get: {
 		return UserDefaults.autoconnectOnDiscovery
 	}, set: { newValue in
@@ -70,7 +82,53 @@ struct AppSettings: View {
 					}
 #endif
 				}
-				Section(header: Text("environment")) {
+				Section(header: Text("Node Layout")) {
+					List {
+						Picker("Node List Density", selection: $nodeListDensity.animation()) {
+							ForEach(NodeListDensity.allCases) { item in
+								Text(item.description).tag(item)
+							}
+						}
+						.pickerStyle(.segmented)
+						if nodeListDensity == .compact {
+							Toggle(isOn: $shouldShowPower) {
+								Text("Power")
+							}
+							Toggle(isOn: $shouldShowLastHeard.animation()) {
+								Text("Last Heard Time")
+							}
+							Toggle(isOn: $lastHeardIsRelative) {
+								Text("Relative Last Heard Time")
+							}
+							.disabled(!shouldShowLastHeard)
+							Toggle(isOn: $shouldShowLocation) {
+								Text("Distance and Bearing")
+							}
+							Toggle(isOn: $shouldShowHops) {
+								Text("Hops Away")
+							}
+							Toggle(isOn: $shouldShowSignal) {
+								Text("Signal (Direct Only)")
+							}
+							Toggle(isOn: $shouldShowChannel) {
+								Text("Channel")
+							}
+							Toggle(isOn: $shouldShowRole) {
+								Text("Device Role")
+							}
+							Toggle(isOn: $shouldShowTelemetry) {
+								Text("Log Icons")
+							}
+						}
+						if nodeListDensity == .standard {
+							Text("The Complete layout displays all available node data. Fields with no data are automatically hidden.")
+								.font(.footnote)
+								.foregroundStyle(.secondary)
+						}
+						BuildTestNode(nodeListDensity: $nodeListDensity)
+					}
+				}
+				Section(header: Text("Environment")) {
 					VStack(alignment: .leading) {
 						Toggle(isOn: $environmentEnableWeatherKit) {
 							Label("Weather Conditions", systemImage: "cloud.sun")
@@ -139,6 +197,10 @@ struct AppSettings: View {
 							Task {
 								try await accessoryManager.disconnect()
 								
+								/// Clear translation cache
+								await TranslationCache.shared.clearAll()
+								await DocTranslationService.shared.clearUIStringCache()
+								
 								/// Delete any database backups too
 								if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
 									url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
@@ -159,9 +221,10 @@ struct AppSettings: View {
 										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
 									}
 								}
-								await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: true)
+								await MeshPackets.shared.flushDebouncedSaves()
+								await MeshPackets.shared.clearDatabase(includeRoutes: true)
+								MeshPackets.recreateShared()
 								clearNotifications()
-								context.refreshAllObjects()
 							}
 						}
 					}
@@ -172,6 +235,15 @@ struct AppSettings: View {
 							.foregroundColor(.red)
 					}
 				}
+				Section(header: Text("Documentation Translations")) {
+					Toggle(isOn: $participateInDistributedTranslations) {
+						Label("Participate in Distributed Translations", systemImage: "globe")
+					}
+					.tint(.accentColor)
+					Text("Upload on-device translated documentation to help improve translations for the community. Translated docs are shared anonymously so other users get instant translations without needing on-device models.")
+						.foregroundStyle(.secondary)
+						.font(idiom == .phone ? .caption : .callout)
+				}
 			}
 		}
 		.navigationTitle("App Settings")
@@ -179,5 +251,43 @@ struct AppSettings: View {
 								ZStack {
 			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 		})
+	}
+}
+
+struct BuildTestNode: View {
+	@Environment(\.modelContext) private var context
+	@Binding var nodeListDensity: NodeListDensity
+	
+	init(nodeListDensity: Binding<NodeListDensity>) {
+		self._nodeListDensity = nodeListDensity
+	}
+
+	private var exampleNode: NodeInfoEntity? {
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			sortBy: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? context.fetch(descriptor).first
+	}
+
+	var body: some View {
+		VStack {
+			if let exampleNode {
+				switch nodeListDensity {
+				case .standard:
+					NodeListItem(
+						node: exampleNode,
+						isDirectlyConnected: true,
+						connectedNode: 0,
+					)
+				case .compact:
+					NodeListItemCompact(
+						node: exampleNode,
+						isDirectlyConnected: true,
+						connectedNode: 0
+					)
+				}
+			}
+		}
 	}
 }

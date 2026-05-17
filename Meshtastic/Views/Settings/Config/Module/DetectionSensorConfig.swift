@@ -24,7 +24,7 @@ enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 
 struct DetectionSensorConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
@@ -260,4 +260,10 @@ struct DetectionSensorConfig: View {
 		
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	DetectionSensorConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

@@ -10,11 +10,11 @@ import OSLog
 import MeshtasticProtobufs
 import CoreBluetooth
 
-private let maxRetries = 1
+private let maxRetries = 2
 private let retryDelay: Duration = .seconds(2)
 
 extension AccessoryManager {
-	func connect(to device: Device, withConnection: Connection? = nil, wantConfig: Bool = true, wantDatabase: Bool = true, versionCheck: Bool = true) async throws {
+	func connect(to device: Device, withConnection: Connection? = nil, wantConfig: Bool = true, wantDatabase: Bool = true, versionCheck: Bool = true, retries: Int? = nil) async throws {
 		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck))")
 		// Prevent new connection if one is active
 		if activeConnection != nil {
@@ -25,8 +25,9 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed("No transport for type")
 		}
 		
-		// Clear any errors from last time
+		// Clear any errors and stale state from last connection
 		lastConnectionError = nil
+		self.activeDeviceNum = nil
 		packetsSent = 0
 		packetsReceived = 0
 		expectedNodeDBSize = nil
@@ -35,14 +36,15 @@ extension AccessoryManager {
 		self.userRequestedConnectionCancellation = false
 		
 		// Prepare to connect
-		self.connectionStepper = SequentialSteps(maxRetries: maxRetries, retryDelay: retryDelay) {
+		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
 				Logger.transport.info("🔗👟 [Connect] Starting connection to \(device.id, privacy: .public)")
 				if retryAttempt > 0 {
 					try await self.closeConnection() // clean-up before retries.
-					self.updateState(.retrying(attempt: retryAttempt + 1))
+					self.updateState(.retrying(attempt: retryAttempt + 1, maxAttempts: retries ?? maxRetries))
+					self.allowDisconnect = true
 				} else {
 					self.updateState(.connecting)
 				}
@@ -71,6 +73,7 @@ extension AccessoryManager {
 						Logger.transport.info("[Accessory] Event stream closed")
 					}
 					self.activeConnection = (device: device, connection: connection)
+					self.activeDeviceNum = device.num
 				} catch let error as CBError where error.code == .peerRemovedPairingInformation {
 					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.coreBluetoothError(error), cancelFullProcess: true)
 				}
@@ -173,6 +176,10 @@ extension AccessoryManager {
 				// We have an active connection
 				self.updateDevice(deviceId: device.id, key: \.connectionState, value: .connected)
 				self.updateState(.subscribed)
+
+				// Release accumulated ModelContext memory from DB retrieval
+				await MeshPackets.shared.flushDebouncedSaves()
+				MeshPackets.recreateShared()
 				
 				// If we successfully connected to a manual connection, then save it to the list
 				// Remember, Device is a value type (struct) so don't use use `device` here, thats
@@ -218,6 +225,10 @@ extension AccessoryManager {
 		do {
 			try await connectionStepper?.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
+		} catch AccessoryError.tooManyRetries {
+			self.lastConnectionError = AccessoryError.tooManyRetries
+			try await self.closeConnection()
+			updateState(.discovering)
 		} catch {
 			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error)")
 			try await self.closeConnection()
@@ -357,6 +368,7 @@ actor SequentialSteps {
 			return
 		}
 		isRunning = false
+		// return
 		throw AccessoryError.tooManyRetries
 	}
 	

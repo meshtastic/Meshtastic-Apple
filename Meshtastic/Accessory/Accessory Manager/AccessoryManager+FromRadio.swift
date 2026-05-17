@@ -9,6 +9,7 @@ import Foundation
 import MeshtasticProtobufs
 import CocoaMQTT
 import OSLog
+import SwiftData
 
 extension AccessoryManager {
 
@@ -34,7 +35,6 @@ extension AccessoryManager {
 					try context.save()
 					Logger.data.info("💾 [TraceRouteEntity] Trace Route Rate Limited")
 				} catch {
-					context.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [TraceRouteEntity] Error Updating Core Data: \(nsError, privacy: .public)")
 				}
@@ -53,7 +53,7 @@ extension AccessoryManager {
 		let manager = LocalNotificationManager()
 		manager.notifications = [
 			Notification(
-				id: UUID().uuidString,
+				id: "client.notification",
 				title: "Firmware Notification".localized,
 				subtitle: "\(clientNotification.level)".capitalized,
 				content: clientNotification.message,
@@ -76,7 +76,7 @@ extension AccessoryManager {
 		updateDevice(key: \.num, value: Int64(myNodeInfo.myNodeNum))
 
 		if let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId),
-		   let myInfo = try? context.existingObject(with: myInfoId) as? MyInfoEntity {
+		   let myInfo = try? context.model(for: myInfoId) as? MyInfoEntity {
 			if let bleName = myInfo.bleName {
 				updateDevice(key: \.name, value: bleName)
 				updateDevice(key: \.longName, value: bleName)
@@ -94,8 +94,31 @@ extension AccessoryManager {
 		}
 		tryClearExistingChannels()
 
+		// Auto-disable new-node notifications for event firmware editions
+		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)
+		firmwareEdition = FirmwareEditions(from: myNodeInfo.firmwareEdition)
+
 		// Initialize TAK bridge for TAK integration
 		initializeTAKBridge()
+	}
+
+	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),
+	/// auto-disable new-node notifications on first connection.
+	/// Reconnecting to vanilla firmware re-enables and resets the flag.
+	private func applyEventFirmwareNotificationDefaults(_ edition: FirmwareEdition) {
+		if edition != .vanilla {
+			if !UserDefaults.nodeNotificationsAutoDisabledForEvent {
+				UserDefaults.newNodeNotifications = false
+				UserDefaults.nodeNotificationsAutoDisabledForEvent = true
+				Logger.services.info("Event firmware detected (\(String(describing: edition))), auto-disabled new node notifications")
+			}
+		} else {
+			if UserDefaults.nodeNotificationsAutoDisabledForEvent {
+				UserDefaults.newNodeNotifications = true
+				UserDefaults.nodeNotificationsAutoDisabledForEvent = false
+				Logger.services.info("Vanilla firmware detected, re-enabled new node notifications")
+			}
+		}
 	}
 
 	func handleNodeInfo(_ nodeInfo: NodeInfo) async {
@@ -116,7 +139,7 @@ extension AccessoryManager {
 		// TODO: nodeInfoPacket's channel: parameter is not used
 		// deferSave hard coded: No need to defer save when nodeInfoPacket is now happening off the main thread
 		if let nodeInfoId = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: false),
-		   let nodeInfo = try? context.existingObject(with: nodeInfoId) as? NodeInfoEntity {
+		   let nodeInfo = try? context.model(for: nodeInfoId) as? NodeInfoEntity {
 			if let activeDevice = activeConnection?.device, activeDevice.num == nodeInfo.num {
 				if let user = nodeInfo.user {
 					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
@@ -201,6 +224,7 @@ extension AccessoryManager {
 		updateDevice(key: \.firmwareVersion, value: metadata.firmwareVersion)
 
 		await MeshPackets.shared.deviceMetadataPacket(metadata: metadata, fromNum: deviceNum)
+		Logger.transport.info("✅ [handleDeviceMetadata] deviceMetadataPacket completed for \(deviceNum.toHex(), privacy: .public)")
 	}
 
 	internal func tryClearExistingChannels() {
@@ -210,15 +234,24 @@ extension AccessoryManager {
 		}
 
 		// Before we get started delete the existing channels from the myNodeInfo
-		let fetchMyInfoRequest = MyInfoEntity.fetchRequest()
-		fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(deviceNum))
+		let num = Int64(deviceNum)
+		let fetchMyInfoRequest = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == num })
 
 		do {
 			let fetchedMyInfo = try context.fetch(fetchMyInfoRequest)
 			if fetchedMyInfo.count == 1 {
-				let mutableChannels = fetchedMyInfo[0].channels?.mutableCopy() as? NSMutableOrderedSet
-				mutableChannels?.removeAllObjects()
-				fetchedMyInfo[0].channels = mutableChannels
+				let channelsToDelete = fetchedMyInfo[0].channels
+				for channel in channelsToDelete {
+					context.delete(channel)
+				}
+				fetchedMyInfo[0].channels.removeAll()
+
+				// Clean orphaned channels from older app versions where channels were
+				// detached but not deleted, which can create duplicate rows in queries.
+				let allChannels = try context.fetch(FetchDescriptor<ChannelEntity>())
+				for channel in allChannels where channel.myInfoChannel == nil {
+					context.delete(channel)
+				}
 				do {
 					try context.save()
 				} catch {
@@ -267,17 +300,17 @@ extension AccessoryManager {
 						routerNode.storeForwardConfig?.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
 						routerNode.storeForwardConfig?.lastHeartbeat = Date()
 					} else {
-						let newConfig = StoreForwardConfigEntity(context: context)
+						let newConfig = StoreForwardConfigEntity()
 						newConfig.enabled = true
 						newConfig.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
 						newConfig.lastHeartbeat = Date()
+						context.insert(newConfig)
 						routerNode.storeForwardConfig = newConfig
 					}
 
 					do {
 						try context.save()
 					} catch {
-						context.rollback()
 						Logger.data.error("Save Store and Forward Router Error")
 					}
 				}
@@ -296,15 +329,15 @@ extension AccessoryManager {
 				if routerNode.storeForwardConfig != nil {
 					routerNode.storeForwardConfig?.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
 				} else {
-					let newConfig = StoreForwardConfigEntity(context: context)
+					let newConfig = StoreForwardConfigEntity()
 					newConfig.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
+					context.insert(newConfig)
 					routerNode.storeForwardConfig = newConfig
 				}
 
 				do {
 					try context.save()
 				} catch {
-					context.rollback()
 					Logger.data.error("Save Store and Forward Router Error")
 				}
 				Logger.mesh.info("\("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
@@ -363,13 +396,17 @@ extension AccessoryManager {
 				return
 			}
 			var hopNodes: [TraceRouteHopEntity] = []
-			let connectedHop = TraceRouteHopEntity(context: context)
+			let connectedHop = TraceRouteHopEntity()
+			context.insert(connectedHop)
 			connectedHop.time = Date()
 			connectedHop.num = deviceNum
 			connectedHop.name = connectedNode.user?.longName ?? "???"
 			// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 			connectedHop.snr = Float(routingMessage.snrBack.last ?? -128) / 4
-			if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+			if let mostRecent = traceRoute?.node?.positions.last,
+			   let mostRecentTime = mostRecent.time,
+			   let cutoff = Calendar.current.date(byAdding: .hour, value: -24, to: Date()),
+			   mostRecentTime >= cutoff {
 				connectedHop.altitude = mostRecent.altitude
 				connectedHop.latitudeI = mostRecent.latitudeI
 				connectedHop.longitudeI = mostRecent.longitudeI
@@ -383,7 +420,8 @@ extension AccessoryManager {
 				if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 					hopNode = createNodeInfo(num: Int64(node), context: context)
 				}
-				let traceRouteHop = TraceRouteHopEntity(context: context)
+				let traceRouteHop = TraceRouteHopEntity()
+				context.insert(traceRouteHop)
 				traceRouteHop.time = Date()
 				if routingMessage.snrTowards.count >= index + 1 {
 					traceRouteHop.snr = Float(routingMessage.snrTowards[index]) / 4
@@ -392,7 +430,10 @@ extension AccessoryManager {
 					traceRouteHop.snr = -32
 				}
 				if let hn = hopNode, hn.hasPositions {
-					if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+					if let mostRecent = hn.positions.last,
+					   let mostRecentTime = mostRecent.time,
+					   let cutoff = Calendar.current.date(byAdding: .hour, value: -24, to: Date()),
+					   mostRecentTime >= cutoff {
 						traceRouteHop.altitude = mostRecent.altitude
 						traceRouteHop.latitudeI = mostRecent.latitudeI
 						traceRouteHop.longitudeI = mostRecent.longitudeI
@@ -412,13 +453,17 @@ extension AccessoryManager {
 				let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
 				routeString += "\(hopName) \(mqttLabel)(\(snrLabel)dB) --> "
 			}
-			let destinationHop = TraceRouteHopEntity(context: context)
+			let destinationHop = TraceRouteHopEntity()
+			context.insert(destinationHop)
 			destinationHop.name = traceRoute?.node?.user?.longName ?? "Unknown".localized
 			destinationHop.time = Date()
 			// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 			destinationHop.snr = Float(routingMessage.snrTowards.last ?? -128) / 4
 			destinationHop.num = traceRoute?.node?.num ?? 0
-			if let mostRecent = traceRoute?.node?.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+			if let mostRecent = traceRoute?.node?.positions.last,
+			   let mostRecentTime = mostRecent.time,
+			   let cutoff = Calendar.current.date(byAdding: .hour, value: -24, to: Date()),
+			   mostRecentTime >= cutoff {
 				destinationHop.altitude = mostRecent.altitude
 				destinationHop.latitudeI = mostRecent.latitudeI
 				destinationHop.longitudeI = mostRecent.longitudeI
@@ -439,7 +484,8 @@ extension AccessoryManager {
 					if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
 						hopNode = createNodeInfo(num: Int64(node), context: context)
 					}
-					let traceRouteHop = TraceRouteHopEntity(context: context)
+					let traceRouteHop = TraceRouteHopEntity()
+					context.insert(traceRouteHop)
 					traceRouteHop.time = Date()
 					traceRouteHop.back = true
 					if routingMessage.snrBack.count >= index + 1 {
@@ -449,7 +495,10 @@ extension AccessoryManager {
 						traceRouteHop.snr = -32
 					}
 					if let hn = hopNode, hn.hasPositions {
-						if let mostRecent = hn.positions?.lastObject as? PositionEntity, mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
+						if let mostRecent = hn.positions.last,
+						   let mostRecentTime = mostRecent.time,
+						   let cutoff = Calendar.current.date(byAdding: .hour, value: -24, to: Date()),
+						   mostRecentTime >= cutoff {
 							traceRouteHop.altitude = mostRecent.altitude
 							traceRouteHop.latitudeI = mostRecent.latitudeI
 							traceRouteHop.longitudeI = mostRecent.longitudeI
@@ -474,7 +523,7 @@ extension AccessoryManager {
 				routeBackString += "\(connectedNode.user?.longName ?? String(connectedNode.num.toHex())) (\(snrBackLast != -32 ? String(snrBackLast) : "unknown ".localized)dB)"
 				traceRoute?.routeBackText = routeBackString
 			}
-			traceRoute?.hops = NSOrderedSet(array: hopNodes)
+			traceRoute?.hops = hopNodes
 			traceRoute?.time = Date()
 
 			if let tr = traceRoute {
@@ -496,7 +545,6 @@ extension AccessoryManager {
 				try context.save()
 				Logger.data.info("💾 Saved Trace Route")
 			} catch {
-				context.rollback()
 				let nsError = error as NSError
 				Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")
 			}

@@ -11,21 +11,21 @@ extension Date {
 
 	var lastHeard: String {
 		if self.timeIntervalSince1970 > 0 && self < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
-			formatted()
+			formatted(date: .numeric, time: .shortened)
 		} else {
 			"Unknown Age".localized
 		}
 	}
 
 	func formattedDate(format: String) -> String {
-		let dateformat = DateFormatter()
-		dateformat.dateFormat = format
-		if self.timeIntervalSince1970 > 0 && self < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
-			return dateformat.string(from: self)
-		} else {
+		guard self.timeIntervalSince1970 > 0 else {
 			return "Unknown Age".localized
 		}
+		let formatter = DateFormatter()
+		formatter.dateFormat = format
+		return formatter.string(from: self)
 	}
+
 	func relativeTimeOfDay() -> String {
 		let hour = Calendar.current.component(.hour, from: self)
 
@@ -36,5 +36,13 @@ extension Date {
 		case 17..<22: return "Evening".localized
 		default: return "Nighttime".localized
 		}
+	}
+
+	/// Filename-safe timestamp: `2026-05-04_101521`
+	var exportTimestamp: String {
+		let formatter = DateFormatter()
+		formatter.dateFormat = "yyyy-MM-dd_HHmmss"
+		formatter.locale = Locale(identifier: "en_US_POSIX")
+		return formatter.string(from: self)
 	}
 }

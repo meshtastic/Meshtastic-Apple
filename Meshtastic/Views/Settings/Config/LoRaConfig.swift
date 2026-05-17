@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
@@ -24,7 +24,7 @@ struct LoRaConfig: View {
 		return formatter
 	}()
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	@FocusState var focusedField: Field?
@@ -81,7 +81,9 @@ struct LoRaConfig: View {
 				if usePreset {
 					VStack(alignment: .leading) {
 						Picker("Presets", selection: $modemPreset ) {
-							ForEach(ModemPresets.allCases) { m in
+							// Lite / Narrow presets are intentionally hidden
+							// for now — `userSelectable` filters them out.
+							ForEach(ModemPresets.userSelectable) { m in
 								Text(m.description)
 							}
 						}
@@ -130,7 +132,7 @@ struct LoRaConfig: View {
 						 Picker("Coding Rate", selection: $codingRate) {
 							 ForEach(5..<9) {
 								 Text("\($0)")
-									 .tag($0 == 8 ? 0 : $0)
+									 .tag($0)
 							 }
 						 }
 					 }
@@ -142,7 +144,7 @@ struct LoRaConfig: View {
 								.tag($0)
 						}
 					}
-					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs.")
+					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. 0 hop broadcast messages will not get ACKs.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
@@ -178,7 +180,7 @@ struct LoRaConfig: View {
 				HStack {
 					Image(systemName: "antenna.radiowaves.left.and.right")
 						.foregroundColor(.accentColor)
-					Stepper("\(txPower)dBm Transmit Power", value: $txPower, in: 1...30, step: 1)
+					Stepper(txPower == 0 ? "Max Transmit Power" : "\(txPower)dBm Transmit Power", value: $txPower, in: 0...30, step: 1)
 						.padding(5)
 				}
 			}
@@ -288,7 +290,7 @@ struct LoRaConfig: View {
 			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
 		.onChange(of: txPower) { _, newTxPower in
-			if newTxPower != node?.loRaConfig?.txPower ?? -1 { hasChanges = true }
+			if Int32(newTxPower) != node?.loRaConfig?.txPower { hasChanges = true }
 		}
 		.onChange(of: txEnabled) { _, newTxEnabled in
 			if newTxEnabled != node?.loRaConfig?.txEnabled { hasChanges = true }
@@ -312,7 +314,8 @@ struct LoRaConfig: View {
 		self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 		self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
 		self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
-		self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
+		let loadedCodingRate = Int(node?.loRaConfig?.codingRate ?? 0)
+		self.codingRate = loadedCodingRate == 0 ? 5 : loadedCodingRate
 		self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
@@ -320,4 +323,10 @@ struct LoRaConfig: View {
 		self.okToMqtt = node?.loRaConfig?.okToMqtt ?? false
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	LoRaConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

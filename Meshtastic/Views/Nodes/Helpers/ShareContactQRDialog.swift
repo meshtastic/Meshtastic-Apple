@@ -8,12 +8,12 @@ import CoreImage.CIFilterBuiltins
 #if canImport(UIKit)
 import UIKit
 #endif
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
 struct ShareContactQRDialog: View {
-	let manuallyVerified = false
+	let manuallyVerified: Bool
     let node: NodeInfo
     @Environment(\.dismiss) private var dismiss
     var qrString: String {
@@ -88,7 +88,7 @@ struct ShareContactQRDialog_Previews: PreviewProvider {
 			userProto.publicKey = Data()
 		node.user = userProto
 
-        return ShareContactQRDialog(node: node)
+        return ShareContactQRDialog(manuallyVerified: false, node: node)
     }
 }
 #endif

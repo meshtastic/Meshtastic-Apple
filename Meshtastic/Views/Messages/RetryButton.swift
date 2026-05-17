@@ -2,7 +2,7 @@ import SwiftUI
 import OSLog
 
 struct RetryButton: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	let message: MessageEntity
@@ -48,7 +48,6 @@ struct RetryButton: View {
 							// to messages is via a weak fetched property which is not updated by
 							// `bleManager.sendMessage` unlike the user entity.
 							Task { @MainActor in
-								context.refresh(channel, mergeChanges: true)
 							}
 						}
 					} catch {

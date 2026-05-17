@@ -9,7 +9,7 @@ import SwiftUI
 import OSLog
 
 struct RtttlConfig: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -113,4 +113,10 @@ struct RtttlConfig: View {
 		self.ringtone = node?.rtttlConfig?.ringtone ?? ""
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	RtttlConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

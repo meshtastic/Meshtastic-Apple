@@ -7,7 +7,7 @@
 
 import SwiftUI
 import MapKit
-import CoreData
+import SwiftData
 import CoreLocation
 import CoreBluetooth
 import OSLog
@@ -18,7 +18,7 @@ import ActivityKit
 
 struct Connect: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var lockdown: LockdownCoordinator
 	@Environment(\.colorScheme) private var colorScheme
@@ -26,8 +26,14 @@ struct Connect: View {
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
+	@State var showSecurityVersionNag = false
+#if !targetEnvironment(macCatalyst)
 	@State var liveActivityStarted = false
+#endif
 	@ObservedObject var manualConnections = ManualConnectionList.shared
+	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
+	@Environment(\.scenePhase) private var scenePhase
+	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	
 	var body: some View {
 		NavigationStack {
@@ -37,7 +43,7 @@ struct Connect: View {
 						if let connectedDevice = accessoryManager.activeConnection?.device,
 						   accessoryManager.isConnected || accessoryManager.isConnecting {
 							TipView(ConnectionTip(), arrowEdge: .bottom)
-								.tipViewStyle(PersistentTip())
+										.tipViewStyle(PersistentTipStyle())
 								.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 								.listRowSeparator(.hidden)
 							VStack(alignment: .leading) {
@@ -45,8 +51,8 @@ struct Connect: View {
 									VStack(alignment: .center) {
 										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
 											.padding(.trailing, 5)
-										if node?.latestDeviceMetrics != nil {
-											BatteryCompact(batteryLevel: node?.latestDeviceMetrics?.batteryLevel ?? 0, font: .caption, iconFont: .callout, color: .accentColor)
+										if let batteryLevel = latestBatteryLevel(for: node) {
+											BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 												.padding(.trailing, 5)
 										}
 									}
@@ -75,6 +81,11 @@ struct Connect: View {
 										if node != nil {
 											Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
+										}
+										if accessoryManager.firmwareEdition.isEvent {
+											Text(accessoryManager.firmwareEdition.name)
+												.font(.callout)
+												.foregroundColor(.orange)
 										}
 										switch accessoryManager.state {
 										case .subscribed:
@@ -227,8 +238,8 @@ struct Connect: View {
 										Text("Retreiving nodes . .")
 											.font(.callout)
 											.foregroundColor(.orange)
-									case .retrying(let attempt):
-										Text("Connection Attempt \(attempt) of 10")
+									case .retrying(let attempt, let maxAttempts):
+										Text("Connection Attempt \(attempt) of \(maxAttempts)")
 											.font(.callout)
 											.foregroundColor(.orange)
 									default:
@@ -279,25 +290,38 @@ struct Connect: View {
 									DeviceConnectRow(device: device)
 								}
 							}
-							if manualConnections.connectionsList.count > 0 {
-								Section(header: Text("Manual Connections").font(.title)) {
-									ForEach(manualConnections.connectionsList) { device in
-										DeviceConnectRow(device: device)
+						if manualConnections.connectionsList.count > 0 {
+							Section(header: Text("Manual Connections").font(.title)) {
+								ForEach(manualConnections.connectionsList) { device in
+									DeviceConnectRow(device: device)
 #if targetEnvironment(macCatalyst)
-											.contextMenu {
-												Button {
-													manualConnections.remove(device: device)
-												} label: {
-													Label("Delete", systemImage: "trash")
-												}
+										.contextMenu {
+											Button {
+												manualConnections.remove(device: device)
+											} label: {
+												Label("Delete", systemImage: "trash")
 											}
+										}
 #endif
-									}.onDelete { offsets in
-										manualConnections.remove(atOffsets: offsets)
-									}
+								}.onDelete { offsets in
+									manualConnections.remove(atOffsets: offsets)
+								}
 
+							}
+						}
+
+						// ── Wi-Fi Provisioning (mPWRD-OS / nymea-networkmanager) ──
+						// Devices broadcasting nymea-networkmanager service are picked
+						// up by the passive scan started in .onAppear below.
+						if !nymeaProvisioning.discoverable.isEmpty {
+							Section(header: Text("Wi-Fi Setup").font(.title)) {
+								ForEach(nymeaProvisioning.discoverable) { device in
+								NymeaDeviceConnectRow(device: device) {
+									pendingNymeaDevice = device
+								}
 								}
 							}
+						}
 						}
 						.textCase(nil)
 					}
@@ -353,12 +377,28 @@ struct Connect: View {
 		//		.onChange(of: accessoryManager) {
 		//			invalidFirmwareVersion = self.bleManager.invalidVersion
 		//		}
+		.sheet(isPresented: $invalidFirmwareVersion) {
+			InvalidVersion(minimumVersion: accessoryManager.minimumVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
+		}
+		.sheet(isPresented: $showSecurityVersionNag) {
+			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
+		}
 		.onChange(of: self.accessoryManager.state) { _, state in
+			// Clear stale node data when not subscribed to prevent showing previous connection's info
+			if state != .subscribed {
+				node = nil
+			}
 			
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
 				
-				let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", deviceNum)
+				var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(
+					predicate: #Predicate<NodeInfoEntity> { $0.num == deviceNum }
+				)
+				fetchNodeInfoRequest.fetchLimit = 1
 				
 				do {
 					node = try context.fetch(fetchNodeInfoRequest).first
@@ -370,7 +410,53 @@ struct Connect: View {
 				} catch {
 					Logger.data.error("💥 Error fetching node info: \(error.localizedDescription, privacy: .public)")
 				}
+			// Check firmware version on connection (only if version is known)
+			if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
+				let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
+				let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
+				invalidFirmwareVersion = !meetsMinimumVersion
+				showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
 			}
+			}
+		}
+		.sheet(item: $pendingNymeaDevice, onDismiss: {
+			updateNymeaDiscovery()
+		}) { device in
+			WifiProvisioningView(preselectedDevice: device)
+		}
+		.onAppear { updateNymeaDiscovery() }
+		.onDisappear { nymeaProvisioning.stopDiscovery() }
+		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
+		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
+		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
+	}
+
+	/// Fetch only the latest device metrics battery level without faulting all telemetries.
+	private func latestBatteryLevel(for node: NodeInfoEntity?) -> Int32? {
+		guard let nodeNum = node?.num else { return nil }
+		let metricsType: Int32 = 0
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		guard let result = try? context.fetch(descriptor).first else { return nil }
+		let level = result.batteryLevel ?? 0
+		return level > 0 ? level : nil
+	}
+
+	/// Starts nymea passive discovery only when the Connect view is foreground-visible
+	/// and the app has no primary transport in flight; otherwise stops it.
+	private func updateNymeaDiscovery() {
+		let canScan = scenePhase == .active
+			&& !accessoryManager.isConnected
+			&& !accessoryManager.isConnecting
+			&& pendingNymeaDevice == nil
+			&& !UserDefaults.firstLaunch
+		if canScan {
+			nymeaProvisioning.startDiscovery()
+		} else {
+			nymeaProvisioning.stopDiscovery()
 		}
 	}
 #if !targetEnvironment(macCatalyst)
@@ -379,10 +465,16 @@ struct Connect: View {
 		liveActivityStarted = true
 		// 15 Minutes Local Stats Interval
 		let timerSeconds = 900
-		let localStats = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
-		let mostRecent = localStats?.lastObject as? TelemetryEntity
+		let nodeNum = node?.num ?? 0
+		let metricsType: Int32 = 4
+		var statsDescriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		statsDescriptor.fetchLimit = 1
+		let mostRecent = try? context.fetch(statsDescriptor).first
 		
-		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown")
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
@@ -451,7 +543,7 @@ struct TransportIcon: View {
 struct ManualConnectionMenu: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 
 	private struct IterableTransport: Identifiable {
 		let id: UUID
@@ -524,7 +616,9 @@ struct ManualConnectionMenu: View {
 						if accessoryManager.allowDisconnect {
 							try await accessoryManager.disconnect()
 						}
-						await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+						await MeshPackets.shared.flushDebouncedSaves()
+						await MeshPackets.shared.clearDatabase(includeRoutes: false)
+						MeshPackets.recreateShared()
 						clearNotifications()
 						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
 						
@@ -538,7 +632,7 @@ struct ManualConnectionMenu: View {
 }
 
 struct DeviceConnectRow: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var presentingSwitchPreferredPeripheral = false
 	let device: Device
@@ -571,18 +665,18 @@ struct DeviceConnectRow: View {
 				}
 				// Show transport type
 #if !targetEnvironment(macCatalyst)
-				HStack(alignment: .center){
+				HStack(alignment: .center) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
-						VStack (alignment: .leading) {
+						VStack(alignment: .leading) {
 							Text("Last seen device:")
 							Text("\(String(describing: device))")
 						}
 					}
 				}.padding(.top, 3.0)
 #else
-				//Different alignment for Mac
-				HStack(alignment: .firstTextBaseline){
+				// Different alignment for Mac
+				HStack(alignment: .firstTextBaseline) {
 					TransportIcon(transportType: device.transportType)
 					if device.isManualConnection && (device.longName != nil || device.shortName != nil) {
 						Text("Last seen device: \(String(describing: device))")
@@ -605,7 +699,12 @@ struct DeviceConnectRow: View {
 						if accessoryManager.allowDisconnect {
 							try await accessoryManager.disconnect()
 						}
-						await MeshPackets.shared.clearCoreDataDatabase(includeRoutes: false)
+						// Flush pending saves, clear database via the MeshPackets actor
+						// (not the main context) to avoid destroying model instances that
+						// views still reference, then recreate with a fresh ModelContext.
+						await MeshPackets.shared.flushDebouncedSaves()
+						await MeshPackets.shared.clearDatabase(includeRoutes: false)
+						MeshPackets.recreateShared()
 						clearNotifications()
 						
 						try await accessoryManager.connect(to: device)
@@ -616,3 +715,41 @@ struct DeviceConnectRow: View {
 	}
 }
 
+// MARK: - Nymea (mPWRD-OS) discovery row
+
+/// A row representing a discovered nymea-networkmanager device that needs Wi-Fi
+/// provisioning. Tapping it begins the provisioning workflow targeted at the device.
+struct NymeaDeviceConnectRow: View {
+	let device: NymeaDiscoveredDevice
+	let onSelect: () -> Void
+
+	var body: some View {
+		HStack {
+			Image(systemName: "circle.fill")
+				.foregroundColor(.gray)
+			VStack(alignment: .leading) {
+				Text(device.name).font(.callout)
+				HStack(alignment: .center) {
+					Image(systemName: "wifi.router")
+						.foregroundColor(.accentColor)
+					Text("Wi-Fi Setup")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}.padding(.top, 3.0)
+			}
+			Spacer()
+			SignalStrengthIndicator(signalStrength: rssiToSignalStrength(device.rssi))
+		}
+		.padding([.bottom, .top])
+		.contentShape(Rectangle())
+		.onTapGesture { onSelect() }
+	}
+
+	private func rssiToSignalStrength(_ rssi: Int) -> BLESignalStrength {
+		switch rssi {
+		case ..<(-80): return .weak
+		case -80 ..< -65: return .normal
+		default: return .strong
+		}
+	}
+}

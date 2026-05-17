@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import CoreLocation
 import MapKit
 
@@ -30,10 +31,10 @@ private struct NodeMapContentEquatableWrapper<Content: View>: View, Equatable {
 }
 
 struct NodeMapSwiftUI: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	/// Parameters
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
@@ -52,16 +53,14 @@ struct NodeMapSwiftUI: View {
 	@State var isLookingAround = false
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
+	@State var isShowingLegend = false
 	@State var isMeshMap = false
 	@State var enabledOverlayConfigs: Set<UUID> = Set()
 
 	@State private var mapRegion = MKCoordinateRegion.init()
 
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
-				  predicate: NSPredicate(
-					format: "expire == nil || expire >= %@", Date() as NSDate
-				  ), animation: .none)
-	private var waypoints: FetchedResults<WaypointEntity>
+	@Query(sort: \WaypointEntity.name, order: .reverse)
+	private var waypoints: [WaypointEntity]
 
 	var body: some View {
 		if node.hasPositions {
@@ -77,7 +76,7 @@ struct NodeMapSwiftUI: View {
 				configuredMap
 			}
 		}
-		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions?.count ?? 0) points")), displayMode: .inline)
+		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions.count) points")), displayMode: .inline)
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(
@@ -97,6 +96,13 @@ struct NodeMapSwiftUI: View {
 			.sheet(isPresented: $isEditingSettings) {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 			}
+			.sheet(isPresented: $isShowingLegend) {
+				MapLegend(isMeshMap: false)
+					.presentationDetents([.medium, .large])
+					.presentationContentInteraction(.scrolls)
+					.presentationDragIndicator(.visible)
+					.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+			}
 			.onChange(of: selectedMapLayer) { _, newMapLayer in
 				updateMapStyle(for: newMapLayer)
 			}
@@ -115,8 +121,8 @@ struct NodeMapSwiftUI: View {
 	}
 
 	private var mapContentSignature: NodeMapContentSignature {
-		let positionCount = node.positions?.count ?? 0
-		let lastPositionTime = (node.positions?.lastObject as? PositionEntity)?.time
+		let positionCount = node.positions.count
+		let lastPositionTime = node.positions.last?.time
 		return NodeMapContentSignature(nodeNum: node.num, positionCount: positionCount, lastPositionTime: lastPositionTime, showNodeHistory: showNodeHistory, showRouteLines: showRouteLines, showConvexHull: showConvexHull, favorite: node.favorite)
 	}
 
@@ -170,15 +176,23 @@ struct NodeMapSwiftUI: View {
 		HStack {
 			Button(action: {
 				withAnimation {
+					isShowingLegend = !isShowingLegend
+				}
+			}) {
+				Image(systemName: isShowingLegend ? "map.fill" : "map")
+			}
+			.accessibilityLabel(isShowingLegend ? Text("Hide legend") : Text("Show legend"))
+			.accessibilityHint(Text("Toggles the map legend"))
+			.glassButtonStyle()
+
+			Button(action: {
+				withAnimation {
 					isEditingSettings = !isEditingSettings
 				}
 			}) {
 				Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
-					.padding(.vertical, 5)
 			}
-			.tint(Color(UIColor.secondarySystemBackground))
-			.foregroundColor(.accentColor)
-			.buttonStyle(.borderedProminent)
+			.glassButtonStyle()
 
 			if scene != nil {
 				Button(action: {
@@ -188,14 +202,11 @@ struct NodeMapSwiftUI: View {
 					isLookingAround = !isLookingAround
 				}) {
 					Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
-						.padding(.vertical, 5)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
-				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
+				.glassButtonStyle()
 			}
 
-			if node.positions?.count ?? 0 > 1 {
+			if node.positions.count > 1 {
 				Button(action: {
 					if isLookingAround {
 						isLookingAround = false
@@ -203,11 +214,8 @@ struct NodeMapSwiftUI: View {
 					isShowingAltitude = !isShowingAltitude
 				}) {
 					Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
-						.padding(.vertical, 5)
 				}
-				.tint(Color(UIColor.secondarySystemBackground))
-				.foregroundColor(.accentColor)
-				.buttonStyle(.borderedProminent)
+				.glassButtonStyle()
 			}
 		}
 		.controlSize(.regular)
@@ -228,18 +236,34 @@ struct NodeMapSwiftUI: View {
 		}
 	}
 
+	/// Returns a camera distance that ensures the precision circle is fully visible.
+	/// For precise positions (precisionBits == 32 or 0), returns the default distance.
+	/// For imprecise positions, scales the precision radius so the circle fits comfortably.
+	private func cameraDistanceForPrecision(_ position: PositionEntity?) -> Double {
+		guard let position,
+			  12...24 ~= position.precisionBits,
+			  let pp = PositionPrecision(rawValue: Int(position.precisionBits)) else {
+			return distance
+		}
+		// Camera distance needs to be roughly 4× the circle diameter to show it with padding
+		let needed = pp.precisionMeters * 10.0
+		return max(distance, needed)
+	}
+
 	private func handleNodeChange() {
 		isLookingAround = false
 		isShowingAltitude = false
-		let newMostRecent = node.positions?.lastObject as? PositionEntity
-		if node.positions?.count ?? 0 > 1 {
+		let newMostRecent = node.positions.last
+		if node.positions.count > 1 {
 			position = .automatic
-		} else if let mrCoord = newMostRecent?.coordinate {
-			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
+
+		} else if let mrCoord = newMostRecent?.nodeCoordinate {
+			let cameraDistance = cameraDistanceForPrecision(newMostRecent)
+			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: cameraDistance, heading: 0, pitch: 0))
 		}
-		if let newMostRecent {
+		if let newMostRecent, let coord = newMostRecent.nodeCoordinate {
 			Task {
-				scene = try? await fetchScene(for: newMostRecent.coordinate)
+				scene = try? await fetchScene(for: coord)
 			}
 		}
 	}
@@ -247,13 +271,15 @@ struct NodeMapSwiftUI: View {
 	private func handleAppear() {
 		UIApplication.shared.isIdleTimerDisabled = true
 		updateMapStyle(for: selectedMapLayer)
-		let mostRecent = node.positions?.lastObject as? PositionEntity
-		if node.positions?.count ?? 0 > 1 {
+		let mostRecent = node.positions.last
+		if node.positions.count > 1 {
 			position = .automatic
-		} else if let mrCoord = mostRecent?.coordinate {
-			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: distance, heading: 0, pitch: 0))
+
+		} else if let mrCoord = mostRecent?.nodeCoordinate {
+			let cameraDistance = cameraDistanceForPrecision(mostRecent)
+			position = .camera(MapCamera(centerCoordinate: mrCoord, distance: cameraDistance, heading: 0, pitch: 0))
 		}
-		if scene == nil, let mrCoord = mostRecent?.coordinate {
+		if scene == nil, let mrCoord = mostRecent?.nodeCoordinate {
 			Task {
 				scene = try? await fetchScene(for: mrCoord)
 			}

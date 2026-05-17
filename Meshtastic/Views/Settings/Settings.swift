@@ -6,39 +6,66 @@
 //
 
 import SwiftUI
+import SwiftData
 import OSLog
 import TipKit
 import MeshtasticProtobufs
 
 struct Settings: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@FetchRequest(
-		sortDescriptors: [
-			NSSortDescriptor(key: "favorite", ascending: false),
-			NSSortDescriptor(key: "user.pkiEncrypted", ascending: false),
-			NSSortDescriptor(key: "viaMqtt", ascending: true),
-			NSSortDescriptor(key: "user.longName", ascending: true)
-		],
-		animation: .default
-	)
-	private var nodes: FetchedResults<NodeInfoEntity>
+	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
+	private var nodes: [NodeInfoEntity]
 
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
 
-	@ObservedObject
+	@EnvironmentObject
 	var router: Router
 
 	// MARK: Helper
 
+	private var moduleConfigurationNode: NodeInfoEntity? {
+		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
+		return nodes.first(where: { $0.num == nodeNum })
+	}
+
+	private var showsAnyModuleConfiguration: Bool {
+		isAnySupported([
+			.ambientlightingConfig,
+			.cannedmsgConfig,
+			.detectionsensorConfig,
+			.extnotifConfig,
+			.mqttConfig,
+			.rangetestConfig,
+			.paxcounterConfig,
+			.serialConfig,
+			.storeforwardConfig,
+			.telemetryConfig
+		]) || isTAKModuleSupported()
+	}
+
 	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
-		return Int(nodes.first(where: { $0.num == preferredNodeNum })?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
+		return Int(moduleConfigurationNode?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
 	}
 
 	private func isAnySupported(_ modules: [ExcludedModules]) -> Bool {
 		return modules.map(isModuleSupported).contains(true)
+	}
+
+	private func isTAKModuleSupported() -> Bool {
+		guard let node = moduleConfigurationNode else { return false }
+		if node.takConfig != nil {
+			return true
+		}
+
+		guard let roleValue = node.deviceConfig?.role ?? node.user?.role,
+			  let deviceRole = DeviceRoles(rawValue: Int(roleValue)) else {
+			return false
+		}
+
+		return deviceRole == .tak || deviceRole == .takTracker
 	}
 
 	// MARK: Views
@@ -266,6 +293,20 @@ struct Settings: View {
 				}
 			}
 
+			// Module Configuration → TAK routes to the combined TAK Server page
+			// (TAKServerConfig). That screen renders the firmware module config
+			// (team / role identity, via the embedded TAKIdentitySection) at
+			// the top, and the in-app TAK Server controls (Enable, channel,
+			// mTLS certificates, data package export) below it. The TAK
+			// section at the bottom of this screen links to the same view.
+			NavigationLink(value: SettingsNavigationState.tak) {
+				Label {
+					Text("TAK Server")
+				} icon: {
+					Image(systemName: "target")
+				}
+			}
+
 			if isModuleSupported(.telemetryConfig) {
 				NavigationLink(value: SettingsNavigationState.telemetry) {
 					Label {
@@ -276,14 +317,9 @@ struct Settings: View {
 				}
 			}
 
-			// Update this list with the modules that are shown above. If all are not supported
-			// Then show a message.
-			if !isAnySupported([.ambientlightingConfig, .cannedmsgConfig,
-								.detectionsensorConfig, .extnotifConfig,
-								.mqttConfig, .rangetestConfig, .paxcounterConfig,
-								.audioConfig, .serialConfig, .storeforwardConfig,
-								.telemetryConfig]) {
+			if !showsAnyModuleConfiguration {
 				Text("This node does not support any configurable modules.")
+					.foregroundColor(.secondary)
 			}
 		} header: {
 			Text("Module Configuration")
@@ -311,24 +347,33 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
-		}
-	}
-
-	var firmwareSection: some View {
-		Section(header: Text("Firmware")) {
-			NavigationLink(value: SettingsNavigationState.firmwareUpdates) {
-				Label {
-					Text("Firmware Updates")
-				} icon: {
-					Image(systemName: "arrow.up.arrow.down.square")
+			if #available(iOS 18, *) {
+				NavigationLink(value: SettingsNavigationState.tools) {
+					Label {
+						Text("Tools")
+					} icon: {
+						Image(systemName: "hammer")
+					}
 				}
 			}
-			.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
+				Label {
+					Text("Data Browser")
+				} icon: {
+					Image(systemName: "tablecells")
+				}
+			}
 		}
 	}
 
 	var takSection: some View {
 		Section(header: Text("TAK")) {
+			// Routes to the same combined TAK Server page reached via the
+			// Module Configuration section above. Both entry points are kept
+			// because users naturally look in both places when configuring
+			// TAK — the Module Config link discovers the feature alongside
+			// other module configs, and the dedicated TAK section advertises
+			// the TAK Server functionality at a glance.
 			NavigationLink(value: SettingsNavigationState.tak) {
 				Label {
 					Text("TAK Server")
@@ -341,14 +386,7 @@ struct Settings: View {
 
 	var body: some View {
 		NavigationStack(
-			path: Binding<[SettingsNavigationState]>(
-				get: {
-					[router.navigationState.settings].compactMap { $0 }
-				},
-				set: { newPath in
-					router.navigationState.settings = newPath.first
-				}
-			)
+			path: $router.settingsPath
 		) {
 			let node = nodes.first(where: { $0.num == preferredNodeNum })
 			List {
@@ -360,11 +398,26 @@ struct Settings: View {
 					}
 				}
 
+				NavigationLink(value: SettingsNavigationState.helpDocs) {
+					Label {
+						Text("Help & Documentation")
+					} icon: {
+						Image(systemName: "book.pages")
+					}
+				}
+
 				NavigationLink(value: SettingsNavigationState.appSettings) {
 					Label {
 						Text("App Settings")
 					} icon: {
 						Image(systemName: "gearshape")
+					}
+				}
+				NavigationLink(value: SettingsNavigationState.localMeshDiscovery) {
+					Label {
+						Text("Local Mesh Discovery")
+					} icon: {
+						Image(systemName: "antenna.radiowaves.left.and.right")
 					}
 				}
 				NavigationLink(value: SettingsNavigationState.routes) {
@@ -383,6 +436,14 @@ struct Settings: View {
 							.foregroundColor(.red)
 					}
 				}
+				NavigationLink(value: SettingsNavigationState.firmwareUpdates) {
+					Label {
+						Text("Firmware Updates")
+					} icon: {
+						Image(systemName: "arrow.up.arrow.down.square")
+					}
+				}
+				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if accessoryManager.isConnected {
@@ -439,7 +500,7 @@ struct Settings: View {
 									   let destinationNode = nodes.first(where: { $0.num == newValue }),
 									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
 									   let fromUser = connectedNode.user,
-									   let _ = connectedNode.myInfo,  // not sure why, but this check was present in the initial code.
+									   connectedNode.myInfo != nil,  // not sure why, but this check was present in the initial code.
 									   let toUser = destinationNode.user {
 
 										preferredNodeNum = Int(connectedNode.num)
@@ -452,7 +513,7 @@ struct Settings: View {
 									}
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
-									.tipViewStyle(PersistentTip())
+											.tipViewStyle(PersistentTipStyle())
 									.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 									.listRowSeparator(.hidden)
 							} else {
@@ -469,12 +530,11 @@ struct Settings: View {
 #if DEBUG
 					developersSection
 #endif
-					firmwareSection
-					takSection
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
+				let configNode = nodes.first(where: { $0.num == selectedNode })
 				switch destination {
 				case .about:
 					AboutMeshtastic()
@@ -485,64 +545,80 @@ struct Settings: View {
 				case .routeRecorder:
 					RouteRecorder()
 				case .lora:
-					LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					LoRaConfig(node: configNode)
 				case .channels:
-					Channels(node: node)
+					if let node = node {
+						Channels(node: node)
+					} else {
+						Text("Loading...")
+					}
 				case .shareQRCode:
 					ShareChannels(node: node)
 				case .user:
-					UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					UserConfig(node: configNode)
 				case .bluetooth:
-					BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					BluetoothConfig(node: configNode)
 				case .device:
-					DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					DeviceConfig(node: configNode)
 				case .display:
-					DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					DisplayConfig(node: configNode)
 				case .network:
-					NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					NetworkConfig(node: configNode)
 				case .position:
-					PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					PositionConfig(node: configNode)
 				case .power:
-					PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					PowerConfig(node: configNode)
 				case .ambientLighting:
 					AmbientLightingConfig(node: node)
 				case .cannedMessages:
-					CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					CannedMessagesConfig(node: configNode)
 				case .detectionSensor:
-					DetectionSensorConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					DetectionSensorConfig(node: configNode)
 				case .externalNotification:
-					ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					ExternalNotificationConfig(node: configNode)
 				case .mqtt:
-					MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					MQTTConfig(node: configNode)
 				case .rangeTest:
-					RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					RangeTestConfig(node: configNode)
 				case .paxCounter:
-					PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					PaxCounterConfig(node: configNode)
 				case .ringtone:
-					RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					RtttlConfig(node: configNode)
 				case .security:
-					SecurityConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					SecurityConfig(node: configNode)
 				case .serial:
-					SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					SerialConfig(node: configNode)
 				case .storeAndForward:
-					StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					StoreForwardConfig(node: configNode)
 				case .telemetry:
-					TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					TelemetryConfig(node: configNode)
 				case .debugLogs:
 					AppLog()
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
+				case .tools:
+					if #available(iOS 18, *) {
+						Tools()
+					}
 				case .tak:
 					TAKServerConfig()
+				case .takConfig:
+					TAKModuleConfig(node: configNode)
+				case .coreDataBrowser:
+					CoreDataBrowser()
+				case .localMeshDiscovery:
+					DiscoveryScanView()
+				case .helpDocs:
+					DocBrowserView()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
-				// If the preferred node changes, then select the newly perferred node
+				// If the preferred node changes, then select the newly preferred node
 				// This should only happen during connect
 				preferredNodeNum = newConnectedNode
-				setSelectedNode(to: newConnectedNode)
+				selectedNode = Int(accessoryManager.isConnected ? newConnectedNode : 0)
 			}
 			.onChange(of: accessoryManager.isConnected) { _, isConnectedNow in
 				// If we are on this screen, haven't iniatialized the selection yet,
@@ -550,6 +626,16 @@ struct Settings: View {
 				if isConnectedNow, self.selectedNode == 0 {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
 					setSelectedNode(to: UserDefaults.preferredPeripheralNum)
+				}
+			}
+			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
+				if newDevice == nil {
+					selectedNode = 0
+					preferredNodeNum = 0
+				} else if oldDevice != newDevice {
+					// Physical connection changed — any prior remote admin session is invalid
+					preferredNodeNum = Int(newDevice!)
+					selectedNode = Int(newDevice!)
 				}
 			}
 			.onAppear {

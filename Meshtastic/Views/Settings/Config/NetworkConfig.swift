@@ -10,7 +10,7 @@ import SwiftUI
 
 struct NetworkConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -208,4 +208,10 @@ struct NetworkConfig: View {
 		self.udpEnabled = enabledProtocols & UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) != 0
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	NetworkConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

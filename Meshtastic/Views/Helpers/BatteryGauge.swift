@@ -10,14 +10,14 @@ import Charts
 
 struct BatteryGauge: View {
 
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	private let minValue = 0.0
 	private let maxValue = 100.00
 
 	var body: some View {
 
-		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+		let deviceMetrics = node.telemetries.filter { $0.metricsType == 0 }
+		let mostRecent = deviceMetrics.last
 		// For VoiceOver purposes, detect when device is plugged in (battery > 100%)
 		let isPluggedIn = (mostRecent?.batteryLevel ?? 0) > 100
 		// Use a capped battery level for UI display

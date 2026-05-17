@@ -53,6 +53,11 @@ enum SettingsNavigationState: String {
 	case appFiles
 	case firmwareUpdates
 	case tak
+	case takConfig
+	case tools
+	case coreDataBrowser
+	case localMeshDiscovery
+	case helpDocs
 }
 
 struct NavigationState: Hashable {

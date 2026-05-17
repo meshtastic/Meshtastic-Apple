@@ -11,7 +11,7 @@ import SwiftUI
 
 struct DisplayConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
@@ -234,4 +234,10 @@ struct DisplayConfig: View {
 		self.use12HourClock = node?.displayConfig?.use12HClock ?? false
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	DisplayConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

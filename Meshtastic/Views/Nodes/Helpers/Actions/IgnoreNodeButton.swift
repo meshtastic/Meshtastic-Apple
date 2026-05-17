@@ -1,12 +1,12 @@
-import CoreData
+import SwiftData
 import OSLog
 import SwiftUI
 
 struct IgnoreNodeButton: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
-	@ObservedObject
+	@Bindable
 	var node: NodeInfoEntity
 
 	var body: some View {
@@ -31,7 +31,6 @@ struct IgnoreNodeButton: View {
 						do {
 							try context.save()
 						} catch {
-							context.rollback()
 							Logger.data.error("Save Ignored Node Error")
 						}
 					}
@@ -51,3 +50,14 @@ struct IgnoreNodeButton: View {
 		}
 	}
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	IgnoreNodeButton(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
+}
+*/

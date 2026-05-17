@@ -6,11 +6,11 @@
 //
 import SwiftUI
 import MapKit
-import CoreData
+import SwiftData
 
 struct NodeMapContent: MapContent {
 
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
@@ -20,9 +20,23 @@ struct NodeMapContent: MapContent {
 	@Namespace var mapScope
 	@State var selectedPosition: PositionEntity?
 
+	// Static UIImage caches keyed by node.num.
+	// Node colors are deterministic from node.num (via UIColor(hex:)), so caching by num is correct.
+	// Use NSCache for automatic memory-pressure eviction instead of unbounded dictionaries.
+	private static let circleImageCache: NSCache<NSNumber, UIImage> = {
+		let cache = NSCache<NSNumber, UIImage>()
+		cache.countLimit = 200
+		return cache
+	}()
+	private static let arrowImageCache: NSCache<NSNumber, UIImage> = {
+		let cache = NSCache<NSNumber, UIImage>()
+		cache.countLimit = 200
+		return cache
+	}()
+
 	@MapContentBuilder
 	var nodeMap: some MapContent {
-		let positionArray = node.positions?.array as? [PositionEntity] ?? []
+		let positionArray = node.positions
 
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
@@ -43,7 +57,7 @@ struct NodeMapContent: MapContent {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
 				let radius: CLLocationDistance = pp?.precisionMeters ?? 0
 				if radius > 0.0 {
-					MapCircle(center: position.coordinate, radius: radius)
+					MapCircle(center: position.nodeCoordinate ?? LocationsHandler.DefaultLocation, radius: radius)
 						.foregroundStyle(Color(nodeColor).opacity(0.25))
 						.stroke(.white, lineWidth: 2)
 				}
@@ -51,7 +65,7 @@ struct NodeMapContent: MapContent {
 			/// Lastest Position Pin
 			if position.latest {
 				/// Node Annotations
-				Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
+				Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.nodeCoordinate ?? LocationsHandler.DefaultLocation) {
 					LazyVStack {
 							ZStack {
 								if pf.contains(.Heading) {
@@ -100,7 +114,7 @@ struct NodeMapContent: MapContent {
 				// Having showNodeHistory enabled can be quite slow if there are thousands of history points.
 				if position.latest == false && node.favorite {
 					let headingDegrees = Angle.degrees(Double(position.heading))
-					Annotation("", coordinate: position.coordinate) {
+					Annotation("", coordinate: position.nodeCoordinate ?? LocationsHandler.DefaultLocation) {
 						if pf.contains(.Heading) {
 							Image(uiImage: prerenderedHistoryPointArrowImage)
 								.renderingMode(.original)
@@ -154,24 +168,28 @@ struct NodeMapContent: MapContent {
 
 	@MapContentBuilder
 	var body: some MapContent {
-		if node.positions?.count ?? 0 > 0 {
+		if node.positions.count > 0 {
 			nodeMap
 		}
 	}
 
 	private func prerenderHistoryPointCircle(fill: Color, stroke: Color) -> UIImage {
-		// Render to UIImage once so we don't have to do a ton of vector operations and layers when there are thousands of history points.
+		let key = NSNumber(value: node.num)
+		if let cached = NodeMapContent.circleImageCache.object(forKey: key) { return cached }
 		let content = Circle()
 			.fill(fill)
 			.strokeBorder(stroke, lineWidth: 2)
 			.frame(width: 12, height: 12)
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
-		return renderer.uiImage!
+		let image = renderer.uiImage!
+		NodeMapContent.circleImageCache.setObject(image, forKey: key)
+		return image
 	}
 
 	private func prerenderHistoryPointArrow(fill: Color, stroke: Color) -> UIImage {
-		// Render to UIImage once so we don't have to do a ton of vector operations and layers when there are thousands of history points.
+		let key = NSNumber(value: node.num)
+		if let cached = NodeMapContent.arrowImageCache.object(forKey: key) { return cached }
 		let content = Image(systemName: "location.north.circle")
 			.resizable()
 			.scaledToFit()
@@ -181,6 +199,8 @@ struct NodeMapContent: MapContent {
 			.frame(width: 16, height: 16)
 		let renderer = ImageRenderer(content: content)
 		renderer.scale = UIScreen.main.scale
-		return renderer.uiImage!
+		let image = renderer.uiImage!
+		NodeMapContent.arrowImageCache.setObject(image, forKey: key)
+		return image
 	}
 }

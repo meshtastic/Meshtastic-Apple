@@ -23,6 +23,7 @@ extension [CLLocationCoordinate2D] {
 	/// Get Convex Hull For an array of CLLocationCoordinate2D positions
 	/// - Returns: A smaller CLLocationCoordinate2D array containing only the points necessary to create a convex hull polygon
 	func getConvexHull() -> [CLLocationCoordinate2D] {
+		guard self.count >= 2 else { return self }
 		/// X = longitude
 		/// Y = latitude
 		/// 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.

@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 7/13/22.
 //
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import MeshtasticProtobufs
 
@@ -17,7 +17,7 @@ struct SaveChannelLinkData: Identifiable {
 
 struct SaveChannelQRCode: View {
 	@Environment(\.dismiss) private var dismiss
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	let channelSetLink: String
 	@State var addChannels: Bool = false
 	var accessoryManager: AccessoryManager
@@ -165,12 +165,14 @@ struct SaveChannelQRCode: View {
 			channelData = channelSetLink
 		}
 		Logger.data.info("Processing channel data: \(channelData)")
-		// Fetch current LoRa config from Core Data
-		let fetchRequest = NodeInfoEntity.fetchRequest()
-		fetchRequest.predicate = NSPredicate(format: "num == %lld", Int64(accessoryManager.activeDeviceNum ?? 0))
+		// Fetch current LoRa config
+		let activeNum = Int64(accessoryManager.activeDeviceNum ?? 0)
+		let descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.num == activeNum }
+		)
 
 		do {
-			let nodes = try context.fetch(fetchRequest)
+			let nodes = try context.fetch(descriptor)
 			if let node = nodes.first {
 				currentLoRaConfig = node.loRaConfig?.toProto()
 			}

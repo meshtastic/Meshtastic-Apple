@@ -21,21 +21,11 @@ extension View {
 	}
 	/// Conditionally applies `defaultScrollAnchor` only on iOS 18+.
 	@ViewBuilder
-	func defaultScrollAnchorTopAlignment() -> some View {
-		if #available(iOS 18, macOS 15, *) {
-			AnyView(self.defaultScrollAnchor(.top, for: .alignment))
-		} else {
-			AnyView(self)
-		}
-	}
-	
-	/// Conditionally applies `defaultScrollAnchor` only on iOS 18+.
-	@ViewBuilder
 	func defaultScrollAnchorBottomSizeChanges() -> some View {
 		if #available(iOS 18, macOS 15, *) {
-			AnyView(self.defaultScrollAnchor(.bottom, for: .sizeChanges))
+			self.defaultScrollAnchor(.bottom, for: .sizeChanges)
 		} else {
-			AnyView(self)
+			self
 		}
 	}
 
@@ -45,6 +35,34 @@ extension View {
 		} else {
 			self
 		}
+	}
+
+	/// Standard capsule-shaped prominent button styling.
+	@ViewBuilder
+	func capsuleButtonStyle() -> some View {
+		self
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding(.horizontal)
+			.buttonStyle(.borderedProminent)
+	}
+
+	@ViewBuilder
+	func glassButtonStyle() -> some View {
+		if #available(iOS 26.0, macOS 26.0, *) {
+			glassButtonStyleOS26()
+		} else {
+			self
+				.tint(Color(UIColor.secondarySystemBackground))
+				.foregroundColor(.accentColor)
+				.buttonStyle(.borderedProminent)
+		}
+	}
+
+	@available(iOS 26.0, macOS 26.0, *)
+	@ViewBuilder
+	private func glassButtonStyleOS26() -> some View {
+		self.buttonStyle(.glass)
 	}
 }
 
