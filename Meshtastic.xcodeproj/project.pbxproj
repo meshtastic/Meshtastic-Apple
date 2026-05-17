@@ -2388,6 +2388,7 @@
                 it,
                 ja,
                 pl,
+                "pt-BR",
                 ru,
                 se,
                 sr,
