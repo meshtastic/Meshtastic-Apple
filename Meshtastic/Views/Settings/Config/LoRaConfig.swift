@@ -180,7 +180,7 @@ struct LoRaConfig: View {
 				HStack {
 					Image(systemName: "antenna.radiowaves.left.and.right")
 						.foregroundColor(.accentColor)
-					Stepper("\(txPower)dBm Transmit Power", value: $txPower, in: 1...30, step: 1)
+					Stepper(txPower == 0 ? "Max Transmit Power" : "\(txPower)dBm Transmit Power", value: $txPower, in: 0...30, step: 1)
 						.padding(5)
 				}
 			}
@@ -290,7 +290,7 @@ struct LoRaConfig: View {
 			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
 		.onChange(of: txPower) { _, newTxPower in
-			if newTxPower != node?.loRaConfig?.txPower ?? -1 { hasChanges = true }
+			if Int32(newTxPower) != node?.loRaConfig?.txPower { hasChanges = true }
 		}
 		.onChange(of: txEnabled) { _, newTxEnabled in
 			if newTxEnabled != node?.loRaConfig?.txEnabled { hasChanges = true }
