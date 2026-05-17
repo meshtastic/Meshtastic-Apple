@@ -207,19 +207,17 @@ struct SecurityConfig: View {
 				}
 				.tint(.accentColor)
 			}
-			if adminKey.length > 0 || UserDefaults.enableAdministration {
-				Section(header: Text("Administration")) {
-					Toggle(isOn: $isManaged) {
-						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
-						Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
-					}
-					.tint(.accentColor)
-					.disabled(adminKey.length == 0)
-					if adminKey.length == 0 {
-						Label("An admin key must be set before enabling managed mode.", systemImage: "exclamationmark.triangle.fill")
-							.font(.caption)
-							.foregroundStyle(.orange)
-					}
+			Section(header: Text("Administration")) {
+				Toggle(isOn: $isManaged) {
+					Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+					Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
+				}
+				.tint(.accentColor)
+				.disabled(adminKey.length == 0)
+				if adminKey.length == 0 {
+					Label("An admin key must be set before enabling managed mode.", systemImage: "exclamationmark.triangle.fill")
+						.font(.caption)
+						.foregroundStyle(.orange)
 				}
 			}
 		}

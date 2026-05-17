@@ -10897,6 +10897,9 @@
         }
       }
     },
+    "An admin key must be set before enabling managed mode." : {
+
+    },
     "An open source, off-grid, decentralized, mesh network that runs on affordable, low-power radios." : {
       "localizations" : {
         "da" : {
@@ -33159,6 +33162,7 @@
       }
     },
     "Erase all device and app data?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -40404,6 +40408,9 @@
         }
       }
     },
+    "Hide node filters" : {
+
+    },
     "Hides the map legend." : {
       "localizations" : {
         "de" : {
@@ -40467,6 +40474,9 @@
           }
         }
       }
+    },
+    "Hides the node filter options." : {
+
     },
     "HIGH" : {
       "localizations" : {
@@ -50075,6 +50085,9 @@
           }
         }
       }
+    },
+    "Max Transmit Power" : {
+
     },
     "Mesh activity update" : {
       "localizations" : {
@@ -68697,6 +68710,12 @@
         }
       }
     },
+    "Reset node database and favorites?" : {
+
+    },
+    "Reset node database, preserving favorites?" : {
+
+    },
     "Reset NodeDB" : {
       "localizations" : {
         "da" : {
@@ -68842,6 +68861,9 @@
           }
         }
       }
+    },
+    "Resetting…" : {
+
     },
     "Restart" : {
       "localizations" : {
@@ -79574,6 +79596,9 @@
         }
       }
     },
+    "Show node filters" : {
+
+    },
     "Show nodes" : {
       "localizations" : {
         "da" : {
@@ -80067,6 +80092,9 @@
           }
         }
       }
+    },
+    "Shows the node filter options." : {
+
     },
     "Shut Down" : {
       "localizations" : {
