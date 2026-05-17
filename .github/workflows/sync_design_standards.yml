@@ -1,0 +1,57 @@
+name: Sync Design Standards
+
+on:
+  repository_dispatch:
+    types: [design-standards-updated]
+  workflow_dispatch:
+    # Allow manual triggering
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-design-standards:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Download design standards
+      run: |
+        mkdir -p .standards
+        curl -sSfL \
+          "https://raw.githubusercontent.com/meshtastic/design/master/standards/meshtastic_design_standards_latest.md" \
+          -o .standards/meshtastic_design_standards_latest.md
+
+    - name: Add auto-generation header
+      run: |
+        HEADER="<!-- DO NOT EDIT — This file is auto-generated from https://github.com/meshtastic/design -->
+        <!-- To make changes, open a PR against meshtastic/design and they will be mirrored here automatically. -->
+
+        "
+        TEMP=$(mktemp)
+        printf '%s' "$HEADER" > "$TEMP"
+        cat .standards/meshtastic_design_standards_latest.md >> "$TEMP"
+        mv "$TEMP" .standards/meshtastic_design_standards_latest.md
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: update design standards from source of truth"
+        title: "chore: update design standards from source of truth"
+        body: |
+          This PR automatically syncs the Meshtastic design standards from the
+          [meshtastic/design](https://github.com/meshtastic/design) repository.
+
+          **Source file:** [`standards/meshtastic_design_standards_latest.md`](https://github.com/meshtastic/design/blob/master/standards/meshtastic_design_standards_latest.md)
+
+          Automatically synced by workflow run [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+        branch: chore/sync-design-standards
+        delete-branch: true
+        add-paths: |
+          .standards/
