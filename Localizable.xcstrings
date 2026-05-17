@@ -187,6 +187,12 @@
             "value" : "Invia il Reboot in DFU"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "DFUにリセットを送信"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -219,6 +225,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Per favore, inserisci il numero di dispositivi che desideri collegare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "---"
           }
         },
         "zh-Hans" : {
@@ -345,6 +357,12 @@
             "value" : "Disconnetta Meshtastic"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtasticから離れる - 接続されているBLEノードから離れる"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -379,6 +397,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Invia un messaggio diretto a Meshtastic - invia un messaggio privato a un nodo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtasticの直接メッセージを送信する"
           }
         },
         "zh-Hans" : {
@@ -417,6 +441,12 @@
             "value" : "Invia un messaggio di gruppo Meshtastic"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtasticグループメッセージを送信する - メッシュチャンネルにメッセージを送信する"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -445,6 +475,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Chiudi il mio nodo Meshtastic o riavvia il mio nodo Meshtastic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtasticノードをシャットダウンまたはリスタートします"
           }
         },
         "zh-Hans" : {
@@ -537,6 +573,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "[%lld elementi]"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "[%lld アイテム]"
           }
         },
         "zh-Hans" : {
@@ -1009,6 +1051,12 @@
             "value" : "%1$@ (%2$lld)"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ (%2$lld)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1347,6 +1395,12 @@
             "value" : "%@ dati di configurazione sono stati richiesti tramite PKC amministratore, ma non è stato restituito alcun risposta dal nodo remoto."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PKC管理者から構成データがリクエストされましたが、リモートノードから返信がありません。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1453,6 +1507,12 @@
             "value" : "%@ pagina di documentazione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ のドキュメントページ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1487,6 +1547,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%@ Durata di attesa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ の dwell 期間"
           }
         },
         "zh-Hans" : {
@@ -1591,6 +1657,12 @@
           }
         },
         "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@: %2$lld"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%1$@: %2$lld"
@@ -2005,9 +2077,15 @@
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%dホップ"
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%d ホップ"
+                }
+              }
+            }
           }
         },
         "ru" : {
@@ -2170,6 +2248,12 @@
             "value" : "%lld duplicato"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld 回信"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2265,6 +2349,18 @@
                 "stringUnit" : {
                   "state" : "needs_review",
                   "value" : "%lld caratteristiche"
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld 機能"
                 }
               }
             }
@@ -2370,6 +2466,12 @@
             "value" : "%lld Mesh"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld Mesh"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2402,6 +2504,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%lld nodi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld ノード"
           }
         },
         "zh-Hans" : {
@@ -2556,6 +2664,12 @@
             "value" : "%lld pacchetti ricevuti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld受信"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2590,6 +2704,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%lld relais annullato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld ロータリがキャンセルされました。"
           }
         },
         "zh-Hans" : {
@@ -2628,6 +2748,12 @@
             "value" : "%lld trasmesse"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld 回信されました"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2662,6 +2788,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sono stati inviati %lld pacchetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "送信されたパケット数: %lld"
           }
         },
         "zh-Hans" : {
@@ -2966,6 +3098,12 @@
             "value" : "%@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3001,6 +3139,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Vai indietro fino a **Posizioni** nel picker di file"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファイル選択器から**場所**まで完全に戻ってください。"
           }
         },
         "zh-Hans" : {
@@ -3039,6 +3183,12 @@
             "value" : "Seleziona il tuo dispositivo USB e premi **Salva**."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "USBデバイスを選択し、**保存**を押してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3073,6 +3223,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tocca il pulsante \"Salva Firmware su USB\" sotto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "USBにファームウェアを保存するボタンをタップしてください"
           }
         },
         "zh-Hans" : {
@@ -3111,6 +3267,12 @@
             "value" : "Il nome del file di firmware scaricato sarà una stringa casuale terminante con `.uf2` per prevenire la memorizzazione in cache su iOS."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ダウンロードしたファームウェアのファイル名は、iOSのキャッシュを防ぐために`.uf2`で終わるランダムな文字列になります。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3145,6 +3307,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Potresti vedere un errore che dice che il file non può essere salvato. Questo è normale, poiché il dispositivo si disconnette immediatamente dopo l'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスが更新した後すぐに切断されるため、ファイルを保存できないというエラーが表示されることがあります。"
           }
         },
         "zh-Hans" : {
@@ -3239,6 +3407,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il valore configurato: (%@) non è uno degli intervalli ottimizzati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "設定された値: (%@) は最適化オプションの1つではありません。"
           }
         },
         "ru" : {
@@ -3550,6 +3724,12 @@
             "value" : "15 minuti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "15分 dwell time"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3644,6 +3824,12 @@
             "value" : "30 minuti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "30分"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3678,6 +3864,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "45 minuti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "45分"
           }
         },
         "zh-Hans" : {
@@ -3774,6 +3966,12 @@
             "value" : "60 minuti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "60分"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3868,6 +4066,12 @@
             "value" : "90 minuti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "90分"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3960,6 +4164,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "120 minuti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "120分"
           }
         },
         "zh-Hans" : {
@@ -4097,6 +4307,12 @@
             "value" : "180 minuti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "180分"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4191,6 +4407,12 @@
             "value" : "8089"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAK サーバーのポート番号は 8089 です。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4227,6 +4449,12 @@
             "value" : "Un indice di canale di 0 indica il canale principale dove vengono inviati i pacchetti di trasmissione. I dati di posizione vengono trasmessi dal primo canale dove sono abilitati con il firmware 2.7 avanti."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "0番目は、放送パケットを送信するプライマリチャネルです。2.7バージョン以降に、最初に有効化されたチャネルから位置データが放送されます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4259,6 +4487,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Un certificato auto-firmato predefinito è incluso per le connessioni localhost. Importa un .p12 personalizzato se necessario. Il CA del client (.pem) valida il collegamento ai client TAK."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "localhost接続にはデフォルトの自己署名証明書が含まれています。必要に応じてカスタム.p12をインポートしてください。クライアントCA(.pem)はTAKクライアントを接続する際に検証します。"
           }
         },
         "zh-Hans" : {
@@ -4297,6 +4531,12 @@
             "value" : "Un precedente rapporto di posizione per questo nodo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このノードの前の位置報告です。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4329,6 +4569,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Un rapporto di posizione precedente che mostra la direzione di viaggio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "前回の位置報告は、移動方向を示しています。"
           }
         },
         "zh-Hans" : {
@@ -4367,6 +4613,12 @@
             "value" : "Un codice QR contiene la configurazione LoRa e i canali necessari per le radio per comunicare. Usa Sostituisci Canali per sovrascrivere o Aggiungi Canali per aggiungere ai canali esistenti."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QRコードには、ラジオが通信するためのLoRa設定とチャンネルが含まれています。チャンネルを変更するには、チャンネルを変更する、または既存のチャンネルにチャンネルの追加を行うことができます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4401,6 +4653,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Un punto di interesse condiviso. Premere a lungo sul mappa per crearne uno."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "共有ポイント。マップを長押しして作成します。"
           }
         },
         "zh-Hans" : {
@@ -4961,6 +5219,12 @@
             "value" : "Preset Attivo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "現在の設定"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5127,6 +5391,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiungi CA"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "CAを追加します。"
           }
         },
         "zh-Hans" : {
@@ -5441,6 +5711,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ulteriori informazioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "さらにサポートはこちらをご覧ください。"
           }
         },
         "zh-Hans" : {
@@ -5875,6 +6151,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Utilizzatori Avanzati Solo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "上級ユーザーのみです。"
           }
         },
         "zh-Hans" : {
@@ -6777,6 +7059,12 @@
             "value" : "Alpha"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アルファ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -7371,6 +7659,12 @@
             "value" : "Un contorno che racchiude tutte le posizioni dei nodi LoRa sul reticolo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "LoRaノードのメッシュ上の位置を囲む輪郭"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -7405,6 +7699,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Analizzando..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分析中..."
           }
         },
         "zh-Hans" : {
@@ -7615,6 +7915,12 @@
             "value" : "Icona dell'app"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アプリアイコン"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7659,6 +7965,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Notifiche App"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アプリ通知"
           }
         },
         "ru" : {
@@ -7881,6 +8193,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Architettura"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスアーキテクチャ"
           }
         },
         "zh-Hans" : {
@@ -8153,6 +8471,12 @@
             "value" : "Chiedi all'assistente AI Chirpy"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チリピィAIアシスタントに質問してください"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -8187,6 +8511,12 @@
             "value" : "Chiedi a Chirpy..."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chirpy に聞いてください..."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -8219,6 +8549,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Domanda qualsiasi sul Meshtastic. Cercherò i documenti e risponderò in linguaggio semplice."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtasticについて何か質問がありますか？\nドキュメントを検索し、わかりやすく答えます。"
           }
         },
         "zh-Hans" : {
@@ -8257,6 +8593,12 @@
             "value" : "Autofissa canale principale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAKサーバーのメイン通信チャネルを自動的に修正する"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -8289,6 +8631,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Connettersi automaticamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "自動接続"
           }
         },
         "ru" : {
@@ -8455,6 +8803,12 @@
             "value" : "Reti Wi-Fi Disponibili"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "利用可能なWi-Fiネットワーク"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -8571,6 +8925,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Utilizzo medio del canale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "平均チャンネル利用率"
           }
         },
         "zh-Hans" : {
@@ -9146,6 +9506,12 @@
             "value" : "Livello di batteria, tensione, utilizzo del canale e tempo di trasmissione riportati dal nodo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードが報告したバッテリーレベル、電圧、チャネル利用率、および空間の時間"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -9240,6 +9606,12 @@
             "value" : "Inizia aggiornamento"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "更新を開始します"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -9276,6 +9648,12 @@
             "value" : "Firma"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "バイナリファイル"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -9310,6 +9688,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dati binari (%lld byte)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "バイナリデータ (%lldバイト)"
           }
         },
         "zh-Hans" : {
@@ -9410,6 +9794,12 @@
             "value" : "Dispositivo BLE"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bluetoothデバイス"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -9442,6 +9832,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamento OTA BLE"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "BLE OTA アップデート"
           }
         },
         "zh-Hans" : {
@@ -9726,6 +10122,12 @@
             "value" : "Connessione Bluetooth"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bluetooth接続を構成してください"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9772,6 +10174,12 @@
             "value" : "Titolo in grassetto"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bold Heading"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9816,6 +10224,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inserisci il nome del dispositivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "画面に**タイトル**を強調表示します。"
           }
         },
         "ru" : {
@@ -9866,6 +10280,12 @@
             "value" : "Converte le posizioni, i nodi, i punti di riferimento e i messaggi di Meshtastic in formato TAK/CoT"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mesh to CoT Converterは、Meshの位置、ノード、ウェイポイント、メッセージを TAK/CoT形式にブリッジします。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -9898,6 +10318,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Metriche del dispositivo di trasmissione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "送信デバイス指標"
           }
         },
         "ru" : {
@@ -10647,6 +11073,12 @@
             "value" : "Messaggi CarPlay"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "カープレイメッセージング"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -10795,6 +11227,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Utilizzo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャ Util"
           }
         },
         "zh-Hans" : {
@@ -11953,6 +12391,12 @@
             "value" : "Canale riparato con successo!"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネルが正常に修正されました！"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -11987,6 +12431,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Indice canale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネルインデックス"
           }
         },
         "zh-Hans" : {
@@ -12197,6 +12647,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sicurezza del canale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネルセキュリティ"
           }
         },
         "zh-Hans" : {
@@ -12567,6 +13023,12 @@
             "value" : "Preset dominato dal chat: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッセージ交換が多い設定は %@ です。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -12661,6 +13123,12 @@
             "value" : "Meshtastic sta caricando una risposta"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chirpy が答えをロードしています。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -12693,6 +13161,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Scegliere il Ruolo Giusto del Dispositivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "適切なデバイスの役割を選択する"
           }
         },
         "zh-Hans" : {
@@ -12975,6 +13449,12 @@
             "value" : "Chiudi Traduzione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "クリア翻訳"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -13009,6 +13489,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La base del client dovrebbe preferire solo altri nodi che controlla. Un uso improprio può danneggiare il tuo mesh locale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "クライアントベースは、自分が管理する他のノードのみをフォロワーに指定してください。不適切な使用は、ローカルメッシュに影響を与える可能性があります。"
           }
         },
         "ru" : {
@@ -13051,6 +13537,12 @@
             "value" : "Certificato CA per il Client"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "クライアントCA証明書"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -13083,6 +13575,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Configurazione Cliente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "クライアント構成"
           }
         },
         "zh-Hans" : {
@@ -13607,6 +14105,12 @@
             "value" : "Compass"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "コンパス"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13649,6 +14153,12 @@
             "value" : "Completare la scansione di scoperta del mesh locale per vedere i risultati qui."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュディスカバリースキャンを完了して結果を確認してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -13681,6 +14191,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Configurazione Completa del Dispositivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスの完全設定"
           }
         },
         "zh-Hans" : {
@@ -13773,6 +14289,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Configurazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "設定"
           }
         },
         "zh-Hans" : {
@@ -14041,6 +14563,12 @@
             "value" : "Connetti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "接続"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14263,6 +14791,12 @@
             "value" : "Connetti ai nodi sulla tua rete Wi-Fi locale."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ローカルWi-Fiネットワーク上のノードに接続してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -14297,6 +14831,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Connetti al tuo nodo Meshtastic tramite Bluetooth Low Energy per la migliore esperienza di messaggistica."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bluetooth Low Energyを使用して、Meshtasticノードに接続して、最高のメッセージング体験を実現してください。"
           }
         },
         "zh-Hans" : {
@@ -14335,6 +14875,12 @@
             "value" : "Connetta il tuo dispositivo a una fonte di alimentazione stabile."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスを安定した電源に接続してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -14369,6 +14915,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Connetta il tuo dispositivo mPWRD-OS a una rete Wi-Fi tramite Bluetooth."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "mPWRD-OSデバイスをBluetoothを介してWi-Fiネットワークに接続してください。"
           }
         },
         "zh-Hans" : {
@@ -14487,6 +15039,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Firmware connesso: **%@**"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "接続されたファームウェア: **%@**"
           }
         },
         "zh-Hans" : {
@@ -14785,6 +15343,12 @@
             "value" : "Connessione Attempto %1$d di %2$d"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "接続試行%1$lld/%2$lld"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -14817,6 +15381,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Nome della connessione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "接続名"
           }
         },
         "ru" : {
@@ -14977,6 +15547,12 @@
             "value" : "Contatti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "連絡先"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -15009,6 +15585,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Continua"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "続きです"
           }
         },
         "zh-Hans" : {
@@ -15045,6 +15627,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamenti di posizione continui"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "連続位置更新"
           }
         },
         "zh-Hans" : {
@@ -15629,6 +16217,12 @@
             "value" : "Creare NFC Contact Node"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノード コンタクト NFC タグ を作成"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -15721,6 +16315,12 @@
             "value" : "Creato da:"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "作成者:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -15811,6 +16411,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Allarmi critici"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "重要なアラート"
           }
         },
         "ru" : {
@@ -15919,6 +16525,12 @@
             "value" : "Versione del firmware corrente"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "現在のファームウェアバージョン"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -16013,6 +16625,12 @@
             "value" : "Linea tratteggiata che mostra un percorso registrato."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "記録されたルートパスの表示線"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -16049,6 +16667,12 @@
             "value" : "Browser di dati"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "データブラウザ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -16083,6 +16707,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Browser di Database Principale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メインデータベースブラウザ"
           }
         },
         "zh-Hans" : {
@@ -16435,6 +17065,12 @@
             "value" : "Chiave predefinita richiesta per la scoperta del nodo locale tramite mesh principale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デフォルトキーが必要です"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -16543,6 +17179,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Elimina tutto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "すべて削除"
           }
         },
         "zh-Hans" : {
@@ -17339,6 +17981,12 @@
             "value" : "Desktop Consigliato"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デスクトップ推奨"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -17375,6 +18023,12 @@
             "value" : "Dettagli"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "詳細"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -17407,6 +18061,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dettagli..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "詳細..."
           }
         },
         "ru" : {
@@ -17728,6 +18388,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Gli eventi di sensori di rilevamento riportati dal nodo, come il movimento o le allerte di apertura/chiusura della porta."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードから報告されるセンサーイベント、例えば動きやドアが開閉のアラートなど"
           }
         },
         "zh-Hans" : {
@@ -18166,6 +18832,12 @@
             "value" : "Documentazione sulla configurazione del dispositivo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイス設定ドキュメント"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -18198,6 +18870,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dispositivo collegato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスが接続されました"
           }
         },
         "zh-Hans" : {
@@ -18466,6 +19144,12 @@
             "value" : "Opzioni per il dispositivo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスオプション"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18566,6 +19250,12 @@
             "value" : "Il ruolo del dispositivo è '%@'. Considera di impostarlo su TAK o TAK Tracker per un'ottimale operazione."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスの役割は '%@' です。最適動作のために TAK または TAK トラッカーに設定することをお勧めします。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -18598,6 +19288,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ruoli del dispositivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスロール"
           }
         },
         "zh-Hans" : {
@@ -18692,6 +19388,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamento firmware DFU"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "DFU ファームウェアアップデート"
           }
         },
         "zh-Hans" : {
@@ -18974,6 +19676,12 @@
             "value" : "I messaggi diretti utilizzano l'infrastruttura di chiave pubblica per l'encryptazione. Richiede la versione del firmware 2.5 o superiore."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "直接メッセージは、公開鍵インフラストラクチャを使用して暗号化されます。バージョン2.5またはそれ以上のファームウェアが必要です。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -19066,6 +19774,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aiuto con le Messaggi Diretti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Direct Messages ヘルプ"
           }
         },
         "zh-Hans" : {
@@ -19364,6 +20078,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mappa di Scoperta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "発見マップ"
           }
         },
         "zh-Hans" : {
@@ -19762,6 +20482,12 @@
             "value" : "Mostra la distanza tra il tuo telefono e altri nodi Meshtastic con le loro posizioni."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "あなたのスマートフォンと他のMeshtasticノードとの距離と位置を表示します。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19926,6 +20652,12 @@
             "value" : "Distanza e Azimut"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "距離と方位"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -19960,6 +20692,12 @@
             "value" : "Distanza e Azimut"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "距離と方位"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -19992,6 +20730,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Filtri di distanza"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "距離フィルター"
           }
         },
         "ru" : {
@@ -20040,6 +20784,12 @@
             "value" : "Misurazioni della distanza"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "距離測定"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20086,6 +20836,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Non chiudere l'app durante l'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アップデート中にアプリを閉じることはありません。"
           }
         },
         "zh-Hans" : {
@@ -20180,6 +20936,12 @@
             "value" : "Traduzioni della documentazione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ドキュメント翻訳"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -20214,6 +20976,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Documentazione non disponibile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ドキュメントが読み込めませんでした"
           }
         },
         "zh-Hans" : {
@@ -20420,6 +21188,12 @@
             "value" : "Scarica"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ダウンロード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -20452,6 +21226,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Scarica il pacchetto dati TAK Server"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAKサーバーデータパッケージをダウンロードしてください。"
           }
         },
         "zh-Hans" : {
@@ -20488,6 +21268,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Firmware scaricato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ダウンロード済みの firmware"
           }
         },
         "zh-Hans" : {
@@ -20584,6 +21370,12 @@
             "value" : "Durata della permanenza"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "dwell time"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -20618,6 +21410,12 @@
             "value" : "Tempo di permanenza per preset"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "設定ごとに滞在時間"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -20650,6 +21448,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ogni nodo ha un nome breve (fino a 4 byte) mostrato nel cerchio colorato, e un nome lungo visualizzato accanto a esso. Il colore del cerchio è basato sul numero del nodo. Il nome breve può essere un emoji o iniziali."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "各ノードには、4バイト以内の短い名前（色付きの円の中に表示）と、それに続く長い名前が表示されます。ノード番号に基づいて円の色が異なります。短い名前は絵文字またはイニシャルにすることができます。"
           }
         },
         "zh-Hans" : {
@@ -20996,6 +21800,12 @@
             "value" : "Abilita le aggiornamenti di posizione in background"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "バックグラウンドアクティビティを有効にする"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -21028,6 +21838,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Abilita la trasmissione dei metadati del dispositivo di trasmissione al rete mesh. Quando disabilitato, i metadati vengono inviati solo ai client connessi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュネットワークにブロードキャストデバイスのメトリクスを有効にします。無効にすると、メトリクスは接続されたクライアントのみに送信されます。"
           }
         },
         "ru" : {
@@ -21184,6 +22000,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Abilita il Server TAK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAKサーバーを有効にする"
           }
         },
         "zh-Hans" : {
@@ -21418,6 +22240,12 @@
             "value" : "Abilita il punto blu di posizione per il tuo telefono sul mappaggio mesh."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュマップであなたのスマートフォンの青い位置点を表示します。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21644,6 +22472,12 @@
             "value" : "Abilitare il Wi-Fi disabiliterà la connessione Bluetooth all'app."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fiを有効にすると、アプリのBluetooth接続が停止します。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21832,6 +22666,12 @@
             "value" : "Encryptazione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "暗号化"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -21926,6 +22766,12 @@
             "value" : "Assicurati che il tuo dispositivo sia caricato."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスを充電してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -21960,6 +22806,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inserisci l'indirizzo IP/hostname [porta]"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ホスト名[:ポート]を入力"
           }
         },
         "ru" : {
@@ -22008,6 +22860,12 @@
             "value" : "Inserisci la password P12"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "P12パスワードを入力してください"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -22044,6 +22902,12 @@
             "value" : "Inserisci la password Wi-Fi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fiパスワードを入力してください"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -22076,6 +22940,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inserisci la password per il file PKCS#12"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PKCS#12ファイルのパスワードを入力してください"
           }
         },
         "zh-Hans" : {
@@ -22114,6 +22984,12 @@
             "value" : "Inserisci l'URL del testo selezionato"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "選択したテキストのURLを入力してください"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -22148,6 +23024,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Entità (%lld)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "エントリ (%lld)"
           }
         },
         "zh-Hans" : {
@@ -22240,6 +23122,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Metriche ambientali abilitate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "環境指標が有効です"
           }
         },
         "ru" : {
@@ -22338,6 +23226,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Opzioni di Sensori Ambientali"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "環境センサーオプション"
           }
         },
         "ru" : {
@@ -22554,6 +23448,12 @@
             "value" : "Aggiornatore BLE ESP32"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ESP32 BLE アップデートツール"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -22586,6 +23486,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamento firmware OTA di ESP32 richiede firmware %@ o successivo. Aggiorna il firmware del tuo dispositivo utilizzando il Web Flasher per primo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ESP32 OTA更新には、%@または後のファームウェアが必要です。Web Flasherを使用してデバイスのファームウェアを更新してください。"
           }
         },
         "zh-Hans" : {
@@ -22622,6 +23528,12 @@
             "value" : "Aggiornamento ESP32"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ESP32のアップデート"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -22654,6 +23566,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornatore WiFi ESP32"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ESP32 WiFi アップデートツール"
           }
         },
         "zh-Hans" : {
@@ -22798,6 +23716,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Scambio Informazioni Utente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ユーザー情報を交換"
           }
         },
         "ru" : {
@@ -23398,6 +24322,12 @@
             "value" : "Non è stato possibile scambiare le informazioni utente."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ユーザー情報を交換できませんでした。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23554,6 +24484,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Falso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "False"
           }
         },
         "zh-Hans" : {
@@ -23973,6 +24909,12 @@
             "value" : "Archivos disponibles"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファイルが存在するが、アクティブなファイルはありません"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24017,6 +24959,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Filtra la lista dei nodi e la mappa del mesh in base alla vicinanza al tuo telefono."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "あなたの携帯電話の近くにノードリストとメッシュマップをフィルタリングします。"
           }
         },
         "ru" : {
@@ -24183,6 +25131,12 @@
             "value" : "Trova Dispositivo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスを探す"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -24300,6 +25254,12 @@
             "value" : "Concludi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "完了"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24346,6 +25306,12 @@
             "value" : "File di Firmware"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファームウェアファイル"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -24380,6 +25346,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Rilascio Firmware"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファームウェアリリース"
           }
         },
         "zh-Hans" : {
@@ -24418,6 +25390,12 @@
             "value" : "Documentazione aggiornamento firmware"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファームウェアアップデートドキュメントへのリンク"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -24452,6 +25430,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamento firmware richiesto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファームウェアアップデートが必要です"
           }
         },
         "zh-Hans" : {
@@ -24746,6 +25730,12 @@
             "value" : "Ripara canale principale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネルを修正します"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -24780,6 +25770,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Corrigere il canale principale?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "プライマリチャネルを修正しますか？"
           }
         },
         "zh-Hans" : {
@@ -25248,6 +26244,12 @@
             "value" : "Per motivi di sicurezza, iOS non può scrivere direttamente sui dispositivi USB esterni. Devi salvare il file manualmente."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セキュリティのため、iOSは外部USBデバイスに直接書き込むことができません。ファイルを手動で保存してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -25606,6 +26608,12 @@
             "value" : "Da Radio (RX): %lld"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lldのラジオからの受信"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25648,6 +26656,12 @@
             "value" : "Distanza massima tra nodi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最遠いノード距離"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -25680,6 +26694,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Genera un pacchetto dati (.zip) per configurare i client TAK per connettersi a questo server."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAK クライアントをこのサーバーに接続するためのデータパッケージ (.zip) を生成します。"
           }
         },
         "zh-Hans" : {
@@ -25852,6 +26872,12 @@
             "value" : "Generando raccomandazione AI locale..."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ローカルAIの推奨事項が作成中です..."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -26000,6 +27026,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inizia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "始めましょう"
           }
         },
         "ru" : {
@@ -26506,6 +27538,12 @@
             "value" : "I dati di posizione GPS riportati dal nodo, inclusi latitudine, longitudine e altitudine."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードから報告されたGPS位置データ（緯度、経度、高度）。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -26658,6 +27696,12 @@
             "value" : "Il grigio indica la consegna riuscita. L'arancione indica un errore riproducibile. Il rosso indica un fallimento permanente che non riuscirà a riproducersi."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "グレーは成功の表示、オレンジは再試行可能なエラー、赤は再試行しても成功しない永続的な失敗です"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -26806,6 +27850,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Riavvio duro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ハードリセット"
           }
         },
         "ru" : {
@@ -27030,6 +28080,12 @@
             "value" : "Aiuto e Documentazione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ヘルプ＆ドキュメント"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -27062,6 +28118,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aiuto e Documentazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ヘルプ＆ドキュメント"
           }
         },
         "zh-Hans" : {
@@ -27098,6 +28160,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ciao, sono Chirpy!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "こんにちは、私はチッパーです。"
           }
         },
         "zh-Hans" : {
@@ -27252,6 +28320,12 @@
             "value" : "Nascondi la leggenda"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図のラベルを隠す"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -27286,6 +28360,12 @@
             "value" : "Nascondi la leggenda del mappa"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図のレジェンドを隠す"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -27318,6 +28398,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Nasconde la leggenda del mappa."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図のラベルを隠す"
           }
         },
         "zh-Hans" : {
@@ -28238,6 +29324,12 @@
             "value" : "Come aggiornare"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アップデート方法"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -28269,6 +29361,12 @@
           }
         },
         "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "https://"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "https://"
@@ -28422,6 +29520,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Soffro di ansia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "私は自分のことを知っている"
           }
         },
         "zh-Hans" : {
@@ -28690,6 +29794,12 @@
             "value" : "Icone"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アイコン"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28738,6 +29848,12 @@
             "value" : "ID"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ID"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -28772,6 +29888,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Identità"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アイデンティティ"
           }
         },
         "zh-Hans" : {
@@ -28810,6 +29932,12 @@
             "value" : "Inattività / Sonno"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アイドル / 睡眠"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -28844,6 +29972,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Se collegato, utilizza il pulsante sottostante per riavviare in modalità DFU. Altrimenti, premi il pulsante di ripristino del tuo dispositivo due volte rapidamente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "接続されている場合は、以下のボタンを押してDFUモードにリセットしてください。そうでない場合は、デバイスのリセットボタンを2回速く押してください。"
           }
         },
         "zh-Hans" : {
@@ -29112,6 +30246,12 @@
             "value" : "Se il tuo dispositivo ha l'aggiornatore corretto caricato nella parte OTA_1, puoi provare a utilizzare il processo di aggiornamento BLE."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスにOTA_1パーティションに適切なアップデートドライバーがロードされている場合、BLEアップデートプロセスを試すことができます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -29144,6 +30284,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Se il tuo dispositivo ha l'aggiornatore corretto caricato nella parte OTA_1, puoi tentare di utilizzare il processo di aggiornamento WiFi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスがOTA_1パーティションに適切なアップデターがロードされている場合、WiFi更新プロセスを試すことができます。"
           }
         },
         "zh-Hans" : {
@@ -29354,6 +30500,12 @@
             "value" : "Importare"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "インポート"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -29386,6 +30538,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Importa .pem"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : ".pemファイルをインポートします"
           }
         },
         "zh-Hans" : {
@@ -29422,6 +30580,12 @@
             "value" : "Importa il tuo .p12 personalizzato"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "カスタム.p12をインポート"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -29454,6 +30618,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Errore di importazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "エラー: インポート"
           }
         },
         "zh-Hans" : {
@@ -29550,6 +30720,12 @@
             "value" : "Nota Importante"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "重要なメモ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -29582,6 +30758,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Oltre a Config, Chiavi e legami BLE verranno cancellati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "設定、キー、BLE絆も消去されます"
           }
         },
         "ru" : {
@@ -29710,6 +30892,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Messaggi in arrivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "受信メッセージ"
           }
         },
         "ru" : {
@@ -29912,6 +31100,12 @@
             "value" : "Infrastruttura"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "インフラストラクチャノード数"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -30006,6 +31200,12 @@
             "value" : "Non crittografato con la posizione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "暗号化されていない位置情報用のチャンネルです。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -30040,6 +31240,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inseguro con MQTT"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MQTTで不安全で、正確な位置データがインターネットにアップロードされています"
           }
         },
         "zh-Hans" : {
@@ -30078,6 +31284,12 @@
             "value" : "Inserisci"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "リンクをテキストに挿入"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -30112,6 +31324,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inserisci un collegamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "リンクを挿入"
           }
         },
         "zh-Hans" : {
@@ -30150,6 +31368,12 @@
             "value" : "Installa"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "インストール"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -30182,6 +31406,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Contenuto del file non valido. Per favore, controlla il formato del file."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "無効なファイル内容です。ファイル形式を確認してください。"
           }
         },
         "ru" : {
@@ -30230,6 +31460,12 @@
             "value" : "Indirizzo IP"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "IPアドレス"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -30264,6 +31500,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Connetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fiネットワークに接続"
           }
         },
         "zh-Hans" : {
@@ -30476,6 +31718,12 @@
             "value" : "Tieni il dispositivo vicino al telefono."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスはスマートフォンに近づけてください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -30510,6 +31758,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mantieni aggiornato il mappaggio del mesh e invia la tua posizione al mesh anche mentre utilizzi altre applicazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュマップを更新し、他のアプリを使用している間も位置をメッシュに送信します。"
           }
         },
         "zh-Hans" : {
@@ -30830,6 +32084,12 @@
             "value" : "Ultimo udito"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最後に聞いた時刻"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -30864,6 +32124,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ultimo dispositivo visto:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最後に接続されたデバイス:"
           }
         },
         "ru" : {
@@ -30906,6 +32172,12 @@
             "value" : "Ultimo dispositivo visto: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最後に確認したデバイス: %@"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30946,6 +32218,12 @@
             "value" : "Ultimo aggiornamento da:"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最終更新者:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -30978,6 +32256,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ultimo aggiornamento: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最終更新: %@"
           }
         },
         "zh-Hans" : {
@@ -31016,6 +32300,12 @@
             "value" : "Ultimo aggiornamento: mai"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最終更新日: 不明"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -31050,6 +32340,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Successivamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "後で"
           }
         },
         "zh-Hans" : {
@@ -31254,6 +32550,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Minore congestione: **%1$@** (%2$@ util)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最も混雑が少ない: **%1$@** (%2$@ 利用率)"
           }
         },
         "zh-Hans" : {
@@ -31664,6 +32966,12 @@
             "value" : "Carica messaggi precedenti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "古いメッセージをロード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -31700,6 +33008,12 @@
             "value" : "Caricamento"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "データベースをAPIから読み込み中です"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -31734,6 +33048,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Caricamento delle informazioni hardware..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ハードウェア情報を読み込み中..."
           }
         },
         "zh-Hans" : {
@@ -31828,6 +33148,12 @@
             "value" : "Caricamento configurazione TAK dal nodo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAK コンフィグをノードからロードしています。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -31862,6 +33188,12 @@
             "value" : "Caricamento..."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "読み込み中..."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -31890,6 +33222,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Descubrimiento de red local"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ローカルメッシュディスカバリー"
           }
         },
         "zh-Hans" : {
@@ -31928,6 +33266,12 @@
             "value" : "La scoperta del mesh locale richiede che il canale principale utilizzi la chiave predefinita. Per favore, ripristinare la chiave del canale principale alla predefinita prima di effettuare la scansione."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メインチャネルはデフォルトのキーを使用する必要があります。スキャン前にメインチャネルキーをデフォルトに戻してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -31962,6 +33306,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Accesso alla rete locale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ローカルネットワークアクセスのオプション"
           }
         },
         "ru" : {
@@ -32124,6 +33474,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Icone di Log"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ログアイコン"
           }
         },
         "zh-Hans" : {
@@ -32416,6 +33772,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Azioni a lungo premuto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "長押しアクション"
           }
         },
         "zh-Hans" : {
@@ -32836,6 +34198,12 @@
             "value" : "Modifiche Configurazioni LoRa:"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "LoRa設定変更"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32938,6 +34306,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Batteria bassa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "バッテリーが低い"
           }
         },
         "ru" : {
@@ -33122,6 +34496,12 @@
             "value" : "Gestisci i dati della mappa"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図データの管理"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33226,6 +34606,12 @@
             "value" : "Manuale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "マニュアル"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33270,6 +34656,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Stringa di connessione manuale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "マニュアル接続文字列"
           }
         },
         "ru" : {
@@ -33318,6 +34710,12 @@
             "value" : "Connessioni Manuali"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "マニュアル接続"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33360,6 +34758,12 @@
             "value" : "Mappa"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "探索セッションの地図"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -33392,6 +34796,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dati di Mappa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図データ"
           }
         },
         "ru" : {
@@ -33440,6 +34850,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Legenda del Mappa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図のラベル"
           }
         },
         "zh-Hans" : {
@@ -33728,6 +35144,12 @@
             "value" : "Copertura del Reticolo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュの凸包"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -33926,6 +35348,12 @@
             "value" : "Posizione mappa Mesh"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュマップ位置"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33974,6 +35402,12 @@
             "value" : "Conversore Mesh a CoT"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュからコットに変換器"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -34006,6 +35440,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Meshtastic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュティック"
           }
         },
         "ru" : {
@@ -34056,6 +35496,12 @@
             "value" : "Meshtastic -> TAK funziona, TAK -> Meshtastic bloccato"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュティック -> TAKが機能し、TAK -> メッシュティックがブロックされます"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -34090,6 +35536,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Meshtastic non raccoglie alcuna informazione personale. Raccogliamo anonimamente i dati di utilizzo e di crash per migliorare l'app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュティックは個人情報を収集しません。使用状況やクラッシュデータは匿名で収集し、アプリの改善に役立てています。"
           }
         },
         "zh-Hans" : {
@@ -34182,6 +35634,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Meshtastic utilizza la posizione del tuo telefono per abilitare una serie di funzionalità. Puoi aggiornare le tue permessi di posizione in qualsiasi momento dalle impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtasticは、あなたのスマートフォンの位置情報を利用して、いくつかの機能を有効にします。設定からいつでも位置情報の許可を更新できます。"
           }
         },
         "ru" : {
@@ -34482,6 +35940,12 @@
             "value" : "Notifiche di Messaggio"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッセージ通知"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -34571,6 +36035,12 @@
             "value" : "Stato dei Messaggi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッセージステータス"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -34605,6 +36075,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il messaggio è stato trasmesso ma non confermato dal destinatario finale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッセージは最終受信者に送られましたが、確認されていません。"
           }
         },
         "zh-Hans" : {
@@ -34829,6 +36305,12 @@
             "value" : "Metadati"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メタデータ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -34921,6 +36403,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Minimo richiesto: **%@**"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最低必要なバージョン: **%@**"
           }
         },
         "zh-Hans" : {
@@ -35099,6 +36587,12 @@
             "value" : "Preset Modem"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "モデムプリセット一覧"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -35215,6 +36709,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Più nodi scoperti su **%1$@** (%2$lld nodi)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "**%1$@**で最もユニークなノードが発見されました (%2$lldノード)"
           }
         },
         "zh-Hans" : {
@@ -35471,6 +36971,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "TLS sicuro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "mTLS"
           }
         },
         "zh-Hans" : {
@@ -35815,6 +37321,12 @@
             "value" : "Dispositivi Vicini"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "近くのデバイス"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -36071,6 +37583,12 @@
             "value" : "Posizione della rete"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ネットワーク位置"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -36105,6 +37623,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Nome della rete Wi-Fi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fiネットワーク名を入力してください"
           }
         },
         "zh-Hans" : {
@@ -36257,6 +37781,12 @@
             "value" : "Nuovi nodi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "新しいノード"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36305,6 +37835,12 @@
             "value" : "Nuova scansione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "新規スキャン開始"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -36339,6 +37875,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Nessun valore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "なし"
           }
         },
         "zh-Hans" : {
@@ -36570,6 +38112,12 @@
             "value" : "Nessun dispositivo connesso. Utilizzerò il primo dispositivo scoperto."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "接続されていません。最初に発見されたデバイスを使用します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -36664,6 +38212,12 @@
             "value" : "Nessun sessione di scoperta completata"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "まだ発見セッションを完了していません"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -36756,6 +38310,12 @@
             "value" : "Nessun file caricato"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファイルがアップロードされていません"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36804,6 +38364,12 @@
             "value" : "Non è stato scaricato alcun firmware per questo dispositivo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このデバイスのファームウェアはダウンロードされていません。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -36840,6 +38406,12 @@
             "value" : "Nessuna dati LocalStats raccolti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ローカル統計データがまだ収集されていません"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -36873,6 +38445,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Nessun file di dati geografici caricato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "マップデータファイルがアップロードされていません"
           }
         },
         "ru" : {
@@ -37103,6 +38681,12 @@
             "value" : "Nessuna dati di preset disponibili"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "まだ設定データがありません"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -37137,6 +38721,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Nessun record trovato per %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このリストには%@のレコードが見つかりません"
           }
         },
         "zh-Hans" : {
@@ -37331,6 +38921,12 @@
             "value" : "Il nodo ha sentito nell'ultimo 2 ore. Mostrato con un anello pulsante sulla mappa."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードは過去2時間以内に耳にした。地図上で脈打つリングで表示されています。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -37423,6 +39019,12 @@
             "value" : "Layout del nodo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードレイアウト"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -37457,6 +39059,12 @@
             "value" : "Densità della lista dei nodi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードリスト密度"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -37489,6 +39097,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aiuto della lista dei nodi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードリストのヘルプ"
           }
         },
         "zh-Hans" : {
@@ -37585,6 +39199,12 @@
             "value" : "Nome del nodo connesso: %@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "接続されたノードの名前: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -37619,6 +39239,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il nodo non è stato sentito di recente. È stato mostrato senza anello pulsante sulla mappa."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最近聞いたことがありません。地図にはパルスリングが表示されていません。"
           }
         },
         "zh-Hans" : {
@@ -37713,6 +39339,12 @@
             "value" : "Stato del nodo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードステータス"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -37747,6 +39379,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Node con modulo sensore di rilevamento attivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "検出センサーモジュールがアクティブなノード"
           }
         },
         "zh-Hans" : {
@@ -37855,6 +39493,12 @@
             "value" : "Nodos Descubiertos"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "発見されたノード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -37889,6 +39533,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamento DFU Nordico"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "北欧DFUアップデート"
           }
         },
         "zh-Hans" : {
@@ -37985,6 +39635,12 @@
             "value" : "Non ora"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "もうすぐです"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -38021,6 +39677,12 @@
             "value" : "Non crittografato in modo sicuro"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "暗号化されていません"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -38055,6 +39717,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Nota: Questa aggiornamento temporaneamente disconnetterà il tuo dispositivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "更新中は一時的にデバイスを切断します。"
           }
         },
         "zh-Hans" : {
@@ -38149,6 +39817,12 @@
             "value" : "Notifiche per canale e messaggi diretti."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネルおよび直接メッセージの通知"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38195,6 +39869,12 @@
             "value" : "Notifiche di avviso batteria bassa per il dispositivo connesso."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "接続デバイスのバッテリーが低いことを通知する通知"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38239,6 +39919,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Notifiche per nuovi nodi scoperti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "新しく発見されたノードに関する通知"
           }
         },
         "ru" : {
@@ -38463,6 +40149,12 @@
             "value" : "Node Offline"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "オフラインノード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -38495,6 +40187,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ok"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
           }
         },
         "ru" : {
@@ -38999,6 +40697,12 @@
             "value" : "Node online"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "オンラインノード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -39031,6 +40735,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Apri la documentazione di %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@のドキュメントを開く"
           }
         },
         "zh-Hans" : {
@@ -39067,6 +40777,12 @@
             "value" : "Apri %@ su meshtastic.org"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "meshtastic.orgを開いてください"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -39099,6 +40815,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Apri il Compass"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "コンパスを開く"
           }
         },
         "ru" : {
@@ -39139,6 +40861,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Apri File Locale..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ローカルファイルを開く"
           }
         },
         "zh-Hans" : {
@@ -39233,6 +40961,12 @@
             "value" : "Apri il client SSH"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SSHクライアントを開く"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -39261,6 +40995,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Apri l'app Web Flasher"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Web Flasherを開く"
           }
         },
         "zh-Hans" : {
@@ -39297,6 +41037,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Apri la documentazione di %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@のドキュメントを開きます"
           }
         },
         "zh-Hans" : {
@@ -39533,6 +41279,12 @@
             "value" : "Modifica manualmente le impostazioni del canale principale nelle impostazioni dei canali, quindi torna qui."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネル設定を自分で修正して、この画面に戻してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -39685,6 +41437,12 @@
             "value" : "Altro Rete"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "他のネットワーク"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -39719,6 +41477,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Altro Rete..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "隠れたネットワーク…"
           }
         },
         "zh-Hans" : {
@@ -40045,6 +41809,12 @@
             "value" : "Sostituisci la disposizione dello schermo predefinita."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デフォルトの画面レイアウトをオーバーライドします。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40089,6 +41859,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Numero di pacchetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "パケット数"
           }
         },
         "ru" : {
@@ -40217,6 +41993,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Partecipa alle Traduzioni Distribuite"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分散翻訳に参加してください"
           }
         },
         "zh-Hans" : {
@@ -40687,6 +42469,12 @@
             "value" : "Risultati per Preset"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "各プリセットの結果"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -40859,6 +42647,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Posizione del telefono"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "携帯電話の位置"
           }
         },
         "ru" : {
@@ -41141,6 +42935,12 @@
             "value" : "Posiziona il tuo dispositivo in modalità DFU e collega tramite USB."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスをDFUモードに設定し、USB経由で接続してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -41175,6 +42975,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Platform IO"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "プラットフォームIO"
           }
         },
         "zh-Hans" : {
@@ -41271,6 +43077,12 @@
             "value" : "Assicurati che sia corretto prima di procedere."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "この情報が正しいことを確認してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -41365,6 +43177,12 @@
             "value" : "Per favore, non uscire da questa schermata fino a quando questo processo non sarà completato."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このプロセスを完了するまで画面を離さないでください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -41399,6 +43217,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Per favore, riaccendi il tuo dispositivo per caricare le informazioni sul firmware."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスを再接続してファームウェア情報をロードしてください。"
           }
         },
         "zh-Hans" : {
@@ -41491,6 +43315,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Port"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ポート"
           }
         },
         "zh-Hans" : {
@@ -41855,6 +43685,12 @@
             "value" : "Storia della posizione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードの位置履歴"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -41889,6 +43725,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Punto di Storia della Posizione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "位置履歴ポイント"
           }
         },
         "zh-Hans" : {
@@ -42099,6 +43941,12 @@
             "value" : "Precisione della posizione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "位置精度"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -42133,6 +43981,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Cerchio di precisione della posizione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "GPS精密度低下を示す円形アイコン"
           }
         },
         "zh-Hans" : {
@@ -42229,6 +44083,12 @@
             "value" : "Posizione con direzione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "位置情報：方向"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -42261,6 +44121,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Posizioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "位置"
           }
         },
         "zh-Hans" : {
@@ -42815,6 +44681,12 @@
             "value" : "Opzioni del Sensore di Potenza"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "パワーセンサーオプション"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43029,6 +44901,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Presenze di preset rilevate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "スキャンされたプリセット数"
           }
         },
         "zh-Hans" : {
@@ -43323,6 +45201,12 @@
             "value" : "Canale Principale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メインチャンネル"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -43585,6 +45469,12 @@
             "value" : "Proprietà (%lld)"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "属性 (%lld)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -43617,6 +45507,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Disponibile per le statistiche di utilizzo anonimo e i rapporti di crash."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "匿名使用統計とクラッシュレポートを提供してください。"
           }
         },
         "ru" : {
@@ -43665,6 +45561,12 @@
             "value" : "Fornisci conferma"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "確認を提供してください"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43709,6 +45611,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Provisionamento Fallito"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "プロビジョニング失敗です"
           }
         },
         "zh-Hans" : {
@@ -43977,6 +45885,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inserisci la tua domanda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "質問入力"
           }
         },
         "zh-Hans" : {
@@ -44317,6 +46231,12 @@
             "value" : "La configurazione di test della gamma non è stata ricevuta dalla radio. Prova a riconnetterti al dispositivo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ラジオから範囲テスト設定が受け取れませんでした。デバイスを再接続してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -44349,6 +46269,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il test di gamma richiede un canale privato crittografato. Il canale principale su questo nodo utilizza una chiave predefinita o vuota."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "範囲テストには、暗号化されたプライベートチャネルが必要です。このノードの主要なチャネルは、デフォルトまたは空のキーを使用しています。"
           }
         },
         "zh-Hans" : {
@@ -44387,6 +46313,12 @@
             "value" : "Riprovare Analisi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分析の再実行"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -44423,6 +46355,12 @@
             "value" : "Leggi e rispondi ai canali Meshtastic e ai messaggi diretti dal display della tua auto utilizzando CarPlay."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "車載ディスプレイからMeshtasticチャンネルと直接メッセージを読み取って返すことができます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -44457,6 +46395,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Modo Lettura Unica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "読み書きモード"
           }
         },
         "zh-Hans" : {
@@ -44573,6 +46517,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Riavvia e avvia l'aggiornamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "リセット＆アップデート開始"
           }
         },
         "zh-Hans" : {
@@ -44809,6 +46759,12 @@
             "value" : "Ricevere notifiche per messaggi in arrivo e avvisi critici anche quando l'app è in background."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "バックグラウンドでも、受信されたメッセージや重要なアラートを受け取ることができます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -44841,6 +46797,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ricevuto Accetto: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "受信確認: %@"
           }
         },
         "ru" : {
@@ -44881,6 +46843,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Accettazione del destinatario: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "受信者確認: %@"
           }
         },
         "ru" : {
@@ -44925,6 +46893,12 @@
             "value" : "Raccomandazione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "おすすめ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -44961,6 +46935,12 @@
             "value" : "Versione sicura consigliata: **%@**"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "推奨セキュリティバージョン: **%@**"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -44993,6 +46973,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Percorsi di tracciamento della rotta registrati che mostrano gli hop che un messaggio ha fatto attraverso il mesh per raggiungere questo nodo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュを通ってメッセージがこのノードに到達するまでのホップを示す記録されたトラースルートパスを表示します。"
           }
         },
         "zh-Hans" : {
@@ -45255,6 +47241,12 @@
             "value" : "Ultimo udito relativo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最後に聞いた時刻"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -45293,6 +47285,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Relato da %d %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%d %@が送信しました。"
           }
         },
         "ru" : {
@@ -45391,6 +47389,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ricarica i certificati integrati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバッグ用証明書を再ロード"
           }
         },
         "zh-Hans" : {
@@ -46033,6 +48037,12 @@
             "value" : "Richiesto"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "必須"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -46065,6 +48075,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Richiede un preciso posizionamento GPS dal tuo telefono"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "あなたのスマートフォンから正確なGPSロックが必要です"
           }
         },
         "zh-Hans" : {
@@ -46275,6 +48291,12 @@
             "value" : "Ripristina ai valori predefiniti"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デフォルトに戻す"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -46365,6 +48387,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ripristina il Server"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "サーバーを再起動します"
           }
         },
         "zh-Hans" : {
@@ -46593,6 +48621,12 @@
             "value" : "Riconoscimento dei nodi . ."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードを取得しています。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -46637,6 +48671,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ricerca dei nodi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードを取得しています"
           }
         },
         "ru" : {
@@ -46731,6 +48771,12 @@
             "value" : "Riprova"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "リトライ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -46763,6 +48809,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Riprova aggiornamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "リトライ更新"
           }
         },
         "zh-Hans" : {
@@ -46799,6 +48851,12 @@
             "value" : "Riprovare (tentativo %@)"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "試行中 (%d)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -46831,6 +48889,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Riprovare (tentativo %lld)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "試行中 (%lld)"
           }
         },
         "ru" : {
@@ -46937,6 +49001,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Salute RF"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "無線健康"
           }
         },
         "zh-Hans" : {
@@ -47563,6 +49633,12 @@
             "value" : "Fine percorso"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ルート終点"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -47597,6 +49673,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Linea di percorso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ルートライン"
           }
         },
         "zh-Hans" : {
@@ -47689,6 +49771,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Elenco delle rotte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ルートリスト"
           }
         },
         "ru" : {
@@ -47853,6 +49941,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inizio percorso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ルート開始"
           }
         },
         "zh-Hans" : {
@@ -48065,6 +50159,12 @@
             "value" : "RSSI %d dBm"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "RSSI %d dBm"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -48154,6 +50254,12 @@
           }
         },
         "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "RSSI %lld dBm"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "RSSI %lld dBm"
@@ -48565,6 +50671,12 @@
             "value" : "Salva il Firmware sul USB"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファームウェアをUSBに保存"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -48593,6 +50705,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Guardar la identidad TAK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAKアイデンティティ設定を保存"
           }
         },
         "zh-Hans" : {
@@ -48747,6 +50865,12 @@
             "value" : "Salvando..."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "保存中..."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -48783,6 +50907,12 @@
             "value" : "Progress della scansione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "スキャン進捗"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -48817,6 +50947,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Riassunto della sessione di scoperta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "発見セッションの概要を表示するビューのタイトル"
           }
         },
         "zh-Hans" : {
@@ -48905,6 +51041,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Scansionando..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "スキャン中..."
           }
         },
         "zh-Hans" : {
@@ -49057,6 +51199,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Cerca documenti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "検索ドキュメント"
           }
         },
         "zh-Hans" : {
@@ -49293,6 +51441,12 @@
             "value" : "Connessione TLS sicura su porta 8089. Sono richiesti sia i certificati del server che del client. L'indice del canale TAK seleziona l'indice del canale dove verranno inviati i messaggi TAK."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAKサーバー構成セクションのフッターに表示するテキストです。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -49327,6 +51481,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sicuramente crittografato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "暗号化済み"
           }
         },
         "zh-Hans" : {
@@ -49421,6 +51581,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Avviso di Sicurezza"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セキュリティアドバイザリー"
           }
         },
         "zh-Hans" : {
@@ -49573,6 +51739,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamento di Sicurezza Consigliato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セキュリティアップデート推奨"
           }
         },
         "zh-Hans" : {
@@ -49783,6 +51955,12 @@
             "value" : "Seleziona un nodo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードを選択してください"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -49939,6 +52117,12 @@
             "value" : "Seleziona un emoji"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "絵文字を選択してください"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -50037,6 +52221,12 @@
             "value" : "Seleziona il File di Mappa"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "マップファイルを選択してください"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -50081,6 +52271,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Selezionare pacchetti inviati come critici ignorerà la spia del silenzio e le impostazioni Do Not Disturb nel centro notifiche dell'OS."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "重要なパケットを受信すると、OS通知センターのミュートスイッチとDo Not Disturb設定を無視します。"
           }
         },
         "ru" : {
@@ -50309,6 +52505,12 @@
             "value" : "Invia un messaggio diretto"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "直接メッセージを送信"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -50535,6 +52737,12 @@
             "value" : "Invia un messaggio a un certo nodo Meshtastic"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "特定のMeshtasticノードにメッセージを送信してください"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -50757,6 +52965,12 @@
             "value" : "Invia e ricevi messaggi Meshtastic senza toccare nulla utilizzando Siri e CarPlay."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SiriとCarPlayを使ってMeshtasticのメッセージを送受信できます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -50909,6 +53123,12 @@
             "value" : "Invia trasmissioni di canale e messaggi diretti. Premere a lungo qualsiasi messaggio per eseguire azioni come copiare, rispondere, ritornare e dettagli di consegna."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッセージを送信したり、直接メッセージを送信したりします。メッセージを長押しすると、コピー、返信、リプライ、タップバック、送信詳細などのアクションができます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -51025,6 +53245,12 @@
             "value" : "Invia notifiche"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "通知を送信"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -51069,6 +53295,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Invia domanda a Chirpy"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "クエスチョンを送信します。"
           }
         },
         "zh-Hans" : {
@@ -51161,6 +53393,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "I dati sensoriali come temperatura, umidità e pressione barometrica riportati dal nodo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードが報告する温度、湿度、気圧などのセンサーデータ"
           }
         },
         "zh-Hans" : {
@@ -51257,6 +53495,12 @@
             "value" : "Pacchetti sensori ricevuti durante lo scan"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "センサーパケット数"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -51291,6 +53535,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dominato dai dati sensori: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "センサー主導: %@"
           }
         },
         "zh-Hans" : {
@@ -51980,6 +54230,12 @@
             "value" : "Certificato Server"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "サーバー証明書"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -52072,6 +54328,12 @@
             "value" : "Stato del Server"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "サーバーステータス"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -52100,6 +54362,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Detalles de sesión"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セッション詳細"
           }
         },
         "zh-Hans" : {
@@ -52138,6 +54406,12 @@
             "value" : "Storia delle sessioni di scoperta"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "過去の発見セッション一覧"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -52172,6 +54446,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Panoramica della sessione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セッション概要"
           }
         },
         "zh-Hans" : {
@@ -52266,6 +54546,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Imposta il nome del canale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネル名を設定"
           }
         },
         "zh-Hans" : {
@@ -52496,6 +54782,12 @@
             "value" : "Configurare Wi-Fi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fi設定"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -52640,6 +54932,12 @@
             "value" : "Impostazioni"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "設定"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -52770,6 +55068,12 @@
             "value" : "Condividere canali"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネルを共有する方法について説明します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -52854,6 +55158,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Condividi la posizione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "位置を共有"
           }
         },
         "ru" : {
@@ -53044,6 +55354,12 @@
             "value" : "Condividi con i compagni TAK"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAK友達にQRコードを送信"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53076,6 +55392,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Condividi la tua posizione in tempo reale e mantieni il tuo gruppo coordinato con le funzionalità GPS integrate."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "リアルタイムで自分の位置を共有し、組み込みのGPS機能を使用してグループを連携してください。"
           }
         },
         "ru" : {
@@ -53240,6 +55562,12 @@
             "value" : "Nome Breve & Nome Lungo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ブランド名 & 製品名"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53272,6 +55600,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mostra un dialogo di conferma prima di eseguire il reset di fabbrica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "工場リセットを実行する前に確認ダイアログを表示します"
           }
         },
         "ru" : {
@@ -53438,6 +55772,12 @@
             "value" : "Mostra la leggenda"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図のラベルを表示します"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53470,6 +55810,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mostra la leggenda del mappa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図のレジェンドを表示"
           }
         },
         "zh-Hans" : {
@@ -53682,6 +56028,12 @@
             "value" : "Mostra Originale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "元のメッセージを表示"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53718,6 +56070,12 @@
             "value" : "Mostra Traduzione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "翻訳を表示"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53752,6 +56110,12 @@
             "value" : "Mostra la direzione e la distanza verso un nodo in base alle posizioni GPS. Richiede che sia il tuo dispositivo e il nodo remoto a condividere la posizione."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "GPS位置に基づいてノードの方向と距離を表示します。デバイスの両方が位置を共有する必要があります。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53784,6 +56148,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mostra la leggenda del mappa."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図のラベルを表示します。"
           }
         },
         "zh-Hans" : {
@@ -53878,6 +56248,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Chiudi / Avvia il nodo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ノードをリセットまたは終了します"
           }
         },
         "zh-Hans" : {
@@ -54106,6 +56482,12 @@
             "value" : "Accedi tramite SSH per modificare l'username e la password di default."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SSHでデフォルトのユーザー名とパスワードを変更してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -54138,6 +56520,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Segnale (Solo Diretto)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号（直接のみ）"
           }
         },
         "zh-Hans" : {
@@ -54232,6 +56620,12 @@
             "value" : "Metrica della Forza del Segnale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号強度計"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -54264,6 +56658,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il segnale: cattivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号: 悪い"
           }
         },
         "zh-Hans" : {
@@ -54300,6 +56700,12 @@
             "value" : "Il segnale è buono"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号: 良好"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -54334,6 +56740,12 @@
             "value" : "Il segnale: buono"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号: 良好"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -54366,6 +56778,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il segnale: Molto cattivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "信号: 非常に悪い"
           }
         },
         "zh-Hans" : {
@@ -54404,6 +56822,12 @@
             "value" : "Siri e CarPlay"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SiriとCarPlayでMeshtasticを使用する方法"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -54438,6 +56862,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Siri, Shortcuts e CarPlay"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siri、ショートカット、カープレイの紹介"
           }
         },
         "zh-Hans" : {
@@ -54706,6 +57136,12 @@
             "value" : "SNR supera il limite per il preset modem corrente. Signal forte e affidabile."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "現在のモデムプリセットの制限を超えているSNRです。強い信頼性の高い信号です。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -54738,6 +57174,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La SNR è molto inferiore al limite di impostazione del modem. La comunicazione è improbabile a questo livello di segnale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNRはモデム設定の制限を下回っています。この信号レベルでは通信が期待できません。"
           }
         },
         "zh-Hans" : {
@@ -54774,6 +57216,12 @@
             "value" : "La SNR è leggermente sotto il limite di impostazione del modem. La connessione potrebbe essere intermittente."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNRはモデム設定の制限を下回っています。接続は不定期になる可能性があります。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -54806,6 +57254,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La SNR è ben sotto il limite di impostazione del modem. Si prevede perdita di pacchetti e consegna inaffidabile."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNRはモデム設定の制限を下回っています。パケット損失や不確実な配信が予想されます。"
           }
         },
         "zh-Hans" : {
@@ -55248,6 +57702,12 @@
             "value" : "ssh %1$@@%2$@"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ssh %1$@@%2$@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -55364,6 +57824,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Firmware stabile più recente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最新の安定したファームウェア"
           }
         },
         "zh-Hans" : {
@@ -55484,6 +57950,12 @@
             "value" : "Inizia la scansione"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "スキャン開始"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -55520,6 +57992,12 @@
             "value" : "Stato"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "状態"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -55552,6 +58030,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Stato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ステータス"
           }
         },
         "zh-Hans" : {
@@ -55590,6 +58074,12 @@
             "value" : "Passaggio 1: Collegare Dispositivo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ステップ1: デバイスを接続"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -55626,6 +58116,12 @@
             "value" : "Passaggio 2: Salva il File"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ステップ2: ファイルを保存"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -55660,6 +58156,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Stop Scan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "スキャン停止"
           }
         },
         "zh-Hans" : {
@@ -55940,6 +58442,12 @@
             "value" : "Successivamente caricato '%1$@' con %2$lld sovrapposizioni"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "成功的に%1$@を%2$lldのオーバーレイとともにアップロードしました"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -56104,6 +58612,12 @@
             "value" : "Scorrere a sinistra per disconnettersi. Premere a lungo per avviare l'attività in diretta."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "左にスワイプして切断します。長押ししてライブアクティビティを開始します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -56138,6 +58652,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lista vuota"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "リストが空です"
           }
         },
         "zh-Hans" : {
@@ -56234,6 +58754,12 @@
             "value" : "TAK non può essere utilizzato su canale pubblico"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "公共チャンネルでは TAK を使用できません"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -56268,6 +58794,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Indice canale TAK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAKチャンネルインデックス"
           }
         },
         "zh-Hans" : {
@@ -56306,6 +58838,12 @@
             "value" : "Configurazione TAK"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAK 設定"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -56342,6 +58880,12 @@
             "value" : "Impostazioni dell'Identità TAK"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAKアイデンティティ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -56374,6 +58918,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Server TAK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAKサーバー"
           }
         },
         "zh-Hans" : {
@@ -56520,6 +59070,12 @@
             "value" : "Tocca per inserire emoji"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "絵文字を入力するにはタップしてください"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -56642,6 +59198,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Squadra"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チーム"
           }
         },
         "zh-Hans" : {
@@ -57042,6 +59604,12 @@
             "value" : "Messaggi di testo inviati"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッセージ数"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57074,6 +59642,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il **Web Flasher** non supporta l'aggiornamento su questo dispositivo o tramite USB o BLE."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Web Flasher は、このデバイス、USB、またはBLE 経由で更新をサポートしていません。"
           }
         },
         "zh-Hans" : {
@@ -57170,6 +59744,12 @@
             "value" : "Il canale è crittografato con una chiave AES di 128 o 256 bit."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネルは128ビットまたは256ビットAESキーで暗号化されています。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57204,6 +59784,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il canale non è crittografato in modo sicuro ed è utilizzato per dati di posizione precisi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャネルは暗号化されていませんが、正確な位置データに使用されます。"
           }
         },
         "zh-Hans" : {
@@ -57242,6 +59828,12 @@
             "value" : "Il canale non è crittografato in modo sicuro e i dati di posizione precisi vengono caricati su Internet tramite MQTT."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チャンネルは暗号化されていません。正確な位置データがMQTTを介してインターネットにアップロードされています。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57276,6 +59868,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il canale utilizza una chiave o una chiave nota di 1 byte, ma non viene utilizzato per dati di posizione precisi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "キーが使用されていないか、または1バイトの既知のキーを使用しているが、正確な位置データには使用されていない。"
           }
         },
         "zh-Hans" : {
@@ -57368,6 +59966,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La schermata completa mostra tutti i dati disponibili dei nodi. I campi senza dati vengono nascosti automaticamente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "すべての利用可能なノードデータを表示します。データがないフィールドは自動的に隠されます。"
           }
         },
         "zh-Hans" : {
@@ -57464,6 +60068,12 @@
             "value" : "Il pacchetto di documentazione non è stato caricato."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ドキュメントブーケが読み込めませんでした。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57554,6 +60164,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La barra di gradiente nella layout completa mostra la qualità complessiva del segnale dal rosso (nessun segnale) al giallo, verde (buon segnale). Combina SNR e RSSI in relazione alla tua impostazione del modem."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "完了レイアウトのグラデーションバーは、赤（信号なし）からオレンジ、黄色、緑（良好な信号）までの全体的な信号品質を示しています。SNRとRSSIは、モデム設定と比較して計算されます。"
           }
         },
         "zh-Hans" : {
@@ -57708,6 +60324,12 @@
             "value" : "L'app Meshtastic Apple richiede la versione del firmware %@ o successiva. Le versioni di firmware più vecchie non sono più supportate e potrebbero presentare problemi di compatibilità o funzionalità mancanti."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MeshtasticのAppleアプリは、%@またはそれ以上のファームウェアが必要です。古いファームウェアバージョンはサポートされなくなり、互換性問題や機能欠如が発生する可能性があります。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57802,6 +60424,12 @@
             "value" : "Il più recente chiave pubblica per questo nodo non corrisponde alla chiave precedentemente registrata. Verifica chi stai contattando confrontando le chiavi pubbliche di persona o per telefono."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このノードの最新の公開鍵は、以前記録された鍵と一致していません。対面または電話で公開鍵を比較して、誰とメッセージを送っているか確認してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57838,6 +60466,12 @@
             "value" : "Il nodo è stato recentemente udito ed è considerato online."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最近、ノードが聞こえており、オンラインとみなされています。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57870,6 +60504,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il nodo non ha ricevuto segnali di recente e potrebbe essere addormentato o fuori dalla portata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "最近、ノードは音を聞かれていないため、眠っているか、範囲外にある可能性があります。"
           }
         },
         "zh-Hans" : {
@@ -57906,6 +60546,12 @@
             "value" : "Il numero di nodi intermedi che trasmettono messaggi tra di voi e questo nodo. Nessun salto significa comunicazione diretta."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "あなたとこのノードの間を中継する中間ノードの数です。ホップがない場合は、直接通信です。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57938,6 +60584,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il cerchio numerato indica quale canale il nodo sta utilizzando. Solo visibile quando il nodo è su un canale secondario (non sul canale primario 0)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "番号付きの円は、ノードが使用しているチャネルを示しています。プライマリチャネル0以外の二次チャネルで表示されます。"
           }
         },
         "zh-Hans" : {
@@ -57976,6 +60628,12 @@
             "value" : "Il canale principale gestisce il traffico di trasmissione. Aggiungi canali secondari per gruppi di messaggistica separati, ciascuno protetto da una propria chiave. [Scopri di più](https://meshtastic.org/docs/configuration/tips/)"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メインチャンネルはブロードキャストトラフィックを処理します。メッセージグループごとに別々のチャネルを追加し、それぞれ独自の鍵で保護します。[詳細はこちら](https://meshtastic.org/docs/configuration/tips/)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -58010,6 +60668,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il canale principale deve utilizzare la chiave predefinita per eseguire una scansione di scoperta."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "プライマリチャンネルはデフォルトのキーを使用する必要があります。発見スキャンを実行するには。"
           }
         },
         "zh-Hans" : {
@@ -58102,6 +60766,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il modo consigliato per aggiornare i dispositivi ESP32 è utilizzare il **Web Flasher** su un computer desktop (browser Chrome-basato)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ESP32デバイスの推奨アップデート方法は、デスクトップコンピュータ（Chromeベースのブラウザ）で**Web Flasher**を使用することです。"
           }
         },
         "zh-Hans" : {
@@ -58538,6 +61208,12 @@
             "value" : "Non ci sono stati rispondi a una richiesta di metadati del dispositivo tramite amministratore PKC per questo nodo."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このノードに対するPKC管理者のデバイスメタデータリクエストに対する返信はありません"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -58582,6 +61258,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "C'è un problema con la chiave pubblica di questo contatto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "この連絡先の公開鍵に問題があります。"
           }
         },
         "ru" : {
@@ -58630,6 +61312,12 @@
             "value" : "Queste impostazioni sono applicabili solo quando il ruolo del dispositivo è TAK o TAK Tracker."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "この設定は、デバイスの役割が TAK または TAK トラッカーの場合のみ適用されます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -58664,6 +61352,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Queste impostazioni ti permetteranno di"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "これらの設定は %@ を %@ します。"
           }
         },
         "ru" : {
@@ -58708,6 +61402,12 @@
             "value" : "Questi valori sono inclusi nei rapporti di posizione TAK. Lascia impostato il valore predefinito per consentire al firmware di utilizzare Cyan e Team Member."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TAK位置報告に含まれる値は、CyanとTeam Memberをファームウェアが使用できるようにデフォルトに設定することもできます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -58740,6 +61440,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Pensando..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "考えています..."
           }
         },
         "zh-Hans" : {
@@ -59150,6 +61856,12 @@
             "value" : "Questo strumento di scansione trova le radio Meshtastic vicine nella tua area utilizzando diverse impostazioni di frequenza. Cambia automaticamente le impostazioni, ascolta per alcuni minuti su ciascuna e mostra l'impostazione migliore per la tua posizione in base al numero di radio trovate e alla congestione delle onde radio. Su dispositivi supportati, l'intelligenza artificiale locale sul dispositivo analizza i risultati della scansione e consiglia l'impostazione migliore, senza necessità di connessione a Internet."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このツールは、あなたのローカルエリアで、異なる周波数設定の近くのMeshtasticラジオを探します。設定を自動的に切り替えて、各設定で数分間リスニングし、ラジオの数を数え、空域の混雑度に基づいて、最適な設定を表示します。サポートされているデバイスでは、ローカルデバイスAIがスキャン結果を分析し、最適な設定を推奨します。インターネット接続は必要ありません。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -59184,6 +61896,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Questo cambierà il tuo canale principale in: \n• Nome: TAK \n• Crittografia: Nuova chiave AES 256-bit \n• Preset LoRa: Breve veloce (consigliato per TAK) \n\nQuesto è necessario affinché il server TAK funzioni correttamente. Tutti i link di condivisione di canale esistenti diventeranno invalidi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "この変更により、プライマリチャネルは以下のようになります。\n• 名前: TAK\n• 暗号化: 新規の256ビットAES鍵\n• LoRa設定: ショート・ファスト ( TAK に推奨)\n\n TAK サーバーが正常に動作するためには、この設定が必要です。既存のチャネル共有リンクは無効になります。"
           }
         },
         "zh-Hans" : {
@@ -59388,6 +62106,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tempo rimanente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "残りの時間"
           }
         },
         "zh-Hans" : {
@@ -59762,6 +62486,12 @@
             "value" : "Orario e Override"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "タイミングとオーバーライド"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -59806,6 +62536,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Certificati TLS"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TLS証明書"
           }
         },
         "zh-Hans" : {
@@ -59900,6 +62636,12 @@
             "value" : "È necessario TLS per il server MQTT pubblico Meshtastic."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "公開Meshtastic MQTTサーバーにはTLSが必要です。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -59992,6 +62734,12 @@
             "value" : "Per la Radio (TX): %lld"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "送信機（TX）に%lld"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -60040,6 +62788,12 @@
             "value" : "Tocca la mappa per attivare la leggenda"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "地図のレジェンドをタップして切り替えます"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -60072,6 +62826,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Strumenti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ツール"
           }
         },
         "zh-Hans" : {
@@ -60166,6 +62926,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tempo di permanenza totale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "発見セッションの合計滞在時間"
           }
         },
         "zh-Hans" : {
@@ -60266,6 +63032,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Numero totale di nodi unici trovati durante la scansione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "合計ユニークなノード数"
           }
         },
         "zh-Hans" : {
@@ -60702,6 +63474,12 @@
             "value" : "Traccia le rotte"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "トラッキングルートを表示"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -60728,6 +63506,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seguimiento y compartir ubicaciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "位置を追跡および共有"
           }
         },
         "ru" : {
@@ -60830,6 +63614,12 @@
             "value" : "Traduci"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "翻訳"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -60866,6 +63656,12 @@
             "value" : "Traduzione in corso..."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "翻訳中..."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -60898,6 +63694,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Traduzione in corso..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "翻訳中です..."
           }
         },
         "zh-Hans" : {
@@ -61226,6 +64028,12 @@
             "value" : "Verde"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "true"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -61402,6 +64210,12 @@
             "value" : "Tipo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "オブジェクトの種類"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -61496,6 +64310,12 @@
             "value" : "Firmware UF2"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "UF2ファイル"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -61530,6 +64350,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamento firmware UF2"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "UF2 ファームウェアアップデート"
           }
         },
         "zh-Hans" : {
@@ -61622,6 +64448,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Non disponibile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "利用できません"
           }
         },
         "zh-Hans" : {
@@ -62242,6 +65074,12 @@
             "value" : "Avviso di aggiornamento"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nordic DFU ファームウェアをフラッシュする際の警告です。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -62474,6 +65312,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornando ora..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "現在更新中..."
           }
         },
         "zh-Hans" : {
@@ -62778,6 +65622,12 @@
             "value" : "Carica le sovrapposizioni di mappa"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "マップオーバーレイをアップロード"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -62822,6 +65672,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Carica il documento tradotto sul dispositivo per aiutare a migliorare le traduzioni per la comunità. I documenti tradotti vengono condivisi in anonimato in modo che gli altri utenti possano ottenere traduzioni istantanee senza la necessità di modelli sul dispositivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスに翻訳されたドキュメントをアップロードして、コミュニティの翻訳を改善してください。翻訳されたドキュメントは匿名で共有されるため、他のユーザーはデバイスのモデルを必要とせずに即座に翻訳を取得できます。"
           }
         },
         "zh-Hans" : {
@@ -62908,6 +65764,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mappe di sovrapposizione caricate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "マップオーバーレイをアップロード"
           }
         },
         "ru" : {
@@ -63020,6 +65882,12 @@
             "value" : "Utilizzo e dati di crash"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "使用方法とクラッシュデータ"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -63066,6 +65934,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Utilizzare una chiave di crittografia a 256 bit per il canale principale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "プライマリチャネル用の256ビット暗号鍵を使用してください。"
           }
         },
         "zh-Hans" : {
@@ -63798,6 +66672,12 @@
             "value" : "Scambio di Informazioni utente fallito"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ユーザー情報交換に失敗しました"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -63838,6 +66718,12 @@
             "value" : "Le informazioni utente sono state inviate."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ユーザー情報送信"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -63876,6 +66762,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Privacy dell'utente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ユーザープライバシー"
           }
         },
         "ru" : {
@@ -64285,6 +67177,12 @@
             "value" : "Verifica chi stai contattando confrontando le chiavi pubbliche di persona o per telefono. La chiave pubblica più recente per questo nodo non corrisponde alla chiave registrata precedentemente. Puoi eliminare il nodo e fargli scambiare le chiavi di nuovo se il cambio di chiave è stato causato da un ripristino di fabbrica o da un'azione intenzionale diversa, ma questo potrebbe anche indicare un problema di sicurezza più serio."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このノードの最新の公開鍵は、以前記録された鍵と一致しません。工場リセットや意図的な操作による鍵変更の場合、ノードを削除して鍵交換を再開することができますが、これはより深刻なセキュリティ問題を示す可能性もあります。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -64331,6 +67229,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Verifica che hai selezionato il firmware corretto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "正しいファームウェアを選択してください"
           }
         },
         "zh-Hans" : {
@@ -64549,6 +67453,12 @@
             "value" : "Visualizza il Riassunto Completo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "発見セッションの詳細を表示"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -64583,6 +67493,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Riassunto della sessione di scoperta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "発見セッションの概要を表示"
           }
         },
         "zh-Hans" : {
@@ -64959,6 +67875,12 @@
             "value" : "Avviso"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "警告"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -64993,6 +67915,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Punto di riferimento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ウェイポイント"
           }
         },
         "zh-Hans" : {
@@ -65139,6 +68067,12 @@
             "value" : "Punti di riferimento"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "経路点"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -65237,6 +68171,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Visualizzazione della documentazione %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@のドキュメントを表示するウェブビュー"
           }
         },
         "zh-Hans" : {
@@ -65391,6 +68331,12 @@
             "value" : "Benvenuti a Meshtastic"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッシュティックへようこそ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -65425,6 +68371,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Cos'è questo strumento?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このツールは、どのデバイスが近くにあるかを探します。"
           }
         },
         "zh-Hans" : {
@@ -65763,6 +68715,12 @@
             "value" : "Progettazione della Provisioning Wi-Fi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fi Provisioning"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -65795,6 +68753,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Configurazione Wi-Fi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fi設定"
           }
         },
         "zh-Hans" : {
@@ -65951,6 +68915,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aggiornamento OTA WiFi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fi OTA アップデート"
           }
         },
         "zh-Hans" : {
@@ -66121,6 +69091,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Scrivi il contatto sul tag NFC"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "NFCタグに連絡先を保存"
           }
         },
         "zh-Hans" : {
@@ -66470,6 +69446,12 @@
             "value" : "Sì, controllo questo nodo"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このノードを管理しています"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -66570,6 +69552,12 @@
             "value" : "Sta per eseguire un aggiornamento firmware sul tuo dispositivo. Questo processo comporta rischi. Gli aggiornamenti non riusciti possono fallire e in alcuni casi saranno necessari un nuovo avvio del bootloader."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "デバイスの新しいファームウェアをフラッシュする前に注意してください。このプロセスにはリスクがあります。不成功の場合、更新が失敗し、場合によってはブートローダーを再フラッシュする必要があります。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -66604,6 +69592,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Puoi risolvere questo problema modificando il canale principale:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "この問題を自分で修正するには、プライマリチャネルを変更してください。"
           }
         },
         "zh-Hans" : {
@@ -66768,6 +69762,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Il tuo dispositivo mPWRD-OS ha connesso al network Wi-Fi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "mPWRD-OSデバイスはWi-Fiネットワークに接続されました。"
           }
         },
         "zh-Hans" : {
@@ -66980,6 +69980,12 @@
             "value" : "La tua password viene inviata direttamente al dispositivo tramite Bluetooth e non viene mai memorizzata."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "パスワードはBluetoothでデバイスに直接送信され、保存されません。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -67074,6 +70080,12 @@
             "value" : "Il tuo canale principale utilizza le impostazioni predefinite (nessuna nome o chiave di crittografia predefinita). Il server TAK sta eseguendo in modalità lettura sola."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "プライマリチャネルはデフォルト設定を使用しており、名前やデフォルト暗号鍵が設定されていません。TAKサーバーはリクエストモードで実行されています。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -67106,6 +70118,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La chiave pubblica viene generata dalla chiave privata e inviata ad altri nodi sul mesh in modo che possano calcolare una chiave segreta condivisa con Lei."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "あなたの公開鍵は、あなたの秘密鍵から生成され、メッシュ上の他のノードに送信され、あなたと共有秘密鍵を計算できるようにします。"
           }
         },
         "ru" : {
@@ -67322,6 +70340,12 @@
             "value" : "Le tue informazioni utente sono state inviate con una richiesta di risposta con le tue informazioni utente."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ユーザー情報へのリクエストが送信されました。"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
@@ -67362,6 +70386,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Archivio ZIP"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ZIPファイル"
           }
         },
         "zh-Hans" : {
