@@ -72,7 +72,11 @@ struct Messages: View {
 			.listStyle(.plain)
 			.navigationTitle("Messages")
 			.navigationBarTitleDisplayMode(.large)
-			.navigationBarItems(leading: MeshtasticLogo())
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo()
+				}
+			}
 		} content: {
 			switch router.messagesState {
 			case .channels(let channelId, let messageId):

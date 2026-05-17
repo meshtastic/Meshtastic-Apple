@@ -77,12 +77,11 @@ struct NodeMapSwiftUI: View {
 			}
 		}
 		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions.count) points")), displayMode: .inline)
-		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 	}
 
 	private var configuredMap: some View {

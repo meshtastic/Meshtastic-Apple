@@ -169,12 +169,11 @@ struct PositionLog: View {
 			}
 		}
 		.navigationTitle("Position Log \(node.positions.count) Points")
-		.navigationBarItems(
-			trailing:
-				ZStack {
-					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 	}
 }
 
