@@ -3,65 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CarPlay Architecture</title>
+  <title>carplay</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="carplay">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>CarPlay Architecture</h1>
-<p>This page covers the implementation of the CarPlay feature. For the user-facing guide see <a href="../user/carplay.html">CarPlay</a>.</p>
-<h2>Components</h2>
-<table>
-<thead>
-<tr>
-<th>Component</th>
-<th>File</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CarPlaySceneDelegate</code></td>
-<td><code>Meshtastic/CarPlay/CarPlaySceneDelegate.swift</code></td>
-<td><code>CPTemplateApplicationSceneDelegate</code> that builds and manages the two-tab UI</td>
-</tr>
-<tr>
-<td><code>CarPlayIntentDonation</code></td>
-<td><code>Meshtastic/CarPlay/CarPlayIntentDonation.swift</code></td>
-<td>Donates incoming and outgoing <code>INSendMessageIntent</code> interactions so conversations appear in CarPlay Messages and Siri can read them aloud</td>
-</tr>
-<tr>
-<td><code>SendMessageIntentHandler</code></td>
-<td><code>Meshtastic/Intents/SendMessageIntentHandler.swift</code></td>
-<td>Handles <code>INSendMessageIntent</code> — resolves recipients/channels and sends the message over the active transport</td>
-</tr>
-<tr>
-<td><code>SearchForMessagesIntentHandler</code></td>
-<td><code>Meshtastic/Intents/SearchForMessagesIntentHandler.swift</code></td>
-<td>Handles <code>INSearchForMessagesIntent</code></td>
-</tr>
-<tr>
-<td><code>SetMessageAttributeIntentHandler</code></td>
-<td><code>Meshtastic/Intents/SetMessageAttributeIntentHandler.swift</code></td>
-<td>Handles <code>INSetMessageAttributeIntent</code> (mark as read)</td>
-</tr>
-<tr>
-<td><code>IntentHandler</code></td>
-<td><code>Meshtastic/Intents/IntentHandler.swift</code></td>
-<td>Routes <code>INIntent</code>s to the appropriate handler</td>
-</tr>
-</tbody>
-</table>
-<h2>Template Updates</h2>
-<p>The scene delegate subscribes to <code>AccessoryManager.shared.$isConnected</code> with a <strong>300 ms debounce</strong> and calls <code>updateSections(_:)</code> on existing <code>CPListTemplate</code> instances rather than rebuilding the whole template tree. This minimises flicker during reconnects and avoids triggering CarPlay's rate-limit on template replacement.</p>
-<h2>Intent Donation De-duplication</h2>
-<p>Intent donations are de-duplicated per CarPlay session using an in-memory <code>Set</code>. This avoids repeated IPC calls to the intents daemon on every list refresh (which happens on a timer while CarPlay is connected).</p>
-<p>When a new CarPlay session starts, the set is cleared and up to 50 unread messages are batch-donated so Siri can read them back on demand.</p>
-<h2>Adding a New Intent</h2>
-<ol>
-<li>Create a handler in <code>Meshtastic/Intents/</code> conforming to the appropriate <code>INIntent</code> protocol.</li>
-<li>Register the handler in <code>IntentHandler.swift</code>'s <code>handler(for:)</code> switch.</li>
-<li>Declare the intent in <code>Meshtastic.entitlements</code> under <code>com.apple.developer.siri</code>.</li>
-<li>Add a usage description in <code>Info.plist</code> if the intent requires a new privacy permission.</li>
-</ol>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

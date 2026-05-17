@@ -3,80 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How the Meshtastic Signal Meter Works</title>
+  <title>signal-meter</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="signal-meter">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>How the Meshtastic Signal Meter Works</h1>
-<p><img src="../assets/screenshots/signalMeter_full_all.png" alt="Signal meter levels" /></p>
-<p><img src="../assets/screenshots/signalMeter_compact_all.png" alt="Compact signal meter" /></p>
-<p>The Meshtastic signal meter—often seen as a series of bars or a status color in the app—is calculated very differently than the &quot;bars&quot; on a traditional cell phone or Wi-Fi router.</p>
-<p>Most consumer devices just measure how &quot;loud&quot; a signal is. However, because Meshtastic uses <strong>LoRa (Long Range)</strong> technology, its signal meter uses logic that measures how <strong>clear</strong> the signal is, relative to the specific settings your mesh is using.</p>
-<hr />
-<h2>1. The Two Metrics: &quot;Loudness&quot; vs. &quot;Clarity&quot;</h2>
-<p>To understand the meter, you need to understand the two measurements the LoRa radio chip takes every time it receives a message:</p>
-<ul>
-<li><strong>RSSI (Received Signal Strength Indicator):</strong> This is the <strong>loudness</strong> of the raw power hitting your antenna.</li>
-<li><strong>SNR (Signal-to-Noise Ratio):</strong> This is the <strong>clarity</strong> of the signal compared to the background static.</li>
-</ul>
-<div class="tips-callout"><strong>Tip — The Analogy:</strong> Imagine you are trying to hear a friend talking to you.</p>
-<ul>
-<li><strong>RSSI</strong> is how loud their voice is.</li>
-<li><strong>The Noise Floor</strong> is the background noise in the room (air conditioning, other people talking, traffic).</li>
-<li><strong>SNR</strong> is how easily you can distinguish your friend's voice from the background noise.</li>
-</ul>
-</blockquote>
-<p>If your friend shouts at you at a deafening rock concert, the signal is incredibly loud (High RSSI), but you still can't understand them because the background noise is louder (Bad SNR). Conversely, if your friend whispers to you in a dead-silent library, the signal is very weak (Low RSSI), but you can understand them perfectly (Great SNR).</p>
-<hr />
-<h2>2. The Magic of LoRa: Hearing &quot;Below the Noise Floor&quot;</h2>
-<p>For standard radios (like FM or Wi-Fi), if the background noise is louder than the signal (a negative SNR), the receiver just hears static.</p>
-<p>LoRa is special. It uses <strong>&quot;Spread Spectrum&quot;</strong> modulation, which allows the radio to mathematically pull a signal out of the air even when it is buried deep <em>underneath</em> the background noise. This is why you will frequently see <strong>negative SNR numbers</strong> in Meshtastic (e.g., -10dB, which means the signal is 10 decibels weaker than the background static).</p>
-<p>Depending on which Meshtastic preset you are using (e.g., <code>LongFast</code> vs. <code>ShortFast</code>), the radio has a specific <strong>SNR Limit</strong>—the absolute maximum amount of noise it can tolerate before the message is completely lost to the static.</p>
-<hr />
-<h2>3. How the Signal Meter Calculates Quality</h2>
-<p>The Meshtastic apps take both RSSI and SNR and run them through a specific formula to assign your signal a quality rating (None, Bad, Fair, or Good). It specifically scales these values based on the physical limits of the radio preset you are using.</p>
-<p>Here is exactly how the app decides how many bars (or what color) to show you:</p>
-<table>
-<thead>
-<tr>
-<th>Level</th>
-<th>Bars</th>
-<th>Criteria</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Good</td>
-<td>3</td>
-<td>RSSI better than <code>-115 dBm</code> <strong>AND</strong> SNR above the baseline limit for your preset</td>
-<td>Signal is both loud and clear — healthy connection.</td>
-</tr>
-<tr>
-<td>Fair</td>
-<td>2</td>
-<td>Falls between Good and Bad</td>
-<td>Signal getting quieter or noisier, but the radio understands the message fine.</td>
-</tr>
-<tr>
-<td>Bad</td>
-<td>1</td>
-<td>RSSI drops to <code>-120 dBm</code> or worse, <strong>OR</strong> SNR within <code>5.5 dB</code> of your preset's absolute breaking point</td>
-<td>Barely hanging on — at the edge of range or heavy interference.</td>
-</tr>
-<tr>
-<td>None</td>
-<td>0</td>
-<td>RSSI worse than <code>-126 dBm</code> <strong>AND</strong> SNR has fallen <code>7.5 dB</code> below the ideal limit</td>
-<td>Transmission completely buried in static.</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2>4. What This Means for You</h2>
-<p>Because Meshtastic's meter acts as a <strong>&quot;Clarity Meter&quot;</strong>, it behaves differently than what most people expect:</p>
-<blockquote>
-<p><strong>Tip — Don't panic over low RSSI:</strong> You might see a seemingly terrible RSSI value like <code>-118 dBm</code>. On a cell phone, you would have zero bars. But if you have an SNR of <code>+2 dB</code>, Meshtastic will still show a strong signal! <em>The library is quiet, so the whisper is heard perfectly.</em></div>
-<div class="warning-callout"><strong>Warning — Watch out for local noise:</strong> If you hook up a massive antenna and see a great RSSI (e.g., <code>-90 dBm</code>) but your signal meter is only showing <strong>1 Bar (Bad)</strong>, you have a problem. It means you have local interference—perhaps a cheap power supply, a noisy computer, or a nearby radio tower—creating so much static that it is drowning out your mesh.</div>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

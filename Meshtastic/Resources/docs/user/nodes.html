@@ -3,209 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nodes List</title>
+  <title>nodes</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="nodes">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Nodes List</h1>
-<p>The Nodes tab shows every device your radio has heard on the mesh. Tap any node for details.</p>
-<h2>Node Status</h2>
-<table>
-<thead>
-<tr>
-<th>Element</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/circleTextDefault.png" alt="Node circle" /></td>
-<td><strong>Short Name &amp; Long Name</strong> — each node has a short name (up to 4 bytes) shown in the coloured circle and a long name displayed next to it. The circle colour is derived from the node number. The short name can be an emoji or initials.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/nodeOnline.png" alt="Online" /></td>
-<td><strong>Online</strong> — the node has been heard recently and is considered online.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/nodeIdle.png" alt="Idle / Sleeping" /></td>
-<td><strong>Idle / Sleeping</strong> — the node has not been heard from recently and may be asleep or out of range.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/hopsAway.png" alt="Hops Away" /></td>
-<td><strong>Hops Away</strong> — the number of intermediate nodes relaying messages between you and this node. No hops means direct communication.</td>
-</tr>
-</tbody>
-</table>
-<h2>Encryption</h2>
-<table>
-<thead>
-<tr>
-<th>Icon</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/lockOpen.png" alt="Shared Key" /></td>
-<td><strong>Shared Key</strong> — direct messages are using the shared key for the channel.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/lockClosed.png" alt="Public Key Encryption" /></td>
-<td><strong>Public Key Encryption</strong> — direct messages use public key infrastructure. Requires firmware 2.5+.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/keySlash.png" alt="PKI Mismatch" /></td>
-<td><strong>Public Key Mismatch</strong> — public key does not match the previously recorded key. Verify the contact out-of-band.</td>
-</tr>
-</tbody>
-</table>
-<h2>Device Roles</h2>
-<p>Each node is configured with a role that determines how it behaves on the mesh. Roles are shown in the node detail view.</p>
-<table>
-<thead>
-<tr>
-<th>Icon</th>
-<th>Role</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/roleClient.png" alt="" /></td>
-<td>Client</td>
-<td>Standard end-user device. Sends and receives messages, shares position.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleClientMute.png" alt="" /></td>
-<td>Client Mute</td>
-<td>Like Client but does not forward packets from other devices. Reduces mesh traffic near congested areas.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleClientHidden.png" alt="" /></td>
-<td>Client Hidden</td>
-<td>Only broadcasts as needed for stealth or power savings.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleClientBase.png" alt="" /></td>
-<td>Client Base</td>
-<td>Rooftop node that distributes messages widely from nearby Client Mute nodes.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleRouter.png" alt="" /></td>
-<td>Router</td>
-<td>Dedicated infrastructure node — prioritises packet forwarding. Not for rooftops or mobile nodes.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleRouterLate.png" alt="" /></td>
-<td>Router Late</td>
-<td>Like Router but rebroadcasts once after all other nodes. Better suited to rooftop deployments.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleTracker.png" alt="" /></td>
-<td>Tracker</td>
-<td>Broadcasts GPS position packets as priority. Optimised for frequent location reporting.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleSensor.png" alt="" /></td>
-<td>Sensor</td>
-<td>Broadcasts telemetry packets as priority. Optimised for sensor data.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleTak.png" alt="" /></td>
-<td>TAK</td>
-<td>Optimised for ATAK system communication. Reduces routine broadcasts.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleTakTracker.png" alt="" /></td>
-<td>TAK Tracker</td>
-<td>Enables automatic TAK PLI broadcasts. Reduces routine broadcasts.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleLostAndFound.png" alt="" /></td>
-<td>Lost and Found</td>
-<td>Broadcasts location as a message to the default channel to assist with device recovery.</td>
-</tr>
-</tbody>
-</table>
-<p><a href="https://meshtastic.org/blog/choosing-the-right-device-role/">Choosing the Right Device Role →</a></p>
-<h2>Complete Node Row Examples</h2>
-<p>The full node row shows the circle avatar, battery level, encryption status, last-heard time, device role, signal strength, and log indicators all at once.</p>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/standard_directConnected_dark.png" />
-  <img src="../assets/screenshots/standard_directConnected.png" alt="Directly connected node, favorite, with signal meter" />
-</picture>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/standard_multiHop_dark.png" />
-  <img src="../assets/screenshots/standard_multiHop.png" alt="Multi-hop node 4 hops away" />
-</picture>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/standard_mqtt_dark.png" />
-  <img src="../assets/screenshots/standard_mqtt.png" alt="MQTT-bridged node" />
-</picture>
-<h2>Compact Node Row Examples</h2>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_directConnected_allInfo_dark.png" />
-  <img src="../assets/screenshots/compact_directConnected_allInfo.png" alt="Directly connected node with all telemetry info" />
-</picture>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_multiHop_dark.png" />
-  <img src="../assets/screenshots/compact_multiHop.png" alt="Multi-hop node 7 hops away" />
-</picture>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_withPosition_dark.png" />
-  <img src="../assets/screenshots/compact_withPosition.png" alt="Node with position, 1 hop" />
-</picture>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_pkiMismatch_dark.png" />
-  <img src="../assets/screenshots/compact_pkiMismatch.png" alt="PKI key mismatch node" />
-</picture>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/compact_mqtt_dark.png" />
-  <img src="../assets/screenshots/compact_mqtt.png" alt="MQTT-bridged node" />
-</picture>
-<h2>Additional Icons</h2>
-<p>Tap a node and scroll to the Logs section for detailed metrics:</p>
-<table>
-<thead>
-<tr>
-<th>Log</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/logDistance.png" alt="Distance &amp; Bearing" /></td>
-<td>Direction and distance to the node based on GPS. Requires both devices to share location.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/channelBadge.png" alt="Channel badge" /></td>
-<td>The numbered circle shows which channel the node uses. Only shown for secondary channels (not primary channel 0).</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/logDeviceMetrics.png" alt="Device Metrics" /></td>
-<td>Battery level, voltage, channel utilisation, and airtime reported by the node.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/logPositions.png" alt="Positions" /></td>
-<td>GPS position data including latitude, longitude, and altitude.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/logEnvironment.png" alt="Environment" /></td>
-<td>Sensor data: temperature, humidity, barometric pressure.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/logDetectionSensor.png" alt="Detection Sensor" /></td>
-<td>Motion or door open/close alerts from the node.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/logTraceRoutes.png" alt="Trace Routes" /></td>
-<td>Recorded trace route paths showing the hops a message took through the mesh.</td>
-</tr>
-</tbody>
-</table>
-<h2>Node Detail View</h2>
-<p>Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:</p>
-<p><img src="../assets/screenshots/nodeDetail.png" alt="Node Detail" /></p>
-<p><a href="https://meshtastic.org/docs/configuration/radio/device/">Device Configuration Docs →</a></p>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

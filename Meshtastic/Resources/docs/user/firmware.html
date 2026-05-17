@@ -3,93 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firmware Updates</title>
+  <title>firmware</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="firmware">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Firmware Updates</h1>
-<p>The app can check for and install Meshtastic firmware updates directly on your connected radio over Bluetooth.</p>
-<h2>Checking for Updates</h2>
-<ol>
-<li>Connect to your radio.</li>
-<li>Go to <strong>Settings → Firmware Updates</strong>.</li>
-<li>The app shows the firmware version currently running on your radio and the latest stable release available from GitHub.</li>
-</ol>
-<h2>Installing an Update</h2>
-<ol>
-<li>Tap <strong>Update Firmware</strong> when a newer version is available.</li>
-<li>The app downloads the correct firmware binary for your hardware.</li>
-<li>The radio enters update mode (DFU) and the new firmware is transferred over BLE.</li>
-<li>The radio reboots automatically when the update completes.</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>Icon</th>
-<th>Progress</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/progressZero.png" alt="0%" /></td>
-<td>Starting</td>
-<td>Update initiating — firmware binary downloading.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/progressHalf.png" alt="50%" /></td>
-<td>In Progress</td>
-<td>Firmware transfer in progress over BLE.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/progressComplete.png" alt="Complete" /></td>
-<td>Complete</td>
-<td>Transfer finished — radio is rebooting.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/progressError.png" alt="Error" /></td>
-<td>Error</td>
-<td>Update failed — see Troubleshooting below.</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Do not close the app or move out of Bluetooth range during a firmware update.</strong></p>
-<h2>Update Channels</h2>
-<table>
-<thead>
-<tr>
-<th>Channel</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Stable</td>
-<td>Recommended for most users. Tested releases.</td>
-</tr>
-<tr>
-<td>Alpha</td>
-<td>Early access — may contain bugs. Use on secondary/test devices only.</td>
-</tr>
-</tbody>
-</table>
-<p>Select the update channel in <strong>Settings → App Settings → Firmware Channel</strong>.</p>
-<h2>Troubleshooting</h2>
-<p><strong>Update fails mid-way</strong></p>
-<ul>
-<li>Keep the radio within 1–2 metres of your phone during the update.</li>
-<li>If the radio appears bricked after a failed update, it can usually be recovered using the <a href="https://flasher.meshtastic.org/">Meshtastic Flasher</a> on a computer.</li>
-</ul>
-<p><img src="../assets/screenshots/invalidVersion.png" alt="Incompatible firmware version warning" /></p>
-<p><img src="../assets/screenshots/securityVersionNag.png" alt="Security update recommended" /></p>
-<p><strong>Radio not appearing in firmware list</strong></p>
-<ul>
-<li>The firmware update feature requires a connected radio (BLE or TCP).</li>
-<li>Some older radios do not support OTA updates. Check the <a href="https://meshtastic.org/docs/hardware/">hardware compatibility list</a>.</li>
-</ul>
-<p><strong>Version shown as unknown</strong></p>
-<ul>
-<li>Ensure the radio has fully connected and synced (usually takes 5–10 seconds after BLE connection is established).</li>
-</ul>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

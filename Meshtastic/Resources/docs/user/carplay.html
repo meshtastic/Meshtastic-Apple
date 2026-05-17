@@ -3,103 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CarPlay</title>
+  <title>carplay</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="carplay">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>CarPlay</h1>
-<p>The app supports Apple CarPlay for <strong>hands-free mesh messaging</strong> while driving. The CarPlay interface integrates with the iOS messaging system and Siri so that users can send and receive Meshtastic messages without looking at their phone.</p>
-<h2>Requirements</h2>
-<ul>
-<li>iPhone running iOS 18 or later</li>
-<li>A supported CarPlay head unit or the CarPlay Simulator in Xcode</li>
-<li>A Meshtastic device connected via Bluetooth, TCP, or serial</li>
-<li>Siri enabled — the app requests Siri authorization during onboarding and again on subsequent launches</li>
-</ul>
-<h2>Interface</h2>
-<p>The CarPlay screen presents a <strong>two-tab interface</strong>:</p>
-<table>
-<thead>
-<tr>
-<th>Tab</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Channels</strong></td>
-<td>Lists all active mesh channels</td>
-</tr>
-<tr>
-<td><strong>Direct Messages</strong></td>
-<td>Lists recent and favorite contacts</td>
-</tr>
-</tbody>
-</table>
-<p>When no Meshtastic device is connected, both tabs show a <strong>&quot;Not Connected&quot;</strong> status item with a prompt to open the Meshtastic app.</p>
-<h3>Channels Tab</h3>
-<p>Each channel row shows:</p>
-<ul>
-<li>The channel name (or &quot;Primary Channel&quot; for index 0)</li>
-<li>An unread message badge when there are unread messages</li>
-<li>&quot;Primary&quot; or &quot;Ch N&quot; as detail text</li>
-</ul>
-<p>Tapping a channel row starts a Siri compose session for that channel.</p>
-<h3>Direct Messages Tab</h3>
-<p>The Direct Messages tab is divided into two sections:</p>
-<ul>
-<li><strong>Favorites</strong> — Nodes marked as favorites, sorted by last heard</li>
-<li><strong>Recent</strong> — All other messageable contacts with history, sorted by last heard (capped at 24 entries)</li>
-</ul>
-<p>Each contact row shows:</p>
-<ul>
-<li>Contact name and a person icon</li>
-<li>Unread message count when applicable</li>
-<li>Time since last heard (e.g., &quot;Just now&quot;, &quot;5m ago&quot;, &quot;2h ago&quot;, &quot;3d ago&quot;)</li>
-</ul>
-<h2>Siri Voice Commands</h2>
-<p>Use these Siri voice commands in CarPlay to interact with Meshtastic:</p>
-<table>
-<thead>
-<tr>
-<th>Voice Command</th>
-<th>Example Phrase</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Send Message</td>
-<td>&quot;Send a message on Meshtastic&quot;</td>
-<td>Composes and sends a text message to a contact or channel</td>
-</tr>
-<tr>
-<td>Search Messages</td>
-<td>&quot;Search Meshtastic messages&quot;</td>
-<td>Searches message history</td>
-</tr>
-<tr>
-<td>Mark as Read</td>
-<td>&quot;Mark Meshtastic message as read&quot;</td>
-<td>Marks a conversation as read</td>
-</tr>
-</tbody>
-</table>
-<div class="warning-callout"><strong>Warning — Message Limits:</strong>
-Messages are limited to <strong>200 bytes</strong> (UTF-8). Siri will not send messages that exceed this limit. Only a <strong>single recipient</strong> per message is supported — no group direct messages. Emoji-only messages and admin messages are excluded from CarPlay.</div>
-<h2>Incoming Message Announcements</h2>
-<p>When CarPlay is connected and <strong>Announce Notifications</strong> is enabled in iOS Settings → Siri, Siri reads incoming Meshtastic messages aloud. Only non-emoji, non-admin text messages trigger announcements.</p>
-<p>Up to 50 unread messages that arrived before the CarPlay session started are donated to Siri at connection time so they can be read back on demand.</p>
-<h2>Live Activity</h2>
-<p>When a Meshtastic device connects during a CarPlay session, a <strong>Dynamic Island / Lock Screen Live Activity</strong> starts automatically (iOS only, not available on macOS). It displays:</p>
-<ul>
-<li>Node name and short name</li>
-<li>Uptime, channel utilisation, and air-time TX percentage</li>
-<li>Packets sent, received, and relay statistics</li>
-<li>Online and total node counts</li>
-<li>A 15-minute countdown timer synced with the telemetry reporting interval</li>
-</ul>
-<p>The Live Activity ends automatically when CarPlay disconnects.</p>
-<div class="tips-callout"><strong>Tip —</strong> For implementation details and component architecture, see the <a href="../developer/carplay.html">CarPlay Developer Guide</a>.</div>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

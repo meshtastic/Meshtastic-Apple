@@ -3,135 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TAK Integration</title>
+  <title>tak</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="tak">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>TAK Integration</h1>
-<p>The Meshtastic app supports Team Awareness Kit (TAK) integration, enabling interoperability with ATAK (Android Team Awareness Kit), iTAK, and other CoT (Cursor-on-Target) compatible systems over LoRa mesh radio — no cellular or internet required.</p>
-<h2>What is TAK?</h2>
-<p>TAK is a situational awareness platform widely used in tactical, emergency management, and outdoor recreation contexts. It displays the positions and status of team members on a shared map. Meshtastic bridges TAK users over LoRa, so teams stay connected without requiring cellular or internet coverage.</p>
-<h2>Supported Device Roles</h2>
-<p>TAK integration works with two device roles:</p>
-<table>
-<thead>
-<tr>
-<th>Icon</th>
-<th>Role</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/roleTak.png" alt="TAK" /></td>
-<td>TAK</td>
-<td>Full TAK role — sends CoT position reports and can relay TAK data packets.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/roleTakTracker.png" alt="TAK Tracker" /></td>
-<td>TAK Tracker</td>
-<td>Lightweight position-only TAK role. Lower power consumption, no packet relay.</td>
-</tr>
-</tbody>
-</table>
-<p>Set the device role in <strong>Settings → Device</strong>.</p>
-<div class="tips-callout"><strong>Tip — Firmware version</strong>
-The full TAK V2 wire format (shapes, routes, markers, casevac, emergency) requires firmware <strong>2.8.0 or later</strong> on the connected radio. Older firmware still supports PLI and GeoChat over the legacy V1 format — the app falls back automatically.</div>
-<h2>TAK Server Screen</h2>
-<p><strong>Settings → TAK Server</strong> is the single destination for everything TAK-related. The screen is organised top-to-bottom so you can configure your identity, start the server, and pair an ATAK / iTAK client in one pass.</p>
-<h3>TAK Identity</h3>
-<p>The first section, <strong>TAK Identity</strong>, controls the firmware-level team and role identity the radio attaches to every position report:</p>
-<table>
-<thead>
-<tr>
-<th>Setting</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Team</td>
-<td>The team color shown to TAK clients. Default is Cyan; all standard ATAK team colors are available.</td>
-</tr>
-<tr>
-<td>Role</td>
-<td>Your TAK role. Choices are Team Member (default), Team Lead, HQ, Sniper, Medic, Forward Observer, RTO, and K9.</td>
-</tr>
-</tbody>
-</table>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/takIdentitySection_dark.png">
-  <img src="../assets/screenshots/takIdentitySection.png" alt="TAK Identity section with Team and Role pickers">
-</picture>
-<p>A <strong>Save TAK Identity</strong> button appears in the section only when there are unsaved changes. Saving dispatches an admin message to the connected node; you'll see the change reflected in TAK clients on the next position report.</p>
-<div class="tips-callout"><strong>Tip — Identity pickers disabled?</strong>
-The pickers stay disabled until the connected radio reports its TAK module config back to the app. This usually happens within a few seconds of connecting — give it a moment, or disconnect and reconnect if it doesn't appear.</div>
-<h3>Server Status, Enable, and Channel</h3>
-<p>Below the identity section:</p>
-<ul>
-<li>A <strong>status indicator</strong> showing whether the in-app TAK Server is running and whether your primary channel is suitable for TAK use.</li>
-<li>An <strong>Enable TAK Server</strong> toggle.</li>
-<li>A <strong>channel picker</strong> for the LoRa channel the server bridges between TAK clients and the mesh.</li>
-<li><strong>Read-only mode</strong> (treat the app as a TAK observer that doesn't forward CoT to the mesh) and <strong>mesh-to-CoT relay</strong> toggles.</li>
-</ul>
-<div class="tips-callout"><strong>Tip — Primary channel requirements</strong>
-The TAK Server runs in <strong>read-only mode</strong> until your primary channel has a non-default name and a non-default 256-bit encryption key. Use the <strong>Fix Channel</strong> button on the warning banner to apply a recommended TAK preset (Short Fast, new AES key, name &quot;TAK&quot;) in one tap.</div>
-<h3>Certificates</h3>
-<p>Import a P12 (PKCS#12) or PEM bundle for mTLS-protected ATAK / iTAK connections. The app stores the certificates encrypted in the keychain — they're not visible to other apps or to iTunes/Finder file sharing.</p>
-<h3>Data Package</h3>
-<p>Export a TAK data package zip that you can sideload into ATAK / iTAK. The client uses it to find and trust the app's local server without manually entering a host, port, or certificate.</p>
-<h2>Receiving Routes</h2>
-<p>When another node on the mesh sends a route CoT (<code>b-m-r</code>), the app automatically writes it as a KML data package to <code>Documents/TAK Routes/</code> and posts an iOS notification so you don't miss it:</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Content</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Title</td>
-<td>Route Received</td>
-</tr>
-<tr>
-<td>Subtitle</td>
-<td><em>route callsign</em> (or &quot;Unknown Route&quot;)</td>
-</tr>
-<tr>
-<td>Body</td>
-<td>Saved to Files → Meshtastic → TAK Routes. Open in iTAK to import.</td>
-</tr>
-</tbody>
-</table>
-<p>iTAK silently ignores route CoT received over its TCP streaming connection, so this fallback lets you import the route manually. Tap the notification, then in Files navigate to <strong>On My iPhone → Meshtastic → TAK Routes</strong>, share the <code>.zip</code> to iTAK, and choose <strong>Import Mission Package</strong>.</p>
-<div class="tips-callout"><strong>Tip — Where are my routes?</strong>
-The <code>TAK Routes</code> folder is created the first time a route arrives. If you don't see it, no routes have been received yet. The KML inside the zip is a standard KML 2.2 LineString — you can also open it in Google Earth or any KML viewer.</div>
-<h2>How It Works Under the Hood</h2>
-<p>You don't need to configure anything: the app automatically picks the best TAK wire format your radio supports. Firmware 2.8.0+ uses the new V2 format with zstd-dictionary compression for richer message types and shorter LoRa transmissions. Older firmware keeps using the legacy V1 format, which carries PLI and GeoChat between any two nodes plus a richer Apple-to-Apple fallback for shapes, markers, and routes.</p>
-<p>Developers and curious users can read the full protocol detail in <a href="../developer/tak-protocol.html">TAK Protocol</a>.</p>
-<h2>Troubleshooting</h2>
-<p><strong>TAK client won't connect</strong></p>
-<ul>
-<li>Make sure the in-app TAK Server is enabled in <strong>Settings → TAK Server</strong>.</li>
-<li>Confirm your primary channel has a non-default name <strong>and</strong> encryption key — the server runs in read-only mode otherwise. Use <strong>Fix Channel</strong> in the warning banner if shown.</li>
-<li>For mTLS clients, confirm a P12 / PEM bundle was imported under <strong>Certificates</strong>.</li>
-</ul>
-<p><strong>Routes don't show up in iTAK</strong></p>
-<ul>
-<li>iTAK ignores route CoT from TCP streaming on purpose. Open the saved zip from <strong>Files → Meshtastic → TAK Routes</strong> and import it as a Mission Package.</li>
-<li>If the <code>TAK Routes</code> folder is missing, no route CoT has arrived yet.</li>
-</ul>
-<p><strong>Identity pickers are disabled</strong></p>
-<ul>
-<li>The radio must report its TAK module config back to the app before the pickers enable. Reconnect if it doesn't come through within a few seconds.</li>
-<li>The connected node must have the <strong>TAK</strong> or <strong>TAK Tracker</strong> device role — Team / Role have no effect on other roles.</li>
-</ul>
-<h2>Requirements</h2>
-<ul>
-<li>Firmware <strong>2.3 or later</strong> on your radio for basic TAK PLI / GeoChat; <strong>2.8.0 or later</strong> for the full TAK V2 wire format.</li>
-<li>An ATAK / iTAK / TAK-compatible client app on your phone or tablet.</li>
-<li>Device configured with the <strong>TAK</strong> or <strong>TAK Tracker</strong> role.</li>
-</ul>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

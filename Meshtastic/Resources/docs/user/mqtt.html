@@ -3,107 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MQTT</title>
+  <title>mqtt</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="mqtt">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>MQTT</h1>
-<p>The MQTT module allows a Meshtastic node to bridge mesh traffic to an MQTT broker, extending the mesh over the internet and enabling integration with home automation systems.</p>
-<h2>What MQTT Does</h2>
-<p>A node with MQTT enabled acts as a gateway: it publishes received mesh packets to an MQTT broker and optionally subscribes to a topic so that remote nodes can inject packets back into the local mesh.</p>
-<table>
-<thead>
-<tr>
-<th>Icon</th>
-<th>State</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/mqttConnected.png" alt="MQTT connected" /></td>
-<td>Connected</td>
-<td>MQTT bridge is active — uplink and downlink both enabled.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/mqttUplinkOnly.png" alt="MQTT uplink only" /></td>
-<td>Uplink Only</td>
-<td>Publishing mesh packets to the broker but not subscribing to incoming packets.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/mqttDisconnected.png" alt="MQTT disconnected" /></td>
-<td>Disconnected</td>
-<td>MQTT is configured but not currently connected to the broker.</td>
-</tr>
-</tbody>
-</table>
-<p>This enables two mesh networks in different physical locations to appear as one logical network — as long as at least one node in each location has internet access.</p>
-<h2>Configuring MQTT</h2>
-<p>Go to <strong>Settings → MQTT</strong>:</p>
-<p><img src="../assets/screenshots/mqttConfig.png" alt="MQTT Config" /></p>
-<table>
-<thead>
-<tr>
-<th>Setting</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>MQTT Server</td>
-<td>Hostname or IP of your MQTT broker (e.g., <code>mqtt.meshtastic.org</code> for the public broker).</td>
-</tr>
-<tr>
-<td>Port</td>
-<td>Default is 1883 (unencrypted) or 8883 (TLS).</td>
-</tr>
-<tr>
-<td>Username</td>
-<td>MQTT broker username (optional).</td>
-</tr>
-<tr>
-<td>Password</td>
-<td>MQTT broker password (optional).</td>
-</tr>
-<tr>
-<td>Root Topic</td>
-<td>The topic prefix for all published messages (default: <code>msh</code>).</td>
-</tr>
-<tr>
-<td>Enabled</td>
-<td>Toggle MQTT bridging on/off.</td>
-</tr>
-<tr>
-<td>Encryption Enabled</td>
-<td>Encrypt packets before publishing. Recommended — prevents the broker from reading message content.</td>
-</tr>
-<tr>
-<td>JSON Enabled</td>
-<td>Publish decoded JSON packets in addition to the binary protobuf format. Useful for home automation integrations.</td>
-</tr>
-<tr>
-<td>TLS Enabled</td>
-<td>Use TLS for the MQTT connection. Requires a broker with TLS support.</td>
-</tr>
-<tr>
-<td>Proxy to Client</td>
-<td>Route MQTT traffic through the phone app rather than directly from the radio. Useful for radios without Wi-Fi.</td>
-</tr>
-</tbody>
-</table>
-<h2>Topic Structure</h2>
-<p>Meshtastic publishes to:</p>
-<pre><code>&lt;root_topic&gt;/&lt;region&gt;/&lt;channel_index&gt;/&lt;node_id&gt;/&lt;packet_type&gt;
-</code></pre>
-<p>Example: <code>msh/US/2/!a1b2c3d4/text</code></p>
-<h2>Security Considerations</h2>
-<ul>
-<li>Enabling MQTT with an insecure channel broadcasts location and messages to the internet.</li>
-<li>The channel security indicator shows <strong>Insecure with MQTT</strong> (🔓⚠️) when a channel is unencrypted and MQTT is active.</li>
-<li>Always use <strong>Encryption Enabled</strong> in production to protect message content.</li>
-<li>Consider using a private broker rather than the public <code>mqtt.meshtastic.org</code>.</li>
-</ul>
-<h2>Public Broker</h2>
-<p>The public MQTT broker at <code>mqtt.meshtastic.org</code> is available for testing. <strong>Do not transmit sensitive information over the public broker.</strong> Use it only for initial setup verification.</p>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

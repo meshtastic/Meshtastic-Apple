@@ -3,199 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telemetry &amp; Sensors</title>
+  <title>telemetry</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="telemetry">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Telemetry &amp; Sensors</h1>
-<p>Meshtastic nodes can report sensor data across the mesh, giving you visibility into the physical environment at remote locations.</p>
-<h2>Telemetry Types</h2>
-<table>
-<thead>
-<tr>
-<th>Type</th>
-<th>Data</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Device Metrics</td>
-<td>Battery level, battery voltage, channel utilisation, airtime fraction</td>
-</tr>
-<tr>
-<td>Environment</td>
-<td>Temperature (°C/°F), relative humidity (%), barometric pressure (hPa)</td>
-</tr>
-<tr>
-<td>Air Quality</td>
-<td>PM1.0, PM2.5, PM10 particulate counts (µg/m³)</td>
-</tr>
-<tr>
-<td>Power</td>
-<td>Voltage and current readings from power monitoring sensors</td>
-</tr>
-</tbody>
-</table>
-<h3>Device Metrics</h3>
-<table>
-<thead>
-<tr>
-<th>Icon</th>
-<th>State</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/batteryFull.png" alt="Battery full" /></td>
-<td>Full</td>
-<td>Battery is well charged (≥80%).</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/batteryLow.png" alt="Battery low" /></td>
-<td>Low</td>
-<td>Battery is low (≤20%) — charge the node soon.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/batteryCharging.png" alt="Battery charging" /></td>
-<td>Charging</td>
-<td>Node is plugged in and fully charged.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/batteryNil.png" alt="Battery unknown" /></td>
-<td>Unknown</td>
-<td>Battery level not reported by this node.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/batteryPluggedIn.png" alt="Battery plugged in" /></td>
-<td>Plugged In</td>
-<td>Node is powered via USB/external power.</td>
-</tr>
-</tbody>
-</table>
-<h3>Air Quality</h3>
-<p><img src="../assets/screenshots/iaqScale.png" alt="IAQ Scale" /></p>
-<p>The Indoor Air Quality scale shows category bands from Excellent (green) through Hazardous (maroon). The app supports multiple display modes for air quality readings:</p>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/aqi_all_modes_dark.png" />
-  <img src="../assets/screenshots/aqi_all_modes_light.png" alt="Air Quality Index — all display modes" />
-</picture>
-<h3>Environment</h3>
-<table>
-<thead>
-<tr>
-<th>Icon</th>
-<th>Reading</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/humidityWithDew.png" alt="Humidity with dew point" /></td>
-<td>Humidity (with dew point)</td>
-<td>Relative humidity percentage and calculated dew point temperature.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/humidityNoDew.png" alt="Humidity without dew point" /></td>
-<td>Humidity</td>
-<td>Relative humidity percentage only.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/pressureHigh.png" alt="Pressure high" /></td>
-<td>High pressure</td>
-<td>Barometric pressure above normal (≥1013 hPa).</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/pressureLow.png" alt="Pressure low" /></td>
-<td>Low pressure</td>
-<td>Barometric pressure below normal (&lt;1013 hPa).</td>
-</tr>
-</tbody>
-</table>
-<h3>Wind</h3>
-<table>
-<thead>
-<tr>
-<th>Widget</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/windFull.png" alt="Wind full" /></td>
-<td>Wind speed, gust speed, and direction.</td>
-</tr>
-<tr>
-<td><img src="../assets/screenshots/windMinimal.png" alt="Wind minimal" /></td>
-<td>Wind speed only (no gust or direction data available).</td>
-</tr>
-</tbody>
-</table>
-<h3>Radiation</h3>
-<table>
-<thead>
-<tr>
-<th>Widget</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><img src="../assets/screenshots/radiation.png" alt="Radiation" /></td>
-<td>Radiation level in µR/hr from a connected Geiger counter sensor.</td>
-</tr>
-</tbody>
-</table>
-<h2>Viewing Telemetry</h2>
-<p>Telemetry is visible in two places:</p>
-<ol>
-<li><strong>Node Detail</strong> — tap any node in the Nodes tab. The Logs section shows the most recent device metrics and environment readings.</li>
-<li><strong>Telemetry Charts</strong> — tap the chart icon in a node detail to see historical graphs for any telemetry type the node has reported.</li>
-</ol>
-<h2>Configuring Telemetry</h2>
-<p>Go to <strong>Settings → Telemetry</strong> to enable telemetry modules and set reporting intervals:</p>
-<p><img src="../assets/screenshots/telemetryConfig.png" alt="Telemetry Config" /></p>
-<table>
-<thead>
-<tr>
-<th>Setting</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Device Metrics Interval</td>
-<td>How often (seconds) the node broadcasts battery and utilisation data.</td>
-</tr>
-<tr>
-<td>Environment Interval</td>
-<td>How often environment sensor data is broadcast.</td>
-</tr>
-<tr>
-<td>Air Quality Interval</td>
-<td>How often air quality sensor data is broadcast.</td>
-</tr>
-<tr>
-<td>Environment Screen</td>
-<td>Show environment data on the device screen.</td>
-</tr>
-<tr>
-<td>Telemetry on Admin Channel</td>
-<td>Restrict telemetry to the admin channel instead of broadcast.</td>
-</tr>
-</tbody>
-</table>
-<h2>Supported Sensors</h2>
-<p>The app displays data from any sensor supported by Meshtastic firmware. Common sensors:</p>
-<ul>
-<li><strong>BME280 / BME680</strong> — temperature, humidity, pressure</li>
-<li><strong>SHT31</strong> — temperature, humidity</li>
-<li><strong>MCP9808</strong> — precision temperature</li>
-<li><strong>INA219 / INA260</strong> — power monitoring</li>
-<li><strong>PMSA003</strong> — air quality (PM2.5)</li>
-</ul>
-<p>Sensor availability depends on your hardware. Check the <a href="https://meshtastic.org/docs/hardware/">Meshtastic hardware guide</a> for compatibility.</p>
-<h2>Detection Sensor</h2>
-<p>The Detection Sensor module alerts the mesh when a connected PIR motion sensor or contact switch is triggered. Configure it in <strong>Settings → Detection Sensor</strong>. Alerts appear as messages on the primary channel and as node log entries.</p>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>
