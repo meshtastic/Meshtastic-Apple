@@ -18,6 +18,11 @@ actor BLETransport: Transport {
 
 	let type: TransportType = .ble
 	private var centralManager: CBCentralManager!
+	/// Dedicated serial queue for CBCentralManager delegate callbacks.
+	/// Using a serial queue (instead of `.global()`) guarantees that delegate
+	/// callbacks arrive in the order CoreBluetooth fires them, so the
+	/// `Task { await … }` hops to the actor preserve that ordering.
+	private let centralQueue = DispatchQueue(label: "com.meshtastic.ble.central", qos: .utility)
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
@@ -45,7 +50,7 @@ actor BLETransport: Transport {
 		// onboarding Bluetooth screen has a chance to present it in context.
 		if CBCentralManager.authorization != .notDetermined {
 			centralManager = CBCentralManager(delegate: delegate,
-											  queue: .global(qos: .utility),
+											  queue: centralQueue,
 											  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
 			)
 		}
@@ -58,7 +63,7 @@ actor BLETransport: Transport {
 
 	private func createCentralManager() {
 		centralManager = CBCentralManager(delegate: delegate,
-										  queue: .global(qos: .utility),
+										  queue: centralQueue,
 										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
 		)
 	}
@@ -266,7 +271,17 @@ actor BLETransport: Transport {
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
-		if let connection = self.activeConnection {
+		if let continuation = self.connectContinuation,
+		   self.connectingPeripheral?.identifier == peripheral.identifier {
+			// Disconnect arrived while still waiting for didConnect — resume the
+			// pending continuation so the caller doesn't hang.
+			Logger.transport.debug("🛜 [BLETransport] Clean disconnect during connection phase. Resuming continuation with error.")
+			continuation.resume(throwing: AccessoryError.connectionFailed("Peripheral disconnected before connection completed"))
+			self.connectContinuation = nil
+			self.connectingPeripheral = nil
+			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
+			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
+		} else if let connection = self.activeConnection {
 			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
 			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
 			Task {
@@ -304,6 +319,7 @@ actor BLETransport: Transport {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Resuming connection continuation with error.")
 			continuation.resume(throwing: error)
 			self.connectContinuation = nil
+			self.connectingPeripheral = nil
 		} else if let activeConnection = self.activeConnection {
 			// Inform the active connection that there was an error and it should disconnect
 			Logger.transport.debug("🛜 [BLETransport] Error on active connection. Disconnecting.")
