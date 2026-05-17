@@ -262,6 +262,28 @@ struct RouterTests {
 		#expect(state.nodeListSelectedNodeNum == nil)
 	}
 
+	@Test func popToRootMessages() async {
+		let router = await Router()
+		let url = URL(string: "meshtastic:///messages?channelId=1")!
+		await router.route(url: url)
+		let msgBefore = await router.messagesState
+		#expect(msgBefore != nil)
+		await router.popToRoot(tab: .messages)
+		let msgAfter = await router.messagesState
+		#expect(msgAfter == nil)
+	}
+
+	@Test func popToRootMap() async {
+		let router = await Router()
+		let url = URL(string: "meshtastic:///map?nodenum=99")!
+		await router.route(url: url)
+		let mapBefore = await router.mapState
+		#expect(mapBefore != nil)
+		await router.popToRoot(tab: .map)
+		let mapAfter = await router.mapState
+		#expect(mapAfter == nil)
+	}
+
 	@Test func popToRootSettings() async {
 		let router = await Router()
 		let url = URL(string: "meshtastic:///settings/about")!

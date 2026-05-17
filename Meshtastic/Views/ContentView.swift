@@ -36,12 +36,28 @@ struct ContentView: View {
 			}
 	}
 
+	// MARK: - Tab Reselection
+
+	/// A custom binding that intercepts tab selection so that tapping the
+	/// already-active tab pops its navigation stack back to root.
+	private var tabSelection: Binding<NavigationState.Tab> {
+		Binding(
+			get: { appState.router.selectedTab },
+			set: { newTab in
+				if newTab == appState.router.selectedTab {
+					appState.router.popToRoot(tab: newTab)
+				}
+				appState.router.selectedTab = newTab
+			}
+		)
+	}
+
 	// MARK: - Tab Content
 
 	@ViewBuilder
 	private var tabContent: some View {
 		if #available(iOS 18.0, macCatalyst 18.0, *) {
-			TabView(selection: $appState.router.selectedTab) {
+			TabView(selection: tabSelection) {
 				Tab("Messages", systemImage: "message", value: NavigationState.Tab.messages) {
 					Messages(
 						router: appState.router,
@@ -70,7 +86,7 @@ struct ContentView: View {
 				}
 			}
 		} else {
-			TabView(selection: $appState.router.selectedTab) {
+			TabView(selection: tabSelection) {
 				Messages(
 					router: appState.router,
 					unreadChannelMessages: $appState.unreadChannelMessages,
