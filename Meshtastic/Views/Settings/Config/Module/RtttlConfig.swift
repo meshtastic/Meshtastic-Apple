@@ -33,7 +33,7 @@ struct RtttlConfig: View {
 						.onChange(of: ringtone) {
 							var totalBytes = ringtone.utf8.count
 							// Only mess with the value if it is too big
-							while totalBytes > 228 {
+							while totalBytes > 230 {
 								ringtone = String(ringtone.dropLast())
 								totalBytes = ringtone.utf8.count
 							}

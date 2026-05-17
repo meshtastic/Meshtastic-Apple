@@ -72,7 +72,7 @@ struct CannedMessagesConfig: View {
 					.onChange(of: messages) {
 						var totalBytes = messages.utf8.count
 						// Only mess with the value if it is too big
-						while totalBytes > 198 {
+						while totalBytes > 200 {
 							messages = String(messages.dropLast())
 							totalBytes = messages.utf8.count
 						}
