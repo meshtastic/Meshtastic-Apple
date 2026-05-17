@@ -180,7 +180,7 @@ struct LoRaConfig: View {
 				HStack {
 					Image(systemName: "antenna.radiowaves.left.and.right")
 						.foregroundColor(.accentColor)
-					Stepper("\(txPower)dBm Transmit Power", value: $txPower, in: 1...30, step: 1)
+					Stepper(txPower == 0 ? "Max Power Transmit Power" : "\(txPower)dBm Transmit Power", value: $txPower, in: 0...30, step: 1)
 						.padding(5)
 				}
 			}
