@@ -99,7 +99,8 @@ private struct FirmwareContentView: View {
 	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
 		self.node = node
 		self.hardware = hardware
-		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware))
+		let region = RegionCodes(rawValue: Int(node.loRaConfig?.regionCode ?? -1)) ?? .unset
+		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware, preferredRegion: region))
 	}
 	
 	var body: some View {
@@ -131,12 +132,31 @@ private struct FirmwareContentView: View {
 					Text("Architecture").font(.caption).foregroundColor(.secondary)
 					Text("\(hardware.architecture ?? "Unknown")")
 				}
-				VStack(alignment: .leading) {
-					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
-					Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
+					VStack(alignment: .leading) {
+						Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
+						Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
+					}
+					VStack(alignment: .leading) {
+						Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
+						Text(intendedRegionLabel)
+					}
+					if shouldShowRegionUnsetWarning {
+						Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
+							.foregroundStyle(.orange)
+							.font(.caption)
+					} else if shouldShowLocaleVariantWarning {
+						Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
+							.foregroundStyle(.orange)
+							.font(.caption)
+					}
+					if let suggestedFileNameHint {
+						VStack(alignment: .leading, spacing: 2) {
+							Text("Suggested file pattern").font(.caption).foregroundColor(.secondary)
+							Text(suggestedFileNameHint).font(.caption).textSelection(.enabled)
+						}
+					}
 				}
-			}
-			.listRowSeparator(.hidden)
+				.listRowSeparator(.hidden)
 
 			// SECTION 2: RELEASES
 			Section(header: releasesHeader, footer: lastUpdatedFooter) {
@@ -228,6 +248,40 @@ private struct FirmwareContentView: View {
 				}
 			}
 		}
+	}
+
+	var nodeRegion: RegionCodes? {
+		guard let code = Int(exactly: node.loRaConfig?.regionCode ?? -1) else { return nil }
+		return RegionCodes(rawValue: code)
+	}
+
+	var intendedRegionLabel: String {
+		guard let region = nodeRegion else {
+			return "Not available"
+		}
+		return "\(region.description) (\(region.topic))"
+	}
+
+	var shouldShowRegionUnsetWarning: Bool {
+		nodeRegion == nil || nodeRegion == .unset
+	}
+
+	var shouldShowLocaleVariantWarning: Bool {
+		guard let region = nodeRegion else { return false }
+		return region.prefersLocalizedFontFirmware
+	}
+
+	var suggestedFileNameHint: String? {
+		guard let platformioTarget = hardware.platformioTarget?.trimmingCharacters(in: .whitespacesAndNewlines),
+			  !platformioTarget.isEmpty else {
+			return nil
+		}
+
+		if let region = nodeRegion, region != .unset {
+			return "firmware-\(platformioTarget)-<version>[-\(region.topic)]"
+		}
+
+		return "firmware-\(platformioTarget)-<version>"
 	}
 	
 	var allowedTypes: [UTType] {
