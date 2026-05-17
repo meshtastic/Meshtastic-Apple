@@ -53,7 +53,7 @@ extension AccessoryManager {
 		let manager = LocalNotificationManager()
 		manager.notifications = [
 			Notification(
-				id: UUID().uuidString,
+				id: "client.notification",
 				title: "Firmware Notification".localized,
 				subtitle: "\(clientNotification.level)".capitalized,
 				content: clientNotification.message,
