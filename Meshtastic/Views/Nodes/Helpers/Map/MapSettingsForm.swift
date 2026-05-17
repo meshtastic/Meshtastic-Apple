@@ -16,7 +16,6 @@ struct MapSettingsForm: View {
 	@AppStorage("meshMapShowRouteLines") private var enableMapRouteLines = false
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
-	@AppStorage("enableMapShowFavorites") private var enableMapShowFavorites = false
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
@@ -70,15 +69,6 @@ struct MapSettingsForm: View {
 						}
 						.tint(.accentColor)
 					}
-					Toggle(isOn: $enableMapShowFavorites) {
-						Label {
-							Text("Favorites")
-						} icon: {
-							Image(systemName: "star.fill")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.tint(.accentColor)
 					if !meshMap {
 						Toggle(isOn: $nodeHistory) {
 							Label("Node History", systemImage: "building.columns.fill")
