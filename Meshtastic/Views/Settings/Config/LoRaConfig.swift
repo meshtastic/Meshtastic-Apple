@@ -290,7 +290,7 @@ struct LoRaConfig: View {
 			if newOverrideFrequency != node?.loRaConfig?.overrideFrequency { hasChanges = true }
 		}
 		.onChange(of: txPower) { _, newTxPower in
-			if newTxPower != node?.loRaConfig?.txPower ?? -1 { hasChanges = true }
+			if Int32(newTxPower) != node?.loRaConfig?.txPower { hasChanges = true }
 		}
 		.onChange(of: txEnabled) { _, newTxEnabled in
 			if newTxEnabled != node?.loRaConfig?.txEnabled { hasChanges = true }
