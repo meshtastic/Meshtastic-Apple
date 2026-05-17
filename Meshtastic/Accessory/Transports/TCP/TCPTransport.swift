@@ -23,7 +23,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	private var services: [String: ResolvedService] = [:] // Key: service.name
 	private var continuation: AsyncStream<DiscoveryEvent>.Continuation?
 
-	private var service: NetService?
+	private var pendingServices: Set<NetService> = []
 
 	// Transport Properties
 	let requiresPeriodicHeartbeat = true
@@ -52,6 +52,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 			cont.onTermination = { _ in
 				self.browser?.stop()
 				self.services.removeAll()
+				self.pendingServices.removeAll()
 				self.continuation = nil
 				self.status = .ready
 			}
@@ -59,12 +60,13 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	}
 
 	func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
-		self.service = service
+		pendingServices.insert(service)
 		service.delegate = self
 		service.resolve(withTimeout: 5)
 	}
 
 	func netServiceDidResolveAddress(_ service: NetService) {
+		pendingServices.remove(service)
 		guard let host = service.hostName else {
 			Logger.transport.error("🌐 [TCP] Failed to resolve host for service \(service.name, privacy: .public)")
 			return
@@ -103,6 +105,7 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 	}
 
 	func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
+		pendingServices.remove(sender)
 		Logger.transport.error("🌐 [TCP] Failed to resolve service \(sender.name, privacy: .public): \(errorDict, privacy: .public)")
 	}
 
