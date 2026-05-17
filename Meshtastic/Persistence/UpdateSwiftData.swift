@@ -959,6 +959,12 @@ extension MeshPackets {
 					newSecurityConfig.privateKey = config.privateKey
 					if config.adminKey.count > 0 {
 						newSecurityConfig.adminKey = config.adminKey[0]
+						if config.adminKey.count > 1 {
+							newSecurityConfig.adminKey2 = config.adminKey[1]
+						}
+						if config.adminKey.count > 2 {
+							newSecurityConfig.adminKey3 = config.adminKey[2]
+						}
 					}
 					newSecurityConfig.isManaged = config.isManaged
 					newSecurityConfig.serialEnabled = config.serialEnabled
