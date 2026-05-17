@@ -648,10 +648,12 @@ struct Settings: View {
 				}
 			}
 			.navigationTitle("Settings")
-			.navigationBarItems(
-				leading: MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
+					}
 				}
-			)
+			}
 		}
 	}
 	

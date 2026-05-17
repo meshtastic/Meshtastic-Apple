@@ -129,14 +129,19 @@ struct NodeList: View {
 			ShareContactQRDialog(manuallyVerified: false, node: selectedNode.toProto())
 		}
 		.navigationSplitViewColumnWidth(min: 100, ideal: 300, max: .infinity)
-		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
-			ConnectedDevice(
-				deviceConnected: accessoryManager.isConnected,
-				name: accessoryManager.activeConnection?.device.shortName ?? "?",
-				phoneOnly: true
-			)
+		.toolbar {
+			ToolbarItem(placement: .topBarLeading) {
+				MeshtasticLogo()
+			}
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(
+					deviceConnected: accessoryManager.isConnected,
+					name: accessoryManager.activeConnection?.device.shortName ?? "?",
+					phoneOnly: true
+				)
+				.accessibilityElement(children: .contain)
+			}
 		}
-		.accessibilityElement(children: .contain))
 	}
 
 	// Helper to get the count of nodes for the navigation title

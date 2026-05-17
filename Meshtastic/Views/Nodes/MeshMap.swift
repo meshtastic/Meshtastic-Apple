@@ -264,20 +264,27 @@ struct MeshMap: View {
 					.padding(5)
 				}
 			}
-			.navigationBarItems(leading: MeshtasticLogo(), trailing: HStack {
-				if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
-					Button {
-						if router.selectedTab == .map {
-							router.selectedTab = .nodes
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo()
+				}
+				ToolbarItem(placement: .topBarTrailing) {
+					HStack {
+						if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
+							Button {
+								if router.selectedTab == .map {
+									router.selectedTab = .nodes
+								}
+								openWindow(id: "meshmap-window")
+								isMapWindowOpen = true
+							} label: {
+								Image(systemName: "macwindow.badge.plus")
+							}
 						}
-						openWindow(id: "meshmap-window")
-						isMapWindowOpen = true
-					} label: {
-						Image(systemName: "macwindow.badge.plus")
+						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 					}
 				}
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			})
+			}
 			.toolbarBackground(.hidden, for: .navigationBar)
 		}
 		.onAppear {

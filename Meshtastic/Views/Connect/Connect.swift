@@ -348,18 +348,19 @@ struct Connect: View {
 			}
 			.background(Color(.systemGroupedBackground))
 			.navigationTitle("Connect")
-			.navigationBarItems(
-				leading: MeshtasticLogo(),
-				trailing: ZStack {
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo()
+				}
+				ToolbarItem(placement: .topBarTrailing) {
 					ConnectedDevice(
 						deviceConnected: accessoryManager.isConnected,
 						name: accessoryManager.activeConnection?.device.shortName ?? "?",
 						mqttProxyConnected: accessoryManager.mqttProxyConnected,
 						mqttTopic: accessoryManager.mqttManager.topic
-						
 					)
 				}
-			)
+			}
 			
 		}
 		// TODO: REMOVING VERSION STUFF?

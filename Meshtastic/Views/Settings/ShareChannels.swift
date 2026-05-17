@@ -249,10 +249,11 @@ struct ShareChannels: View {
 			.padding(.bottom, 5)
 			.navigationTitle("Generate QR Code")
 			.navigationBarTitleDisplayMode(.inline)
-			.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			})
+			.toolbar {
+				ToolbarItem(placement: .topBarTrailing) {
+					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				}
+			}
 			.onAppear {
 				generateChannelSet()
 			}

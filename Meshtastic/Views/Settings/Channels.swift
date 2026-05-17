@@ -342,10 +342,11 @@ struct Channels: View {
 		.onAppear {
 			normalizeDuplicateChannelsIfNeeded()
 		}
-		.navigationBarItems(trailing:
-		ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 	}
 }
 
