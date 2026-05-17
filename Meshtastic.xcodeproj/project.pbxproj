@@ -2388,11 +2388,11 @@
                 it,
                 ja,
                 pl,
-                "pt-BR",
                 ru,
                 se,
                 sr,
                 "zh-Hans",
+                "zh-Hant",
                 "zh-Hant-TW",
             );
             mainGroup = DDC2E14B26CE248E0042C5E4;
