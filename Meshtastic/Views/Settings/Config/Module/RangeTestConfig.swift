@@ -107,43 +107,14 @@ struct RangeTestConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a RangeTestModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num == deviceNum {
-						// Connected node: request config if it was not delivered during initial connection
-						if node.rangeTestConfig == nil {
-							Task {
-								do {
-									Logger.mesh.info("⚙️ Range test module config missing for connected node, requesting")
-									try await accessoryManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-								} catch {
-									Logger.mesh.error("🚨 Request range test module config failed for connected node")
-								}
-							}
-						}
-					} else {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.rangeTestConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired range test module config requesting via PKI admin")
-										try await accessoryManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Request Range test module config failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.rangeTestConfig == nil },
+				request: accessoryManager.requestRangeTestModuleConfig,
+				requestForConnectedNode: true
+			)
 		}
 		.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.rangeTestConfig?.enabled { hasChanges = true }

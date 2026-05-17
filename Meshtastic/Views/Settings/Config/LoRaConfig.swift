@@ -226,34 +226,13 @@ struct LoRaConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a LoRaConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.loRaConfig == nil {
-								Task {
-									do {
-										if connectedNode.user != nil && node.user != nil {
-											Logger.mesh.info("⚙️ Empty or expired lora config requesting via PKI admin")
-											_ = try await accessoryManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!)
-										} else {
-											Logger.mesh.info("🚫 No User or node for lora config request")
-										}
-									} catch {
-										Logger.mesh.info("🚨 Lora config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.loRaConfig == nil },
+				request: accessoryManager.requestLoRaConfig
+			)
 		}
 		.onChange(of: region) { _, newRegion in
 			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }

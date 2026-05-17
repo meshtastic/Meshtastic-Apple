@@ -159,30 +159,13 @@ struct DisplayConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a DisplayConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.displayConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired display config requesting via PKI admin")
-										try await accessoryManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Display config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.displayConfig == nil },
+				request: accessoryManager.requestDisplayConfig
+			)
 		}
 		.onChange(of: screenOnSeconds) { oldScreenSecs, newScreenSecs in
 			if oldScreenSecs != newScreenSecs && newScreenSecs != node?.displayConfig?.screenOnSeconds ?? -1 { hasChanges = true }

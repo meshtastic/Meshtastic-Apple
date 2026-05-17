@@ -236,6 +236,7 @@
         D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D92B81509D0066FBC8 /* TapbackInputView.swift */; };
         D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
         D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
+		D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */; };
         D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
         D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
         D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
@@ -759,6 +760,7 @@
         D93068D92B81509D0066FBC8 /* TapbackInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackInputView.swift; sourceTree = "<group>"; };
         D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
         D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
+		D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestConfigOnAppear.swift; sourceTree = "<group>"; };
         D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
         D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
         D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
@@ -1783,6 +1785,7 @@
             children = (
                 DD61937B2863877A00E59241 /* Module */,
                 D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
+				D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */,
                 D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
                 DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */,
                 DD41582528582E9B009B0E59 /* DeviceConfig.swift */,
@@ -2825,6 +2828,7 @@
                 DD00003ASUPPORTLVL0000001 /* SupportLevel.swift in Sources */,
                 DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
                 D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
+				D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */,
                 251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */,
                 DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
                 DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */,
