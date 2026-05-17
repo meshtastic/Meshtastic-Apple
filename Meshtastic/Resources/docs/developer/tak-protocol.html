@@ -3,143 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TAK Protocol</title>
+  <title>tak-protocol</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="tak-protocol">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>TAK Protocol</h1>
-<p>The app implements three CoT (Cursor-on-Target) wire formats over LoRa: two legacy V1 paths and one V2 path that uses the <a href="https://github.com/meshtastic/TAKPacket-SDK">TAKPacket-SDK</a> for zstd-dictionary compression and richer typed payloads. This page documents the choice of format, the receive dispatch, and the supporting infrastructure.</p>
-<h2>Wire Formats</h2>
-<table>
-<thead>
-<tr>
-<th>Format</th>
-<th>Port</th>
-<th>Payload</th>
-<th>Used when</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>V1 ATAK_PLUGIN</td>
-<td>72</td>
-<td>Bare <code>TAKPacket</code> protobuf (PLI / GeoChat only)</td>
-<td>Connected radio firmware &lt; 2.8.0</td>
-</tr>
-<tr>
-<td>V1 ATAK_FORWARDER</td>
-<td>257</td>
-<td>zlib-compressed CoT XML, optionally Fountain (LT) coded for multi-packet payloads</td>
-<td>Connected radio firmware &lt; 2.8.0, CoT type other than PLI / GeoChat (Apple-to-Apple only)</td>
-</tr>
-<tr>
-<td>V2 ATAK_PLUGIN_V2</td>
-<td>78</td>
-<td><code>TAKPacketV2</code> protobuf, compressed with the TAKPacket-SDK zstd dictionary</td>
-<td>Connected radio firmware ≥ 2.8.0</td>
-</tr>
-</tbody>
-</table>
-<p>V2 carries the full typed CoT vocabulary: PLI, GeoChat, shapes, markers, routes, casevac, emergency, and task. V1 ATAK_PLUGIN carries PLI and GeoChat only; everything else falls back to the V1 ATAK_FORWARDER path.</p>
-<h2>Per-send Fork</h2>
-<p><code>TAKMeshtasticBridge.sendToMesh(_:clientInfo:)</code> chooses the format on every send based on <code>AccessoryManager.supportsTAKv2</code>, which checks the connected radio's firmware version:</p>
-<pre><code class="language-swift">if accessoryManager.supportsTAKv2 {
-    // V2: SDK-driven path
-    let parser = MeshtasticTAK.CotXmlParser()
-    let packet = try parser.parse(strippedXml)
-    let compressor = MeshtasticTAK.TakCompressor()
-    // `compressWithRemarksFallback` returns `Data?` — `nil` means the
-    // payload is still over the LoRa MTU even after `&lt;remarks&gt;` are
-    // stripped. The real `sendCoTToMeshV2` translates that into a
-    // thrown `AccessoryError.ioFailed(...)` so the caller's `do/catch`
-    // doesn't treat the silent drop as a successful send.
-    guard let wire = try compressor.compressWithRemarksFallback(packet, maxWireBytes: 225) else {
-        throw AccessoryError.ioFailed(&quot;TAK V2 payload exceeds LoRa wire size limit&quot;)
-    }
-    try await sendTAKV2Packet(wire, channel: channel)
-} else {
-    // V1: classify, then dispatch
-    switch GenericCoTHandler.shared.classifySendMethod(for: cot) {
-    case .takPacketPLI, .takPacketChat:
-        let pkt = convertToTAKPacket(cot: cot)
-        try await sendTAKPacket(pkt, channel: channel)
-    case .exiDirect, .exiFountain:
-        try await GenericCoTHandler.shared.sendGenericCoT(cot, channel: channel)
-    }
-}
-</code></pre>
-<p>The fork is per-send (not per-session) so a radio that upgrades mid-session jumps to V2 immediately.</p>
-<h2>Receive Dispatch</h2>
-<p><code>AccessoryManager.swift</code>'s exhaustive portnum switch dispatches incoming TAK packets to handlers in <code>AccessoryManager+TAK.swift</code>:</p>
-<table>
-<thead>
-<tr>
-<th>Portnum</th>
-<th>Handler</th>
-<th>Behavior</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>.atakPlugin</code> (72)</td>
-<td><code>handleATAKPluginPacket(_:)</code></td>
-<td>Decode bare <code>TAKPacket</code> protobuf; convert PLI / GeoChat to <code>CoTMessage</code>; forward to TAK clients via <code>TAKServerManager.shared.broadcast(_:)</code>.</td>
-</tr>
-<tr>
-<td><code>.atakPluginV2</code> (78)</td>
-<td><code>handleATAKPluginV2Packet(_:)</code></td>
-<td>zstd-decompress with <code>TakCompressor</code>; rebuild CoT XML with <code>CotXmlBuilder</code>; strip the XML prologue and inter-tag whitespace; forward raw XML via <code>broadcastRawXml(_:)</code> so shape detail (<code>&lt;link point&gt;</code> vertices, colors, stroke) survives. Route CoT (<code>b-m-r</code>) triggers the <a href="#route-data-packages">route data package</a> side-effect.</td>
-</tr>
-<tr>
-<td><code>.atakForwarder</code> (257)</td>
-<td><code>handleATAKForwarderPacket(_:)</code></td>
-<td>Hand off to <code>GenericCoTHandler.handleIncomingForwarderPacket(_:)</code>, which reassembles Fountain fragments and zlib-decompresses the resulting CoT XML before broadcasting.</td>
-</tr>
-</tbody>
-</table>
-<h2>TAKPacket-SDK</h2>
-<p>The <a href="https://github.com/meshtastic/TAKPacket-SDK">TAKPacket-SDK</a> Swift Package is pinned in <code>Meshtastic.xcworkspace/.../Package.resolved</code>. The bridge uses three APIs:</p>
-<ul>
-<li><code>MeshtasticTAK.CotXmlParser().parse(_:)</code> — parses CoT XML into a <code>TAKPacketV2</code> protobuf. <code>throws</code>; callers must <code>try</code>.</li>
-<li><code>MeshtasticTAK.TakCompressor().compressWithRemarksFallback(_:maxWireBytes:)</code> — picks the zstd dictionary best suited to the payload, attempts compression, and on overflow retries with <code>&lt;remarks&gt;</code> stripped. Returns <code>nil</code> if the payload is too large even without remarks; <code>sendCoTToMeshV2</code> translates the <code>nil</code> into <code>AccessoryError.ioFailed(...)</code> so the caller's <code>do/catch</code> doesn't treat the drop as a successful send.</li>
-<li><code>MeshtasticTAK.CotXmlBuilder().build(_:)</code> — round-trips <code>TAKPacketV2</code> back to CoT XML for forwarding to TAK clients.</li>
-</ul>
-<p>The wire MTU constant <code>maxWirePayloadBytes = 225</code> reflects the LoRa frame budget after the Meshtastic envelope.</p>
-<h2>Identity Admin</h2>
-<p><code>TAKIdentitySection</code> (embedded in <code>TAKServerConfig</code>) reads <code>node.takConfig</code> for the current team and role values. When the node has no TAK config cached, <code>requestTakConfigIfNeeded()</code> fires an admin request via <code>AccessoryManager.requestTAKModuleConfig(fromUser:toUser:)</code> so first-time users don't see a perma-spinner.</p>
-<p>Saving the identity dispatches <code>AccessoryManager.saveTAKModuleConfig(config:fromUser:toUser:)</code>, which packages a <code>ModuleConfig.TAKConfig</code> inside an <code>AdminMessage</code> and ships it on the admin port.</p>
-<h2>Offline Queue</h2>
-<p><code>TAKServerManager</code> buffers outgoing CoT for delivery when a TAK client reconnects:</p>
-<pre><code class="language-swift">private enum QueuedPayload {
-    case message(CoTMessage)
-    case rawXml(String)
-}
-</code></pre>
-<p><code>broadcast(_:)</code> enqueues <code>.message</code> payloads; <code>broadcastRawXml(_:)</code> enqueues <code>.rawXml</code> so V2 shapes / routes / markers retain their detail elements. The queue has a 5-minute TTL and a 50-entry cap. <code>drainOfflineQueue()</code> dispatches the right path per payload variant when a client (re)connects.</p>
-<h2>Route Data Packages</h2>
-<p><code>RouteDataPackageGenerator</code> (in <code>Meshtastic/Helpers/TAK/</code>) converts route CoT (<code>b-m-r</code>) into KML-inside-zip ATAK data packages that the user can sideload into iTAK (which silently ignores route CoT received over its TCP streaming connection).</p>
-<p>The pipeline:</p>
-<ol>
-<li><code>generateKml(routeXml:)</code> extracts <code>&lt;event uid&gt;</code>, <code>&lt;contact callsign&gt;</code>, and every <code>&lt;link point=&quot;lat,lon,hae&quot;&gt;</code> waypoint via <code>attributeValue(in:on:named:)</code>, which supports both single- and double-quoted attributes.</li>
-<li><code>sanitizeForFilename(_:)</code> strips path separators, control chars, and <code>..</code> sequences from the route UID so it's safe to use in file names and the temp directory path. <code>escapeXml(_:)</code> separately escapes the value before interpolation into the manifest's <code>value=&quot;...&quot;</code> attribute.</li>
-<li><code>generateDataPackage(routeXml:)</code> writes the KML and <code>manifest.xml</code> to a temp directory and zips them with <code>NSFileCoordinator(readingItemAt:options:.forUploading)</code>.</li>
-<li><code>saveToDocuments(fileName:zipData:)</code> writes the zip to <code>Documents/TAK Routes/&lt;sanitizedUid&gt;.zip</code> (creating the directory on first use).</li>
-<li><code>AccessoryManager+TAK.handleATAKPluginV2Packet(_:)</code> posts a <code>Notification</code> titled <strong>Route Received</strong> with the route callsign as subtitle and body <strong>Saved to Files → Meshtastic → TAK Routes. Open in iTAK to import.</strong></li>
-</ol>
-<h2>Capabilities</h2>
-<p><code>AccessoryManager.supportsTAKv2</code> is the canonical gate:</p>
-<pre><code class="language-swift">var supportsTAKv2: Bool { checkIsVersionSupported(forVersion: &quot;2.8.0&quot;) }
-</code></pre>
-<p>Use this property (rather than parsing the firmware version inline) anywhere a V1/V2 decision is needed. Future TAK SDK features that require a higher firmware version should add a sibling property with a clear cut-off so the bridge stays declarative.</p>
-<h2>Related Files</h2>
-<ul>
-<li><code>Meshtastic/Helpers/TAK/TAKMeshtasticBridge.swift</code> — V1/V2 fork in <code>sendToMesh</code>.</li>
-<li><code>Meshtastic/Accessory/Accessory Manager/AccessoryManager+TAK.swift</code> — send and receive handlers.</li>
-<li><code>Meshtastic/Helpers/TAK/TAKServerManager.swift</code> — TCP server, offline queue, certificate management.</li>
-<li><code>Meshtastic/Helpers/TAK/GenericCoTHandler.swift</code> — V1 ATAK_FORWARDER classification and Fountain reassembly.</li>
-<li><code>Meshtastic/Helpers/TAK/RouteDataPackageGenerator.swift</code> — KML data package writer.</li>
-<li><code>Meshtastic/Views/Settings/TAKServerConfig.swift</code> — combined TAK Server settings screen with the embedded <code>TAKIdentitySection</code>.</li>
-</ul>
-<p>See also <a href="transport.html">Transport Layer</a> for the AccessoryManager extension map.</p>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

@@ -3,195 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SwiftData</title>
+  <title>swiftdata</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="swiftdata">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>SwiftData</h1>
-<p>The app uses SwiftData exclusively for persistence. Do not introduce SQLite, Realm, Core Data, or any other persistence library.</p>
-<h2>ModelContainer Setup</h2>
-<p><code>PersistenceController.shared</code> (in <code>Meshtastic/Persistence/PersistenceController.swift</code>) creates and owns the <code>ModelContainer</code>. It is initialised once at app launch in <code>MeshtasticApp.swift</code> and injected via <code>.modelContainer(PersistenceController.shared.container)</code>.</p>
-<p>Autosave is <strong>disabled</strong> in production (<code>container.mainContext.autosaveEnabled = false</code>). All persistence is driven by explicit <code>modelContext.save()</code> calls so the app controls exactly when SQLite writes occur.</p>
-<h2>Save Strategy</h2>
-<p>The app uses two save patterns depending on packet frequency:</p>
-<h3>Immediate Saves</h3>
-<p>Config changes, messages, waypoints, and other low-frequency mutations call <code>savePendingChanges()</code> directly after updating the model graph. This helper is a thin wrapper around <code>modelContext.save()</code> with error logging.</p>
-<h3>Debounced Saves</h3>
-<p>High-frequency packets — positions and telemetry — use <code>scheduleDebouncedSave()</code> to coalesce writes. The debouncer waits <strong>2 seconds</strong> of inactivity before flushing, with a hard ceiling of <strong>5 seconds</strong> from the first dirty change. This prevents dozens of SQLite writes per second when the mesh is busy.</p>
-<pre><code>Position packet 1 → dirty flag set, 2s timer starts
-Position packet 2 (200ms later) → timer resets to 2s
-Position packet 3 (200ms later) → timer resets to 2s
-...
-No packets for 2s → save() fires
-— OR —
-5s since first dirty change → save() fires regardless
-</code></pre>
-<p>Debounced saves are flushed explicitly on disconnect so no data is lost.</p>
-<h2>Indexes</h2>
-<p>Frequently queried fields use <code>@Attribute(.unique)</code> to create a UNIQUE INDEX in the underlying SQLite store. This eliminates full table scans on the hottest lookup paths:</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Entity</th>
-<th>Why</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>num</code></td>
-<td><code>NodeInfoEntity</code></td>
-<td>Looked up on every incoming packet</td>
-</tr>
-<tr>
-<td><code>num</code></td>
-<td><code>UserEntity</code></td>
-<td>Looked up on every message</td>
-</tr>
-<tr>
-<td><code>messageId</code></td>
-<td><code>MessageEntity</code></td>
-<td>ACK lookups, deduplication</td>
-</tr>
-<tr>
-<td><code>hwModel</code></td>
-<td><code>DeviceHardwareEntity</code></td>
-<td>Hardware image lookups</td>
-</tr>
-</tbody>
-</table>
-<div class="tips-callout"><strong>Note</strong> — <code>@Attribute(.indexed)</code> requires iOS 18+. The app targets iOS 17.5, so <code>@Attribute(.unique)</code> is used instead (it creates a UNIQUE INDEX which also serves as a regular index).</div>
-<h2>Using the ModelContext in Views</h2>
-<pre><code class="language-swift">struct MyView: View {
-    @Environment(\.modelContext) private var context
-    @Query private var nodes: [NodeInfoEntity]
-
-    var body: some View { ... }
-}
-</code></pre>
-<p>Use <code>@Query</code> for data that drives the view. Use <code>context.insert(_:)</code> / <code>context.delete(_:)</code> for mutations. Mutations on the main context are safe on the main actor.</p>
-<h2>Background Writes</h2>
-<p>For writes triggered by incoming radio packets (off the main thread), use the <code>MeshPackets</code> <code>@ModelActor</code>:</p>
-<pre><code class="language-swift">let actor = MeshPackets(modelContainer: PersistenceController.shared.container)
-await actor.savePacket(packet)
-</code></pre>
-<p>Never write to the main <code>ModelContext</code> from a background thread.</p>
-<h2>Model Types</h2>
-<p>All model types live in <code>Meshtastic/Model/</code>. Each type is decorated with <code>@Model</code>:</p>
-<pre><code class="language-swift">@Model
-final class NodeInfoEntity {
-    var num: Int64
-    var longName: String?
-    // ...
-}
-</code></pre>
-<p>Key model types:</p>
-<table>
-<thead>
-<tr>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>NodeInfoEntity</code></td>
-<td>A node heard on the mesh</td>
-</tr>
-<tr>
-<td><code>MessageEntity</code></td>
-<td>A channel or direct message</td>
-</tr>
-<tr>
-<td><code>PositionEntity</code></td>
-<td>A GPS position update</td>
-</tr>
-<tr>
-<td><code>TelemetryEntity</code></td>
-<td>Device/environment sensor data</td>
-</tr>
-<tr>
-<td><code>TraceRouteEntity</code></td>
-<td>A recorded trace route</td>
-</tr>
-<tr>
-<td><code>WaypointEntity</code></td>
-<td>A shared map waypoint</td>
-</tr>
-</tbody>
-</table>
-<h2>Schema Migrations</h2>
-<p>When you add, rename, or remove properties on a <code>@Model</code> type, you must provide a migration. Schema files live in <code>Meshtastic/Model/Schema/</code>.</p>
-<h3>Adding a New Schema Version</h3>
-<ol>
-<li>Create <code>Meshtastic/Model/Schema/MeshtasticSchemaV2.swift</code> with the updated models:</li>
-</ol>
-<pre><code class="language-swift">enum MeshtasticSchemaV2: VersionedSchema {
-    static var versionIdentifier = Schema.Version(2, 0, 0)
-    static var models: [any PersistentModel.Type] { ... }
-}
-</code></pre>
-<ol start="2">
-<li>Append <code>MeshtasticSchemaV2.self</code> to <code>MeshtasticMigrationPlan.schemas</code> (newest last).</li>
-<li>Add a migration stage to <code>MeshtasticMigrationPlan.stages</code>:</li>
-</ol>
-<pre><code class="language-swift">// Lightweight — SwiftData infers additive changes automatically (new optional properties)
-static let migrateV1toV2 = MigrationStage.lightweight(
-    fromVersion: MeshtasticSchemaV1.self,
-    toVersion: MeshtasticSchemaV2.self
-)
-
-// Custom — when you need to transform or backfill data
-static let migrateV1toV2 = MigrationStage.custom(
-    fromVersion: MeshtasticSchemaV1.self,
-    toVersion: MeshtasticSchemaV2.self,
-    willMigrate: { context in },
-    didMigrate: { context in
-        // Transform data, populate new fields, etc.
-        try context.save()
-    }
-)
-</code></pre>
-<ol start="4">
-<li>Update <code>MeshtasticSchema.current</code> to point to the new version.</li>
-</ol>
-<div class="warning-callout"><strong>Warning — Never delete a <code>VersionedSchema</code>.</strong> Migration history must be preserved or the migration plan will fail on devices that skipped intermediate versions.</div>
-<h2>Query Helpers</h2>
-<p><code>QuerySwiftData.swift</code> contains helper functions for common fetches:</p>
-<pre><code class="language-swift">let node = getNodeInfo(id: nodeNum, context: context)
-</code></pre>
-<p><code>UpdateSwiftData.swift</code> contains helpers for upsert patterns:</p>
-<pre><code class="language-swift">upsertNode(packet: packet, context: context)
-</code></pre>
-<p>Prefer these helpers over direct queries to keep logic consistent.</p>
-<h2>Data Caps</h2>
-<p>To prevent unbounded database growth, the app enforces per-node caps when inserting new records. Older rows beyond the cap are deleted in the same transaction:</p>
-<table>
-<thead>
-<tr>
-<th>Relationship</th>
-<th>Cap</th>
-<th>Behaviour</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>NodeInfoEntity.positions</code></td>
-<td>5 000</td>
-<td>Oldest positions deleted when exceeded</td>
-</tr>
-<tr>
-<td><code>NodeInfoEntity.telemetries</code></td>
-<td>5 000 per metrics type</td>
-<td>Oldest telemetry of that type deleted</td>
-</tr>
-<tr>
-<td><code>MessageEntity</code> (per channel)</td>
-<td>50 000</td>
-<td>Oldest messages in the channel deleted</td>
-</tr>
-</tbody>
-</table>
-<p>These caps are enforced in <code>UpdateSwiftData.swift</code> during the upsert path, so they run on every incoming packet without requiring a separate maintenance task.</p>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

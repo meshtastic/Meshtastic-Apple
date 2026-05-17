@@ -3,79 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adding Features</title>
+  <title>adding-features</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="adding-features">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Adding Features</h1>
-<p>This guide walks through adding a new settings view end-to-end: navigation state, deep link, view file, and Settings integration.</p>
-<h2>1. Add a Navigation Case</h2>
-<p>Open <code>Meshtastic/Router/NavigationState.swift</code> and add a new case to <code>SettingsNavigationState</code>:</p>
-<pre><code class="language-swift">enum SettingsNavigationState: String {
-    // ... existing cases ...
-    case myNewFeature   // raw value is &quot;myNewFeature&quot; — matches the deep link path segment
-}
-</code></pre>
-<p>Use <code>lowerCamelCase</code> raw values. The raw value becomes the URL path segment for deep linking.</p>
-<h2>2. Create the View</h2>
-<p>Create a new SwiftUI file under <code>Meshtastic/Views/Settings/</code>:</p>
-<pre><code class="language-swift">// Meshtastic/Views/Settings/MyNewFeatureView.swift
-
-import SwiftUI
-
-struct MyNewFeatureView: View {
-    var body: some View {
-        List {
-            // content
-        }
-        .navigationTitle(&quot;My New Feature&quot;)
-    }
-}
-</code></pre>
-<p>Keep view files focused. If the view grows beyond ~400 lines (SwiftLint warning), split into subviews or extension files.</p>
-<h2>3. Wire up Settings Navigation</h2>
-<p>Open <code>Meshtastic/Views/Settings/Settings.swift</code> and find the <code>navigationDestination(for:)</code> switch. Add your case:</p>
-<pre><code class="language-swift">.navigationDestination(for: SettingsNavigationState.self) { state in
-    switch state {
-    // ... existing cases ...
-    case .myNewFeature:
-        MyNewFeatureView()
-    }
-}
-</code></pre>
-<p>Then add a <code>NavigationLink</code> in the appropriate section of the Settings list:</p>
-<pre><code class="language-swift">NavigationLink(value: SettingsNavigationState.myNewFeature) {
-    Label(&quot;My New Feature&quot;, systemImage: &quot;star&quot;)
-}
-</code></pre>
-<h2>4. Handle the Deep Link (Optional)</h2>
-<p>If you need a deep link (<code>meshtastic:///settings/myNewFeature</code>), add handling in <code>Router.routeSettings()</code>:</p>
-<pre><code class="language-swift">func routeSettings(path: String) {
-    if let state = SettingsNavigationState(rawValue: path) {
-        navigationState.settingsNavigationState = state
-        navigationState.selectedTab = .settings
-    }
-}
-</code></pre>
-<p>The <code>rawValue</code> init already handles this automatically for <code>String</code>-backed enums — no additional code needed.</p>
-<p>Document the new URL in <code>docs/developer/deep-links.md</code>.</p>
-<h2>5. Add Logging</h2>
-<p>Import the appropriate logger category from <code>Logger.swift</code>:</p>
-<pre><code class="language-swift">Logger.data.debug(&quot;MyNewFeatureView appeared&quot;)
-</code></pre>
-<p>Create a new category only if existing categories don't fit. See the <a href="codebase.html">Codebase Guide</a> for available categories.</p>
-<h2>6. Write Tests</h2>
-<p>Add a test file in <code>MeshtasticTests/</code> using Swift Testing:</p>
-<pre><code class="language-swift">import Testing
-@testable import Meshtastic
-
-@Suite(&quot;MyNewFeatureTests&quot;)
-struct MyNewFeatureTests {
-    @Test func navigationCaseHasCorrectRawValue() {
-        #expect(SettingsNavigationState.myNewFeature.rawValue == &quot;myNewFeature&quot;)
-    }
-}
-</code></pre>
-<p>Run tests in Xcode with ⌘U before opening a PR.</p>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

@@ -3,112 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transport Layer</title>
+  <title>transport</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="transport">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Transport Layer</h1>
-<p><code>AccessoryManager</code> abstracts BLE, TCP/IP, and serial transports behind a single interface. Views and services interact only with <code>AccessoryManager</code> — never with transport implementations directly.</p>
-<h2>Transport Implementations</h2>
-<p>Transports live in <code>Meshtastic/Accessory/Transports/</code>:</p>
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th>Protocol</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>BLETransport.swift</code></td>
-<td>CoreBluetooth</td>
-<td>Standard BLE connection to radios</td>
-</tr>
-<tr>
-<td><code>TCPTransport.swift</code></td>
-<td>Network.framework</td>
-<td>Wi-Fi / TCP/IP to radios with networking</td>
-</tr>
-<tr>
-<td><code>SerialTransport.swift</code></td>
-<td>IOKit serial</td>
-<td>macOS only; USB-serial adapters</td>
-</tr>
-</tbody>
-</table>
-<p>Each transport conforms to a <code>MeshTransport</code> protocol that exposes <code>connect()</code>, <code>disconnect()</code>, <code>send(data:)</code>, and a <code>received</code> publisher.</p>
-<h2>AccessoryManager Extension Map</h2>
-<table>
-<thead>
-<tr>
-<th>Extension</th>
-<th>Key Methods</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>+Discovery</code></td>
-<td><code>startScanning()</code>, <code>stopScanning()</code>, <code>peripheral(_:didDiscover:)</code></td>
-</tr>
-<tr>
-<td><code>+Connect</code></td>
-<td><code>connect(peripheral:)</code>, <code>disconnect()</code>, <code>centralManager(_:didConnect:)</code></td>
-</tr>
-<tr>
-<td><code>+ToRadio</code></td>
-<td><code>sendPacket(_:)</code>, <code>sendWantConfig()</code>, <code>sendWaypoint(_:)</code></td>
-</tr>
-<tr>
-<td><code>+FromRadio</code></td>
-<td><code>handleFromRadio(_:)</code>, <code>handleMeshPacket(_:)</code></td>
-</tr>
-<tr>
-<td><code>+Position</code></td>
-<td><code>startLocationUpdates()</code>, <code>sendPosition(_:)</code></td>
-</tr>
-<tr>
-<td><code>+MQTT</code></td>
-<td><code>connectMQTT()</code>, <code>publishPacket(_:)</code>, <code>mqttClient(_:didReceiveMessage:)</code></td>
-</tr>
-<tr>
-<td><code>+TAK</code></td>
-<td><code>handleATAKPluginPacket(_:)</code>, <code>handleATAKPluginV2Packet(_:)</code>, <code>handleATAKForwarderPacket(_:)</code>, <code>sendTAKPacket(_:channel:)</code>, <code>sendTAKV2Packet(_:channel:)</code>, <code>sendCoTToMeshV2(_:channel:)</code>. See <a href="tak-protocol.html">TAK Protocol</a> for the V1/V2 wire format detail.</td>
-</tr>
-</tbody>
-</table>
-<h2>Packet Flow (Inbound)</h2>
-<pre><code>Radio (BLE/TCP/Serial)
-  → Transport.received publisher
-  → AccessoryManager+FromRadio.handleFromRadio(_:)
-  → Decode protobuf (MeshtasticProtobufs)
-  → Route by packet type:
-      MeshPacket  → handleMeshPacket(_:)
-      NodeInfo    → updateNodeInfo(_:)
-      MyNodeInfo  → updateMyNodeInfo(_:)
-      Config      → updateConfig(_:)
-      ...
-  → Write to SwiftData via MeshPackets @ModelActor
-  → Publish changes via @Published properties (UI updates)
-</code></pre>
-<h2>Packet Flow (Outbound)</h2>
-<pre><code>View / Service
-  → AccessoryManager+ToRadio.sendPacket(_:)
-  → Encode to protobuf (ToRadio wrapper)
-  → Transport.send(data:)
-  → Radio
-</code></pre>
-<h2>Adding a New Packet Type</h2>
-<ol>
-<li>Add the protobuf definition in the <code>protobufs/</code> submodule.</li>
-<li>Run <code>./scripts/gen_protos.sh</code>.</li>
-<li>Add a decode/dispatch case in <code>AccessoryManager+FromRadio.handleFromRadio(_:)</code>.</li>
-<li>Add a send method in <code>AccessoryManager+ToRadio.swift</code>.</li>
-<li>Add a model property or SwiftData entity if the data needs to persist.</li>
-<li>Write unit tests against the encode/decode round-trip.</li>
-</ol>
-<h2>Concurrency Notes</h2>
-<p><code>AccessoryManager</code> is not <code>@MainActor</code>. Its <code>@Published</code> properties are observed from SwiftUI views on the main actor. Use <code>await MainActor.run { }</code> when updating published properties from background tasks or CoreBluetooth delegate callbacks.</p>
-<p>Background persistence writes must go through the <code>MeshPackets</code> <code>@ModelActor</code>, not the main <code>ModelContext</code>.</p>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>

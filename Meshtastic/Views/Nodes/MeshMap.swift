@@ -51,18 +51,17 @@ struct MeshMap: View {
 	/// Track whether a detached Mesh Map window is currently open.
 	@State private var isMapWindowOpen = false
 
-	@AppStorage("enableMapShowFavorites") private var showFavorites = false
-
 	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true },
 		   sort: \PositionEntity.time, order: .reverse)
 	private var allLatestPositions: [PositionEntity]
 
-	/// Positions filtered once per render, passed to MeshMapContent to avoid repeated relationship faulting.
+	/// Positions filtered once per render using the full NodeFilterParameters,
+	/// passed to MeshMapContent to avoid repeated relationship faulting.
 	private var filteredPositions: [PositionEntity] {
-		if showFavorites {
-			return allLatestPositions.filter { $0.nodePosition?.favorite == true }
+		allLatestPositions.filter { position in
+			guard let node = position.nodePosition else { return false }
+			return filters.matches(node)
 		}
-		return allLatestPositions
 	}
 
 	/// Keep the detached map window fully populated while still starving the
@@ -218,6 +217,7 @@ struct MeshMap: View {
 				}
 				.sheet(isPresented: $editingFilters) {
 					NodeListFilter(
+						filterTitle: "Map Filters",
 						filters: filters
 					)
 				}
@@ -231,6 +231,16 @@ struct MeshMap: View {
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
 					HStack {
 						Spacer()
+						Button(action: {
+							withAnimation {
+								editingFilters = !editingFilters
+							}
+						}) {
+							Image(systemName: filters.isFiltering ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+						}
+						.accessibilityLabel(editingFilters ? "Hide node filters" : "Show node filters")
+						.accessibilityHint(editingFilters ? "Hides the node filter options." : "Shows the node filter options.")
+						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								showLegend = !showLegend

@@ -3,54 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Map &amp; Waypoints</title>
+  <title>map</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="map">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Map &amp; Waypoints</h1>
-<p>The Map tab shows all nodes that have shared a position, overlaid on an Apple Maps base layer.</p>
-<h2>Node Pins</h2>
-<p>Each node that has reported a GPS position appears as a coloured circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
-<p>Pins update automatically when a new position packet is received from the mesh.</p>
-<h2>Map Layers</h2>
-<p>Tap the layer icon (top-right) to switch between:</p>
-<table>
-<thead>
-<tr>
-<th>Layer</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Standard</td>
-<td>Default Apple Maps street/satellite hybrid</td>
-</tr>
-<tr>
-<td>Satellite</td>
-<td>Aerial imagery</td>
-</tr>
-<tr>
-<td>GeoJSON Overlays</td>
-<td>Custom map layers loaded from <code>.geojson</code> files in the app's file storage</td>
-</tr>
-</tbody>
-</table>
-<h2>Waypoints</h2>
-<p>Waypoints are named points of interest you can share across the mesh.</p>
-<h3>Creating a Waypoint</h3>
-<ol>
-<li>Long press anywhere on the map.</li>
-<li>Enter a name, optional description, and lock icon (to limit editing to the creator).</li>
-<li>Tap <strong>Save</strong> — the waypoint broadcasts to all nodes on the primary channel.</li>
-</ol>
-<h3>Editing a Waypoint</h3>
-<p>Tap an existing waypoint pin, then tap <strong>Edit</strong>. Changes broadcast to the mesh immediately.</p>
-<h3>Deleting a Waypoint</h3>
-<p>Tap the waypoint, then tap <strong>Delete</strong>. The deletion broadcasts to all nodes.</p>
-<h2>Node Trail</h2>
-<p>When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.</p>
-<h2>Your Location</h2>
-<p>Your current GPS position appears as a blue dot (standard iOS location indicator). Enable position broadcasting in <strong>Settings → Position</strong> to share your location with the mesh.</p>
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
+Options:
+  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
+  --width WIDTH    Specify wrap width (default 0 = nowrap)
+  --sourcepos      Include source position attribute
+  --hardbreaks     Treat newlines as hard line breaks
+  --nobreaks       Render soft line breaks as spaces
+  --safe           Omit raw HTML and dangerous URLs
+  --unsafe         Render raw HTML and dangerous URLs
+  --smart          Use smart punctuation
+  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
+  --help, -h       Print usage information
+  --version        Print version
 </body>
 </html>
