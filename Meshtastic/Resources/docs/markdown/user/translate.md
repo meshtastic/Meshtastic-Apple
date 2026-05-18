@@ -6,9 +6,44 @@ nav_order: 14
 
 # Translate the App
 
-Contributing translations to the Meshtastic Apple app helps make the project accessible to a wider audience. The process is designed to be simple: a script generates machine translations on your Mac using Apple Intelligence, marks them for review, and opens a pull request automatically. A native speaker then reviews and approves the strings in Xcode before they ship.
+## Automatic documentation translation
 
-## Requirements
+On devices running iOS 26 or later, the in-app documentation is automatically translated into your device language when you open **Help & Docs**.
+
+**Here's how it works:** The very first person to use a particular language + app version combination translates all pages on-device and automatically contributes their translations back to the community. Every user after them gets those translations instantly — no waiting for on-device translation.
+
+1. You open **Help & Docs** in a non-English language.
+2. If community translations already exist for your language and app version, they're downloaded instantly.
+3. If not, Apple's Translation framework translates every page on-device (~10 seconds per page).
+4. Your translations are anonymously uploaded to the [meshtastic/translations](https://github.com/meshtastic/translations) repository.
+5. The next user in your language gets instant translated docs from the community cache.
+
+No sign-up, no manual work — it just happens in the background while you use the app. You can disable this by toggling off **Participate in Distributed Translations** in App Settings.
+
+> **Tip — English users**
+> If your device language is English, no translation occurs and the bundled English documentation is displayed directly.
+
+---
+
+## Contributing app translations
+
+Contributing translations helps make Meshtastic accessible to a wider audience. Native speakers can review machine-translated strings for their language directly in Xcode — look for strings marked **Needs Review** and improve anything that sounds unnatural. If you have a Mac with Apple Silicon, you can also run a script that uses on-device Apple Intelligence to generate any missing translations for your language and automatically open a pull request.
+
+### Review machine translations
+
+All on-device translations are uploaded to the [meshtastic/translations](https://github.com/meshtastic/translations) repository. They're a great starting point, but machine translations aren't perfect! If you're a native speaker and spot something that could be improved:
+
+1. Browse to your language + app version at [apple-apps/](https://github.com/meshtastic/translations/tree/main/apple-apps)
+2. Edit the `.md` file directly on GitHub
+3. Submit a pull request
+
+Your improvements will be served to every user of that language going forward — no coding required.
+
+---
+
+## Generate new translations with a script
+
+### Requirements
 
 Before you start, make sure you have:
 
@@ -27,7 +62,7 @@ mkdir -p ~/bin && cp .build/release/local-localizer ~/bin/local-localizer
 
 Make sure `~/bin` is on your PATH (add `export PATH="$HOME/bin:$PATH"` to your shell profile if needed).
 
-## Add or complete a locale
+### Add or complete a locale
 
 Clone the repository, then run the translation script with your locale code:
 
@@ -56,7 +91,7 @@ The script will:
 
 The translation step runs entirely on your device and takes roughly 10–20 minutes for a complete locale.
 
-## Tone options
+### Tone options
 
 | Tone | When to use |
 |---|---|
@@ -66,7 +101,7 @@ The translation step runs entirely on your device and takes roughly 10–20 minu
 | `informal` | Casual register |
 | `neutral` | Plain, no register preference |
 
-## Reviewing translated strings
+### Reviewing translated strings
 
 Once the PR is open, any native speaker can review the translations directly in Xcode:
 
@@ -75,18 +110,5 @@ Once the PR is open, any native speaker can review the translations directly in 
 3. Filter by your locale and set the state filter to **Needs Review**
 4. Read each string in context, edit if needed, and mark it **Reviewed**
 5. Push your changes to the PR branch
-
-## Automatic documentation translation
-
-On devices running iOS 26 or later, the in-app documentation is automatically translated into your device language when you open **Help & Docs**. The translation pipeline works as follows:
-
-1. The app reads the bundled English markdown source files.
-2. Text segments are translated using Apple's Translation framework, falling back to on-device Foundation Models if your language is not supported.
-3. Translated markdown is cached locally so subsequent visits load instantly.
-
-After all pages are translated in the background, the app anonymously uploads the translated files to the [meshtastic/translations](https://github.com/meshtastic/translations) repository for community review and improvement.
-
-> **Tip — English users**
-> If your device language is English, no translation occurs and the bundled English documentation is displayed directly.
 
 Thank you for helping expand the reach of Meshtastic!

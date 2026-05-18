@@ -15,7 +15,7 @@ struct DisplayConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State var hasChanges = false
 	@State var screenOnSeconds = 0
@@ -63,7 +63,6 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 			}
 			Section(header: Text("Timing and Overrides")) {
 				VStack(alignment: .leading) {
@@ -76,7 +75,6 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 				
 				VStack(alignment: .leading) {
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
@@ -89,19 +87,18 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 				
 				Toggle(isOn: $wakeOnTapOrMotion) {
 					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
 					Text("Requires that there be an accelerometer on your device.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $flipScreen) {
 					Label("Flip Screen", systemImage: "pip.swap")
 					Text("Flip screen vertically")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				VStack(alignment: .leading) {
 					Picker("Display Mode", selection: $displayMode ) {
@@ -113,7 +110,6 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 				VStack(alignment: .leading) {
 					Picker("OLED Type", selection: $oledType ) {
 						ForEach(OledTypes.allCases) { ot in
@@ -124,14 +120,19 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.displayConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
 						var dc = Config.DisplayConfig()
 						dc.screenOnSecs = UInt32(screenOnSeconds)
 						dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
@@ -143,52 +144,25 @@ struct DisplayConfig: View {
 						dc.units = Units(rawValue: units)!.protoEnumValue()
 						dc.use12HClock = use12HourClock
 						dc.headingBold = headingBold
-						
-						Task {
-							_ = try await accessoryManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+						_ = try await accessoryManager.saveDisplayConfig(config: dc, fromUser: fromUser, toUser: toUser)
 					}
 				}
 			}
 		}
 		.navigationTitle("Display Config")
-		.navigationBarItems(
-			trailing: ZStack {
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-				
 			}
-		)
+		}
 		.onFirstAppear {
-			// Need to request a DisplayConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.displayConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired display config requesting via PKI admin")
-										try await accessoryManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Display config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.displayConfig == nil },
+				request: accessoryManager.requestDisplayConfig
+			)
 		}
 		.onChange(of: screenOnSeconds) { oldScreenSecs, newScreenSecs in
 			if oldScreenSecs != newScreenSecs && newScreenSecs != node?.displayConfig?.screenOnSeconds ?? -1 { hasChanges = true }

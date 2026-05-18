@@ -3,22 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>settings</title>
+  <title>Settings</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="settings">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
-Options:
-  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
-  --width WIDTH    Specify wrap width (default 0 = nowrap)
-  --sourcepos      Include source position attribute
-  --hardbreaks     Treat newlines as hard line breaks
-  --nobreaks       Render soft line breaks as spaces
-  --safe           Omit raw HTML and dangerous URLs
-  --unsafe         Render raw HTML and dangerous URLs
-  --smart          Use smart punctuation
-  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
-  --help, -h       Print usage information
-  --version        Print version
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Settings</h1>
+<p>The Settings tab lets you configure the app and your connected Meshtastic radio.</p>
+<h2>App Settings</h2>
+<p>General app preferences including map style, notification behaviour, and theme. These affect only the app — not the radio.</p>
+<h3>Data Management</h3>
+<ul>
+<li><strong>Erase All App Data</strong> — clears the local database, translation cache, and all stored settings. Use this as a last resort.</li>
+<li><strong>NodeDB Reset</strong> — resets the node database on your connected radio. When prompted, you can choose to <strong>Preserve Favorites</strong> so your starred nodes are retained after the reset.</li>
+<li><strong>Reset App Settings</strong> — restores default app preferences without affecting your node database.</li>
+</ul>
+<h2>Radio Configuration</h2>
+<p>Radio configuration requires a connected node. Select your node from the <strong>Configure</strong> section if you have multiple nodes.</p>
+<h3>LoRa</h3>
+<p>LoRa settings control how your radio communicates on the mesh:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Region</td>
+<td>Your geographical region. <strong>Must be set correctly</strong> — using the wrong region is illegal and prevents communication with local nodes. Available regions include the standard set plus Nepal 865MHz, Brazil 902MHz, ITU Region 1 Amateur 2m, ITU Region 2/3 Amateur 2m, and the EU 866 / 874 / 917 / 868-narrow bands.</td>
+</tr>
+<tr>
+<td>Modem Preset</td>
+<td>Speed/range trade-off. Most users should use Long Fast or Long Slow.</td>
+</tr>
+<tr>
+<td>Hop Limit</td>
+<td>The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic.</td>
+</tr>
+<tr>
+<td>Frequency Slot</td>
+<td>Fine-tune the exact frequency within your region.</td>
+</tr>
+</tbody>
+</table>
+<h3>Channels</h3>
+<p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
+<h3>Security</h3>
+<p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
+<h3>User</h3>
+<p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
+<h3>Bluetooth</h3>
+<p>BLE radio settings including PIN mode and power saving. Changes apply on next radio restart.</p>
+<h3>Device</h3>
+<p>Device role, serial output, debug log streaming, and node info broadcast interval.</p>
+<h3>Display</h3>
+<p>Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.</p>
+<h3>Network</h3>
+<p>Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).</p>
+<h3>Position</h3>
+<p>GPS update interval, position precision, and smart position broadcasting. Enable <strong>Broadcast Position</strong> to share your location with the mesh.</p>
+<h3>Power</h3>
+<p>Battery saving profiles, sleep modes, and minimum wake time. Critical for solar-powered router nodes.</p>
+<h2>Module Configuration</h2>
+<p>Optional feature modules. Only available when your connected node supports the module.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ambient Lighting</td>
+<td>Control NeoPixel/LED lighting on supported hardware.</td>
+</tr>
+<tr>
+<td>Canned Messages</td>
+<td>Pre-programmed message shortcuts accessible from the device buttons.</td>
+</tr>
+<tr>
+<td>Detection Sensor</td>
+<td>Configure PIR motion or contact sensors.</td>
+</tr>
+<tr>
+<td>External Notification</td>
+<td>Buzzer or LED alerts for incoming messages.</td>
+</tr>
+<tr>
+<td>MQTT</td>
+<td>Uplink/downlink messages to an MQTT broker for internet bridging.</td>
+</tr>
+<tr>
+<td>Range Test</td>
+<td>Automated range testing with position logging.</td>
+</tr>
+<tr>
+<td>Pax Counter</td>
+<td>Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection.</td>
+</tr>
+<tr>
+<td>Ringtone</td>
+<td>Custom RTTTL melodies for notification tones.</td>
+</tr>
+<tr>
+<td>Store &amp; Forward</td>
+<td>Store packets for nodes that are temporarily offline.</td>
+</tr>
+<tr>
+<td>Serial</td>
+<td>UART serial output for integration with other hardware.</td>
+</tr>
+<tr>
+<td>Telemetry</td>
+<td>Device, environment, and air-quality sensor reporting.</td>
+</tr>
+</tbody>
+</table>
+<h2>Firmware Updates</h2>
+<p>Check for and apply OTA firmware updates to your connected radio directly from the app. See <a href="firmware.html">Firmware Updates</a> for full details.</p>
+<h2>Automatic Documentation Translation</h2>
+<p>On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.</p>
+<h3>How It Works</h3>
+<ul>
+<li><strong>Language detection</strong>: The app reads your device's primary language setting each time you open a documentation page.</li>
+<li><strong>On-device translation</strong>: Pages are translated using Apple's on-device Translation framework (iOS 26+). If a language is not supported by the Translation framework, the app falls back to the on-device Foundation model (iOS 26+ only).</li>
+<li><strong>No network required</strong>: After initial translation, all content is available offline.</li>
+<li><strong>Caching</strong>: Translated pages are stored locally so they load instantly on subsequent visits.</li>
+<li><strong>Background prefetch</strong>: After the current page is translated, remaining pages are translated in the background at low priority.</li>
+</ul>
+<h3>Fallback to English</h3>
+<p>If translation is unavailable (older than iOS 26, unsupported language, or language pack not downloaded), the original English documentation is displayed. The app never shows blank or broken pages.</p>
+<h3>Cache Management</h3>
+<ul>
+<li>Translated files are stored in Application Support and persist across app launches.</li>
+<li>A 50 MB per-language limit is enforced using least-recently-used eviction.</li>
+<li>When the English source documentation is updated (new app version), stale translations are automatically regenerated.</li>
+</ul>
+<div class="tips-callout"><strong>Tip — Language change</strong>
+If you change your device language while the app is open, documentation pages automatically reload in the new language.</div>
 </body>
 </html>

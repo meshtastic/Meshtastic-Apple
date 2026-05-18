@@ -14,7 +14,7 @@ struct ExternalNotificationConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -43,36 +43,36 @@ struct ExternalNotificationConfig: View {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "megaphone")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $alertBell) {
 					Label("Alert when receiving a bell", systemImage: "bell")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $alertMessage) {
 					Label("Alert when receiving a message", systemImage: "message")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $usePWM) {
 					Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
 					Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $useI2SAsBuzzer) {
 					Label("Use I2S As Buzzer", systemImage: "light.beacon.max.fill")
 					Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 			}
 			Section(header: Text("Primary GPIO")) {
 				Toggle(isOn: $active) {
 					Label("Active", systemImage: "togglepower")
 					Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Picker("Output pin GPIO", selection: $output) {
 					ForEach(0..<49) {
@@ -83,7 +83,6 @@ struct ExternalNotificationConfig: View {
 						}
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.listRowSeparator(.visible)
 				
 				Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
@@ -91,7 +90,6 @@ struct ExternalNotificationConfig: View {
 						Text(oi.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.listRowSeparator(.hidden)
 				Text("When using in GPIO mode, keep the output on for this long. ")
 					.foregroundColor(.gray)
@@ -109,19 +107,19 @@ struct ExternalNotificationConfig: View {
 				Toggle(isOn: $alertBellBuzzer) {
 					Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Toggle(isOn: $alertBellVibra) {
 					Label("Alert GPIO vibra motor when receiving a bell", systemImage: "bell")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Toggle(isOn: $alertMessageBuzzer) {
 					Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Toggle(isOn: $alertMessageBuzzer) {
 					Label("Alert GPIO vibra motor when receiving a message", systemImage: "message")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
 					ForEach(0..<49) {
 						if $0 == 0 {
@@ -131,7 +129,6 @@ struct ExternalNotificationConfig: View {
 						}
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				Picker("Output pin vibra GPIO", selection: $outputVibra) {
 					ForEach(0..<49) {
 						if $0 == 0 {
@@ -141,81 +138,54 @@ struct ExternalNotificationConfig: View {
 						}
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.externalNotificationConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						var enc = ModuleConfig.ExternalNotificationConfig()
-						enc.enabled = enabled
-						enc.alertBell = alertBell
-						enc.alertBellBuzzer = alertBellBuzzer
-						enc.alertBellVibra = alertBellVibra
-						enc.alertMessage = alertMessage
-						enc.alertMessageBuzzer = alertMessageBuzzer
-						enc.alertMessageVibra = alertMessageVibra
-						enc.active = active
-						enc.output = UInt32(output)
-						enc.nagTimeout = UInt32(nagTimeout.intValue)
-						enc.outputBuzzer = UInt32(outputBuzzer)
-						enc.outputVibra = UInt32(outputVibra)
-						enc.outputMs = UInt32(outputMilliseconds)
-						enc.usePwm = usePWM
-						enc.useI2SAsBuzzer = useI2SAsBuzzer
-						Task {
-							do {
-								_ = try await accessoryManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!)
-								Task { @MainActor in
-									hasChanges = false
-									goBack()
-								}
-							} catch {
-								Logger.mesh.error("Unable to save external notiication module config")
-							}
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var enc = ModuleConfig.ExternalNotificationConfig()
+					enc.enabled = enabled
+					enc.alertBell = alertBell
+					enc.alertBellBuzzer = alertBellBuzzer
+					enc.alertBellVibra = alertBellVibra
+					enc.alertMessage = alertMessage
+					enc.alertMessageBuzzer = alertMessageBuzzer
+					enc.alertMessageVibra = alertMessageVibra
+					enc.active = active
+					enc.output = UInt32(output)
+					enc.nagTimeout = UInt32(nagTimeout.intValue)
+					enc.outputBuzzer = UInt32(outputBuzzer)
+					enc.outputVibra = UInt32(outputVibra)
+					enc.outputMs = UInt32(outputMilliseconds)
+					enc.usePwm = usePWM
+					enc.useI2SAsBuzzer = useI2SAsBuzzer
+					_ = try await accessoryManager.saveExternalNotificationModuleConfig(config: enc, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("External Notification Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
-			// Need to request a ExternalNotificationModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.externalNotificationConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired external notificaiton module config requesting via PKI admin")
-										try await accessoryManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Unable to send external ntoification module config request")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.externalNotificationConfig == nil },
+				request: accessoryManager.requestExternalNotificationModuleConfig
+			)
 		}
 		.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.externalNotificationConfig?.enabled { hasChanges = true }

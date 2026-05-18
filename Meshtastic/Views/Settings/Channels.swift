@@ -333,6 +333,7 @@ struct Channels: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.buttonBorderShape(.circle)
 			}
 			.controlSize(.regular)
 			.padding(5)
@@ -342,10 +343,11 @@ struct Channels: View {
 		.onAppear {
 			normalizeDuplicateChannelsIfNeeded()
 		}
-		.navigationBarItems(trailing:
-		ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 	}
 }
 

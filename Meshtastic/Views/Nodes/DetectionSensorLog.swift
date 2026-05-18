@@ -131,10 +131,11 @@ struct DetectionSensorLog: View {
 		}
 		.navigationTitle("Detection Sensor Log")
 		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),

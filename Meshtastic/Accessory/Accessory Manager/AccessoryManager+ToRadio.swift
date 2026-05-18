@@ -1878,9 +1878,10 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) async throws {
+	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity, preserveFavorites: Bool = true) async throws {
 		var adminPacket = AdminMessage()
-		adminPacket.nodedbReset = true
+		// nodedbReset = true means preserve favorites; false means wipe all nodes.
+		adminPacket.nodedbReset = preserveFavorites
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}

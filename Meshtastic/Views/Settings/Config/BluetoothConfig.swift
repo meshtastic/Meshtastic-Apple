@@ -46,19 +46,16 @@ struct BluetoothConfig: View {
 						TextField("Fixed Pin", text: $fixedPin)
 							.foregroundColor(.gray)
 							.onChange(of: fixedPin) {
-								// Don't let the first character be 0 because it will get stripped when saving a UInt32
-								if fixedPin.first == "0" {
-									fixedPin = fixedPin.replacing("0", with: "")
-								}
+								// Only allow numeric characters
+								let filtered = fixedPin.filter(\.isNumber)
+								// Strip leading zeros since the protobuf value is a UInt32
+								let trimmed = String(filtered.drop(while: { $0 == "0" }))
 								// Require that pin is no more than 6 numbers and no less than 6 numbers
-								if fixedPin.utf8.count == pinLength {
-									shortPin = false
-								} else if fixedPin.utf8.count > pinLength {
-									shortPin = false
-									fixedPin = String(fixedPin.prefix(pinLength))
-								} else if fixedPin.utf8.count < pinLength {
-									shortPin = true
+								let clamped = String(trimmed.prefix(pinLength))
+								if fixedPin != clamped {
+									fixedPin = clamped
 								}
+								shortPin = clamped.count < pinLength
 							}
 							.foregroundColor(.gray)
 					}
@@ -74,25 +71,21 @@ struct BluetoothConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.bluetoothConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if let myNodeNum = accessoryManager.activeDeviceNum,
-					   let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
-						var bc = Config.BluetoothConfig()
-						bc.enabled = enabled
-						bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
-						bc.fixedPin = UInt32(fixedPin) ?? 123456
-						Task {
-							// TODO: ADMINIndex?
-							_ = try await accessoryManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var bc = Config.BluetoothConfig()
+					bc.enabled = enabled
+					bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
+					bc.fixedPin = UInt32(fixedPin) ?? 123456
+					_ = try await accessoryManager.saveBluetoothConfig(config: bc, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("Bluetooth Config")
@@ -103,32 +96,13 @@ struct BluetoothConfig: View {
 			}
 		)
 		.onFirstAppear {
-			// Need to request a BluetoothConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.bluetoothConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired bluetooth config requesting via PKI admin")
-										// TODO: AdminIndex?
-										try await accessoryManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Bluetooth config request failed")
-									}
-								}
-								
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.bluetoothConfig == nil },
+				request: accessoryManager.requestBluetoothConfig
+			)
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node?.bluetoothConfig?.enabled { hasChanges = true }

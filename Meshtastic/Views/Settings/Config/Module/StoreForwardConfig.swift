@@ -13,7 +13,7 @@ struct StoreForwardConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	/// Enable the Store and Forward Module
@@ -38,7 +38,7 @@ struct StoreForwardConfig: View {
 					Label("Enabled", systemImage: "envelope.arrow.triangle.branch")
 					Text("Enables the store and forward module.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 			}
 			
 			if enabled {
@@ -54,7 +54,6 @@ struct StoreForwardConfig: View {
 						Text("75").tag(75)
 						Text("100").tag(100)
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Picker("History Return Max", selection: $historyReturnMax) {
 						Text("Unset").tag(0)
 						Text("25").tag(25)
@@ -62,7 +61,6 @@ struct StoreForwardConfig: View {
 						Text("75").tag(75)
 						Text("100").tag(100)
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Picker("History Return Window", selection: $historyReturnWindow) {
 						Text("Unset").tag(0)
 						Text("One Minute").tag(60)
@@ -73,7 +71,6 @@ struct StoreForwardConfig: View {
 						Text("One Hour").tag(3600)
 						Text("Two Hours").tag(7200)
 					}
-					.pickerStyle(DefaultPickerStyle())
 				}
 				
 				Section(header: Text("Server Option")) {
@@ -81,7 +78,7 @@ struct StoreForwardConfig: View {
 						Label("Server", systemImage: "server.rack")
 						Text("Enable this device as a Store and Forward server. Requires an ESP32 device with PSRAM.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					if isServer {
 						Text("Store and forward servers require an ESP32 device with PSRAM or Linux Native.")
 							.foregroundColor(.gray)
@@ -94,76 +91,51 @@ struct StoreForwardConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.storeForwardConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						/// Let the user set isServer for the connected node, for nodes on the mesh set isServer based
-						/// on receipt of a primary heartbeat
-						if connectedNode?.num ?? 0 == node?.num ?? -1 {
-							connectedNode?.storeForwardConfig?.isRouter = isServer
-							do {
-								try context.save()
-							} catch {
-								Logger.mesh.error("Failed to save isServer: \(error.localizedDescription, privacy: .public)")
-							}
-						}
-						
-						var sfc = ModuleConfig.StoreForwardConfig()
-						sfc.isServer = isServer
-						sfc.enabled = self.enabled
-						sfc.heartbeat = self.heartbeat
-						sfc.records = UInt32(self.records)
-						sfc.historyReturnMax = UInt32(self.historyReturnMax)
-						sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
-						
-						Task {
-							_ = try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				// Let the user set isServer for the connected node
+				if let deviceNum = accessoryManager.activeDeviceNum,
+				   let connectedNode = getNodeInfo(id: deviceNum, context: context),
+				   connectedNode.num == node?.num ?? -1 {
+					connectedNode.storeForwardConfig?.isRouter = isServer
+					do {
+						try context.save()
+					} catch {
+						Logger.mesh.error("Failed to save isServer: \(error.localizedDescription, privacy: .public)")
 					}
 				}
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var sfc = ModuleConfig.StoreForwardConfig()
+					sfc.isServer = isServer
+					sfc.enabled = self.enabled
+					sfc.heartbeat = self.heartbeat
+					sfc.records = UInt32(self.records)
+					sfc.historyReturnMax = UInt32(self.historyReturnMax)
+					sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
+					_ = try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: fromUser, toUser: toUser)
+				}
+			}
 			}
 		}
 		.navigationTitle("Store & Forward Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
-			// Need to request a StoreForwardModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != deviceNum {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.storeForwardConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired store & forward module config requesting via PKI admin")
-										try await accessoryManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Request for store & forward module config failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.storeForwardConfig == nil },
+				request: accessoryManager.requestStoreAndForwardModuleConfig
+			)
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node?.storeForwardConfig?.enabled { hasChanges = true }

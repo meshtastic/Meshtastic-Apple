@@ -3,22 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>getting-started</title>
+  <title>Getting Started</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="getting-started">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
-Options:
-  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
-  --width WIDTH    Specify wrap width (default 0 = nowrap)
-  --sourcepos      Include source position attribute
-  --hardbreaks     Treat newlines as hard line breaks
-  --nobreaks       Render soft line breaks as spaces
-  --safe           Omit raw HTML and dangerous URLs
-  --unsafe         Render raw HTML and dangerous URLs
-  --smart          Use smart punctuation
-  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
-  --help, -h       Print usage information
-  --version        Print version
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Getting Started</h1>
+<p>Welcome to the Meshtastic Apple app — your iOS, iPadOS, and macOS companion for off-grid mesh radio communication.</p>
+<h2>What You Need</h2>
+<ul>
+<li>A supported Meshtastic LoRa radio device (see <a href="https://meshtastic.org/docs/hardware/">meshtastic.org</a>)</li>
+<li>iPhone, iPad, or Mac with the Meshtastic app installed</li>
+<li>Bluetooth enabled on your device</li>
+</ul>
+<h2>Step 1: Power On Your Radio</h2>
+<p>Turn on your Meshtastic radio. Most devices show a splash screen and begin broadcasting on the mesh immediately.</p>
+<h2>Step 2: Open the App and Connect</h2>
+<ol>
+<li>Open the Meshtastic app.</li>
+<li>Tap <strong>Connect</strong> (the antenna icon in the tab bar).</li>
+<li>Your radio should appear in the nearby devices list within a few seconds.</li>
+<li>Tap the device name to connect.</li>
+</ol>
+<p>The connection indicator turns green when the radio is paired and communicating.</p>
+<div class="tips-callout"><strong>Tip:</strong> If your device does not appear, make sure Bluetooth is enabled in iOS Settings and that the radio is within range (roughly 10 metres for initial pairing).</div>
+<h2>Step 3: Set Your Name and Short ID</h2>
+<ol>
+<li>Go to <strong>Settings → User</strong>.</li>
+<li>Enter a <strong>Long Name</strong> (your display name, up to 39 characters).</li>
+<li>Enter a <strong>Short Name</strong> (up to 4 characters or an emoji — shown in the node circle).</li>
+<li>Tap <strong>Save</strong>.</li>
+</ol>
+<p>Your name broadcasts to nearby nodes automatically.</p>
+<h2>Step 4: Explore the Mesh</h2>
+<p>Once connected, the app shows nearby nodes in the <strong>Nodes</strong> tab. Tap any node to see details like signal strength, last heard time, and position.</p>
+<p>Send your first message by tapping the <strong>Messages</strong> tab and selecting the primary channel.</p>
+<div class="tips-callout"><strong>Tip — Quick navigation</strong>
+Tap the currently active tab icon to jump back to the top-level view from anywhere in that tab.</div>
+<h2>Step 5: Check Your Settings</h2>
+<p>Visit <strong>Settings → LoRa</strong> to verify your region code matches your location. Using the wrong region is illegal and will prevent communication with other nodes in your area.</p>
+<h2>Next Steps</h2>
+<ul>
+<li><a href="bluetooth.html">Bluetooth Device Connection</a> — manage multiple radios</li>
+<li><a href="messages.html">Messages &amp; Channels</a> — send broadcasts and direct messages</li>
+<li><a href="nodes.html">Nodes List</a> — understand node status indicators</li>
+<li><a href="map.html">Map &amp; Waypoints</a> — see the mesh on a map</li>
+</ul>
 </body>
 </html>

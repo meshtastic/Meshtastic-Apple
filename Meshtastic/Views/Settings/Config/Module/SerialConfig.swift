@@ -14,7 +14,7 @@ struct SerialConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -38,27 +38,25 @@ struct SerialConfig: View {
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "terminal")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					Toggle(isOn: $echo) {
 						Label("Echo", systemImage: "repeat")
 						Text("If set, any packets you send will be echoed back to your device.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					Picker("Baud", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in
 							Text(sbr.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					Picker("Timeout", selection: $timeout ) {
 						ForEach(SerialTimeoutIntervals.allCases) { sti in
 							Text(sti.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
 					Text("The amount of time to wait before we consider your packet as done.")
 						.foregroundColor(.gray)
@@ -69,7 +67,6 @@ struct SerialConfig: View {
 							Text(smt.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 				}
 				Section(header: Text("GPIO")) {
 					
@@ -82,7 +79,6 @@ struct SerialConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.visible)
 					
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
@@ -94,7 +90,6 @@ struct SerialConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
 					Text("Set the GPIO pins for RXD and TXD.")
 						.foregroundColor(.gray)
@@ -104,68 +99,42 @@ struct SerialConfig: View {
 			.disabled(!accessoryManager.isConnected || node?.serialConfig == nil)
 			.safeAreaInset(edge: .bottom, alignment: .center) {
 				HStack(spacing: 0) {
-					SaveConfigButton(node: node, hasChanges: $hasChanges) {
-						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-						if connectedNode != nil {
-							var sc = ModuleConfig.SerialConfig()
-							sc.enabled = enabled
-							sc.echo = echo
-							sc.rxd = UInt32(rxd)
-							sc.txd = UInt32(txd)
-							sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
-							sc.timeout = UInt32(timeout)
-							sc.overrideConsoleSerialPort = overrideConsoleSerialPort
-							sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
-							
-							Task {
-								_ = try await accessoryManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!)
-								
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
-									hasChanges = false
-									goBack()
-								}
-							}
-						}
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var sc = ModuleConfig.SerialConfig()
+						sc.enabled = enabled
+						sc.echo = echo
+						sc.rxd = UInt32(rxd)
+						sc.txd = UInt32(txd)
+						sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
+						sc.timeout = UInt32(timeout)
+						sc.overrideConsoleSerialPort = overrideConsoleSerialPort
+						sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
+						_ = try await accessoryManager.saveSerialModuleConfig(config: sc, fromUser: fromUser, toUser: toUser)
 					}
+				}
 				}
 			}
 			.navigationTitle("Serial Config")
-			.navigationBarItems(
-				trailing: ZStack {
-					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?"
-					)
+			.toolbar {
+				ToolbarItem(placement: .topBarTrailing) {
+					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 				}
-			)
+			}
 			.onFirstAppear {
-				// Need to request a SerialModuleConfig from the remote node before allowing changes
-				if let deviceNum = accessoryManager.activeDeviceNum, let node {
-					let connectedNode = getNodeInfo(id: deviceNum, context: context)
-					if let connectedNode {
-						if node.num != deviceNum {
-							if UserDefaults.enableAdministration && node.num != deviceNum {
-								/// 2.5 Administration with session passkey
-								let expiration = node.sessionExpiration ?? Date()
-								if expiration < Date() || node.serialConfig == nil {
-									Task {
-										do {
-											Logger.mesh.info("⚙️ Empty or expired serial module config requesting via PKI admin")
-											try await accessoryManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-										} catch {
-											Logger.mesh.info("🚨 Request for serial module config failed")
-										}
-									}
-								}
-							} else {
-								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-							}
-						}
-					}
-				}
+				requestRemoteConfig(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					configIsNil: { $0.serialConfig == nil },
+					request: accessoryManager.requestSerialModuleConfig
+				)
 			}
 			.onChange(of: enabled) { oldEnabled, newEnabled in
 				if oldEnabled != newEnabled && newEnabled != node?.serialConfig?.enabled ?? false { hasChanges = true }

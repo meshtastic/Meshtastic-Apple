@@ -19,6 +19,7 @@ struct DeviceConfig: View {
 	
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
+	@State private var isResetting = false
 	@State var hasChanges = false
 	@State var deviceRole = 0
 	@State var buzzerGPIO = 0
@@ -33,6 +34,13 @@ struct DeviceConfig: View {
 	@State private var showSpecialRoleWarningForRole: Int = 0
 
 	var body: some View {
+		Group {
+		if isResetting {
+			VStack {
+				ProgressView()
+				Text("Resetting…").font(.caption).foregroundStyle(.secondary)
+			}
+		} else {
 		Form {
 			ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
 			
@@ -169,18 +177,47 @@ struct DeviceConfig: View {
 							isPresented: $isPresentingNodeDBResetConfirm,
 							titleVisibility: .visible
 						) {
-							Button("Erase all device and app data?", role: .destructive) {
+							Button("Reset node database, preserving favorites?") {
+								guard let fromUser = node?.user, let toUser = node?.user else { return }
+								isResetting = true
 								Task {
 									do {
-										try await accessoryManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!)
+										try await accessoryManager.sendNodeDBReset(fromUser: fromUser, toUser: toUser, preserveFavorites: true)
 										try await Task.sleep(for: .seconds(1))
-										try await accessoryManager.disconnect()
+										if let conn = accessoryManager.activeConnection {
+											try await conn.connection.disconnect(withError: nil, shouldReconnect: true)
+										}
+										goBack()
+										try await Task.sleep(for: .milliseconds(500))
+										await MeshPackets.shared.flushDebouncedSaves()
+										await MeshPackets.shared.clearDatabase(includeRoutes: false, preserveFavorites: true)
+										MeshPackets.recreateShared()
+										clearNotifications()
+									} catch {
+										Logger.mesh.error("NodeDB Reset Failed")
+										isResetting = false
+									}
+								}
+							}
+							Button("Reset node database and favorites?", role: .destructive) {
+								guard let fromUser = node?.user, let toUser = node?.user else { return }
+								isResetting = true
+								Task {
+									do {
+										try await accessoryManager.sendNodeDBReset(fromUser: fromUser, toUser: toUser, preserveFavorites: false)
+										try await Task.sleep(for: .seconds(1))
+										if let conn = accessoryManager.activeConnection {
+											try await conn.connection.disconnect(withError: nil, shouldReconnect: true)
+										}
+										goBack()
+										try await Task.sleep(for: .milliseconds(500))
 										await MeshPackets.shared.flushDebouncedSaves()
 										await MeshPackets.shared.clearDatabase(includeRoutes: false)
 										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("NodeDB Reset Failed")
+										isResetting = false
 									}
 								}
 							}
@@ -197,32 +234,44 @@ struct DeviceConfig: View {
 							titleVisibility: .visible
 						) {
 							Button("Delete all config? ", role: .destructive) {
+								guard let fromUser = node?.user, let toUser = node?.user else { return }
+								isResetting = true
 								Task {
 									do {
-										try await accessoryManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!)
+										try await accessoryManager.sendFactoryReset(fromUser: fromUser, toUser: toUser)
 										try await Task.sleep(for: .seconds(1))
-										try await accessoryManager.disconnect()
+										if let conn = accessoryManager.activeConnection {
+											try await conn.connection.disconnect(withError: nil, shouldReconnect: true)
+										}
+										goBack()
+										try await Task.sleep(for: .milliseconds(500))
 										await MeshPackets.shared.flushDebouncedSaves()
 										await MeshPackets.shared.clearDatabase(includeRoutes: false)
 										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("Factory Reset Failed")
+										isResetting = false
 									}
 								}
 							}
 							Button("Delete all config, keys and BLE bonds? ", role: .destructive) {
+								guard let fromUser = node?.user, let toUser = node?.user else { return }
+								isResetting = true
 								Task {
 									do {
-										try await accessoryManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!, resetDevice: true)
+										try await accessoryManager.sendFactoryReset(fromUser: fromUser, toUser: toUser, resetDevice: true)
 										try? await Task.sleep(for: .seconds(1))
 										try await accessoryManager.disconnect()
+										goBack()
+										try await Task.sleep(for: .milliseconds(500))
 										await MeshPackets.shared.flushDebouncedSaves()
 										await MeshPackets.shared.clearDatabase(includeRoutes: false)
 										MeshPackets.recreateShared()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("Factory Reset Failed")
+										isResetting = false
 									}
 								}
 							}
@@ -231,30 +280,27 @@ struct DeviceConfig: View {
 					.padding(.bottom)
 				}
 				HStack(spacing: 0) {
-					SaveConfigButton(node: node, hasChanges: $hasChanges) {
-						if let deviceNum = accessoryManager.activeDeviceNum,
-						   let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-							var dc = Config.DeviceConfig()
-							dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
-							dc.buttonGpio = UInt32(buttonGPIO)
-							dc.buzzerGpio = UInt32(buzzerGPIO)
-							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
-							dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs.intValue)
-							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
-							dc.disableTripleClick = !tripleClickAsAdHocPing
-							dc.tzdef = tzdef
-							dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
-							Task {
-								_ = try await accessoryManager.saveDeviceConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
-									hasChanges = false
-									goBack()
-								}
-							}
-						}
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var dc = Config.DeviceConfig()
+						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
+						dc.buttonGpio = UInt32(buttonGPIO)
+						dc.buzzerGpio = UInt32(buzzerGPIO)
+						dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
+						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs.intValue)
+						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
+						dc.disableTripleClick = !tripleClickAsAdHocPing
+						dc.tzdef = tzdef
+						dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
+						_ = try await accessoryManager.saveDeviceConfig(config: dc, fromUser: fromUser, toUser: toUser)
 					}
+				}
 				}
 			}
 			.navigationTitle("Device Config")
@@ -264,7 +310,9 @@ struct DeviceConfig: View {
 					
 				}
 			)
-		}
+		} // end Form
+		} // end else
+		} // end Group
 		.onFirstAppear {
 			// Need to request a DeviceConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {
@@ -295,30 +343,39 @@ struct DeviceConfig: View {
 			}
 		}
 		.onChange(of: deviceRole) { oldRole, newRole in
+			guard !isResetting else { return }
 			if oldRole != newRole && newRole != node?.deviceConfig?.role ?? -1 { hasChanges = true }
 		}
 		.onChange(of: buttonGPIO) { oldButtonGPIO, newButtonGPIO in
+			guard !isResetting else { return }
 			if oldButtonGPIO != newButtonGPIO && newButtonGPIO != node?.deviceConfig?.buttonGpio ?? -1 { hasChanges = true }
 		}
 		.onChange(of: buzzerGPIO) { oldBuzzerGPIO, newBuzzerGPIO in
+			guard !isResetting else { return }
 			if oldBuzzerGPIO != newBuzzerGPIO && newBuzzerGPIO != node?.deviceConfig?.buzzerGpio ?? -1 { hasChanges = true }
 		}
 		.onChange(of: rebroadcastMode) { oldRebroadcastMode, newRebroadcastMode in
+			guard !isResetting else { return }
 			if oldRebroadcastMode != newRebroadcastMode && newRebroadcastMode != node?.deviceConfig?.rebroadcastMode ?? -1 { hasChanges = true }
 		}
 		.onChange(of: nodeInfoBroadcastSecs.intValue) { oldNodeInfoBroadcastSecs, newNodeInfoBroadcastSecs in
+			guard !isResetting else { return }
 			if oldNodeInfoBroadcastSecs != newNodeInfoBroadcastSecs && newNodeInfoBroadcastSecs != node?.deviceConfig?.nodeInfoBroadcastSecs ?? -1 { hasChanges = true }
 		}
 		.onChange(of: doubleTapAsButtonPress) { oldDoubleTapAsButtonPress, newDoubleTapAsButtonPress in
+			guard !isResetting else { return }
 			if oldDoubleTapAsButtonPress != newDoubleTapAsButtonPress && newDoubleTapAsButtonPress != node?.deviceConfig?.doubleTapAsButtonPress ?? false { hasChanges = true }
 		}
 		.onChange(of: tripleClickAsAdHocPing) { oldTripleClickAsAdHocPing, newTripleClickAsAdHocPing in
+			guard !isResetting else { return }
 			if oldTripleClickAsAdHocPing != newTripleClickAsAdHocPing && newTripleClickAsAdHocPing != node?.deviceConfig?.tripleClickAsAdHocPing ?? false { hasChanges = true }
 		}
 		.onChange(of: tzdef) { oldTzdef, newTzdef in
+			guard !isResetting else { return }
 			if oldTzdef != newTzdef && newTzdef != node?.deviceConfig?.tzdef { hasChanges = true }
 		}
 		.onChange(of: ledHeartbeatEnabled) { oldLedHeartbeatEnabled, newLedHeartbeatEnabled in
+			guard !isResetting else { return }
 			if oldLedHeartbeatEnabled != newLedHeartbeatEnabled && newLedHeartbeatEnabled != node?.deviceConfig?.ledHeartbeatEnabled ?? false { hasChanges = true }
 		}
 	}

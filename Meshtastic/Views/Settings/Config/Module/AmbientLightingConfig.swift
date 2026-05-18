@@ -14,7 +14,7 @@ struct AmbientLightingConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -32,7 +32,7 @@ struct AmbientLightingConfig: View {
 					Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
 					Text("The state of the LED (on/off)")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				HStack {
 					Image(systemName: "eyedropper")
@@ -51,68 +51,41 @@ struct AmbientLightingConfig: View {
 		.disabled(!self.accessoryManager.isConnected || node?.ambientLightingConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard let deviceNum = accessoryManager.activeDeviceNum else {
-						return
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var al = ModuleConfig.AmbientLightingConfig()
+					al.ledState = ledState
+					al.current = UInt32(current)
+					components = color.resolve(in: environment)
+					if let components {
+						al.red = UInt32(components.red * 255)
+						al.green = UInt32(components.green * 255)
+						al.blue = UInt32(components.blue * 255)
 					}
-					let connectedNode = getNodeInfo(id: deviceNum, context: context)
-					if connectedNode != nil {
-						var al = ModuleConfig.AmbientLightingConfig()
-						al.ledState = ledState
-						al.current = UInt32(current)
-						components = color.resolve(in: environment)
-						if let components {
-							al.red = UInt32(components.red * 255)
-							al.green = UInt32(components.green * 255)
-							al.blue = UInt32(components.blue * 255)
-						}
-						
-						Task {
-							do {
-								_ = try await accessoryManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!)
-								Task { @MainActor in
-									hasChanges = false
-									goBack()
-								}
-							} catch {
-								Logger.mesh.warning("Unable to send ambient lighting module config")
-							}
-						}
-					}
+					_ = try await accessoryManager.saveAmbientLightingModuleConfig(config: al, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}}
 		.navigationTitle("Ambient Lighting Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			}
-		)
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onFirstAppear {
-			// Need to request a Ambient Lighting Config from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.ambientLightingConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired ambient lighting module config requesting via PKI admin")
-										try await accessoryManager.requestAmbientLightingConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Unable to send  ambient lighting config request")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.ambientLightingConfig == nil },
+				request: accessoryManager.requestAmbientLightingConfig
+			)
 		}
 		.onChange(of: ledState) { _, newLedState in
 			if newLedState != node?.ambientLightingConfig?.ledState { hasChanges = true }

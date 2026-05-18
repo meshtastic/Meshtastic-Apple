@@ -59,7 +59,6 @@ struct TAKModuleConfig: View {
 							Text(teamTitle(teamOption)).tag(teamOption.rawValue)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text(teamHelpText(selectedTeam))
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -71,7 +70,6 @@ struct TAKModuleConfig: View {
 							Text(roleTitle(roleOption)).tag(roleOption.rawValue)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text(roleHelpText(selectedRole))
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -87,36 +85,28 @@ struct TAKModuleConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.takConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context),
-						  let fromUser = connectedNode.user,
-						  let toUser = node?.user else {
-						return
-					}
-
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
 					var config = ModuleConfig.TAKConfig()
 					config.team = selectedTeam
 					config.role = selectedRole
-
-					Task {
-						_ = try await accessoryManager.saveTAKModuleConfig(config: config, fromUser: fromUser, toUser: toUser)
-						Task { @MainActor in
-							hasChanges = false
-							goBack()
-						}
-					}
+					_ = try await accessoryManager.saveTAKModuleConfig(config: config, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("TAK Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onAppear {
 			// Need to request a TAKModuleConfig from the connected node before allowing changes.
 			if let deviceNum = accessoryManager.activeDeviceNum,
@@ -137,26 +127,13 @@ struct TAKModuleConfig: View {
 			}
 		}
 		.onFirstAppear {
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode, node.num != deviceNum {
-					if UserDefaults.enableAdministration {
-						let expiration = node.sessionExpiration ?? Date()
-						if expiration < Date() || node.takConfig == nil {
-							Task {
-								do {
-									Logger.mesh.info("⚙️ Empty or expired TAK module config requesting via PKI admin")
-									try await accessoryManager.requestTAKModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-								} catch {
-									Logger.mesh.info("🚨 TAK module config request failed: \(error.localizedDescription)")
-								}
-							}
-						}
-					} else {
-						Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.takConfig == nil },
+				request: accessoryManager.requestTAKModuleConfig
+			)
 		}
 		.onChange(of: team) { _, newTeam in
 			if newTeam != Int(node?.takConfig?.team ?? Int32(Team.unspecifedColor.rawValue)) {

@@ -27,7 +27,7 @@ struct DetectionSensorConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	@AppStorage("detectionSensorRole") private var role: DetectionSensorRole = .sensor
@@ -52,7 +52,7 @@ struct DetectionSensorConfig: View {
 					Label("Enabled", systemImage: "dot.radiowaves.right")
 					Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				if enabled {
 					HStack {
@@ -82,7 +82,7 @@ struct DetectionSensorConfig: View {
 						Label("Send Bell", systemImage: "bell")
 						Text("Send ASCII bell with alert message. Useful for triggering external notification on bell.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					HStack {
 						Label("Name", systemImage: "signature")
@@ -113,21 +113,19 @@ struct DetectionSensorConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					
 					Picker("TriggerType", selection: $triggerType) {
 						ForEach(TriggerTypes.allCases) { tt in
 							Text(tt.name).tag(tt.rawValue)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					.listRowSeparator(.hidden)
 					
 					Toggle(isOn: $usePullup) {
 						Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
 						Text("Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 				Section(header: Text("Update Interval")) {
 					UpdateIntervalPicker(
@@ -156,69 +154,40 @@ struct DetectionSensorConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.detectionSensorConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						var dsc = ModuleConfig.DetectionSensorConfig()
-						dsc.enabled = self.enabled
-						dsc.sendBell = self.sendBell
-						dsc.name = self.name
-						dsc.monitorPin = UInt32(self.monitorPin)
-						dsc.detectionTriggerType = TriggerTypes(rawValue: triggerType)!.protoEnumValue()
-						dsc.usePullup = self.usePullup
-						dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs.intValue)
-						dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs.intValue)
-						Task {
-							do {
-								_ = try await accessoryManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!)
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
-									hasChanges = false
-									goBack()
-								}
-							} catch {
-								Logger.mesh.error("Unable to save detection sensor module config")
-							}
-						}
-					}
-				}}}
-		.navigationTitle("Detection Sensor Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
-			}
-		)
-		.onFirstAppear {
-			// Need to request a DetectionSensorModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.detectionSensorConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired detection sensor module config requesting via PKI admin")
-										try await accessoryManager.requestDetectionSensorModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Unable to send  detection sensor module config request")
-									}
-								}
-								
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var dsc = ModuleConfig.DetectionSensorConfig()
+					dsc.enabled = self.enabled
+					dsc.sendBell = self.sendBell
+					dsc.name = self.name
+					dsc.monitorPin = UInt32(self.monitorPin)
+					dsc.detectionTriggerType = TriggerTypes(rawValue: triggerType)!.protoEnumValue()
+					dsc.usePullup = self.usePullup
+					dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs.intValue)
+					dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs.intValue)
+					_ = try await accessoryManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: fromUser, toUser: toUser)
 				}
+			}}}
+		.navigationTitle("Detection Sensor Config")
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.detectionSensorConfig == nil },
+				request: accessoryManager.requestDetectionSensorModuleConfig
+			)
 		}
 		.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.detectionSensorConfig?.enabled { hasChanges = true }

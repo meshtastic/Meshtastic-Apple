@@ -216,10 +216,11 @@ struct TraceRouteLog: View {
 			}
 			.navigationTitle("Trace Route Log")
 		}
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 	}
 	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
 		ForEach(0..<indexes, id: \.self) { idx in

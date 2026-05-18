@@ -36,12 +36,12 @@ struct PowerConfig: View {
 						Label("Power Saving", systemImage: "bolt")
 						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 				Toggle(isOn: $shutdownOnPowerLoss) {
 					Label("Shutdown on Power Loss", systemImage: "power")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				if shutdownOnPowerLoss {
 					UpdateIntervalPicker(
 						config: .all,
@@ -57,7 +57,7 @@ struct PowerConfig: View {
 					Toggle(isOn: $adcOverride) {
 						Text("ADC Override")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 
 					if adcOverride {
 						HStack {
@@ -78,14 +78,14 @@ struct PowerConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard let deviceNum = accessoryManager.activeDeviceNum,
-						  let connectedNode = getNodeInfo(id: deviceNum, context: context),
-						  let fromUser = connectedNode.user,
-						  let toUser = node?.user else {
-						return
-					}
-					
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
 					var config = Config.PowerConfig()
 					config.isPowerSaving = isPowerSaving
 					config.onBatteryShutdownAfterSecs = shutdownOnPowerLoss ? UInt32(shutdownAfterSecs.intValue) : 0
@@ -93,27 +93,21 @@ struct PowerConfig: View {
 					config.waitBluetoothSecs = UInt32(waitBluetoothSecs)
 					config.lsSecs = UInt32(lsSecs)
 					config.minWakeSecs = UInt32(minWakeSecs)
-					Task {
-						_ = try await accessoryManager.savePowerConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
-					}
+					_ = try await accessoryManager.savePowerConfig(
+						config: config,
+						fromUser: fromUser,
+						toUser: toUser
+					)
 				}
+			}
 			}
 		}
 		.navigationTitle("Power Config")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {
 				Spacer()
@@ -135,32 +129,15 @@ struct PowerConfig: View {
 					architecture = arch
 				}
 			}
-			
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.powerConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired power config requesting via PKI admin")
-										try await accessoryManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Power config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.powerConfig == nil },
+				request: accessoryManager.requestPowerConfig
+			)
 		}
 		.onChange(of: isPowerSaving) { oldIsPowerSaving, newIsPowerSaving in
 			if oldIsPowerSaving != newIsPowerSaving && newIsPowerSaving != node?.powerConfig?.isPowerSaving { hasChanges = true }

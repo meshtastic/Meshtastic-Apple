@@ -12,7 +12,7 @@ struct CannedMessagesConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var hasMessagesChanges = false
@@ -47,20 +47,19 @@ struct CannedMessagesConfig: View {
 					
 					Label("Enabled", systemImage: "list.bullet.rectangle.fill")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Toggle(isOn: $sendBell) {
 					
 					Label("Send Bell", systemImage: "bell")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				
 				Picker("Configuration Presets", selection: $configPreset ) {
 					ForEach(ConfigPresets.allCases) { cp in
 						Text(cp.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.padding(.top, 10)
 				.padding(.bottom, 10)
 			}
@@ -73,7 +72,7 @@ struct CannedMessagesConfig: View {
 					.onChange(of: messages) {
 						var totalBytes = messages.utf8.count
 						// Only mess with the value if it is too big
-						while totalBytes > 198 {
+						while totalBytes > 200 {
 							messages = String(messages.dropLast())
 							totalBytes = messages.utf8.count
 						}
@@ -90,13 +89,13 @@ struct CannedMessagesConfig: View {
 					
 					Label("Rotary 1", systemImage: "dial.min")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.disabled(updown1Enabled)
 				Toggle(isOn: $updown1Enabled) {
 					
 					Label("Up Down 1", systemImage: "arrow.up.arrow.down")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.disabled(rotary1Enabled)
 			}
 			.disabled(configPreset > 0)
@@ -111,7 +110,6 @@ struct CannedMessagesConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder A port.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -126,7 +124,6 @@ struct CannedMessagesConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder B port.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -141,7 +138,6 @@ struct CannedMessagesConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder Press port.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -154,7 +150,6 @@ struct CannedMessagesConfig: View {
 						Text(iec.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.padding(.top, 10)
 				.padding(.bottom, 10)
 				Picker("Counter Clockwise Rotary Event", selection: $inputbrokerEventCcw ) {
@@ -162,7 +157,6 @@ struct CannedMessagesConfig: View {
 						Text(iec.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.padding(.top, 10)
 				.padding(.bottom, 10)
 				Picker("Encoder Press Event", selection: $inputbrokerEventPress ) {
@@ -170,7 +164,6 @@ struct CannedMessagesConfig: View {
 						Text(iec.description)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
 				.padding(.top, 10)
 				.padding(.bottom, 10)
 			}
@@ -180,104 +173,68 @@ struct CannedMessagesConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.cannedMessageConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if hasChanges {
-						if connectedNode != nil {
-							var cmc = ModuleConfig.CannedMessageConfig()
-							cmc.enabled = enabled
-							cmc.sendBell = sendBell
-							cmc.rotary1Enabled = rotary1Enabled
-							cmc.updown1Enabled = updown1Enabled
-							if rotary1Enabled {
-								/// Input event origin accepted by the canned messages
-								/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
-								cmc.allowInputSource = "rotEnc1"
-							} else if updown1Enabled {
-								cmc.allowInputSource = "upDown1"
-							} else {
-								cmc.allowInputSource = "_any"
-							}
-							cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
-							cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
-							cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
-							cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
-							cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
-							cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
-							Task {
-								do {
-									_ = try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
-									Task { @MainActor in
-										// Should show a saved successfully alert once I know that to be true
-										// for now just disable the button after a successful save
-										hasChanges = false
-										goBack()
-									}
-								} catch {
-									Logger.mesh.error("Unable to save canned message module config")
-								}
-							}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				guard let toUser = node?.user else { return }
+				if hasChanges {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var cmc = ModuleConfig.CannedMessageConfig()
+						cmc.enabled = enabled
+						cmc.sendBell = sendBell
+						cmc.rotary1Enabled = rotary1Enabled
+						cmc.updown1Enabled = updown1Enabled
+						if rotary1Enabled {
+							cmc.allowInputSource = "rotEnc1"
+						} else if updown1Enabled {
+							cmc.allowInputSource = "upDown1"
+						} else {
+							cmc.allowInputSource = "_any"
 						}
+						cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
+						cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
+						cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
+						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
+						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
+						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
+						_ = try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: fromUser, toUser: toUser)
 					}
-					if hasMessagesChanges {
-						Task {
-							do {
-								_ = try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
-								
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
-									hasMessagesChanges = false
-									if !hasChanges {
-										Task {
-											Logger.transport.debug("[CannedMessagesConfig] sending wantConfig for save cannedMessagesConfig")
-										}
-										goBack()
-									}
-								}
-							} catch {
-								Logger.mesh.error("Unable to save canned message module messages")
+				}
+				if hasMessagesChanges {
+					Task {
+						do {
+							_ = try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: toUser, toUser: toUser)
+							hasMessagesChanges = false
+							if !hasChanges {
+								Logger.transport.debug("[CannedMessagesConfig] sending wantConfig for save cannedMessagesConfig")
+								goBack()
 							}
+						} catch {
+							Logger.mesh.error("Unable to save canned message module messages")
 						}
 					}
 				}
+			}
 			}
 		}
 		.navigationTitle("Canned Messages Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
-			// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.cannedMessageConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired canned messages module config requesting via PKI admin")
-										try await accessoryManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Unable to send canned message module config request")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.cannedMessageConfig == nil },
+				request: accessoryManager.requestCannedMessagesModuleConfig
+			)
 		}
 		.onChange(of: configPreset) { _, newPreset in
 			

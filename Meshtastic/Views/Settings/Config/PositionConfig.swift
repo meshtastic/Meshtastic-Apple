@@ -28,7 +28,7 @@ struct PositionConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State var hasChanges = false
 	@State var hasFlagChanges = false
 	@State var smartPositionEnabled = true
@@ -93,7 +93,7 @@ struct PositionConfig: View {
 			Toggle(isOn: $smartPositionEnabled) {
 				Label("Smart Position", systemImage: "brain")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			
 			if smartPositionEnabled {
 				VStack(alignment: .leading) {
@@ -119,7 +119,6 @@ struct PositionConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("The minimum distance change in meters to be considered for a smart position broadcast.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -166,7 +165,7 @@ struct PositionConfig: View {
 							
 						}
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 			}
 		}
@@ -183,7 +182,7 @@ struct PositionConfig: View {
 			Toggle(isOn: $includeAltitude) {
 				Label("Altitude", systemImage: "arrow.up")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeAltitude) { _, newIncludeAltitude in
 				if newIncludeAltitude != PositionFlags(rawValue: self.positionFlags).contains(.Altitude) { hasChanges = true }
 			}
@@ -191,7 +190,7 @@ struct PositionConfig: View {
 			Toggle(isOn: $includeSatsinview) {
 				Label("Number of satellites", systemImage: "skew")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeSatsinview) { _, newIncludeSatsinview in
 				if newIncludeSatsinview != PositionFlags(rawValue: self.positionFlags).contains(.Satsinview) { hasChanges = true }
 			}
@@ -199,7 +198,7 @@ struct PositionConfig: View {
 			Toggle(isOn: $includeSeqNo) { // 64
 				Label("Sequence number", systemImage: "number")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeSeqNo) { _, newIncludeSeqNo in
 				if newIncludeSeqNo != PositionFlags(rawValue: self.positionFlags).contains(.SeqNo) { hasChanges = true }
 			}
@@ -207,7 +206,7 @@ struct PositionConfig: View {
 			Toggle(isOn: $includeTimestamp) { // 128
 				Label("Timestamp", systemImage: "clock")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeTimestamp) { _, newIncludeTimestamp in
 				if newIncludeTimestamp != PositionFlags(rawValue: self.positionFlags).contains(.Timestamp) { hasChanges = true }
 			}
@@ -215,7 +214,7 @@ struct PositionConfig: View {
 			Toggle(isOn: $includeHeading) { // 128
 				Label("Vehicle heading", systemImage: "location.circle")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeHeading) { _, newIncludeHeading in
 				if newIncludeHeading != PositionFlags(rawValue: self.positionFlags).contains(.Heading) { hasChanges = true }
 			}
@@ -223,7 +222,7 @@ struct PositionConfig: View {
 			Toggle(isOn: $includeSpeed) { // 128
 				Label("Vehicle speed", systemImage: "speedometer")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeSpeed) { _, newIncludeSpeed in
 				if newIncludeSpeed != PositionFlags(rawValue: self.positionFlags).contains(.Speed) { hasChanges = true }
 			}
@@ -238,7 +237,7 @@ struct PositionConfig: View {
 				Toggle(isOn: $includeAltitudeMsl) {
 					Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.onChange(of: includeAltitudeMsl) { _, newIncludeAltitudeMsl in
 					if newIncludeAltitudeMsl != PositionFlags(rawValue: self.positionFlags).contains(.AltitudeMsl) { hasChanges = true }
 				}
@@ -246,7 +245,7 @@ struct PositionConfig: View {
 				Toggle(isOn: $includeGeoidalSeparation) {
 					Label("Altitude Geoidal Separation", systemImage: "globe.americas")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.onChange(of: includeGeoidalSeparation) { _, newIncludeGeoidalSeparation in
 					if newIncludeGeoidalSeparation != PositionFlags(rawValue: self.positionFlags).contains(.GeoidalSeparation) { hasChanges = true }
 				}
@@ -255,7 +254,7 @@ struct PositionConfig: View {
 			Toggle(isOn: $includeDop) {
 				Text("Dilution of precision (DOP) PDOP used by default")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeDop) { _, newIncludeDop in
 				if newIncludeDop != PositionFlags(rawValue: self.positionFlags).contains(.Dop) { hasChanges = true }
 			}
@@ -264,7 +263,7 @@ struct PositionConfig: View {
 				Toggle(isOn: $includeHvdop) {
 					Text("If DOP is set, use HDOP / VDOP values instead of PDOP")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.onChange(of: includeHvdop) { _, newIncludeHvdop in
 					if newIncludeHvdop != PositionFlags(rawValue: self.positionFlags).contains(.Hvdop) { hasChanges = true }
 				}
@@ -284,7 +283,6 @@ struct PositionConfig: View {
 					}
 				}
 			}
-			.pickerStyle(DefaultPickerStyle())
 			Picker("GPS Transmit GPIO", selection: $txGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
@@ -294,7 +292,6 @@ struct PositionConfig: View {
 					}
 				}
 			}
-			.pickerStyle(DefaultPickerStyle())
 			Picker("GPS EN GPIO", selection: $gpsEnGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
@@ -304,7 +301,6 @@ struct PositionConfig: View {
 					}
 				}
 			}
-			.pickerStyle(DefaultPickerStyle())
 			Text("(Re)define PIN_GPS_EN for your board.")
 				.font(.caption)
 		}
@@ -316,7 +312,13 @@ struct PositionConfig: View {
 					try await accessoryManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 				}
 			}
-			if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+			performConfigSave(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				hasChanges: $hasChanges,
+				dismiss: goBack
+			) { fromUser, toUser in
 				var pc = Config.PositionConfig()
 				pc.positionBroadcastSmartEnabled = smartPositionEnabled
 				pc.gpsEnabled = gpsMode == 1
@@ -341,14 +343,7 @@ struct PositionConfig: View {
 				if includeSpeed { pf.insert(.Speed) }
 				if includeHeading { pf.insert(.Heading) }
 				pc.positionFlags = UInt32(pf.rawValue)
-				Task {
-					_ = try await accessoryManager.savePositionConfig(config: pc, fromUser: connectedNode.user!, toUser: node!.user!)
-					Task { @MainActor in
-						// Disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
-				}
+				_ = try await accessoryManager.savePositionConfig(config: pc, fromUser: fromUser, toUser: toUser)
 			}
 		}
 	}
@@ -396,38 +391,22 @@ struct PositionConfig: View {
 			}
 		}
 		.navigationTitle("Position Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			}
-		)
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onFirstAppear {
 			supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.positionConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired position config requesting via PKI admin")
-										try await accessoryManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Position config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.positionConfig == nil },
+				request: accessoryManager.requestPositionConfig
+			)
 		}
 		.onChange(of: fixedPosition) { _, newFixed in
 			if supportedVersion {

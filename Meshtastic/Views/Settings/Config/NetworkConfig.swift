@@ -14,7 +14,7 @@ struct NetworkConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State var hasChanges: Bool = false
 	@State var wifiEnabled = false
@@ -38,7 +38,7 @@ struct NetworkConfig: View {
 							Label("Enabled", systemImage: "wifi")
 							Text("Enabling WiFi will disable the bluetooth connection to the app.")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 						
 						HStack {
 							Label("SSID", systemImage: "network")
@@ -102,34 +102,31 @@ struct NetworkConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.networkConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-						var network = Config.NetworkConfig()
-						network.wifiEnabled = self.wifiEnabled
-						network.wifiSsid = self.wifiSsid
-						network.wifiPsk = self.wifiPsk
-						network.ethEnabled = self.ethEnabled
-						network.enabledProtocols = self.udpEnabled ? UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) : UInt32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue)
-						// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
-						Task {
-							_ = try await accessoryManager.saveNetworkConfig(config: network, fromUser: connectedNode.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var network = Config.NetworkConfig()
+					network.wifiEnabled = self.wifiEnabled
+					network.wifiSsid = self.wifiSsid
+					network.wifiPsk = self.wifiPsk
+					network.ethEnabled = self.ethEnabled
+					network.enabledProtocols = self.udpEnabled ? UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) : UInt32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue)
+					_ = try await accessoryManager.saveNetworkConfig(config: network, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("Network Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			}
-		)
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onAppear {
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if accessoryManager.isConnected && node?.networkConfig == nil {
@@ -142,31 +139,13 @@ struct NetworkConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.networkConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired network config requesting via PKI admin")
-										try await accessoryManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Network config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.networkConfig == nil },
+				request: accessoryManager.requestNetworkConfig
+			)
 		}
 		.onChange(of: wifiEnabled) { _, newEnabled in
 			if newEnabled != node?.networkConfig?.wifiEnabled { hasChanges = true }
@@ -182,7 +161,8 @@ struct NetworkConfig: View {
 		}
 		.onChange(of: ethEnabled) { _, newEthEnabled in
 			if newEthEnabled != node?.networkConfig?.ethEnabled { hasChanges = true }
-		}.onChange(of: udpEnabled) {_, newUdpEnabled in
+		}
+		.onChange(of: udpEnabled) {_, newUdpEnabled in
 			if let netConfig = node?.networkConfig {
 				let newValue: UInt32
 				if newUdpEnabled {

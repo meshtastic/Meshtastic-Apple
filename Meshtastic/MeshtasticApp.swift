@@ -245,6 +245,9 @@ struct MeshtasticAppleApp: App {
 			case .active:
 				Logger.services.info("🎬 [App] Scene is active")
 				accessoryManager.appDidBecomeActive()
+				if let context = persistenceController?.container.mainContext {
+					appState.refreshBadgeCount(context: context)
+				}
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}

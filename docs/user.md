@@ -18,6 +18,14 @@ Documentation for using the Meshtastic iOS, iPadOS, macOS, watchOS, and visionOS
 Keep the last 5–8 entries and archive older ones by removing them.
 -->
 
+**May 2026** — [Translate](user/translate) — Docs Translation Pipeline: community-sourced translations are shared via CDN so future users get instant localized docs.
+
+**May 2026** — [Translate](user/translate) — Automatic Documentation Translation: on iOS 26+, in-app docs are translated into your device language using the Apple Translation framework.
+
+**May 2026** — [Messages](user/messages) — Message Formatting Toolbar (iOS 18+/macOS 15+): bold, italic, strikethrough, code, and link formatting with live preview.
+
+**May 2026** — [Nodes](user/nodes) — Node List Layout: switchable Complete and Compact density modes for large meshes with configurable detail toggles.
+
 **May 2026** — [Units, Measurement & Locale](user/units-and-locale) — New page explaining how the app automatically adapts temperatures, distances, speeds, and times to your device's regional settings.
 
 **May 2026** — [Messages & Channels](user/messages) — Channel conversations now load the most recent 50 messages with a Load More button for older history.

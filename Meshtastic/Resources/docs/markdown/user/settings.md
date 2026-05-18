@@ -12,6 +12,12 @@ The Settings tab lets you configure the app and your connected Meshtastic radio.
 
 General app preferences including map style, notification behaviour, and theme. These affect only the app — not the radio.
 
+### Data Management
+
+- **Erase All App Data** — clears the local database, translation cache, and all stored settings. Use this as a last resort.
+- **NodeDB Reset** — resets the node database on your connected radio. When prompted, you can choose to **Preserve Favorites** so your starred nodes are retained after the reset.
+- **Reset App Settings** — restores default app preferences without affecting your node database.
+
 ## Radio Configuration
 
 Radio configuration requires a connected node. Select your node from the **Configure** section if you have multiple nodes.

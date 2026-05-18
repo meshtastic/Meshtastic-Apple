@@ -15,7 +15,7 @@ struct RangeTestConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -57,7 +57,7 @@ struct RangeTestConfig: View {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "figure.walk")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.listRowSeparator(.visible)
 				UpdateIntervalPicker(
 					config: .rangeTestSender,
@@ -73,7 +73,7 @@ struct RangeTestConfig: View {
 					Label("Save", systemImage: "square.and.arrow.down.fill")
 					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
 				
 			}
@@ -81,72 +81,37 @@ struct RangeTestConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.rangeTestConfig == nil || isPrimaryChannelPublic)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						var rtc = ModuleConfig.RangeTestConfig()
-						let effectiveEnabled = isPrimaryChannelPublic ? false : enabled
-						rtc.enabled = effectiveEnabled
-						rtc.save = save
-						rtc.sender = UInt32(sender.intValue)
-						Task {
-							_ = try await accessoryManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
-					}
-				}}}
-		.navigationTitle("Range Test Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
-			}
-		)
-		.onFirstAppear {
-			// Need to request a RangeTestModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num == deviceNum {
-						// Connected node: request config if it was not delivered during initial connection
-						if node.rangeTestConfig == nil {
-							Task {
-								do {
-									Logger.mesh.info("⚙️ Range test module config missing for connected node, requesting")
-									try await accessoryManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-								} catch {
-									Logger.mesh.error("🚨 Request range test module config failed for connected node")
-								}
-							}
-						}
-					} else {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.rangeTestConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired range test module config requesting via PKI admin")
-										try await accessoryManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Request Range test module config failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var rtc = ModuleConfig.RangeTestConfig()
+					let effectiveEnabled = isPrimaryChannelPublic ? false : enabled
+					rtc.enabled = effectiveEnabled
+					rtc.save = save
+					rtc.sender = UInt32(sender.intValue)
+					_ = try await accessoryManager.saveRangeTestModuleConfig(config: rtc, fromUser: fromUser, toUser: toUser)
 				}
+			}}}
+		.navigationTitle("Range Test Config")
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.rangeTestConfig == nil },
+				request: accessoryManager.requestRangeTestModuleConfig,
+				requestForConnectedNode: true
+			)
 		}
 		.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.rangeTestConfig?.enabled { hasChanges = true }
