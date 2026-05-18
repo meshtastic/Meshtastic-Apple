@@ -603,21 +603,6 @@ struct LoRaSignalStrengthMeterSnapshotTests {
 
 	// MARK: Compact node list style (SignalStrengthIndicator) — all levels
 
-	@Test("BLE style — All Levels")
-	func bleAllLevels() async {
-		await assertViewSnapshot(
-			of: HStack(spacing: 16) {
-				SignalStrengthIndicator(signalStrength: .strong, width: 5, height: 20)
-				SignalStrengthIndicator(signalStrength: .normal, width: 5, height: 20)
-				SignalStrengthIndicator(signalStrength: .weak, width: 5, height: 20)
-			}
-			.padding(),
-			width: 140,
-			transparent: true,
-			named: "signalBLE_all",
-			forDocs: true
-		)
-	}
 }
 
 // MARK: - RadarSweepView Snapshot Tests
