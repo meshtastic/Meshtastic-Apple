@@ -77,8 +77,6 @@ The channel form lets you configure the channel name, encryption key, role, posi
 
 Long press any message and tap **Tapback** to send an emoji reaction.
 
-![Tapback input](../assets/screenshots/tapbackInput.png)
-
 ---
 
 {: .tip }

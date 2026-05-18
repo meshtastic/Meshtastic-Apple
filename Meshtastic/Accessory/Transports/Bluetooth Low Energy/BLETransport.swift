@@ -82,7 +82,7 @@ actor BLETransport: Transport {
 				try await self.setupCompleteGate.wait()
 				
 				if await !self.restoreInProgress {
-					centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+					centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 					
 					let peripherals = await self.discoveredPeripherals.values.map({$0.peripheral})
 					for alreadyDiscoveredPeripheral in peripherals {
@@ -162,7 +162,7 @@ actor BLETransport: Transport {
 			if self.discoveredDeviceContinuation != nil && !restoreInProgress {
 				// We have someone already subscribed to our discovery event stream.
 				// Likely a powerOff event occcurred and need to now restore scanning.
-				central.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+				central.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 			}
 
 		case .poweredOff:

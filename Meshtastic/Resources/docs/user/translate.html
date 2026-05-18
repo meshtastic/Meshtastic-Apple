@@ -3,22 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>translate</title>
+  <title>Translate the App</title>
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="translate">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div>Usage:   cmark [FILE*]
-Options:
-  --to, -t FORMAT  Specify output format (html, xml, man, commonmark, latex)
-  --width WIDTH    Specify wrap width (default 0 = nowrap)
-  --sourcepos      Include source position attribute
-  --hardbreaks     Treat newlines as hard line breaks
-  --nobreaks       Render soft line breaks as spaces
-  --safe           Omit raw HTML and dangerous URLs
-  --unsafe         Render raw HTML and dangerous URLs
-  --smart          Use smart punctuation
-  --validate-utf8  Replace invalid UTF-8 sequences with U+FFFD
-  --help, -h       Print usage information
-  --version        Print version
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Translate the App</h1>
+<h2>Automatic documentation translation</h2>
+<p>On devices running iOS 26 or later, the in-app documentation is automatically translated into your device language when you open <strong>Help &amp; Docs</strong>.</p>
+<p><strong>Here's how it works:</strong> The very first person to use a particular language + app version combination translates all pages on-device and automatically contributes their translations back to the community. Every user after them gets those translations instantly — no waiting for on-device translation.</p>
+<ol>
+<li>You open <strong>Help &amp; Docs</strong> in a non-English language.</li>
+<li>If community translations already exist for your language and app version, they're downloaded instantly.</li>
+<li>If not, Apple's Translation framework translates every page on-device (~10 seconds per page).</li>
+<li>Your translations are anonymously uploaded to the <a href="https://github.com/meshtastic/translations">meshtastic/translations</a> repository.</li>
+<li>The next user in your language gets instant translated docs from the community cache.</li>
+</ol>
+<p>No sign-up, no manual work — it just happens in the background while you use the app. You can disable this by toggling off <strong>Participate in Distributed Translations</strong> in App Settings.</p>
+<div class="tips-callout"><strong>Tip — English users</strong>
+If your device language is English, no translation occurs and the bundled English documentation is displayed directly.</div>
+<hr />
+<h2>Contributing app translations</h2>
+<p>Contributing translations helps make Meshtastic accessible to a wider audience. Native speakers can review machine-translated strings for their language directly in Xcode — look for strings marked <strong>Needs Review</strong> and improve anything that sounds unnatural. If you have a Mac with Apple Silicon, you can also run a script that uses on-device Apple Intelligence to generate any missing translations for your language and automatically open a pull request.</p>
+<h3>Review machine translations</h3>
+<p>All on-device translations are uploaded to the <a href="https://github.com/meshtastic/translations">meshtastic/translations</a> repository. They're a great starting point, but machine translations aren't perfect! If you're a native speaker and spot something that could be improved:</p>
+<ol>
+<li>Browse to your language + app version at <a href="https://github.com/meshtastic/translations/tree/main/apple-apps">apple-apps/</a></li>
+<li>Edit the <code>.md</code> file directly on GitHub</li>
+<li>Submit a pull request</li>
+</ol>
+<p>Your improvements will be served to every user of that language going forward — no coding required.</p>
+<hr />
+<h2>Generate new translations with a script</h2>
+<h3>Requirements</h3>
+<p>Before you start, make sure you have:</p>
+<ul>
+<li><strong>macOS 26 or later</strong> with Apple Silicon</li>
+<li><strong>Apple Intelligence enabled</strong> — System Settings → Apple Intelligence &amp; Siri</li>
+<li><strong><a href="https://github.com/JoshuaSullivan/local-localizer">local-localizer</a></strong> installed (see below)</li>
+<li><strong>GitHub CLI</strong> installed — <code>brew install gh</code> and <code>gh auth login</code></li>
+</ul>
+<h3>Install local-localizer</h3>
+<pre><code class="language-bash">git clone https://github.com/JoshuaSullivan/local-localizer.git ~/local-localizer
+cd ~/local-localizer &amp;&amp; swift build -c release
+mkdir -p ~/bin &amp;&amp; cp .build/release/local-localizer ~/bin/local-localizer
+</code></pre>
+<p>Make sure <code>~/bin</code> is on your PATH (add <code>export PATH=&quot;$HOME/bin:$PATH&quot;</code> to your shell profile if needed).</p>
+<h3>Add or complete a locale</h3>
+<p>Clone the repository, then run the translation script with your locale code:</p>
+<pre><code class="language-bash">git clone https://github.com/meshtastic/Meshtastic-Apple.git
+cd Meshtastic-Apple
+scripts/translate-locale.sh &lt;locale&gt;
+</code></pre>
+<p>For example:</p>
+<pre><code class="language-bash">scripts/translate-locale.sh fr          # French
+scripts/translate-locale.sh de formal   # German, formal register
+scripts/translate-locale.sh ja polite   # Japanese, polite register
+scripts/translate-locale.sh zh-Hant-TW  # Traditional Chinese (Taiwan)
+</code></pre>
+<p>The script will:</p>
+<ol>
+<li>Count how many strings are missing or need updating for the locale</li>
+<li>Generate a glossary that keeps Meshtastic brand terms (LoRa, MQTT, BLE, TAK, etc.) untranslated</li>
+<li>Run local-localizer using on-device Apple Intelligence — no internet or API key needed</li>
+<li>Mark every new string as <strong>Needs Review</strong> so native speakers know to check them</li>
+<li>Commit the result and open a pull request automatically</li>
+</ol>
+<p>The translation step runs entirely on your device and takes roughly 10–20 minutes for a complete locale.</p>
+<h3>Tone options</h3>
+<table>
+<thead>
+<tr>
+<th>Tone</th>
+<th>When to use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>professional</code></td>
+<td>Default — clear and neutral, suitable for most languages</td>
+</tr>
+<tr>
+<td><code>formal</code></td>
+<td>Recommended for German (<code>de</code>), French (<code>fr</code>), Italian (<code>it</code>), Spanish (<code>es</code>) — selects the polite second-person form (Sie / vous / Lei / usted)</td>
+</tr>
+<tr>
+<td><code>polite</code></td>
+<td>Recommended for Japanese (<code>ja</code>) and Korean (<code>ko</code>) — selects polite verb forms</td>
+</tr>
+<tr>
+<td><code>informal</code></td>
+<td>Casual register</td>
+</tr>
+<tr>
+<td><code>neutral</code></td>
+<td>Plain, no register preference</td>
+</tr>
+</tbody>
+</table>
+<h3>Reviewing translated strings</h3>
+<p>Once the PR is open, any native speaker can review the translations directly in Xcode:</p>
+<ol>
+<li>Open <code>Meshtastic.xcworkspace</code></li>
+<li>Select <code>Localizable.xcstrings</code> in the project navigator</li>
+<li>Filter by your locale and set the state filter to <strong>Needs Review</strong></li>
+<li>Read each string in context, edit if needed, and mark it <strong>Reviewed</strong></li>
+<li>Push your changes to the PR branch</li>
+</ol>
+<p>Thank you for helping expand the reach of Meshtastic!</p>
 </body>
 </html>

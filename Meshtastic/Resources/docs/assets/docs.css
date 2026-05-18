@@ -328,7 +328,7 @@ picture img {
     margin: 1.25em 0;
 }
 
-.tips-callout strong {
+.tips-callout strong:first-child {
     display: block;
     margin-bottom: 6px;
     color: var(--callout-border);
@@ -343,7 +343,7 @@ picture img {
     margin: 1.25em 0;
 }
 
-.warning-callout strong {
+.warning-callout strong:first-child {
     display: block;
     margin-bottom: 6px;
     color: var(--warning-border);
