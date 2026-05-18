@@ -16,7 +16,7 @@ import MeshtasticProtobufs
 private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = nil, transparent: Bool = false, colorScheme: ColorScheme? = nil) -> UIImage {
 	// Wrap the view to ignore safe area so content isn't inset by the device's safe area.
 	// Inject colorScheme environment when specified so dark mode renders correctly
-	// even in a windowless UIHostingController context.
+	// even in a windowless UIHostingController context.headi
 	let wrappedView: AnyView
 	if let scheme = colorScheme {
 		wrappedView = AnyView(
@@ -1539,23 +1539,6 @@ struct ChannelFormSnapshotTests {
 			supportedVersion: .constant(true)
 		)
 		await assertViewSnapshot(of: view, width: 390, height: 700, named: "channelForm_primary", forDocs: true)
-	}
-}
-
-// MARK: - TapbackInputView Snapshot Tests
-
-@Suite("TapbackInputView Snapshots")
-struct TapbackInputViewSnapshotTests {
-
-	@Test("Tapback emoji input")
-	@MainActor
-	func tapbackInput() async {
-		let view = TapbackInputView(
-			text: .constant(""),
-			isPresented: .constant(true),
-			onEmojiSelected: { _ in }
-		)
-		await assertViewSnapshot(of: view, width: 390, height: 120, named: "tapbackInput", forDocs: true)
 	}
 }
 

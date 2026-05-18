@@ -270,7 +270,7 @@
             "encryption",
             "direct"
         ],
-        "charCount": 7425
+        "charCount": 7424
     },
     {
         "id": "mqtt",
