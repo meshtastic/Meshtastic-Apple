@@ -9,13 +9,13 @@ import OSLog
 import SwiftUI
 
 struct TelemetryConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
-	var node: NodeInfoEntity?
-	
+
+	let node: NodeInfoEntity?
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State private var deviceUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
@@ -31,15 +31,15 @@ struct TelemetryConfig: View {
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
-			
+
 			Section(header: Text("Device Options")) {
 				if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
 					Toggle(isOn: $deviceTelemetryEnabled) {
 						Label("Broadcast Device Metrics", systemImage: "wifi")
 						Text("Enable broadcasting device metrics to the mesh network. When disabled, metrics are only sent to connected clients.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+					.tint(.accentColor)
+
 					if deviceTelemetryEnabled {
 						UpdateIntervalPicker(
 							config: .broadcastShort,
@@ -70,12 +70,12 @@ struct TelemetryConfig: View {
 				Text("Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3.")
 					.foregroundColor(.gray)
 					.font(.callout)
-				
+
 				Toggle(isOn: $environmentMeasurementEnabled) {
 					Label("Environment Metrics Enabled", systemImage: "chart.xyaxis.line")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+				.tint(.accentColor)
+
 				if environmentMeasurementEnabled {
 					UpdateIntervalPicker(
 						config: .broadcastShort,
@@ -87,24 +87,24 @@ struct TelemetryConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 						.listRowSeparator(.visible)
-					
+
 					Toggle(isOn: $environmentScreenEnabled) {
 						Label("Show on device screen", systemImage: "display")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+					.tint(.accentColor)
+
 					Toggle(isOn: $environmentDisplayFahrenheit) {
 						Label("Display Fahrenheit", systemImage: "thermometer")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 			}
 			Section(header: Text("Power Sensor Options")) {
 				Toggle(isOn: $powerMeasurementEnabled) {
 					Label("Enabled", systemImage: "bolt")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+				.tint(.accentColor)
+
 				if powerMeasurementEnabled {
 					UpdateIntervalPicker(
 						config: .broadcastShort,
@@ -119,75 +119,52 @@ struct TelemetryConfig: View {
 					Toggle(isOn: $powerScreenEnabled) {
 						Label("Power Screen", systemImage: "tv")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.telemetryConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						var tc = ModuleConfig.TelemetryConfig()
-						tc.deviceUpdateInterval = UInt32(deviceUpdateInterval.intValue)
-						tc.environmentUpdateInterval = UInt32(environmentUpdateInterval.intValue)
-						tc.environmentMeasurementEnabled = environmentMeasurementEnabled
-						tc.environmentScreenEnabled = environmentScreenEnabled
-						tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-						tc.powerMeasurementEnabled = powerMeasurementEnabled
-						tc.powerUpdateInterval = UInt32(powerUpdateInterval.intValue)
-						tc.powerScreenEnabled = powerScreenEnabled
-						if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
-							tc.deviceTelemetryEnabled = deviceTelemetryEnabled
-						}
-						
-						Task {
-							_ = try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var tc = ModuleConfig.TelemetryConfig()
+					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval.intValue)
+					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval.intValue)
+					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
+					tc.environmentScreenEnabled = environmentScreenEnabled
+					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
+					tc.powerMeasurementEnabled = powerMeasurementEnabled
+					tc.powerUpdateInterval = UInt32(powerUpdateInterval.intValue)
+					tc.powerScreenEnabled = powerScreenEnabled
+					if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
+						tc.deviceTelemetryEnabled = deviceTelemetryEnabled
 					}
+					_ = try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("Telemetry Config")
-		.navigationBarItems(
-			trailing: ZStack {
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-				
 			}
-		)
+		}
 		.onFirstAppear {
-			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != deviceNum {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.telemetryConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired telemetry module config requesting via PKI admin")
-										try await accessoryManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Telemetry module config request failed: \(error.localizedDescription)")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.telemetryConfig == nil },
+				request: accessoryManager.requestTelemetryModuleConfig
+			)
 		}
 		.onChange(of: deviceUpdateInterval.intValue) { _, newDeviceInterval in
 			if newDeviceInterval != node?.telemetryConfig?.deviceUpdateInterval ?? -1 { hasChanges = true }
@@ -213,12 +190,13 @@ struct TelemetryConfig: View {
 		.onChange(of: powerScreenEnabled) { _, newPowerScreenEnabled in
 			if newPowerScreenEnabled != node?.telemetryConfig?.powerScreenEnabled { hasChanges = true	}
 		}
-		.onChange(of: deviceTelemetryEnabled) { _, newDeviceTelemetryEnabled in
-			if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
-				if newDeviceTelemetryEnabled != node?.telemetryConfig?.deviceTelemetryEnabled { hasChanges = true }
+		.onChange(of: deviceTelemetryEnabled) { _, newValue in
+			let supportsToggle = accessoryManager.checkIsVersionSupported(forVersion: "2.7.12")
+			if supportsToggle && newValue != node?.telemetryConfig?.deviceTelemetryEnabled {
+				hasChanges = true
 			}
 		}
-		
+
 	}
 	func setTelemetryValues() {
 		let deviceInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 1800)
@@ -230,14 +208,14 @@ struct TelemetryConfig: View {
 		self.powerMeasurementEnabled = node?.telemetryConfig?.powerMeasurementEnabled ?? false
 		self.powerUpdateInterval = UpdateInterval(from: Int(node?.telemetryConfig?.powerUpdateInterval ?? 1800))
 		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false
-		
+
 		if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
 			self.deviceTelemetryEnabled = node?.telemetryConfig?.deviceTelemetryEnabled ?? false
 		} else {
 			// Legacy behavior: if deviceUpdateInterval is Int32.max, telemetry is disabled
 			self.deviceTelemetryEnabled = deviceInterval != Int(Int32.max)
 		}
-		
+
 		self.hasChanges = false
 	}
 }

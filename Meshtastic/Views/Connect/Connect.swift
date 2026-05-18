@@ -17,7 +17,7 @@ import ActivityKit
 #endif
 
 struct Connect: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.colorScheme) private var colorScheme
@@ -33,7 +33,7 @@ struct Connect: View {
 	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
 	@Environment(\.scenePhase) private var scenePhase
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
-	
+
 	var body: some View {
 		NavigationStack {
 			VStack(spacing: 0) {
@@ -111,7 +111,7 @@ struct Connect: View {
 															ProgressView(value: Double(nodeCount), total: Double(expectedNodeDBSize))
 														}
 													}
-													
+
 												} else {
 													Text("Retrieving nodes \(nodeCount)").font(.callout)
 														.foregroundColor(.teal)
@@ -156,7 +156,7 @@ struct Connect: View {
 								}
 							}
 							.contextMenu {
-								
+
 								if node != nil {
 									Label("\(String(node!.num))", systemImage: "number")
 #if !targetEnvironment(macCatalyst)
@@ -196,7 +196,7 @@ struct Connect: View {
 													Logger.mesh.error("Shutdown Failed: \(error)")
 												}
 											}
-											
+
 										} label: {
 											Label("Power Off", systemImage: "power")
 										}
@@ -252,9 +252,9 @@ struct Connect: View {
 										}.disabled(!accessoryManager.allowDisconnect)
 									}
 								}
-								
+
 							} else {
-								
+
 								if let lastError = accessoryManager.lastConnectionError as? Error {
 									Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 								}
@@ -272,7 +272,7 @@ struct Connect: View {
 						}
 					}
 					.textCase(nil)
-					
+
 					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
 						Group {
 							Section(header: HStack {
@@ -344,23 +344,24 @@ struct Connect: View {
 					Spacer()
 				}
 				.padding(.bottom, 10)
-				
+
 			}
 			.background(Color(.systemGroupedBackground))
 			.navigationTitle("Connect")
-			.navigationBarItems(
-				leading: MeshtasticLogo(),
-				trailing: ZStack {
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo()
+				}
+				ToolbarItem(placement: .topBarTrailing) {
 					ConnectedDevice(
 						deviceConnected: accessoryManager.isConnected,
 						name: accessoryManager.activeConnection?.device.shortName ?? "?",
 						mqttProxyConnected: accessoryManager.mqttProxyConnected,
 						mqttTopic: accessoryManager.mqttManager.topic
-						
 					)
 				}
-			)
-			
+			}
+
 		}
 		// TODO: REMOVING VERSION STUFF?
 		//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
@@ -386,14 +387,14 @@ struct Connect: View {
 			if state != .subscribed {
 				node = nil
 			}
-			
+
 			if let deviceNum = accessoryManager.activeDeviceNum, UserDefaults.preferredPeripheralId.count > 0 && state == .subscribed {
-				
+
 				var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(
 					predicate: #Predicate<NodeInfoEntity> { $0.num == deviceNum }
 				)
 				fetchNodeInfoRequest.fetchLimit = 1
-				
+
 				do {
 					node = try context.fetch(fetchNodeInfoRequest).first
 					if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
@@ -467,9 +468,9 @@ struct Connect: View {
 		)
 		statsDescriptor.fetchLimit = 1
 		let mostRecent = try? context.fetch(statsDescriptor).first
-		
+
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
-		
+
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
 																	  channelUtilization: mostRecent?.channelUtilization ?? 0.0,
@@ -483,9 +484,9 @@ struct Connect: View {
 																	  nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
 																	  totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
 																	  timerRange: Date.now...future)
-		
+
 		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
-		
+
 		do {
 			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
 																		  pushType: nil)
@@ -494,7 +495,7 @@ struct Connect: View {
 			Logger.services.error("Error requesting live activity: \(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
 	func endActivity() {
 		liveActivityStarted = false
 		Task {
@@ -516,7 +517,7 @@ struct Connect: View {
 struct TransportIcon: View {
 	var transportType: TransportType
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	
+
 	var body: some View {
 		let transport = accessoryManager.transportForType(transportType)
 		return HStack(spacing: 3.0) {
@@ -545,15 +546,15 @@ struct ManualConnectionMenu: View {
 		let title: String
 		let transport: any Transport
 	}
-	
+
 	private var transports: [IterableTransport]
-	
+
 	init() {
 		self.transports = AccessoryManager.shared.transports.filter { $0.supportsManualConnection}.map { transport in
 			IterableTransport(id: UUID(), icon: transport.type.icon, title: transport.type.rawValue, transport: transport)
 		}
 	}
-	
+
 	@State private var selectedTransport: IterableTransport?
 	@State private var showAlert: Bool = false
 	@State private var connectionString = ""
@@ -586,7 +587,7 @@ struct ManualConnectionMenu: View {
 						connectionString = filtered
 					}
 				}
-			
+
 			Button("OK", action: {
 				if !connectionString.isEmpty {
 					if let device = selectedTransport.transport.device(forManualConnection: connectionString) {
@@ -615,7 +616,7 @@ struct ManualConnectionMenu: View {
 						MeshPackets.recreateShared()
 						clearNotifications()
 						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
-						
+
 						// Clean up just in case
 						deviceForManualConnection = nil
 					}
@@ -630,7 +631,7 @@ struct DeviceConnectRow: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var presentingSwitchPreferredPeripheral = false
 	let device: Device
-	
+
 	var body: some View {
 		HStack {
 			if UserDefaults.preferredPeripheralId == device.id.uuidString {
@@ -700,9 +701,9 @@ struct DeviceConnectRow: View {
 						await MeshPackets.shared.clearDatabase(includeRoutes: false)
 						MeshPackets.recreateShared()
 						clearNotifications()
-						
+
 						try await accessoryManager.connect(to: device)
-						
+
 					}
 				}
 			}

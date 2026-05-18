@@ -39,13 +39,19 @@ SwiftUI client applications for iOS, iPadOS, macOS, visionOS and watchOS that co
 
 ### For Users
 
+- **May 2026** — **Docs Translation Pipeline** — Community-sourced translations: each device contributes on-device translations that are shared via a CDN feed so future users get instant localized docs.
+- **May 2026** — **Automatic Docs Translation** — On iOS 26+, in-app documentation is automatically translated into your device language using the Apple Translation framework.
+- **May 2026** — **Message Formatting Toolbar** — Markdown formatting toolbar in the message compose UI (iOS 18+/macOS 15+). Apply bold, italic, strikethrough, code, and links with one tap; live preview shows rendered output before sending.
+- **May 2026** — **Node List Layout** — Switchable Complete and Compact density modes for the node list. Compact mode reduces row height for large meshes (100+ nodes) with configurable detail toggles.
 - **May 2026** — [Signal Meter](https://meshtastic.github.io/Meshtastic-Apple/user/signal-meter.html) — New deep-dive page explaining how the LoRa signal quality meter works, why negative SNR values are normal, and how to interpret RSSI vs. SNR for your mesh.
 - **May 2026** — [Apple Watch App](https://meshtastic.github.io/Meshtastic-Apple/user/watch.html) — New page covering the companion watch app: node list, fox hunt compass, and how it syncs with your iPhone.
+- **Apr 2026** — **Local Mesh Discovery** — A diagnostic tool that cycles through multiple LoRa modem presets to audit the local RF environment, collecting nodes and telemetry across presets with configurable dwell times.
 
 ### For Developers
 
 - **May 2026** — [Testing](https://meshtastic.github.io/Meshtastic-Apple/developer/testing.html) — Snapshot test conventions established: consolidated multi-state views into single combined images (light + dark pairs), use `assertViewSnapshot` helper with explicit `width`/`height` and `transparent: true` for icon snapshots.
 - **May 2026** — [Architecture](https://meshtastic.github.io/Meshtastic-Apple/developer/architecture.html) — In-app documentation system added: markdown source under `docs/` is converted to HTML by `scripts/build-docs.sh` and bundled at `Meshtastic/Resources/docs/`. Navigation is driven by `index.json`.
+- **May 2026** — **App Docs (Jekyll + In-App)** — Full offline documentation system: markdown source under `docs/`, GitHub Pages Jekyll site, in-app WKWebView browser with dark-mode support, and AI-powered search via Foundation Models (iOS 26+).
 
 ## Getting Started
 

@@ -232,15 +232,17 @@
 		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
 		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
 		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
+		D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */; };
+		D9306A112B81FF020066FBC8 /* ConfigSaveHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */; };
 		D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
 		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
 		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
-		DAC1B5182FB9D40500F8F586 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = AA009SMD0000000000000002 /* Markdown */; };
-		DAC1B5AA2FB9D6CB00F8F586 /* RegionCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5A92FB9D6CB00F8F586 /* RegionCodes.swift */; };
-		DAC1B5AC2FB9D6CD00F8F586 /* ModemPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5AB2FB9D6CD00F8F586 /* ModemPresets.swift */; };
-		DAC1B5AE2FB9D6CF00F8F586 /* Bandwidths.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5AD2FB9D6CF00F8F586 /* Bandwidths.swift */; };
-		DAC1B5B02FB9D6D100F8F586 /* RegionCodes+FirmwareLocale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5AF2FB9D6D100F8F586 /* RegionCodes+FirmwareLocale.swift */; };
-		DAC1B5BA2FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5B92FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift */; };
+		DAC1B8092FBB1E1400F8F586 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = AA009SMD0000000000000002 /* Markdown */; };
+		DAC1B89E2FBB1E6600F8F586 /* ModemPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B89A2FBB1E6600F8F586 /* ModemPresets.swift */; };
+		DAC1B89F2FBB1E6600F8F586 /* RegionCodes+FirmwareLocale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B89C2FBB1E6600F8F586 /* RegionCodes+FirmwareLocale.swift */; };
+		DAC1B8A02FBB1E6600F8F586 /* RegionCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B89B2FBB1E6600F8F586 /* RegionCodes.swift */; };
+		DAC1B8A12FBB1E6600F8F586 /* Bandwidths.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B8992FBB1E6600F8F586 /* Bandwidths.swift */; };
+		DAC1B8A32FBB1E9D00F8F586 /* RegionCodesFirmwareLocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B8A22FBB1E9D00F8F586 /* RegionCodesFirmwareLocaleTests.swift */; };
 		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
 		DD000001NODNAVTST00000001 /* NodeNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */; };
 		DD000002STREXTTST00000001 /* StringExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000002STREXTTST00000000 /* StringExtensionTests.swift */; };
@@ -761,14 +763,16 @@
 		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
 		D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
 		D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
+		D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestConfigOnAppear.swift; sourceTree = "<group>"; };
+		D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigSaveHelper.swift; sourceTree = "<group>"; };
 		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
 		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
 		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
-		DAC1B5A92FB9D6CB00F8F586 /* RegionCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodes.swift; sourceTree = "<group>"; };
-		DAC1B5AB2FB9D6CD00F8F586 /* ModemPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModemPresets.swift; sourceTree = "<group>"; };
-		DAC1B5AD2FB9D6CF00F8F586 /* Bandwidths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bandwidths.swift; sourceTree = "<group>"; };
-		DAC1B5AF2FB9D6D100F8F586 /* RegionCodes+FirmwareLocale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RegionCodes+FirmwareLocale.swift"; sourceTree = "<group>"; };
-		DAC1B5B92FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodesFirmwareLocaleTests.swift; sourceTree = "<group>"; };
+		DAC1B8992FBB1E6600F8F586 /* Bandwidths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bandwidths.swift; sourceTree = "<group>"; };
+		DAC1B89A2FBB1E6600F8F586 /* ModemPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModemPresets.swift; sourceTree = "<group>"; };
+		DAC1B89B2FBB1E6600F8F586 /* RegionCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodes.swift; sourceTree = "<group>"; };
+		DAC1B89C2FBB1E6600F8F586 /* RegionCodes+FirmwareLocale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RegionCodes+FirmwareLocale.swift"; sourceTree = "<group>"; };
+		DAC1B8A22FBB1E9D00F8F586 /* RegionCodesFirmwareLocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodesFirmwareLocaleTests.swift; sourceTree = "<group>"; };
 		DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteModels.swift; sourceTree = "<group>"; };
 		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
 		DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeNavigationTests.swift; sourceTree = "<group>"; };
@@ -1158,7 +1162,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DAC1B5182FB9D40500F8F586 /* Markdown in Frameworks */,
+				DAC1B8092FBB1E1400F8F586 /* Markdown in Frameworks */,
 				102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */,
 				25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
 				102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */,
@@ -1474,7 +1478,7 @@
 		25F5D5C82C4375A8008036E3 /* MeshtasticTests */ = {
 			isa = PBXGroup;
 			children = (
-				DAC1B5B92FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift */,
+				DAC1B8A22FBB1E9D00F8F586 /* RegionCodesFirmwareLocaleTests.swift */,
 				AA00010022E2730EC0060000 /* ConnectViewTests.swift */,
 				DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
@@ -1688,7 +1692,7 @@
 			path = TextMessageField;
 			sourceTree = "<group>";
 		};
-		DAC1B5192FB9D40500F8F586 /* Recovered References */ = {
+		DAC1B80A2FBB1E1400F8F586 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
 				AA003DOC0000001000000007 /* TranslationCache.swift */,
@@ -1700,13 +1704,13 @@
 			name = "Recovered References";
 			sourceTree = "<group>";
 		};
-		DAC1B5A82FB9D6CB00F8F586 /* LoraConfig */ = {
+		DAC1B89D2FBB1E6600F8F586 /* LoraConfig */ = {
 			isa = PBXGroup;
 			children = (
-				DAC1B5A92FB9D6CB00F8F586 /* RegionCodes.swift */,
-				DAC1B5AB2FB9D6CD00F8F586 /* ModemPresets.swift */,
-				DAC1B5AD2FB9D6CF00F8F586 /* Bandwidths.swift */,
-				DAC1B5AF2FB9D6D100F8F586 /* RegionCodes+FirmwareLocale.swift */,
+				DAC1B8992FBB1E6600F8F586 /* Bandwidths.swift */,
+				DAC1B89A2FBB1E6600F8F586 /* ModemPresets.swift */,
+				DAC1B89B2FBB1E6600F8F586 /* RegionCodes.swift */,
+				DAC1B89C2FBB1E6600F8F586 /* RegionCodes+FirmwareLocale.swift */,
 			);
 			path = LoraConfig;
 			sourceTree = "<group>";
@@ -1811,7 +1815,9 @@
 			children = (
 				DD61937B2863877A00E59241 /* Module */,
 				D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
+				D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */,
 				D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
+				D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */,
 				DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */,
 				DD41582528582E9B009B0E59 /* DeviceConfig.swift */,
 				DD8EBF42285058FA00426DCA /* DisplayConfig.swift */,
@@ -1900,6 +1906,7 @@
 		DD8ED9C6289CE4A100B3B0AB /* Enums */ = {
 			isa = PBXGroup;
 			children = (
+				DAC1B89D2FBB1E6600F8F586 /* LoraConfig */,
 				DD1BEF4B2E030D240090CE24 /* KeyBackupStatus.swift */,
 				DDA951592BC6624100CEA535 /* TelemetryWeather.swift */,
 				DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */,
@@ -1922,7 +1929,6 @@
 				DDA9515B2BC6631200CEA535 /* TelemetryEnums.swift */,
 				DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */,
 				AB6E72752E3FC85A00639328 /* LayoutEnums.swift */,
-				DAC1B5A82FB9D6CB00F8F586 /* LoraConfig */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -1972,7 +1978,7 @@
 				AA0005WTCH00000000GR0001 /* Meshtastic Watch App */,
 				DDC2E15526CE248E0042C5E4 /* Products */,
 				DD8EDE9226F97A2B00A5A10B /* Frameworks */,
-				DAC1B5192FB9D40500F8F586 /* Recovered References */,
+				DAC1B80A2FBB1E1400F8F586 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 			usesTabs = 1;
@@ -2585,7 +2591,7 @@
 				DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */,
 				DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */,
 				DD000021ENMCMPTST0000001 /* EnumComprehensiveTests.swift in Sources */,
-				DAC1B5BA2FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift in Sources */,
+				DAC1B8A32FBB1E9D00F8F586 /* RegionCodesFirmwareLocaleTests.swift in Sources */,
 				DD000022GEOJSNCFG0000001 /* GeoJSONOverlayConfigTests.swift in Sources */,
 				DD000023EXTDETTST0000001 /* ExtensionDetailedTests.swift in Sources */,
 				DD000024ENMBATTST0000001 /* EnumBatchTests.swift in Sources */,
@@ -2638,7 +2644,6 @@
 				AA009MDC0000002000000001 /* MarkdownConverter.swift in Sources */,
 				AA009DTU0000002000000001 /* DocsTranslationUploader.swift in Sources */,
 				AA009CTF0000002000000001 /* CommunityTranslationFetcher.swift in Sources */,
-				DAC1B5AE2FB9D6CF00F8F586 /* Bandwidths.swift in Sources */,
 				D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */,
 				C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */,
 				BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */,
@@ -2648,7 +2653,6 @@
 				B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */,
 				AA00SDBF0001 /* DeviceHardwareImageEntity.swift in Sources */,
 				AA00SDBF0002 /* DeviceHardwareTagEntity.swift in Sources */,
-				DAC1B5AC2FB9D6CD00F8F586 /* ModemPresets.swift in Sources */,
 				AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */,
 				10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */,
 				6467579F9E9E4B0EAA009615 /* MeshtasticSchemaV1.swift in Sources */,
@@ -2691,6 +2695,7 @@
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DD4756AB2E9F1A0000029299 /* SecurityVersionNag.swift in Sources */,
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
+				D9306A112B81FF020066FBC8 /* ConfigSaveHelper.swift in Sources */,
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndex.swift in Sources */,
 				2315D19D2EECB3DA00E0FAE7 /* UTI+UF2.swift in Sources */,
 				DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */,
@@ -2780,6 +2785,10 @@
 				6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */,
 				DD9C700D2E8D5A9500106227 /* ChannelMessageRow.swift in Sources */,
 				2315D1A02EECB44800E0FAE7 /* UF2MassStorageView.swift in Sources */,
+				DAC1B89E2FBB1E6600F8F586 /* ModemPresets.swift in Sources */,
+				DAC1B89F2FBB1E6600F8F586 /* RegionCodes+FirmwareLocale.swift in Sources */,
+				DAC1B8A02FBB1E6600F8F586 /* RegionCodes.swift in Sources */,
+				DAC1B8A12FBB1E6600F8F586 /* Bandwidths.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */,
 				DDA9515A2BC6624100CEA535 /* TelemetryWeather.swift in Sources */,
@@ -2856,6 +2865,7 @@
 				DD00003ASUPPORTLVL0000001 /* SupportLevel.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
+				D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */,
 				251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */,
@@ -2868,7 +2878,6 @@
 				DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */,
 				6C95257E7B3E55D4FED5694C /* MapWindow.swift in Sources */,
 				DD3CC24C2C498D6C001BD3A2 /* BatteryCompact.swift in Sources */,
-				DAC1B5AA2FB9D6CB00F8F586 /* RegionCodes.swift in Sources */,
 				BCB613812C67290800485544 /* SendWaypointIntent.swift in Sources */,
 				ABA8E6402E2F2A2300E27791 /* AppIconButton.swift in Sources */,
 				DD1B8F402B35E2F10022AABC /* GPSStatus.swift in Sources */,
@@ -2967,7 +2976,6 @@
 				D93068D72B8146690066FBC8 /* MessageText.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */,
 				8A8F2D8A3769D24BAB88B4A1 /* CoTMessage.swift in Sources */,
-				DAC1B5B02FB9D6D100F8F586 /* RegionCodes+FirmwareLocale.swift in Sources */,
 				8EED425B7820DA4FEB40C375 /* CoTXMLParser.swift in Sources */,
 				B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */,
 				2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */,

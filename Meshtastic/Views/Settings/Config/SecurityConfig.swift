@@ -13,14 +13,14 @@ import OSLog
 import CryptoKit
 
 struct SecurityConfig: View {
-	
+
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
-	var node: NodeInfoEntity?
-	
+
+	let node: NodeInfoEntity?
+
 	@State var hasChanges = false
 	@State var publicKey = ""
 	@State var privateKey = ""
@@ -37,7 +37,7 @@ struct SecurityConfig: View {
 	@State var privateKeyIsSecure = true
 	@State var backupStatus: KeyBackupStatus?
 	@State var backupStatusError: OSStatus?
-	
+
 	private var isValidKeyPair: Bool {
 		guard let privateKeyBytes = Data(base64Encoded: privateKey),
 			  let calculatedPublicKey = generatePublicKeyDisplay(from: privateKeyBytes),
@@ -46,7 +46,7 @@ struct SecurityConfig: View {
 		}
 		return calculatedPublicKey == decodedPublicKey
 	}
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Security", config: \.securityConfig, node: node, onAppear: setSecurityValues)
@@ -200,20 +200,24 @@ struct SecurityConfig: View {
 					Label("Serial Console", systemImage: "terminal")
 					Text("Serial Console over the Stream API.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Toggle(isOn: $debugLogApiEnabled) {
 					Label("Debug Logs", systemImage: "ant.fill")
 					Text("Output live debug logging over serial, view and export position-redacted device logs over Bluetooth.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 			}
-			if adminKey.length > 0 || UserDefaults.enableAdministration {
-				Section(header: Text("Administration")) {
-					Toggle(isOn: $isManaged) {
-						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
-						Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			Section(header: Text("Administration")) {
+				Toggle(isOn: $isManaged) {
+					Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+					Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
+				}
+				.tint(.accentColor)
+				.disabled(adminKey.length == 0)
+				if adminKey.length == 0 {
+					Label("An admin key must be set before enabling managed mode.", systemImage: "exclamationmark.triangle.fill")
+						.font(.caption)
+						.foregroundStyle(.orange)
 				}
 			}
 		}
@@ -221,25 +225,25 @@ struct SecurityConfig: View {
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					
+
 					if !hasValidPrivateKey || !hasValidAdminKey || !hasValidAdminKey2 || !hasValidAdminKey3 {
 						return
 					}
-					
+
 					guard let deviceNum = accessoryManager.activeDeviceNum,
 						  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 						  let fromUser = connectedNode.user,
 						  let toUser = node?.user else {
 						return
 					}
-					
+
 					var config = Config.SecurityConfig()
 					config.privateKey = Data(base64Encoded: privateKey) ?? Data()
 					config.adminKey = [Data(base64Encoded: adminKey) ?? Data(), Data(base64Encoded: adminKey2) ?? Data(), Data(base64Encoded: adminKey3) ?? Data()]
 					config.isManaged = isManaged
 					config.serialEnabled = serialEnabled
 					config.debugLogApiEnabled = debugLogApiEnabled
-					
+
 					let keyUpdated = node?.securityConfig?.privateKey?.base64EncodedString() ?? "" != privateKey
 					Task {
 						_ = try await accessoryManager.saveSecurityConfig(
@@ -281,9 +285,11 @@ struct SecurityConfig: View {
 		}
 		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Security Config")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onChange(of: node) { _, _ in
 			setSecurityValues()
 		}
@@ -343,35 +349,16 @@ struct SecurityConfig: View {
 			if key != node?.securityConfig?.adminKey3?.base64EncodedString() ?? "" && hasValidAdminKey3 { hasChanges = true }
 		}
 		.onFirstAppear {
-			// Need to request a SecurityConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.securityConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired security config requesting via PKI admin")
-										try await accessoryManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Security config request failed")
-									}
-								}
-							}
-						} else {
-							if node.deviceConfig == nil {
-								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-							}
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.securityConfig == nil },
+				request: accessoryManager.requestSecurityConfig
+			)
 		}
 	}
-	
+
 	func setSecurityValues() {
 		self.publicKey = node?.securityConfig?.publicKey?.base64EncodedString() ?? ""
 		self.privateKey = node?.securityConfig?.privateKey?.base64EncodedString() ?? ""
@@ -383,7 +370,7 @@ struct SecurityConfig: View {
 		self.debugLogApiEnabled = node?.securityConfig?.debugLogApiEnabled ?? false
 		self.hasChanges = false
 	}
-	
+
 	func generatePrivateKey(count: Int) -> Data? {
 		var randomBytes = Data(count: count)
 		let status = randomBytes.withUnsafeMutableBytes { (mutableBytes: UnsafeMutableRawBufferPointer) -> Int32 in
@@ -392,7 +379,7 @@ struct SecurityConfig: View {
 			}
 			return SecRandomCopyBytes(kSecRandomDefault, count, pointer)
 		}
-		
+
 		if status == errSecSuccess {
 			// Generate a random "f" value and then adjust the value to make
 			// it valid as an "s" value for eval().  According to the specification
@@ -408,14 +395,14 @@ struct SecurityConfig: View {
 			return nil
 		}
 	}
-	
+
 	// Generate a new public key for display purposes to show the user what will be changed after the new private key is saved to the device
 	func generatePublicKeyDisplay(from privateKeyData: Data) -> Data? {
 		guard privateKeyData.count == 32 else {
 			Logger.mesh.debug("Invalid private key length. Must be 32 bytes for Curve25519.")
 			return nil
 		}
-		
+
 		do {
 			// Create a Curve25519 private key from raw representation
 			let privateKey = try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: privateKeyData)

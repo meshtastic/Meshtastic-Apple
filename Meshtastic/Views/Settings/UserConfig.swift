@@ -9,17 +9,17 @@ import MeshtasticProtobufs
 import SwiftUI
 
 struct UserConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	enum Field: Hashable {
 		case frequencyOverride
 	}
-	
+
 	@State private var isPresentingFactoryResetConfirm: Bool = false
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -31,23 +31,23 @@ struct UserConfig: View {
 	@State var overrideFrequency: Float = 0.0
 	@State var txPower = 0
 	@FocusState var focusedField: Field?
-	
+
 	public var minimumVersion = "2.6.9"
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
 		return formatter
 	}()
-	
+
 	var body: some View {
-		
+
 		Form {
 			Section(header: Text("User Details")) {
-				
+
 				VStack(alignment: .leading) {
 					HStack {
 						Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
-						
+
 						TextField("Long Name", text: $longName)
 							.onChange(of: longName) {
 								var newValue = longName.withoutVariationSelectors
@@ -72,7 +72,7 @@ struct UserConfig: View {
 					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
 						.foregroundColor(.gray)
 						.font(.callout)
-					
+
 				}
 				VStack(alignment: .leading) {
 					HStack {
@@ -115,12 +115,12 @@ struct UserConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if isLicensed {
-						
+
 						Text("Onboarding for licensed operators requires firmware 2.0.20 or greater. Make sure to refer to your local regulations and contact the local amateur frequency coordinators with questions.")
 							.font(.caption2)
 						Text("What licensed operator mode does:\n* Sets the node name to your call sign \n* Broadcasts node info every 10 minutes \n* Overrides frequency, dutycycle and tx power \n* Disables encryption")
 							.font(.caption2)
-						
+
 						HStack {
 							Label("Frequency", systemImage: "waveform.path.ecg")
 							Spacer()
@@ -169,17 +169,17 @@ struct UserConfig: View {
 							if longName.isEmpty && isLicensed {
 								return
 							}
-							
+
 							let connectedUser = getUser(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 							let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
 							if node != nil && connectedNode != nil {
-								
+
 								if !isLicensed {
 									var u = User()
 									u.shortName = shortName
 									u.longName = longName
 									u.isUnmessagable = isUnmessagable
-									
+
 									Task {
 										_ = try await accessoryManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!)
 										Task { @MainActor in
@@ -211,10 +211,11 @@ struct UserConfig: View {
 			}
 		}
 		.navigationTitle("User Config")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.onAppear {
 			self.shortName = node?.user?.shortName ?? ""
 			self.longName = node?.user?.longName ?? ""

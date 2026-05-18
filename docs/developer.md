@@ -31,6 +31,12 @@ Things that trip up first-time contributors — check these before requesting re
 Keep the last 5–8 entries and trim older ones from the bottom.
 -->
 
+**May 2026** — [Translate](developer/architecture) — Docs Translation Pipeline (`009`): markdown-level translation with community CDN feed, manifest-based caching, and automatic contribution back to `meshtastic/translations` repo.
+
+**May 2026** — [Architecture](developer/architecture) — Automatic Docs Translation (`008`): on-device Apple Translation framework integration for in-app docs, with file-based cache in Application Support.
+
+**May 2026** — [Architecture](developer/architecture) — Message Formatting Toolbar (`004`): pure SwiftUI markdown toolbar using `TextSelection` (iOS 18+), raw markdown storage in existing `messagePayload` field — no schema changes.
+
 **May 2026** — [SwiftData](developer/swiftdata) — Documented save strategy (autosave disabled, debounced saves), `@Attribute(.unique)` indexes, and data caps for positions/telemetry/messages. Fixed stale `QueryCoreData`/`UpdateCoreData` references.
 
 **May 2026** — [CarPlay](developer/carplay) — Documented fetch limits and predicates on CarPlay data queries.

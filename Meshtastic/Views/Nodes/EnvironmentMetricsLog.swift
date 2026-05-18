@@ -22,14 +22,14 @@ struct EnvironmentMetricsLog: View {
 	@StateObject var seriesList = MetricsSeriesList.environmentDefaultChartSeries
 
 	@State var isEditingColumnConfiguration = false
-	
+
 	private var chartData: [TelemetryEntity] {
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
 		return (node.telemetries ?? [])
 			.filter { $0.metricsType == 1 && ($0.time ?? Date.distantPast) >= oneWeekAgo }
 			.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
 	}
-	
+
 	var body: some View {
 		VStack {
 			if node.hasEnvironmentMetrics {
@@ -150,10 +150,11 @@ struct EnvironmentMetricsLog: View {
 
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),

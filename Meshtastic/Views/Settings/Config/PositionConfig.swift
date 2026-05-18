@@ -24,11 +24,11 @@ struct PositionFlags: OptionSet {
 }
 
 struct PositionConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State var hasChanges = false
 	@State var hasFlagChanges = false
 	@State var smartPositionEnabled = true
@@ -43,7 +43,7 @@ struct PositionConfig: View {
 	@State var broadcastSmartMinimumDistance = 0
 	@State private var broadcastSmartMinimumIntervalSecs: UpdateInterval = UpdateInterval(from: 0)
 	@State var positionFlags = 811
-	
+
 	/// Position Flags
 	/// Altitude value - 1
 	@State var includeAltitude = false
@@ -74,11 +74,11 @@ struct PositionConfig: View {
 	@State private var supportedVersion = true
 	@State private var showingSetFixedAlert = false
 	// @State private var showingRemoveFixedAlert = false
-	
+
 	@ViewBuilder
 	var positionPacketSection: some View {
 		Section(header: Text("Position Packet")) {
-			
+
 			VStack(alignment: .leading) {
 				UpdateIntervalPicker(
 					config: .broadcastMedium,
@@ -89,12 +89,12 @@ struct PositionConfig: View {
 					.foregroundColor(.gray)
 					.font(.callout)
 			}
-			
+
 			Toggle(isOn: $smartPositionEnabled) {
 				Label("Smart Position", systemImage: "brain")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			
+			.tint(.accentColor)
+
 			if smartPositionEnabled {
 				VStack(alignment: .leading) {
 					UpdateIntervalPicker(
@@ -119,7 +119,6 @@ struct PositionConfig: View {
 							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("The minimum distance change in meters to be considered for a smart position broadcast.")
 						.foregroundColor(.gray)
 						.font(.callout)
@@ -127,7 +126,7 @@ struct PositionConfig: View {
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	var deviceGPSSection: some View {
 		Section(header: Text("Device GPS")) {
@@ -163,115 +162,115 @@ struct PositionConfig: View {
 						if !(node?.positionConfig?.fixedPosition ?? false) {
 							Text("Your current location will be set as the fixed position and broadcast over the mesh on the position interval.")
 						} else {
-							
+
 						}
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	var positionFlagsSection: some View {
 		Section(header: Text("Position Flags")) {
-			
+
 			Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
 				.foregroundColor(.gray)
 				.font(.callout)
-			
+
 			Toggle(isOn: $includeAltitude) {
 				Label("Altitude", systemImage: "arrow.up")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeAltitude) { _, newIncludeAltitude in
 				if newIncludeAltitude != PositionFlags(rawValue: self.positionFlags).contains(.Altitude) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeSatsinview) {
 				Label("Number of satellites", systemImage: "skew")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeSatsinview) { _, newIncludeSatsinview in
 				if newIncludeSatsinview != PositionFlags(rawValue: self.positionFlags).contains(.Satsinview) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeSeqNo) { // 64
 				Label("Sequence number", systemImage: "number")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeSeqNo) { _, newIncludeSeqNo in
 				if newIncludeSeqNo != PositionFlags(rawValue: self.positionFlags).contains(.SeqNo) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeTimestamp) { // 128
 				Label("Timestamp", systemImage: "clock")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeTimestamp) { _, newIncludeTimestamp in
 				if newIncludeTimestamp != PositionFlags(rawValue: self.positionFlags).contains(.Timestamp) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeHeading) { // 128
 				Label("Vehicle heading", systemImage: "location.circle")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeHeading) { _, newIncludeHeading in
 				if newIncludeHeading != PositionFlags(rawValue: self.positionFlags).contains(.Heading) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeSpeed) { // 128
 				Label("Vehicle speed", systemImage: "speedometer")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeSpeed) { _, newIncludeSpeed in
 				if newIncludeSpeed != PositionFlags(rawValue: self.positionFlags).contains(.Speed) { hasChanges = true }
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	var advancedPositionFlagsSection: some View {
 		Section(header: Text("Advanced Position Flags")) {
-			
+
 			if includeAltitude {
 				Toggle(isOn: $includeAltitudeMsl) {
 					Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.onChange(of: includeAltitudeMsl) { _, newIncludeAltitudeMsl in
 					if newIncludeAltitudeMsl != PositionFlags(rawValue: self.positionFlags).contains(.AltitudeMsl) { hasChanges = true }
 				}
-				
+
 				Toggle(isOn: $includeGeoidalSeparation) {
 					Label("Altitude Geoidal Separation", systemImage: "globe.americas")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.onChange(of: includeGeoidalSeparation) { _, newIncludeGeoidalSeparation in
 					if newIncludeGeoidalSeparation != PositionFlags(rawValue: self.positionFlags).contains(.GeoidalSeparation) { hasChanges = true }
 				}
 			}
-			
+
 			Toggle(isOn: $includeDop) {
 				Text("Dilution of precision (DOP) PDOP used by default")
 			}
-			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			.tint(.accentColor)
 			.onChange(of: includeDop) { _, newIncludeDop in
 				if newIncludeDop != PositionFlags(rawValue: self.positionFlags).contains(.Dop) { hasChanges = true }
 			}
-			
+
 			if includeDop {
 				Toggle(isOn: $includeHvdop) {
 					Text("If DOP is set, use HDOP / VDOP values instead of PDOP")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.onChange(of: includeHvdop) { _, newIncludeHvdop in
 					if newIncludeHvdop != PositionFlags(rawValue: self.positionFlags).contains(.Hvdop) { hasChanges = true }
 				}
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	var advancedDeviceGPSSection: some View {
 		Section(header: Text("Advanced Device GPS")) {
@@ -284,7 +283,6 @@ struct PositionConfig: View {
 					}
 				}
 			}
-			.pickerStyle(DefaultPickerStyle())
 			Picker("GPS Transmit GPIO", selection: $txGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
@@ -294,7 +292,6 @@ struct PositionConfig: View {
 					}
 				}
 			}
-			.pickerStyle(DefaultPickerStyle())
 			Picker("GPS EN GPIO", selection: $gpsEnGpio) {
 				ForEach(0..<49) {
 					if $0 == 0 {
@@ -304,7 +301,6 @@ struct PositionConfig: View {
 					}
 				}
 			}
-			.pickerStyle(DefaultPickerStyle())
 			Text("(Re)define PIN_GPS_EN for your board.")
 				.font(.caption)
 		}
@@ -316,7 +312,13 @@ struct PositionConfig: View {
 					try await accessoryManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 				}
 			}
-			if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+			performConfigSave(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				hasChanges: $hasChanges,
+				dismiss: goBack
+			) { fromUser, toUser in
 				var pc = Config.PositionConfig()
 				pc.positionBroadcastSmartEnabled = smartPositionEnabled
 				pc.gpsEnabled = gpsMode == 1
@@ -341,18 +343,11 @@ struct PositionConfig: View {
 				if includeSpeed { pf.insert(.Speed) }
 				if includeHeading { pf.insert(.Heading) }
 				pc.positionFlags = UInt32(pf.rawValue)
-				Task {
-					_ = try await accessoryManager.savePositionConfig(config: pc, fromUser: connectedNode.user!, toUser: node!.user!)
-					Task { @MainActor in
-						// Disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
-				}
+				_ = try await accessoryManager.savePositionConfig(config: pc, fromUser: fromUser, toUser: toUser)
 			}
 		}
 	}
-	
+
 	var setFixedAlertTitle: String {
 		if node?.positionConfig?.fixedPosition == true {
 			return "Remove Fixed Position"
@@ -360,9 +355,9 @@ struct PositionConfig: View {
 			return "Set Fixed Position"
 		}
 	}
-	
+
 	var body: some View {
-		
+
 		Form {
 			ConfigHeader(title: "Position", config: \.positionConfig, node: node, onAppear: setPositionValues)
 			positionPacketSection
@@ -396,38 +391,22 @@ struct PositionConfig: View {
 			}
 		}
 		.navigationTitle("Position Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			}
-		)
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onFirstAppear {
 			supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.positionConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired position config requesting via PKI admin")
-										try await accessoryManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Position config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.positionConfig == nil },
+				request: accessoryManager.requestPositionConfig
+			)
 		}
 		.onChange(of: fixedPosition) { _, newFixed in
 			if supportedVersion {
@@ -470,7 +449,7 @@ struct PositionConfig: View {
 			if newGpsUpdateInterval != node?.positionConfig?.gpsUpdateInterval ?? 0 { hasChanges = true }
 		}
 	}
-	
+
 	func handlePositionFlagtChanges() {
 		guard (node?.positionConfig) != nil else { return }
 		let pf = PositionFlags(rawValue: self.positionFlags)
@@ -486,7 +465,7 @@ struct PositionConfig: View {
 		pf.contains(.Dop) ||
 		pf.contains(.Hvdop)
 	}
-	
+
 	func setPositionValues() {
 		self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
 		self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? false
@@ -516,7 +495,7 @@ struct PositionConfig: View {
 		self.includeHeading = pf.contains(.Heading)
 		self.hasChanges = false
 	}
-	
+
 	private func setFixedPosition() {
 		guard let nodeNum = accessoryManager.activeDeviceNum,
 			  nodeNum > 0 else { return }
@@ -536,7 +515,7 @@ struct PositionConfig: View {
 			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	private func removeFixedPosition() {
 		guard let nodeNum = accessoryManager.activeDeviceNum,
 			  nodeNum > 0 else { return }

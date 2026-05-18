@@ -648,13 +648,15 @@ struct Settings: View {
 				}
 			}
 			.navigationTitle("Settings")
-			.navigationBarItems(
-				leading: MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo().onLongPressGesture(minimumDuration: 1.0) {
+					}
 				}
-			)
+			}
 		}
 	}
-	
+
 	func setSelectedNode(to nodeNum: Int) {
 		if nodes.count > 1 {
 			if selectedNode == 0 {

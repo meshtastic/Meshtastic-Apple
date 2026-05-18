@@ -29,7 +29,7 @@ struct LoRaConfig: View {
 	@Environment(\.dismiss) private var goBack
 	@FocusState var focusedField: Field?
 
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 
 	@State var hasChanges = false
 	@State var region: Int = 0
@@ -71,12 +71,11 @@ struct LoRaConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 
 				Toggle(isOn: $usePreset) {
 					Label("Use Preset", systemImage: "list.bullet.rectangle")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 
 				if usePreset {
 					VStack(alignment: .leading) {
@@ -87,7 +86,6 @@ struct LoRaConfig: View {
 								Text(m.description)
 							}
 						}
-						.pickerStyle(DefaultPickerStyle())
 						.fixedSize()
 						Text("Available modem presets, default is Long Fast.")
 							.foregroundColor(.gray)
@@ -100,16 +98,16 @@ struct LoRaConfig: View {
 				Toggle(isOn: $ignoreMqtt) {
 					Label("Ignore MQTT", systemImage: "server.rack")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Toggle(isOn: $okToMqtt) {
 					Label("Ok to MQTT", systemImage: "network")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 
 				Toggle(isOn: $txEnabled) {
 					Label("Transmit Enabled", systemImage: "waveform.path")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 
 				 if !usePreset {
 					 HStack {
@@ -148,7 +146,6 @@ struct LoRaConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				.pickerStyle(DefaultPickerStyle())
 
 				VStack(alignment: .leading) {
 					HStack {
@@ -167,7 +164,7 @@ struct LoRaConfig: View {
 				Toggle(isOn: $rxBoostedGain) {
 					Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 
 				HStack {
 					Label("Frequency Override", systemImage: "waveform.path.ecg")
@@ -189,75 +186,53 @@ struct LoRaConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-						var lc = Config.LoRaConfig()
-						lc.hopLimit = UInt32(hopLimit)
-						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
-						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-						lc.usePreset = usePreset
-						lc.txEnabled = txEnabled
-						lc.txPower = Int32(txPower)
-						lc.channelNum = UInt32(channelNum)
-						lc.bandwidth = UInt32(bandwidth)
-						lc.codingRate = UInt32(codingRate)
-						lc.spreadFactor = UInt32(spreadFactor)
-						lc.sx126XRxBoostedGain = rxBoostedGain
-						lc.overrideFrequency = overrideFrequency
-						lc.ignoreMqtt = ignoreMqtt
-						lc.configOkToMqtt = okToMqtt
-						if connectedNode.num == node?.user?.num ?? 0 {
-							UserDefaults.modemPreset = modemPreset
-						}
-						Task {
-							_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: connectedNode.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var lc = Config.LoRaConfig()
+					lc.hopLimit = UInt32(hopLimit)
+					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+					lc.usePreset = usePreset
+					lc.txEnabled = txEnabled
+					lc.txPower = Int32(txPower)
+					lc.channelNum = UInt32(channelNum)
+					lc.bandwidth = UInt32(bandwidth)
+					lc.codingRate = UInt32(codingRate)
+					lc.spreadFactor = UInt32(spreadFactor)
+					lc.sx126XRxBoostedGain = rxBoostedGain
+					lc.overrideFrequency = overrideFrequency
+					lc.ignoreMqtt = ignoreMqtt
+					lc.configOkToMqtt = okToMqtt
+					if let deviceNum = accessoryManager.activeDeviceNum,
+					   let connectedNode = getNodeInfo(id: deviceNum, context: context),
+					   connectedNode.num == node?.user?.num ?? 0 {
+						UserDefaults.modemPreset = modemPreset
 					}
+					_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("LoRa Config")
-		.navigationBarItems(
-			trailing: ZStack {
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
 			}
-		)
+		}
 		.onFirstAppear {
-			// Need to request a LoRaConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.loRaConfig == nil {
-								Task {
-									do {
-										if connectedNode.user != nil && node.user != nil {
-											Logger.mesh.info("⚙️ Empty or expired lora config requesting via PKI admin")
-											_ = try await accessoryManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node.user!)
-										} else {
-											Logger.mesh.info("🚫 No User or node for lora config request")
-										}
-									} catch {
-										Logger.mesh.info("🚨 Lora config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.loRaConfig == nil },
+				request: accessoryManager.requestLoRaConfig
+			)
 		}
 		.onChange(of: region) { _, newRegion in
 			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
