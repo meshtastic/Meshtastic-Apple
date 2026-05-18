@@ -99,31 +99,26 @@ struct SerialConfig: View {
 			.disabled(!accessoryManager.isConnected || node?.serialConfig == nil)
 			.safeAreaInset(edge: .bottom, alignment: .center) {
 				HStack(spacing: 0) {
-					SaveConfigButton(node: node, hasChanges: $hasChanges) {
-						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-						if connectedNode != nil {
-							var sc = ModuleConfig.SerialConfig()
-							sc.enabled = enabled
-							sc.echo = echo
-							sc.rxd = UInt32(rxd)
-							sc.txd = UInt32(txd)
-							sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
-							sc.timeout = UInt32(timeout)
-							sc.overrideConsoleSerialPort = overrideConsoleSerialPort
-							sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
-							
-							Task {
-								_ = try await accessoryManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!)
-								
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
-									hasChanges = false
-									goBack()
-								}
-							}
-						}
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var sc = ModuleConfig.SerialConfig()
+						sc.enabled = enabled
+						sc.echo = echo
+						sc.rxd = UInt32(rxd)
+						sc.txd = UInt32(txd)
+						sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
+						sc.timeout = UInt32(timeout)
+						sc.overrideConsoleSerialPort = overrideConsoleSerialPort
+						sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
+						_ = try await accessoryManager.saveSerialModuleConfig(config: sc, fromUser: fromUser, toUser: toUser)
 					}
+				}
 				}
 			}
 			.navigationTitle("Serial Config")

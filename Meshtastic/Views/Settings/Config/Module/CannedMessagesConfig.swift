@@ -173,67 +173,52 @@ struct CannedMessagesConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.cannedMessageConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if hasChanges {
-						if connectedNode != nil {
-							var cmc = ModuleConfig.CannedMessageConfig()
-							cmc.enabled = enabled
-							cmc.sendBell = sendBell
-							cmc.rotary1Enabled = rotary1Enabled
-							cmc.updown1Enabled = updown1Enabled
-							if rotary1Enabled {
-								/// Input event origin accepted by the canned messages
-								/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
-								cmc.allowInputSource = "rotEnc1"
-							} else if updown1Enabled {
-								cmc.allowInputSource = "upDown1"
-							} else {
-								cmc.allowInputSource = "_any"
-							}
-							cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
-							cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
-							cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
-							cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
-							cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
-							cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
-							Task {
-								do {
-									_ = try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
-									Task { @MainActor in
-										// Should show a saved successfully alert once I know that to be true
-										// for now just disable the button after a successful save
-										hasChanges = false
-										goBack()
-									}
-								} catch {
-									Logger.mesh.error("Unable to save canned message module config")
-								}
-							}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				guard let toUser = node?.user else { return }
+				if hasChanges {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var cmc = ModuleConfig.CannedMessageConfig()
+						cmc.enabled = enabled
+						cmc.sendBell = sendBell
+						cmc.rotary1Enabled = rotary1Enabled
+						cmc.updown1Enabled = updown1Enabled
+						if rotary1Enabled {
+							cmc.allowInputSource = "rotEnc1"
+						} else if updown1Enabled {
+							cmc.allowInputSource = "upDown1"
+						} else {
+							cmc.allowInputSource = "_any"
 						}
+						cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
+						cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
+						cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
+						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
+						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
+						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
+						_ = try await accessoryManager.saveCannedMessageModuleConfig(config: cmc, fromUser: fromUser, toUser: toUser)
 					}
-					if hasMessagesChanges {
-						Task {
-							do {
-								_ = try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!)
-								
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
-									hasMessagesChanges = false
-									if !hasChanges {
-										Task {
-											Logger.transport.debug("[CannedMessagesConfig] sending wantConfig for save cannedMessagesConfig")
-										}
-										goBack()
-									}
-								}
-							} catch {
-								Logger.mesh.error("Unable to save canned message module messages")
+				}
+				if hasMessagesChanges {
+					Task {
+						do {
+							_ = try await accessoryManager.saveCannedMessageModuleMessages(messages: messages, fromUser: toUser, toUser: toUser)
+							hasMessagesChanges = false
+							if !hasChanges {
+								Logger.transport.debug("[CannedMessagesConfig] sending wantConfig for save cannedMessagesConfig")
+								goBack()
 							}
+						} catch {
+							Logger.mesh.error("Unable to save canned message module messages")
 						}
 					}
 				}
+			}
 			}
 		}
 		.navigationTitle("Canned Messages Config")

@@ -51,35 +51,26 @@ struct AmbientLightingConfig: View {
 		.disabled(!self.accessoryManager.isConnected || node?.ambientLightingConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard let deviceNum = accessoryManager.activeDeviceNum else {
-						return
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var al = ModuleConfig.AmbientLightingConfig()
+					al.ledState = ledState
+					al.current = UInt32(current)
+					components = color.resolve(in: environment)
+					if let components {
+						al.red = UInt32(components.red * 255)
+						al.green = UInt32(components.green * 255)
+						al.blue = UInt32(components.blue * 255)
 					}
-					let connectedNode = getNodeInfo(id: deviceNum, context: context)
-					if connectedNode != nil {
-						var al = ModuleConfig.AmbientLightingConfig()
-						al.ledState = ledState
-						al.current = UInt32(current)
-						components = color.resolve(in: environment)
-						if let components {
-							al.red = UInt32(components.red * 255)
-							al.green = UInt32(components.green * 255)
-							al.blue = UInt32(components.blue * 255)
-						}
-						
-						Task {
-							do {
-								_ = try await accessoryManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!)
-								Task { @MainActor in
-									hasChanges = false
-									goBack()
-								}
-							} catch {
-								Logger.mesh.warning("Unable to send ambient lighting module config")
-							}
-						}
-					}
+					_ = try await accessoryManager.saveAmbientLightingModuleConfig(config: al, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}}
 		.navigationTitle("Ambient Lighting Config")
 		.toolbar {

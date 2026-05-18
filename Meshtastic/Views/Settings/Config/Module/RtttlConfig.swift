@@ -50,20 +50,17 @@ struct RtttlConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.rtttlConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						Task {
-							_ = try await accessoryManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					_ = try await accessoryManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("Ringtone Config")
@@ -82,9 +79,7 @@ struct RtttlConfig: View {
 			)
 		}
 		.onChange(of: ringtone) { _, newRingtone in
-			if node != nil && node!.rtttlConfig != nil {
-				if newRingtone != node!.rtttlConfig!.ringtone { hasChanges = true }
-			}
+			if newRingtone != node?.rtttlConfig?.ringtone ?? "" { hasChanges = true }
 		}
 		
 	}

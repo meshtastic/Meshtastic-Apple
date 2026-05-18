@@ -143,38 +143,33 @@ struct ExternalNotificationConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.externalNotificationConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						var enc = ModuleConfig.ExternalNotificationConfig()
-						enc.enabled = enabled
-						enc.alertBell = alertBell
-						enc.alertBellBuzzer = alertBellBuzzer
-						enc.alertBellVibra = alertBellVibra
-						enc.alertMessage = alertMessage
-						enc.alertMessageBuzzer = alertMessageBuzzer
-						enc.alertMessageVibra = alertMessageVibra
-						enc.active = active
-						enc.output = UInt32(output)
-						enc.nagTimeout = UInt32(nagTimeout.intValue)
-						enc.outputBuzzer = UInt32(outputBuzzer)
-						enc.outputVibra = UInt32(outputVibra)
-						enc.outputMs = UInt32(outputMilliseconds)
-						enc.usePwm = usePWM
-						enc.useI2SAsBuzzer = useI2SAsBuzzer
-						Task {
-							do {
-								_ = try await accessoryManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!)
-								Task { @MainActor in
-									hasChanges = false
-									goBack()
-								}
-							} catch {
-								Logger.mesh.error("Unable to save external notiication module config")
-							}
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var enc = ModuleConfig.ExternalNotificationConfig()
+					enc.enabled = enabled
+					enc.alertBell = alertBell
+					enc.alertBellBuzzer = alertBellBuzzer
+					enc.alertBellVibra = alertBellVibra
+					enc.alertMessage = alertMessage
+					enc.alertMessageBuzzer = alertMessageBuzzer
+					enc.alertMessageVibra = alertMessageVibra
+					enc.active = active
+					enc.output = UInt32(output)
+					enc.nagTimeout = UInt32(nagTimeout.intValue)
+					enc.outputBuzzer = UInt32(outputBuzzer)
+					enc.outputVibra = UInt32(outputVibra)
+					enc.outputMs = UInt32(outputMilliseconds)
+					enc.usePwm = usePWM
+					enc.useI2SAsBuzzer = useI2SAsBuzzer
+					_ = try await accessoryManager.saveExternalNotificationModuleConfig(config: enc, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("External Notification Config")

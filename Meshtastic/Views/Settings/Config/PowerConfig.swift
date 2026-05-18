@@ -78,14 +78,14 @@ struct PowerConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard let deviceNum = accessoryManager.activeDeviceNum,
-						  let connectedNode = getNodeInfo(id: deviceNum, context: context),
-						  let fromUser = connectedNode.user,
-						  let toUser = node?.user else {
-						return
-					}
-					
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
 					var config = Config.PowerConfig()
 					config.isPowerSaving = isPowerSaving
 					config.onBatteryShutdownAfterSecs = shutdownOnPowerLoss ? UInt32(shutdownAfterSecs.intValue) : 0
@@ -93,20 +93,13 @@ struct PowerConfig: View {
 					config.waitBluetoothSecs = UInt32(waitBluetoothSecs)
 					config.lsSecs = UInt32(lsSecs)
 					config.minWakeSecs = UInt32(minWakeSecs)
-					Task {
-						_ = try await accessoryManager.savePowerConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
-					}
+					_ = try await accessoryManager.savePowerConfig(
+						config: config,
+						fromUser: fromUser,
+						toUser: toUser
+					)
 				}
+			}
 			}
 		}
 		.navigationTitle("Power Config")

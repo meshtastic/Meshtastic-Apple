@@ -15,7 +15,7 @@ struct DeviceConfig: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	let node: NodeInfoEntity?
+	var node: NodeInfoEntity?
 	
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
@@ -76,6 +76,7 @@ struct DeviceConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
+				.pickerStyle(DefaultPickerStyle())
 				
 				VStack(alignment: .leading) {
 					Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
@@ -99,19 +100,19 @@ struct DeviceConfig: View {
 					Label("Double Tap as Button", systemImage: "hand.tap")
 					Text("Treat double tap on supported accelerometers as a user button press.")
 				}
-				.tint(.accentColor)
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				
 				Toggle(isOn: $tripleClickAsAdHocPing) {
 					Label("Triple Click Ad Hoc Ping", systemImage: "mappin")
 					Text("Send a position on the primary channel when the user button is triple clicked.")
 				}
-				.tint(.accentColor)
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				
 				Toggle(isOn: $ledHeartbeatEnabled) {
 					Label("LED Heartbeat", systemImage: "waveform.path.ecg")
 					Text("Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable.")
 				}
-				.tint(.accentColor)
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
 			Section(header: Text("Debug")) {
 				VStack(alignment: .leading) {
@@ -146,6 +147,7 @@ struct DeviceConfig: View {
 						}
 					}
 				}
+				.pickerStyle(DefaultPickerStyle())
 				Picker("Buzzer GPIO", selection: $buzzerGPIO) {
 					ForEach(0..<49) {
 						if $0 == 0 {
@@ -155,6 +157,7 @@ struct DeviceConfig: View {
 						}
 					}
 				}
+				.pickerStyle(DefaultPickerStyle())
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.deviceConfig == nil)
@@ -277,49 +280,67 @@ struct DeviceConfig: View {
 					.padding(.bottom)
 				}
 				HStack(spacing: 0) {
-					SaveConfigButton(node: node, hasChanges: $hasChanges) {
-						if let deviceNum = accessoryManager.activeDeviceNum,
-						   let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-							var dc = Config.DeviceConfig()
-							dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
-							dc.buttonGpio = UInt32(buttonGPIO)
-							dc.buzzerGpio = UInt32(buzzerGPIO)
-							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
-							dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs.intValue)
-							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
-							dc.disableTripleClick = !tripleClickAsAdHocPing
-							dc.tzdef = tzdef
-							dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
-							Task {
-								_ = try await accessoryManager.saveDeviceConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
-									hasChanges = false
-									goBack()
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var dc = Config.DeviceConfig()
+						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
+						dc.buttonGpio = UInt32(buttonGPIO)
+						dc.buzzerGpio = UInt32(buzzerGPIO)
+						dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
+						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs.intValue)
+						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
+						dc.disableTripleClick = !tripleClickAsAdHocPing
+						dc.tzdef = tzdef
+						dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
+						_ = try await accessoryManager.saveDeviceConfig(config: dc, fromUser: fromUser, toUser: toUser)
+					}
+				}
+				}
+			}
+			.navigationTitle("Device Config")
+			.navigationBarItems(
+				trailing: ZStack {
+					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+					
+				}
+			)
+		} // end Form
+		} // end else
+		} // end Group
+		.onFirstAppear {
+			// Need to request a DeviceConfig from the remote node before allowing changes
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
+				if let connectedNode {
+					if node.num != deviceNum {
+						if UserDefaults.enableAdministration {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.deviceConfig == nil {
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired device config requesting via PKI admin")
+										try await accessoryManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.error("🚨 Device config request failed")
+									}
 								}
+							}
+						} else {
+							if node.deviceConfig == nil {
+								/// Legacy Administration
+								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
 							}
 						}
 					}
 				}
 			}
-			.navigationTitle("Device Config")
-			.toolbar {
-			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			}
-		}
-		} // end Form
-		} // end else
-		} // end Group
-		.onFirstAppear {
-			requestRemoteConfig(
-				node: node,
-				context: context,
-				accessoryManager: accessoryManager,
-				configIsNil: { $0.deviceConfig == nil },
-				request: accessoryManager.requestDeviceConfig
-			)
 		}
 		.onChange(of: deviceRole) { oldRole, newRole in
 			guard !isResetting else { return }

@@ -126,7 +126,13 @@ struct DisplayConfig: View {
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
 						var dc = Config.DisplayConfig()
 						dc.screenOnSecs = UInt32(screenOnSeconds)
 						dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
@@ -138,16 +144,7 @@ struct DisplayConfig: View {
 						dc.units = Units(rawValue: units)!.protoEnumValue()
 						dc.use12HClock = use12HourClock
 						dc.headingBold = headingBold
-						
-						Task {
-							_ = try await accessoryManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+						_ = try await accessoryManager.saveDisplayConfig(config: dc, fromUser: fromUser, toUser: toUser)
 					}
 				}
 			}
