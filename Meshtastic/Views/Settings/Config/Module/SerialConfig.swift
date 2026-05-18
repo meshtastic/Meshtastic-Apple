@@ -9,16 +9,16 @@ import OSLog
 import SwiftUI
 
 struct SerialConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
-	
+
 	@State var enabled = false
 	@State var echo = false
 	@State var rxd = 0
@@ -27,25 +27,25 @@ struct SerialConfig: View {
 	@State var timeout = 0
 	@State var overrideConsoleSerialPort = false
 	@State var mode = 0
-	
+
 	var body: some View {
 		VStack {
 			Form {
 				ConfigHeader(title: "Serial", config: \.serialConfig, node: node, onAppear: setSerialValues)
-				
+
 				Section(header: Text("Options")) {
-					
+
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "terminal")
 					}
 					.tint(.accentColor)
-					
+
 					Toggle(isOn: $echo) {
 						Label("Echo", systemImage: "repeat")
 						Text("If set, any packets you send will be echoed back to your device.")
 					}
 					.tint(.accentColor)
-					
+
 					Picker("Baud", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in
 							Text(sbr.description)
@@ -61,7 +61,7 @@ struct SerialConfig: View {
 					Text("The amount of time to wait before we consider your packet as done.")
 						.foregroundColor(.gray)
 						.font(.callout)
-					
+
 					Picker("Mode", selection: $mode ) {
 						ForEach(SerialModeTypes.allCases) { smt in
 							Text(smt.description)
@@ -69,7 +69,7 @@ struct SerialConfig: View {
 					}
 				}
 				Section(header: Text("GPIO")) {
-					
+
 					Picker("Receive data (rxd) GPIO pin", selection: $rxd) {
 						ForEach(0..<49) {
 							if $0 == 0 {
@@ -80,7 +80,7 @@ struct SerialConfig: View {
 						}
 					}
 					.listRowSeparator(.visible)
-					
+
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
 						ForEach(0..<49) {
 							if $0 == 0 {

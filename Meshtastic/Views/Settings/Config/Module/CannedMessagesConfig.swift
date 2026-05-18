@@ -40,21 +40,21 @@ struct CannedMessagesConfig: View {
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
-			
+
 			Section(header: Text("Options")) {
-				
+
 				Toggle(isOn: $enabled) {
-					
+
 					Label("Enabled", systemImage: "list.bullet.rectangle.fill")
 				}
 				.tint(.accentColor)
-				
+
 				Toggle(isOn: $sendBell) {
-					
+
 					Label("Send Bell", systemImage: "bell")
 				}
 				.tint(.accentColor)
-				
+
 				Picker("Configuration Presets", selection: $configPreset ) {
 					ForEach(ConfigPresets.allCases) { cp in
 						Text(cp.description)
@@ -86,13 +86,13 @@ struct CannedMessagesConfig: View {
 			.keyboardType(.default)
 			Section(header: Text("Control Type")) {
 				Toggle(isOn: $rotary1Enabled) {
-					
+
 					Label("Rotary 1", systemImage: "dial.min")
 				}
 				.tint(.accentColor)
 				.disabled(updown1Enabled)
 				Toggle(isOn: $updown1Enabled) {
-					
+
 					Label("Up Down 1", systemImage: "arrow.up.arrow.down")
 				}
 				.tint(.accentColor)
@@ -237,9 +237,9 @@ struct CannedMessagesConfig: View {
 			)
 		}
 		.onChange(of: configPreset) { _, newPreset in
-			
+
 			if newPreset == 1 {
-				
+
 				// RAK Rotary Encoder
 				updown1Enabled = true
 				rotary1Enabled = false
@@ -249,9 +249,9 @@ struct CannedMessagesConfig: View {
 				inputbrokerEventCw = InputEventChars.down.rawValue
 				inputbrokerEventCcw = InputEventChars.up.rawValue
 				inputbrokerEventPress = InputEventChars.select.rawValue
-				
+
 			} else if newPreset == 2 {
-				
+
 				// CardKB / RAK Keypad
 				updown1Enabled = false
 				rotary1Enabled = false
@@ -262,7 +262,7 @@ struct CannedMessagesConfig: View {
 				inputbrokerEventCcw = InputEventChars.none.rawValue
 				inputbrokerEventPress = InputEventChars.none.rawValue
 			}
-			
+
 			hasChanges = true
 		}
 		.onChange(of: enabled) { _, newEnabled in

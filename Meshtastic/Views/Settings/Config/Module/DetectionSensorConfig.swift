@@ -23,7 +23,7 @@ enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 }
 
 struct DetectionSensorConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
@@ -41,19 +41,19 @@ struct DetectionSensorConfig: View {
 	@State private var minimumBroadcastSecs: UpdateInterval = UpdateInterval(from: 0)
 	@State private var stateBroadcastSecs: UpdateInterval = UpdateInterval(from: 0)
 	@State var monitorPin = 0
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Detection Sensor", config: \.detectionSensorConfig, node: node, onAppear: setDetectionSensorValues)
-			
+
 			Section(header: Text("Options")) {
-				
+
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "dot.radiowaves.right")
 					Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
 				}
 				.tint(.accentColor)
-				
+
 				if enabled {
 					HStack {
 						Picker(selection: $role, label: Text("Role")) {
@@ -83,7 +83,7 @@ struct DetectionSensorConfig: View {
 						Text("Send ASCII bell with alert message. Useful for triggering external notification on bell.")
 					}
 					.tint(.accentColor)
-					
+
 					HStack {
 						Label("Name", systemImage: "signature")
 						TextField("Friendly name", text: $name, axis: .vertical)
@@ -103,7 +103,7 @@ struct DetectionSensorConfig: View {
 					Text("Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"")
 						.font(.callout)
 						.foregroundStyle(.gray)
-					
+
 					Picker("GPIO Pin to monitor", selection: $monitorPin) {
 						ForEach(0..<49) {
 							if $0 == 0 {
@@ -113,14 +113,14 @@ struct DetectionSensorConfig: View {
 							}
 						}
 					}
-					
+
 					Picker("TriggerType", selection: $triggerType) {
 						ForEach(TriggerTypes.allCases) { tt in
 							Text(tt.name).tag(tt.rawValue)
 						}
 					}
 					.listRowSeparator(.hidden)
-					
+
 					Toggle(isOn: $usePullup) {
 						Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
 						Text("Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")
@@ -226,7 +226,7 @@ struct DetectionSensorConfig: View {
 		self.triggerType = Int(node?.detectionSensorConfig?.triggerType ?? 0)
 		self.minimumBroadcastSecs = UpdateInterval(from: Int(node?.detectionSensorConfig?.minimumBroadcastSecs ?? 60))
 		self.stateBroadcastSecs = UpdateInterval(from: Int(node?.detectionSensorConfig?.stateBroadcastSecs ?? 0))
-		
+
 		self.hasChanges = false
 	}
 }

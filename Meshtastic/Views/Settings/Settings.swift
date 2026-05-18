@@ -656,7 +656,7 @@ struct Settings: View {
 			}
 		}
 	}
-	
+
 	func setSelectedNode(to nodeNum: Int) {
 		if nodes.count > 1 {
 			if selectedNode == 0 {

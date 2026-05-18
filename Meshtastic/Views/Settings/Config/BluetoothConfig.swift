@@ -28,7 +28,7 @@ struct BluetoothConfig: View {
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Bluetooth", config: \.bluetoothConfig, node: node, onAppear: setBluetoothValues)
-			
+
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "antenna.radiowaves.left.and.right")
@@ -92,7 +92,7 @@ struct BluetoothConfig: View {
 		.navigationBarItems(
 			trailing: ZStack {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-				
+
 			}
 		)
 		.onFirstAppear {

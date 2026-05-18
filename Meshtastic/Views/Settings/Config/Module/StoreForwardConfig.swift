@@ -9,7 +9,7 @@ import OSLog
 import SwiftUI
 
 struct StoreForwardConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
@@ -28,11 +28,11 @@ struct StoreForwardConfig: View {
 	@State var historyReturnMax = 0
 	/// Time window for history
 	@State var historyReturnWindow = 0
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Store & Forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
-			
+
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "envelope.arrow.triangle.branch")
@@ -40,7 +40,7 @@ struct StoreForwardConfig: View {
 				}
 				.tint(.accentColor)
 			}
-			
+
 			if enabled {
 				Section(header: Text("Settings")) {
 					Toggle(isOn: $heartbeat) {
@@ -72,7 +72,7 @@ struct StoreForwardConfig: View {
 						Text("Two Hours").tag(7200)
 					}
 				}
-				
+
 				Section(header: Text("Server Option")) {
 					Toggle(isOn: $isServer) {
 						Label("Server", systemImage: "server.rack")
@@ -158,7 +158,7 @@ struct StoreForwardConfig: View {
 			if oldHistoryReturnWindow != newHistoryReturnWindow && newHistoryReturnWindow != node?.storeForwardConfig?.historyReturnWindow ?? -1 { hasChanges = true }
 		}
 	}
-	
+
 	func setStoreAndForwardValues() {
 		self.enabled = (node?.storeForwardConfig?.enabled ?? false)
 		self.isServer = (node?.storeForwardConfig?.isRouter ?? false)

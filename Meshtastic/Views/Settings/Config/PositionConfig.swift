@@ -24,7 +24,7 @@ struct PositionFlags: OptionSet {
 }
 
 struct PositionConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
@@ -43,7 +43,7 @@ struct PositionConfig: View {
 	@State var broadcastSmartMinimumDistance = 0
 	@State private var broadcastSmartMinimumIntervalSecs: UpdateInterval = UpdateInterval(from: 0)
 	@State var positionFlags = 811
-	
+
 	/// Position Flags
 	/// Altitude value - 1
 	@State var includeAltitude = false
@@ -74,11 +74,11 @@ struct PositionConfig: View {
 	@State private var supportedVersion = true
 	@State private var showingSetFixedAlert = false
 	// @State private var showingRemoveFixedAlert = false
-	
+
 	@ViewBuilder
 	var positionPacketSection: some View {
 		Section(header: Text("Position Packet")) {
-			
+
 			VStack(alignment: .leading) {
 				UpdateIntervalPicker(
 					config: .broadcastMedium,
@@ -89,12 +89,12 @@ struct PositionConfig: View {
 					.foregroundColor(.gray)
 					.font(.callout)
 			}
-			
+
 			Toggle(isOn: $smartPositionEnabled) {
 				Label("Smart Position", systemImage: "brain")
 			}
 			.tint(.accentColor)
-			
+
 			if smartPositionEnabled {
 				VStack(alignment: .leading) {
 					UpdateIntervalPicker(
@@ -126,7 +126,7 @@ struct PositionConfig: View {
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	var deviceGPSSection: some View {
 		Section(header: Text("Device GPS")) {
@@ -162,7 +162,7 @@ struct PositionConfig: View {
 						if !(node?.positionConfig?.fixedPosition ?? false) {
 							Text("Your current location will be set as the fixed position and broadcast over the mesh on the position interval.")
 						} else {
-							
+
 						}
 					}
 					.tint(.accentColor)
@@ -170,15 +170,15 @@ struct PositionConfig: View {
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	var positionFlagsSection: some View {
 		Section(header: Text("Position Flags")) {
-			
+
 			Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
 				.foregroundColor(.gray)
 				.font(.callout)
-			
+
 			Toggle(isOn: $includeAltitude) {
 				Label("Altitude", systemImage: "arrow.up")
 			}
@@ -186,7 +186,7 @@ struct PositionConfig: View {
 			.onChange(of: includeAltitude) { _, newIncludeAltitude in
 				if newIncludeAltitude != PositionFlags(rawValue: self.positionFlags).contains(.Altitude) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeSatsinview) {
 				Label("Number of satellites", systemImage: "skew")
 			}
@@ -194,7 +194,7 @@ struct PositionConfig: View {
 			.onChange(of: includeSatsinview) { _, newIncludeSatsinview in
 				if newIncludeSatsinview != PositionFlags(rawValue: self.positionFlags).contains(.Satsinview) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeSeqNo) { // 64
 				Label("Sequence number", systemImage: "number")
 			}
@@ -202,7 +202,7 @@ struct PositionConfig: View {
 			.onChange(of: includeSeqNo) { _, newIncludeSeqNo in
 				if newIncludeSeqNo != PositionFlags(rawValue: self.positionFlags).contains(.SeqNo) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeTimestamp) { // 128
 				Label("Timestamp", systemImage: "clock")
 			}
@@ -210,7 +210,7 @@ struct PositionConfig: View {
 			.onChange(of: includeTimestamp) { _, newIncludeTimestamp in
 				if newIncludeTimestamp != PositionFlags(rawValue: self.positionFlags).contains(.Timestamp) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeHeading) { // 128
 				Label("Vehicle heading", systemImage: "location.circle")
 			}
@@ -218,7 +218,7 @@ struct PositionConfig: View {
 			.onChange(of: includeHeading) { _, newIncludeHeading in
 				if newIncludeHeading != PositionFlags(rawValue: self.positionFlags).contains(.Heading) { hasChanges = true }
 			}
-			
+
 			Toggle(isOn: $includeSpeed) { // 128
 				Label("Vehicle speed", systemImage: "speedometer")
 			}
@@ -228,11 +228,11 @@ struct PositionConfig: View {
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	var advancedPositionFlagsSection: some View {
 		Section(header: Text("Advanced Position Flags")) {
-			
+
 			if includeAltitude {
 				Toggle(isOn: $includeAltitudeMsl) {
 					Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
@@ -241,7 +241,7 @@ struct PositionConfig: View {
 				.onChange(of: includeAltitudeMsl) { _, newIncludeAltitudeMsl in
 					if newIncludeAltitudeMsl != PositionFlags(rawValue: self.positionFlags).contains(.AltitudeMsl) { hasChanges = true }
 				}
-				
+
 				Toggle(isOn: $includeGeoidalSeparation) {
 					Label("Altitude Geoidal Separation", systemImage: "globe.americas")
 				}
@@ -250,7 +250,7 @@ struct PositionConfig: View {
 					if newIncludeGeoidalSeparation != PositionFlags(rawValue: self.positionFlags).contains(.GeoidalSeparation) { hasChanges = true }
 				}
 			}
-			
+
 			Toggle(isOn: $includeDop) {
 				Text("Dilution of precision (DOP) PDOP used by default")
 			}
@@ -258,7 +258,7 @@ struct PositionConfig: View {
 			.onChange(of: includeDop) { _, newIncludeDop in
 				if newIncludeDop != PositionFlags(rawValue: self.positionFlags).contains(.Dop) { hasChanges = true }
 			}
-			
+
 			if includeDop {
 				Toggle(isOn: $includeHvdop) {
 					Text("If DOP is set, use HDOP / VDOP values instead of PDOP")
@@ -270,7 +270,7 @@ struct PositionConfig: View {
 			}
 		}
 	}
-	
+
 	@ViewBuilder
 	var advancedDeviceGPSSection: some View {
 		Section(header: Text("Advanced Device GPS")) {
@@ -347,7 +347,7 @@ struct PositionConfig: View {
 			}
 		}
 	}
-	
+
 	var setFixedAlertTitle: String {
 		if node?.positionConfig?.fixedPosition == true {
 			return "Remove Fixed Position"
@@ -355,9 +355,9 @@ struct PositionConfig: View {
 			return "Set Fixed Position"
 		}
 	}
-	
+
 	var body: some View {
-		
+
 		Form {
 			ConfigHeader(title: "Position", config: \.positionConfig, node: node, onAppear: setPositionValues)
 			positionPacketSection
@@ -449,7 +449,7 @@ struct PositionConfig: View {
 			if newGpsUpdateInterval != node?.positionConfig?.gpsUpdateInterval ?? 0 { hasChanges = true }
 		}
 	}
-	
+
 	func handlePositionFlagtChanges() {
 		guard (node?.positionConfig) != nil else { return }
 		let pf = PositionFlags(rawValue: self.positionFlags)
@@ -465,7 +465,7 @@ struct PositionConfig: View {
 		pf.contains(.Dop) ||
 		pf.contains(.Hvdop)
 	}
-	
+
 	func setPositionValues() {
 		self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
 		self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? false
@@ -495,7 +495,7 @@ struct PositionConfig: View {
 		self.includeHeading = pf.contains(.Heading)
 		self.hasChanges = false
 	}
-	
+
 	private func setFixedPosition() {
 		guard let nodeNum = accessoryManager.activeDeviceNum,
 			  nodeNum > 0 else { return }
@@ -515,7 +515,7 @@ struct PositionConfig: View {
 			Logger.data.error("Error Saving Position Config Entity \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	private func removeFixedPosition() {
 		guard let nodeNum = accessoryManager.activeDeviceNum,
 			  nodeNum > 0 else { return }

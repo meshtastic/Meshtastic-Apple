@@ -9,13 +9,13 @@ import OSLog
 import SwiftUI
 
 struct NetworkConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State var hasChanges: Bool = false
 	@State var wifiEnabled = false
 	@State var wifiSsid = ""
@@ -25,21 +25,21 @@ struct NetworkConfig: View {
 	@State var ethEnabled = false
 	@State var ethMode = 0
 	@State var udpEnabled = false
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Network", config: \.networkConfig, node: node, onAppear: setNetworkValues)
-			
+
 			if let node {
 				if node.metadata?.hasWifi ?? false {
 					Section(header: Text("WiFi Options")) {
-						
+
 						Toggle(isOn: $wifiEnabled) {
 							Label("Enabled", systemImage: "wifi")
 							Text("Enabling WiFi will disable the bluetooth connection to the app.")
 						}
 						.tint(.accentColor)
-						
+
 						HStack {
 							Label("SSID", systemImage: "network")
 							TextField("SSID", text: $wifiSsid)
@@ -86,7 +86,7 @@ struct NetworkConfig: View {
 						.tint(.accentColor)
 					}
 				}
-				
+
 				if node.metadata?.hasEthernet ?? false || node.metadata?.hasWifi ?? false {
 					Section(header: Text("UDP Broadcast")) {
 						Toggle(isOn: $udpEnabled) {
@@ -177,7 +177,7 @@ struct NetworkConfig: View {
 			}
 		}
 	}
-	
+
 	func setNetworkValues() {
 		self.wifiEnabled = node?.networkConfig?.wifiEnabled ?? false
 		self.wifiSsid = node?.networkConfig?.wifiSsid ?? ""

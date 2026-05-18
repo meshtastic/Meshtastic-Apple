@@ -12,17 +12,17 @@ struct RtttlConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var ringtone: String = ""
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
-			
+
 			Section(header: Text("Options")) {
 				HStack {
 					Label("Ringtone", systemImage: "music.quarternote.3")
@@ -81,7 +81,7 @@ struct RtttlConfig: View {
 		.onChange(of: ringtone) { _, newRingtone in
 			if newRingtone != node?.rtttlConfig?.ringtone ?? "" { hasChanges = true }
 		}
-		
+
 	}
 	func setRtttLConfigValue() {
 		self.ringtone = node?.rtttlConfig?.ringtone ?? ""

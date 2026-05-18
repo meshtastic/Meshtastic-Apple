@@ -9,13 +9,13 @@ import OSLog
 import SwiftUI
 
 struct ExternalNotificationConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var enabled = false
@@ -33,34 +33,34 @@ struct ExternalNotificationConfig: View {
 	@State var outputMilliseconds = 0
 	@State private var nagTimeout: UpdateInterval = UpdateInterval(from: 0)
 	@State var useI2SAsBuzzer = false
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
-			
+
 			Section(header: Text("Options")) {
-				
+
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "megaphone")
 				}
 				.tint(.accentColor)
-				
+
 				Toggle(isOn: $alertBell) {
 					Label("Alert when receiving a bell", systemImage: "bell")
 				}
 				.tint(.accentColor)
-				
+
 				Toggle(isOn: $alertMessage) {
 					Label("Alert when receiving a message", systemImage: "message")
 				}
 				.tint(.accentColor)
-				
+
 				Toggle(isOn: $usePWM) {
 					Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
 					Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
 				}
 				.tint(.accentColor)
-				
+
 				Toggle(isOn: $useI2SAsBuzzer) {
 					Label("Use I2S As Buzzer", systemImage: "light.beacon.max.fill")
 					Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
@@ -73,7 +73,7 @@ struct ExternalNotificationConfig: View {
 					Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
 				}
 				.tint(.accentColor)
-				
+
 				Picker("Output pin GPIO", selection: $output) {
 					ForEach(0..<49) {
 						if $0 == 0 {
@@ -84,7 +84,7 @@ struct ExternalNotificationConfig: View {
 					}
 				}
 				.listRowSeparator(.visible)
-				
+
 				Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
 					ForEach(OutputIntervals.allCases) { oi in
 						Text(oi.description)
@@ -102,7 +102,7 @@ struct ExternalNotificationConfig: View {
 				)
 				.listRowSeparator(.hidden)
 			}
-				
+
 			Section(header: Text("Optional GPIO")) {
 				Toggle(isOn: $alertBellBuzzer) {
 					Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")

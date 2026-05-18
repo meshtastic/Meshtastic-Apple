@@ -22,7 +22,7 @@ struct PowerConfig: View {
 	@State private var minWakeSecs = 10
 
 	@State private var architecture: Architecture?
-	
+
 	@State private var hasChanges: Bool = false
 	@FocusState private var isFocused: Bool
 

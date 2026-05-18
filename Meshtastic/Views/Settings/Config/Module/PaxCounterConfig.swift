@@ -13,17 +13,17 @@ struct PaxCounterConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State private var enabled = false
 	@State private var paxcounterUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
 	@State private var hasChanges: Bool = false
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "PAX Counter Config", config: \.powerConfig, node: node, onAppear: setPaxValues)
-			
+
 			Section {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "figure.walk.motion")
@@ -109,7 +109,7 @@ struct PaxCounterConfig: View {
 			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval && newPaxcounterUpdateInterval != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
 		}
 	}
-	
+
 	private func setPaxValues() {
 		enabled = node?.paxCounterConfig?.enabled ?? enabled
 		paxcounterUpdateInterval = UpdateInterval(from: Int(node?.paxCounterConfig?.updateInterval ?? 1800))
