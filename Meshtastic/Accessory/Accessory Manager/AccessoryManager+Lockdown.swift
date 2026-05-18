@@ -31,6 +31,7 @@ extension AccessoryManager: LockdownSender {
 	func sendLockdownAuth(passphrase: Data,
 						  bootsRemaining: UInt32,
 						  validUntilEpoch: UInt32,
+						  maxSessionSeconds: UInt32,
 						  lockNow: Bool) {
 		let myNum = self.myNodeNum
 		guard myNum != 0 else {
@@ -42,6 +43,7 @@ extension AccessoryManager: LockdownSender {
 		lockdownAuth.passphrase = passphrase
 		lockdownAuth.bootsRemaining = bootsRemaining
 		lockdownAuth.validUntilEpoch = validUntilEpoch
+		lockdownAuth.maxSessionSeconds = maxSessionSeconds
 		lockdownAuth.lockNow = lockNow
 
 		var adminMessage = AdminMessage()

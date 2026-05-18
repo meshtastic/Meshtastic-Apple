@@ -58,6 +58,7 @@ private struct PassphraseEntryContent: View {
 	@State private var passphrase: String = ""
 	@State private var bootsString: String = ""
 	@State private var hoursString: String = ""
+	@State private var sessionMinutesString: String = ""
 	@State private var showAdvanced: Bool = false
 	@FocusState private var passphraseFocused: Bool
 
@@ -78,8 +79,14 @@ private struct PassphraseEntryContent: View {
 		hoursString.isEmpty ? 0 : UInt32(hoursString)
 	}
 
+	/// Per-boot session uptime cap in minutes. Empty / 0 = unlimited (firmware
+	/// default). Converted to seconds for `LockdownAuth.max_session_seconds`.
+	private var sessionMinutesParsed: UInt32? {
+		sessionMinutesString.isEmpty ? 0 : UInt32(sessionMinutesString)
+	}
+
 	private var areTTLFieldsValid: Bool {
-		bootsParsed != nil && hoursParsed != nil
+		bootsParsed != nil && hoursParsed != nil && sessionMinutesParsed != nil
 	}
 
 	private var coordinatorReady: Bool {
@@ -173,6 +180,15 @@ private struct PassphraseEntryContent: View {
 							.font(.caption)
 							.foregroundStyle(.secondary)
 					}
+					VStack(alignment: .leading, spacing: 4) {
+						Text("lockdown.session.cap_minutes")
+							.font(.footnote)
+						TextField("0", text: $sessionMinutesString)
+							.keyboardType(.numberPad)
+						Text("lockdown.session.cap_caption")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
 				} label: {
 					Label("lockdown.session.section", systemImage: "clock.badge")
 				}
@@ -210,9 +226,14 @@ private struct PassphraseEntryContent: View {
 			guard let hours = hoursParsed, hours > 0 else { return 0 }
 			return UInt32(Date().timeIntervalSince1970) + hours * 3600
 		}()
+		let maxSessionSeconds: UInt32 = {
+			guard let minutes = sessionMinutesParsed, minutes > 0 else { return 0 }
+			return minutes * 60
+		}()
 		lockdown.submitPassphrase(passphrase,
 								  bootsRemaining: boots,
-								  validUntilEpoch: validUntilEpoch)
+								  validUntilEpoch: validUntilEpoch,
+								  maxSessionSeconds: maxSessionSeconds)
 		// Wipe local copy immediately; coordinator also clears its own pending copy
 		// on response. NFR-002.
 		passphrase = ""

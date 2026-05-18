@@ -13,6 +13,33 @@ struct StoredPassphrase: Codable, Equatable {
 	let passphrase: String
 	let bootsRemaining: UInt32
 	let validUntilEpoch: UInt32
+	/// Per-boot uptime cap in seconds. 0 = unlimited.
+	/// See `LockdownAuth.max_session_seconds` (meshtastic/protobufs PR #916).
+	let maxSessionSeconds: UInt32
+
+	init(passphrase: String,
+		 bootsRemaining: UInt32,
+		 validUntilEpoch: UInt32,
+		 maxSessionSeconds: UInt32 = 0) {
+		self.passphrase = passphrase
+		self.bootsRemaining = bootsRemaining
+		self.validUntilEpoch = validUntilEpoch
+		self.maxSessionSeconds = maxSessionSeconds
+	}
+
+	private enum CodingKeys: String, CodingKey {
+		case passphrase, bootsRemaining, validUntilEpoch, maxSessionSeconds
+	}
+
+	/// Custom decoder so cached entries written before maxSessionSeconds existed
+	/// still load cleanly with a default of 0.
+	init(from decoder: Decoder) throws {
+		let c = try decoder.container(keyedBy: CodingKeys.self)
+		passphrase = try c.decode(String.self, forKey: .passphrase)
+		bootsRemaining = try c.decode(UInt32.self, forKey: .bootsRemaining)
+		validUntilEpoch = try c.decode(UInt32.self, forKey: .validUntilEpoch)
+		maxSessionSeconds = try c.decodeIfPresent(UInt32.self, forKey: .maxSessionSeconds) ?? 0
+	}
 }
 
 /// Protocol abstraction over `LockdownPassphraseStore` so tests can substitute

@@ -30,6 +30,7 @@ protocol LockdownSender: AnyObject {
 	func sendLockdownAuth(passphrase: Data,
 						  bootsRemaining: UInt32,
 						  validUntilEpoch: UInt32,
+						  maxSessionSeconds: UInt32,
 						  lockNow: Bool)
 }
 
@@ -73,6 +74,7 @@ final class LockdownCoordinator: ObservableObject {
 	private var pendingPassphrase: String?
 	private var pendingBootsRemaining: UInt32 = 0
 	private var pendingValidUntilEpoch: UInt32 = 0
+	private var pendingMaxSessionSeconds: UInt32 = 0
 	private var pendingLockNow = false
 
 	// MARK: Init
@@ -152,9 +154,11 @@ final class LockdownCoordinator: ObservableObject {
 			pendingPassphrase = stored.passphrase
 			pendingBootsRemaining = stored.bootsRemaining
 			pendingValidUntilEpoch = stored.validUntilEpoch
+			pendingMaxSessionSeconds = stored.maxSessionSeconds
 			sender?.sendLockdownAuth(passphrase: data,
 									 bootsRemaining: stored.bootsRemaining,
 									 validUntilEpoch: stored.validUntilEpoch,
+									 maxSessionSeconds: stored.maxSessionSeconds,
 									 lockNow: false)
 			return
 		}
@@ -167,7 +171,8 @@ final class LockdownCoordinator: ObservableObject {
 		   let passphrase = pendingPassphrase {
 			let stored = StoredPassphrase(passphrase: passphrase,
 										  bootsRemaining: pendingBootsRemaining,
-										  validUntilEpoch: pendingValidUntilEpoch)
+										  validUntilEpoch: pendingValidUntilEpoch,
+										  maxSessionSeconds: pendingMaxSessionSeconds)
 			let ok = store.save(peripheralID: peripheralID, stored)
 			if !ok {
 				logger.warning("Failed to save passphrase for peripheral \(peripheralID.uuidString, privacy: .public)")
@@ -207,7 +212,8 @@ final class LockdownCoordinator: ObservableObject {
 
 	func submitPassphrase(_ passphrase: String,
 						  bootsRemaining: UInt32,
-						  validUntilEpoch: UInt32) {
+						  validUntilEpoch: UInt32,
+						  maxSessionSeconds: UInt32 = 0) {
 		guard let sender else {
 			logger.error("submitPassphrase called but no sender wired")
 			return
@@ -219,12 +225,14 @@ final class LockdownCoordinator: ObservableObject {
 		pendingPassphrase = passphrase
 		pendingBootsRemaining = bootsRemaining
 		pendingValidUntilEpoch = validUntilEpoch
+		pendingMaxSessionSeconds = maxSessionSeconds
 		wasAutoAttempt = false
 		// Hide the sheet while we wait for the firmware response.
 		state = .none
 		sender.sendLockdownAuth(passphrase: data,
 								bootsRemaining: bootsRemaining,
 								validUntilEpoch: validUntilEpoch,
+								maxSessionSeconds: maxSessionSeconds,
 								lockNow: false)
 	}
 
@@ -234,6 +242,7 @@ final class LockdownCoordinator: ObservableObject {
 		sender.sendLockdownAuth(passphrase: Data(),
 								bootsRemaining: 0,
 								validUntilEpoch: 0,
+								maxSessionSeconds: 0,
 								lockNow: true)
 	}
 
@@ -251,5 +260,6 @@ final class LockdownCoordinator: ObservableObject {
 		pendingPassphrase = nil
 		pendingBootsRemaining = 0
 		pendingValidUntilEpoch = 0
+		pendingMaxSessionSeconds = 0
 	}
 }

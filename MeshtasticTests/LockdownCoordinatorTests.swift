@@ -23,6 +23,7 @@ final class LockdownCoordinatorTests: XCTestCase {
 			let passphrase: Data
 			let bootsRemaining: UInt32
 			let validUntilEpoch: UInt32
+			let maxSessionSeconds: UInt32
 			let lockNow: Bool
 		}
 		var calls: [Call] = []
@@ -30,10 +31,12 @@ final class LockdownCoordinatorTests: XCTestCase {
 		func sendLockdownAuth(passphrase: Data,
 							  bootsRemaining: UInt32,
 							  validUntilEpoch: UInt32,
+							  maxSessionSeconds: UInt32,
 							  lockNow: Bool) {
 			calls.append(.init(passphrase: passphrase,
 							   bootsRemaining: bootsRemaining,
 							   validUntilEpoch: validUntilEpoch,
+							   maxSessionSeconds: maxSessionSeconds,
 							   lockNow: lockNow))
 		}
 	}
@@ -289,5 +292,39 @@ final class LockdownCoordinatorTests: XCTestCase {
 		coordinator.forgetCachedPassphrase()
 
 		XCTAssertEqual(store.entries[otherID]?.passphrase, "x")
+	}
+
+	// MARK: max_session_seconds (protobufs PR #916)
+
+	func testSubmitPassphrase_threadsMaxSessionSecondsToSenderAndCache() {
+		let (coordinator, sender, store) = makeCoordinator()
+		coordinator.onConnect(peripheralID: peripheralID)
+		coordinator.handle(makeStatus(state: .needsProvision))
+
+		coordinator.submitPassphrase("secret",
+									 bootsRemaining: 2,
+									 validUntilEpoch: 0,
+									 maxSessionSeconds: 1800)
+
+		XCTAssertEqual(sender.calls.first?.maxSessionSeconds, 1800,
+					   "Sender must receive the operator-supplied session cap")
+
+		coordinator.handle(makeStatus(state: .unlocked, bootsRemaining: 2, validUntilEpoch: 0))
+		XCTAssertEqual(store.entries[peripheralID]?.maxSessionSeconds, 1800,
+					   "Session cap must persist with the cached passphrase")
+	}
+
+	func testHandle_locked_autoReplay_passesCachedMaxSessionSeconds() {
+		let (coordinator, sender, store) = makeCoordinator()
+		store.entries[peripheralID] = StoredPassphrase(passphrase: "cached",
+													   bootsRemaining: 5,
+													   validUntilEpoch: 0,
+													   maxSessionSeconds: 600)
+		coordinator.onConnect(peripheralID: peripheralID)
+
+		coordinator.handle(makeStatus(state: .locked, lockReason: "needs_auth"))
+
+		XCTAssertEqual(sender.calls.first?.maxSessionSeconds, 600,
+					   "Auto-replay must reuse the cached session cap")
 	}
 }

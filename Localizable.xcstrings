@@ -100816,6 +100816,28 @@
           }
         }
       }
+    },
+    "lockdown.session.cap_minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Session cap (minutes)"
+          }
+        }
+      }
+    },
+    "lockdown.session.cap_caption": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Per-boot uptime cap. Leave empty for no cap. Device reboots when the cap elapses; next boot auto-unlocks via the boot-count TTL."
+          }
+        }
+      }
     }
   },
   "version": "1.1"
