@@ -91,6 +91,15 @@ The full node row shows the circle avatar, battery level, encryption status, las
   <img src="../assets/screenshots/compact_mqtt.png" alt="MQTT-bridged node" />
 </picture>
 
+## Context Menu Actions
+
+Long-press any node in the list to access quick actions:
+
+- **Favorite / Unfavorite** — star important nodes so they appear at the top of the list
+- **Request Client History** — for Store & Forward nodes, request any messages you may have missed while offline
+- **Trace Route** — discover the path messages take to reach this node
+- **Delete Node** — remove the node from your local database
+
 ## Additional Icons
 
 Tap a node and scroll to the Logs section for detailed metrics:

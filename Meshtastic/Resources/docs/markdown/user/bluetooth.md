@@ -50,6 +50,7 @@ The app displays the Bluetooth signal strength of nearby devices during scanning
 - Ensure Bluetooth is enabled in iOS Settings → Bluetooth.
 - Move within 10 metres of the radio.
 - Restart the radio.
+- The app continuously listens for BLE advertisements — nearby radios should appear within a few seconds. If a device disappears from the list, it will reappear automatically when next heard.
 
 **Connection drops repeatedly**
 - Check battery level on the radio.

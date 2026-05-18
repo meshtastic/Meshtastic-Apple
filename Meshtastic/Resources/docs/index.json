@@ -7,21 +7,25 @@
         "keywords": [
             "radio",
             "bluetooth",
-            "connected",
             "app",
             "device",
+            "connected",
+            "radios",
             "live",
             "ios",
             "connection",
             "connect",
+            "ble",
             "activity",
             "via",
             "tap",
             "settings",
-            "radios",
+            "nearby",
             "multiple",
             "meshtastic",
-            "ble",
+            "list",
+            "automatically",
+            "within",
             "view",
             "them",
             "switch",
@@ -30,13 +34,9 @@
             "status",
             "start",
             "signal",
-            "reconnecting",
-            "press",
-            "permission",
-            "not",
-            "nearby"
+            "reconnecting"
         ],
-        "charCount": 1841
+        "charCount": 2033
     },
     {
         "id": "carplay",
@@ -318,21 +318,23 @@
         "navOrder": 4,
         "keywords": [
             "node",
+            "nodes",
+            "messages",
             "key",
             "device",
-            "broadcasts",
-            "nodes",
             "client",
+            "broadcasts",
+            "from",
             "not",
             "name",
-            "messages",
-            "from",
             "channel",
             "role",
             "public",
             "mesh",
+            "list",
             "heard",
             "circle",
+            "any",
             "view",
             "tap",
             "tak",
@@ -344,11 +346,9 @@
             "router",
             "reduces",
             "position",
-            "packets",
-            "optimised",
-            "log"
+            "packets"
         ],
-        "charCount": 3392
+        "charCount": 3794
     },
     {
         "id": "settings",
@@ -361,14 +361,15 @@
             "device",
             "radio",
             "translation",
+            "settings",
+            "node",
             "translated",
             "region",
+            "nodes",
             "documentation",
-            "settings",
             "position",
             "pages",
-            "nodes",
-            "node",
+            "connected",
             "range",
             "only",
             "messages",
@@ -376,18 +377,17 @@
             "from",
             "firmware",
             "english",
-            "connected",
             "configure",
             "using",
             "updates",
             "supported",
+            "stored",
             "set",
             "serial",
-            "notification",
-            "not",
-            "name"
+            "reset",
+            "notification"
         ],
-        "charCount": 4716
+        "charCount": 5120
     },
     {
         "id": "signal-meter",
@@ -543,7 +543,7 @@
             "automatically",
             "version"
         ],
-        "charCount": 4766
+        "charCount": 4775
     },
     {
         "id": "units-and-locale",
