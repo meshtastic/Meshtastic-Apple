@@ -8,6 +8,18 @@
 </head>
 <body data-page="translate">
 <div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Translate the App</h1>
+<h2>Automatic documentation translation</h2>
+<p>On devices running iOS 26 or later, the in-app documentation is automatically translated into your device language when you open <strong>Help &amp; Docs</strong>. The translation pipeline works as follows:</p>
+<ol>
+<li>The app reads the bundled English markdown source files.</li>
+<li>Text segments are translated using Apple's Translation framework, falling back to on-device Foundation Models if your language is not supported.</li>
+<li>Translated markdown is cached locally so subsequent visits load instantly.</li>
+</ol>
+<p>After all pages are translated in the background, the app anonymously uploads the translated files to the <a href="https://github.com/meshtastic/translations">meshtastic/translations</a> repository for community review and improvement.</p>
+<div class="tips-callout"><strong>Tip — English users</strong>
+If your device language is English, no translation occurs and the bundled English documentation is displayed directly.</div>
+<hr />
+<h2>Contributing app translations</h2>
 <p>Contributing translations to the Meshtastic Apple app helps make the project accessible to a wider audience. The process is designed to be simple: a script generates machine translations on your Mac using Apple Intelligence, marks them for review, and opens a pull request automatically. A native speaker then reviews and approves the strings in Xcode before they ship.</p>
 <h2>Requirements</h2>
 <p>Before you start, make sure you have:</p>
@@ -84,16 +96,6 @@ scripts/translate-locale.sh zh-Hant-TW  # Traditional Chinese (Taiwan)
 <li>Read each string in context, edit if needed, and mark it <strong>Reviewed</strong></li>
 <li>Push your changes to the PR branch</li>
 </ol>
-<h2>Automatic documentation translation</h2>
-<p>On devices running iOS 26 or later, the in-app documentation is automatically translated into your device language when you open <strong>Help &amp; Docs</strong>. The translation pipeline works as follows:</p>
-<ol>
-<li>The app reads the bundled English markdown source files.</li>
-<li>Text segments are translated using Apple's Translation framework, falling back to on-device Foundation Models if your language is not supported.</li>
-<li>Translated markdown is cached locally so subsequent visits load instantly.</li>
-</ol>
-<p>After all pages are translated in the background, the app anonymously uploads the translated files to the <a href="https://github.com/meshtastic/translations">meshtastic/translations</a> repository for community review and improvement.</p>
-<div class="tips-callout"><strong>Tip — English users</strong>
-If your device language is English, no translation occurs and the bundled English documentation is displayed directly.</div>
 <p>Thank you for helping expand the reach of Meshtastic!</p>
 </body>
 </html>

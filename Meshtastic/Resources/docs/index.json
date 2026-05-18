@@ -517,16 +517,16 @@
             "meshtastic",
             "localizer",
             "local",
+            "app",
             "translation",
             "translated",
             "translate",
-            "app",
             "amp",
+            "translations",
             "scripts",
             "review",
             "polite",
             "device",
-            "translations",
             "register",
             "open",
             "intelligence",
@@ -543,7 +543,7 @@
             "make",
             "language"
         ],
-        "charCount": 3745
+        "charCount": 3776
     },
     {
         "id": "units-and-locale",
