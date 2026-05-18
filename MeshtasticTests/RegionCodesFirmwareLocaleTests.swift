@@ -19,7 +19,8 @@ struct RegionCodesFirmwareLocaleTests {
 	func latinRegionsDoNotPreferLocale() {
 		let latinRegions: [RegionCodes] = [
 			.us, .eu433, .eu868, .anz, .in, .nz865,
-			.my433, .my919, .sg923, .ph433, .ph868, .ph915, .lora24
+			.my433, .my919, .sg923, .ph433, .ph868, .ph915, .lora24,
+			.anz433, .kz433, .kz863, .np865, .br902, .itu12M, .itu232M, .eu866, .eu874, .eu917, .euN868
 		]
 		for region in latinRegions {
 			#expect(!region.prefersLocalizedFontFirmware, "\(region) should be Latin")
@@ -51,29 +52,6 @@ struct RegionCodesFirmwareLocaleTests {
 		#expect(RegionCodes.ua433.firmwareLocaleTagCandidates == ["UA_433", "ua_433", "UA-433", "ua-433", "UA", "ua"])
 	}
 
-	@Test("Candidates are deduplicated and first tag is uppercased topic")
-	func candidatesAreDeduplicatedAndOrdered() {
-		for region in RegionCodes.allCases where region != .unset {
-			let tags = region.firmwareLocaleTagCandidates
-			#expect(tags.count == Set(tags).count, "Duplicates found in \(region)")
-			#expect(tags.first == region.topic.uppercased())
-		}
-	}
-
-	// MARK: - Philippines casing regression
-
-	@Test("Philippines topic strings are uppercase")
-	func philippinesTopicIsUppercase() {
-		#expect(RegionCodes.ph433.topic == "PH_433")
-		#expect(RegionCodes.ph868.topic == "PH_868")
-		#expect(RegionCodes.ph915.topic == "PH_915")
-	}
-
-	@Test("Philippines candidates start with uppercase tag")
-	func philippinesCandidatesStartWithUppercase() {
-		#expect(RegionCodes.ph433.firmwareLocaleTagCandidates.first == "PH_433")
-	}
-
 	// MARK: - More general checks
 
 	@Test("All region topics are uppercase")
@@ -95,15 +73,23 @@ struct RegionCodesFirmwareLocaleTests {
 	}
 
 	/// The full stringly-typed chain — URL construction
-	@Test("Locale-specific URL candidates precede the generic fallback")
-	func localeURLCandidateOrdering() {
-		let tags = RegionCodes.ru.firmwareLocaleTagCandidates  // ["RU", "ru"]
-		// Verify the first tag produces a URL containing the locale suffix
-		// and the last URL is the generic fallback (no locale suffix)
-		#expect(tags.first == "RU")
-		#expect(tags.last == "ru")
-		// The generic fallback (no tag) must always be reachable
-		// i.e. firmwareLocaleTagCandidates never produces an empty list for a set region
-		#expect(!tags.isEmpty)
+	@Test("Locale tag candidates are non-empty and well-formed for all set regions",
+		  arguments: RegionCodes.allCases.filter { $0 != .unset })
+	func localeTagCandidatesForRegion(region: RegionCodes) {
+		let tags = region.firmwareLocaleTagCandidates
+		#expect(!tags.isEmpty, "\(region) should produce at least one tag")
+		#expect(tags.first == region.topic.uppercased(),
+				"\(region) first tag should be uppercased topic")
+		#expect(tags.count == Set(tags).count,
+				"\(region) should have no duplicate tags")
+	}
+
+	// MARK: - Some specific tests
+
+	@Test("Philippines topic strings are uppercase and properly formatted with `_`")
+	func philippinesTopicIsUppercase() {
+		#expect(RegionCodes.ph433.topic == "PH_433")
+		#expect(RegionCodes.ph868.topic == "PH_868")
+		#expect(RegionCodes.ph915.topic == "PH_915")
 	}
 }
