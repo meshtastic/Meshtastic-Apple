@@ -333,6 +333,7 @@ struct Channels: View {
 				.tint(Color(UIColor.secondarySystemBackground))
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
+				.buttonBorderShape(.circle)
 			}
 			.controlSize(.regular)
 			.padding(5)
