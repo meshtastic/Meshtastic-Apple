@@ -91,39 +91,35 @@ struct StoreForwardConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.storeForwardConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						/// Let the user set isServer for the connected node, for nodes on the mesh set isServer based
-						/// on receipt of a primary heartbeat
-						if connectedNode?.num ?? 0 == node?.num ?? -1 {
-							connectedNode?.storeForwardConfig?.isRouter = isServer
-							do {
-								try context.save()
-							} catch {
-								Logger.mesh.error("Failed to save isServer: \(error.localizedDescription, privacy: .public)")
-							}
-						}
-						
-						var sfc = ModuleConfig.StoreForwardConfig()
-						sfc.isServer = isServer
-						sfc.enabled = self.enabled
-						sfc.heartbeat = self.heartbeat
-						sfc.records = UInt32(self.records)
-						sfc.historyReturnMax = UInt32(self.historyReturnMax)
-						sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
-						
-						Task {
-							_ = try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				// Let the user set isServer for the connected node
+				if let deviceNum = accessoryManager.activeDeviceNum,
+				   let connectedNode = getNodeInfo(id: deviceNum, context: context),
+				   connectedNode.num == node?.num ?? -1 {
+					connectedNode.storeForwardConfig?.isRouter = isServer
+					do {
+						try context.save()
+					} catch {
+						Logger.mesh.error("Failed to save isServer: \(error.localizedDescription, privacy: .public)")
 					}
 				}
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var sfc = ModuleConfig.StoreForwardConfig()
+					sfc.isServer = isServer
+					sfc.enabled = self.enabled
+					sfc.heartbeat = self.heartbeat
+					sfc.records = UInt32(self.records)
+					sfc.historyReturnMax = UInt32(self.historyReturnMax)
+					sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
+					_ = try await accessoryManager.saveStoreForwardModuleConfig(config: sfc, fromUser: fromUser, toUser: toUser)
+				}
+			}
 			}
 		}
 		.navigationTitle("Store & Forward Config")

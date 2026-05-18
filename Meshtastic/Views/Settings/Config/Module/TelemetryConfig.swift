@@ -126,33 +126,29 @@ struct TelemetryConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.telemetryConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						var tc = ModuleConfig.TelemetryConfig()
-						tc.deviceUpdateInterval = UInt32(deviceUpdateInterval.intValue)
-						tc.environmentUpdateInterval = UInt32(environmentUpdateInterval.intValue)
-						tc.environmentMeasurementEnabled = environmentMeasurementEnabled
-						tc.environmentScreenEnabled = environmentScreenEnabled
-						tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-						tc.powerMeasurementEnabled = powerMeasurementEnabled
-						tc.powerUpdateInterval = UInt32(powerUpdateInterval.intValue)
-						tc.powerScreenEnabled = powerScreenEnabled
-						if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
-							tc.deviceTelemetryEnabled = deviceTelemetryEnabled
-						}
-						
-						Task {
-							_ = try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var tc = ModuleConfig.TelemetryConfig()
+					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval.intValue)
+					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval.intValue)
+					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
+					tc.environmentScreenEnabled = environmentScreenEnabled
+					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
+					tc.powerMeasurementEnabled = powerMeasurementEnabled
+					tc.powerUpdateInterval = UInt32(powerUpdateInterval.intValue)
+					tc.powerScreenEnabled = powerScreenEnabled
+					if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
+						tc.deviceTelemetryEnabled = deviceTelemetryEnabled
 					}
+					_ = try await accessoryManager.saveTelemetryModuleConfig(config: tc, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("Telemetry Config")

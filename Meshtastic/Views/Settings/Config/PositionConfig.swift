@@ -312,7 +312,13 @@ struct PositionConfig: View {
 					try await accessoryManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 				}
 			}
-			if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
+			performConfigSave(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				hasChanges: $hasChanges,
+				dismiss: goBack
+			) { fromUser, toUser in
 				var pc = Config.PositionConfig()
 				pc.positionBroadcastSmartEnabled = smartPositionEnabled
 				pc.gpsEnabled = gpsMode == 1
@@ -337,14 +343,7 @@ struct PositionConfig: View {
 				if includeSpeed { pf.insert(.Speed) }
 				if includeHeading { pf.insert(.Heading) }
 				pc.positionFlags = UInt32(pf.rawValue)
-				Task {
-					_ = try await accessoryManager.savePositionConfig(config: pc, fromUser: connectedNode.user!, toUser: node!.user!)
-					Task { @MainActor in
-						// Disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
-				}
+				_ = try await accessoryManager.savePositionConfig(config: pc, fromUser: fromUser, toUser: toUser)
 			}
 		}
 	}

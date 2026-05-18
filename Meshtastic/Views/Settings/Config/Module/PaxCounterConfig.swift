@@ -29,7 +29,7 @@ struct PaxCounterConfig: View {
 					Label("Enabled", systemImage: "figure.walk.motion")
 					Text("When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.")
 				}
-				.tint(.accentColor)
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.listRowSeparator(.visible)
 				if enabled {
 					UpdateIntervalPicker(
@@ -49,31 +49,24 @@ struct PaxCounterConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context),
-						  let fromUser = connectedNode.user,
-						  let toUser = node?.user else {
-						return
-					}
-					
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
 					var config = ModuleConfig.PaxcounterConfig()
 					config.enabled = enabled
 					config.paxcounterUpdateInterval = UInt32(paxcounterUpdateInterval.intValue)
-					
-					Task {
-						_ = try await accessoryManager.savePaxcounterModuleConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
-					}
+					_ = try await accessoryManager.savePaxcounterModuleConfig(
+						config: config,
+						fromUser: fromUser,
+						toUser: toUser
+					)
 				}
+			}
 			}
 		}
 		.navigationTitle("PAX Counter Config")
@@ -83,13 +76,31 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.onFirstAppear {
-			requestRemoteConfig(
-				node: node,
-				context: context,
-				accessoryManager: accessoryManager,
-				configIsNil: { $0.paxCounterConfig == nil },
-				request: accessoryManager.requestPaxCounterModuleConfig
-			)
+			// Need to request a PaxCounterModuleConfig from the remote node before allowing changes
+			if let deviceNum = accessoryManager.activeDeviceNum, let node {
+				let connectedNode = getNodeInfo(id: deviceNum, context: context)
+				if let connectedNode {
+					if node.num != deviceNum {
+						if UserDefaults.enableAdministration && node.num != connectedNode.num {
+							/// 2.5 Administration with session passkey
+							let expiration = node.sessionExpiration ?? Date()
+							if expiration < Date() || node.paxCounterConfig == nil {
+								Task {
+									do {
+										Logger.mesh.info("⚙️ Empty or expired pax counter module config requesting via PKI admin")
+										try await accessoryManager.requestPaxCounterModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
+									} catch {
+										Logger.mesh.info("🚨 Request for pax counter module config failed")
+									}
+								}
+							}
+						} else {
+							/// Legacy Administration
+							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
+						}
+					}
+				}
+			}
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
 			if oldEnabled != newEnabled && newEnabled != node?.paxCounterConfig?.enabled { hasChanges = true }

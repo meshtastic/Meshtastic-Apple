@@ -154,33 +154,26 @@ struct DetectionSensorConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.detectionSensorConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						var dsc = ModuleConfig.DetectionSensorConfig()
-						dsc.enabled = self.enabled
-						dsc.sendBell = self.sendBell
-						dsc.name = self.name
-						dsc.monitorPin = UInt32(self.monitorPin)
-						dsc.detectionTriggerType = TriggerTypes(rawValue: triggerType)!.protoEnumValue()
-						dsc.usePullup = self.usePullup
-						dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs.intValue)
-						dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs.intValue)
-						Task {
-							do {
-								_ = try await accessoryManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!)
-								Task { @MainActor in
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
-									hasChanges = false
-									goBack()
-								}
-							} catch {
-								Logger.mesh.error("Unable to save detection sensor module config")
-							}
-						}
-					}
-				}}}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var dsc = ModuleConfig.DetectionSensorConfig()
+					dsc.enabled = self.enabled
+					dsc.sendBell = self.sendBell
+					dsc.name = self.name
+					dsc.monitorPin = UInt32(self.monitorPin)
+					dsc.detectionTriggerType = TriggerTypes(rawValue: triggerType)!.protoEnumValue()
+					dsc.usePullup = self.usePullup
+					dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs.intValue)
+					dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs.intValue)
+					_ = try await accessoryManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: fromUser, toUser: toUser)
+				}
+			}}}
 		.navigationTitle("Detection Sensor Config")
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {

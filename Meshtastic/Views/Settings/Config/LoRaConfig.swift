@@ -186,37 +186,37 @@ struct LoRaConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.loRaConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-						var lc = Config.LoRaConfig()
-						lc.hopLimit = UInt32(hopLimit)
-						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
-						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-						lc.usePreset = usePreset
-						lc.txEnabled = txEnabled
-						lc.txPower = Int32(txPower)
-						lc.channelNum = UInt32(channelNum)
-						lc.bandwidth = UInt32(bandwidth)
-						lc.codingRate = UInt32(codingRate)
-						lc.spreadFactor = UInt32(spreadFactor)
-						lc.sx126XRxBoostedGain = rxBoostedGain
-						lc.overrideFrequency = overrideFrequency
-						lc.ignoreMqtt = ignoreMqtt
-						lc.configOkToMqtt = okToMqtt
-						if connectedNode.num == node?.user?.num ?? 0 {
-							UserDefaults.modemPreset = modemPreset
-						}
-						Task {
-							_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: connectedNode.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var lc = Config.LoRaConfig()
+					lc.hopLimit = UInt32(hopLimit)
+					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+					lc.usePreset = usePreset
+					lc.txEnabled = txEnabled
+					lc.txPower = Int32(txPower)
+					lc.channelNum = UInt32(channelNum)
+					lc.bandwidth = UInt32(bandwidth)
+					lc.codingRate = UInt32(codingRate)
+					lc.spreadFactor = UInt32(spreadFactor)
+					lc.sx126XRxBoostedGain = rxBoostedGain
+					lc.overrideFrequency = overrideFrequency
+					lc.ignoreMqtt = ignoreMqtt
+					lc.configOkToMqtt = okToMqtt
+					if let deviceNum = accessoryManager.activeDeviceNum,
+					   let connectedNode = getNodeInfo(id: deviceNum, context: context),
+					   connectedNode.num == node?.user?.num ?? 0 {
+						UserDefaults.modemPreset = modemPreset
 					}
+					_ = try await accessoryManager.saveLoRaConfig(config: lc, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("LoRa Config")

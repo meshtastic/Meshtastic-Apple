@@ -13,7 +13,7 @@ struct BluetoothConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	let node: NodeInfoEntity?
+	var node: NodeInfoEntity?
 	@State var hasChanges = false
 	@State var enabled = true
 	@State var mode = 0
@@ -33,12 +33,13 @@ struct BluetoothConfig: View {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "antenna.radiowaves.left.and.right")
 				}
-				.tint(.accentColor)
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Picker("Pairing Mode", selection: $mode ) {
 					ForEach(BluetoothModes.allCases) { bm in
 						Text(bm.description)
 					}
 				}
+				.pickerStyle(DefaultPickerStyle())
 				if mode == 1 {
 					HStack {
 						Label("Fixed Pin", systemImage: "wallet.pass")
@@ -70,33 +71,30 @@ struct BluetoothConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.bluetoothConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if let myNodeNum = accessoryManager.activeDeviceNum,
-					   let connectedNode = getNodeInfo(id: myNodeNum, context: context) {
-						var bc = Config.BluetoothConfig()
-						bc.enabled = enabled
-						bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
-						bc.fixedPin = UInt32(fixedPin) ?? 123456
-						Task {
-							// TODO: ADMINIndex?
-							_ = try await accessoryManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var bc = Config.BluetoothConfig()
+					bc.enabled = enabled
+					bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
+					bc.fixedPin = UInt32(fixedPin) ?? 123456
+					_ = try await accessoryManager.saveBluetoothConfig(config: bc, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("Bluetooth Config")
-		.toolbar {
-			ToolbarItem(placement: .topBarTrailing) {
+		.navigationBarItems(
+			trailing: ZStack {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				
 			}
-		}
+		)
 		.onFirstAppear {
 			requestRemoteConfig(
 				node: node,

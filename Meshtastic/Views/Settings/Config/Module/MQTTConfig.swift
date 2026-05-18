@@ -254,36 +254,31 @@ struct MQTTConfig: View {
 			.disabled(!accessoryManager.isConnected || node?.mqttConfig == nil)
 			.safeAreaInset(edge: .bottom, alignment: .center) {
 				HStack(spacing: 0) {
-					SaveConfigButton(node: node, hasChanges: $hasChanges) {
-						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-						if connectedNode != nil {
-							var mqtt = ModuleConfig.MQTTConfig()
-							mqtt.enabled = self.enabled
-							mqtt.proxyToClientEnabled = self.proxyToClientEnabled
-							mqtt.address = self.address
-							mqtt.username = self.username
-							mqtt.password = self.password
-							mqtt.root = self.root
-							mqtt.encryptionEnabled = self.encryptionEnabled
-							mqtt.jsonEnabled = self.jsonEnabled
-							mqtt.tlsEnabled = self.tlsEnabled
-							mqtt.mapReportingEnabled = self.mapReportingEnabled
-							mqtt.mapReportSettings.shouldReportLocation = UserDefaults.mapReportingOptIn
-							mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
-							mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs.intValue)
-							Task {
-								do {
-									_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
-									Task { @MainActor in
-										// Should show a saved successfully alert once I know that to be true
-										// for now just disable the button after a successful save
-										hasChanges = false
-										goBack()
-									}
-								}
-							}
-						}
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var mqtt = ModuleConfig.MQTTConfig()
+						mqtt.enabled = self.enabled
+						mqtt.proxyToClientEnabled = self.proxyToClientEnabled
+						mqtt.address = self.address
+						mqtt.username = self.username
+						mqtt.password = self.password
+						mqtt.root = self.root
+						mqtt.encryptionEnabled = self.encryptionEnabled
+						mqtt.jsonEnabled = self.jsonEnabled
+						mqtt.tlsEnabled = self.tlsEnabled
+						mqtt.mapReportingEnabled = self.mapReportingEnabled
+						mqtt.mapReportSettings.shouldReportLocation = UserDefaults.mapReportingOptIn
+						mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
+						mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs.intValue)
+						_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: fromUser, toUser: toUser)
 					}
+				}
 				}
 			}.onChange(of: enabled) { oldEnabled, newEnabled in
 				if oldEnabled != newEnabled && newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
