@@ -402,10 +402,10 @@
             "noise",
             "meter",
             "meshtastic",
-            "background",
             "than",
             "static",
             "radio",
+            "background",
             "dbm",
             "bars",
             "bad",
@@ -413,7 +413,6 @@
             "preset",
             "loud",
             "lora",
-            "friend",
             "using",
             "uses",
             "them",
@@ -423,10 +422,11 @@
             "message",
             "means",
             "limit",
+            "like",
             "good",
-            "clarity"
+            "friend"
         ],
-        "charCount": 4137
+        "charCount": 4032
     },
     {
         "id": "tak",

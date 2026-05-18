@@ -19,13 +19,7 @@
 <li><strong>RSSI (Received Signal Strength Indicator):</strong> This is the <strong>loudness</strong> of the raw power hitting your antenna.</li>
 <li><strong>SNR (Signal-to-Noise Ratio):</strong> This is the <strong>clarity</strong> of the signal compared to the background static.</li>
 </ul>
-<div class="tips-callout"><strong>Tip — The Analogy:</strong> Imagine you are trying to hear a friend talking to you.</p>
-<ul>
-<li><strong>RSSI</strong> is how loud their voice is.</li>
-<li><strong>The Noise Floor</strong> is the background noise in the room (air conditioning, other people talking, traffic).</li>
-<li><strong>SNR</strong> is how easily you can distinguish your friend's voice from the background noise.</li>
-</ul>
-</blockquote>
+<p>Think of it like hearing a friend talk: <strong>RSSI</strong> is how loud their voice is, <strong>the noise floor</strong> is the background noise in the room, and <strong>SNR</strong> is how easily you can distinguish their voice from that noise.</p>
 <p>If your friend shouts at you at a deafening rock concert, the signal is incredibly loud (High RSSI), but you still can't understand them because the background noise is louder (Bad SNR). Conversely, if your friend whispers to you in a dead-silent library, the signal is very weak (Low RSSI), but you can understand them perfectly (Great SNR).</p>
 <hr />
 <h2>2. The Magic of LoRa: Hearing &quot;Below the Noise Floor&quot;</h2>
@@ -75,8 +69,7 @@
 <hr />
 <h2>4. What This Means for You</h2>
 <p>Because Meshtastic's meter acts as a <strong>&quot;Clarity Meter&quot;</strong>, it behaves differently than what most people expect:</p>
-<blockquote>
-<p><strong>Tip — Don't panic over low RSSI:</strong> You might see a seemingly terrible RSSI value like <code>-118 dBm</code>. On a cell phone, you would have zero bars. But if you have an SNR of <code>+2 dB</code>, Meshtastic will still show a strong signal! <em>The library is quiet, so the whisper is heard perfectly.</em></div>
+<div class="tips-callout"><strong>Tip — Don't panic over low RSSI:</strong> You might see a seemingly terrible RSSI value like <code>-118 dBm</code>. On a cell phone, you would have zero bars. But if you have an SNR of <code>+2 dB</code>, Meshtastic will still show a strong signal! <em>The library is quiet, so the whisper is heard perfectly.</em></div>
 <div class="warning-callout"><strong>Warning — Watch out for local noise:</strong> If you hook up a massive antenna and see a great RSSI (e.g., <code>-90 dBm</code>) but your signal meter is only showing <strong>1 Bar (Bad)</strong>, you have a problem. It means you have local interference—perhaps a cheap power supply, a noisy computer, or a nearby radio tower—creating so much static that it is drowning out your mesh.</div>
 </body>
 </html>
