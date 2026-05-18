@@ -14,7 +14,7 @@ On devices running iOS 26 or later, the in-app documentation is automatically tr
 
 1. You open **Help & Docs** in a non-English language.
 2. If community translations already exist for your language and app version, they're downloaded instantly.
-3. If not, Apple's Translation framework translates every page on-device (~30 seconds).
+3. If not, Apple's Translation framework translates every page on-device (~10 seconds per page).
 4. Your translations are anonymously uploaded to the [meshtastic/translations](https://github.com/meshtastic/translations) repository.
 5. The next user in your language gets instant translated docs from the community cache.
 
