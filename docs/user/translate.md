@@ -23,7 +23,7 @@ After all pages are translated in the background, the app anonymously uploads th
 
 ## Contributing app translations
 
-Contributing translations to the Meshtastic Apple app helps make the project accessible to a wider audience. The process is designed to be simple: a script generates machine translations on your Mac using Apple Intelligence, marks them for review, and opens a pull request automatically. A native speaker then reviews and approves the strings in Xcode before they ship.
+Contributing translations to the Meshtastic Apple app helps make the project accessible to a wider audience. The process is designed to be simple: a script generates machine translations on your Mac using Apple Intelligence, marks them for review, and opens a pull request automatically.
 
 ## Review machine translations
 
