@@ -53,11 +53,7 @@ struct DetectionSensorConfig: View {
 					Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
 				}
 				.tint(.accentColor)
-<<<<<<< firmware-region-aware-selection
 
-=======
-				
->>>>>>> main
 				if enabled {
 					HStack {
 						Picker(selection: $role, label: Text("Role")) {
@@ -87,11 +83,7 @@ struct DetectionSensorConfig: View {
 						Text("Send ASCII bell with alert message. Useful for triggering external notification on bell.")
 					}
 					.tint(.accentColor)
-<<<<<<< firmware-region-aware-selection
 
-=======
-					
->>>>>>> main
 					HStack {
 						Label("Name", systemImage: "signature")
 						TextField("Friendly name", text: $name, axis: .vertical)
@@ -121,11 +113,7 @@ struct DetectionSensorConfig: View {
 							}
 						}
 					}
-<<<<<<< firmware-region-aware-selection
 
-=======
-					
->>>>>>> main
 					Picker("TriggerType", selection: $triggerType) {
 						ForEach(TriggerTypes.allCases) { tt in
 							Text(tt.name).tag(tt.rawValue)

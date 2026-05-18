@@ -14,15 +14,9 @@ struct DisplayConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-<<<<<<< firmware-region-aware-selection
 
 	let node: NodeInfoEntity?
 
-=======
-	
-	let node: NodeInfoEntity?
-	
->>>>>>> main
 	@State var hasChanges = false
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
@@ -81,11 +75,7 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-<<<<<<< firmware-region-aware-selection
 
-=======
-				
->>>>>>> main
 				VStack(alignment: .leading) {
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
 						ForEach(ScreenCarouselIntervals.allCases) { sci in
@@ -97,31 +87,19 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-<<<<<<< firmware-region-aware-selection
 
-=======
-				
->>>>>>> main
 				Toggle(isOn: $wakeOnTapOrMotion) {
 					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
 					Text("Requires that there be an accelerometer on your device.")
 				}
 				.tint(.accentColor)
-<<<<<<< firmware-region-aware-selection
 
-=======
-				
->>>>>>> main
 				Toggle(isOn: $flipScreen) {
 					Label("Flip Screen", systemImage: "pip.swap")
 					Text("Flip screen vertically")
 				}
 				.tint(.accentColor)
-<<<<<<< firmware-region-aware-selection
 
-=======
-				
->>>>>>> main
 				VStack(alignment: .leading) {
 					Picker("Display Mode", selection: $displayMode ) {
 						ForEach(DisplayModes.allCases) { dm in

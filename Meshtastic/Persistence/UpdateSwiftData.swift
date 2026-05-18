@@ -141,11 +141,7 @@ extension MeshPackets {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}
 	}
-<<<<<<< firmware-region-aware-selection
 
-=======
-	
->>>>>>> main
 	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) {
 		// Delete entities that are on the inverse side of many-to-many
 		// relationships first to avoid constraint trigger violations.
