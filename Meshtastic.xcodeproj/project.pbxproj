@@ -332,6 +332,8 @@
         DD3D17E02C3FB67200561584 /* LocalWeatherConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3D17DF2C3FB67200561584 /* LocalWeatherConditions.swift */; };
         DD4074692F1233F400BCC22F /* ExchangeUserInfoButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */; };
         DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
+        AA000401CFG0000000000003 /* ConfigSaveHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000401CFG0000000000001 /* ConfigSaveHelper.swift */; };
+        AA000401CFG0000000000004 /* RequestConfigOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000401CFG0000000000002 /* RequestConfigOnAppear.swift */; };
         DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
         DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
         DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */; };
@@ -876,6 +878,8 @@
         DD3D17DF2C3FB67200561584 /* LocalWeatherConditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalWeatherConditions.swift; sourceTree = "<group>"; };
         DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeUserInfoButton.swift; sourceTree = "<group>"; };
         DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
+        AA000401CFG0000000000001 /* ConfigSaveHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigSaveHelper.swift; sourceTree = "<group>"; };
+        AA000401CFG0000000000002 /* RequestConfigOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestConfigOnAppear.swift; sourceTree = "<group>"; };
         DD415827285859C4009B0E59 /* TelemetryConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryConfig.swift; sourceTree = "<group>"; };
         DD41582928585C32009B0E59 /* RangeTestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeTestConfig.swift; sourceTree = "<group>"; };
         DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeWeatherForecast.swift; sourceTree = "<group>"; };
@@ -1787,6 +1791,8 @@
                 D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
 				D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */,
                 D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
+                AA000401CFG0000000000001 /* ConfigSaveHelper.swift */,
+                AA000401CFG0000000000002 /* RequestConfigOnAppear.swift */,
                 D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */,
                 DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */,
                 DD41582528582E9B009B0E59 /* DeviceConfig.swift */,
@@ -2775,6 +2781,8 @@
                 ABB99DEB2E2EA1C500CFBD05 /* AppIconPicker.swift in Sources */,
                 DD4074692F1233F400BCC22F /* ExchangeUserInfoButton.swift in Sources */,
                 DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */,
+                AA000401CFG0000000000003 /* ConfigSaveHelper.swift in Sources */,
+                AA000401CFG0000000000004 /* RequestConfigOnAppear.swift in Sources */,
                 DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */,
                 DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */,
                 DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */,
