@@ -8,13 +8,17 @@ nav_order: 14
 
 ## Automatic documentation translation
 
-On devices running iOS 26 or later, the in-app documentation is automatically translated into your device language when you open **Help & Docs**. The translation pipeline works as follows:
+On devices running iOS 26 or later, the in-app documentation is automatically translated into your device language when you open **Help & Docs**.
 
-1. The app reads the bundled English markdown source files.
-2. Text segments are translated using Apple's Translation framework, falling back to on-device Foundation Models if your language is not supported.
-3. Translated markdown is cached locally so subsequent visits load instantly.
+**Here's how it works:** The very first person to use a particular language + app version combination translates all pages on-device and automatically contributes their translations back to the community. Every user after them gets those translations instantly — no waiting for on-device translation.
 
-After all pages are translated in the background, the app anonymously uploads the translated files to the [meshtastic/translations](https://github.com/meshtastic/translations) repository for community review and improvement.
+1. You open **Help & Docs** in a non-English language.
+2. If community translations already exist for your language and app version, they're downloaded instantly.
+3. If not, Apple's Translation framework translates every page on-device (~30 seconds).
+4. Your translations are anonymously uploaded to the [meshtastic/translations](https://github.com/meshtastic/translations) repository.
+5. The next user in your language gets instant translated docs from the community cache.
+
+No sign-up, no manual work — it just happens in the background while you use the app. You can disable this by toggling off **Participate in Distributed Translations** in App Settings.
 
 > **Tip — English users**
 > If your device language is English, no translation occurs and the bundled English documentation is displayed directly.
