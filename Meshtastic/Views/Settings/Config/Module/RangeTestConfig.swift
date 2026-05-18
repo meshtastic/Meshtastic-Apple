@@ -14,9 +14,15 @@ struct RangeTestConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
+<<<<<<< firmware-region-aware-selection
 
 	let node: NodeInfoEntity?
 
+=======
+	
+	let node: NodeInfoEntity?
+	
+>>>>>>> main
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var enabled = false
