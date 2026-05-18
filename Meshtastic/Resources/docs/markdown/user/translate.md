@@ -29,7 +29,7 @@ No sign-up, no manual work — it just happens in the background while you use t
 
 Contributing translations helps make Meshtastic accessible to a wider audience. Native speakers can review machine-translated strings for their language directly in Xcode — look for strings marked **Needs Review** and improve anything that sounds unnatural. If you have a Mac with Apple Silicon, you can also run a script that uses on-device Apple Intelligence to generate any missing translations for your language and automatically open a pull request.
 
-## Review machine translations
+### Review machine translations
 
 All on-device translations are uploaded to the [meshtastic/translations](https://github.com/meshtastic/translations) repository. They're a great starting point, but machine translations aren't perfect! If you're a native speaker and spot something that could be improved:
 
@@ -43,7 +43,7 @@ Your improvements will be served to every user of that language going forward �
 
 ## Generate new translations with a script
 
-## Requirements
+### Requirements
 
 Before you start, make sure you have:
 
@@ -62,7 +62,7 @@ mkdir -p ~/bin && cp .build/release/local-localizer ~/bin/local-localizer
 
 Make sure `~/bin` is on your PATH (add `export PATH="$HOME/bin:$PATH"` to your shell profile if needed).
 
-## Add or complete a locale
+### Add or complete a locale
 
 Clone the repository, then run the translation script with your locale code:
 
@@ -91,7 +91,7 @@ The script will:
 
 The translation step runs entirely on your device and takes roughly 10–20 minutes for a complete locale.
 
-## Tone options
+### Tone options
 
 | Tone | When to use |
 |---|---|
@@ -101,7 +101,7 @@ The translation step runs entirely on your device and takes roughly 10–20 minu
 | `informal` | Casual register |
 | `neutral` | Plain, no register preference |
 
-## Reviewing translated strings
+### Reviewing translated strings
 
 Once the PR is open, any native speaker can review the translations directly in Xcode:
 

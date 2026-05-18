@@ -24,7 +24,7 @@ If your device language is English, no translation occurs and the bundled Englis
 <hr />
 <h2>Contributing app translations</h2>
 <p>Contributing translations helps make Meshtastic accessible to a wider audience. Native speakers can review machine-translated strings for their language directly in Xcode — look for strings marked <strong>Needs Review</strong> and improve anything that sounds unnatural. If you have a Mac with Apple Silicon, you can also run a script that uses on-device Apple Intelligence to generate any missing translations for your language and automatically open a pull request.</p>
-<h2>Review machine translations</h2>
+<h3>Review machine translations</h3>
 <p>All on-device translations are uploaded to the <a href="https://github.com/meshtastic/translations">meshtastic/translations</a> repository. They're a great starting point, but machine translations aren't perfect! If you're a native speaker and spot something that could be improved:</p>
 <ol>
 <li>Browse to your language + app version at <a href="https://github.com/meshtastic/translations/tree/main/apple-apps">apple-apps/</a></li>
@@ -34,7 +34,7 @@ If your device language is English, no translation occurs and the bundled Englis
 <p>Your improvements will be served to every user of that language going forward — no coding required.</p>
 <hr />
 <h2>Generate new translations with a script</h2>
-<h2>Requirements</h2>
+<h3>Requirements</h3>
 <p>Before you start, make sure you have:</p>
 <ul>
 <li><strong>macOS 26 or later</strong> with Apple Silicon</li>
@@ -48,7 +48,7 @@ cd ~/local-localizer &amp;&amp; swift build -c release
 mkdir -p ~/bin &amp;&amp; cp .build/release/local-localizer ~/bin/local-localizer
 </code></pre>
 <p>Make sure <code>~/bin</code> is on your PATH (add <code>export PATH=&quot;$HOME/bin:$PATH&quot;</code> to your shell profile if needed).</p>
-<h2>Add or complete a locale</h2>
+<h3>Add or complete a locale</h3>
 <p>Clone the repository, then run the translation script with your locale code:</p>
 <pre><code class="language-bash">git clone https://github.com/meshtastic/Meshtastic-Apple.git
 cd Meshtastic-Apple
@@ -69,7 +69,7 @@ scripts/translate-locale.sh zh-Hant-TW  # Traditional Chinese (Taiwan)
 <li>Commit the result and open a pull request automatically</li>
 </ol>
 <p>The translation step runs entirely on your device and takes roughly 10–20 minutes for a complete locale.</p>
-<h2>Tone options</h2>
+<h3>Tone options</h3>
 <table>
 <thead>
 <tr>
@@ -100,7 +100,7 @@ scripts/translate-locale.sh zh-Hant-TW  # Traditional Chinese (Taiwan)
 </tr>
 </tbody>
 </table>
-<h2>Reviewing translated strings</h2>
+<h3>Reviewing translated strings</h3>
 <p>Once the PR is open, any native speaker can review the translations directly in Xcode:</p>
 <ol>
 <li>Open <code>Meshtastic.xcworkspace</code></li>
