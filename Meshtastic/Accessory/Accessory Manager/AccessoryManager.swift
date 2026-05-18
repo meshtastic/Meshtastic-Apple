@@ -139,6 +139,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
 
+	/// MESHTASTIC_LOCKDOWN-hardened firmware state machine. See
+	/// Meshtastic/Helpers/LockdownCoordinator.swift and
+	/// specs/007-lockdown-mode/. Set by MeshtasticApp at startup.
+	var lockdownCoordinator: LockdownCoordinator?
+
 	var activeConnection: (device: Device, connection: any Connection)?
 
 	/// Reference to the active discovery scan engine, if any
@@ -289,6 +294,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+
+		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
+		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
+		lockdownCoordinator?.onDisconnect()
 		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
@@ -707,6 +716,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received for LoRaWAN Bridge UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .remoteShellApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Shell UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .atakPluginV2:
+					Logger.mesh.info("🕸️ MESH PACKET received ATAK Plugin V2 App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .unknownApp:
 					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
@@ -802,7 +813,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			if state == .subscribed {
 				Task { try? await sendWantConfig() }
 			}
-			
+
+		case .lockdownStatus(let status):
+			// MESHTASTIC_LOCKDOWN-hardened firmware reports state after config_complete_id
+			// (and again in response to each LockdownAuth admin command). Route to the
+			// coordinator, which owns the per-connection state machine + passphrase cache.
+			lockdownCoordinator?.handle(status)
+
 		default:
 			Logger.mesh.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
 		}

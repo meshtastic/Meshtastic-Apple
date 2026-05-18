@@ -20,6 +20,7 @@ struct Connect: View {
 	
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var lockdown: LockdownCoordinator
 	@Environment(\.colorScheme) private var colorScheme
 	@State var router: Router
 	@State var node: NodeInfoEntity?
@@ -203,7 +204,12 @@ struct Connect: View {
 									}
 								}
 							}
-							if isUnsetRegion {
+							// FR-013: suppress action-prompting banners when the
+							// connected device is lockdown-enabled but the current
+							// connection is not yet authorized. Non-lockdown
+							// firmware leaves the coordinator at .none, so the
+							// banner shows normally there too.
+							if isUnsetRegion && !lockdown.isBlockingSession {
 								HStack {
 									NavigationLink {
 										LoRaConfig(node: node)
