@@ -240,6 +240,7 @@
 		DAC1B5AC2FB9D6CD00F8F586 /* ModemPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5AB2FB9D6CD00F8F586 /* ModemPresets.swift */; };
 		DAC1B5AE2FB9D6CF00F8F586 /* Bandwidths.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5AD2FB9D6CF00F8F586 /* Bandwidths.swift */; };
 		DAC1B5B02FB9D6D100F8F586 /* RegionCodes+FirmwareLocale.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5AF2FB9D6D100F8F586 /* RegionCodes+FirmwareLocale.swift */; };
+		DAC1B5BA2FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC1B5B92FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift */; };
 		DCC919C6B47C15BB0795456C /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D5AD8037A0D583C614B0597 /* Tools.swift */; };
 		DD000001NODNAVTST00000001 /* NodeNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */; };
 		DD000002STREXTTST00000001 /* StringExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000002STREXTTST00000000 /* StringExtensionTests.swift */; };
@@ -767,6 +768,7 @@
 		DAC1B5AB2FB9D6CD00F8F586 /* ModemPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModemPresets.swift; sourceTree = "<group>"; };
 		DAC1B5AD2FB9D6CF00F8F586 /* Bandwidths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bandwidths.swift; sourceTree = "<group>"; };
 		DAC1B5AF2FB9D6D100F8F586 /* RegionCodes+FirmwareLocale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RegionCodes+FirmwareLocale.swift"; sourceTree = "<group>"; };
+		DAC1B5B92FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodesFirmwareLocaleTests.swift; sourceTree = "<group>"; };
 		DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteModels.swift; sourceTree = "<group>"; };
 		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
 		DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeNavigationTests.swift; sourceTree = "<group>"; };
@@ -1472,6 +1474,7 @@
 		25F5D5C82C4375A8008036E3 /* MeshtasticTests */ = {
 			isa = PBXGroup;
 			children = (
+				DAC1B5B92FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift */,
 				AA00010022E2730EC0060000 /* ConnectViewTests.swift */,
 				DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
@@ -2582,6 +2585,7 @@
 				DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */,
 				DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */,
 				DD000021ENMCMPTST0000001 /* EnumComprehensiveTests.swift in Sources */,
+				DAC1B5BA2FBA6FC900F8F586 /* RegionCodesFirmwareLocaleTests.swift in Sources */,
 				DD000022GEOJSNCFG0000001 /* GeoJSONOverlayConfigTests.swift in Sources */,
 				DD000023EXTDETTST0000001 /* ExtensionDetailedTests.swift in Sources */,
 				DD000024ENMBATTST0000001 /* EnumBatchTests.swift in Sources */,

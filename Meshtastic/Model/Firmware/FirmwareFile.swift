@@ -20,7 +20,7 @@ extension FirmwareFile {
 		case unknownVersion
 		case unknownReleaseType
 		case unknownRemoteURL
-		
+
 		var errorDescription: String? {
 			switch self {
 			case .invalidFilenamePrefix:
@@ -52,16 +52,16 @@ extension FirmwareFile {
 		case downloaded
 		case error(String)
 	}
-	
+
 	enum FirmwareType: String, Identifiable, CustomStringConvertible {
-        var id: String { rawValue }
+		var id: String { rawValue }
 		var description: String { return rawValue }
-		
+
 		case uf2 = ".uf2"
 		case bin = ".bin"
 		case otaZip = "-ota.zip"
 	}
-	
+
 	static let localFirmwareStorageURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 	static let remoteFirmwareURLPrefix = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/")!
 }
@@ -77,9 +77,9 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	let firmwareType: FirmwareType
 	let architecture: Architecture
 	let releaseNotes: String?
-	
+
 	let versionMajor, versionMinor, versionPatch: Int
-	
+
 	init(
 		firmware: FirmwareReleaseEntity,
 		hardware: DeviceHardwareEntity,
@@ -94,17 +94,17 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			throw FirmwareFileError.unknownArchitecture
 		}
 		self.architecture = architecture
-		
+
 		// Get the version from the given FirmwareReleaseEntity
 		let version = firmware.versionId
 		let releaseType = firmware.releaseType.flatMap { ReleaseType(rawValue: $0) }
 		let releaseNotes = firmware.releaseNotes
-		
+
 		self.releaseNotes = releaseNotes
-		
+
 		guard !version.isEmpty else { throw FirmwareFileError.unknownVersion }
 		self.versionId = version
-		
+
 		let cleanString = version.hasPrefix("v") ? version.dropFirst() : Substring(version)
 		let parts = cleanString.split(separator: ".")
 		if parts.count >= 3 {
@@ -114,48 +114,48 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		} else {
 			throw FirmwareFileError.parseError
 		}
-		
+
 		guard let releaseType else { throw FirmwareFileError.unknownReleaseType }
 		self.releaseType = releaseType
-		
+
 		// Calculate the filename
 		guard let defaultFileType = FirmwareFile.validFilenameSuffixes(forArchitecture: architecture).first else {
 			throw FirmwareFileError.unknownArchitecture
 		}
 		self.firmwareType = type ?? defaultFileType
-			let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
-			let fileName = "firmware-\(target)-\(fileNameVersion)\(firmwareType)"
-			self.localUrl = FirmwareFile.localFirmwareStorageURL.appendingPathComponent(fileName)
-			self.remoteUrlCandidates = Self.makeRemoteURLCandidates(
-				target: target,
-				version: fileNameVersion,
-				firmwareType: firmwareType,
-				localeTags: localeTags
-			)
-			self.remoteUrl = self.remoteUrlCandidates.first
-		
+		let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
+		let fileName = "firmware-\(target)-\(fileNameVersion)\(firmwareType)"
+		self.localUrl = FirmwareFile.localFirmwareStorageURL.appendingPathComponent(fileName)
+		self.remoteUrlCandidates = Self.makeRemoteURLCandidates(
+			target: target,
+			version: fileNameVersion,
+			firmwareType: firmwareType,
+			localeTags: localeTags
+		)
+		self.remoteUrl = self.remoteUrlCandidates.first
+
 		if FileManager.default.fileExists(atPath: localUrl.path) {
 			self.status = .downloaded
 		} else {
 			self.status = .notDownloaded
 		}
 	}
-	
+
 	@MainActor
 	init(localFile url: URL) throws {
 		self.localUrl = url
-		
+
 		let fileName = url.lastPathComponent
-		
+
 		// Check Prefix
 		guard fileName.hasPrefix("firmware-") else {
 			throw FirmwareFileError.invalidFilenamePrefix
 		}
-		
+
 		// Check and Strip Suffix (Extension)
 		// We strip the prefix and suffix first to isolate "<target>-<version>"
 		var coreName = String(fileName.dropFirst("firmware-".count))
-		
+
 		if fileName.hasSuffix("-ota.zip") {
 			coreName = String(coreName.dropLast("-ota.zip".count))
 			self.firmwareType = .otaZip
@@ -169,7 +169,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			// File does not match supported extensions
 			throw FirmwareFileError.unknownFileType
 		}
-		
+
 		// Extract Target and Version
 		// Strategy: We assume the format is Target-Version.
 		// Since Targets can have hyphens (e.g. "esp32-s3"), but Versions usually don't contain
@@ -177,10 +177,10 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		guard let lastHyphenIndex = coreName.lastIndex(of: "-") else {
 			throw FirmwareFileError.parseError
 		}
-		
+
 		let target = String(coreName[..<lastHyphenIndex])
 		var version = String(coreName[coreName.index(after: lastHyphenIndex)...])
-		
+
 		let cleanString = version.hasPrefix("v") ? version.dropFirst() : Substring(version)
 		let parts = cleanString.split(separator: ".")
 		if parts.count >= 3 {
@@ -190,25 +190,25 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		} else {
 			throw FirmwareFileError.parseError
 		}
-		
+
 		if !version.hasPrefix("v") {
 			version = "v" + version
 		}
-		
+
 		// Validation to ensure we didn't end up with empty strings
 		guard !target.isEmpty, !version.isEmpty else {
 			throw FirmwareFileError.parseError
 		}
-		
+
 		self.versionId = version
 		self.platformioTarget = target
-		
+
 		if FileManager.default.fileExists(atPath: url.path) {
 			self.status = .downloaded
 		} else {
 			self.status = .notDownloaded
 		}
-		
+
 		// Look up the architecture for this file
 		let context = PersistenceController.shared.container.mainContext
 		var hardwareDescriptor = FetchDescriptor<DeviceHardwareEntity>(
@@ -223,10 +223,10 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			throw FirmwareFileError.unknownArchitecture
 		}
 		let architecture = hardwareResult?.architecture.flatMap { Architecture(rawValue: $0) }
-		
+
 		guard let architecture else { throw FirmwareFileError.unknownArchitecture }
 		self.architecture = architecture
-		
+
 		// Determine release type
 		var releaseType: ReleaseType = .unlisted
 		var releaseNotes: String?
@@ -244,14 +244,14 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		}
 		self.releaseType = releaseType
 		self.releaseNotes = releaseNotes
-		
+
 		let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
 		self.remoteUrl = FirmwareFile.remoteFirmwareURLPrefix
 			.appendingPathComponent("firmware-\(fileNameVersion)")
 			.appendingPathComponent(fileName)
 		self.remoteUrlCandidates = [self.remoteUrl].compactMap { $0 }
 	}
-	
+
 	@MainActor
 	func download() async throws {
 		guard !remoteUrlCandidates.isEmpty else {
@@ -284,7 +284,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		self.status = .error(finalError.localizedDescription)
 		throw finalError
 	}
-	
+
 	static func validFilenameSuffixes(forArchitecture: Architecture) -> [FirmwareType] {
 		switch forArchitecture {
 		case .esp32, .esp32C3, .esp32S3, .esp32C6:
@@ -295,15 +295,15 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 			return [.uf2]
 		}
 	}
-	
+
 	static func == (lhs: FirmwareFile, rhs: FirmwareFile) -> Bool {
 		return lhs.localUrl == rhs.localUrl &&
-			   lhs.remoteUrl == rhs.remoteUrl &&
-			   lhs.versionId == rhs.versionId &&
-			   lhs.platformioTarget == rhs.platformioTarget &&
-			   lhs.releaseType == rhs.releaseType &&
-			   lhs.firmwareType == rhs.firmwareType &&
-			   lhs.architecture == rhs.architecture
+		lhs.remoteUrl == rhs.remoteUrl &&
+		lhs.versionId == rhs.versionId &&
+		lhs.platformioTarget == rhs.platformioTarget &&
+		lhs.releaseType == rhs.releaseType &&
+		lhs.firmwareType == rhs.firmwareType &&
+		lhs.architecture == rhs.architecture
 	}
 
 	func hash(into hasher: inout Hasher) {

@@ -47,7 +47,7 @@ class FirmwareViewModel: ObservableObject {
 			refresh()
 		}
 	}
-	
+
 	func refresh() {
 		var newFirmwareList = [String: FirmwareFile]()
 
@@ -60,45 +60,45 @@ class FirmwareViewModel: ObservableObject {
 		let descriptor = FetchDescriptor<FirmwareReleaseEntity>()
 		do {
 			let firmwareReleases = try context.fetch(descriptor)
-				for release in firmwareReleases {
-					let localeTags = preferredRegion == .unset ? [] : preferredRegion.firmwareLocaleTagCandidates
-					if let architecture = hardwareArchitecture {
-						for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
-							let firmwareFile = try FirmwareFile(
-								firmware: release,
-								hardware: hardware,
-								type: firmwareType,
-								localeTags: localeTags
-							)
-							newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
-						}
-					} else {
-						// Just the default
+			for release in firmwareReleases {
+				let localeTags = preferredRegion == .unset ? [] : preferredRegion.firmwareLocaleTagCandidates
+				if let architecture = hardwareArchitecture {
+					for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
 						let firmwareFile = try FirmwareFile(
 							firmware: release,
 							hardware: hardware,
+							type: firmwareType,
 							localeTags: localeTags
 						)
 						newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
 					}
+				} else {
+					// Just the default
+					let firmwareFile = try FirmwareFile(
+						firmware: release,
+						hardware: hardware,
+						localeTags: localeTags
+					)
+					newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
 				}
+			}
 		} catch {
 			Logger.services.error("Error fetching firmware releases: \(error)")
 		}
-		
+
 		// Now look for unlisted files on the filesystem
 		let fileManager = FileManager.default
 		var isDirectory: ObjCBool = false
-		
+
 		// 1. Check if directory exists
 		if !fileManager.fileExists(atPath: FirmwareFile.localFirmwareStorageURL.path, isDirectory: &isDirectory) {
 			return
 		}
-		
+
 		// 2. Iterate the files in the folder
 		do {
 			let fileURLs = try fileManager.contentsOfDirectory(at: FirmwareFile.localFirmwareStorageURL, includingPropertiesForKeys: nil)
-			
+
 			for url in fileURLs {
 				do {
 					let firmwareFile = try FirmwareFile(localFile: url)
@@ -106,7 +106,7 @@ class FirmwareViewModel: ObservableObject {
 						// Skip if this is not for the current hardware we are dealing with
 						continue
 					}
-					
+
 					if newFirmwareList[firmwareFile.localUrl.lastPathComponent] != nil {
 						// Already have this one from the Core Data entries
 						continue
@@ -119,7 +119,7 @@ class FirmwareViewModel: ObservableObject {
 		} catch {
 			Logger.services.error("Error loading firmware files: \(error)")
 		}
-		
+
 		Task { @MainActor in
 			// Keep the list sorted by version, with deterministic ordering of the firmware type
 			self.firmwareFiles = newFirmwareList.values.sorted {
@@ -146,11 +146,11 @@ class FirmwareViewModel: ObservableObject {
 		descriptor.fetchLimit = 1
 		return try? context.fetch(descriptor).first?.versionId
 	}
-	
+
 	func firmwareFiles(forVersionId versionId: String) -> [FirmwareFile] {
 		return firmwareFiles.filter({ $0.versionId == versionId })
 	}
-	
+
 	func mostRecentFirmware(forReleaseType releaseType: ReleaseType) -> [FirmwareFile] {
 		if let versionId = mostRecentFirmwareVersion(forReleaseType: releaseType) {
 			return firmwareFiles.filter { $0.releaseType == releaseType && $0.versionId == versionId }
@@ -163,7 +163,7 @@ class FirmwareViewModel: ObservableObject {
 		}
 		return []
 	}
-	
+
 	func downloadedFirmware(includeInProgressDownloads: Bool = true) -> [FirmwareFile] {
 		if includeInProgressDownloads {
 			return firmwareFiles.filter( { $0.status == .downloading || $0.status == .downloaded })
@@ -175,7 +175,7 @@ class FirmwareViewModel: ObservableObject {
 	var hasDownloadedFirmware: Bool {
 		return !downloadedFirmware(includeInProgressDownloads: false).isEmpty
 	}
-	
+
 	func delete(_ filesToDelete: [FirmwareFile]) {
 		// 1. Create a bucket for files that were actually deleted
 		var deletedFiles = Set<FirmwareFile>()

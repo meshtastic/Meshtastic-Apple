@@ -84,12 +84,12 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
             "MY_919"
         case .sg923:
             "SG_923"
-        case .ph433:
-            "ph_433"
-        case .ph868:
-            "ph_868"
-        case .ph915:
-            "ph_915"
+		case .ph433:
+			"ph_433"
+		case .ph868:
+			"ph_868"
+		case .ph915:
+			"ph_915"
         case .kz433:
             "KZ_433"
         case .kz863:
@@ -120,284 +120,284 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .unset:
-            return "Please set a region".localized
+            "Please set a region".localized
         case .us:
-            return "United States".localized
+            "United States".localized
         case .eu433:
-            return "European Union 433MHz".localized
+            "European Union 433MHz".localized
         case .eu868:
-            return "European Union 868MHz".localized
+            "European Union 868MHz".localized
         case .cn:
-            return "China".localized
+            "China".localized
         case .jp:
-            return "Japan".localized
+            "Japan".localized
         case .anz:
-            return "Australia / New Zealand".localized
+            "Australia / New Zealand".localized
         case .anz433:
-            return "Australia / New Zealand 433MHz".localized
+            "Australia / New Zealand 433MHz".localized
         case .kr:
-            return "Korea".localized
+            "Korea".localized
         case .tw:
-            return "Taiwan".localized
+            "Taiwan".localized
         case .ru:
-            return "Russia".localized
+            "Russia".localized
         case .in:
-            return "India".localized
+            "India".localized
         case .nz865:
-            return "New Zealand 865MHz".localized
+            "New Zealand 865MHz".localized
         case .th:
-            return "Thailand".localized
+            "Thailand".localized
         case .ua433:
-            return "Ukraine 433MHz".localized
+            "Ukraine 433MHz".localized
         case .ua868:
-            return "Ukraine 868MHz".localized
+            "Ukraine 868MHz".localized
         case .my433:
-            return "Malaysia 433MHz".localized
+            "Malaysia 433MHz".localized
         case .my919:
-            return "Malaysia 919MHz".localized
+            "Malaysia 919MHz".localized
         case .sg923:
-            return "Singapore 923MHz".localized
+            "Singapore 923MHz".localized
         case .ph433:
-            return "Philippines 433MHz".localized
+            "Philippines 433MHz".localized
         case .ph868:
-            return "Philippines 868MHz".localized
+            "Philippines 868MHz".localized
         case .ph915:
-            return "Philippines 915MHz".localized
+            "Philippines 915MHz".localized
         case .kz433:
-            return "Kazakhstan 433MHz".localized
+            "Kazakhstan 433MHz".localized
         case .kz863:
-            return "Kazakhstan 863MHz".localized
+            "Kazakhstan 863MHz".localized
         case .np865:
-            return "Nepal 865MHz".localized
+            "Nepal 865MHz".localized
         case .br902:
-            return "Brazil 902MHz".localized
+            "Brazil 902MHz".localized
         case .itu12M:
-            return "ITU Region 1 / Amateur 2m".localized
+            "ITU Region 1 / Amateur 2m".localized
         case .itu232M:
-            return "ITU Region 2 & 3 / Amateur 2m".localized
+            "ITU Region 2 & 3 / Amateur 2m".localized
         case .eu866:
-            return "European Union 866MHz".localized
+            "European Union 866MHz".localized
         case .eu874:
-            return "European Union 874MHz".localized
+            "European Union 874MHz".localized
         case .eu917:
-            return "European Union 917MHz".localized
+            "European Union 917MHz".localized
         case .euN868:
-            return "European Union 868MHz (Narrow)".localized
+            "European Union 868MHz (Narrow)".localized
         case .lora24:
-            return "2.4 Ghz".localized
+            "2.4 Ghz".localized
         }
     }
 
     var dutyCycle: Int {
         switch self {
         case .unset:
-            return 0
+            0
         case .us:
-            return 100
+            100
         case .eu433:
-            return 10
+            10
         case .eu868:
-            return 10
+            10
         case .cn:
-            return 100
+            100
         case .jp:
-            return 100
+            100
         case .anz:
-            return 100
+            100
         case .kr:
-            return 100
+            100
         case .tw:
-            return 100
+            100
         case .ru:
-            return 100
+            100
         case .in:
-            return 100
+            100
         case .nz865:
-            return 100
+            100
         case .th:
-            return 100
+            100
         case .ua433:
-            return 10
+            10
         case .ua868:
-            return 10
+            10
         case .lora24:
-            return 100
+            100
         case .my433:
-            return 100
+            100
         case .my919:
-            return 100
+            100
         case .sg923:
-            return 100
+            100
         case .ph433:
-            return 100
+            100
         case .ph868:
-            return 100
+            100
         case .ph915:
-            return 100
+            100
         case .anz433:
-            return 100
+            100
         case .kz433:
-            return 100
+            100
         case .kz863:
-            return 100
+            100
         case .np865:
-            return 100
+            100
         case .br902:
-            return 100
+            100
         case .itu12M:
-            return 100
+            100
         case .itu232M:
-            return 100
+            100
         case .eu866:
-            return 10
+            10
         case .eu874:
-            return 10
+            10
         case .eu917:
-            return 10
+            10
         case .euN868:
-            return 10
+            10
         }
     }
 
     var isCountry: Bool {
         switch self {
         case .unset:
-            return false
+            false
         case .us:
-            return true
+            true
         case .eu433:
-            return false
+            false
         case .eu868:
-            return false
+            false
         case .cn:
-            return true
+            true
         case .jp:
-            return true
+            true
         case .anz:
-            return false
+            false
         case .kr:
-            return true
+            true
         case .tw:
-            return true
+            true
         case .ru:
-            return true
+            true
         case .in:
-            return true
+            true
         case .nz865:
-            return true
+            true
         case .th:
-            return true
+            true
         case .ua433:
-            return true
+            true
         case .ua868:
-            return true
+            true
         case .lora24:
-            return false
+            false
         case .my433:
-            return true
+            true
         case .my919:
-            return true
+            true
         case .sg923:
-            return true
+            true
         case .ph433:
-            return true
+            true
         case .ph868:
-            return true
+            true
         case .ph915:
-            return true
+            true
         case .anz433:
-            return false
+            false
         case .kz433:
-            return true
+            true
         case .kz863:
-            return true
+            true
         case .np865:
-            return true
+            true
         case .br902:
-            return true
+            true
         case .itu12M:
-            return false
+            false
         case .itu232M:
-            return false
+            false
         case .eu866:
-            return false
+            false
         case .eu874:
-            return false
+            false
         case .eu917:
-            return false
+            false
         case .euN868:
-            return false
+            false
         }
     }
 
     func protoEnumValue() -> Config.LoRaConfig.RegionCode {
         switch self {
         case .unset:
-            return Config.LoRaConfig.RegionCode.unset
+            Config.LoRaConfig.RegionCode.unset
         case .us:
-            return Config.LoRaConfig.RegionCode.us
+            Config.LoRaConfig.RegionCode.us
         case .eu433:
-            return Config.LoRaConfig.RegionCode.eu433
+            Config.LoRaConfig.RegionCode.eu433
         case .eu868:
-            return Config.LoRaConfig.RegionCode.eu868
+            Config.LoRaConfig.RegionCode.eu868
         case .cn:
-            return Config.LoRaConfig.RegionCode.cn
+            Config.LoRaConfig.RegionCode.cn
         case .jp:
-            return Config.LoRaConfig.RegionCode.jp
+            Config.LoRaConfig.RegionCode.jp
         case .anz:
-            return Config.LoRaConfig.RegionCode.anz
+            Config.LoRaConfig.RegionCode.anz
         case .kr:
-            return Config.LoRaConfig.RegionCode.kr
+            Config.LoRaConfig.RegionCode.kr
         case .tw:
-            return Config.LoRaConfig.RegionCode.tw
+            Config.LoRaConfig.RegionCode.tw
         case .ru:
-            return Config.LoRaConfig.RegionCode.ru
+            Config.LoRaConfig.RegionCode.ru
         case .in:
-            return Config.LoRaConfig.RegionCode.in
+            Config.LoRaConfig.RegionCode.in
         case .nz865:
-            return Config.LoRaConfig.RegionCode.nz865
+            Config.LoRaConfig.RegionCode.nz865
         case .th:
-            return Config.LoRaConfig.RegionCode.th
+            Config.LoRaConfig.RegionCode.th
         case .ua433:
-            return Config.LoRaConfig.RegionCode.ua433
+            Config.LoRaConfig.RegionCode.ua433
         case .ua868:
-            return Config.LoRaConfig.RegionCode.ua868
+            Config.LoRaConfig.RegionCode.ua868
         case .lora24:
-            return Config.LoRaConfig.RegionCode.lora24
+            Config.LoRaConfig.RegionCode.lora24
         case .my433:
-            return Config.LoRaConfig.RegionCode.my433
+            Config.LoRaConfig.RegionCode.my433
         case .my919:
-            return Config.LoRaConfig.RegionCode.my919
+            Config.LoRaConfig.RegionCode.my919
         case .sg923:
-            return Config.LoRaConfig.RegionCode.sg923
+            Config.LoRaConfig.RegionCode.sg923
         case .ph433:
-            return Config.LoRaConfig.RegionCode.ph433
+            Config.LoRaConfig.RegionCode.ph433
         case .ph868:
-            return Config.LoRaConfig.RegionCode.ph868
+            Config.LoRaConfig.RegionCode.ph868
         case .ph915:
-            return Config.LoRaConfig.RegionCode.ph915
+            Config.LoRaConfig.RegionCode.ph915
         case .anz433:
-            return Config.LoRaConfig.RegionCode.anz433
+            Config.LoRaConfig.RegionCode.anz433
         case .kz433:
-            return Config.LoRaConfig.RegionCode.kz433
+            Config.LoRaConfig.RegionCode.kz433
         case .kz863:
-            return Config.LoRaConfig.RegionCode.kz863
+            Config.LoRaConfig.RegionCode.kz863
         case .np865:
-            return Config.LoRaConfig.RegionCode.np865
+            Config.LoRaConfig.RegionCode.np865
         case .br902:
-            return Config.LoRaConfig.RegionCode.br902
+            Config.LoRaConfig.RegionCode.br902
         case .itu12M:
-            return Config.LoRaConfig.RegionCode.itu12M
+            Config.LoRaConfig.RegionCode.itu12M
         case .itu232M:
-            return Config.LoRaConfig.RegionCode.itu232M
+            Config.LoRaConfig.RegionCode.itu232M
         case .eu866:
-            return Config.LoRaConfig.RegionCode.eu866
+            Config.LoRaConfig.RegionCode.eu866
         case .eu874:
-            return Config.LoRaConfig.RegionCode.eu874
+            Config.LoRaConfig.RegionCode.eu874
         case .eu917:
-            return Config.LoRaConfig.RegionCode.eu917
+            Config.LoRaConfig.RegionCode.eu917
         case .euN868:
-            return Config.LoRaConfig.RegionCode.euN868
+            Config.LoRaConfig.RegionCode.euN868
         }
     }
 }
