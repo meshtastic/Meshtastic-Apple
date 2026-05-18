@@ -186,6 +186,7 @@ struct ChannelList: View {
 				.olderThanOS26 { $0.padding([.top, .bottom]) }
 				.listStyle(.plain)
 			}
+			Spacer()
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
