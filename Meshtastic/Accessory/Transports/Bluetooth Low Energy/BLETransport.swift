@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 @preconcurrency import CoreBluetooth
 import SwiftUI
 import OSLog

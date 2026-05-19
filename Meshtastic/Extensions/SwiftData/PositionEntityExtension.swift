@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/28/21.
 //
 
-import SwiftData
+@preconcurrency import SwiftData
 import CoreLocation
 import MapKit
 import MeshtasticProtobufs

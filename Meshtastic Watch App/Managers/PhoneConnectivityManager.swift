@@ -96,7 +96,7 @@ final class PhoneConnectivityManager: NSObject, ObservableObject {
 }
 
 // MARK: - WCSessionDelegate
-extension PhoneConnectivityManager: @preconcurrency WCSessionDelegate {
+extension PhoneConnectivityManager: WCSessionDelegate {
 
 	nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
 		Task { @MainActor in
