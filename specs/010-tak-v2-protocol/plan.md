@@ -13,7 +13,7 @@ Apple-specific stack: `Network.framework` for the TLS listener (vs. Android's JS
 
 ## Technical Context
 
-**Language / Version**: Swift 5.9+, targeting iOS 16+, iPadOS 16+, macOS via Mac Catalyst (Catalyst 16+ / macOS 13+).
+**Language / Version**: Swift 5.9+, targeting iOS 17.5+, iPadOS 17.5+, macOS via Mac Catalyst (Catalyst 17.5+ / macOS 14.6+).
 **Primary Dependencies**: TAKPacket-SDK (SPM, pinned `0.2.3`), MeshtasticProtobufs (Swift Package), CocoaMQTT, CoreBluetooth, Network.framework, SwiftData (for node lookups in the bridge), SwiftUI, OSLog (Logger.tak channel).
 **Storage**: App Documents for route KML data packages (`Documents/TAK Routes/`); Keychain for custom `.p12` certificates (`TAKCertificateManager`); App bundle for default `.p12` and `.pref` resources; `@AppStorage` for `takServerEnabled`, `takServerChannel`, `takServerReadOnly`, `takServerMeshToCot`.
 **Testing**: Swift Testing framework (`@Suite`, `@Test`); ~172 TAK-tagged `@Test` methods across `MeshtasticTests/{TAKBridgeTests,TAKBridgeDetailedTests,TAKCodecTests,CoTMessageTests,CoTMessageDetailedTests,CoTXMLParserTests,CoTExtensionTests,GenericCoTHandlerTests}.swift`.
