@@ -9,7 +9,7 @@ For the spec / requirements: see `spec.md`. For implementation phasing and struc
 ## Prerequisites
 
 - Xcode 16+ (Swift 5.9+, Swift Testing framework support).
-- An iOS device or simulator (iOS 16+). Apple Silicon Mac running Mac Catalyst also works.
+- An iOS device or simulator (iOS 17.5+). Apple Silicon Mac running Mac Catalyst also works.
 - Optional but recommended for end-to-end testing:
   - A Meshtastic radio with firmware ≥ 2.8.0 (for V2 path testing).
   - A second Meshtastic radio with firmware ≤ 2.7.x (for V1 ATAK_PLUGIN fallback testing).
