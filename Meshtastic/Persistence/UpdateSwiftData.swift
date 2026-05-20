@@ -853,15 +853,29 @@ extension MeshPackets {
 					newNetworkConfig.wifiEnabled = config.wifiEnabled
 					newNetworkConfig.wifiSsid = config.wifiSsid
 					newNetworkConfig.wifiPsk = config.wifiPsk
+					newNetworkConfig.ntpServer = config.ntpServer
 					newNetworkConfig.ethEnabled = config.ethEnabled
 					newNetworkConfig.enabledProtocols = Int32(config.enabledProtocols)
+					newNetworkConfig.addressMode = Int32(config.addressMode.rawValue)
+					newNetworkConfig.rsyslogServer = config.rsyslogServer
+					newNetworkConfig.ip = Int32(bitPattern: config.ipv4Config.ip)
+					newNetworkConfig.gateway = Int32(bitPattern: config.ipv4Config.gateway)
+					newNetworkConfig.subnet = Int32(bitPattern: config.ipv4Config.subnet)
+					newNetworkConfig.dns = Int32(bitPattern: config.ipv4Config.dns)
 					fetchedNode[0].networkConfig = newNetworkConfig
 				} else {
 					fetchedNode[0].networkConfig?.ethEnabled = config.ethEnabled
 					fetchedNode[0].networkConfig?.wifiEnabled = config.wifiEnabled
 					fetchedNode[0].networkConfig?.wifiSsid = config.wifiSsid
 					fetchedNode[0].networkConfig?.wifiPsk = config.wifiPsk
+					fetchedNode[0].networkConfig?.ntpServer = config.ntpServer
 					fetchedNode[0].networkConfig?.enabledProtocols = Int32(config.enabledProtocols)
+					fetchedNode[0].networkConfig?.addressMode = Int32(config.addressMode.rawValue)
+					fetchedNode[0].networkConfig?.rsyslogServer = config.rsyslogServer
+					fetchedNode[0].networkConfig?.ip = Int32(bitPattern: config.ipv4Config.ip)
+					fetchedNode[0].networkConfig?.gateway = Int32(bitPattern: config.ipv4Config.gateway)
+					fetchedNode[0].networkConfig?.subnet = Int32(bitPattern: config.ipv4Config.subnet)
+					fetchedNode[0].networkConfig?.dns = Int32(bitPattern: config.ipv4Config.dns)
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
