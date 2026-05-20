@@ -63,10 +63,10 @@ enum SettingsNavigationState: String {
 struct NavigationState: Hashable {
 	enum Tab: String, Hashable {
 		case messages
-		case connect
 		case nodes
 		case map
 		case settings
+		case connect
 	}
 
 	var selectedTab: Tab = .connect
