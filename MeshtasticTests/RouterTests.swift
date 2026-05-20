@@ -211,6 +211,7 @@ struct RouterTests {
 		("security", SettingsNavigationState.security),
 		("storeAndForward", SettingsNavigationState.storeAndForward),
 		("telemetry", SettingsNavigationState.telemetry),
+		("trafficManagement", SettingsNavigationState.trafficManagement),
 		("debugLogs", SettingsNavigationState.debugLogs),
 		("appFiles", SettingsNavigationState.appFiles),
 		("firmwareUpdates", SettingsNavigationState.firmwareUpdates),

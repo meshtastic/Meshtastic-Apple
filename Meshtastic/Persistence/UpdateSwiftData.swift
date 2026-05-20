@@ -1614,4 +1614,64 @@ extension MeshPackets {
 			Logger.data.error("💥 [TAKConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
+
+	func upsertTrafficManagementModuleConfigPacket(config: ModuleConfig.TrafficManagementConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Traffic Management module config received: %@".localized, String(nodeNum))
+		Logger.data.info("🚦 \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+		var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+		fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].trafficManagementConfig == nil {
+					let newConfig = TrafficManagementConfigEntity()
+					modelContext.insert(newConfig)
+					newConfig.enabled = config.enabled
+					newConfig.positionDedupEnabled = config.positionDedupEnabled
+					newConfig.positionPrecisionBits = Int32(config.positionPrecisionBits)
+					newConfig.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
+					newConfig.nodeinfoDirectResponse = config.nodeinfoDirectResponse
+					newConfig.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
+					newConfig.rateLimitEnabled = config.rateLimitEnabled
+					newConfig.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
+					newConfig.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
+					newConfig.dropUnknownEnabled = config.dropUnknownEnabled
+					newConfig.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
+					newConfig.exhaustHopTelemetry = config.exhaustHopTelemetry
+					newConfig.exhaustHopPosition = config.exhaustHopPosition
+					newConfig.routerPreserveHops = config.routerPreserveHops
+					fetchedNode[0].trafficManagementConfig = newConfig
+				} else {
+					fetchedNode[0].trafficManagementConfig?.enabled = config.enabled
+					fetchedNode[0].trafficManagementConfig?.positionDedupEnabled = config.positionDedupEnabled
+					fetchedNode[0].trafficManagementConfig?.positionPrecisionBits = Int32(config.positionPrecisionBits)
+					fetchedNode[0].trafficManagementConfig?.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
+					fetchedNode[0].trafficManagementConfig?.nodeinfoDirectResponse = config.nodeinfoDirectResponse
+					fetchedNode[0].trafficManagementConfig?.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
+					fetchedNode[0].trafficManagementConfig?.rateLimitEnabled = config.rateLimitEnabled
+					fetchedNode[0].trafficManagementConfig?.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
+					fetchedNode[0].trafficManagementConfig?.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
+					fetchedNode[0].trafficManagementConfig?.dropUnknownEnabled = config.dropUnknownEnabled
+					fetchedNode[0].trafficManagementConfig?.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
+					fetchedNode[0].trafficManagementConfig?.exhaustHopTelemetry = config.exhaustHopTelemetry
+					fetchedNode[0].trafficManagementConfig?.exhaustHopPosition = config.exhaustHopPosition
+					fetchedNode[0].trafficManagementConfig?.routerPreserveHops = config.routerPreserveHops
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+				Logger.data.info("💾 [TrafficManagementConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+			} else {
+				Logger.data.error("💥 [TrafficManagementConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Traffic Management Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [TrafficManagementConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
 }

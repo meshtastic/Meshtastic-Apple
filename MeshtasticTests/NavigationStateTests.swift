@@ -156,6 +156,7 @@ struct SettingsNavigationStateTests {
 			(.security, "security"),
 			(.storeAndForward, "storeAndForward"),
 			(.telemetry, "telemetry"),
+			(.trafficManagement, "trafficManagement"),
 			(.debugLogs, "debugLogs"),
 			(.appFiles, "appFiles"),
 			(.firmwareUpdates, "firmwareUpdates"),
