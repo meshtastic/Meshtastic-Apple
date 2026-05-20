@@ -67,7 +67,8 @@ struct NeighborInfoConfig: View {
 				) { fromUser, toUser in
 					var config = ModuleConfig.NeighborInfoConfig()
 					config.enabled = enabled
-					config.updateInterval = UInt32(updateInterval)
+					// A value of 0 means use the firmware default; otherwise enforce the minimum of 14400 seconds
+					config.updateInterval = updateInterval == 0 ? 0 : UInt32(max(updateInterval, 14400))
 					config.transmitOverLora = transmitOverLora
 					_ = try await accessoryManager.saveNeighborInfoModuleConfig(
 						config: config,
