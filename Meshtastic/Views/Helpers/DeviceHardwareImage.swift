@@ -44,19 +44,31 @@ private struct DeviceHardwareImageProcessor: View {
 	let hardware: [DeviceHardwareEntity]
 	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
 	
-	// We buffer the processed images in State.
-	// This prevents the Layout pass from triggering faults.
 	@State private var sortedImages: [DeviceHardwareImageEntity] = []
+	@State private var lastHardwareIdentity: Int64 = -1
+	
+	private var hardwareIdentity: Int64 {
+		hardware.first?.hwModel ?? -1
+	}
 	
 	var body: some View {
 		DeviceHardwareImageLayout(
 			images: sortedImages,
 			isLoading: meshtasticAPI.isLoadingDeviceList
 		)
-		.task(id: hardware.count) {
-			// Re-calculate only when the hardware list actually changes,
-			// NOT when the scrollview bounces or layout shifts.
-			self.sortedImages = processImages()
+		.onAppear {
+			updateImages()
+		}
+		.onChange(of: hardwareIdentity) {
+			updateImages()
+		}
+	}
+	
+	private func updateImages() {
+		let currentIdentity = hardwareIdentity
+		if currentIdentity != lastHardwareIdentity {
+			lastHardwareIdentity = currentIdentity
+			sortedImages = processImages()
 		}
 	}
 	
@@ -90,27 +102,29 @@ private struct DeviceHardwareImageLayout: View {
 	let isLoading: Bool
 	
 	var body: some View {
-		Color.clear
-			.aspectRatio(1, contentMode: .fit)
-			.overlay {
-				if images.isEmpty {
-					if isLoading {
-						ProgressView()
-					} else {
-						Image("UNSET")
-							.resizable()
-							.scaledToFit()
-					}
+		Group {
+			if images.isEmpty {
+				if isLoading {
+					ProgressView()
+						.frame(height: 120)
+						.frame(maxWidth: .infinity)
 				} else {
-					grid(images: images)
+					Image("UNSET")
+						.resizable()
+						.scaledToFit()
+						.frame(height: 120)
+						.frame(maxWidth: .infinity)
 				}
+			} else {
+				grid(images: images)
 			}
-			.clipped() // Essential for ScrollView stability
+		}
+		.clipped()
 	}
 	
 	@ViewBuilder
 	private func grid(images: [DeviceHardwareImageEntity]) -> some View {
-		let spacing: CGFloat = 10.0
+		let spacing: CGFloat = 6.0
 		
 		switch images.count {
 		case 1:
@@ -123,17 +137,17 @@ private struct DeviceHardwareImageLayout: View {
 			}
 			
 		case 3:
-			GeometryReader { proxy in
-				HStack(spacing: spacing) {
-					SingleImageView(entity: images[0])
-						.frame(width: floor(proxy.size.width * 0.6))
-					
-					VStack(spacing: spacing) {
-						SingleImageView(entity: images[1])
-						SingleImageView(entity: images[2])
-					}
+			HStack(spacing: spacing) {
+				SingleImageView(entity: images[0])
+					.frame(maxWidth: .infinity)
+				
+				VStack(spacing: spacing) {
+					SingleImageView(entity: images[1])
+					SingleImageView(entity: images[2])
 				}
+				.frame(maxWidth: .infinity)
 			}
+			.frame(height: 200)
 			
 		default: // 4 or more
 			VStack(spacing: spacing) {
@@ -156,21 +170,27 @@ private struct SingleImageView: View {
 	let entity: DeviceHardwareImageEntity
 	@State private var svg: SVG?
 	
+	private var aspectRatio: CGFloat? {
+		guard let svg = svg, svg.size.height > 0 else { return nil }
+		return svg.size.width / svg.size.height
+	}
+	
 	var body: some View {
 		Group {
 			if let svg = svg {
 				SVGView(svg: svg)
 					.resizable()
-					.aspectRatio(contentMode: .fit)
+					.aspectRatio(aspectRatio, contentMode: .fit)
 					.frame(maxWidth: .infinity, maxHeight: .infinity)
 			} else {
 				Color.clear
 			}
 		}
-		.task {
-			// Parse SVG once, prevents lag during scroll/layout
-			if self.svg == nil, let data = entity.svgData {
+		.task(id: entity.persistentModelID) {
+			if let data = entity.svgData {
 				self.svg = SVG(data: data)
+			} else {
+				self.svg = nil
 			}
 		}
 	}

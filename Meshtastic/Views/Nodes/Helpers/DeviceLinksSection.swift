@@ -124,9 +124,9 @@ struct DeviceLinksSection: View {
 							}
 						} label: {
 							HStack {
-								Text(link.linkDescription ?? link.shortCode)
-									.font(link.isVendor || !isMarketplaceLink(link) ? .body : .caption)
-									.fontWeight(link.isVendor || !isMarketplaceLink(link) ? .semibold : .regular)
+						Text(link.linkDescription ?? link.shortCode)
+							.font(link.isVendor || !isMarketplaceLink(link) ? .body : .subheadline)
+							.fontWeight(link.isVendor || !isMarketplaceLink(link) ? .semibold : .regular)
 									.foregroundStyle(.primary)
 								Spacer()
 								Image(systemName: "safari")
