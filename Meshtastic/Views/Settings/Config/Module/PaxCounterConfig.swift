@@ -18,6 +18,8 @@ struct PaxCounterConfig: View {
 	
 	@State private var enabled = false
 	@State private var paxcounterUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
+	@State private var wifiThreshold: Int32 = -80
+	@State private var bleThreshold: Int32 = -80
 	@State private var hasChanges: Bool = false
 	
 	var body: some View {
@@ -41,6 +43,34 @@ struct PaxCounterConfig: View {
 					Text("How often we can send a message to the mesh when people are detected.")
 						.foregroundColor(.gray)
 						.font(.callout)
+					HStack {
+						Label("WiFi Threshold", systemImage: "wifi")
+						Spacer()
+						TextField("WiFi Threshold", value: $wifiThreshold, format: .number)
+							.foregroundColor(.gray)
+							.multilineTextAlignment(.trailing)
+							.keyboardType(.numbersAndPunctuation)
+						Text("dBm")
+							.foregroundColor(.gray)
+					}
+					.listRowSeparator(.hidden)
+					Text("RSSI threshold for WiFi device counting. Default is −80 dBm.")
+						.foregroundColor(.gray)
+						.font(.callout)
+					HStack {
+						Label("BLE Threshold", systemImage: "antenna.radiowaves.left.and.right")
+						Spacer()
+						TextField("BLE Threshold", value: $bleThreshold, format: .number)
+							.foregroundColor(.gray)
+							.multilineTextAlignment(.trailing)
+							.keyboardType(.numbersAndPunctuation)
+						Text("dBm")
+							.foregroundColor(.gray)
+					}
+					.listRowSeparator(.hidden)
+					Text("RSSI threshold for BLE device counting. Default is −80 dBm.")
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 			} header: {
 				Text("Options")
@@ -60,6 +90,8 @@ struct PaxCounterConfig: View {
 					var config = ModuleConfig.PaxcounterConfig()
 					config.enabled = enabled
 					config.paxcounterUpdateInterval = UInt32(paxcounterUpdateInterval.intValue)
+					config.wifiThreshold = wifiThreshold
+					config.bleThreshold = bleThreshold
 					_ = try await accessoryManager.savePaxcounterModuleConfig(
 						config: config,
 						fromUser: fromUser,
@@ -108,11 +140,19 @@ struct PaxCounterConfig: View {
 		.onChange(of: paxcounterUpdateInterval.intValue) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
 			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval && newPaxcounterUpdateInterval != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
 		}
+		.onChange(of: wifiThreshold) { oldWifiThreshold, newWifiThreshold in
+			if oldWifiThreshold != newWifiThreshold && newWifiThreshold != node?.paxCounterConfig?.wifiThreshold ?? -80 { hasChanges = true }
+		}
+		.onChange(of: bleThreshold) { oldBleThreshold, newBleThreshold in
+			if oldBleThreshold != newBleThreshold && newBleThreshold != node?.paxCounterConfig?.bleThreshold ?? -80 { hasChanges = true }
+		}
 	}
 	
 	private func setPaxValues() {
 		enabled = node?.paxCounterConfig?.enabled ?? enabled
 		paxcounterUpdateInterval = UpdateInterval(from: Int(node?.paxCounterConfig?.updateInterval ?? 1800))
+		wifiThreshold = node?.paxCounterConfig?.wifiThreshold ?? -80
+		bleThreshold = node?.paxCounterConfig?.bleThreshold ?? -80
 	}
 }
 
