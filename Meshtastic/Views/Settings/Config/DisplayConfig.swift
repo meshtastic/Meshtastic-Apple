@@ -20,7 +20,6 @@ struct DisplayConfig: View {
 	@State var hasChanges = false
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
-	@State var gpsFormat = 0
 	@State var compassNorthTop = false
 	@State var wakeOnTapOrMotion = false
 	@State var flipScreen = false
