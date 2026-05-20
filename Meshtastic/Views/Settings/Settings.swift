@@ -43,7 +43,7 @@ struct Settings: View {
 			.serialConfig,
 			.storeforwardConfig,
 			.telemetryConfig
-		]) || isTAKModuleSupported()
+		]) || isTAKModuleSupported() || accessoryManager.supportsStatusMessage
 	}
 
 	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
@@ -279,6 +279,16 @@ struct Settings: View {
 						Text("Serial")
 					} icon: {
 						Image(systemName: "terminal")
+					}
+				}
+			}
+
+			if accessoryManager.supportsStatusMessage {
+				NavigationLink(value: SettingsNavigationState.statusMessage) {
+					Label {
+						Text("Status Message")
+					} icon: {
+						Image(systemName: "text.bubble")
 					}
 				}
 			}
@@ -588,6 +598,8 @@ struct Settings: View {
 					SecurityConfig(node: configNode)
 				case .serial:
 					SerialConfig(node: configNode)
+				case .statusMessage:
+					StatusMessageConfig(node: configNode)
 				case .storeAndForward:
 					StoreForwardConfig(node: configNode)
 				case .telemetry:

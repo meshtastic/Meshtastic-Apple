@@ -121,6 +121,7 @@ struct NavigationStateExtendedTests {
 			(.ringtone, "ringtone"),
 			(.serial, "serial"),
 			(.security, "security"),
+			(.statusMessage, "statusMessage"),
 			(.storeAndForward, "storeAndForward"),
 			(.telemetry, "telemetry"),
 			(.debugLogs, "debugLogs"),
