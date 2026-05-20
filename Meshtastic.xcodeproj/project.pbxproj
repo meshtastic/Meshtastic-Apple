@@ -340,6 +340,7 @@
         DD4756AB2E9F1A0000029299 /* SecurityVersionNag.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */; };
         DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
         DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */; };
+        AA00010A2F0CC00000600001 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010B2F0CC00000600001 /* AudioConfig.swift */; };
         DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
         DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */; };
         DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */; };
@@ -888,6 +889,7 @@
         DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityVersionNag.swift; sourceTree = "<group>"; };
         DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
         DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientLightingConfig.swift; sourceTree = "<group>"; };
+        AA00010B2F0CC00000600001 /* AudioConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfig.swift; sourceTree = "<group>"; };
         DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
         DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentMetricsLog.swift; sourceTree = "<group>"; };
         DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
@@ -1806,6 +1808,7 @@
             isa = PBXGroup;
             children = (
                 DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */,
+                AA00010B2F0CC00000600001 /* AudioConfig.swift */,
                 DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */,
                 DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */,
                 DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */,
@@ -2877,6 +2880,7 @@
                 DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
                 2388EC3A2EDF8A1400F6F982 /* DFUModel.swift in Sources */,
                 DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
+                AA00010A2F0CC00000600001 /* AudioConfig.swift in Sources */,
                 3D3417D22E2DC260006A988B /* MapDataManager.swift in Sources */,
                 D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,
                 D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */,
