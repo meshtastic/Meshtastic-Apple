@@ -181,6 +181,8 @@ actor MeshPackets {
 			upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum)
 		case .mqtt:
 			upsertMqttModuleConfigPacket(config: config.mqtt, nodeNum: nodeNum)
+		case .neighborInfo:
+			upsertNeighborInfoModuleConfigPacket(config: config.neighborInfo, nodeNum: nodeNum)
 		case .paxcounter:
 			upsertPaxCounterModuleConfigPacket(config: config.paxcounter, nodeNum: nodeNum)
 		case .rangeTest:

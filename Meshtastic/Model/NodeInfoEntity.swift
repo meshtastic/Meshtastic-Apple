@@ -57,6 +57,9 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .nullify, inverse: \MQTTConfigEntity.mqttConfigNode)
 	var mqttConfig: MQTTConfigEntity?
 
+	@Relationship(deleteRule: .nullify, inverse: \NeighborInfoConfigEntity.neighborInfoConfigNode)
+	var neighborInfoConfig: NeighborInfoConfigEntity?
+
 	@Relationship(deleteRule: .nullify, inverse: \MyInfoEntity.myInfoNode)
 	var myInfo: MyInfoEntity?
 

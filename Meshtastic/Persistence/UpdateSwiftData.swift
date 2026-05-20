@@ -1265,6 +1265,44 @@ extension MeshPackets {
 		}
 	}
 	
+	func upsertNeighborInfoModuleConfigPacket(config: ModuleConfig.NeighborInfoConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Neighbor Info config received: %@".localized, String(nodeNum))
+		Logger.data.info("🏘️ \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+			fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].neighborInfoConfig == nil {
+					let newConfig = NeighborInfoConfigEntity()
+					modelContext.insert(newConfig)
+					newConfig.enabled = config.enabled
+					newConfig.updateInterval = Int32(config.updateInterval)
+					newConfig.transmitOverLora = config.transmitOverLora
+					fetchedNode[0].neighborInfoConfig = newConfig
+				} else {
+					fetchedNode[0].neighborInfoConfig?.enabled = config.enabled
+					fetchedNode[0].neighborInfoConfig?.updateInterval = Int32(config.updateInterval)
+					fetchedNode[0].neighborInfoConfig?.transmitOverLora = config.transmitOverLora
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+					Logger.data.info("💾 [NeighborInfoConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
+			} else {
+				Logger.data.error("💥 [NeighborInfoConfigEntity] No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Neighbor Info Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [NeighborInfoConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
 	func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("PAX Counter config received: %@".localized, String(nodeNum))

@@ -42,6 +42,7 @@ enum SettingsNavigationState: String {
 	case detectionSensor
 	case externalNotification
 	case mqtt
+	case neighborInfo
 	case rangeTest
 	case paxCounter
 	case ringtone

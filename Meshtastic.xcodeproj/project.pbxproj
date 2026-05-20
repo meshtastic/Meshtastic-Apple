@@ -153,6 +153,7 @@
         AA000001303050030000B001 /* Color+Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002303050030000B001 /* Color+Brand.swift */; };
         AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
         AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
+        AA0002022F07A4B000600001 /* NeighborInfoConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012F07A4B000600001 /* NeighborInfoConfig.swift */; };
         AA000201CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
         AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */; };
         AA000301CPTST000000000002 /* CarPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000301CPTST000000000001 /* CarPlayTests.swift */; };
@@ -674,6 +675,7 @@
         AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
         AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
         AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
+        AA0002012F07A4B000600001 /* NeighborInfoConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeighborInfoConfig.swift; sourceTree = "<group>"; };
         AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
         AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
         AA000301CPTST000000000001 /* CarPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayTests.swift; sourceTree = "<group>"; };
@@ -1810,6 +1812,7 @@
                 DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */,
                 DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */,
                 DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
+                AA0002012F07A4B000600001 /* NeighborInfoConfig.swift */,
                 DD41582928585C32009B0E59 /* RangeTestConfig.swift */,
                 DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */,
                 DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */,
@@ -2704,6 +2707,7 @@
                 DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
                 108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */,
                 DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */,
+                AA0002022F07A4B000600001 /* NeighborInfoConfig.swift in Sources */,
                 DDDB445229F8ACF900EE2349 /* Date.swift in Sources */,
                 2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */,
                 23C2BD2B2EE8993800F6A997 /* DeviceHardwareImage.swift in Sources */,

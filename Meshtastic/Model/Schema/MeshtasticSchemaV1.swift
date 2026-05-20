@@ -43,6 +43,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			ExternalNotificationConfigEntity.self,
 			LoRaConfigEntity.self,
 			MQTTConfigEntity.self,
+			NeighborInfoConfigEntity.self,
 			NetworkConfigEntity.self,
 			PaxCounterConfigEntity.self,
 			PositionConfigEntity.self,
