@@ -27,6 +27,8 @@ struct TelemetryConfig: View {
 	@State private var powerUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
 	@State var powerScreenEnabled = false
 	@State var deviceTelemetryEnabled = false
+	@State var airQualityEnabled = false
+	@State private var airQualityInterval: UpdateInterval = UpdateInterval(from: 0)
 
 	var body: some View {
 		Form {
@@ -99,6 +101,25 @@ struct TelemetryConfig: View {
 					.tint(.accentColor)
 				}
 			}
+			Section(header: Text("Air Quality Sensor Options")) {
+				Toggle(isOn: $airQualityEnabled) {
+					Label("Air Quality Metrics Enabled", systemImage: "aqi.medium")
+				}
+				.tint(.accentColor)
+
+				if airQualityEnabled {
+					UpdateIntervalPicker(
+						config: .broadcastShort,
+						pickerLabel: "Air Quality Metrics",
+						selectedInterval: $airQualityInterval
+					)
+					.listRowSeparator(.hidden)
+					Text("How often air quality metrics are sent out over the mesh. Default is 30 minutes.")
+						.foregroundColor(.gray)
+						.font(.callout)
+						.listRowSeparator(.visible)
+				}
+			}
 			Section(header: Text("Power Sensor Options")) {
 				Toggle(isOn: $powerMeasurementEnabled) {
 					Label("Enabled", systemImage: "bolt")
@@ -140,6 +161,8 @@ struct TelemetryConfig: View {
 					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
 					tc.environmentScreenEnabled = environmentScreenEnabled
 					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
+					tc.airQualityEnabled = airQualityEnabled
+					tc.airQualityInterval = UInt32(airQualityInterval.intValue)
 					tc.powerMeasurementEnabled = powerMeasurementEnabled
 					tc.powerUpdateInterval = UInt32(powerUpdateInterval.intValue)
 					tc.powerScreenEnabled = powerScreenEnabled
@@ -181,6 +204,12 @@ struct TelemetryConfig: View {
 		.onChange(of: environmentDisplayFahrenheit) { _, newEnvDisplayF in
 			if newEnvDisplayF != node?.telemetryConfig?.environmentDisplayFahrenheit { hasChanges = true	}
 		}
+		.onChange(of: airQualityEnabled) { _, newAirQualityEnabled in
+			if newAirQualityEnabled != node?.telemetryConfig?.airQualityEnabled { hasChanges = true }
+		}
+		.onChange(of: airQualityInterval.intValue) { _, newAirQualityInterval in
+			if newAirQualityInterval != node?.telemetryConfig?.airQualityInterval ?? -1 { hasChanges = true }
+		}
 		.onChange(of: powerMeasurementEnabled) { _, newPowerMeasurementEnabled in
 			if newPowerMeasurementEnabled != node?.telemetryConfig?.powerMeasurementEnabled { hasChanges = true	}
 		}
@@ -205,6 +234,8 @@ struct TelemetryConfig: View {
 		self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
 		self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
 		self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
+		self.airQualityEnabled = node?.telemetryConfig?.airQualityEnabled ?? false
+		self.airQualityInterval = UpdateInterval(from: Int(node?.telemetryConfig?.airQualityInterval ?? 1800))
 		self.powerMeasurementEnabled = node?.telemetryConfig?.powerMeasurementEnabled ?? false
 		self.powerUpdateInterval = UpdateInterval(from: Int(node?.telemetryConfig?.powerUpdateInterval ?? 1800))
 		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false

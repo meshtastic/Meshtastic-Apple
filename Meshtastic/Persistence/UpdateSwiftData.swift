@@ -1547,6 +1547,8 @@ extension MeshPackets {
 					newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 					newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 					newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+					newTelemetryConfig.airQualityEnabled = config.airQualityEnabled
+					newTelemetryConfig.airQualityInterval = Int32(truncatingIfNeeded: config.airQualityInterval)
 					newTelemetryConfig.powerMeasurementEnabled = config.powerMeasurementEnabled
 					newTelemetryConfig.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 					newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
@@ -1558,6 +1560,8 @@ extension MeshPackets {
 					fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 					fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
 					fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+					fetchedNode[0].telemetryConfig?.airQualityEnabled = config.airQualityEnabled
+					fetchedNode[0].telemetryConfig?.airQualityInterval = Int32(truncatingIfNeeded: config.airQualityInterval)
 					fetchedNode[0].telemetryConfig?.powerMeasurementEnabled = config.powerMeasurementEnabled
 					fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 					fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
