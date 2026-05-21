@@ -57,6 +57,21 @@ Device role, serial output, debug log streaming, and node info broadcast interva
 
 Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.
 
+#### Compass Orientation
+
+Controls which direction the on-device compass points when the screen is at rest. Use this when your radio is mounted at an angle or upside-down.
+
+| Option | Description |
+|--------|-------------|
+| 0° | Default orientation — north at the top. |
+| 90° | Rotated 90° clockwise. |
+| 180° | Rotated 180° (upside-down). |
+| 270° | Rotated 270° clockwise (90° counter-clockwise). |
+| 0° Inverted | Default orientation with the display flipped (mirrored). |
+| 90° Inverted | 90° clockwise with the display flipped. |
+| 180° Inverted | 180° with the display flipped. |
+| 270° Inverted | 270° clockwise with the display flipped. |
+
 ### Network
 
 Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).
