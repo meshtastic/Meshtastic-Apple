@@ -87,6 +87,7 @@ final class DeviceConfigEntity {
 @Model
 final class DisplayConfigEntity {
 	var compassNorthTop: Bool = false
+	var compassOrientation: Int32 = 0
 	var displayMode: Int32 = 0
 	var flipScreen: Bool = false
 	var headingBold: Bool = true

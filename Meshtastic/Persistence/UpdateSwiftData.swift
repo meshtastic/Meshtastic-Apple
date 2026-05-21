@@ -734,6 +734,7 @@ extension MeshPackets {
 					newDisplayConfig.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
 					newDisplayConfig.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 					newDisplayConfig.compassNorthTop = config.compassNorthTop
+					newDisplayConfig.compassOrientation = Int32(config.compassOrientation.rawValue)
 					newDisplayConfig.flipScreen = config.flipScreen
 					newDisplayConfig.oledType = Int32(config.oled.rawValue)
 					newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
@@ -745,6 +746,7 @@ extension MeshPackets {
 					fetchedNode[0].displayConfig?.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
 					fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 					fetchedNode[0].displayConfig?.compassNorthTop = config.compassNorthTop
+					fetchedNode[0].displayConfig?.compassOrientation = Int32(config.compassOrientation.rawValue)
 					fetchedNode[0].displayConfig?.flipScreen = config.flipScreen
 					fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 					fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)

@@ -410,7 +410,6 @@
             "position",
             "pages",
             "connected",
-            "configure",
             "clockwise",
             "range",
             "only",
@@ -424,9 +423,10 @@
             "default",
             "using",
             "use",
-            "updates"
+            "updates",
+            "supported"
         ],
-        "charCount": 5866
+        "charCount": 5724
     },
     {
         "id": "signal-meter",
