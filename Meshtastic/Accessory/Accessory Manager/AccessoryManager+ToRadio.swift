@@ -48,7 +48,7 @@ extension AccessoryManager {
 			try await send(toRadio, debugDescription: logString)
 		}
 	}
-	
+
 	public func getRingtone(destNum: Int64, wantResponse: Bool) throws {
 		guard let deviceNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending RtttlConfig request.  No active device.")
@@ -176,12 +176,12 @@ extension AccessoryManager {
 			}
 		}
 	}
-	
+
 	// toConnection parameter can be used during connection process before the AccessoryManager is fully setup
 	public func sendHeartbeat(toConnection: Connection? = nil) async throws {
 		var heartbeatToRadio: ToRadio = ToRadio()
 		var heartbeatPacket = Heartbeat()
-		
+
 		// Note: at the time of writing, there was some indication that the firmware might
 		// respond to a nonce == 1 differently than other nonces.  So making this a random
 		// from 2..UInt32 max.  If additional special cases are added, can increase the
@@ -195,7 +195,7 @@ extension AccessoryManager {
 		}
 		await self.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
 	}
-	
+
 	public func sendTime() async throws {
 		guard let deviceNum = self.activeDeviceNum.map({ UInt32($0) }) else {
 			Logger.mesh.error("🚫 Unable to send time, connected node is disconnected or invalid")
@@ -221,7 +221,7 @@ extension AccessoryManager {
 		let messageDescription = "🕛 Sent Set Time Admin Message to the connected node."
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
-	
+
 	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) async throws {
 		var adminPacket = AdminMessage()
 		adminPacket.shutdownSeconds = 5
@@ -465,11 +465,11 @@ extension AccessoryManager {
 				if fetchedMyInfo.count != 1 {
 					throw AccessoryError.appError("MyInfo not found")
 				}
-				
+
 				// We are trying to add a channel so lets get the last index
 				myInfo = fetchedMyInfo[0]
 				i = Int32(myInfo.channels.count)
-				
+
 				// Bail out if the index is negative or bigger than our max of 8
 				if i < 0 || i > 8 {
 					throw AccessoryError.appError("Index out of range \(i)")
@@ -540,7 +540,7 @@ extension AccessoryManager {
 				var toRadio: ToRadio!
 				toRadio = ToRadio()
 				toRadio.packet = meshPacket
-				
+
 				let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
 				try await send(toRadio, debugDescription: logString)
 			}
@@ -566,7 +566,7 @@ extension AccessoryManager {
 				var toRadio: ToRadio!
 				toRadio = ToRadio()
 				toRadio.packet = meshPacket
-				
+
 				let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
 				try await send(toRadio, debugDescription: logString)
 			}
@@ -833,7 +833,7 @@ extension AccessoryManager {
 		guard isConnected else {
 			throw AccessoryError.ioFailed("No connected accessory")
 		}
-		
+
 		let fromUserNum = fromUser.map { UInt32($0.num) } ?? UInt32(activeDeviceNum ?? 0)
 		let toUserNum = toUser.map { UInt32($0.num) } ?? UInt32(activeDeviceNum ?? 0)
 
@@ -1524,7 +1524,7 @@ extension AccessoryManager {
 	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, mode: OTAMode, otaHash: Data) async throws {
 		var adminPacket = AdminMessage()
 		var otaRequest = AdminMessage.OTAEvent()
-		
+
 		guard otaHash.count == 32 else {
 			throw AccessoryError.ioFailed("sendRebootOta: Unable to serialize admin packet")
 		}
@@ -1532,7 +1532,7 @@ extension AccessoryManager {
 		otaRequest.otaHash = otaHash
 		otaRequest.rebootOtaMode = mode
 		adminPacket.otaRequest = otaRequest
-		
+
 		if fromUser != toUser {
 			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
 		}

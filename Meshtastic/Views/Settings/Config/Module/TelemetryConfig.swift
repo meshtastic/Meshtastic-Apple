@@ -9,13 +9,13 @@ import OSLog
 import SwiftUI
 
 struct TelemetryConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State private var deviceUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
@@ -33,7 +33,7 @@ struct TelemetryConfig: View {
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Telemetry", config: \.telemetryConfig, node: node, onAppear: setTelemetryValues)
-			
+
 			Section(header: Text("Device Options")) {
 				if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
 					Toggle(isOn: $deviceTelemetryEnabled) {
@@ -41,7 +41,7 @@ struct TelemetryConfig: View {
 						Text("Enable broadcasting device metrics to the mesh network. When disabled, metrics are only sent to connected clients.")
 					}
 					.tint(.accentColor)
-					
+
 					if deviceTelemetryEnabled {
 						UpdateIntervalPicker(
 							config: .broadcastShort,
@@ -72,12 +72,12 @@ struct TelemetryConfig: View {
 				Text("Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3.")
 					.foregroundColor(.gray)
 					.font(.callout)
-				
+
 				Toggle(isOn: $environmentMeasurementEnabled) {
 					Label("Environment Metrics Enabled", systemImage: "chart.xyaxis.line")
 				}
 				.tint(.accentColor)
-				
+
 				if environmentMeasurementEnabled {
 					UpdateIntervalPicker(
 						config: .broadcastShort,
@@ -89,12 +89,12 @@ struct TelemetryConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 						.listRowSeparator(.visible)
-					
+
 					Toggle(isOn: $environmentScreenEnabled) {
 						Label("Show on device screen", systemImage: "display")
 					}
 					.tint(.accentColor)
-					
+
 					Toggle(isOn: $environmentDisplayFahrenheit) {
 						Label("Display Fahrenheit", systemImage: "thermometer")
 					}
@@ -125,7 +125,7 @@ struct TelemetryConfig: View {
 					Label("Enabled", systemImage: "bolt")
 				}
 				.tint(.accentColor)
-				
+
 				if powerMeasurementEnabled {
 					UpdateIntervalPicker(
 						config: .broadcastShort,
@@ -225,7 +225,7 @@ struct TelemetryConfig: View {
 				hasChanges = true
 			}
 		}
-		
+
 	}
 	func setTelemetryValues() {
 		let deviceInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 1800)
@@ -239,14 +239,14 @@ struct TelemetryConfig: View {
 		self.powerMeasurementEnabled = node?.telemetryConfig?.powerMeasurementEnabled ?? false
 		self.powerUpdateInterval = UpdateInterval(from: Int(node?.telemetryConfig?.powerUpdateInterval ?? 1800))
 		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false
-		
+
 		if accessoryManager.checkIsVersionSupported(forVersion: "2.7.12") {
 			self.deviceTelemetryEnabled = node?.telemetryConfig?.deviceTelemetryEnabled ?? false
 		} else {
 			// Legacy behavior: if deviceUpdateInterval is Int32.max, telemetry is disabled
 			self.deviceTelemetryEnabled = deviceInterval != Int(Int32.max)
 		}
-		
+
 		self.hasChanges = false
 	}
 }

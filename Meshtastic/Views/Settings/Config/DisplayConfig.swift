@@ -10,13 +10,13 @@ import OSLog
 import SwiftUI
 
 struct DisplayConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State var hasChanges = false
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
@@ -29,11 +29,11 @@ struct DisplayConfig: View {
 	@State var units = 0
 	@State var use12HourClock = false
 	@State var headingBold = false
-	
+
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Display", config: \.displayConfig, node: node, onAppear: setDisplayValues)
-			
+
 			Section(header: Text("Device Screen")) {
 				
 				if accessoryManager.checkIsVersionSupported(forVersion: "2.3.13") {
@@ -61,7 +61,7 @@ struct DisplayConfig: View {
 					Text("Sets the screen clock format to 12-hour.")
 				}
 				.tint(Color.accentColor)
-				
+
 				Toggle(isOn: $headingBold) {
 					Label("Bold Heading", systemImage: "bold")
 					Text("Bold the heading text on the screen.")
@@ -89,31 +89,31 @@ struct DisplayConfig: View {
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				
+
 				VStack(alignment: .leading) {
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
 						ForEach(ScreenCarouselIntervals.allCases) { sci in
 							Text(sci.description)
 						}
 					}
-					
+
 					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
-				
+
 				Toggle(isOn: $wakeOnTapOrMotion) {
 					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
 					Text("Requires that there be an accelerometer on your device.")
 				}
 				.tint(.accentColor)
-				
+
 				Toggle(isOn: $flipScreen) {
 					Label("Flip Screen", systemImage: "pip.swap")
 					Text("Flip screen vertically")
 				}
 				.tint(.accentColor)
-				
+
 				VStack(alignment: .leading) {
 					Picker("Display Mode", selection: $displayMode ) {
 						ForEach(DisplayModes.allCases) { dm in

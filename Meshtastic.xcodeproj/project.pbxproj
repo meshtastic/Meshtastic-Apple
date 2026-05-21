@@ -1,10 +1,10 @@
 // !$*UTF8*$!
 {
-    archiveVersion = 1;
-    classes = {
-    };
-    objectVersion = 70;
-    objects = {
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
 
 /* Begin PBXBuildFile section */
 10794B232F8713CB000CA23F /* MeshtasticTAK in Frameworks */ = {isa = PBXBuildFile; productRef = 10794B222F8713CB000CA23F /* MeshtasticTAK */; };
@@ -238,7 +238,6 @@
         D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
         D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
 		D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */; };
-        D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
 		D9306A112B81FF020066FBC8 /* ConfigSaveHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */; };
         D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
         D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
@@ -479,61 +478,61 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-        25F5D5CB2C4375A8008036E3 /* PBXContainerItemProxy */ = {
-            isa = PBXContainerItemProxy;
-            containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
-            proxyType = 1;
-            remoteGlobalIDString = DDC2E15326CE248E0042C5E4;
-            remoteInfo = Meshtastic;
-        };
-        AA0005WTCH00000000CX0001 /* PBXContainerItemProxy */ = {
-            isa = PBXContainerItemProxy;
-            containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
-            proxyType = 1;
-            remoteGlobalIDString = AA0005WTCH00000000NT0001;
-            remoteInfo = "Meshtastic Watch App";
-        };
-        DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */ = {
-            isa = PBXContainerItemProxy;
-            containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
-            proxyType = 1;
-            remoteGlobalIDString = DDDE59F329AF163D00490C6C;
-            remoteInfo = WidgetsExtension;
-        };
+		25F5D5CB2C4375A8008036E3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DDC2E15326CE248E0042C5E4;
+			remoteInfo = Meshtastic;
+		};
+		AA0005WTCH00000000CX0001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0005WTCH00000000NT0001;
+			remoteInfo = "Meshtastic Watch App";
+		};
+		DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DDDE59F329AF163D00490C6C;
+			remoteInfo = WidgetsExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-        236CA24D2EE3073100A47F96 /* CopyFiles */ = {
-            isa = PBXCopyFilesBuildPhase;
-            buildActionMask = 2147483647;
-            dstPath = "";
-            dstSubfolderSpec = 7;
-            files = (
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
-        AA0005WTCH00000000CP0001 /* Embed Watch Content */ = {
-            isa = PBXCopyFilesBuildPhase;
-            buildActionMask = 2147483647;
-            dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-            dstSubfolderSpec = 16;
-            files = (
-                AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */,
-            );
-            name = "Embed Watch Content";
-            runOnlyForDeploymentPostprocessing = 0;
-        };
-        DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */ = {
-            isa = PBXCopyFilesBuildPhase;
-            buildActionMask = 2147483647;
-            dstPath = "";
-            dstSubfolderSpec = 13;
-            files = (
-                DDDE5A0329AF163E00490C6C /* WidgetsExtension.appex in Embed Foundation Extensions */,
-            );
-            name = "Embed Foundation Extensions";
-            runOnlyForDeploymentPostprocessing = 0;
-        };
+		236CA24D2EE3073100A47F96 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0005WTCH00000000CP0001 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				AA0005WTCH00000000BF0011 /* Meshtastic Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DDDE5A0329AF163E00490C6C /* WidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -1066,727 +1065,751 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-        236CA24C2EE3071A00A47F96 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-            isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-            membershipExceptions = (
-                crowpanel_2_8.svg,
-                crowpanel_3_5.svg,
-                crowpanel_5_0.svg,
-                crowpanel_7_0.svg,
-                diy.svg,
-                heltec_mesh_pocket.svg,
-                heltec_v4.svg,
-                "heltec-ht62-esp32c3-sx1262.svg",
-                "heltec-mesh-node-t114-case.svg",
-                "heltec-mesh-node-t114.svg",
-                "heltec-mesh-solar.svg",
-                "heltec-v3-case.svg",
-                "heltec-v3.svg",
-                "heltec-vision-master-e213.svg",
-                "heltec-vision-master-e290.svg",
-                "heltec-vision-master-t190.svg",
-                "heltec-wireless-paper.svg",
-                "heltec-wireless-tracker.svg",
-                "heltec-wsl-v3.svg",
-                image_manifest.json,
-                "lilygo-tlora-pager.svg",
-                m5_c6l.svg,
-                meteor_pro.svg,
-                muzi_r1_neo.svg,
-                "nano-g2-ultra.svg",
-                pico.svg,
-                promicro.svg,
-                rak_3312.svg,
-                rak_wismesh_tag.svg,
-                "rak-wismesh-tap-v2.svg",
-                "rak-wismeshtap.svg",
-                rak2560.svg,
-                rak4631_case.svg,
-                rak4631.svg,
-                rak11200.svg,
-                rak11310.svg,
-                rpipicow.svg,
-                seeed_solar.svg,
-                seeed_xiao_nrf52_kit.svg,
-                "seeed-sensecap-indicator.svg",
-                "seeed-xiao-s3.svg",
-                "station-g2.svg",
-                "t-deck.svg",
-                "t-echo.svg",
-                "t-watch-s3.svg",
-                "tbeam-s3-core.svg",
-                tbeam.svg,
-                tdeck_pro.svg,
-                techo_lite.svg,
-                thinknode_m1.svg,
-                thinknode_m2.svg,
-                "tlora-t3s3-epaper.svg",
-                "tlora-t3s3-v1.svg",
-                "tlora-v2-1-1_6.svg",
-                "tlora-v2-1-1_8.svg",
-                "tracker-t1000-e.svg",
-                wio_tracker_l1_case.svg,
-                wio_tracker_l1_eink.svg,
-                "wio-tracker-wm1110.svg",
-            );
-            target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
-        };
+		236CA24C2EE3071A00A47F96 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				crowpanel_2_8.svg,
+				crowpanel_3_5.svg,
+				crowpanel_5_0.svg,
+				crowpanel_7_0.svg,
+				diy.svg,
+				heltec_mesh_pocket.svg,
+				heltec_v4.svg,
+				"heltec-ht62-esp32c3-sx1262.svg",
+				"heltec-mesh-node-t114-case.svg",
+				"heltec-mesh-node-t114.svg",
+				"heltec-mesh-solar.svg",
+				"heltec-v3-case.svg",
+				"heltec-v3.svg",
+				"heltec-vision-master-e213.svg",
+				"heltec-vision-master-e290.svg",
+				"heltec-vision-master-t190.svg",
+				"heltec-wireless-paper.svg",
+				"heltec-wireless-tracker.svg",
+				"heltec-wsl-v3.svg",
+				image_manifest.json,
+				"lilygo-tlora-pager.svg",
+				m5_c6l.svg,
+				meteor_pro.svg,
+				muzi_r1_neo.svg,
+				"nano-g2-ultra.svg",
+				pico.svg,
+				promicro.svg,
+				rak_3312.svg,
+				rak_wismesh_tag.svg,
+				"rak-wismesh-tap-v2.svg",
+				"rak-wismeshtap.svg",
+				rak2560.svg,
+				rak4631_case.svg,
+				rak4631.svg,
+				rak11200.svg,
+				rak11310.svg,
+				rpipicow.svg,
+				seeed_solar.svg,
+				seeed_xiao_nrf52_kit.svg,
+				"seeed-sensecap-indicator.svg",
+				"seeed-xiao-s3.svg",
+				"station-g2.svg",
+				"t-deck.svg",
+				"t-echo.svg",
+				"t-watch-s3.svg",
+				"tbeam-s3-core.svg",
+				tbeam.svg,
+				tdeck_pro.svg,
+				techo_lite.svg,
+				thinknode_m1.svg,
+				thinknode_m2.svg,
+				"tlora-t3s3-epaper.svg",
+				"tlora-t3s3-v1.svg",
+				"tlora-v2-1-1_6.svg",
+				"tlora-v2-1-1_8.svg",
+				"tracker-t1000-e.svg",
+				wio_tracker_l1_case.svg,
+				wio_tracker_l1_eink.svg,
+				"wio-tracker-wm1110.svg",
+			);
+			target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-        236CA20D2EE3036A00A47F96 /* images */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (236CA24C2EE3071A00A47F96 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = images; sourceTree = "<group>"; };
-        DD4C11E02E8099C3003F2F2E /* PreferenceKeys */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PreferenceKeys; sourceTree = "<group>"; };
+		236CA20D2EE3036A00A47F96 /* images */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (236CA24C2EE3071A00A47F96 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = images; sourceTree = "<group>"; };
+		DD4C11E02E8099C3003F2F2E /* PreferenceKeys */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PreferenceKeys; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-        25F5D5C42C4375A8008036E3 /* Frameworks */ = {
-            isa = PBXFrameworksBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-                DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */,
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
-        AA0005WTCH00000000FP0001 /* Frameworks */ = {
-            isa = PBXFrameworksBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
-        DDC2E15126CE248E0042C5E4 /* Frameworks */ = {
-            isa = PBXFrameworksBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-                102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */,
-                25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
-                102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */,
-                102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */,
-                102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */,
-                2315D1A82EEF2ED400E0FAE7 /* SwiftDraw in Frameworks */,
-                AA009SMD0000000000000003 /* Markdown in Frameworks */,
-                DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
-                10794B232F8713CB000CA23F /* MeshtasticTAK in Frameworks */,
-                2388EC382EDF88E900F6F982 /* NordicDFU in Frameworks */,
-                10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */,
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
-        DDDE59F129AF163D00490C6C /* Frameworks */ = {
-            isa = PBXFrameworksBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-                DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */,
-                DDDE59F529AF163D00490C6C /* WidgetKit.framework in Frameworks */,
-                25A978BC2C13F90D0003AAE7 /* MeshtasticProtobufs in Frameworks */,
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
+		25F5D5C42C4375A8008036E3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0005WTCH00000000FP0001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDC2E15126CE248E0042C5E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DAC1B8092FBB1E1400F8F586 /* Markdown in Frameworks */,
+				102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */,
+				25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
+				102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */,
+				102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */,
+				102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */,
+				2315D1A82EEF2ED400E0FAE7 /* SwiftDraw in Frameworks */,
+				DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */,
+				10794B232F8713CB000CA23F /* MeshtasticTAK in Frameworks */,
+				2388EC382EDF88E900F6F982 /* NordicDFU in Frameworks */,
+				10D109F42E2047D600536CE6 /* DatadogTrace in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDDE59F129AF163D00490C6C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */,
+				DDDE59F529AF163D00490C6C /* WidgetKit.framework in Frameworks */,
+				25A978BC2C13F90D0003AAE7 /* MeshtasticProtobufs in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-        23148E2E2EE1CCB100F0DB2C /* API */ = {
-            isa = PBXGroup;
-            children = (
-                23DC51382EE76DA20023838A /* Helpers */,
-                23148E2F2EE1CCE500F0DB2C /* MeshtasticAPI.swift */,
-            );
-            path = API;
-            sourceTree = "<group>";
-        };
-        2315D19E2EECB42D00E0FAE7 /* UF2 Mass Storage */ = {
-            isa = PBXGroup;
-            children = (
-                2315D19F2EECB44800E0FAE7 /* UF2MassStorageView.swift */,
-            );
-            path = "UF2 Mass Storage";
-            sourceTree = "<group>";
-        };
-        2315D1A32EED94D700E0FAE7 /* Firmware */ = {
-            isa = PBXGroup;
-            children = (
-                23C2BE292EEAF96A00F6A997 /* FirmwareViewModel.swift */,
-                2315D1A42EED94E800E0FAE7 /* FirmwareFile.swift */,
-            );
-            path = Firmware;
-            sourceTree = "<group>";
-        };
-        23196C712EF42D4300B1504B /* Helpers */ = {
-            isa = PBXGroup;
-            children = (
-                23196C6F2EF42D3D00B1504B /* CircularProgressView.swift */,
-            );
-            path = Helpers;
-            sourceTree = "<group>";
-        };
-        231B3F1E2D0879BC0069A07D /* Metrics Visualization */ = {
-            isa = PBXGroup;
-            children = (
-                2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */,
-                231B3F202D087A4C0069A07D /* MetricTableColumn.swift */,
-                231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */,
-                2373AE142D0A24930086C749 /* MetricsSeriesList.swift */,
-            );
-            path = "Metrics Visualization";
-            sourceTree = "<group>";
-        };
-        231B3F232D087C020069A07D /* Metrics Columns */ = {
-            isa = PBXGroup;
-            children = (
-                231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */,
-                2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */,
-                231B3F262D0885240069A07D /* MetricsColumnDetail.swift */,
-            );
-            path = "Metrics Columns";
-            sourceTree = "<group>";
-        };
-        233E99B42D849C2D00CC3A77 /* Compact Widgets */ = {
-            isa = PBXGroup;
-            children = (
-                233E99C42D84A0B600CC3A77 /* CompactWidget.swift */,
-                233E99B72D849C6500CC3A77 /* HumidityCompactWidget.swift */,
-                233E99B52D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift */,
-                233E99B92D849C7000CC3A77 /* PressureCompactWidget.swift */,
-                233E99BB2D849C8C00CC3A77 /* WindCompactWidget.swift */,
-                DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
-                233E99BD2D849D3200CC3A77 /* RadiationCompactWidget.swift */,
-                233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */,
-                233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */,
-                233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */,
-                233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */,
-            );
-            path = "Compact Widgets";
-            sourceTree = "<group>";
-        };
-        234D99E62F96FD3F00D26B89 /* Nymea */ = {
-            isa = PBXGroup;
-            children = (
-                234D99E42F96FD3F00D26B89 /* NymeaConstants.swift */,
-                234D99E52F96FD3F00D26B89 /* NymeaSession.swift */,
-            );
-            path = Nymea;
-            sourceTree = "<group>";
-        };
-        234D99E82F96FD3F00D26B89 /* Provisioning */ = {
-            isa = PBXGroup;
-            children = (
-                234D99E62F96FD3F00D26B89 /* Nymea */,
-                234D99E72F96FD3F00D26B89 /* NymeaProvisioningManager.swift */,
-            );
-            path = Provisioning;
-            sourceTree = "<group>";
-        };
-        234D99EE2F96FD5A00D26B89 /* Provisioning */ = {
-            isa = PBXGroup;
-            children = (
-                234D99EC2F96FD5A00D26B89 /* WifiNetworkListView.swift */,
-                234D99ED2F96FD5A00D26B89 /* WifiProvisioningView.swift */,
-            );
-            path = Provisioning;
-            sourceTree = "<group>";
-        };
-        237AEB8D2E1FE120003B7CE3 /* Accessory */ = {
-            isa = PBXGroup;
-            children = (
-                23D9D9312E50DA0E005D1C18 /* Protocols */,
-                23D9D9322E50DA1F005D1C18 /* Accessory Manager */,
-                23D9D9332E50DA33005D1C18 /* Transports */,
-                23D9D9372E50DA81005D1C18 /* Helpers */,
-            );
-            path = Accessory;
-            sourceTree = "<group>";
-        };
-        23825FFA2EF6E6EC00C25543 /* WiFi */ = {
-            isa = PBXGroup;
-            children = (
-                23196A6D2EF1BA9100B1504B /* ESP32WifiOTAViewModel.swift */,
-                23825FF82EF6D9AA00C25543 /* ESP32WifiOTASheet.swift */,
-            );
-            path = WiFi;
-            sourceTree = "<group>";
-        };
-        23825FFB2EF6E6FB00C25543 /* BLE */ = {
-            isa = PBXGroup;
-            children = (
-                23825FFE2EF6E79C00C25543 /* ESP32BLEOTASheet.swift */,
-                230A983F2EF86A44004D87F1 /* AsyncCentral.swift */,
-                230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift */,
-            );
-            path = BLE;
-            sourceTree = "<group>";
-        };
-        23C2BD272EE87CFD00F6A997 /* Debugging */ = {
-            isa = PBXGroup;
-            children = (
-                23C2BD282EE87D0300F6A997 /* CoreDataBrowser.swift */,
-            );
-            path = Debugging;
-            sourceTree = "<group>";
-        };
-        23C2BE282EEAF91900F6A997 /* Firmware */ = {
-            isa = PBXGroup;
-            children = (
-                DDD6EEAE29BC024700383354 /* Firmware.swift */,
-                2315D19E2EECB42D00E0FAE7 /* UF2 Mass Storage */,
-                23C2BE322EEC3F7800F6A997 /* ESP32 OTA */,
-                23C2BE2F2EEB821400F6A997 /* NRF DFU */,
-                23196C712EF42D4300B1504B /* Helpers */,
-            );
-            path = Firmware;
-            sourceTree = "<group>";
-        };
-        23C2BE2F2EEB821400F6A997 /* NRF DFU */ = {
-            isa = PBXGroup;
-            children = (
-                2388EC392EDF8A1400F6F982 /* DFUModel.swift */,
-                23C2BE302EEB823900F6A997 /* NRFDFUSheet.swift */,
-            );
-            path = "NRF DFU";
-            sourceTree = "<group>";
-        };
-        23C2BE322EEC3F7800F6A997 /* ESP32 OTA */ = {
-            isa = PBXGroup;
-            children = (
-                23C873E12EF9B57D00BFEA7B /* Helpers */,
-                23825FFB2EF6E6FB00C25543 /* BLE */,
-                23825FFA2EF6E6EC00C25543 /* WiFi */,
-                23C2BE332EEC3F9600F6A997 /* ESP32OTAIntroSheet.swift */,
-            );
-            path = "ESP32 OTA";
-            sourceTree = "<group>";
-        };
-        23C873E12EF9B57D00BFEA7B /* Helpers */ = {
-            isa = PBXGroup;
-            children = (
-                23C873E22EF9B58C00BFEA7B /* OTAEnums.swift */,
-            );
-            path = Helpers;
-            sourceTree = "<group>";
-        };
-        23D9D9312E50DA0E005D1C18 /* Protocols */ = {
-            isa = PBXGroup;
-            children = (
-                237AEB8E2E1FE456003B7CE3 /* Transport.swift */,
-                237AEB922E1FE4BA003B7CE3 /* Connection.swift */,
-                237AEB942E1FE516003B7CE3 /* Device.swift */,
-            );
-            path = Protocols;
-            sourceTree = "<group>";
-        };
-        23D9D9322E50DA1F005D1C18 /* Accessory Manager */ = {
-            isa = PBXGroup;
-            children = (
-                237AEB902E1FE46D003B7CE3 /* AccessoryManager.swift */,
-                23F488112E32980B002C776F /* AccessoryManager+Position.swift */,
-                23FF00B52E323C75001DF095 /* AccessoryManager+Connect.swift */,
-                230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */,
-                23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */,
-                23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */,
-                23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */,
-                82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */,
-            );
-            path = "Accessory Manager";
-            sourceTree = "<group>";
-        };
-        23D9D9332E50DA33005D1C18 /* Transports */ = {
-            isa = PBXGroup;
-            children = (
-                23D9D9342E50DA40005D1C18 /* Bluetooth Low Energy */,
-                23D9D9352E50DA4D005D1C18 /* TCP */,
-                23D9D9362E50DA5A005D1C18 /* Serial */,
-            );
-            path = Transports;
-            sourceTree = "<group>";
-        };
-        23D9D9342E50DA40005D1C18 /* Bluetooth Low Energy */ = {
-            isa = PBXGroup;
-            children = (
-                237AEB962E1FE627003B7CE3 /* BLETransport.swift */,
-                237AEB982E20098B003B7CE3 /* BLEConnection.swift */,
-                231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */,
-            );
-            path = "Bluetooth Low Energy";
-            sourceTree = "<group>";
-        };
-        23D9D9352E50DA4D005D1C18 /* TCP */ = {
-            isa = PBXGroup;
-            children = (
-                232ED4C22E2C5E89009DA392 /* TCPTransport.swift */,
-                232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */,
-            );
-            path = TCP;
-            sourceTree = "<group>";
-        };
-        23D9D9362E50DA5A005D1C18 /* Serial */ = {
-            isa = PBXGroup;
-            children = (
-                2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */,
-                2346A7182E2FB9A300CB9239 /* SerialConnection.swift */,
-            );
-            path = Serial;
-            sourceTree = "<group>";
-        };
-        23D9D9372E50DA81005D1C18 /* Helpers */ = {
-            isa = PBXGroup;
-            children = (
-                23D316922E5618D2002FA4FB /* AsyncGate.swift */,
-                23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */,
-                23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */,
-                2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */,
-            );
-            path = Helpers;
-            sourceTree = "<group>";
-        };
-        23DC51382EE76DA20023838A /* Helpers */ = {
-            isa = PBXGroup;
-            children = (
-                2315D19C2EECB3D400E0FAE7 /* UTI+UF2.swift */,
-                23DC50BA2EE76D9C0023838A /* URL+fetch.swift */,
-            );
-            path = Helpers;
-            sourceTree = "<group>";
-        };
-        251926882C3BAF2E00249DF5 /* Actions */ = {
-            isa = PBXGroup;
-            children = (
-                DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */,
-                DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
-                251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
-                251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
-                DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */,
-                251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */,
-                2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */,
-                2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */,
-                251926912C3CB52300249DF5 /* DeleteNodeButton.swift */,
-            );
-            path = Actions;
-            sourceTree = "<group>";
-        };
-        25F5D5BC2C3F6D7B008036E3 /* Router */ = {
-            isa = PBXGroup;
-            children = (
-                25F5D5BD2C3F6D87008036E3 /* NavigationState.swift */,
-                25F5D5BF2C3F6DA6008036E3 /* Router.swift */,
-            );
-            path = Router;
-            sourceTree = "<group>";
-        };
-        25F5D5C82C4375A8008036E3 /* MeshtasticTests */ = {
-            isa = PBXGroup;
-            children = (
-                AA00010022E2730EC0060000 /* ConnectViewTests.swift */,
-                DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
-                25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
-                AA000301CPTST000000000001 /* CarPlayTests.swift */,
-                DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */,
-                DD000002STREXTTST00000000 /* StringExtensionTests.swift */,
-                DD000003NUMEXTTST00000000 /* NumericExtensionTests.swift */,
-                DD000004URLTST0000000000 /* URLExtensionTests.swift */,
-                DD000005ENUMTST000000000 /* EnumTests.swift */,
-                DD000006GEOTST0000000000 /* GeoExtensionTests.swift */,
-                DD000007LORATST000000000 /* LoraDeviceEnumTests.swift */,
-                AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */,
-                64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */,
-                AA003DOC0000001000000005 /* DocBundleTests.swift */,
-                DD000008APPSTST000000000 /* AppSettingsEnumTests.swift */,
-                DD000009INTVTST000000000 /* IntervalEnumTests.swift */,
-                DD00000AEXTNTST000000000 /* ExtensionTests.swift */,
-                DD00000BTAKCTST000000000 /* TAKCodecTests.swift */,
-                DD00000CCOTTST0000000000 /* CoTMessageTests.swift */,
-                DD00000DGEOJSNTST0000000 /* GeoJSONTests.swift */,
-                DD00000ETAKBRGTST0000000 /* TAKBridgeTests.swift */,
-                DD00000FCOTXMLTST0000000 /* CoTXMLParserTests.swift */,
-                DD000010GENCOTTST0000000 /* GenericCoTHandlerTests.swift */,
-                DD000011UTILENTST0000000 /* UtilityAndEnumTests.swift */,
-                DD000012COTEXTTST0000000 /* CoTExtensionTests.swift */,
-                DD000013FWAPITST00000000 /* FirmwareAndAPITests.swift */,
-                DD000014RTRDLTST00000000 /* RouterDeepLinkTests.swift */,
-                DD000016NAVSTATST00000000 /* NavigationStateTests.swift */,
-                DD000017MTRVZTST00000000 /* MetricsVisualizationTests.swift */,
-                DD000018RTMISCTST0000000 /* RoutingAndMiscTests.swift */,
-                DD000019NYMEACTST0000000 /* NymeaConstantsTests.swift */,
-                DD00001AASYNCCTST0000000 /* AsyncConcurrencyTests.swift */,
-                DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */,
-                DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */,
-                DD00001DCDENTTST00000000 /* EntityTests.swift */,
-                DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */,
-                DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */,
-                DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */,
-                DD000021ENMCMPTST0000000 /* EnumComprehensiveTests.swift */,
-                DD000022GEOJSNCFG0000000 /* GeoJSONOverlayConfigTests.swift */,
-                DD000023EXTDETTST0000000 /* ExtensionDetailedTests.swift */,
-                DD000024ENMBATTST0000000 /* EnumBatchTests.swift */,
-                DD000025COTMSGDTL0000000 /* CoTMessageDetailedTests.swift */,
-                DD000026STREXTDTL0000000 /* StringExtensionDetailedTests.swift */,
-                DD000027REMEUTLTST000000 /* RemainingEnumAndUtilTests.swift */,
-                DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */,
-                DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */,
-                DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */,
-                DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */,
-                AA004FMT0000001000000004 /* MarkdownFormattingTests.swift */,
-                DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */,
-                DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */,
-                DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */,
-                AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
-                AA003DOC0000001000000008 /* DocTranslationTests.swift */,
-            );
-            path = MeshtasticTests;
-            sourceTree = "<group>";
-        };
-        5EC3D356BFF0031F67B3499A /* Services */ = {
-            isa = PBXGroup;
-            children = (
-                FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */,
-            );
-            path = Services;
-            sourceTree = "<group>";
-        };
-        71084780865585DCE48BD08F /* Discovery */ = {
-            isa = PBXGroup;
-            children = (
-                F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */,
-                4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */,
-                F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */,
-                41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */,
-                4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */,
-            );
-            path = Discovery;
-            sourceTree = "<group>";
-        };
-        AA000201CPLAY000000000005 /* CarPlay */ = {
-            isa = PBXGroup;
-            children = (
-                AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */,
-                AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */,
-            );
-            path = CarPlay;
-            sourceTree = "<group>";
-        };
-        AA0005WTCH00000000GR0001 /* Meshtastic Watch App */ = {
-            isa = PBXGroup;
-            children = (
-                AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */,
-                AA0005WTCH00000000FR0002 /* ContentView.swift */,
-                AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */,
-                AA0005WTCH00000000FR0009 /* Assets.xcassets */,
-                AA0005WTCH00000000GR0002 /* Managers */,
-                AA0005WTCH00000000GR0003 /* Models */,
-                AA0005WTCH00000000GR0004 /* Views */,
-            );
-            path = "Meshtastic Watch App";
-            sourceTree = "<group>";
-        };
-        AA0005WTCH00000000GR0002 /* Managers */ = {
-            isa = PBXGroup;
-            children = (
-                AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */,
-                AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */,
-            );
-            path = Managers;
-            sourceTree = "<group>";
-        };
-        AA0005WTCH00000000GR0003 /* Models */ = {
-            isa = PBXGroup;
-            children = (
-                AA0005WTCH00000000FR0003 /* MeshNode.swift */,
-            );
-            path = Models;
-            sourceTree = "<group>";
-        };
-        AA0005WTCH00000000GR0004 /* Views */ = {
-            isa = PBXGroup;
-            children = (
-                AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */,
-                AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */,
-                AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */,
-                AA0005WTCH00000000FR0013 /* WatchCircleText.swift */,
-            );
-            path = Views;
-            sourceTree = "<group>";
-        };
-        AA003DOC0000003000000001 /* HelpAndDocumentation */ = {
-            isa = PBXGroup;
-            children = (
-                AA003DOC0000001000000001 /* DocModels.swift */,
-                AA003DOC0000001000000002 /* DocBrowserView.swift */,
-                AA003DOC0000001000000003 /* DocPageView.swift */,
-                AA003DOC0000001000000004 /* AIDocAssistantView.swift */,
-                AA003DOC0000001000000006 /* DocTranslationService.swift */,
-            );
-            path = HelpAndDocumentation;
-            sourceTree = "<group>";
-        };
-        BCB6137F2C6728E700485544 /* AppIntents */ = {
-            isa = PBXGroup;
-            children = (
-                BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */,
-                BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */,
-                BCB613802C67290800485544 /* SendWaypointIntent.swift */,
-                BCB613822C672A2600485544 /* MessageChannelIntent.swift */,
-                BCB613842C68703800485544 /* NodePositionIntent.swift */,
-                BCB613862C69A0FB00485544 /* AppIntentErrors.swift */,
-                BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */,
-                BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */,
-                BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */,
-                BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */,
-                BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */,
-                BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */,
-            );
-            path = AppIntents;
-            sourceTree = "<group>";
-        };
-        C37572859BC745C4284A9B42 /* TAK */ = {
-            isa = PBXGroup;
-            children = (
-                4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */,
-                748E4806582595DE80D455CD /* CoTXMLParser.swift */,
-                09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */,
-                01028778B8BFD81F7A039593 /* TAKConnection.swift */,
-                87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */,
-                10794B242F8C2C90000CA23F /* RouteDataPackageGenerator.swift */,
-                2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */,
-                9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */,
-                3F203877F307073096C89179 /* FountainCodec.swift */,
-                3D0A8ABAEF1E587683970927 /* EXICodec.swift */,
-                7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */,
-            );
-            path = TAK;
-            sourceTree = "<group>";
-        };
-        D05BD108B673E15AD4B01BC8 /* Intents */ = {
-            isa = PBXGroup;
-            children = (
-                CA63632A10C2DD076FA222BE /* IntentHandler.swift */,
-                39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */,
-                5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */,
-                0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */,
-                CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */,
-            );
-            path = Intents;
-            sourceTree = "<group>";
-        };
-        D952A49BD44F4EB19722C716 /* Schema */ = {
-            isa = PBXGroup;
-            children = (
-                05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */,
-                1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */,
-            );
-            path = Schema;
-            sourceTree = "<group>";
-        };
-        D9C9839E2B79D0C600BDBE6A /* TextMessageField */ = {
-            isa = PBXGroup;
-            children = (
-                B3E905B02B71F7F300654D07 /* TextMessageField.swift */,
-                AA004FMT0000001000000002 /* FormattingToolbarButtons.swift */,
-                AA004FMT0000001000000003 /* MessagePreview.swift */,
-                D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */,
-                D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */,
-                D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */,
-            );
-            path = TextMessageField;
-            sourceTree = "<group>";
-        };
-        DD007BB12AA59B9A00F5FA12 /* SwiftData */ = {
-            isa = PBXGroup;
-            children = (
-                108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */,
-                DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
-                6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
-                DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */,
-                DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */,
-                DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
-                DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
-                DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
-                DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */,
-                DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */,
-            );
-            path = SwiftData;
-            sourceTree = "<group>";
-        };
-        DD1BD0EC2C603C5B008C0C70 /* Measurement */ = {
-            isa = PBXGroup;
-            children = (
-                DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */,
-            );
-            path = Measurement;
-            sourceTree = "<group>";
-        };
-        DD47E3CA26F0E50300029299 /* Nodes */ = {
-            isa = PBXGroup;
-            children = (
-                DDDB26402AABEF7B003AFCB7 /* Helpers */,
-                DDDB263E2AABEE20003AFCB7 /* NodeList.swift */,
-                DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
-                DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */,
-                B990EE65E4D5CABBA4DD8DC2 /* MapWindow.swift */,
-                DD73FD1028750779000852D6 /* PositionLog.swift */,
-                DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
-                6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
-                DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */,
-                DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */,
-                8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */,
-            );
-            path = Nodes;
-            sourceTree = "<group>";
-        };
-        DD47E3D726F2F21A00029299 /* Connect */ = {
-            isa = PBXGroup;
-            children = (
-                DD836AE626F6B38600ABCC23 /* Connect.swift */,
-                DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */,
-                DD86D409287F04F100BAEB7A /* InvalidVersion.swift */,
-            );
-            path = Connect;
-            sourceTree = "<group>";
-        };
-        DD4A911C2708C57100501B7E /* Settings */ = {
-            isa = PBXGroup;
-            children = (
-                DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */,
-                DDD5BB0E2C285F92007E03CA /* Logs */,
-                DD93800C2BA74CE3008BEC06 /* Channels */,
-                DD61937A2863876A00E59241 /* Config */,
-                23C2BE282EEAF91900F6A997 /* Firmware */,
-                DD97E96728EFE9A00056DDA4 /* About.swift */,
-                DDD5BB152C28B1E4007E03CA /* AppData.swift */,
-                DDD5BB082C285DDC007E03CA /* AppLog.swift */,
-                DD4A911D2708C65400501B7E /* AppSettings.swift */,
-                ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */,
-                DDA0B6B1294CDC55001356EC /* Channels.swift */,
-                DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
-                DDAB580C2B0DAA9E00147258 /* Routes.swift */,
-                DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */,
-                DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
-                DD3501882852FC3B000FC853 /* Settings.swift */,
-                DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
-                DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
-                ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */,
-                0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */,
-                1D5AD8037A0D583C614B0597 /* Tools.swift */,
-                71084780865585DCE48BD08F /* Discovery */,
-                AA003DOC0000003000000001 /* HelpAndDocumentation */,
-            );
-            path = Settings;
-            sourceTree = "<group>";
-        };
-        DD5E523D298F5A7D00D21B61 /* Weather */ = {
-            isa = PBXGroup;
-            children = (
-                DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */,
-                DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */,
-                DD354FD82BD96A0B0061A25F /* IAQScale.swift */,
-                DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
-                DD3D17DF2C3FB67200561584 /* LocalWeatherConditions.swift */,
-            );
-            path = Weather;
-            sourceTree = "<group>";
-        };
-        DD61937A2863876A00E59241 /* Config */ = {
-            isa = PBXGroup;
-            children = (
-                DD61937B2863877A00E59241 /* Module */,
-                D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
+		23148E2E2EE1CCB100F0DB2C /* API */ = {
+			isa = PBXGroup;
+			children = (
+				23DC51382EE76DA20023838A /* Helpers */,
+				23148E2F2EE1CCE500F0DB2C /* MeshtasticAPI.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
+		2315D19E2EECB42D00E0FAE7 /* UF2 Mass Storage */ = {
+			isa = PBXGroup;
+			children = (
+				2315D19F2EECB44800E0FAE7 /* UF2MassStorageView.swift */,
+			);
+			path = "UF2 Mass Storage";
+			sourceTree = "<group>";
+		};
+		2315D1A32EED94D700E0FAE7 /* Firmware */ = {
+			isa = PBXGroup;
+			children = (
+				23C2BE292EEAF96A00F6A997 /* FirmwareViewModel.swift */,
+				2315D1A42EED94E800E0FAE7 /* FirmwareFile.swift */,
+			);
+			path = Firmware;
+			sourceTree = "<group>";
+		};
+		23196C712EF42D4300B1504B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				23196C6F2EF42D3D00B1504B /* CircularProgressView.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		231B3F1E2D0879BC0069A07D /* Metrics Visualization */ = {
+			isa = PBXGroup;
+			children = (
+				2373AE122D0A216C0086C749 /* MetricsChartSeries.swift */,
+				231B3F202D087A4C0069A07D /* MetricTableColumn.swift */,
+				231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */,
+				2373AE142D0A24930086C749 /* MetricsSeriesList.swift */,
+			);
+			path = "Metrics Visualization";
+			sourceTree = "<group>";
+		};
+		231B3F232D087C020069A07D /* Metrics Columns */ = {
+			isa = PBXGroup;
+			children = (
+				231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */,
+				2373AE162D0A26620086C749 /* EnvironmentDefaultSeries.swift */,
+				231B3F262D0885240069A07D /* MetricsColumnDetail.swift */,
+			);
+			path = "Metrics Columns";
+			sourceTree = "<group>";
+		};
+		233E99B42D849C2D00CC3A77 /* Compact Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				233E99C42D84A0B600CC3A77 /* CompactWidget.swift */,
+				233E99B72D849C6500CC3A77 /* HumidityCompactWidget.swift */,
+				233E99B52D849C3D00CC3A77 /* WeatherConditionsCompactWidget.swift */,
+				233E99B92D849C7000CC3A77 /* PressureCompactWidget.swift */,
+				233E99BB2D849C8C00CC3A77 /* WindCompactWidget.swift */,
+				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
+				233E99BD2D849D3200CC3A77 /* RadiationCompactWidget.swift */,
+				233E99C02D849D6000CC3A77 /* DistanceCompactWidget.swift */,
+				233E99C22D849D7A00CC3A77 /* WeightCompactWidget.swift */,
+				233E99C62D84A70900CC3A77 /* SoilCompactWidgets.swift */,
+				233E99CA2D85AAA900CC3A77 /* RainfallCompactWidget.swift */,
+			);
+			path = "Compact Widgets";
+			sourceTree = "<group>";
+		};
+		234D99E62F96FD3F00D26B89 /* Nymea */ = {
+			isa = PBXGroup;
+			children = (
+				234D99E42F96FD3F00D26B89 /* NymeaConstants.swift */,
+				234D99E52F96FD3F00D26B89 /* NymeaSession.swift */,
+			);
+			path = Nymea;
+			sourceTree = "<group>";
+		};
+		234D99E82F96FD3F00D26B89 /* Provisioning */ = {
+			isa = PBXGroup;
+			children = (
+				234D99E62F96FD3F00D26B89 /* Nymea */,
+				234D99E72F96FD3F00D26B89 /* NymeaProvisioningManager.swift */,
+			);
+			path = Provisioning;
+			sourceTree = "<group>";
+		};
+		234D99EE2F96FD5A00D26B89 /* Provisioning */ = {
+			isa = PBXGroup;
+			children = (
+				234D99EC2F96FD5A00D26B89 /* WifiNetworkListView.swift */,
+				234D99ED2F96FD5A00D26B89 /* WifiProvisioningView.swift */,
+			);
+			path = Provisioning;
+			sourceTree = "<group>";
+		};
+		237AEB8D2E1FE120003B7CE3 /* Accessory */ = {
+			isa = PBXGroup;
+			children = (
+				23D9D9312E50DA0E005D1C18 /* Protocols */,
+				23D9D9322E50DA1F005D1C18 /* Accessory Manager */,
+				23D9D9332E50DA33005D1C18 /* Transports */,
+				23D9D9372E50DA81005D1C18 /* Helpers */,
+			);
+			path = Accessory;
+			sourceTree = "<group>";
+		};
+		23825FFA2EF6E6EC00C25543 /* WiFi */ = {
+			isa = PBXGroup;
+			children = (
+				23196A6D2EF1BA9100B1504B /* ESP32WifiOTAViewModel.swift */,
+				23825FF82EF6D9AA00C25543 /* ESP32WifiOTASheet.swift */,
+			);
+			path = WiFi;
+			sourceTree = "<group>";
+		};
+		23825FFB2EF6E6FB00C25543 /* BLE */ = {
+			isa = PBXGroup;
+			children = (
+				23825FFE2EF6E79C00C25543 /* ESP32BLEOTASheet.swift */,
+				230A983F2EF86A44004D87F1 /* AsyncCentral.swift */,
+				230A98412EF86AA9004D87F1 /* ESP32BLEOTAViewModel.swift */,
+			);
+			path = BLE;
+			sourceTree = "<group>";
+		};
+		23C2BD272EE87CFD00F6A997 /* Debugging */ = {
+			isa = PBXGroup;
+			children = (
+				23C2BD282EE87D0300F6A997 /* CoreDataBrowser.swift */,
+			);
+			path = Debugging;
+			sourceTree = "<group>";
+		};
+		23C2BE282EEAF91900F6A997 /* Firmware */ = {
+			isa = PBXGroup;
+			children = (
+				DDD6EEAE29BC024700383354 /* Firmware.swift */,
+				2315D19E2EECB42D00E0FAE7 /* UF2 Mass Storage */,
+				23C2BE322EEC3F7800F6A997 /* ESP32 OTA */,
+				23C2BE2F2EEB821400F6A997 /* NRF DFU */,
+				23196C712EF42D4300B1504B /* Helpers */,
+			);
+			path = Firmware;
+			sourceTree = "<group>";
+		};
+		23C2BE2F2EEB821400F6A997 /* NRF DFU */ = {
+			isa = PBXGroup;
+			children = (
+				2388EC392EDF8A1400F6F982 /* DFUModel.swift */,
+				23C2BE302EEB823900F6A997 /* NRFDFUSheet.swift */,
+			);
+			path = "NRF DFU";
+			sourceTree = "<group>";
+		};
+		23C2BE322EEC3F7800F6A997 /* ESP32 OTA */ = {
+			isa = PBXGroup;
+			children = (
+				23C873E12EF9B57D00BFEA7B /* Helpers */,
+				23825FFB2EF6E6FB00C25543 /* BLE */,
+				23825FFA2EF6E6EC00C25543 /* WiFi */,
+				23C2BE332EEC3F9600F6A997 /* ESP32OTAIntroSheet.swift */,
+			);
+			path = "ESP32 OTA";
+			sourceTree = "<group>";
+		};
+		23C873E12EF9B57D00BFEA7B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				23C873E22EF9B58C00BFEA7B /* OTAEnums.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		23D9D9312E50DA0E005D1C18 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				237AEB8E2E1FE456003B7CE3 /* Transport.swift */,
+				237AEB922E1FE4BA003B7CE3 /* Connection.swift */,
+				237AEB942E1FE516003B7CE3 /* Device.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		23D9D9322E50DA1F005D1C18 /* Accessory Manager */ = {
+			isa = PBXGroup;
+			children = (
+				237AEB902E1FE46D003B7CE3 /* AccessoryManager.swift */,
+				23F488112E32980B002C776F /* AccessoryManager+Position.swift */,
+				23FF00B52E323C75001DF095 /* AccessoryManager+Connect.swift */,
+				230BC3962E31071E0046BF2A /* AccessoryManager+Discovery.swift */,
+				23AD54682E2A6EAA0046E9AB /* AccessoryManager+FromRadio.swift */,
+				23AD546A2E2AA5A80046E9AB /* AccessoryManager+ToRadio.swift */,
+				23AD546C2E2AE9630046E9AB /* AccessoryManager+MQTT.swift */,
+				82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */,
+			);
+			path = "Accessory Manager";
+			sourceTree = "<group>";
+		};
+		23D9D9332E50DA33005D1C18 /* Transports */ = {
+			isa = PBXGroup;
+			children = (
+				23D9D9342E50DA40005D1C18 /* Bluetooth Low Energy */,
+				23D9D9352E50DA4D005D1C18 /* TCP */,
+				23D9D9362E50DA5A005D1C18 /* Serial */,
+			);
+			path = Transports;
+			sourceTree = "<group>";
+		};
+		23D9D9342E50DA40005D1C18 /* Bluetooth Low Energy */ = {
+			isa = PBXGroup;
+			children = (
+				237AEB962E1FE627003B7CE3 /* BLETransport.swift */,
+				237AEB982E20098B003B7CE3 /* BLEConnection.swift */,
+				231251372E3BC96400E6ED07 /* BLEAuthorizationHelper.swift */,
+			);
+			path = "Bluetooth Low Energy";
+			sourceTree = "<group>";
+		};
+		23D9D9352E50DA4D005D1C18 /* TCP */ = {
+			isa = PBXGroup;
+			children = (
+				232ED4C22E2C5E89009DA392 /* TCPTransport.swift */,
+				232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */,
+			);
+			path = TCP;
+			sourceTree = "<group>";
+		};
+		23D9D9362E50DA5A005D1C18 /* Serial */ = {
+			isa = PBXGroup;
+			children = (
+				2346A71C2E2FB9C500CB9239 /* SerialTransport.swift */,
+				2346A7182E2FB9A300CB9239 /* SerialConnection.swift */,
+			);
+			path = Serial;
+			sourceTree = "<group>";
+		};
+		23D9D9372E50DA81005D1C18 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				23D316922E5618D2002FA4FB /* AsyncGate.swift */,
+				23E23F912E392C2B00919073 /* LogRecord+StringRepresentation.swift */,
+				23D9D9382E50DA97005D1C18 /* ResettableTimer.swift */,
+				2349A0492EAE4DA30060A581 /* ManualConnectionList.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		23DC51382EE76DA20023838A /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				2315D19C2EECB3D400E0FAE7 /* UTI+UF2.swift */,
+				23DC50BA2EE76D9C0023838A /* URL+fetch.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		251926882C3BAF2E00249DF5 /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */,
+				DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
+				251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
+				251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
+				DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */,
+				251926862C3BAE2200249DF5 /* NodeAlertsButton.swift */,
+				2519268B2C3BB52000249DF5 /* TraceRouteButton.swift */,
+				2519268F2C3CB44900249DF5 /* ClientHistoryButton.swift */,
+				251926912C3CB52300249DF5 /* DeleteNodeButton.swift */,
+			);
+			path = Actions;
+			sourceTree = "<group>";
+		};
+		25F5D5BC2C3F6D7B008036E3 /* Router */ = {
+			isa = PBXGroup;
+			children = (
+				25F5D5BD2C3F6D87008036E3 /* NavigationState.swift */,
+				25F5D5BF2C3F6DA6008036E3 /* Router.swift */,
+			);
+			path = Router;
+			sourceTree = "<group>";
+		};
+		25F5D5C82C4375A8008036E3 /* MeshtasticTests */ = {
+			isa = PBXGroup;
+			children = (
+				DAC1B8A22FBB1E9D00F8F586 /* RegionCodesFirmwareLocaleTests.swift */,
+				AA00010022E2730EC0060000 /* ConnectViewTests.swift */,
+				DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
+				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
+				AA000301CPTST000000000001 /* CarPlayTests.swift */,
+				DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */,
+				DD000002STREXTTST00000000 /* StringExtensionTests.swift */,
+				DD000003NUMEXTTST00000000 /* NumericExtensionTests.swift */,
+				DD000004URLTST0000000000 /* URLExtensionTests.swift */,
+				DD000005ENUMTST000000000 /* EnumTests.swift */,
+				DD000006GEOTST0000000000 /* GeoExtensionTests.swift */,
+				DD000007LORATST000000000 /* LoraDeviceEnumTests.swift */,
+				AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */,
+				64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */,
+				AA003DOC0000001000000005 /* DocBundleTests.swift */,
+				DD000008APPSTST000000000 /* AppSettingsEnumTests.swift */,
+				DD000009INTVTST000000000 /* IntervalEnumTests.swift */,
+				DD00000AEXTNTST000000000 /* ExtensionTests.swift */,
+				DD00000BTAKCTST000000000 /* TAKCodecTests.swift */,
+				DD00000CCOTTST0000000000 /* CoTMessageTests.swift */,
+				DD00000DGEOJSNTST0000000 /* GeoJSONTests.swift */,
+				DD00000ETAKBRGTST0000000 /* TAKBridgeTests.swift */,
+				DD00000FCOTXMLTST0000000 /* CoTXMLParserTests.swift */,
+				DD000010GENCOTTST0000000 /* GenericCoTHandlerTests.swift */,
+				DD000011UTILENTST0000000 /* UtilityAndEnumTests.swift */,
+				DD000012COTEXTTST0000000 /* CoTExtensionTests.swift */,
+				DD000013FWAPITST00000000 /* FirmwareAndAPITests.swift */,
+				DD000014RTRDLTST00000000 /* RouterDeepLinkTests.swift */,
+				DD000016NAVSTATST00000000 /* NavigationStateTests.swift */,
+				DD000017MTRVZTST00000000 /* MetricsVisualizationTests.swift */,
+				DD000018RTMISCTST0000000 /* RoutingAndMiscTests.swift */,
+				DD000019NYMEACTST0000000 /* NymeaConstantsTests.swift */,
+				DD00001AASYNCCTST0000000 /* AsyncConcurrencyTests.swift */,
+				DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */,
+				DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */,
+				DD00001DCDENTTST00000000 /* EntityTests.swift */,
+				DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */,
+				DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */,
+				DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */,
+				DD000021ENMCMPTST0000000 /* EnumComprehensiveTests.swift */,
+				DD000022GEOJSNCFG0000000 /* GeoJSONOverlayConfigTests.swift */,
+				DD000023EXTDETTST0000000 /* ExtensionDetailedTests.swift */,
+				DD000024ENMBATTST0000000 /* EnumBatchTests.swift */,
+				DD000025COTMSGDTL0000000 /* CoTMessageDetailedTests.swift */,
+				DD000026STREXTDTL0000000 /* StringExtensionDetailedTests.swift */,
+				DD000027REMEUTLTST000000 /* RemainingEnumAndUtilTests.swift */,
+				DD000029APSTFWTST0000000 /* AppSettingsAndFirmwareTests.swift */,
+				DD00002AINTREMTST00000000 /* IntentAndRemainingTests.swift */,
+				DD00002BMSHPKTELTST000000 /* MeshPacketsAndTelemetryTests.swift */,
+				DD00002DSNPVWTST000000000 /* SwiftUIViewSnapshotTests.swift */,
+				AA004FMT0000001000000004 /* MarkdownFormattingTests.swift */,
+				DD00002ESDMIGTST000000000 /* SwiftDataMigrationTests.swift */,
+				DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */,
+				DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */,
+				AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
+				AA003DOC0000001000000008 /* DocTranslationTests.swift */,
+			);
+			path = MeshtasticTests;
+			sourceTree = "<group>";
+		};
+		5EC3D356BFF0031F67B3499A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		71084780865585DCE48BD08F /* Discovery */ = {
+			isa = PBXGroup;
+			children = (
+				F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */,
+				4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */,
+				F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */,
+				41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */,
+				4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */,
+			);
+			path = Discovery;
+			sourceTree = "<group>";
+		};
+		AA000201CPLAY000000000005 /* CarPlay */ = {
+			isa = PBXGroup;
+			children = (
+				AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */,
+				AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */,
+			);
+			path = CarPlay;
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0001 /* Meshtastic Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */,
+				AA0005WTCH00000000FR0002 /* ContentView.swift */,
+				AA0005WTCH00000000FR0010 /* Meshtastic Watch App.entitlements */,
+				AA0005WTCH00000000FR0009 /* Assets.xcassets */,
+				AA0005WTCH00000000GR0002 /* Managers */,
+				AA0005WTCH00000000GR0003 /* Models */,
+				AA0005WTCH00000000GR0004 /* Views */,
+			);
+			path = "Meshtastic Watch App";
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0002 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0004 /* PhoneConnectivityManager.swift */,
+				AA0005WTCH00000000FR0005 /* WatchLocationManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0003 /* MeshNode.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA0005WTCH00000000GR0004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AA0005WTCH00000000FR0006 /* FoxhuntCompassView.swift */,
+				AA0005WTCH00000000FR0007 /* NearbyNodesListView.swift */,
+				AA0005WTCH00000000FR0008 /* DeviceConnectionView.swift */,
+				AA0005WTCH00000000FR0013 /* WatchCircleText.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AA003DOC0000003000000001 /* HelpAndDocumentation */ = {
+			isa = PBXGroup;
+			children = (
+				AA003DOC0000001000000001 /* DocModels.swift */,
+				AA003DOC0000001000000002 /* DocBrowserView.swift */,
+				AA003DOC0000001000000003 /* DocPageView.swift */,
+				AA003DOC0000001000000004 /* AIDocAssistantView.swift */,
+				AA003DOC0000001000000006 /* DocTranslationService.swift */,
+			);
+			path = HelpAndDocumentation;
+			sourceTree = "<group>";
+		};
+		BCB6137F2C6728E700485544 /* AppIntents */ = {
+			isa = PBXGroup;
+			children = (
+				BCB35B4E2E5FC41E00B04F60 /* MessageNodeIntent.swift */,
+				BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */,
+				BCB613802C67290800485544 /* SendWaypointIntent.swift */,
+				BCB613822C672A2600485544 /* MessageChannelIntent.swift */,
+				BCB613842C68703800485544 /* NodePositionIntent.swift */,
+				BCB613862C69A0FB00485544 /* AppIntentErrors.swift */,
+				BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */,
+				BCE2D3C42C7AE369008E6199 /* RestartNodeIntent.swift */,
+				BCE2D3C82C7C377F008E6199 /* FactoryResetNodeIntent.swift */,
+				BCE2D3C62C7B0D0A008E6199 /* ShortcutsProvider.swift */,
+				BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */,
+				BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */,
+			);
+			path = AppIntents;
+			sourceTree = "<group>";
+		};
+		C37572859BC745C4284A9B42 /* TAK */ = {
+			isa = PBXGroup;
+			children = (
+				4AA216CF50721EE1AE7D7251 /* CoTMessage.swift */,
+				748E4806582595DE80D455CD /* CoTXMLParser.swift */,
+				09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */,
+				01028778B8BFD81F7A039593 /* TAKConnection.swift */,
+				87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */,
+				10794B242F8C2C90000CA23F /* RouteDataPackageGenerator.swift */,
+				2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */,
+				9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */,
+				3F203877F307073096C89179 /* FountainCodec.swift */,
+				3D0A8ABAEF1E587683970927 /* EXICodec.swift */,
+				7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */,
+			);
+			path = TAK;
+			sourceTree = "<group>";
+		};
+		D05BD108B673E15AD4B01BC8 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				CA63632A10C2DD076FA222BE /* IntentHandler.swift */,
+				39D80697D5BB72C4566988E0 /* IntentMessageConverters.swift */,
+				5FCB3877F157D9011FA5C6CF /* SendMessageIntentHandler.swift */,
+				0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */,
+				CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
+		D952A49BD44F4EB19722C716 /* Schema */ = {
+			isa = PBXGroup;
+			children = (
+				05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */,
+				1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */,
+			);
+			path = Schema;
+			sourceTree = "<group>";
+		};
+		D9C9839E2B79D0C600BDBE6A /* TextMessageField */ = {
+			isa = PBXGroup;
+			children = (
+				B3E905B02B71F7F300654D07 /* TextMessageField.swift */,
+				AA004FMT0000001000000002 /* FormattingToolbarButtons.swift */,
+				AA004FMT0000001000000003 /* MessagePreview.swift */,
+				D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */,
+				D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */,
+				D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */,
+			);
+			path = TextMessageField;
+			sourceTree = "<group>";
+		};
+		DAC1B80A2FBB1E1400F8F586 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				AA003DOC0000001000000007 /* TranslationCache.swift */,
+				AA003FM00000001000000001 /* FoundationModelAvailability.swift */,
+				AA009MDC0000001000000001 /* MarkdownConverter.swift */,
+				AA009DTU0000001000000001 /* DocsTranslationUploader.swift */,
+				AA009CTF0000001000000001 /* CommunityTranslationFetcher.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		DAC1B89D2FBB1E6600F8F586 /* LoraConfig */ = {
+			isa = PBXGroup;
+			children = (
+				DAC1B8992FBB1E6600F8F586 /* Bandwidths.swift */,
+				DAC1B89A2FBB1E6600F8F586 /* ModemPresets.swift */,
+				DAC1B89B2FBB1E6600F8F586 /* RegionCodes.swift */,
+				DAC1B89C2FBB1E6600F8F586 /* RegionCodes+FirmwareLocale.swift */,
+			);
+			path = LoraConfig;
+			sourceTree = "<group>";
+		};
+		DD007BB12AA59B9A00F5FA12 /* SwiftData */ = {
+			isa = PBXGroup;
+			children = (
+				108FFECC2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift */,
+				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
+				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
+				DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */,
+				DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */,
+				DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
+				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
+				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
+				DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */,
+				DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */,
+			);
+			path = SwiftData;
+			sourceTree = "<group>";
+		};
+		DD1BD0EC2C603C5B008C0C70 /* Measurement */ = {
+			isa = PBXGroup;
+			children = (
+				DD1BD0ED2C603C91008C0C70 /* CustomFormatters.swift */,
+			);
+			path = Measurement;
+			sourceTree = "<group>";
+		};
+		DD47E3CA26F0E50300029299 /* Nodes */ = {
+			isa = PBXGroup;
+			children = (
+				DDDB26402AABEF7B003AFCB7 /* Helpers */,
+				DDDB263E2AABEE20003AFCB7 /* NodeList.swift */,
+				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
+				DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */,
+				B990EE65E4D5CABBA4DD8DC2 /* MapWindow.swift */,
+				DD73FD1028750779000852D6 /* PositionLog.swift */,
+				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
+				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
+				DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */,
+				DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */,
+				8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */,
+			);
+			path = Nodes;
+			sourceTree = "<group>";
+		};
+		DD47E3D726F2F21A00029299 /* Connect */ = {
+			isa = PBXGroup;
+			children = (
+				DD836AE626F6B38600ABCC23 /* Connect.swift */,
+				DD4756AA2E9F1A0000029299 /* SecurityVersionNag.swift */,
+				DD86D409287F04F100BAEB7A /* InvalidVersion.swift */,
+			);
+			path = Connect;
+			sourceTree = "<group>";
+		};
+		DD4A911C2708C57100501B7E /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				DD9C70102E916EA200106227 /* UpdateIntervalPicker.swift */,
+				DDD5BB0E2C285F92007E03CA /* Logs */,
+				DD93800C2BA74CE3008BEC06 /* Channels */,
+				DD61937A2863876A00E59241 /* Config */,
+				23C2BE282EEAF91900F6A997 /* Firmware */,
+				DD97E96728EFE9A00056DDA4 /* About.swift */,
+				DDD5BB152C28B1E4007E03CA /* AppData.swift */,
+				DDD5BB082C285DDC007E03CA /* AppLog.swift */,
+				DD4A911D2708C65400501B7E /* AppSettings.swift */,
+				ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */,
+				DDA0B6B1294CDC55001356EC /* Channels.swift */,
+				DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
+				DDAB580C2B0DAA9E00147258 /* Routes.swift */,
+				DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */,
+				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
+				DD3501882852FC3B000FC853 /* Settings.swift */,
+				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
+				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
+				ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */,
+				0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */,
+				1D5AD8037A0D583C614B0597 /* Tools.swift */,
+				71084780865585DCE48BD08F /* Discovery */,
+				AA003DOC0000003000000001 /* HelpAndDocumentation */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		DD5E523D298F5A7D00D21B61 /* Weather */ = {
+			isa = PBXGroup;
+			children = (
+				DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */,
+				DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */,
+				DD354FD82BD96A0B0061A25F /* IAQScale.swift */,
+				DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
+				DD3D17DF2C3FB67200561584 /* LocalWeatherConditions.swift */,
+			);
+			path = Weather;
+			sourceTree = "<group>";
+		};
+		DD61937A2863876A00E59241 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				DD61937B2863877A00E59241 /* Module */,
+				D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
 				D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */,
                 D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
                 D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */,
@@ -2257,263 +2280,263 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-        25F5D5C62C4375A8008036E3 /* MeshtasticTests */ = {
-            isa = PBXNativeTarget;
-            buildConfigurationList = 25F5D5CF2C4375A8008036E3 /* Build configuration list for PBXNativeTarget "MeshtasticTests" */;
-            buildPhases = (
-                25F5D5C32C4375A8008036E3 /* Sources */,
-                25F5D5C42C4375A8008036E3 /* Frameworks */,
-                25F5D5C52C4375A8008036E3 /* Resources */,
-            );
-            buildRules = (
-            );
-            dependencies = (
-                25F5D5CC2C4375A8008036E3 /* PBXTargetDependency */,
-            );
-            name = MeshtasticTests;
-            packageProductDependencies = (
-                DD00003B000SNAP00000000 /* SnapshotTesting */,
-            );
-            productName = MeshtasticTests;
-            productReference = 25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */;
-            productType = "com.apple.product-type.bundle.unit-test";
-        };
-        AA0005WTCH00000000NT0001 /* Meshtastic Watch App */ = {
-            isa = PBXNativeTarget;
-            buildConfigurationList = AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */;
-            buildPhases = (
-                AA0005WTCH00000000SP0001 /* Sources */,
-                AA0005WTCH00000000FP0001 /* Frameworks */,
-                AA0005WTCH00000000RP0001 /* Resources */,
-            );
-            buildRules = (
-            );
-            dependencies = (
-            );
-            name = "Meshtastic Watch App";
-            productName = "Meshtastic Watch App";
-            productReference = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */;
-            productType = "com.apple.product-type.application";
-        };
-        DDC2E15326CE248E0042C5E4 /* Meshtastic */ = {
-            isa = PBXNativeTarget;
-            buildConfigurationList = DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */;
-            buildPhases = (
-                23148E312EE1F43B00F0DB2C /* Download Node SVG Images */,
-                236CA24D2EE3073100A47F96 /* CopyFiles */,
-                BB450974275599CE00509624 /* ShellScript */,
-                DDC2E15026CE248E0042C5E4 /* Sources */,
-                DDC2E15126CE248E0042C5E4 /* Frameworks */,
-                DDC2E15226CE248E0042C5E4 /* Resources */,
-                DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */,
-                AA0005WTCH00000000CP0001 /* Embed Watch Content */,
-            );
-            buildRules = (
-            );
-            dependencies = (
-                DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
-                AA0005WTCH00000000TD0001 /* PBXTargetDependency */,
-            );
-            fileSystemSynchronizedGroups = (
-                236CA20D2EE3036A00A47F96 /* images */,
-                DD4C11E02E8099C3003F2F2E /* PreferenceKeys */,
-            );
-            name = Meshtastic;
-            packageProductDependencies = (
-                DD0D3D212A55CEB10066DB71 /* CocoaMQTT */,
-                10794B222F8713CB000CA23F /* MeshtasticTAK */,
-                25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */,
-                102B5EAA2E172F41003D191E /* DatadogCore */,
-                102B5EAC2E172F41003D191E /* DatadogCrashReporting */,
-                102B5EAE2E172F41003D191E /* DatadogLogs */,
-                102B5EB02E172F41003D191E /* DatadogRUM */,
-                10D109F32E2047D600536CE6 /* DatadogTrace */,
-                2388EC372EDF88E900F6F982 /* NordicDFU */,
-                2315D1A72EEF2ED400E0FAE7 /* SwiftDraw */,
-                AA009SMD0000000000000002 /* Markdown */,
-            );
-            productName = MeshtasticClient;
-            productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
-            productType = "com.apple.product-type.application";
-        };
-        DDDE59F329AF163D00490C6C /* WidgetsExtension */ = {
-            isa = PBXNativeTarget;
-            buildConfigurationList = DDDE5A0529AF163F00490C6C /* Build configuration list for PBXNativeTarget "WidgetsExtension" */;
-            buildPhases = (
-                DDDE59F029AF163D00490C6C /* Sources */,
-                DDDE59F129AF163D00490C6C /* Frameworks */,
-                DDDE59F229AF163D00490C6C /* Resources */,
-            );
-            buildRules = (
-            );
-            dependencies = (
-            );
-            name = WidgetsExtension;
-            packageProductDependencies = (
-                25A978BB2C13F90D0003AAE7 /* MeshtasticProtobufs */,
-            );
-            productName = WidgetsExtension;
-            productReference = DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */;
-            productType = "com.apple.product-type.app-extension";
-        };
+		25F5D5C62C4375A8008036E3 /* MeshtasticTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 25F5D5CF2C4375A8008036E3 /* Build configuration list for PBXNativeTarget "MeshtasticTests" */;
+			buildPhases = (
+				25F5D5C32C4375A8008036E3 /* Sources */,
+				25F5D5C42C4375A8008036E3 /* Frameworks */,
+				25F5D5C52C4375A8008036E3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				25F5D5CC2C4375A8008036E3 /* PBXTargetDependency */,
+			);
+			name = MeshtasticTests;
+			packageProductDependencies = (
+				DD00003B000SNAP00000000 /* SnapshotTesting */,
+			);
+			productName = MeshtasticTests;
+			productReference = 25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AA0005WTCH00000000NT0001 /* Meshtastic Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */;
+			buildPhases = (
+				AA0005WTCH00000000SP0001 /* Sources */,
+				AA0005WTCH00000000FP0001 /* Frameworks */,
+				AA0005WTCH00000000RP0001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Meshtastic Watch App";
+			productName = "Meshtastic Watch App";
+			productReference = AA0005WTCH00000000FR0012 /* Meshtastic Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DDC2E15326CE248E0042C5E4 /* Meshtastic */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */;
+			buildPhases = (
+				23148E312EE1F43B00F0DB2C /* Download Node SVG Images */,
+				236CA24D2EE3073100A47F96 /* CopyFiles */,
+				BB450974275599CE00509624 /* ShellScript */,
+				DDC2E15026CE248E0042C5E4 /* Sources */,
+				DDC2E15126CE248E0042C5E4 /* Frameworks */,
+				DDC2E15226CE248E0042C5E4 /* Resources */,
+				DDDE5A0829AF163F00490C6C /* Embed Foundation Extensions */,
+				AA0005WTCH00000000CP0001 /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
+				AA0005WTCH00000000TD0001 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				236CA20D2EE3036A00A47F96 /* images */,
+				DD4C11E02E8099C3003F2F2E /* PreferenceKeys */,
+			);
+			name = Meshtastic;
+			packageProductDependencies = (
+				DD0D3D212A55CEB10066DB71 /* CocoaMQTT */,
+				10794B222F8713CB000CA23F /* MeshtasticTAK */,
+				25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */,
+				102B5EAA2E172F41003D191E /* DatadogCore */,
+				102B5EAC2E172F41003D191E /* DatadogCrashReporting */,
+				102B5EAE2E172F41003D191E /* DatadogLogs */,
+				102B5EB02E172F41003D191E /* DatadogRUM */,
+				10D109F32E2047D600536CE6 /* DatadogTrace */,
+				2388EC372EDF88E900F6F982 /* NordicDFU */,
+				2315D1A72EEF2ED400E0FAE7 /* SwiftDraw */,
+				AA009SMD0000000000000002 /* Markdown */,
+			);
+			productName = MeshtasticClient;
+			productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DDDE59F329AF163D00490C6C /* WidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDDE5A0529AF163F00490C6C /* Build configuration list for PBXNativeTarget "WidgetsExtension" */;
+			buildPhases = (
+				DDDE59F029AF163D00490C6C /* Sources */,
+				DDDE59F129AF163D00490C6C /* Frameworks */,
+				DDDE59F229AF163D00490C6C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WidgetsExtension;
+			packageProductDependencies = (
+				25A978BB2C13F90D0003AAE7 /* MeshtasticProtobufs */,
+			);
+			productName = WidgetsExtension;
+			productReference = DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-        DDC2E14C26CE248E0042C5E4 /* Project object */ = {
-            isa = PBXProject;
-            attributes = {
-                BuildIndependentTargetsInParallel = YES;
-                LastSwiftUpdateCheck = 1540;
-                LastUpgradeCheck = 1640;
-                TargetAttributes = {
-                    25F5D5C62C4375A8008036E3 = {
-                        CreatedOnToolsVersion = 15.4;
-                        TestTargetID = DDC2E15326CE248E0042C5E4;
-                    };
-                    DDC2E15326CE248E0042C5E4 = {
-                        CreatedOnToolsVersion = 12.5.1;
-                        LastSwiftMigration = 1340;
-                    };
-                    DDDE59F329AF163D00490C6C = {
-                        CreatedOnToolsVersion = 14.2;
-                    };
-                };
-            };
-            buildConfigurationList = DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic" */;
-            compatibilityVersion = "Xcode 13.0";
-            developmentRegion = en;
-            hasScannedForEncodings = 0;
-            knownRegions = (
-                Base,
-                da,
-                de,
-                en,
-                es,
-                fr,
-                he,
-                it,
-                ja,
-                ko,
-                pl,
-                "pt-BR",
-                ru,
-                se,
-                sr,
-                "zh-Hans",
-                "zh-Hant",
-                "zh-Hant-TW",
-            );
-            mainGroup = DDC2E14B26CE248E0042C5E4;
-            packageReferences = (
-                DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */,
-                10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */,
-                25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
-                259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
-                102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
-                2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
-                2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */,
-                DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
-                AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */,
-            );
-            productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
-            projectDirPath = "";
-            projectRoot = "";
-            targets = (
-                DDC2E15326CE248E0042C5E4 /* Meshtastic */,
-                DDDE59F329AF163D00490C6C /* WidgetsExtension */,
-                25F5D5C62C4375A8008036E3 /* MeshtasticTests */,
-                AA0005WTCH00000000NT0001 /* Meshtastic Watch App */,
-            );
-        };
+		DDC2E14C26CE248E0042C5E4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					25F5D5C62C4375A8008036E3 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = DDC2E15326CE248E0042C5E4;
+					};
+					DDC2E15326CE248E0042C5E4 = {
+						CreatedOnToolsVersion = 12.5.1;
+						LastSwiftMigration = 1340;
+					};
+					DDDE59F329AF163D00490C6C = {
+						CreatedOnToolsVersion = 14.2;
+					};
+				};
+			};
+			buildConfigurationList = DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				da,
+				de,
+				en,
+				es,
+				fr,
+				he,
+				it,
+				ja,
+				ko,
+				pl,
+				"pt-BR",
+				ru,
+				se,
+				sr,
+				"zh-Hans",
+				"zh-Hant",
+				"zh-Hant-TW",
+			);
+			mainGroup = DDC2E14B26CE248E0042C5E4;
+			packageReferences = (
+				DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */,
+				10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */,
+				25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
+				259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
+				2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
+				2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */,
+				DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */,
+			);
+			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DDC2E15326CE248E0042C5E4 /* Meshtastic */,
+				DDDE59F329AF163D00490C6C /* WidgetsExtension */,
+				25F5D5C62C4375A8008036E3 /* MeshtasticTests */,
+				AA0005WTCH00000000NT0001 /* Meshtastic Watch App */,
+			);
+		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-        25F5D5C52C4375A8008036E3 /* Resources */ = {
-            isa = PBXResourcesBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
-        AA0005WTCH00000000RP0001 /* Resources */ = {
-            isa = PBXResourcesBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-                AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */,
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
-        DDC2E15226CE248E0042C5E4 /* Resources */ = {
-            isa = PBXResourcesBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-                DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
-                AA000401SIRI000000000002 /* AppIntentVocabulary.plist in Resources */,
-                DD98EB292E7A42CC0016320A /* AppIcon_Chirpy.icon in Resources */,
-                25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */,
-                DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
-                2339EA9A2E6C65DC0032C234 /* AppIconDebug.icon in Resources */,
-                DD98EB212E7A31140016320A /* AppIcon_Ham.icon in Resources */,
-                2339EA982E6C65570032C234 /* AppIcon.icon in Resources */,
-                DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
-                DD98EB2B2E7A838D0016320A /* AppIcon_MPowered.icon in Resources */,
-                DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
-                DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
-                DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
-                8E587743574CE17703E892C6 /* Certificates in Resources */,
-                AA003DOC0000004000000001 /* docs in Resources */,
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
-        DDDE59F229AF163D00490C6C /* Resources */ = {
-            isa = PBXResourcesBuildPhase;
-            buildActionMask = 2147483647;
-            files = (
-                DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */,
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-        };
+		25F5D5C52C4375A8008036E3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0005WTCH00000000RP0001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0005WTCH00000000BF0009 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDC2E15226CE248E0042C5E4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
+				AA000401SIRI000000000002 /* AppIntentVocabulary.plist in Resources */,
+				DD98EB292E7A42CC0016320A /* AppIcon_Chirpy.icon in Resources */,
+				25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */,
+				DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
+				2339EA9A2E6C65DC0032C234 /* AppIconDebug.icon in Resources */,
+				DD98EB212E7A31140016320A /* AppIcon_Ham.icon in Resources */,
+				2339EA982E6C65570032C234 /* AppIcon.icon in Resources */,
+				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
+				DD98EB2B2E7A838D0016320A /* AppIcon_MPowered.icon in Resources */,
+				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
+				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
+				DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
+				8E587743574CE17703E892C6 /* Certificates in Resources */,
+				AA003DOC0000004000000001 /* docs in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDDE59F229AF163D00490C6C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-        23148E312EE1F43B00F0DB2C /* Download Node SVG Images */ = {
-            isa = PBXShellScriptBuildPhase;
-            alwaysOutOfDate = 1;
-            buildActionMask = 2147483647;
-            files = (
-            );
-            inputFileListPaths = (
-            );
-            inputPaths = (
-            );
-            name = "Download Node SVG Images";
-            outputFileListPaths = (
-            );
-            outputPaths = (
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-            shellPath = /bin/sh;
-            shellScript = "MARKER=\"${TARGET_TEMP_DIR}/first-build.marker\"\n\nif [ ! -f \"$MARKER\" ]; then\n # Treating as CLEAN build (or first build in this DerivedData)\n # Force update all the note board images\n \"$SRCROOT/scripts/download_images.py\" --output-dir \"$SRCROOT/Meshtastic/Resources/images\" --output-json \"$SRCROOT/Meshtastic/Resources/DeviceHardware.json\" --force\n touch \"$MARKER\"\nelse\n # Incremental build\n # update only if there was a change in the devices json\n \"$SRCROOT/scripts/download_images.py\" --output-dir \"$SRCROOT/Meshtastic/Resources/images\" --output-json \"$SRCROOT/Meshtastic/Resources/DeviceHardware.json\"\nfi\n";
-            showEnvVarsInLog = 0;
-        };
-        BB450974275599CE00509624 /* ShellScript */ = {
-            isa = PBXShellScriptBuildPhase;
-            alwaysOutOfDate = 1;
-            buildActionMask = 2147483647;
-            files = (
-            );
-            inputFileListPaths = (
-            );
-            inputPaths = (
-            );
-            outputFileListPaths = (
-            );
-            outputPaths = (
-            );
-            runOnlyForDeploymentPostprocessing = 0;
-            shellPath = /bin/sh;
-            shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
-        };
+		23148E312EE1F43B00F0DB2C /* Download Node SVG Images */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download Node SVG Images";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "MARKER=\"${TARGET_TEMP_DIR}/first-build.marker\"\n\nif [ ! -f \"$MARKER\" ]; then\n # Treating as CLEAN build (or first build in this DerivedData)\n # Force update all the note board images\n \"$SRCROOT/scripts/download_images.py\" --output-dir \"$SRCROOT/Meshtastic/Resources/images\" --output-json \"$SRCROOT/Meshtastic/Resources/DeviceHardware.json\" --force\n touch \"$MARKER\"\nelse\n # Incremental build\n # update only if there was a change in the devices json\n \"$SRCROOT/scripts/download_images.py\" --output-dir \"$SRCROOT/Meshtastic/Resources/images\" --output-json \"$SRCROOT/Meshtastic/Resources/DeviceHardware.json\"\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		BB450974275599CE00509624 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"\nfi\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -2979,729 +3002,729 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-        25F5D5CC2C4375A8008036E3 /* PBXTargetDependency */ = {
-            isa = PBXTargetDependency;
-            target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
-            targetProxy = 25F5D5CB2C4375A8008036E3 /* PBXContainerItemProxy */;
-        };
-        AA0005WTCH00000000TD0001 /* PBXTargetDependency */ = {
-            isa = PBXTargetDependency;
-            platformFilter = ios;
-            target = AA0005WTCH00000000NT0001 /* Meshtastic Watch App */;
-            targetProxy = AA0005WTCH00000000CX0001 /* PBXContainerItemProxy */;
-        };
-        DDDE5A0229AF163E00490C6C /* PBXTargetDependency */ = {
-            isa = PBXTargetDependency;
-            platformFilter = ios;
-            target = DDDE59F329AF163D00490C6C /* WidgetsExtension */;
-            targetProxy = DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */;
-        };
+		25F5D5CC2C4375A8008036E3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
+			targetProxy = 25F5D5CB2C4375A8008036E3 /* PBXContainerItemProxy */;
+		};
+		AA0005WTCH00000000TD0001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = AA0005WTCH00000000NT0001 /* Meshtastic Watch App */;
+			targetProxy = AA0005WTCH00000000CX0001 /* PBXContainerItemProxy */;
+		};
+		DDDE5A0229AF163E00490C6C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = DDDE59F329AF163D00490C6C /* WidgetsExtension */;
+			targetProxy = DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-        AA000401SIRI000000000001 /* AppIntentVocabulary.plist */ = {
-            isa = PBXVariantGroup;
-            children = (
-                AA000401SIRI000000000010 /* en */,
-                AA000401SIRI000000000011 /* de */,
-                AA000401SIRI000000000012 /* es */,
-                AA000401SIRI000000000013 /* fr */,
-                AA000401SIRI000000000014 /* it */,
-                AA000401SIRI000000000015 /* ja */,
-                AA000401SIRI000000000016 /* da */,
-                AA000401SIRI000000000017 /* pl */,
-                AA000401SIRI000000000018 /* ru */,
-                AA000401SIRI000000000019 /* he */,
-                AA000401SIRI000000000020 /* sr */,
-                AA000401SIRI000000000021 /* se */,
-                AA000401SIRI000000000022 /* zh-Hans */,
-                AA000401SIRI000000000023 /* zh-Hant-TW */,
-            );
-            name = AppIntentVocabulary.plist;
-            sourceTree = "<group>";
-        };
+		AA000401SIRI000000000001 /* AppIntentVocabulary.plist */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AA000401SIRI000000000010 /* en */,
+				AA000401SIRI000000000011 /* de */,
+				AA000401SIRI000000000012 /* es */,
+				AA000401SIRI000000000013 /* fr */,
+				AA000401SIRI000000000014 /* it */,
+				AA000401SIRI000000000015 /* ja */,
+				AA000401SIRI000000000016 /* da */,
+				AA000401SIRI000000000017 /* pl */,
+				AA000401SIRI000000000018 /* ru */,
+				AA000401SIRI000000000019 /* he */,
+				AA000401SIRI000000000020 /* sr */,
+				AA000401SIRI000000000021 /* se */,
+				AA000401SIRI000000000022 /* zh-Hans */,
+				AA000401SIRI000000000023 /* zh-Hant-TW */,
+			);
+			name = AppIntentVocabulary.plist;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-        25F5D5CD2C4375A8008036E3 /* Debug */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-                BUNDLE_LOADER = "$(TEST_HOST)";
-                CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                ENABLE_USER_SCRIPT_SANDBOXING = YES;
-                GCC_C_LANGUAGE_STANDARD = gnu17;
-                GENERATE_INFOPLIST_FILE = YES;
-                IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-                MARKETING_VERSION = 1.0;
-                PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-                SUPPORTS_MACCATALYST = YES;
-                SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-                SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-                SWIFT_EMIT_LOC_STRINGS = NO;
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = "1,2";
-                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Meshtastic";
-            };
-            name = Debug;
-        };
-        25F5D5CE2C4375A8008036E3 /* Release */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-                BUNDLE_LOADER = "$(TEST_HOST)";
-                CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                GCC_C_LANGUAGE_STANDARD = gnu17;
-                GENERATE_INFOPLIST_FILE = YES;
-                IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-                MARKETING_VERSION = 1.0;
-                PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-                SUPPORTS_MACCATALYST = YES;
-                SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-                SWIFT_EMIT_LOC_STRINGS = NO;
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = "1,2";
-                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Meshtastic";
-            };
-            name = Release;
-        };
-        AA0005WTCH00000000BC0001 /* Debug */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-                ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-                CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                DEVELOPMENT_TEAM = GCH7VS5Y9R;
-                GENERATE_INFOPLIST_FILE = YES;
-                INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
-                INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
-                INFOPLIST_KEY_CFBundleIconName = AppIcon;
-                INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
-                INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
-                INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
-                LD_RUNPATH_SEARCH_PATHS = (
-                    "$(inherited)",
-                    "@executable_path/Frameworks",
-                );
-                MARKETING_VERSION = 2.7.13;
-                PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SDKROOT = watchos;
-                SKIP_INSTALL = YES;
-                SUPPORTED_PLATFORMS = "watchos watchsimulator";
-                SWIFT_EMIT_LOC_STRINGS = YES;
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = 4;
-                WATCHOS_DEPLOYMENT_TARGET = 10.0;
-            };
-            name = Debug;
-        };
-        AA0005WTCH00000000BC0002 /* Release */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-                ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-                CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                DEVELOPMENT_TEAM = GCH7VS5Y9R;
-                GENERATE_INFOPLIST_FILE = YES;
-                INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
-                INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
-                INFOPLIST_KEY_CFBundleIconName = AppIcon;
-                INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
-                INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
-                INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
-                LD_RUNPATH_SEARCH_PATHS = (
-                    "$(inherited)",
-                    "@executable_path/Frameworks",
-                );
-                MARKETING_VERSION = 2.7.13;
-                PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SDKROOT = watchos;
-                SKIP_INSTALL = YES;
-                SUPPORTED_PLATFORMS = "watchos watchsimulator";
-                SWIFT_EMIT_LOC_STRINGS = YES;
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = 4;
-                WATCHOS_DEPLOYMENT_TARGET = 10.0;
-            };
-            name = Release;
-        };
-        DDC2E17C26CE248F0042C5E4 /* Debug */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ALWAYS_SEARCH_USER_PATHS = NO;
-                ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
-                ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-                CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
-                CLANG_ANALYZER_NONNULL = YES;
-                CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-                CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-                CLANG_CXX_LIBRARY = "libc++";
-                CLANG_ENABLE_MODULES = YES;
-                CLANG_ENABLE_OBJC_ARC = YES;
-                CLANG_ENABLE_OBJC_WEAK = YES;
-                CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-                CLANG_WARN_BOOL_CONVERSION = YES;
-                CLANG_WARN_COMMA = YES;
-                CLANG_WARN_CONSTANT_CONVERSION = YES;
-                CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-                CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-                CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-                CLANG_WARN_EMPTY_BODY = YES;
-                CLANG_WARN_ENUM_CONVERSION = YES;
-                CLANG_WARN_INFINITE_RECURSION = YES;
-                CLANG_WARN_INT_CONVERSION = YES;
-                CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-                CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-                CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-                CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-                CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-                CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-                CLANG_WARN_STRICT_PROTOTYPES = YES;
-                CLANG_WARN_SUSPICIOUS_MOVE = YES;
-                CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-                CLANG_WARN_UNREACHABLE_CODE = YES;
-                CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-                COPY_PHASE_STRIP = NO;
-                DEBUG_INFORMATION_FORMAT = dwarf;
-                DEVELOPMENT_TEAM = GCH7VS5Y9R;
-                ENABLE_STRICT_OBJC_MSGSEND = YES;
-                ENABLE_TESTABILITY = YES;
-                ENABLE_USER_SCRIPT_SANDBOXING = NO;
-                GCC_C_LANGUAGE_STANDARD = gnu11;
-                GCC_DYNAMIC_NO_PIC = NO;
-                GCC_NO_COMMON_BLOCKS = YES;
-                GCC_OPTIMIZATION_LEVEL = 0;
-                GCC_PREPROCESSOR_DEFINITIONS = (
-                    "DEBUG=1",
-                    "$(inherited)",
-                );
-                GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-                GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-                GCC_WARN_UNDECLARED_SELECTOR = YES;
-                GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-                GCC_WARN_UNUSED_FUNCTION = YES;
-                GCC_WARN_UNUSED_VARIABLE = YES;
-                IPHONEOS_DEPLOYMENT_TARGET = 16.4;
-                LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-                MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-                MTL_FAST_MATH = YES;
-                ONLY_ACTIVE_ARCH = YES;
-                SDKROOT = iphoneos;
-                SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-                SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-                SWIFT_STRICT_CONCURRENCY = targeted;
-                SWIFT_VERSION = 6.0;
-            };
-            name = Debug;
-        };
-        DDC2E17D26CE248F0042C5E4 /* Release */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ALWAYS_SEARCH_USER_PATHS = NO;
-                ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
-                ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-                CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
-                CLANG_ANALYZER_NONNULL = YES;
-                CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-                CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-                CLANG_CXX_LIBRARY = "libc++";
-                CLANG_ENABLE_MODULES = YES;
-                CLANG_ENABLE_OBJC_ARC = YES;
-                CLANG_ENABLE_OBJC_WEAK = YES;
-                CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-                CLANG_WARN_BOOL_CONVERSION = YES;
-                CLANG_WARN_COMMA = YES;
-                CLANG_WARN_CONSTANT_CONVERSION = YES;
-                CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-                CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-                CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-                CLANG_WARN_EMPTY_BODY = YES;
-                CLANG_WARN_ENUM_CONVERSION = YES;
-                CLANG_WARN_INFINITE_RECURSION = YES;
-                CLANG_WARN_INT_CONVERSION = YES;
-                CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-                CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-                CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-                CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-                CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-                CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-                CLANG_WARN_STRICT_PROTOTYPES = YES;
-                CLANG_WARN_SUSPICIOUS_MOVE = YES;
-                CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-                CLANG_WARN_UNREACHABLE_CODE = YES;
-                CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-                COPY_PHASE_STRIP = NO;
-                DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-                DEVELOPMENT_TEAM = GCH7VS5Y9R;
-                ENABLE_NS_ASSERTIONS = NO;
-                ENABLE_STRICT_OBJC_MSGSEND = YES;
-                ENABLE_USER_SCRIPT_SANDBOXING = YES;
-                GCC_C_LANGUAGE_STANDARD = gnu11;
-                GCC_NO_COMMON_BLOCKS = YES;
-                GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-                GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-                GCC_WARN_UNDECLARED_SELECTOR = YES;
-                GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-                GCC_WARN_UNUSED_FUNCTION = YES;
-                GCC_WARN_UNUSED_VARIABLE = YES;
-                IPHONEOS_DEPLOYMENT_TARGET = 16.4;
-                LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-                MTL_ENABLE_DEBUG_INFO = NO;
-                MTL_FAST_MATH = YES;
-                ONLY_ACTIVE_ARCH = YES;
-                SDKROOT = iphoneos;
-                SWIFT_COMPILATION_MODE = wholemodule;
-                SWIFT_OPTIMIZATION_LEVEL = "-O";
-                SWIFT_STRICT_CONCURRENCY = targeted;
-                SWIFT_VERSION = 6.0;
-                TARGETED_DEVICE_FAMILY = "1,2,6";
-                VALIDATE_PRODUCT = YES;
-            };
-            name = Release;
-        };
-        DDC2E17F26CE248F0042C5E4 /* Debug */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDebug;
-                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-                ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-                CLANG_ENABLE_MODULES = YES;
-                CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
-                "CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
-                ENABLE_APP_SANDBOX = YES;
-                ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
-                ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
-                ENABLE_PREVIEWS = YES;
-                ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
-                ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
-                ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-                ENABLE_RESOURCE_ACCESS_CAMERA = NO;
-                ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
-                ENABLE_RESOURCE_ACCESS_LOCATION = NO;
-                ENABLE_RESOURCE_ACCESS_PRINTING = NO;
-                ENABLE_RESOURCE_ACCESS_USB = NO;
-                INFOPLIST_FILE = Meshtastic/Info.plist;
-                INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
-                INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-                IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-                LD_RUNPATH_SEARCH_PATHS = (
-                    "$(inherited)",
-                    "@executable_path/Frameworks",
-                );
-                MACOSX_DEPLOYMENT_TARGET = 14.6;
-                MARKETING_VERSION = 2.7.13;
-                OTHER_LDFLAGS = (
-                    "-weak_framework",
-                    SwiftUI,
-                );
-                PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SUPPORTS_MACCATALYST = YES;
-                SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-                SWIFT_EMIT_LOC_STRINGS = YES;
-                SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = "1,2";
-            };
-            name = Debug;
-        };
-        DDC2E18026CE248F0042C5E4 /* Release */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-                ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-                CLANG_ENABLE_MODULES = YES;
-                CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
-                "CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
-                ENABLE_APP_SANDBOX = YES;
-                ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
-                ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
-                ENABLE_PREVIEWS = YES;
-                ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
-                ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
-                ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-                ENABLE_RESOURCE_ACCESS_CAMERA = NO;
-                ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
-                ENABLE_RESOURCE_ACCESS_LOCATION = NO;
-                ENABLE_RESOURCE_ACCESS_PRINTING = NO;
-                ENABLE_RESOURCE_ACCESS_USB = NO;
-                INFOPLIST_FILE = Meshtastic/Info.plist;
-                INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
-                INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-                IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-                LD_RUNPATH_SEARCH_PATHS = (
-                    "$(inherited)",
-                    "@executable_path/Frameworks",
-                );
-                MACOSX_DEPLOYMENT_TARGET = 14.6;
-                MARKETING_VERSION = 2.7.13;
-                OTHER_LDFLAGS = (
-                    "-weak_framework",
-                    SwiftUI,
-                );
-                PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SUPPORTS_MACCATALYST = YES;
-                SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-                SWIFT_EMIT_LOC_STRINGS = YES;
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = "1,2";
-            };
-            name = Release;
-        };
-        DDDE5A0629AF163F00490C6C /* Debug */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-                ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-                CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-                CODE_SIGN_ENTITLEMENTS = Widgets/WidgetsExtension.entitlements;
-                CODE_SIGN_IDENTITY = "Apple Development";
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                GENERATE_INFOPLIST_FILE = YES;
-                INFOPLIST_FILE = Widgets/Info.plist;
-                INFOPLIST_KEY_CFBundleDisplayName = Widgets;
-                INFOPLIST_KEY_NSHumanReadableCopyright = "";
-                IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-                LD_RUNPATH_SEARCH_PATHS = (
-                    "$(inherited)",
-                    "@executable_path/Frameworks",
-                    "@executable_path/../../Frameworks",
-                );
-                MACOSX_DEPLOYMENT_TARGET = 14.6;
-                MARKETING_VERSION = 2.7.13;
-                PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                PROVISIONING_PROFILE_SPECIFIER = "";
-                SKIP_INSTALL = YES;
-                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-                SUPPORTS_MACCATALYST = YES;
-                SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-                SWIFT_EMIT_LOC_STRINGS = YES;
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = "1,2";
-            };
-            name = Debug;
-        };
-        DDDE5A0729AF163F00490C6C /* Release */ = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-                ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-                CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-                CODE_SIGN_ENTITLEMENTS = Widgets/WidgetsExtension.entitlements;
-                CODE_SIGN_IDENTITY = "Apple Development";
-                CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
-                GENERATE_INFOPLIST_FILE = YES;
-                INFOPLIST_FILE = Widgets/Info.plist;
-                INFOPLIST_KEY_CFBundleDisplayName = Widgets;
-                INFOPLIST_KEY_NSHumanReadableCopyright = "";
-                IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-                LD_RUNPATH_SEARCH_PATHS = (
-                    "$(inherited)",
-                    "@executable_path/Frameworks",
-                    "@executable_path/../../Frameworks",
-                );
-                MACOSX_DEPLOYMENT_TARGET = 14.6;
-                MARKETING_VERSION = 2.7.13;
-                PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                PROVISIONING_PROFILE_SPECIFIER = "";
-                SKIP_INSTALL = YES;
-                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-                SUPPORTS_MACCATALYST = YES;
-                SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-                SWIFT_EMIT_LOC_STRINGS = YES;
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = "1,2";
-            };
-            name = Release;
-        };
+		25F5D5CD2C4375A8008036E3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Meshtastic";
+			};
+			name = Debug;
+		};
+		25F5D5CE2C4375A8008036E3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Meshtastic";
+			};
+			name = Release;
+		};
+		AA0005WTCH00000000BC0001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.7.13;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		AA0005WTCH00000000BC0002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.7.13;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		DDC2E17C26CE248F0042C5E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		DDC2E17D26CE248F0042C5E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2,6";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DDC2E17F26CE248F0042C5E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDebug;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				INFOPLIST_FILE = Meshtastic/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 2.7.13;
+				OTHER_LDFLAGS = (
+					"-weak_framework",
+					SwiftUI,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DDC2E18026CE248F0042C5E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				INFOPLIST_FILE = Meshtastic/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 2.7.13;
+				OTHER_LDFLAGS = (
+					"-weak_framework",
+					SwiftUI,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DDDE5A0629AF163F00490C6C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = Widgets/WidgetsExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Widgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 2.7.13;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DDDE5A0729AF163F00490C6C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = Widgets/WidgetsExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Widgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 2.7.13;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-        25F5D5CF2C4375A8008036E3 /* Build configuration list for PBXNativeTarget "MeshtasticTests" */ = {
-            isa = XCConfigurationList;
-            buildConfigurations = (
-                25F5D5CD2C4375A8008036E3 /* Debug */,
-                25F5D5CE2C4375A8008036E3 /* Release */,
-            );
-            defaultConfigurationIsVisible = 0;
-            defaultConfigurationName = Release;
-        };
-        AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */ = {
-            isa = XCConfigurationList;
-            buildConfigurations = (
-                AA0005WTCH00000000BC0001 /* Debug */,
-                AA0005WTCH00000000BC0002 /* Release */,
-            );
-            defaultConfigurationIsVisible = 0;
-            defaultConfigurationName = Release;
-        };
-        DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic" */ = {
-            isa = XCConfigurationList;
-            buildConfigurations = (
-                DDC2E17C26CE248F0042C5E4 /* Debug */,
-                DDC2E17D26CE248F0042C5E4 /* Release */,
-            );
-            defaultConfigurationIsVisible = 0;
-            defaultConfigurationName = Release;
-        };
-        DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */ = {
-            isa = XCConfigurationList;
-            buildConfigurations = (
-                DDC2E17F26CE248F0042C5E4 /* Debug */,
-                DDC2E18026CE248F0042C5E4 /* Release */,
-            );
-            defaultConfigurationIsVisible = 0;
-            defaultConfigurationName = Release;
-        };
-        DDDE5A0529AF163F00490C6C /* Build configuration list for PBXNativeTarget "WidgetsExtension" */ = {
-            isa = XCConfigurationList;
-            buildConfigurations = (
-                DDDE5A0629AF163F00490C6C /* Debug */,
-                DDDE5A0729AF163F00490C6C /* Release */,
-            );
-            defaultConfigurationIsVisible = 0;
-            defaultConfigurationName = Release;
-        };
+		25F5D5CF2C4375A8008036E3 /* Build configuration list for PBXNativeTarget "MeshtasticTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25F5D5CD2C4375A8008036E3 /* Debug */,
+				25F5D5CE2C4375A8008036E3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0005WTCH00000000CL0001 /* Build configuration list for PBXNativeTarget "Meshtastic Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0005WTCH00000000BC0001 /* Debug */,
+				AA0005WTCH00000000BC0002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDC2E17C26CE248F0042C5E4 /* Debug */,
+				DDC2E17D26CE248F0042C5E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDC2E17F26CE248F0042C5E4 /* Debug */,
+				DDC2E18026CE248F0042C5E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDDE5A0529AF163F00490C6C /* Build configuration list for PBXNativeTarget "WidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDDE5A0629AF163F00490C6C /* Debug */,
+				DDDE5A0729AF163F00490C6C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-        25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */ = {
-            isa = XCLocalSwiftPackageReference;
-            relativePath = MeshtasticProtobufs;
-        };
+		25A978B82C13F8ED0003AAE7 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = MeshtasticProtobufs;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
-            requirement = {
-                kind = upToNextMinorVersion;
-                minimumVersion = 0.2.2;
-            };
-        };
-        102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
-            requirement = {
-                kind = versionRange;
-                maximumVersion = 4.0.0;
-                minimumVersion = 3.3.0;
-            };
-        };
-        2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/swhitty/SwiftDraw";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 0.25.3;
-            };
-        };
-        2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 4.16.0;
-            };
-        };
-        259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/apple/swift-protobuf.git";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 1.26.0;
-            };
-        };
-        DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 1.17.0;
-            };
-        };
-        DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/emqx/CocoaMQTT";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 2.0.0;
-            };
-        };
-        AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/swiftlang/swift-markdown";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 0.5.0;
-            };
-        };
+		102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
+			requirement = {
+				kind = versionRange;
+				maximumVersion = 4.0.0;
+				minimumVersion = 3.3.0;
+			};
+		};
+		10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.2.2;
+			};
+		};
+		2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swhitty/SwiftDraw";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.25.3;
+			};
+		};
+		2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.16.0;
+			};
+		};
+		259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.26.0;
+			};
+		};
+		AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-markdown";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.0;
+			};
+		};
+		DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.0;
+			};
+		};
+		DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/emqx/CocoaMQTT";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-10794B222F8713CB000CA23F /* MeshtasticTAK */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = 10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */;
-            productName = MeshtasticTAK;
-        };
-        102B5EAA2E172F41003D191E /* DatadogCore */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-            productName = DatadogCore;
-        };
-        102B5EAC2E172F41003D191E /* DatadogCrashReporting */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-            productName = DatadogCrashReporting;
-        };
-        102B5EAE2E172F41003D191E /* DatadogLogs */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-            productName = DatadogLogs;
-        };
-        102B5EB02E172F41003D191E /* DatadogRUM */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-            productName = DatadogRUM;
-        };
-        10D109F32E2047D600536CE6 /* DatadogTrace */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-            productName = DatadogTrace;
-        };
-        2315D1A72EEF2ED400E0FAE7 /* SwiftDraw */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = 2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */;
-            productName = SwiftDraw;
-        };
-        2388EC372EDF88E900F6F982 /* NordicDFU */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = 2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
-            productName = NordicDFU;
-        };
-        25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */ = {
-            isa = XCSwiftPackageProductDependency;
-            productName = MeshtasticProtobufs;
-        };
-        25A978BB2C13F90D0003AAE7 /* MeshtasticProtobufs */ = {
-            isa = XCSwiftPackageProductDependency;
-            productName = MeshtasticProtobufs;
-        };
-        DD00003B000SNAP00000000 /* SnapshotTesting */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-            productName = SnapshotTesting;
-        };
-        DD0D3D212A55CEB10066DB71 /* CocoaMQTT */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
-            productName = CocoaMQTT;
-        };
-        AA009SMD0000000000000002 /* Markdown */ = {
-            isa = XCSwiftPackageProductDependency;
-            package = AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */;
-            productName = Markdown;
-        };
+		102B5EAA2E172F41003D191E /* DatadogCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogCore;
+		};
+		102B5EAC2E172F41003D191E /* DatadogCrashReporting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogCrashReporting;
+		};
+		102B5EAE2E172F41003D191E /* DatadogLogs */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogLogs;
+		};
+		102B5EB02E172F41003D191E /* DatadogRUM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogRUM;
+		};
+		10794B222F8713CB000CA23F /* MeshtasticTAK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */;
+			productName = MeshtasticTAK;
+		};
+		10D109F32E2047D600536CE6 /* DatadogTrace */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogTrace;
+		};
+		2315D1A72EEF2ED400E0FAE7 /* SwiftDraw */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */;
+			productName = SwiftDraw;
+		};
+		2388EC372EDF88E900F6F982 /* NordicDFU */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
+			productName = NordicDFU;
+		};
+		25A978B92C13F8ED0003AAE7 /* MeshtasticProtobufs */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MeshtasticProtobufs;
+		};
+		25A978BB2C13F90D0003AAE7 /* MeshtasticProtobufs */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MeshtasticProtobufs;
+		};
+		AA009SMD0000000000000002 /* Markdown */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */;
+			productName = Markdown;
+		};
+		DD00003B000SNAP00000000 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		DD0D3D212A55CEB10066DB71 /* CocoaMQTT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
+			productName = CocoaMQTT;
+		};
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
-        DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
-            isa = XCVersionGroup;
-            children = (
-                AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */,
-                DD7D46262F833B520028AC1A /* MeshtasticDataModelV 56.xcdatamodel */,
-                DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */,
-                DDDF34392E2CB8E600356DC3 /* MeshtasticDataModelV 54.xcdatamodel */,
-                DD1BEF462DFF284C0090CE24 /* MeshtasticDataModelV 53.xcdatamodel */,
-                DD0836AB2DE7C7CB00A3A973 /* MeshtasticDataModelV 52.xcdatamodel */,
-                DD63CB4E2DD4FBEA00AFCAE2 /* MeshtasticDataModelV 51.xcdatamodel */,
-                233E99B32D84969500CC3A77 /* MeshtasticDataModelV 50.xcdatamodel */,
-                8D3F8A3D2D44B137009EAAA4 /* MeshtasticDataModelV 49.xcdatamodel */,
-                DDA28B1B2D32C89200EF726F /* MeshtasticDataModelV 48.xcdatamodel */,
-                DDDFE7402D0D4A070044463C /* MeshtasticDataModelV 47.xcdatamodel */,
-                DD0BE30C2CB785D8000BA445 /* MeshtasticDataModelV 46.xcdatamodel */,
-                DD6D5A342CA13BA600ED3032 /* MeshtasticDataModelV 45.xcdatamodel */,
-                DD7CF8DA2C93663C008BD10E /* MeshtasticDataModelV 44.xcdatamodel */,
-                DD7E235F2C7AA3E50078ACDF /* MeshtasticDataModelV 43.xcdatamodel */,
-                DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */,
-                DD2984A82C5AEF7500B1268D /* MeshtasticDataModelV 41.xcdatamodel */,
-                DD68BAE72C417A74004C01A0 /* MeshtasticDataModelV 40.xcdatamodel */,
-                DD3D17DC2C3D7B1400561584 /* MeshtasticDataModelV 39.xcdatamodel */,
-                DDD5BB142C28680D007E03CA /* MeshtasticDataModelV 38.xcdatamodel */,
-                DDD28D372C0CD2670063CFA3 /* MeshtasticDataModelV 37.xcdatamodel */,
-                DD31B04D2BDC6FD30024FA63 /* MeshtasticDataModelV 36.xcdatamodel */,
-                DD268D8C2BCC7D11008073AE /* MeshtasticDataModelV 35.xcdatamodel */,
-                DDDBC87C2BC65682001E8DF7 /* MeshtasticDataModelV 34.xcdatamodel */,
-                DDF45C382BC46B16005ED5F2 /* MeshtasticDataModelV33.xcdatamodel */,
-                DD9681A22BBB22BE00FD2C47 /* MeshtasticDataModelV32.xcdatamodel */,
-                DDDCD5712BB3246500BE6B60 /* MeshtasticDataModelV 31.xcdatamodel */,
-                DD9A1A912BA2D2D3001E602E /* MeshtasticDataModelV 30.xcdatamodel */,
-                DD398EBD2B93F640002B4C51 /* MeshtasticDataModelV 29.xcdatamodel */,
-                DD0E20FF2B892E1300F2D100 /* MeshtasticDataModelV 28.xcdatamodel */,
-                D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */,
-                DD05296F2B77F454008E44CD /* MeshtasticDataModelV 26.xcdatamodel */,
-                DD23D9AB2B7133F6003F5CBE /* MeshtasticDataModelV 25.xcdatamodel */,
-                DDB234392B5CA9B000DA6FB1 /* MeshtasticDataModelV 24.xcdatamodel */,
-                DD33DB602B3D1ECC003E1EA0 /* MeshtasticDataModelV 23.xcdatamodel */,
-                DD295CE92B323ED9002CC4AC /* MeshtasticDataModelV22.xcdatamodel */,
-                DD3619132B1EE20700C41C8C /* MeshtasticDataModelV21.xcdatamodel */,
-                DDAB580B2B0D913500147258 /* MeshtasticDataModelV20.xcdatamodel */,
-                DD2CC2E52ABFE04E00EDFDA7 /* MeshtasticDataModelV19.xcdatamodel */,
-                DDDB26492AAD743E003AFCB7 /* MeshtasticDataModelV18.xcdatamodel */,
-                DDF6B2462A9AEB9E00BA6931 /* MeshtasticDataModelV17.xcdatamodel */,
-                DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */,
-                DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */,
-                DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */,
-                DDB75A1F2A10766D006ED576 /* MeshtasticDataModelV13.xcdatamodel */,
-                DDB759E12A04B264006ED576 /* MeshtasticDataModelV12.xcdatamodel */,
-                DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */,
-                DDC94FC329CED7280082EA6E /* MeshtasticDataModelV10.xcdatamodel */,
-                DDDD527729B5B83F0045BC3C /* MeshtasticDataModelV9.xcdatamodel */,
-                DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */,
-                DD5E51CC2986643400D21B61 /* MeshtasticDataModelV7.xcdatamodel */,
-                DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */,
-                DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */,
-                DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */,
-                DDCDC69A29467643004C1DDA /* MeshtasticDataModelV3.xcdatamodel */,
-                DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
-                DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
-            );
-            currentVersion = DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */;
-            name = Meshtastic.xcdatamodeld;
-            path = Meshtastic/Meshtastic.xcdatamodeld;
-            sourceTree = "<group>";
-            versionGroupType = wrapper.xcdatamodel;
-        };
+		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */,
+				DD7D46262F833B520028AC1A /* MeshtasticDataModelV 56.xcdatamodel */,
+				DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */,
+				DDDF34392E2CB8E600356DC3 /* MeshtasticDataModelV 54.xcdatamodel */,
+				DD1BEF462DFF284C0090CE24 /* MeshtasticDataModelV 53.xcdatamodel */,
+				DD0836AB2DE7C7CB00A3A973 /* MeshtasticDataModelV 52.xcdatamodel */,
+				DD63CB4E2DD4FBEA00AFCAE2 /* MeshtasticDataModelV 51.xcdatamodel */,
+				233E99B32D84969500CC3A77 /* MeshtasticDataModelV 50.xcdatamodel */,
+				8D3F8A3D2D44B137009EAAA4 /* MeshtasticDataModelV 49.xcdatamodel */,
+				DDA28B1B2D32C89200EF726F /* MeshtasticDataModelV 48.xcdatamodel */,
+				DDDFE7402D0D4A070044463C /* MeshtasticDataModelV 47.xcdatamodel */,
+				DD0BE30C2CB785D8000BA445 /* MeshtasticDataModelV 46.xcdatamodel */,
+				DD6D5A342CA13BA600ED3032 /* MeshtasticDataModelV 45.xcdatamodel */,
+				DD7CF8DA2C93663C008BD10E /* MeshtasticDataModelV 44.xcdatamodel */,
+				DD7E235F2C7AA3E50078ACDF /* MeshtasticDataModelV 43.xcdatamodel */,
+				DD1BD0F12C61D3AD008C0C70 /* MeshtasticDataModelV 42.xcdatamodel */,
+				DD2984A82C5AEF7500B1268D /* MeshtasticDataModelV 41.xcdatamodel */,
+				DD68BAE72C417A74004C01A0 /* MeshtasticDataModelV 40.xcdatamodel */,
+				DD3D17DC2C3D7B1400561584 /* MeshtasticDataModelV 39.xcdatamodel */,
+				DDD5BB142C28680D007E03CA /* MeshtasticDataModelV 38.xcdatamodel */,
+				DDD28D372C0CD2670063CFA3 /* MeshtasticDataModelV 37.xcdatamodel */,
+				DD31B04D2BDC6FD30024FA63 /* MeshtasticDataModelV 36.xcdatamodel */,
+				DD268D8C2BCC7D11008073AE /* MeshtasticDataModelV 35.xcdatamodel */,
+				DDDBC87C2BC65682001E8DF7 /* MeshtasticDataModelV 34.xcdatamodel */,
+				DDF45C382BC46B16005ED5F2 /* MeshtasticDataModelV33.xcdatamodel */,
+				DD9681A22BBB22BE00FD2C47 /* MeshtasticDataModelV32.xcdatamodel */,
+				DDDCD5712BB3246500BE6B60 /* MeshtasticDataModelV 31.xcdatamodel */,
+				DD9A1A912BA2D2D3001E602E /* MeshtasticDataModelV 30.xcdatamodel */,
+				DD398EBD2B93F640002B4C51 /* MeshtasticDataModelV 29.xcdatamodel */,
+				DD0E20FF2B892E1300F2D100 /* MeshtasticDataModelV 28.xcdatamodel */,
+				D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */,
+				DD05296F2B77F454008E44CD /* MeshtasticDataModelV 26.xcdatamodel */,
+				DD23D9AB2B7133F6003F5CBE /* MeshtasticDataModelV 25.xcdatamodel */,
+				DDB234392B5CA9B000DA6FB1 /* MeshtasticDataModelV 24.xcdatamodel */,
+				DD33DB602B3D1ECC003E1EA0 /* MeshtasticDataModelV 23.xcdatamodel */,
+				DD295CE92B323ED9002CC4AC /* MeshtasticDataModelV22.xcdatamodel */,
+				DD3619132B1EE20700C41C8C /* MeshtasticDataModelV21.xcdatamodel */,
+				DDAB580B2B0D913500147258 /* MeshtasticDataModelV20.xcdatamodel */,
+				DD2CC2E52ABFE04E00EDFDA7 /* MeshtasticDataModelV19.xcdatamodel */,
+				DDDB26492AAD743E003AFCB7 /* MeshtasticDataModelV18.xcdatamodel */,
+				DDF6B2462A9AEB9E00BA6931 /* MeshtasticDataModelV17.xcdatamodel */,
+				DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */,
+				DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */,
+				DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */,
+				DDB75A1F2A10766D006ED576 /* MeshtasticDataModelV13.xcdatamodel */,
+				DDB759E12A04B264006ED576 /* MeshtasticDataModelV12.xcdatamodel */,
+				DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */,
+				DDC94FC329CED7280082EA6E /* MeshtasticDataModelV10.xcdatamodel */,
+				DDDD527729B5B83F0045BC3C /* MeshtasticDataModelV9.xcdatamodel */,
+				DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */,
+				DD5E51CC2986643400D21B61 /* MeshtasticDataModelV7.xcdatamodel */,
+				DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */,
+				DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */,
+				DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */,
+				DDCDC69A29467643004C1DDA /* MeshtasticDataModelV3.xcdatamodel */,
+				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
+				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
+			);
+			currentVersion = DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */;
+			name = Meshtastic.xcdatamodeld;
+			path = Meshtastic/Meshtastic.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
 /* End XCVersionGroup section */
-    };
-    rootObject = DDC2E14C26CE248E0042C5E4 /* Project object */;
+	};
+	rootObject = DDC2E14C26CE248E0042C5E4 /* Project object */;
 }

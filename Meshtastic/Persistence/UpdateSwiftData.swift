@@ -16,7 +16,7 @@ extension MeshPackets {
 		var nodePKIExpireTime: TimeInterval {
 			return TimeInterval((nodeExpireDays < 7 ? -7 : -nodeExpireDays) * 86400)
 		}
-		
+
 		if nodeExpireDays == 0 {
 			Logger.data.info("💾 [NodeInfoEntity] Skip clearing stale nodes")
 			return false
@@ -51,7 +51,7 @@ extension MeshPackets {
 		}
 		return false
 	}
-	
+
 	func clearPax(destNum: Int64) -> Bool {
 		let num = destNum
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
@@ -69,7 +69,7 @@ extension MeshPackets {
 		}
 		return false
 	}
-	
+
 	public func clearPositions(destNum: Int64) -> Bool {
 		let num = destNum
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
@@ -87,7 +87,7 @@ extension MeshPackets {
 		}
 		return false
 	}
-	
+
 	public func clearTelemetry(destNum: Int64, metricsType: Int32) -> Bool {
 		let num = destNum
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
@@ -108,7 +108,7 @@ extension MeshPackets {
 		}
 		return false
 	}
-	
+
 	public func deleteChannelMessages(channel: ChannelEntity) {
 		let channelIndex = channel.index
 		let descriptor = FetchDescriptor<MessageEntity>(
@@ -126,7 +126,7 @@ extension MeshPackets {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
 	public func deleteUserMessages(user: UserEntity) {
 		let messages = (user.sentMessages ?? []) + (user.receivedMessages ?? [])
 		let filtered = messages.filter { msg in
@@ -141,7 +141,7 @@ extension MeshPackets {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
 	public func clearDatabase(includeRoutes: Bool, preserveFavorites: Bool = false) {
 		// Delete entities that are on the inverse side of many-to-many
 		// relationships first to avoid constraint trigger violations.
@@ -216,32 +216,32 @@ extension MeshPackets {
 			Logger.data.error("Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
 	func updateAnyPacketFrom (packet: MeshPacket, activeDeviceNum: Int64) {
 		// Update NodeInfoEntity for any packet received. This mirrors the firmware's NodeDB::updateFrom, which sniffs ALL received packets and updates the radio's nodeDB with packet.from's:
 		// - last_heard (from rxTime)
 		// - snr
 		// - via_mqtt
 		// - hops_away
-		
+
 		guard packet.from > 0 else { return }
 		guard packet.from != activeDeviceNum else { return }
-		
+
 		// Skip routing packets with no rxTime — these are locally-generated implicit ACKs
 		// that don't represent actual RF contact with the remote node.
 		let isImplicitAck = packet.decoded.portnum == .routingApp && packet.rxTime == 0
-		
+
 		let num = Int64(packet.from)
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate<NodeInfoEntity> { $0.num == num }
 		)
 		descriptor.fetchLimit = 1
-		
+
 		do {
 			if let node = try modelContext.fetch(descriptor).first {
 				node.id = Int64(packet.from)
 				node.num = Int64(packet.from)
-				
+
 				if !isImplicitAck {
 					if packet.rxTime > 0 {
 						node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
@@ -251,16 +251,16 @@ extension MeshPackets {
 						Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
 					}
 				}
-				
+
 				node.snr = packet.rxSnr
 				node.rssi = packet.rxRssi
 				node.viaMqtt = packet.viaMqtt
-				
+
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					node.hopsAway = Int32(packet.hopStart - packet.hopLimit)
 					Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) hopsAway=\(node.hopsAway)")
 				}
-				
+
 				// Changes are saved by the subsequent packet handler's save call
 				Logger.data.info("💾 [updateAnyPacketFrom] Updated node \(node.num.toHex(), privacy: .public) snr=\(node.snr), rssi=\(node.rssi) from packet \(packet.id.toHex(), privacy: .public)")
 			}
@@ -268,20 +268,20 @@ extension MeshPackets {
 			Logger.data.error("💥 [updateAnyPacketFrom] fetch data error")
 		}
 	}
-	
+
 	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false) {
-		
+
 		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, packet.from.toHex())
 		Logger.mesh.info("📟 \(logString, privacy: .public)")
-		
+
 		guard packet.from > 0 else { return }
-		
+
 		let fetchNum = Int64(packet.from)
 		var fetchNodeInfoAppRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 		fetchNodeInfoAppRequest.fetchLimit = 1
-		
+
 		do {
-			
+
 			let fetchedNode = try modelContext.fetch(fetchNodeInfoAppRequest)
 			if fetchedNode.count == 0 {
 				// Not Found Insert
@@ -300,7 +300,7 @@ extension MeshPackets {
 				newNode.snr = packet.rxSnr
 				newNode.rssi = packet.rxRssi
 				newNode.viaMqtt = packet.viaMqtt
-				
+
 				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 					newNode.channel = Int32(packet.channel)
 				}
@@ -310,9 +310,9 @@ extension MeshPackets {
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
 				}
-				
+
 				if let newUserMessage = try? User(serializedBytes: packet.decoded.payload) {
-					
+
 					if newUserMessage.id.isEmpty {
 						if packet.from > Constants.minimumNodeNum {
 							do {
@@ -325,7 +325,7 @@ extension MeshPackets {
 							}
 						}
 					} else {
-						
+
 						let newUser = UserEntity()
 						modelContext.insert(newUser)
 						newUser.userId = newNode.num.toHex()
@@ -351,7 +351,7 @@ extension MeshPackets {
 							newUser.pkiEncrypted = true
 							newUser.publicKey = newUserMessage.publicKey
 						}
-						
+
 						let fetchHwModel1 = Int64(newUser.hwModelId)
 						let hwDescriptor1 = FetchDescriptor<DeviceHardwareEntity>(
 							predicate: #Predicate { $0.hwModel == fetchHwModel1 }
@@ -360,7 +360,7 @@ extension MeshPackets {
 							newUser.hwDisplayName = hardwareEntity.displayName
 						}
 						newNode.user = newUser
-						
+
 						if UserDefaults.newNodeNotifications {
 							Task { @MainActor in
 								let manager = LocalNotificationManager()
@@ -407,16 +407,16 @@ extension MeshPackets {
 						return
 					}
 				}
-				
+
 				savePendingChanges()
 				Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
-				
+
 			} else {
 				// Update an existing node
 				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
 					fetchedNode[0].channel = Int32(packet.channel)
 				}
-				
+
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
 
 					fetchedNode[0].favorite = nodeInfoMessage.isFavorite
@@ -512,24 +512,24 @@ extension MeshPackets {
 			Logger.data.error("💥 [NodeInfoEntity] fetch data error for NODEINFO_APP")
 		}
 	}
-	
+
 	func upsertPositionPacket (packet: MeshPacket) {
-		
+
 		let logString = String.localizedStringWithFormat("[Position] received from node: %@".localized, String(packet.from))
 		Logger.mesh.info("📍 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(packet.from)
 			var fetchNodePositionRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodePositionRequest.fetchLimit = 1
 		do {
-			
+
 			if let positionMessage = try? Position(serializedBytes: packet.decoded.payload) {
-				
+
 				/// Don't save empty position packets from null island or apple park
 				if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
 					let fetchedNode = try modelContext.fetch(fetchNodePositionRequest)
 					if fetchedNode.count == 1 {
-						
+
 						// Unset the current latest position for this node
 						let posNum = Int64(packet.from)
 						let fetchCurrentLatestPositionsRequest = FetchDescriptor<PositionEntity>(predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == true })
@@ -612,7 +612,7 @@ extension MeshPackets {
 						}
 
 						fetchedNode[0].channel = Int32(packet.channel)
-						
+
 						scheduleDebouncedSave()
 						Logger.data.info("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")
 					}
@@ -624,12 +624,12 @@ extension MeshPackets {
 			Logger.data.error("💥 Error Deserializing POSITION_APP packet.")
 		}
 	}
-	
+
 	func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Bluetooth config received: %@".localized, String(nodeNum))
 		Logger.mesh.info("📶 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -663,9 +663,9 @@ extension MeshPackets {
 			Logger.data.error("💥 [BluetoothConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Device config received: %@".localized, String(nodeNum))
 		Logger.mesh.info("📟 \(logString, privacy: .public)")
 		let fetchNum = Int64(nodeNum)
@@ -713,12 +713,12 @@ extension MeshPackets {
 			Logger.data.error("💥 [DeviceConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertDisplayConfigPacket(config: Config.DisplayConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Display config received: %@".localized, nodeNum.toHex())
 		Logger.data.info("🖥️ \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -726,9 +726,9 @@ extension MeshPackets {
 			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
 			// Found a node, save Device Config
 			if !fetchedNode.isEmpty {
-				
+
 				if fetchedNode[0].displayConfig == nil {
-					
+
 					let newDisplayConfig = DisplayConfigEntity()
 					modelContext.insert(newDisplayConfig)
 					newDisplayConfig.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
@@ -763,18 +763,18 @@ extension MeshPackets {
 			} else {
 				Logger.data.error("💥 [DisplayConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Display Config")
 			}
-			
+
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("💥 [DisplayConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertLoRaConfigPacket(config: Config.LoRaConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("LoRa config received: %@".localized, nodeNum.toHex())
 		Logger.data.info("📻 \(logString, privacy: .public)")
-		
+
 		let fetchNum = nodeNum
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -836,12 +836,12 @@ extension MeshPackets {
 			Logger.data.error("💥 [LoRaConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertNetworkConfigPacket(config: Config.NetworkConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Network config received: %@".localized, String(nodeNum))
 		Logger.data.info("🌐 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -893,12 +893,12 @@ extension MeshPackets {
 			Logger.data.error("💥 [NetworkConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertPositionConfigPacket(config: Config.PositionConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Position config received: %@".localized, String(nodeNum))
 		Logger.data.info("🗺️ \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -952,11 +952,11 @@ extension MeshPackets {
 			Logger.data.error("💥 [PositionConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertPowerConfigPacket(config: Config.PowerConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		let logString = String.localizedStringWithFormat("Power config received: %@".localized, String(nodeNum))
 		Logger.data.info("🗺️ \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -998,12 +998,12 @@ extension MeshPackets {
 			Logger.data.error("💥 [PowerConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("mesh.log.security.config %@".localized, String(nodeNum))
 		Logger.data.info("🛡️ \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1109,10 +1109,10 @@ extension MeshPackets {
 	}
 
 	func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Ambient Lighting module config received: %@".localized, String(nodeNum))
 		Logger.data.info("🏮 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1120,7 +1120,7 @@ extension MeshPackets {
 			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
 			// Found a node, save Ambient Lighting Config
 			if !fetchedNode.isEmpty {
-				
+
 				if fetchedNode[0].cannedMessageConfig == nil {
 					let newAmbientLightingConfig = AmbientLightingConfigEntity()
 					modelContext.insert(newAmbientLightingConfig)
@@ -1131,7 +1131,7 @@ extension MeshPackets {
 					newAmbientLightingConfig.blue = Int32(config.blue)
 					fetchedNode[0].ambientLightingConfig = newAmbientLightingConfig
 				} else {
-					
+
 					if fetchedNode[0].ambientLightingConfig == nil {
 						let newAmbientLighting = AmbientLightingConfigEntity()
 						modelContext.insert(newAmbientLighting)
@@ -1157,12 +1157,12 @@ extension MeshPackets {
 			Logger.data.error("💥 [AmbientLightingConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertCannedMessagesModuleConfigPacket(config: ModuleConfig.CannedMessageConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Canned Message module config received: %@".localized, String(nodeNum))
 		Logger.data.info("🥫 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1170,7 +1170,7 @@ extension MeshPackets {
 			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
 			// Found a node, save Canned Message Config
 			if !fetchedNode.isEmpty {
-				
+
 				if fetchedNode[0].cannedMessageConfig == nil {
 					let newCannedMessageConfig = CannedMessageConfigEntity()
 					modelContext.insert(newCannedMessageConfig)
@@ -1213,10 +1213,10 @@ extension MeshPackets {
 	}
 
 	func upsertDetectionSensorModuleConfigPacket(config: ModuleConfig.DetectionSensorConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Detection Sensor module config received: %@".localized, String(nodeNum))
 		Logger.data.info("🕵️ \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1252,11 +1252,11 @@ extension MeshPackets {
 				}
 				savePendingChanges()
 				Logger.data.info("💾 [DetectionSensorConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
-				
+
 			} else {
 				Logger.data.error("💥 [DetectionSensorConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Detection Sensor Module Config")
 			}
-			
+
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("💥 [DetectionSensorConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
@@ -1264,10 +1264,10 @@ extension MeshPackets {
 	}
 
 	func upsertExternalNotificationModuleConfigPacket(config: ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("External Notification module config received: %@".localized, String(nodeNum))
 		Logger.data.info("📣 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1275,7 +1275,7 @@ extension MeshPackets {
 			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
 			// Found a node, save External Notificaitone Config
 			if !fetchedNode.isEmpty {
-				
+
 				if fetchedNode[0].externalNotificationConfig == nil {
 					let newExternalNotificationConfig = ExternalNotificationConfigEntity()
 					modelContext.insert(newExternalNotificationConfig)
@@ -1326,12 +1326,12 @@ extension MeshPackets {
 			Logger.data.error("💥 [ExternalNotificationConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
-	
+
 	func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("PAX Counter config received: %@".localized, String(nodeNum))
 		Logger.data.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1369,10 +1369,10 @@ extension MeshPackets {
 	}
 
 	func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("RTTTL Ringtone config received: %@".localized, String(nodeNum))
 		Logger.data.info("⛰️ \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1404,10 +1404,10 @@ extension MeshPackets {
 	}
 
 	func upsertMqttModuleConfigPacket(config: ModuleConfig.MQTTConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("MQTT module config received: %@".localized, String(nodeNum))
 		Logger.data.info("🌉 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1462,10 +1462,10 @@ extension MeshPackets {
 	}
 
 	func upsertRangeTestModuleConfigPacket(config: ModuleConfig.RangeTestConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Range Test module config received: %@".localized, String(nodeNum))
 		Logger.data.info("⛰️ \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1501,10 +1501,10 @@ extension MeshPackets {
 	}
 
 	func upsertSerialModuleConfigPacket(config: ModuleConfig.SerialConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Serial module config received: %@".localized, String(nodeNum))
 		Logger.data.info("🤖 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1542,17 +1542,17 @@ extension MeshPackets {
 				Logger.data.error("💥 [SerialConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
 			}
 		} catch {
-			
+
 			let nsError = error as NSError
 			Logger.data.error("💥 [SerialConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
 
 	func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Store & Forward module config received: %@".localized, String(nodeNum))
 		Logger.data.info("📬 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1593,10 +1593,10 @@ extension MeshPackets {
 	}
 
 	func upsertTelemetryModuleConfigPacket(config: ModuleConfig.TelemetryConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
-		
+
 		let logString = String.localizedStringWithFormat("Telemetry module config received: %@".localized, String(nodeNum))
 		Logger.data.info("📈 \(logString, privacy: .public)")
-		
+
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1
@@ -1638,11 +1638,11 @@ extension MeshPackets {
 				}
 				savePendingChanges()
 				Logger.data.info("💾 [TelemetryConfigEntity] Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")
-				
+
 			} else {
 				Logger.data.error("💥 [TelemetryConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Telemetry Module Config")
 			}
-			
+
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("💥 [TelemetryConfigEntity] Fetching node for core data TelemetryConfigEntity failed: \(nsError, privacy: .public)")

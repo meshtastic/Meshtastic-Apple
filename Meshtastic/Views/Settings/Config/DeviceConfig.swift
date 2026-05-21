@@ -10,13 +10,13 @@ import OSLog
 import SwiftUI
 
 struct DeviceConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
 	@State private var isResetting = false
@@ -43,7 +43,7 @@ struct DeviceConfig: View {
 		} else {
 		Form {
 			ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
-			
+
 			Section(header: Text("Options")) {
 				VStack(alignment: .leading) {
 					Picker("Device Role", selection: $deviceRole ) {
@@ -62,7 +62,7 @@ struct DeviceConfig: View {
 						isPresented: $showSpecialRoleWarning,
 						titleVisibility: .visible
 					) {
-						
+
 						Button("Confirm") {
 							hasChanges = true
 						}
@@ -77,7 +77,7 @@ struct DeviceConfig: View {
 						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-				
+
 				VStack(alignment: .leading) {
 					Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
 						ForEach(RebroadcastModes.allCases) { rm in
@@ -95,19 +95,19 @@ struct DeviceConfig: View {
 				)
 			}
 			Section(header: Text("Hardware")) {
-				
+
 				Toggle(isOn: $doubleTapAsButtonPress) {
 					Label("Double Tap as Button", systemImage: "hand.tap")
 					Text("Treat double tap on supported accelerometers as a user button press.")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+
 				Toggle(isOn: $tripleClickAsAdHocPing) {
 					Label("Triple Click Ad Hoc Ping", systemImage: "mappin")
 					Text("Send a position on the primary channel when the user button is triple clicked.")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+
 				Toggle(isOn: $ledHeartbeatEnabled) {
 					Label("LED Heartbeat", systemImage: "waveform.path.ecg")
 					Text("Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable.")
@@ -307,7 +307,7 @@ struct DeviceConfig: View {
 			.navigationBarItems(
 				trailing: ZStack {
 					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-					
+
 				}
 			)
 		} // end Form

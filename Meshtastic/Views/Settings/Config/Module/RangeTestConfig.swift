@@ -10,13 +10,13 @@ import OSLog
 import SwiftUI
 
 struct RangeTestConfig: View {
-	
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var enabled = false
@@ -68,14 +68,14 @@ struct RangeTestConfig: View {
 				Text("This device will send out range test messages on the selected interval.")
 					.foregroundColor(.gray)
 					.font(.callout)
-				
+
 				Toggle(isOn: $save) {
 					Label("Save", systemImage: "square.and.arrow.down.fill")
 					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 				}
 				.tint(.accentColor)
 				.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
-				
+
 			}
 		}
 		.disabled(!accessoryManager.isConnected || node?.rangeTestConfig == nil || isPrimaryChannelPublic)
@@ -124,7 +124,7 @@ struct RangeTestConfig: View {
 		.onChange(of: sender.intValue) { _, newSender in
 			if newSender != node?.rangeTestConfig?.sender ?? -1 { hasChanges = true }
 		}
-		
+
 	}
 	func setRangeTestValues() {
 		self.enabled = node?.rangeTestConfig?.enabled ?? false

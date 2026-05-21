@@ -13,9 +13,9 @@ struct AmbientLightingConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	let node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var ledState: Bool = false
@@ -25,15 +25,15 @@ struct AmbientLightingConfig: View {
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Ambient Lighting", config: \.ambientLightingConfig, node: node, onAppear: setAmbientLightingConfigValue)
-			
+
 			Section(header: Text("Options")) {
-				
+
 				Toggle(isOn: $ledState) {
 					Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
 					Text("The state of the LED (on/off)")
 				}
 				.tint(.accentColor)
-				
+
 				HStack {
 					Image(systemName: "eyedropper")
 						.foregroundColor(.accentColor)
