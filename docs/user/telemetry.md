@@ -77,7 +77,8 @@ Go to **Settings → Telemetry** to enable telemetry modules and set reporting i
 |---------|-------------|
 | Device Metrics Interval | How often (seconds) the node broadcasts battery and utilisation data. |
 | Environment Interval | How often environment sensor data is broadcast. |
-| Air Quality Interval | How often air quality sensor data is broadcast. |
+| Air Quality Metrics Enabled | Enable or disable air quality sensor reporting. When enabled, the interval picker appears. |
+| Air Quality Interval | How often air quality sensor data is broadcast. Default is 30 minutes. |
 | Environment Screen | Show environment data on the device screen. |
 | Telemetry on Admin Channel | Restrict telemetry to the admin channel instead of broadcast. |
 
