@@ -96,6 +96,9 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .nullify, inverse: \SerialConfigEntity.serialConfigNode)
 	var serialConfig: SerialConfigEntity?
 
+	@Relationship(deleteRule: .nullify, inverse: \StatusMessageConfigEntity.statusMessageConfigNode)
+	var statusMessageConfig: StatusMessageConfigEntity?
+
 	@Relationship(deleteRule: .nullify, inverse: \StoreForwardConfigEntity.storeForwardConfigNode)
 	var storeForwardConfig: StoreForwardConfigEntity?
 

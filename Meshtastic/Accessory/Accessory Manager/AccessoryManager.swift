@@ -860,6 +860,11 @@ extension AccessoryManager {
 	var supportsTAKv2: Bool {
 		checkIsVersionSupported(forVersion: "2.8.0")
 	}
+
+	/// StatusMessage module was introduced in firmware 2.6.0.
+	var supportsStatusMessage: Bool {
+		checkIsVersionSupported(forVersion: "2.6.0")
+	}
 }
 
 extension AccessoryManager {

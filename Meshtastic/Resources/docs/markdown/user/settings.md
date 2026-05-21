@@ -102,6 +102,7 @@ Optional feature modules. Only available when your connected node supports the m
 | Ringtone | Custom RTTTL melodies for notification tones. |
 | Store & Forward | Store packets for nodes that are temporarily offline. |
 | Serial | UART serial output for integration with other hardware. |
+| Status Message | Set a custom status message broadcast to the mesh. |
 | Telemetry | Device, environment, and air-quality sensor reporting. |
 
 ## Firmware Updates
