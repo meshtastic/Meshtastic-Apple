@@ -307,6 +307,8 @@ final class TAKConfigEntity {
 
 @Model
 final class TelemetryConfigEntity {
+	var airQualityEnabled: Bool = false
+	var airQualityInterval: Int32 = 0
 	var deviceTelemetryEnabled: Bool = false
 	var deviceUpdateInterval: Int32 = 0
 	var environmentDisplayFahrenheit: Bool = false
