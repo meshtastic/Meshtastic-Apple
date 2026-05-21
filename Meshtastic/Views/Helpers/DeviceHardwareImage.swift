@@ -48,14 +48,19 @@ private struct DeviceHardwareImageProcessor: View {
 	// This prevents the Layout pass from triggering faults.
 	@State private var sortedImages: [DeviceHardwareImageEntity] = []
 	
+	/// A stable identity that changes when the actual hardware models change, not just the count.
+	private var hardwareIdentity: String {
+		hardware.map { "\($0.hwModel)" }.joined(separator: ",")
+	}
+
 	var body: some View {
 		DeviceHardwareImageLayout(
 			images: sortedImages,
 			isLoading: meshtasticAPI.isLoadingDeviceList
 		)
-		.task(id: hardware.count) {
-			// Re-calculate only when the hardware list actually changes,
-			// NOT when the scrollview bounces or layout shifts.
+		.task(id: hardwareIdentity) {
+			// Re-calculate when the hardware list actually changes
+			// (different node selected, not just layout shifts).
 			self.sortedImages = processImages()
 		}
 	}
@@ -167,10 +172,12 @@ private struct SingleImageView: View {
 				Color.clear
 			}
 		}
-		.task {
-			// Parse SVG once, prevents lag during scroll/layout
-			if self.svg == nil, let data = entity.svgData {
+		.task(id: entity.fileName) {
+			// Re-parse SVG when the entity changes (e.g. switching nodes)
+			if let data = entity.svgData {
 				self.svg = SVG(data: data)
+			} else {
+				self.svg = nil
 			}
 		}
 	}
