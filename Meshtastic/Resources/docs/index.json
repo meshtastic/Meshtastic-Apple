@@ -357,23 +357,25 @@
         "navOrder": 4,
         "keywords": [
             "node",
+            "from",
             "nodes",
-            "messages",
             "key",
             "device",
-            "client",
             "broadcasts",
-            "from",
+            "messages",
+            "client",
             "not",
             "name",
             "channel",
             "role",
+            "remove",
             "public",
+            "message",
             "mesh",
             "list",
             "heard",
+            "direct",
             "circle",
-            "any",
             "view",
             "tap",
             "tak",
@@ -383,11 +385,9 @@
             "sensor",
             "row",
             "router",
-            "reduces",
-            "position",
-            "packets"
+            "reduces"
         ],
-        "charCount": 3794
+        "charCount": 3885
     },
     {
         "id": "settings",
@@ -407,6 +407,7 @@
             "nodes",
             "documentation",
             "display",
+            "configure",
             "position",
             "pages",
             "connected",
@@ -414,6 +415,7 @@
             "range",
             "only",
             "messages",
+            "mesh",
             "ios",
             "inverted",
             "from",
@@ -422,11 +424,9 @@
             "english",
             "default",
             "using",
-            "use",
-            "updates",
-            "supported"
+            "use"
         ],
-        "charCount": 5724
+        "charCount": 5965
     },
     {
         "id": "signal-meter",
@@ -894,7 +894,7 @@
             "routes",
             "route"
         ],
-        "charCount": 2908
+        "charCount": 2903
     },
     {
         "id": "measurement",
