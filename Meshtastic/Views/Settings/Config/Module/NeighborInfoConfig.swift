@@ -17,7 +17,7 @@ struct NeighborInfoConfig: View {
 
 	@State private var enabled = false
 	@State private var transmitOverLora = false
-	@State private var updateInterval = 0
+	@State private var updateInterval: UpdateInterval = UpdateInterval(from: 14400)
 	@State private var hasChanges: Bool = false
 
 	var body: some View {
@@ -34,15 +34,13 @@ struct NeighborInfoConfig: View {
 
 			if enabled {
 				Section(header: Text("Settings")) {
-					HStack {
-						Label("Update Interval (seconds)", systemImage: "clock")
-						Spacer()
-						TextField("Update Interval", value: $updateInterval, format: .number)
-							.keyboardType(.numberPad)
-							.multilineTextAlignment(.trailing)
-							.frame(width: 100)
-					}
-					Text("How often to broadcast neighbor info. Minimum is 14400 seconds (4 hours).")
+					UpdateIntervalPicker(
+						config: .neighborInfo,
+						pickerLabel: "Update Interval",
+						selectedInterval: $updateInterval
+					)
+					.listRowSeparator(.hidden)
+					Text("How often to broadcast neighbor info. Default is 4 hours.")
 						.foregroundColor(.gray)
 						.font(.callout)
 
@@ -68,7 +66,7 @@ struct NeighborInfoConfig: View {
 					var config = ModuleConfig.NeighborInfoConfig()
 					config.enabled = enabled
 					// A value of 0 means use the firmware default; otherwise enforce the minimum of 14400 seconds
-					config.updateInterval = updateInterval == 0 ? 0 : UInt32(max(updateInterval, 14400))
+					config.updateInterval = UInt32(updateInterval.intValue)
 					config.transmitOverLora = transmitOverLora
 					_ = try await accessoryManager.saveNeighborInfoModuleConfig(
 						config: config,
@@ -110,20 +108,26 @@ struct NeighborInfoConfig: View {
 			}
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
-			if oldEnabled != newEnabled && newEnabled != node?.neighborInfoConfig?.enabled { hasChanges = true }
+			if oldEnabled != newEnabled && newEnabled != (node?.neighborInfoConfig?.enabled ?? false) { hasChanges = true }
 		}
-		.onChange(of: updateInterval) { oldInterval, newInterval in
-			if oldInterval != newInterval && newInterval != Int(node?.neighborInfoConfig?.updateInterval ?? -1) { hasChanges = true }
+		.onChange(of: updateInterval.intValue) { oldInterval, newInterval in
+			if oldInterval != newInterval {
+				let stored = Int(node?.neighborInfoConfig?.updateInterval ?? 0)
+				let effective = stored == 0 ? 14400 : stored
+				if newInterval != effective { hasChanges = true }
+			}
 		}
 		.onChange(of: transmitOverLora) { oldTransmit, newTransmit in
-			if oldTransmit != newTransmit && newTransmit != node?.neighborInfoConfig?.transmitOverLora { hasChanges = true }
+			if oldTransmit != newTransmit && newTransmit != (node?.neighborInfoConfig?.transmitOverLora ?? false) { hasChanges = true }
 		}
 	}
 
 	private func setNeighborInfoValues() {
 		enabled = node?.neighborInfoConfig?.enabled ?? enabled
-		updateInterval = Int(node?.neighborInfoConfig?.updateInterval ?? 0)
+		let storedInterval = Int(node?.neighborInfoConfig?.updateInterval ?? 0)
+		updateInterval = UpdateInterval(from: storedInterval == 0 ? 14400 : storedInterval)
 		transmitOverLora = node?.neighborInfoConfig?.transmitOverLora ?? transmitOverLora
+		hasChanges = false
 	}
 }
 

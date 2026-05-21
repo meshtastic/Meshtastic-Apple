@@ -23,6 +23,10 @@ Welcome to the Meshtastic Apple app documentation. Browse the pages below or use
 
 ## What's New
 
+- **Audio Module Config** — Codec2 voice communication settings for 2.4 GHz radios (LORA_24 region). [Learn more](settings.md)
+- **Neighbor Info Module Config** — Neighbor info broadcasting with configurable update interval (4–72 hours). [Learn more](settings.md)
+- **Pax Counter Thresholds** — WiFi and BLE RSSI threshold fields for device counting sensitivity. [Learn more](settings.md)
+- **Compass Orientation** — 8-option compass orientation picker in Display config. [Learn more](settings.md)
 - **Docs Translation Pipeline** — Community-sourced translations are shared via CDN so future users get instant localized docs. [Learn more](translate.md)
 - **Automatic Documentation Translation** — On iOS 26+, in-app docs are automatically translated into your device language. [Learn more](translate.md)
 - **Message Formatting Toolbar** — Markdown formatting in message compose (iOS 18+/macOS 15+). Bold, italic, strikethrough, code, and links with live preview. [Learn more](messages.md)

@@ -18,6 +18,14 @@ Documentation for using the Meshtastic iOS, iPadOS, macOS, watchOS, and visionOS
 Keep the last 5–8 entries and archive older ones by removing them.
 -->
 
+**May 2026** — [Settings](user/settings) — Audio Module Config: Codec2 voice communication settings, only available on 2.4 GHz radios (LORA_24 region).
+
+**May 2026** — [Settings](user/settings) — Neighbor Info Module Config: neighbor info broadcasting with configurable update interval (4–72 hours).
+
+**May 2026** — [Settings](user/settings) — Pax Counter: added WiFi and BLE RSSI threshold fields for device counting sensitivity.
+
+**May 2026** — [Settings](user/settings) — Compass Orientation: new 8-option picker in Display config for radios mounted at non-standard angles.
+
 **May 2026** — [Translate](user/translate) — Docs Translation Pipeline: community-sourced translations are shared via CDN so future users get instant localized docs.
 
 **May 2026** — [Translate](user/translate) — Automatic Documentation Translation: on iOS 26+, in-app docs are translated into your device language using the Apple Translation framework.
