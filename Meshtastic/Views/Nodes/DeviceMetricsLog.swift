@@ -30,7 +30,7 @@ struct DeviceMetricsLog: View {
 		VStack {
 			if node.hasDeviceMetrics {
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-				let deviceMetrics = node.telemetries.filter { $0.metricsType == 0 }.reversed()
+				let deviceMetrics = node.safeTelemetries(ofType: 0)
 				let chartData = deviceMetrics
 						.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
 						.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }

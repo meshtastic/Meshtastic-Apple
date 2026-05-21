@@ -102,7 +102,7 @@ struct NodeDetail: View {
 					}
 					.accessibilityElement(children: .combine)
 				}
-				if node.telemetries.count > 0 {
+				if node.hasDeviceMetrics {
 					Spacer()
 					BatteryGauge(node: node)
 				}
@@ -215,7 +215,7 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
-			if let dm = node.telemetries.filter({ $0.metricsType == 0 }).last, let uptimeSeconds = dm.uptimeSeconds {
+			if let dm = node.latestDeviceMetrics, let uptimeSeconds = dm.uptimeSeconds {
 				HStack {
 					Label {
 						Text("\("Uptime".localized)")

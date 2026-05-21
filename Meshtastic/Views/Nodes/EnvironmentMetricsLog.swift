@@ -25,8 +25,8 @@ struct EnvironmentMetricsLog: View {
 	
 	private var chartData: [TelemetryEntity] {
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
-		return (node.telemetries ?? [])
-			.filter { $0.metricsType == 1 && ($0.time ?? Date.distantPast) >= oneWeekAgo }
+		return node.safeTelemetries(ofType: 1)
+			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
 			.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
 	}
 	
