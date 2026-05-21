@@ -57,6 +57,21 @@ Device role, serial output, debug log streaming, and node info broadcast interva
 
 Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.
 
+#### Compass Orientation
+
+Controls which direction the on-device compass points when the screen is at rest. Use this when your radio is mounted at an angle or upside-down.
+
+| Option | Description |
+|--------|-------------|
+| 0° | Default orientation — north at the top. |
+| 90° | Rotated 90° clockwise. |
+| 180° | Rotated 180° (upside-down). |
+| 270° | Rotated 270° clockwise (90° counter-clockwise). |
+| 0° Inverted | Default orientation with the display flipped (mirrored). |
+| 90° Inverted | 90° clockwise with the display flipped. |
+| 180° Inverted | 180° with the display flipped. |
+| 270° Inverted | 270° clockwise with the display flipped. |
+
 ### Network
 
 Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).
@@ -81,7 +96,7 @@ Optional feature modules. Only available when your connected node supports the m
 | External Notification | Buzzer or LED alerts for incoming messages. |
 | MQTT | Uplink/downlink messages to an MQTT broker for internet bridging. |
 | Range Test | Automated range testing with position logging. |
-| Pax Counter | Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. |
+| Pax Counter | Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. Configure WiFi Threshold (dBm) and BLE Threshold (dBm) to control the RSSI sensitivity for device counting — default is −80 dBm for both. |
 | Ringtone | Custom RTTTL melodies for notification tones. |
 | Store & Forward | Store packets for nodes that are temporarily offline. |
 | Serial | UART serial output for integration with other hardware. |

@@ -14247,6 +14247,9 @@
         }
       }
     },
+    "BLE Threshold" : {
+
+    },
     "Bluetooth" : {
       "localizations" : {
         "da" : {
@@ -23947,6 +23950,9 @@
           }
         }
       }
+    },
+    "dBm" : {
+
     },
     "Debug" : {
       "localizations" : {
@@ -71661,6 +71667,12 @@
         }
       }
     },
+    "RSSI threshold for BLE device counting. Default is −80 dBm." : {
+
+    },
+    "RSSI threshold for WiFi device counting. Default is −80 dBm." : {
+
+    },
     "RX Boosted Gain" : {
       "localizations" : {
         "da" : {
@@ -98460,6 +98472,9 @@
           }
         }
       }
+    },
+    "WiFi Threshold" : {
+
     },
     "Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button." : {
       "localizations" : {
