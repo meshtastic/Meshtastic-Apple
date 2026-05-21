@@ -406,6 +406,8 @@
         DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */; };
         DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
         DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */; };
+        285B163BBA5F49FD91069A6C /* RegionCodes+FirmwareLocale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3DFBA6BB4CE59D6B202E /* RegionCodes+FirmwareLocale.swift */; };
+        B761F47160B44A76AEF42E5F /* RegionCodesFirmwareLocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5FD1B125404376A2E1BE5F /* RegionCodesFirmwareLocaleTests.swift */; };
         DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
         DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */; };
         DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A0E2A05920E006ED576 /* FileManager.swift */; };
@@ -975,6 +977,8 @@
         DDB6ABDF28B13AC700384BA1 /* DeviceEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEnums.swift; sourceTree = "<group>"; };
         DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
         DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
+        84BB3DFBA6BB4CE59D6B202E /* RegionCodes+FirmwareLocale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RegionCodes+FirmwareLocale.swift"; sourceTree = "<group>"; };
+        FE5FD1B125404376A2E1BE5F /* RegionCodesFirmwareLocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionCodesFirmwareLocaleTests.swift; sourceTree = "<group>"; };
         DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
         DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapSwiftUI.swift; sourceTree = "<group>"; };
         DDB759E12A04B264006ED576 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
@@ -1480,6 +1484,7 @@
             isa = PBXGroup;
             children = (
                 AA00010022E2730EC0060000 /* ConnectViewTests.swift */,
+                FE5FD1B125404376A2E1BE5F /* RegionCodesFirmwareLocaleTests.swift */,
                 DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
                 25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
                 AA000301CPTST000000000001 /* CarPlayTests.swift */,
@@ -1896,6 +1901,7 @@
                 DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */,
                 DD1BEF572E0A00030090CE24 /* FirmwareEditionEnum.swift */,
                 DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */,
+                662042B9F54B4DB0BA37CE82 /* LoraConfig */,
                 DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */,
                 DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */,
                 DD268D8D2BCC90E2008073AE /* RouteEnums.swift */,
@@ -1908,6 +1914,14 @@
                 AB6E72752E3FC85A00639328 /* LayoutEnums.swift */,
             );
             path = Enums;
+            sourceTree = "<group>";
+        };
+        662042B9F54B4DB0BA37CE82 /* LoraConfig */ = {
+            isa = PBXGroup;
+            children = (
+                84BB3DFBA6BB4CE59D6B202E /* RegionCodes+FirmwareLocale.swift */,
+            );
+            path = LoraConfig;
             sourceTree = "<group>";
         };
         DD8EDE9226F97A2B00A5A10B /* Frameworks */ = {
@@ -2582,6 +2596,7 @@
                 DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */,
                 DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */,
                 DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */,
+                B761F47160B44A76AEF42E5F /* RegionCodesFirmwareLocaleTests.swift in Sources */,
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -2793,6 +2808,7 @@
                 DD3CC6C228EB9D4900FA9159 /* UpdateSwiftData.swift in Sources */,
                 DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */,
                 DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
+                285B163BBA5F49FD91069A6C /* RegionCodes+FirmwareLocale.swift in Sources */,
                 231A53782E69ADB900216B99 /* NodeFilterParameters.swift in Sources */,
                 232ED4C52E2C5EDD009DA392 /* TCPConnection.swift in Sources */,
                 23825FF92EF6D9AA00C25543 /* ESP32WifiOTASheet.swift in Sources */,
