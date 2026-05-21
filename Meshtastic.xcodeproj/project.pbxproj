@@ -149,7 +149,7 @@
         9604373EEB96801AA89DF48C /* EXICodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0A8ABAEF1E587683970927 /* EXICodec.swift */; };
         9BC51D7EF97090D149658843 /* SetMessageAttributeIntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */; };
         9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7101240749F24E96835A040A /* NodeInfoEntity.swift */; };
-		F1A2B3C4D5E6F7A800000002 /* Model+Sendable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A800000001 /* Model+Sendable.swift */; };
+        F1A2B3C4D5E6F7A800000002 /* Model+Sendable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A800000001 /* Model+Sendable.swift */; };
         A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */; };
         AA000001303050030000B001 /* Color+Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002303050030000B001 /* Color+Brand.swift */; };
         AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
@@ -238,9 +238,9 @@
         D93068DA2B81509D0066FBC8 /* TapbackInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D92B81509D0066FBC8 /* TapbackInputView.swift */; };
         D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
         D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
-		D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */; };
+        D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */; };
         D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
-		D9306A112B81FF020066FBC8 /* ConfigSaveHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */; };
+        D9306A112B81FF020066FBC8 /* ConfigSaveHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */; };
         D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
         D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
         D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
@@ -659,7 +659,7 @@
         6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
         6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
         7101240749F24E96835A040A /* NodeInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntity.swift; sourceTree = "<group>"; };
-		F1A2B3C4D5E6F7A800000001 /* Model+Sendable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Model+Sendable.swift"; sourceTree = "<group>"; };
+        F1A2B3C4D5E6F7A800000001 /* Model+Sendable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Model+Sendable.swift"; sourceTree = "<group>"; };
         748E4806582595DE80D455CD /* CoTXMLParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTXMLParser.swift; sourceTree = "<group>"; };
         7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GenericCoTHandler.swift; sourceTree = "<group>"; };
         82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "AccessoryManager+TAK.swift"; sourceTree = "<group>"; };
@@ -764,7 +764,7 @@
         D93068D92B81509D0066FBC8 /* TapbackInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackInputView.swift; sourceTree = "<group>"; };
         D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
         D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
-		D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestConfigOnAppear.swift; sourceTree = "<group>"; };
+        D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestConfigOnAppear.swift; sourceTree = "<group>"; };
         D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
         D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
         D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigSaveHelper.swift; sourceTree = "<group>"; };
@@ -1789,7 +1789,7 @@
             children = (
                 DD61937B2863877A00E59241 /* Module */,
                 D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
-				D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */,
+                D9306A002B81FF010066FBC8 /* RequestConfigOnAppear.swift */,
                 D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
                 D9306A102B81FF020066FBC8 /* ConfigSaveHelper.swift */,
                 DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */,
@@ -2041,7 +2041,7 @@
                 F3204EF969484E549C139730 /* MessageEntity.swift */,
                 DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */,
                 7101240749F24E96835A040A /* NodeInfoEntity.swift */,
-				F1A2B3C4D5E6F7A800000001 /* Model+Sendable.swift */,
+                F1A2B3C4D5E6F7A800000001 /* Model+Sendable.swift */,
                 A97241903A924144A3EEB679 /* PositionEntity.swift */,
                 DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */,
                 31483AF5F5354D3481698E32 /* TelemetryEntity.swift */,
@@ -2633,7 +2633,7 @@
                 D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */,
                 85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */,
                 9C744FC4C34549008EADCA4E /* NodeInfoEntity.swift in Sources */,
-				F1A2B3C4D5E6F7A800000002 /* Model+Sendable.swift in Sources */,
+                F1A2B3C4D5E6F7A800000002 /* Model+Sendable.swift in Sources */,
                 D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */,
                 93FFCD83202042FB85B47CFD /* RouteModels.swift in Sources */,
                 5D3AFC6F08ED4C909C830C55 /* TelemetryEntity.swift in Sources */,
@@ -2837,7 +2837,7 @@
                 DD00003ASUPPORTLVL0000001 /* SupportLevel.swift in Sources */,
                 DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
                 D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
-				D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */,
+                D9306A012B81FF010066FBC8 /* RequestConfigOnAppear.swift in Sources */,
                 251926872C3BAE2200249DF5 /* NodeAlertsButton.swift in Sources */,
                 DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
                 DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */,
@@ -3020,6 +3020,9 @@
                 AA000401SIRI000000000021 /* se */,
                 AA000401SIRI000000000022 /* zh-Hans */,
                 AA000401SIRI000000000023 /* zh-Hant-TW */,
+                AA000401SIRI000000000024 /* ko */,
+                AA000401SIRI000000000025 /* pt-BR */,
+                AA000401SIRI000000000026 /* zh-Hant */,
             );
             name = AppIntentVocabulary.plist;
             sourceTree = "<group>";
