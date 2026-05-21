@@ -443,7 +443,7 @@ extension AccessoryManager {
 			"<precisionlocation[^>]*/>",                 // precision location metadata
 			"<precisionlocation[^>]*>.*?</precisionlocation>",
 			"<precisionLocation[^>]*/>",                 // iTAK camelCase variant
-			"<precisionLocation[^>]*>.*?</precisionLocation>",
+			"<precisionLocation[^>]*>.*?</precisionLocation>"
 		]
 		for pattern in patterns {
 			if let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) {
@@ -461,7 +461,7 @@ extension AccessoryManager {
 			#"\s+color\s*=\s*"[^"]*""#,           // link_attr color (SDK uses strokeColor)
 			#"\s+access\s*=\s*"[^"]*""#,          // access control
 			#"\s+callsign\s*=\s*"""#,             // empty callsign
-			#"\s+phone\s*=\s*"""#,                // empty phone
+			#"\s+phone\s*=\s*"""#                 // empty phone
 		]
 		for pattern in attrPatterns {
 			if let regex = try? NSRegularExpression(pattern: pattern) {

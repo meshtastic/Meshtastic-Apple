@@ -96,6 +96,7 @@ struct DocPage: Identifiable, Hashable {
 	var systemImage: String {
 		switch id {
 		// User Guide
+		case "help-and-docs":	return "book.pages"
 		case "getting-started":	return "star.fill"
 		case "bluetooth":		return "custom.bluetooth"
 		case "messages":		return "message.fill"

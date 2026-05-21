@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 import SwiftDraw
 
 // 1. THE LOADER (Public API)

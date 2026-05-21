@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 
 extension UserEntity {

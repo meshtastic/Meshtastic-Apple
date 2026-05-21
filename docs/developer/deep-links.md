@@ -35,7 +35,7 @@ The app registers the `meshtastic:///` URL scheme. Use `Router.route(url:)` to h
 | [`meshtastic:///nodes`](meshtastic:///nodes) | Nodes tab |
 | `meshtastic:///nodes?nodenum={nodenum}` | Selected node |
 
-## Mesh Map
+## Map
 
 | URL | Description |
 |-----|-------------|

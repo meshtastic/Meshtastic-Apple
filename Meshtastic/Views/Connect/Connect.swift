@@ -7,7 +7,7 @@
 
 import SwiftUI
 import MapKit
-import SwiftData
+@preconcurrency import SwiftData
 import CoreLocation
 import CoreBluetooth
 import OSLog

@@ -7,7 +7,7 @@
 
 import Foundation
 import WatchConnectivity
-import SwiftData
+@preconcurrency import SwiftData
 import CoreLocation
 import os
 

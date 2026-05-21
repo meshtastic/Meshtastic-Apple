@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/7/22.
 //
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 
 extension ChannelEntity {
