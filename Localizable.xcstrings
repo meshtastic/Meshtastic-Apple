@@ -9313,6 +9313,12 @@
         }
       }
     },
+    "Air Quality Metrics Enabled" : {
+
+    },
+    "Air Quality Sensor Options" : {
+
+    },
     "Airtime" : {
       "localizations" : {
         "da" : {
@@ -41203,6 +41209,9 @@
           }
         }
       }
+    },
+    "How often air quality metrics are sent out over the mesh. Default is 30 minutes." : {
+
     },
     "How often device metrics are sent out over the mesh. Default is 30 minutes." : {
       "localizations" : {
