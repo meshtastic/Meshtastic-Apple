@@ -27,7 +27,7 @@ struct PowerMetricsLog: View {
 	@State private var channelSelection = 0
 
 	var powerMetrics: [TelemetryEntity] {
-		return node.telemetries.filter { $0.metricsType == 2 }.reversed()
+		return node.safeTelemetries(ofType: 2)
 	}
 
 	var minMax: (min: Double, max: Double) {
