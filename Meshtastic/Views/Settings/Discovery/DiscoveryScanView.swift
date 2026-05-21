@@ -9,7 +9,7 @@
 import MapKit
 import MeshtasticProtobufs
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 import SwiftUI
 import TipKit
 

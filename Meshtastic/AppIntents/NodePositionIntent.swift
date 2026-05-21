@@ -8,7 +8,7 @@
 import Foundation
 import AppIntents
 import CoreLocation
-import SwiftData
+@preconcurrency import SwiftData
 
 struct NodePositionIntent: AppIntent {
 

@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 
 // These structs are public becase tehy are used elsewhere in the app to represent
 // fields in the Core Data database.

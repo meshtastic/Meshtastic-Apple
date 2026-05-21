@@ -1107,7 +1107,7 @@ actor DocTranslationService {
 		guard let regex = try? NSRegularExpression(pattern: calloutPattern),
 			  let prefixMatch = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
 			  let prefixRange = Range(prefixMatch.range(at: 1), in: text) else {
-			return [MarkdownSegment(text: text, translatable: true)]
+			return segmentMarkdownLinks(text)
 		}
 
 		let prefix = String(text[prefixRange])           // e.g. "> **Tip — "
@@ -1143,6 +1143,61 @@ actor DocTranslationService {
 	/// Returns true if the line is a GFM table separator (e.g. `|---|---|`).
 	private func isTableSeparator(_ trimmed: String) -> Bool {
 		trimmed.hasPrefix("|") && trimmed.allSatisfy { $0 == "|" || $0 == "-" || $0 == ":" || $0 == " " }
+	}
+
+	/// Splits text on markdown links `[text](url)`, keeping the link syntax and URL as
+	/// non-translatable while making the display text translatable.
+	private func segmentMarkdownLinks(_ text: String) -> [MarkdownSegment] {
+		// Pattern matches [display text](url) — captures display text and full link
+		let pattern = #"\[([^\]]+)\]\(([^)]+)\)"#
+		guard let regex = try? NSRegularExpression(pattern: pattern) else {
+			return [MarkdownSegment(text: text, translatable: true)]
+		}
+		let nsText = text as NSString
+		let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsText.length))
+
+		guard !matches.isEmpty else {
+			return [MarkdownSegment(text: text, translatable: true)]
+		}
+
+		var segments: [MarkdownSegment] = []
+		var lastEnd = 0
+
+		for match in matches {
+			let matchRange = match.range
+			let displayRange = match.range(at: 1)
+			let urlRange = match.range(at: 2)
+
+			// Text before the link
+			if matchRange.location > lastEnd {
+				let before = nsText.substring(with: NSRange(location: lastEnd, length: matchRange.location - lastEnd))
+				if !before.isEmpty {
+					segments.append(MarkdownSegment(text: before, translatable: true))
+				}
+			}
+
+			let displayText = nsText.substring(with: displayRange)
+			let url = nsText.substring(with: urlRange)
+
+			// [  — non-translatable
+			segments.append(MarkdownSegment(text: "[", translatable: false))
+			// display text — translatable
+			segments.append(MarkdownSegment(text: displayText, translatable: true))
+			// ](url) — non-translatable
+			segments.append(MarkdownSegment(text: "](\(url))", translatable: false))
+
+			lastEnd = matchRange.location + matchRange.length
+		}
+
+		// Remaining text after last link
+		if lastEnd < nsText.length {
+			let remaining = nsText.substring(from: lastEnd)
+			if !remaining.isEmpty {
+				segments.append(MarkdownSegment(text: remaining, translatable: true))
+			}
+		}
+
+		return segments
 	}
 
 	/// Returns true if the trimmed cell content is an image reference or empty.

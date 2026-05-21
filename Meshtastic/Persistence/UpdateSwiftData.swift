@@ -4,7 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/3/22.
 
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
@@ -734,6 +734,7 @@ extension MeshPackets {
 					newDisplayConfig.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
 					newDisplayConfig.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 					newDisplayConfig.compassNorthTop = config.compassNorthTop
+					newDisplayConfig.compassOrientation = Int32(config.compassOrientation.rawValue)
 					newDisplayConfig.flipScreen = config.flipScreen
 					newDisplayConfig.oledType = Int32(config.oled.rawValue)
 					newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
@@ -745,6 +746,7 @@ extension MeshPackets {
 					fetchedNode[0].displayConfig?.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
 					fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 					fetchedNode[0].displayConfig?.compassNorthTop = config.compassNorthTop
+					fetchedNode[0].displayConfig?.compassOrientation = Int32(config.compassOrientation.rawValue)
 					fetchedNode[0].displayConfig?.flipScreen = config.flipScreen
 					fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 					fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
@@ -853,15 +855,29 @@ extension MeshPackets {
 					newNetworkConfig.wifiEnabled = config.wifiEnabled
 					newNetworkConfig.wifiSsid = config.wifiSsid
 					newNetworkConfig.wifiPsk = config.wifiPsk
+					newNetworkConfig.ntpServer = config.ntpServer
 					newNetworkConfig.ethEnabled = config.ethEnabled
 					newNetworkConfig.enabledProtocols = Int32(config.enabledProtocols)
+					newNetworkConfig.addressMode = Int32(config.addressMode.rawValue)
+					newNetworkConfig.rsyslogServer = config.rsyslogServer
+					newNetworkConfig.ip = Int32(bitPattern: config.ipv4Config.ip)
+					newNetworkConfig.gateway = Int32(bitPattern: config.ipv4Config.gateway)
+					newNetworkConfig.subnet = Int32(bitPattern: config.ipv4Config.subnet)
+					newNetworkConfig.dns = Int32(bitPattern: config.ipv4Config.dns)
 					fetchedNode[0].networkConfig = newNetworkConfig
 				} else {
 					fetchedNode[0].networkConfig?.ethEnabled = config.ethEnabled
 					fetchedNode[0].networkConfig?.wifiEnabled = config.wifiEnabled
 					fetchedNode[0].networkConfig?.wifiSsid = config.wifiSsid
 					fetchedNode[0].networkConfig?.wifiPsk = config.wifiPsk
+					fetchedNode[0].networkConfig?.ntpServer = config.ntpServer
 					fetchedNode[0].networkConfig?.enabledProtocols = Int32(config.enabledProtocols)
+					fetchedNode[0].networkConfig?.addressMode = Int32(config.addressMode.rawValue)
+					fetchedNode[0].networkConfig?.rsyslogServer = config.rsyslogServer
+					fetchedNode[0].networkConfig?.ip = Int32(bitPattern: config.ipv4Config.ip)
+					fetchedNode[0].networkConfig?.gateway = Int32(bitPattern: config.ipv4Config.gateway)
+					fetchedNode[0].networkConfig?.subnet = Int32(bitPattern: config.ipv4Config.subnet)
+					fetchedNode[0].networkConfig?.dns = Int32(bitPattern: config.ipv4Config.dns)
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1046,6 +1062,52 @@ extension MeshPackets {
 		}
 	}
 	
+	func upsertAudioModuleConfigPacket(config: ModuleConfig.AudioConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Audio module config received: %@".localized, String(nodeNum))
+		Logger.data.info("🔊 \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+			fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].audioConfig == nil {
+					let newAudioConfig = AudioConfigEntity()
+					modelContext.insert(newAudioConfig)
+					newAudioConfig.codec2Enabled = config.codec2Enabled
+					newAudioConfig.pttPin = Int32(config.pttPin)
+					newAudioConfig.bitrate = Int32(config.bitrate.rawValue)
+					newAudioConfig.i2sWs = Int32(config.i2SWs)
+					newAudioConfig.i2sSd = Int32(config.i2SSd)
+					newAudioConfig.i2sDin = Int32(config.i2SDin)
+					newAudioConfig.i2sSck = Int32(config.i2SSck)
+					fetchedNode[0].audioConfig = newAudioConfig
+				} else {
+					fetchedNode[0].audioConfig?.codec2Enabled = config.codec2Enabled
+					fetchedNode[0].audioConfig?.pttPin = Int32(config.pttPin)
+					fetchedNode[0].audioConfig?.bitrate = Int32(config.bitrate.rawValue)
+					fetchedNode[0].audioConfig?.i2sWs = Int32(config.i2SWs)
+					fetchedNode[0].audioConfig?.i2sSd = Int32(config.i2SSd)
+					fetchedNode[0].audioConfig?.i2sDin = Int32(config.i2SDin)
+					fetchedNode[0].audioConfig?.i2sSck = Int32(config.i2SSck)
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+					Logger.data.info("💾 [AudioConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+			} else {
+				Logger.data.error("💥 [AudioConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Audio Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [AudioConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
 	func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Ambient Lighting module config received: %@".localized, String(nodeNum))
@@ -1320,10 +1382,14 @@ extension MeshPackets {
 					modelContext.insert(newPaxCounterConfig)
 					newPaxCounterConfig.enabled = config.enabled
 					newPaxCounterConfig.updateInterval = Int32(config.paxcounterUpdateInterval)
+					newPaxCounterConfig.wifiThreshold = config.wifiThreshold
+					newPaxCounterConfig.bleThreshold = config.bleThreshold
 					fetchedNode[0].paxCounterConfig = newPaxCounterConfig
 				} else {
 					fetchedNode[0].paxCounterConfig?.enabled = config.enabled
 					fetchedNode[0].paxCounterConfig?.updateInterval = Int32(config.paxcounterUpdateInterval)
+					fetchedNode[0].paxCounterConfig?.wifiThreshold = config.wifiThreshold
+					fetchedNode[0].paxCounterConfig?.bleThreshold = config.bleThreshold
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1585,6 +1651,8 @@ extension MeshPackets {
 					newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 					newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 					newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+					newTelemetryConfig.airQualityEnabled = config.airQualityEnabled
+					newTelemetryConfig.airQualityInterval = Int32(truncatingIfNeeded: config.airQualityInterval)
 					newTelemetryConfig.powerMeasurementEnabled = config.powerMeasurementEnabled
 					newTelemetryConfig.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 					newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
@@ -1596,6 +1664,8 @@ extension MeshPackets {
 					fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 					fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
 					fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+					fetchedNode[0].telemetryConfig?.airQualityEnabled = config.airQualityEnabled
+					fetchedNode[0].telemetryConfig?.airQualityInterval = Int32(truncatingIfNeeded: config.airQualityInterval)
 					fetchedNode[0].telemetryConfig?.powerMeasurementEnabled = config.powerMeasurementEnabled
 					fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 					fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
