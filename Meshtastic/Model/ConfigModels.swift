@@ -202,6 +202,16 @@ final class NetworkConfigEntity {
 }
 
 @Model
+final class NeighborInfoConfigEntity {
+	var enabled: Bool = false
+	var transmitOverLora: Bool = false
+	var updateInterval: Int32 = 0
+	var neighborInfoConfigNode: NodeInfoEntity?
+
+	init() {}
+}
+
+@Model
 final class PaxCounterConfigEntity {
 	var bleThreshold: Int32 = 0
 	var enabled: Bool = false

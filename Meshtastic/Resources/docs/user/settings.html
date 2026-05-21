@@ -125,7 +125,7 @@
 </tr>
 <tr>
 <td>Audio</td>
-<td>Codec2-based voice communication over the mesh. Configure I2S GPIO pins and codec bitrate.</td>
+<td>Codec2 voice communication settings. Only available when LoRa region is set to <strong>LORA_24</strong> (2.4 GHz). Configure Codec2 encoding, bitrate, PTT pin, and I2S GPIO pins.</td>
 </tr>
 <tr>
 <td>Canned Messages</td>
@@ -142,6 +142,10 @@
 <tr>
 <td>MQTT</td>
 <td>Uplink/downlink messages to an MQTT broker for internet bridging.</td>
+</tr>
+<tr>
+<td>Neighbor Info</td>
+<td>Periodically broadcasts information about directly-heard neighbors to help visualise mesh topology. Update interval ranges from 4 hours (default) to 72 hours. Enable <strong>Transmit over LoRa</strong> to share neighbour data over the radio in addition to MQTT and PhoneAPI.</td>
 </tr>
 <tr>
 <td>Range Test</td>

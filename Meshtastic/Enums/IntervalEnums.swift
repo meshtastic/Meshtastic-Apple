@@ -15,6 +15,7 @@ enum IntervalConfiguration: CaseIterable {
 	case detectionSensorMinimum
 	case detectionSensorState
 	case nagTimeout
+	case neighborInfo
 	case paxCounter
 	case rangeTestSender
 	case smartBroadcastMinimum
@@ -35,6 +36,8 @@ enum IntervalConfiguration: CaseIterable {
 			return [.unset, .fifteenMinutes, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
 		case .nagTimeout:
 			return [.unset, .oneSecond, .fiveSeconds, .tenSeconds, .fifteenSeconds, .thirtySeconds, .oneMinute]
+		case .neighborInfo:
+			return [.fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
 		case .paxCounter:
 			return [.fifteenMinutes, .thirtyMinutes, .oneHour, .twoHours, .threeHours, .fourHours, .fiveHours, .sixHours, .twelveHours, .eighteenHours, .twentyFourHours, .thirtySixHours, .fortyeightHours, .seventyTwoHours]
 		case .rangeTestSender:

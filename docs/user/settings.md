@@ -91,11 +91,12 @@ Optional feature modules. Only available when your connected node supports the m
 | Module | Description |
 |--------|-------------|
 | Ambient Lighting | Control NeoPixel/LED lighting on supported hardware. |
-| Audio | Codec2-based voice communication over the mesh. Configure I2S GPIO pins and codec bitrate. |
+| Audio | Codec2 voice communication settings. Only available when LoRa region is set to **LORA_24** (2.4 GHz). Configure Codec2 encoding, bitrate, PTT pin, and I2S GPIO pins. |
 | Canned Messages | Pre-programmed message shortcuts accessible from the device buttons. |
 | Detection Sensor | Configure PIR motion or contact sensors. |
 | External Notification | Buzzer or LED alerts for incoming messages. |
 | MQTT | Uplink/downlink messages to an MQTT broker for internet bridging. |
+| Neighbor Info | Periodically broadcasts information about directly-heard neighbors to help visualise mesh topology. Update interval ranges from 4 hours (default) to 72 hours. Enable **Transmit over LoRa** to share neighbour data over the radio in addition to MQTT and PhoneAPI. |
 | Range Test | Automated range testing with position logging. |
 | Pax Counter | Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. Configure WiFi Threshold (dBm) and BLE Threshold (dBm) to control the RSSI sensitivity for device counting — default is −80 dBm for both. |
 | Ringtone | Custom RTTTL melodies for notification tones. |

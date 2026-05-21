@@ -26,6 +26,10 @@ Use the sidebar navigation to browse the **User Guide** for app features and the
 
 ## What's New
 
+- **Audio Module Config** — New configuration screen for Codec2 voice communication. Only available on 2.4 GHz radios (LORA_24 region). [Learn more](user/settings)
+- **Neighbor Info Module Config** — New configuration screen for neighbor info broadcasting with update interval picker (4–72 hours). [Learn more](user/settings)
+- **Pax Counter Thresholds** — WiFi and BLE RSSI threshold fields added to the Pax Counter module config. [Learn more](user/settings)
+- **Compass Orientation** — New 8-option compass orientation picker in Display config for radios mounted at non-standard angles. [Learn more](user/settings)
 - **Docs Translation Pipeline** — Community-sourced translations: each device contributes translated docs that are shared via a CDN feed, so future users get instant localized results. [Learn more](user/translate)
 - **Automatic Documentation Translation** — On iOS 26+, in-app docs are automatically translated into your device language using the Apple Translation framework. [Learn more](user/translate)
 - **Message Formatting Toolbar** — Markdown formatting in message compose (iOS 18+/macOS 15+). Bold, italic, strikethrough, code, and links with live preview. [Learn more](user/messages)

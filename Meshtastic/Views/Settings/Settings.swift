@@ -39,6 +39,7 @@ struct Settings: View {
 			.detectionsensorConfig,
 			.extnotifConfig,
 			.mqttConfig,
+			.neighborinfoConfig,
 			.rangetestConfig,
 			.paxcounterConfig,
 			.serialConfig,
@@ -250,6 +251,16 @@ struct Settings: View {
 						Text("MQTT")
 					} icon: {
 						Image(systemName: "dot.radiowaves.up.forward")
+					}
+				}
+			}
+
+			if isModuleSupported(.neighborinfoConfig) {
+				NavigationLink(value: SettingsNavigationState.neighborInfo) {
+					Label {
+						Text("Neighbor Info")
+					} icon: {
+						Image(systemName: "network")
 					}
 				}
 			}
@@ -591,6 +602,8 @@ struct Settings: View {
 					ExternalNotificationConfig(node: configNode)
 				case .mqtt:
 					MQTTConfig(node: configNode)
+				case .neighborInfo:
+					NeighborInfoConfig(node: configNode)
 				case .rangeTest:
 					RangeTestConfig(node: configNode)
 				case .paxCounter:
