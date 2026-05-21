@@ -4,7 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/3/22.
 
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
@@ -1298,10 +1298,14 @@ extension MeshPackets {
 					modelContext.insert(newPaxCounterConfig)
 					newPaxCounterConfig.enabled = config.enabled
 					newPaxCounterConfig.updateInterval = Int32(config.paxcounterUpdateInterval)
+					newPaxCounterConfig.wifiThreshold = config.wifiThreshold
+					newPaxCounterConfig.bleThreshold = config.bleThreshold
 					fetchedNode[0].paxCounterConfig = newPaxCounterConfig
 				} else {
 					fetchedNode[0].paxCounterConfig?.enabled = config.enabled
 					fetchedNode[0].paxCounterConfig?.updateInterval = Int32(config.paxcounterUpdateInterval)
+					fetchedNode[0].paxCounterConfig?.wifiThreshold = config.wifiThreshold
+					fetchedNode[0].paxCounterConfig?.bleThreshold = config.bleThreshold
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey

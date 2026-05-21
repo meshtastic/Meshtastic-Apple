@@ -155,7 +155,7 @@ struct AppSettings: View {
 						}
 #endif
 					}
-					.onChange(of: usageDataAndCrashReporting) { oldUsageDataAndCrashReporting, newUsageDataAndCrashReporting in
+					.onChange(of: usageDataAndCrashReporting) { _, newUsageDataAndCrashReporting in
 						if !newUsageDataAndCrashReporting {
 							Datadog.set(trackingConsent: .notGranted)
 						}

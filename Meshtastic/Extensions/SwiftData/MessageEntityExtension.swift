@@ -5,7 +5,7 @@
 //  Created by Ben on 8/22/23.
 //
 
-import SwiftData
+@preconcurrency import SwiftData
 import CoreLocation
 import Foundation
 import MapKit

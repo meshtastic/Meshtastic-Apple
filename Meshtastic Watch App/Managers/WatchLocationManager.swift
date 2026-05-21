@@ -77,7 +77,7 @@ final class WatchLocationManager: NSObject, ObservableObject {
 }
 
 // MARK: - CLLocationManagerDelegate
-extension WatchLocationManager: @preconcurrency CLLocationManagerDelegate {
+extension WatchLocationManager: CLLocationManagerDelegate {
 
 	nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 		Task { @MainActor in
