@@ -64,7 +64,7 @@ struct PowerConfig: View {
 							Text("Multiplier")
 							Spacer()
 							FloatField(title: "Multiplier", number: $adcMultiplier) {
-								(2.0 ... 6.0).contains($0)
+								$0 > 0.0
 							}
 							.focused($isFocused)
 							Spacer()
