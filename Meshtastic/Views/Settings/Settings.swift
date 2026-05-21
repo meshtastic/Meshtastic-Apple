@@ -69,8 +69,8 @@ struct Settings: View {
 	}
 
 	private func isTrafficManagementModuleSupported() -> Bool {
-		guard let node = moduleConfigurationNode else { return false }
-		return node.trafficManagementConfig != nil
+		guard moduleConfigurationNode != nil else { return false }
+		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
 	// MARK: Views
