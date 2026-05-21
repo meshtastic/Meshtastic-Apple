@@ -1062,6 +1062,52 @@ extension MeshPackets {
 		}
 	}
 	
+	func upsertAudioModuleConfigPacket(config: ModuleConfig.AudioConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Audio module config received: %@".localized, String(nodeNum))
+		Logger.data.info("🔊 \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+			fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].audioConfig == nil {
+					let newAudioConfig = AudioConfigEntity()
+					modelContext.insert(newAudioConfig)
+					newAudioConfig.codec2Enabled = config.codec2Enabled
+					newAudioConfig.pttPin = Int32(config.pttPin)
+					newAudioConfig.bitrate = Int32(config.bitrate.rawValue)
+					newAudioConfig.i2sWs = Int32(config.i2SWs)
+					newAudioConfig.i2sSd = Int32(config.i2SSd)
+					newAudioConfig.i2sDin = Int32(config.i2SDin)
+					newAudioConfig.i2sSck = Int32(config.i2SSck)
+					fetchedNode[0].audioConfig = newAudioConfig
+				} else {
+					fetchedNode[0].audioConfig?.codec2Enabled = config.codec2Enabled
+					fetchedNode[0].audioConfig?.pttPin = Int32(config.pttPin)
+					fetchedNode[0].audioConfig?.bitrate = Int32(config.bitrate.rawValue)
+					fetchedNode[0].audioConfig?.i2sWs = Int32(config.i2SWs)
+					fetchedNode[0].audioConfig?.i2sSd = Int32(config.i2SSd)
+					fetchedNode[0].audioConfig?.i2sDin = Int32(config.i2SDin)
+					fetchedNode[0].audioConfig?.i2sSck = Int32(config.i2SSck)
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+					Logger.data.info("💾 [AudioConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+			} else {
+				Logger.data.error("💥 [AudioConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Audio Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [AudioConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
 	func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Ambient Lighting module config received: %@".localized, String(nodeNum))

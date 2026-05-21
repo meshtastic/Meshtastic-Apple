@@ -21,6 +21,20 @@ final class AmbientLightingConfigEntity {
 }
 
 @Model
+final class AudioConfigEntity {
+	var codec2Enabled: Bool = false
+	var pttPin: Int32 = 0
+	var bitrate: Int32 = 0
+	var i2sWs: Int32 = 0
+	var i2sSd: Int32 = 0
+	var i2sDin: Int32 = 0
+	var i2sSck: Int32 = 0
+	var audioConfigNode: NodeInfoEntity?
+
+	init() {}
+}
+
+@Model
 final class BluetoothConfigEntity {
 	var deviceLoggingEnabled: Bool = false
 	var enabled: Bool = false

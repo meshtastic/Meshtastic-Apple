@@ -91,6 +91,7 @@ Optional feature modules. Only available when your connected node supports the m
 | Module | Description |
 |--------|-------------|
 | Ambient Lighting | Control NeoPixel/LED lighting on supported hardware. |
+| Audio | Codec2-based voice communication over the mesh. Configure I2S GPIO pins and codec bitrate. |
 | Canned Messages | Pre-programmed message shortcuts accessible from the device buttons. |
 | Detection Sensor | Configure PIR motion or contact sensors. |
 | External Notification | Buzzer or LED alerts for incoming messages. |

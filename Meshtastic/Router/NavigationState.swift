@@ -38,6 +38,7 @@ enum SettingsNavigationState: String {
 	case position
 	case power
 	case ambientLighting
+	case audio
 	case cannedMessages
 	case detectionSensor
 	case externalNotification

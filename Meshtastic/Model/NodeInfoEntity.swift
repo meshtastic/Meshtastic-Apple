@@ -30,6 +30,9 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .cascade, inverse: \AmbientLightingConfigEntity.ambientLightingConfigNode)
 	var ambientLightingConfig: AmbientLightingConfigEntity?
 
+	@Relationship(deleteRule: .cascade, inverse: \AudioConfigEntity.audioConfigNode)
+	var audioConfig: AudioConfigEntity?
+
 	@Relationship(deleteRule: .cascade, inverse: \BluetoothConfigEntity.bluetoothConfigNode)
 	var bluetoothConfig: BluetoothConfigEntity?
 
