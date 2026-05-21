@@ -168,12 +168,14 @@ final class MQTTConfigEntity {
 
 @Model
 final class NetworkConfigEntity {
+	var addressMode: Int32 = 0
 	var dns: Int32 = 0
 	var enabledProtocols: Int32 = 0
 	var ethEnabled: Bool = false
 	var gateway: Int32 = 0
 	var ip: Int32 = 0
 	var ntpServer: String?
+	var rsyslogServer: String?
 	var subnet: Int32 = 0
 	var wifiEnabled: Bool = false
 	var wifiMode: Int32 = 0
