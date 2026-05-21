@@ -38,9 +38,11 @@ extension FirmwareViewModel {
 class FirmwareViewModel: ObservableObject {
 	@Published var firmwareFiles: [FirmwareFile] = []
 	let hardware: DeviceHardwareEntity
+	let preferredRegion: RegionCodes
 
-	init(forHardware: DeviceHardwareEntity) {
+	init(forHardware: DeviceHardwareEntity, preferredRegion: RegionCodes = .unset) {
 		self.hardware = forHardware
+		self.preferredRegion = preferredRegion
 		Task {
 			refresh()
 		}
@@ -59,14 +61,24 @@ class FirmwareViewModel: ObservableObject {
 		do {
 			let firmwareReleases = try context.fetch(descriptor)
 			for release in firmwareReleases {
+				let localeTags = preferredRegion == .unset ? [] : preferredRegion.firmwareLocaleTagCandidates
 				if let architecture = hardwareArchitecture {
 					for firmwareType in FirmwareFile.validFilenameSuffixes(forArchitecture: architecture) {
-						let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware, type: firmwareType)
+						let firmwareFile = try FirmwareFile(
+							firmware: release,
+							hardware: hardware,
+							type: firmwareType,
+							localeTags: localeTags
+						)
 						newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
 					}
 				} else {
 					// Just the default
-					let firmwareFile = try FirmwareFile(firmware: release, hardware: hardware)
+					let firmwareFile = try FirmwareFile(
+						firmware: release,
+						hardware: hardware,
+						localeTags: localeTags
+					)
 					newFirmwareList[firmwareFile.localUrl.lastPathComponent] = firmwareFile
 				}
 			}

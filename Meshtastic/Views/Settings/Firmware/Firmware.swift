@@ -73,33 +73,36 @@ private struct FirmwareContentView: View {
 		case stable, alpha, downloaded
 	}
 	
-	@EnvironmentObject var accessoryManager: AccessoryManager
-	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
-	
-	let node: NodeInfoEntity
-	let hardware: DeviceHardwareEntity
-	
-	// We can safely init the StateObject here because 'hardware' is passed in
-	@StateObject var firmwareList: FirmwareViewModel
-	@State private var firmwareSelection = FirmwareTab.stable
-	
-	// For Catalyst file picker
-	@State var showFirmwareFilePicker = false
-	@State var showInstallationSheet: FirmwareFile.FirmwareType?
-	@State var locallyChosenFirmwareFile: URL?
-	// For row-level install sheet
-	@State var rowInstallation: RowInstallation?
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@EnvironmentObject private var meshtasticAPI: MeshtasticAPI
 
-	struct RowInstallation: Identifiable {
+	private let node: NodeInfoEntity
+	private let hardware: DeviceHardwareEntity
+	private let nodeRegion: RegionCodes          // stored, not computed
+
+	// We can safely init the StateObject here because 'hardware' is passed in
+	@StateObject private var firmwareList: FirmwareViewModel
+	@State private var firmwareSelection = FirmwareTab.stable
+
+	// For Catalyst file picker
+	@State private var showFirmwareFilePicker = false
+	@State private var showInstallationSheet: FirmwareFile.FirmwareType?
+	@State private var locallyChosenFirmwareFile: URL?
+	// For row-level install sheet
+	@State private var rowInstallation: RowInstallation?
+
+	private struct RowInstallation: Identifiable {
 		let type: FirmwareFile.FirmwareType
 		let url: URL
 		var id: String { "\(type.rawValue)-\(url.absoluteString)" }
 	}
-	
+
 	init(node: NodeInfoEntity, hardware: DeviceHardwareEntity) {
 		self.node = node
 		self.hardware = hardware
-		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware))
+		let region = node.loRaConfig.flatMap { RegionCodes(rawValue: Int($0.regionCode)) } ?? .unset
+		self.nodeRegion = region
+		_firmwareList = StateObject(wrappedValue: FirmwareViewModel(forHardware: hardware, preferredRegion: region))
 	}
 	
 	var body: some View {
@@ -134,6 +137,25 @@ private struct FirmwareContentView: View {
 				VStack(alignment: .leading) {
 					Text("Current Firmware Version").font(.caption).foregroundColor(.secondary)
 					Text("\(node.metadata?.firmwareVersion ?? "Unknown")")
+				}
+				VStack(alignment: .leading) {
+					Text("Intended LoRa Region").font(.caption).foregroundColor(.secondary)
+					Text(intendedRegionLabel)
+				}
+				if shouldShowRegionUnsetWarning {
+					Label("Set a LoRa region before installing firmware.", systemImage: "exclamationmark.triangle.fill")
+						.foregroundStyle(.orange)
+						.font(.caption)
+				} else if shouldShowLocaleVariantWarning {
+					Label("This region may require a locale-specific firmware file for correct on-device text rendering.", systemImage: "character.book.closed.fill")
+						.foregroundStyle(.orange)
+						.font(.caption)
+				}
+				if let suggestedFileNameHint {
+					VStack(alignment: .leading, spacing: 2) {
+						Text("Suggested file pattern").font(.caption).foregroundColor(.secondary)
+						Text(suggestedFileNameHint).font(.caption).textSelection(.enabled)
+					}
 				}
 			}
 			.listRowSeparator(.hidden)
@@ -229,7 +251,32 @@ private struct FirmwareContentView: View {
 			}
 		}
 	}
-	
+
+	private var intendedRegionLabel: String {
+		"\(nodeRegion.description) (\(nodeRegion.topic))"
+	}
+
+	private var shouldShowRegionUnsetWarning: Bool {
+		nodeRegion == .unset
+	}
+
+	private var shouldShowLocaleVariantWarning: Bool {
+		nodeRegion.prefersLocalizedFontFirmware
+	}
+
+	private var suggestedFileNameHint: String? {
+		guard let platformioTarget = hardware.platformioTarget?.trimmingCharacters(in: .whitespacesAndNewlines),
+			  !platformioTarget.isEmpty else {
+			return nil
+		}
+
+		if nodeRegion != .unset {
+			return "firmware-\(platformioTarget)-<version>[-\(nodeRegion.topic)]"
+		}
+
+		return "firmware-\(platformioTarget)-<version>"
+	}
+
 	var allowedTypes: [UTType] {
 		switch hardware.architecture.flatMap( {Architecture(rawValue: $0) }) {
 		case .esp32, .esp32C3, .esp32S3, .esp32C6:
