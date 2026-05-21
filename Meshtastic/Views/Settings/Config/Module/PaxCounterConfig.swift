@@ -17,7 +17,7 @@ struct PaxCounterConfig: View {
 	let node: NodeInfoEntity?
 	
 	@State private var enabled = false
-	@State private var paxcounterUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
+	@State private var paxcounterUpdateInterval: UpdateInterval = UpdateInterval(from: 3600)
 	@State private var wifiThreshold: Int32 = -80
 	@State private var bleThreshold: Int32 = -80
 	@State private var hasChanges: Bool = false
@@ -135,24 +135,40 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
-			if oldEnabled != newEnabled && newEnabled != node?.paxCounterConfig?.enabled { hasChanges = true }
+			if oldEnabled != newEnabled && newEnabled != (node?.paxCounterConfig?.enabled ?? false) { hasChanges = true }
 		}
 		.onChange(of: paxcounterUpdateInterval.intValue) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
-			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval && newPaxcounterUpdateInterval != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
+			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval {
+				let stored = Int(node?.paxCounterConfig?.updateInterval ?? 0)
+				let effective = stored == 0 ? 3600 : stored
+				if newPaxcounterUpdateInterval != effective { hasChanges = true }
+			}
 		}
 		.onChange(of: wifiThreshold) { oldWifiThreshold, newWifiThreshold in
-			if oldWifiThreshold != newWifiThreshold && newWifiThreshold != node?.paxCounterConfig?.wifiThreshold ?? -80 { hasChanges = true }
+			if oldWifiThreshold != newWifiThreshold {
+				let stored = node?.paxCounterConfig?.wifiThreshold ?? 0
+				let effective = stored == 0 ? Int32(-80) : stored
+				if newWifiThreshold != effective { hasChanges = true }
+			}
 		}
 		.onChange(of: bleThreshold) { oldBleThreshold, newBleThreshold in
-			if oldBleThreshold != newBleThreshold && newBleThreshold != node?.paxCounterConfig?.bleThreshold ?? -80 { hasChanges = true }
+			if oldBleThreshold != newBleThreshold {
+				let stored = node?.paxCounterConfig?.bleThreshold ?? 0
+				let effective = stored == 0 ? Int32(-80) : stored
+				if newBleThreshold != effective { hasChanges = true }
+			}
 		}
 	}
 	
 	private func setPaxValues() {
 		enabled = node?.paxCounterConfig?.enabled ?? enabled
-		paxcounterUpdateInterval = UpdateInterval(from: Int(node?.paxCounterConfig?.updateInterval ?? 1800))
-		wifiThreshold = node?.paxCounterConfig?.wifiThreshold ?? -80
-		bleThreshold = node?.paxCounterConfig?.bleThreshold ?? -80
+		let storedInterval = Int(node?.paxCounterConfig?.updateInterval ?? 0)
+		paxcounterUpdateInterval = UpdateInterval(from: storedInterval == 0 ? 3600 : storedInterval)
+		let storedWifi = node?.paxCounterConfig?.wifiThreshold ?? 0
+		wifiThreshold = storedWifi == 0 ? -80 : storedWifi
+		let storedBle = node?.paxCounterConfig?.bleThreshold ?? 0
+		bleThreshold = storedBle == 0 ? -80 : storedBle
+		hasChanges = false
 	}
 }
 
