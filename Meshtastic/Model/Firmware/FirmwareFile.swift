@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 
 extension FirmwareFile {
 	enum FirmwareFileError: Error, LocalizedError {

@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 

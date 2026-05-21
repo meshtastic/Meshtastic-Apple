@@ -14,7 +14,7 @@ import CarPlay
 import Combine
 import Intents
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 import UserNotifications
 #if canImport(ActivityKit)
 import ActivityKit

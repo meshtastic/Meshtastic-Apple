@@ -34,6 +34,7 @@ struct Settings: View {
 	private var showsAnyModuleConfiguration: Bool {
 		isAnySupported([
 			.ambientlightingConfig,
+			.audioConfig,
 			.cannedmsgConfig,
 			.detectionsensorConfig,
 			.extnotifConfig,
@@ -199,6 +200,16 @@ struct Settings: View {
 						Text("Ambient Lighting")
 					} icon: {
 						Image(systemName: "light.max")
+					}
+				}
+			}
+
+			if isModuleSupported(.audioConfig) {
+				NavigationLink(value: SettingsNavigationState.audio) {
+					Label {
+						Text("Audio")
+					} icon: {
+						Image(systemName: "waveform")
 					}
 				}
 			}
@@ -570,6 +581,8 @@ struct Settings: View {
 					PowerConfig(node: configNode)
 				case .ambientLighting:
 					AmbientLightingConfig(node: node)
+				case .audio:
+					AudioConfig(node: configNode)
 				case .cannedMessages:
 					CannedMessagesConfig(node: configNode)
 				case .detectionSensor:

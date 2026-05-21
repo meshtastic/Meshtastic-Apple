@@ -11,7 +11,7 @@ import Foundation
 import MapKit
 import MeshtasticProtobufs
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 import SwiftUI
 
 // MARK: - Scan State
