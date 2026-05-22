@@ -109,62 +109,69 @@ struct AppLogFilter: View {
 
 	var body: some View {
 
-		Form {
-			Section(header: HStack {
-				Text("Categories")
-				Spacer()
-				Button {
-					categories.formUnion(LogCategories.allCases.map(\.id))
-				} label: {
-					Text("All")
-				}
-			}) {
-				VStack {
-					List(LogCategories.allCases, selection: $categories) { cat in
-						Text(cat.description)
+		NavigationStack {
+			Form {
+				Section(header: HStack {
+					Text("Categories")
+					Spacer()
+					Button {
+						categories.formUnion(LogCategories.allCases.map(\.id))
+					} label: {
+						Text("All")
 					}
-					.listStyle(.plain)
-					.environment(\.editMode, $editMode) /// bind it here!
-					.frame(minHeight: 338, maxHeight: .infinity)
-				}
-			}
-			Section(header: HStack {
-				Text("Log Levels")
-				Spacer()
-				Button {
-					levels.formUnion(LogLevels.allCases.map(\.id))
-				} label: {
-					Text("All")
-				}
-			}) {
-				VStack {
-					List(LogLevels.allCases, selection: $levels) { level in
-						Text(level.description)
-							.foregroundStyle(level.color)
+				}) {
+					VStack {
+						List(LogCategories.allCases, selection: $categories) { cat in
+							Text(cat.description)
+						}
+						.listStyle(.plain)
+						.environment(\.editMode, $editMode) /// bind it here!
+						.frame(minHeight: 338, maxHeight: .infinity)
 					}
-					.listStyle(.plain)
-					.environment(\.editMode, $editMode) /// bind it here!
-					.frame(minHeight: 210, maxHeight: .infinity)
+				}
+				Section(header: HStack {
+					Text("Log Levels")
+					Spacer()
+					Button {
+						levels.formUnion(LogLevels.allCases.map(\.id))
+					} label: {
+						Text("All")
+					}
+				}) {
+					VStack {
+						List(LogLevels.allCases, selection: $levels) { level in
+							Text(level.description)
+								.foregroundStyle(level.color)
+						}
+						.listStyle(.plain)
+						.environment(\.editMode, $editMode) /// bind it here!
+						.frame(minHeight: 210, maxHeight: .infinity)
+					}
 				}
 			}
 		}
 
-#if targetEnvironment(macCatalyst)
-		Spacer()
-		Button {
-			dismiss()
-		} label: {
-			Label("Close", systemImage: "xmark")
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding(.bottom)
-#endif
+		#endif
 		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+
+
 	}
 }
 

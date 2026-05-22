@@ -28,95 +28,97 @@ struct NodeListFilter: View {
 	
 	var body: some View {
 
-		Form {
-			Section(header: Text(filterTitle)) {
-				Toggle(isOn: $filters.viaLora) {
-
-					Label {
-						Text("Via Lora")
-					} icon: {
-						Image(systemName: "dot.radiowaves.left.and.right")
-							.rotationEffect(.degrees(-90))
-							.symbolRenderingMode(.multicolor)
-					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Toggle(isOn: $filters.viaMqtt) {
-
-					Label {
-						Text("Via Mqtt")
-					} icon: {
-						Image(systemName: "dot.radiowaves.up.forward")
-							.symbolRenderingMode(.multicolor)
-					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
-
-				Toggle(isOn: $filters.isOnline) {
-
-					Label {
-						Text("Online")
-					} icon: {
-						Image(systemName: "checkmark.circle.fill")
-							.foregroundColor(.green)
-							.symbolRenderingMode(.hierarchical)
-					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
-
-				Toggle(isOn: $filters.isPkiEncrypted) {
-
-					Label {
-						Text("Encrypted")
-					} icon: {
-						Image(systemName: "lock.fill")
-							.foregroundColor(.green)
-							.symbolRenderingMode(.hierarchical)
-					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
-
-				Toggle(isOn: $filters.isFavorite) {
-
-					Label {
-						Text("Favorites")
-					} icon: {
-
-						Image(systemName: "star.fill")
-							.symbolRenderingMode(.multicolor)
-					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
-
-				if filterTitle == "Node Filters" {
-					Toggle(isOn: $filters.isIgnored) {
+		NavigationStack {
+			Form {
+				Section {
+					Toggle(isOn: $filters.viaLora) {
 
 						Label {
-							Text("Ignored")
+							Text("Via Lora")
 						} icon: {
-
-							Image(systemName: "minus.circle.fill")
+							Image(systemName: "dot.radiowaves.left.and.right")
+								.rotationEffect(.degrees(-90))
 								.symbolRenderingMode(.multicolor)
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.listRowSeparator(.visible)
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $filters.viaMqtt) {
 
-					Toggle(isOn: $filters.isEnvironment) {
 						Label {
-							Text("Environment")
+							Text("Via Mqtt")
 						} icon: {
-							Image(systemName: "cloud.sun")
+							Image(systemName: "dot.radiowaves.up.forward")
 								.symbolRenderingMode(.multicolor)
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
+
+					Toggle(isOn: $filters.isOnline) {
+
+						Label {
+							Text("Online")
+						} icon: {
+							Image(systemName: "checkmark.circle.fill")
+								.foregroundColor(.green)
+								.symbolRenderingMode(.hierarchical)
+						}
 					}
-				Toggle(isOn: $filters.distanceFilter) {
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+
+					Toggle(isOn: $filters.isPkiEncrypted) {
+
+						Label {
+							Text("Encrypted")
+						} icon: {
+							Image(systemName: "lock.fill")
+								.foregroundColor(.green)
+								.symbolRenderingMode(.hierarchical)
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+
+					Toggle(isOn: $filters.isFavorite) {
+
+						Label {
+							Text("Favorites")
+						} icon: {
+
+							Image(systemName: "star.fill")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+
+					if filterTitle == "Node Filters" {
+						Toggle(isOn: $filters.isIgnored) {
+
+							Label {
+								Text("Ignored")
+							} icon: {
+
+								Image(systemName: "minus.circle.fill")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
+
+						Toggle(isOn: $filters.isEnvironment) {
+							Label {
+								Text("Environment")
+							} icon: {
+								Image(systemName: "cloud.sun")
+									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
+					}
+					Toggle(isOn: $filters.distanceFilter) {
 						Label {
 							Text("Distance")
 						} icon: {
@@ -175,39 +177,47 @@ struct NodeListFilter: View {
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				if filters.roleFilter {
-					VStack {
-						List(DeviceRoles.allCases, selection: $filters.deviceRoles) { dr in
-							Label {
-								Text("\(dr.name)")
-							} icon: {
-								Image(systemName: dr.systemName)
+					if filters.roleFilter {
+						VStack {
+							List(DeviceRoles.allCases, selection: $filters.deviceRoles) { dr in
+								Label {
+									Text("\(dr.name)")
+								} icon: {
+									Image(systemName: dr.systemName)
+								}
 							}
+							.listStyle(.plain)
+							.environment(\.editMode, $editMode) /// bind it here!
+							.frame(minHeight: 510, maxHeight: .infinity)
 						}
-						.listStyle(.plain)
-						.environment(\.editMode, $editMode) /// bind it here!
-						.frame(minHeight: 510, maxHeight: .infinity)
 					}
 				}
 			}
+			.listStyle(.insetGrouped)
+			.navigationTitle(filterTitle)
+			.navigationBarTitleDisplayMode(.inline)
 		}
-		.listStyle(.insetGrouped)
-#if targetEnvironment(macCatalyst)
-		Spacer()
-		Button {
-			dismiss()
-		} label: {
-			Label("Close", systemImage: "xmark")
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding(.bottom)
-#endif
+		#endif
 		.presentationDetents([.large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .large))
+
+
 	}
 }
 

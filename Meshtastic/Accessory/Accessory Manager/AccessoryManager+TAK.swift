@@ -352,8 +352,11 @@ extension AccessoryManager {
 	/// TAKMeshIntegration used to hit before it standardised on 3.
 	func takBroadcastHopLimit(forDevice deviceNum: Int64) -> UInt32 {
 		let fallback: UInt32 = 3
-		guard let node = getNodeInfo(id: deviceNum, context: context) else { return fallback }
-		let configured = node.loRaConfig?.hopLimit ?? 0
+		guard let node = getNodeInfo(id: deviceNum, context: context),
+			  !node.isDeleted else { return fallback }
+		guard let loRaConfig = node.loRaConfig,
+			  !loRaConfig.isDeleted else { return fallback }
+		let configured = loRaConfig.hopLimit
 		return configured > 0 ? UInt32(truncatingIfNeeded: configured) : fallback
 	}
 
