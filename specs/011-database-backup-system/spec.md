@@ -69,7 +69,7 @@ A user wants to see which node backups exist, how much space they consume, and o
 - **FR-001**: The system MUST automatically create a backup of the current node's database state when the user initiates a connection to a different node.
 - **FR-002**: The system MUST automatically restore a previously backed-up database state when the user reconnects to a node that has an existing backup.
 - **FR-003**: The system MUST identify nodes uniquely to associate backups correctly.
-- **FR-004**: The system MUST handle backup failures gracefully without blocking the node switch.
+- **FR-004**: The system MUST retry a failed backup/restore once automatically; if the retry also fails, skip with a non-blocking toast warning and proceed with the node connection.
 - **FR-005**: The system MUST provide a UI for viewing and managing existing backups.
 - **FR-006**: The system MUST handle the case where no backup exists for a connecting node (proceed normally).
 - **FR-007**: The system MUST ensure data integrity of backups (detect corruption).
@@ -102,4 +102,12 @@ A user wants to see which node backups exist, how much space they consume, and o
 
 ### Session 2026-05-22
 
-- Q: What is the backup granularity — full database snapshot or per-node filtered data? → A: Full SQLite file snapshot (the DB only ever contains one node's data at a time; it clears previous node data before connecting a new one).
+1. **Backup scope** — Q: What is the backup granularity — full database snapshot or per-node filtered data? → A: Full SQLite/SwiftData file snapshot. The DB only ever contains one node's data at a time (previous node data is cleared before connecting a new one).
+
+2. **Backup trigger** — Q: When exactly does the backup happen relative to the node-switch flow? → A: Immediately before the DB is cleared for the new node connection. The clear is blocked until the snapshot completes (synchronous gate).
+
+3. **Retention policy** — Q: How many backups are kept per node? → A: One (1:1 node-to-backup mapping). Each new backup for a given node replaces the previous one.
+
+4. **Restore UX** — Q: How is the user informed when a restore happens? → A: Fully automatic and silent. A brief non-blocking toast/indicator is shown (e.g., "Restored Node A data") but no user action is required.
+
+5. **Error handling** — Q: What happens when a backup or restore operation fails? → A: Retry once automatically. If the retry also fails, silently skip with a brief toast warning; the node connection proceeds regardless. Failed backups will be retried on the next node switch.
