@@ -45,6 +45,7 @@ private struct DeviceHardware: Codable {
 	let hasInkHud: Bool?
 	let partitionScheme: String?
 	let hasMui: Bool?
+	let hasPaFan: Bool?
 	let key: String?
 	let variant: String?
 }
@@ -243,6 +244,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				deviceEntity.hasInkHud = device.hasInkHud ?? false
 				deviceEntity.partitionScheme = device.partitionScheme
 				deviceEntity.hasMui = device.hasMui ?? false
+				deviceEntity.hasPaFan = device.hasPaFan ?? false
 				deviceEntity.key = device.key
 				deviceEntity.variant = device.variant
 

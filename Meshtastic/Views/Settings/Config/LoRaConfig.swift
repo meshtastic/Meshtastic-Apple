@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
@@ -46,6 +46,13 @@ struct LoRaConfig: View {
 	@State var overrideFrequency: Float = 0.0
 	@State var ignoreMqtt = false
 	@State var okToMqtt = false
+	@State var paFanDisabled = false
+
+	@Query private var hardwareResults: [DeviceHardwareEntity]
+
+	private var hasPaFan: Bool {
+		hardwareResults.first?.hasPaFan ?? false
+	}
 
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
@@ -54,6 +61,14 @@ struct LoRaConfig: View {
 		formatter.maximumFractionDigits = 4
 		return formatter
 	}()
+
+	init(node: NodeInfoEntity?) {
+		self.node = node
+		let hwModel = Int64(node?.user?.hwModelId ?? 0)
+		_hardwareResults = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
+			hw.hwModel == hwModel
+		})
+	}
 
 	var body: some View {
 		Form {
@@ -180,6 +195,12 @@ struct LoRaConfig: View {
 					Stepper(txPower == 0 ? "Max Transmit Power" : "\(txPower)dBm Transmit Power", value: $txPower, in: 0...30, step: 1)
 						.padding(5)
 				}
+				if hasPaFan {
+					Toggle(isOn: $paFanDisabled) {
+						Label("PA Fan Disabled", systemImage: "fan.slash")
+					}
+					.tint(.accentColor)
+				}
 			}
 		}
 		.scrollDismissesKeyboard(.immediately)
@@ -209,6 +230,7 @@ struct LoRaConfig: View {
 					lc.overrideFrequency = overrideFrequency
 					lc.ignoreMqtt = ignoreMqtt
 					lc.configOkToMqtt = okToMqtt
+					lc.paFanDisabled = paFanDisabled
 					if let deviceNum = accessoryManager.activeDeviceNum,
 					   let connectedNode = getNodeInfo(id: deviceNum, context: context),
 					   connectedNode.num == node?.user?.num ?? 0 {
@@ -276,6 +298,9 @@ struct LoRaConfig: View {
 		.onChange(of: okToMqtt) { _, newOkToMqtt in
 			if newOkToMqtt != node?.loRaConfig?.okToMqtt { hasChanges = true }
 		}
+		.onChange(of: paFanDisabled) { _, newPaFanDisabled in
+			if newPaFanDisabled != node?.loRaConfig?.paFanDisabled { hasChanges = true }
+		}
 	}
 	func setLoRaValues() {
 		if node?.loRaConfig?.modemPreset ?? 0 == 2 {
@@ -296,6 +321,7 @@ struct LoRaConfig: View {
 		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
 		self.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
 		self.okToMqtt = node?.loRaConfig?.okToMqtt ?? false
+		self.paFanDisabled = node?.loRaConfig?.paFanDisabled ?? false
 		self.hasChanges = false
 	}
 }
