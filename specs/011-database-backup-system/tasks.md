@@ -20,7 +20,7 @@
 **Purpose**: Project initialization — create files, directories, and shared utilities needed by all user stories
 
 - [ ] T001 Create `Meshtastic/Persistence/` directory structure for backup service files
-- [ ] T002 [P] Add `.backup` Logger category to the existing `Meshtastic/Extensions/Logger.swift`
+- [ ] T002 [P] Add `💾 Backup` Logger category (e.g., `static let backup = Logger(subsystem: subsystem, category: "💾 Backup")`) to the existing `Meshtastic/Extensions/Logger.swift`
 - [ ] T003 [P] Define `BackupEntry`, `BackupIndex`, and `NodeBackupResult` data types in `Meshtastic/Persistence/BackupModels.swift`
 
 ---
@@ -58,7 +58,7 @@
 
 - [ ] T013 [US1] Integrate backup call in node-switch flow: insert `await NodeBackupManager.shared.createBackup(forNode:nodeName:)` after `flushDebouncedSaves()` and before `clearDatabase()` in `Meshtastic/Views/Connect/Connect.swift`
 - [ ] T014 [US1] Add toast/indicator feedback for backup result (success indicator, skip warning) in `Meshtastic/Views/Connect/Connect.swift`
-- [ ] T015 [US1] Add structured logging for backup operations using `Logger.backup` in `Meshtastic/Extensions/Logger.swift` and `Meshtastic/Persistence/NodeBackupManager.swift`
+- [ ] T015 [US1] Add structured logging statements for backup operations using `Logger.backup` within `Meshtastic/Persistence/NodeBackupManager.swift` (Logger category already added in T002)
 
 **Checkpoint**: Switching from Node A to Node B creates a backup file for Node A. Verify with unit tests and manual test.
 
@@ -97,7 +97,7 @@
 - [ ] T022 [P] [US3] Create `BackupRowView` displaying node name, backup date, and formatted file size in `Meshtastic/Views/Settings/BackupManagement/BackupRowView.swift`
 - [ ] T023 [US3] Create `BackupManagementView` with list of backups, total storage display, and swipe-to-delete in `Meshtastic/Views/Settings/BackupManagement/BackupManagementView.swift`
 - [ ] T024 [US3] Add delete confirmation alert and call `NodeBackupManager.shared.deleteBackup(forNode:)` on confirm in `Meshtastic/Views/Settings/BackupManagement/BackupManagementView.swift`
-- [ ] T025 [US3] Add navigation link to `BackupManagementView` from the Settings screen in `Meshtastic/Views/Settings/` (appropriate settings file)
+- [ ] T025 [US3] Add navigation link to `BackupManagementView` from the Settings screen in `Meshtastic/Views/Settings/` (appropriate settings file). Acceptance: verify path is Settings → Backup Management (2 taps to list, 3rd tap to delete) satisfying SC-005.
 
 **Checkpoint**: Users can navigate to backup management, see all backups with metadata, and delete individual backups.
 
@@ -113,6 +113,7 @@
 - [ ] T029 Handle app termination mid-backup: verify backup index consistency on launch and clean up orphaned files in `Meshtastic/Persistence/NodeBackupManager.swift`
 - [ ] T030 Run SwiftLint on all new files and fix any violations
 - [ ] T031 Validate implementation against quickstart.md scenarios (build + manual test)
+- [ ] T032 [P] Verify SC-004 (non-blocking UI): assert that file I/O in `NodeBackupManager` runs via `Task.detached` off `@MainActor`, and add a unit test confirming backup/restore do not execute on the main thread in `MeshtasticTests/NodeBackupManagerTests.swift`
 
 ---
 
@@ -207,7 +208,7 @@ All stories integrate independently into the shared `NodeBackupManager`.
 - [Story] label maps task to specific user story for traceability
 - The database contains only one node's data at a time — backup is a full SQLite file copy
 - `NodeBackupManager` is `@MainActor`-isolated; file I/O runs on background thread via `Task.detached`
-- Backup is a synchronous gate: `clearDatabase()` is blocked until backup completes
+- Backup is an async await barrier: `clearDatabase()` is suspended (not thread-blocking) until backup completes via `await`
 - One backup per node (1:1 mapping) — new backups overwrite previous ones
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently

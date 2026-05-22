@@ -60,7 +60,7 @@ A user wants to see which node backups exist, how much space they consume, and o
 - What happens if the backup file becomes corrupted?
 - How does the system handle connecting to a node when device storage is critically low?
 - What happens if the user connects rapidly between multiple nodes?
-- How does the system handle a node whose number has changed (factory reset)?
+- How does the system handle a node whose number has changed (factory reset)? → Decision: A new node number is treated as a new node. The node number does not currently change on factory reset, but if it does in the future, the old backup remains accessible under the old number and the new number starts fresh.
 
 ## Requirements *(mandatory)*
 
@@ -83,8 +83,8 @@ A user wants to see which node backups exist, how much space they consume, and o
 
 ### Measurable Outcomes
 
-- **SC-001**: Backup creation completes within 5 seconds for a database with up to 10,000 entities.
-- **SC-002**: Restore completes within 5 seconds for a database with up to 10,000 entities.
+- **SC-001**: Backup creation completes within 5 seconds for a database with up to 10,000 total rows across all entity types (or ~50MB file size).
+- **SC-002**: Restore completes within 5 seconds for a database with up to 10,000 total rows across all entity types (or ~50MB file size).
 - **SC-003**: Zero data loss when switching between two previously connected nodes in round-trip testing.
 - **SC-004**: Backup/restore operations do not block the UI thread.
 - **SC-005**: Users can manage backups and free storage within 3 taps from Settings.
@@ -104,7 +104,7 @@ A user wants to see which node backups exist, how much space they consume, and o
 
 1. **Backup scope** — Q: What is the backup granularity — full database snapshot or per-node filtered data? → A: Full SQLite/SwiftData file snapshot. The DB only ever contains one node's data at a time (previous node data is cleared before connecting a new one).
 
-2. **Backup trigger** — Q: When exactly does the backup happen relative to the node-switch flow? → A: Immediately before the DB is cleared for the new node connection. The clear is blocked until the snapshot completes (synchronous gate).
+2. **Backup trigger** — Q: When exactly does the backup happen relative to the node-switch flow? → A: Immediately before the DB is cleared for the new node connection. The clear is suspended via `await` until the snapshot completes (async await barrier — non-blocking to the UI thread).
 
 3. **Retention policy** — Q: How many backups are kept per node? → A: One (1:1 node-to-backup mapping). Each new backup for a given node replaces the previous one.
 

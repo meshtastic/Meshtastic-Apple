@@ -55,8 +55,7 @@ specs/011-database-backup-system/
 
 ```text
 Meshtastic/
-├── Model/
-│   └── BackupMetadataEntity.swift       # Backup index metadata (if SwiftData-backed)
+├── Model/                               # No new SwiftData models — backup metadata uses JSON index file
 ├── Persistence/
 │   └── NodeBackupManager.swift          # Core backup/restore service
 ├── Extensions/
@@ -66,9 +65,9 @@ Meshtastic/
 │       └── BackupManagement/
 │           ├── BackupManagementView.swift   # List of backups
 │           └── BackupRowView.swift          # Individual backup row
-├── Accessory/
-│   └── Accessory Manager/
-│       └── AccessoryManager+Connect.swift  # Modified: hook backup before clear
+├── Views/
+│   └── Connect/
+│       └── Connect.swift                   # Modified: hook backup before clear (existing file)
 
 MeshtasticTests/
 └── NodeBackupManagerTests.swift         # Unit tests for backup service
