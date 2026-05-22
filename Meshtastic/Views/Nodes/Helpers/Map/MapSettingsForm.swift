@@ -222,6 +222,8 @@ struct MapSettingsForm: View {
 			mapDataManager.initialize()
 		}
 
+
+
 	}
 }
 

@@ -60,22 +60,22 @@ struct MapLegend: View {
 			}
 			.navigationTitle("Map Legend")
 			.navigationBarTitleDisplayMode(.inline)
-		}
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
+			#if targetEnvironment(macCatalyst)
+			.toolbar {
+				ToolbarItem(placement: .cancellationAction) {
+					Button {
+						dismiss()
+					} label: {
+						Image(systemName: "xmark.circle.fill")
+							.font(.system(size: 34))
+							.symbolRenderingMode(.palette)
+							.foregroundStyle(.white, Color(.systemGray3))
+					}
+					.buttonStyle(.borderless)
+				}
 			}
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
+			#endif
 		}
-		#endif
 
 	}
 

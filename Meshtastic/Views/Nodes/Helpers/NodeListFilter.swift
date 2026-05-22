@@ -204,7 +204,26 @@ struct NodeListFilter: View {
 			.padding(.top, 12)
 			.padding(.leading, 14)
 		}
+<<<<<<< HEAD
 		#endif
+=======
+		.listStyle(.insetGrouped)
+#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
+		}
+#endif
+>>>>>>> 6f3c5e33 (Fix Mac Catalyst sheet dismiss buttons)
 		.presentationDetents([.large])
 		.presentationContentInteraction(.scrolls)
 		#if !targetEnvironment(macCatalyst)

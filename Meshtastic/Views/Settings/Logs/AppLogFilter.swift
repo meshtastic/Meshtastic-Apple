@@ -151,7 +151,11 @@ struct AppLogFilter: View {
 		.navigationTitle(filterTitle)
 		.navigationBarTitleDisplayMode(.inline)
 
+<<<<<<< HEAD
 		#if targetEnvironment(macCatalyst)
+=======
+#if targetEnvironment(macCatalyst)
+>>>>>>> 6f3c5e33 (Fix Mac Catalyst sheet dismiss buttons)
 		.overlay(alignment: .topLeading) {
 			Button {
 				dismiss()
@@ -165,7 +169,11 @@ struct AppLogFilter: View {
 			.padding(.top, 12)
 			.padding(.leading, 14)
 		}
+<<<<<<< HEAD
 		#endif
+=======
+#endif
+>>>>>>> 6f3c5e33 (Fix Mac Catalyst sheet dismiss buttons)
 		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
 		#if !targetEnvironment(macCatalyst)

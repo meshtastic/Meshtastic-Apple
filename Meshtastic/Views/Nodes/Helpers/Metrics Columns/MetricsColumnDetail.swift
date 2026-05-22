@@ -80,8 +80,14 @@ struct MetricsColumnDetail: View {
 			.navigationTitle("Metrics")
 			.navigationBarTitleDisplayMode(.inline)
 		}
+<<<<<<< HEAD
 
 		#if targetEnvironment(macCatalyst)
+=======
+		.listStyle(.insetGrouped)
+		.listSectionSpacing(12)
+#if targetEnvironment(macCatalyst)
+>>>>>>> 6f3c5e33 (Fix Mac Catalyst sheet dismiss buttons)
 		.overlay(alignment: .topLeading) {
 			Button {
 				dismiss()
@@ -95,7 +101,11 @@ struct MetricsColumnDetail: View {
 			.padding(.top, 12)
 			.padding(.leading, 14)
 		}
+<<<<<<< HEAD
 		#endif
+=======
+#endif
+>>>>>>> 6f3c5e33 (Fix Mac Catalyst sheet dismiss buttons)
 		.presentationDetents([.medium, .large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
 		#if !targetEnvironment(macCatalyst)
