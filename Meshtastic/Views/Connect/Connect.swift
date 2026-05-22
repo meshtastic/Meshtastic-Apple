@@ -612,8 +612,26 @@ struct ManualConnectionMenu: View {
 							try await accessoryManager.disconnect()
 						}
 						await MeshPackets.shared.flushDebouncedSaves()
+						// Backup current node before clearing
+						if let currentNodeNum = accessoryManager.activeDeviceNum {
+							let backupResult = await NodeBackupManager.shared.createBackup(
+								forNode: currentNodeNum,
+								nodeName: node?.user?.longName
+							)
+							if case .skipped(let reason) = backupResult {
+								Logger.backup.warning("Backup skipped: \(reason, privacy: .public)")
+							}
+						}
 						await MeshPackets.shared.clearDatabase(includeRoutes: false)
 						MeshPackets.recreateShared()
+						// Restore backup for the target node if available
+						let targetNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+						if targetNodeNum > 0 {
+							let restoreResult = await NodeBackupManager.shared.restoreBackup(forNode: targetNodeNum)
+							if case .success = restoreResult {
+								MeshPackets.recreateShared()
+							}
+						}
 						clearNotifications()
 						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
 						
@@ -698,8 +716,26 @@ struct DeviceConnectRow: View {
 						// (not the main context) to avoid destroying model instances that
 						// views still reference, then recreate with a fresh ModelContext.
 						await MeshPackets.shared.flushDebouncedSaves()
+						// Backup current node before clearing
+						if let currentNodeNum = accessoryManager.activeDeviceNum {
+							let backupResult = await NodeBackupManager.shared.createBackup(
+								forNode: currentNodeNum,
+								nodeName: device.longName
+							)
+							if case .skipped(let reason) = backupResult {
+								Logger.backup.warning("Backup skipped: \(reason, privacy: .public)")
+							}
+						}
 						await MeshPackets.shared.clearDatabase(includeRoutes: false)
 						MeshPackets.recreateShared()
+						// Restore backup for the target node if available
+						let targetNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+						if targetNodeNum > 0 {
+							let restoreResult = await NodeBackupManager.shared.restoreBackup(forNode: targetNodeNum)
+							if case .success = restoreResult {
+								MeshPackets.recreateShared()
+							}
+						}
 						clearNotifications()
 						
 						try await accessoryManager.connect(to: device)

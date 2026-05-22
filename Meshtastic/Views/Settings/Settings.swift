@@ -357,6 +357,13 @@ struct Settings: View {
 					Image(systemName: "scroll")
 				}
 			}
+			NavigationLink(value: SettingsNavigationState.backupManagement) {
+				Label {
+					Text("Backup Management")
+				} icon: {
+					Image(systemName: "externaldrive")
+				}
+			}
 		}
 	}
 
@@ -638,6 +645,8 @@ struct Settings: View {
 					DiscoveryScanView()
 				case .helpDocs:
 					DocBrowserView()
+				case .backupManagement:
+					BackupManagementView()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
