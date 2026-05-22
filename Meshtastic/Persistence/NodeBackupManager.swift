@@ -243,82 +243,6 @@ final class NodeBackupManager: NodeBackupManaging {
 		return entry
 	}
 
-	// MARK: - T008: Restore Backup
-
-	func restoreBackup(forNode nodeNum: Int64) async -> NodeBackupResult {
-		Logger.backup.info("Attempting restore for node \(nodeNum)")
-
-		guard let entry = backupIndex.entries[nodeNum] else {
-			Logger.backup.debug("No backup found for node \(nodeNum)")
-			return .noBackupFound
-		}
-
-		// Retry-once logic (FR-004)
-		for attempt in 1...2 {
-			do {
-				let restoredEntry = try await performRestore(entry: entry)
-				Logger.backup.info("Restore completed for node \(nodeNum)")
-				return .success(restoredEntry)
-			} catch {
-				if attempt == 1 {
-					Logger.backup.warning("Restore attempt 1 failed for node \(nodeNum), retrying: \(error.localizedDescription, privacy: .public)")
-				} else {
-					Logger.backup.error("Restore failed after retry for node \(nodeNum): \(error.localizedDescription, privacy: .public)")
-					return .skipped(reason: "Restore failed: \(error.localizedDescription)")
-				}
-			}
-		}
-
-		return .skipped(reason: "Restore failed unexpectedly")
-	}
-
-	private func performRestore(entry: BackupEntry) async throws -> BackupEntry {
-		let nodeBackupDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
-		let sqliteBackup = nodeBackupDir.appendingPathComponent(Self.storeFileName)
-
-		// Validate checksum (FR-007)
-		let currentChecksum = try await computeChecksum(for: sqliteBackup)
-		guard currentChecksum == entry.checksum else {
-			// T028: Delete corrupt backup
-			Logger.backup.error("Checksum mismatch for node \(entry.nodeNum) — backup is corrupt, deleting")
-			deleteBackup(forNode: entry.nodeNum)
-			throw BackupError.checksumMismatch
-		}
-
-		// Get destination database path
-		let destinationURL = self.activeDatabaseURL()
-		let destinationDir = destinationURL.deletingLastPathComponent()
-
-		// Replace files on background thread
-		try await Task.detached(priority: .userInitiated) { [fileManager] in
-			// Remove existing database files
-			let sqliteDst = destinationDir.appendingPathComponent(Self.storeFileName)
-			let walDst = destinationDir.appendingPathComponent(Self.walFileName)
-			let shmDst = destinationDir.appendingPathComponent(Self.shmFileName)
-
-			try? fileManager.removeItem(at: sqliteDst)
-			try? fileManager.removeItem(at: walDst)
-			try? fileManager.removeItem(at: shmDst)
-
-			// Copy backup to active location
-			try fileManager.copyItem(at: sqliteBackup, to: sqliteDst)
-
-			// Copy WAL if present
-			let walBackup = nodeBackupDir.appendingPathComponent(Self.walFileName)
-			if fileManager.fileExists(atPath: walBackup.path) {
-				try fileManager.copyItem(at: walBackup, to: walDst)
-			}
-
-			// Copy SHM if present
-			let shmBackup = nodeBackupDir.appendingPathComponent(Self.shmFileName)
-			if fileManager.fileExists(atPath: shmBackup.path) {
-				try fileManager.copyItem(at: shmBackup, to: shmDst)
-			}
-		}.value
-
-		return entry
-	}
-
 	// MARK: - T009: Query Methods
 
 	func hasBackup(forNode nodeNum: Int64) -> Bool {
@@ -391,55 +315,6 @@ final class NodeBackupManager: NodeBackupManaging {
 		return appSupport.appendingPathComponent("Meshtastic.store")
 	}
 
-	/// Swaps the active database files with a backup for the given node.
-	/// If no backup exists, deletes the active files so a fresh database is created.
-	/// Call this BEFORE recreating the ModelContainer.
-	func swapDatabaseFiles(forNode nodeNum: Int64?) {
-		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-		let activeStore = appSupport.appendingPathComponent(Self.storeFileName)
-		let activeWal = appSupport.appendingPathComponent(Self.walFileName)
-		let activeShm = appSupport.appendingPathComponent(Self.shmFileName)
-
-		// Remove current database files
-		try? fileManager.removeItem(at: activeStore)
-		try? fileManager.removeItem(at: activeWal)
-		try? fileManager.removeItem(at: activeShm)
-		Logger.backup.info("Removed active database files for swap")
-
-		// If target has a backup, copy it in
-		guard let nodeNum,
-			  let entry = backupIndex.entries[nodeNum] else {
-			Logger.backup.info("No backup for target — fresh database will be created")
-			return
-		}
-
-		let nodeBackupDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
-		let backupStore = nodeBackupDir.appendingPathComponent(Self.storeFileName)
-
-		guard fileManager.fileExists(atPath: backupStore.path) else {
-			Logger.backup.warning("Backup store file missing for node \(nodeNum)")
-			return
-		}
-
-		do {
-			try fileManager.copyItem(at: backupStore, to: activeStore)
-
-			let walBackup = nodeBackupDir.appendingPathComponent(Self.walFileName)
-			if fileManager.fileExists(atPath: walBackup.path) {
-				try fileManager.copyItem(at: walBackup, to: activeWal)
-			}
-
-			let shmBackup = nodeBackupDir.appendingPathComponent(Self.shmFileName)
-			if fileManager.fileExists(atPath: shmBackup.path) {
-				try fileManager.copyItem(at: shmBackup, to: activeShm)
-			}
-
-			Logger.backup.info("Database files swapped to backup for node \(nodeNum)")
-		} catch {
-			Logger.backup.error("Failed to swap database files for node \(nodeNum): \(error.localizedDescription, privacy: .public)")
-		}
-	}
-
 	// MARK: - Full Database Restore via Import
 
 	/// Restores a full backup by importing all entities from the backup SQLite into the live container.
@@ -469,6 +344,13 @@ final class NodeBackupManager: NodeBackupManaging {
 		guard fileManager.fileExists(atPath: backupStoreURL.path) else {
 			Logger.backup.error("💾 Backup store file missing for node \(nodeNum)")
 			return .skipped(reason: "Backup file not found")
+		}
+
+		do {
+			try await validateBackupIntegrity(entry: entry, backupStoreURL: backupStoreURL)
+		} catch {
+			Logger.backup.error("💾 Backup integrity check failed for node \(nodeNum): \(error.localizedDescription, privacy: .public)")
+			return .skipped(reason: "Restore failed: \(error.localizedDescription)")
 		}
 
 		do {
@@ -503,6 +385,15 @@ final class NodeBackupManager: NodeBackupManaging {
 		} catch {
 			Logger.backup.error("💾 Full restore failed for node \(nodeNum): \(error.localizedDescription, privacy: .public)")
 			return .skipped(reason: "Restore failed: \(error.localizedDescription)")
+		}
+	}
+
+	private func validateBackupIntegrity(entry: BackupEntry, backupStoreURL: URL) async throws {
+		let currentChecksum = try await computeChecksum(for: backupStoreURL)
+		guard currentChecksum == entry.checksum else {
+			Logger.backup.error("Checksum mismatch for node \(entry.nodeNum) — backup is corrupt, deleting")
+			deleteBackup(forNode: entry.nodeNum)
+			throw BackupError.checksumMismatch
 		}
 	}
 

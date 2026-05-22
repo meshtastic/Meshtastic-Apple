@@ -25,19 +25,13 @@ protocol NodeBackupManaging: Sendable {
     /// - Note: Retries once automatically on failure before returning `.skipped`
     func createBackup(forNode nodeNum: Int64, nodeName: String?) async -> NodeBackupResult
     
-    /// Restores a previously backed-up database for the specified node.
-    ///
-    /// - Parameter nodeNum: The unique node number to restore backup for
-    /// - Returns: Result indicating success, skip, or no backup found
-    /// - Note: Validates checksum before restoring. Returns `.skipped` if corrupt.
-    func restoreBackup(forNode nodeNum: Int64) async -> NodeBackupResult
-
     /// Restores a full backup by importing all entities from a backup snapshot into the live container.
     /// Call this after `clearDatabase()` has emptied the active store.
     ///
     /// - Parameters:
     ///   - nodeNum: The node number whose backup should be imported
     ///   - container: The live container to import into
+    /// - Note: Validates the stored `.store` checksum before importing. Corrupt backups are deleted.
     func restoreFromBackup(forNode nodeNum: Int64, into container: ModelContainer) async -> NodeBackupResult
     
     /// Checks whether a backup exists for the specified node.

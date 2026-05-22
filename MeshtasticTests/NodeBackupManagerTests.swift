@@ -7,6 +7,8 @@
 
 import Testing
 import Foundation
+import CryptoKit
+import SwiftData
 @testable import Meshtastic
 
 @Suite("NodeBackupManager Tests")
@@ -26,13 +28,45 @@ struct NodeBackupManagerTests {
 	private func createFakeDatabase(at directory: URL, content: String = "fake-sqlite-data") throws -> URL {
 		try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 		let sqliteURL = directory.appendingPathComponent("Meshtastic.store")
-		try content.data(using: .utf8)!.write(to: sqliteURL)
+		try Data(content.utf8).write(to: sqliteURL)
 		return sqliteURL
 	}
 
 	/// Cleans up temporary directory.
 	private func cleanup(_ url: URL) {
 		try? FileManager.default.removeItem(at: url)
+	}
+
+	private func makeContainer(inMemory: Bool = true, storeURL: URL? = nil) throws -> ModelContainer {
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let config: ModelConfiguration
+		if let storeURL {
+			config = ModelConfiguration(url: storeURL, allowsSave: true)
+			return try ModelContainer(
+				for: schema,
+				migrationPlan: MeshtasticMigrationPlan.self,
+				configurations: config
+			)
+		}
+
+		config = ModelConfiguration(
+			"NodeBackupManagerTests-\(UUID().uuidString)",
+			schema: schema,
+			isStoredInMemoryOnly: inMemory,
+			allowsSave: true
+		)
+		return try ModelContainer(
+			for: schema,
+			migrationPlan: MeshtasticMigrationPlan.self,
+			configurations: config
+		)
+	}
+
+	private func writeIndex(entry: BackupEntry, to backupDir: URL) throws {
+		var index = BackupIndex()
+		index.entries[entry.nodeNum] = entry
+		let indexData = try JSONEncoder().encode(index)
+		try indexData.write(to: backupDir.appendingPathComponent("backup-index.json"))
 	}
 
 	// MARK: - T010: createBackup Success Case
@@ -126,29 +160,40 @@ struct NodeBackupManagerTests {
 		}
 	}
 
-	// MARK: - T016: restoreBackup Success Case
+	// MARK: - T016: restoreFromBackup Success Case
 
-	@Test("restoreBackup restores files when valid backup exists")
+	@Test("restoreFromBackup imports entities when valid backup exists")
 	@MainActor
-	func testRestoreBackupSuccess() async throws {
+	func testRestoreFromBackupSuccess() async throws {
 		let tempDir = try makeTempDir()
 		defer { cleanup(tempDir) }
 
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
-		let manager = NodeBackupManager(baseURL: backupDir)
-
-		// Manually create a backup entry with real files
 		let nodeNum: Int64 = 55555
 		let nodeDirName = "\(nodeNum)"
 		let nodeBackupPath = backupDir.appendingPathComponent(nodeDirName, isDirectory: true)
 		try FileManager.default.createDirectory(at: nodeBackupPath, withIntermediateDirectories: true)
 
-		let content = "test-database-content"
-		let sqliteFile = nodeBackupPath.appendingPathComponent("Meshtastic.sqlite")
-		try content.data(using: .utf8)!.write(to: sqliteFile)
+		let backupStoreURL = nodeBackupPath.appendingPathComponent("Meshtastic.store")
+		let backupContainer = try makeContainer(inMemory: false, storeURL: backupStoreURL)
+		let backupContext = ModelContext(backupContainer)
+		backupContext.autosaveEnabled = false
+
+		let node = NodeInfoEntity()
+		node.num = nodeNum
+		node.bleName = "Test BLE"
+		backupContext.insert(node)
+
+		let user = UserEntity()
+		user.num = nodeNum
+		user.longName = "RestoredNode"
+		user.shortName = "RN"
+		user.userNode = node
+		backupContext.insert(user)
+		try backupContext.save()
 
 		// Compute real checksum
-		let data = try Data(contentsOf: sqliteFile)
+		let data = try Data(contentsOf: backupStoreURL)
 		let digest = CryptoKit.SHA256.hash(data: data)
 		let checksum = digest.map { String(format: "%02x", $0) }.joined()
 
@@ -157,43 +202,41 @@ struct NodeBackupManagerTests {
 			nodeNum: nodeNum,
 			nodeName: "RestoredNode",
 			createdAt: .now,
-			fileSize: Int64(content.utf8.count),
+			fileSize: Int64(data.count),
 			checksum: checksum,
 			backupPath: nodeDirName
 		)
-
-		// We need to test through the public API, so use hasBackup to verify
-		// The manager loads index from disk, so we write it manually
-		var index = BackupIndex()
-		index.entries[nodeNum] = entry
-		let indexData = try JSONEncoder().encode(index)
-		try indexData.write(to: backupDir.appendingPathComponent("backup-index.json"))
+		try writeIndex(entry: entry, to: backupDir)
 
 		// Recreate manager to pick up the index
 		let manager2 = NodeBackupManager(baseURL: backupDir)
 		#expect(manager2.hasBackup(forNode: nodeNum))
 
-		// Attempt restore (will fail at file replacement in test env, but validates checksum path)
-		let result = await manager2.restoreBackup(forNode: nodeNum)
-		// Result depends on whether destination exists — we're testing the flow
+		let liveStoreURL = tempDir.appendingPathComponent("Live.store")
+		let liveContainer = try makeContainer(inMemory: false, storeURL: liveStoreURL)
+
+		let result = await manager2.restoreFromBackup(forNode: nodeNum, into: liveContainer)
 		switch result {
 		case .success:
-			break // Ideal case
-		case .skipped:
-			break // Acceptable in test environment
+			let liveContext = ModelContext(liveContainer)
+			let restoredNodes = try liveContext.fetch(FetchDescriptor<NodeInfoEntity>())
+			let restoredUsers = try liveContext.fetch(FetchDescriptor<UserEntity>())
+			#expect(restoredNodes.count == 1)
+			#expect(restoredNodes.first?.num == nodeNum)
+			#expect(restoredUsers.count == 1)
+			#expect(restoredUsers.first?.longName == "RestoredNode")
+		case .skipped(let reason):
+			Issue.record("Expected restoreFromBackup to succeed, got skipped: \(reason)")
 		case .noBackupFound:
 			Issue.record("Should have found the backup we just created")
 		}
-
-		// Suppress unused variable warnings
-		_ = manager
 	}
 
-	// MARK: - T017: restoreBackup Checksum Mismatch
+	// MARK: - T017: restoreFromBackup Checksum Mismatch
 
-	@Test("restoreBackup detects corrupt backup via checksum mismatch")
+	@Test("restoreFromBackup detects corrupt backup via checksum mismatch")
 	@MainActor
-	func testRestoreBackupChecksumMismatch() async throws {
+	func testRestoreFromBackupChecksumMismatch() async throws {
 		let tempDir = try makeTempDir()
 		defer { cleanup(tempDir) }
 
@@ -205,8 +248,8 @@ struct NodeBackupManagerTests {
 		let nodeBackupPath = backupDir.appendingPathComponent(nodeDirName, isDirectory: true)
 		try FileManager.default.createDirectory(at: nodeBackupPath, withIntermediateDirectories: true)
 
-		let sqliteFile = nodeBackupPath.appendingPathComponent("Meshtastic.sqlite")
-		try "some data".data(using: .utf8)!.write(to: sqliteFile)
+		let sqliteFile = nodeBackupPath.appendingPathComponent("Meshtastic.store")
+		try Data("some data".utf8).write(to: sqliteFile)
 
 		// Write index with intentionally wrong checksum
 		let entry = BackupEntry(
@@ -217,39 +260,37 @@ struct NodeBackupManagerTests {
 			checksum: "0000000000000000000000000000000000000000000000000000000000000000",
 			backupPath: nodeDirName
 		)
-		var index = BackupIndex()
-		index.entries[nodeNum] = entry
-		let indexData = try JSONEncoder().encode(index)
-		try indexData.write(to: backupDir.appendingPathComponent("backup-index.json"))
+		try writeIndex(entry: entry, to: backupDir)
 
 		let manager = NodeBackupManager(baseURL: backupDir)
-		let result = await manager.restoreBackup(forNode: nodeNum)
+		let liveContainer = try makeContainer()
+		let result = await manager.restoreFromBackup(forNode: nodeNum, into: liveContainer)
 
 		// Should skip due to checksum mismatch and delete the corrupt backup (T028)
 		switch result {
 		case .skipped(let reason):
-			#expect(reason.contains("failed") || reason.contains("Failed") || reason.contains("integrity"))
-		case .noBackupFound:
-			// After T028, corrupt backup is deleted, so subsequent calls return noBackupFound
-			// The backup was deleted by checksum validation
+			#expect(reason.contains("integrity") || reason.contains("failed") || reason.contains("Failed"))
 			#expect(!manager.hasBackup(forNode: nodeNum))
+		case .noBackupFound:
+			Issue.record("Checksum mismatch should report a skipped restore before removing the backup entry")
 		case .success:
 			Issue.record("Should not succeed with mismatched checksum")
 		}
 	}
 
-	// MARK: - T018: restoreBackup No Backup Exists
+	// MARK: - T018: restoreFromBackup No Backup Exists
 
-	@Test("restoreBackup returns .noBackupFound when no backup exists")
+	@Test("restoreFromBackup returns .noBackupFound when no backup exists")
 	@MainActor
-	func testRestoreBackupNoBackupFound() async throws {
+	func testRestoreFromBackupNoBackupFound() async throws {
 		let tempDir = try makeTempDir()
 		defer { cleanup(tempDir) }
 
 		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
 		let manager = NodeBackupManager(baseURL: backupDir)
+		let liveContainer = try makeContainer()
 
-		let result = await manager.restoreBackup(forNode: 11111)
+		let result = await manager.restoreFromBackup(forNode: 11111, into: liveContainer)
 
 		switch result {
 		case .noBackupFound:
@@ -296,8 +337,8 @@ struct NodeBackupManagerTests {
 		let nodeDirName = "\(nodeNum)"
 		let nodeBackupPath = backupDir.appendingPathComponent(nodeDirName, isDirectory: true)
 		try FileManager.default.createDirectory(at: nodeBackupPath, withIntermediateDirectories: true)
-		let sqliteFile = nodeBackupPath.appendingPathComponent("Meshtastic.sqlite")
-		try "data".data(using: .utf8)!.write(to: sqliteFile)
+		let sqliteFile = nodeBackupPath.appendingPathComponent("Meshtastic.store")
+		try Data("data".utf8).write(to: sqliteFile)
 
 		// Write index
 		let entry = BackupEntry(nodeNum: nodeNum, nodeName: "DeleteMe", createdAt: .now, fileSize: 4, checksum: "abc", backupPath: nodeDirName)
@@ -333,7 +374,7 @@ struct NodeBackupManagerTests {
 		for n in 1...3 {
 			let dir = backupDir.appendingPathComponent("\(n)", isDirectory: true)
 			try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-			try "data".data(using: .utf8)!.write(to: dir.appendingPathComponent("Meshtastic.sqlite"))
+			try Data("data".utf8).write(to: dir.appendingPathComponent("Meshtastic.store"))
 		}
 
 		let indexData = try JSONEncoder().encode(index)
@@ -365,7 +406,7 @@ struct NodeBackupManagerTests {
 		for n in 1...2 {
 			let dir = backupDir.appendingPathComponent("\(n)", isDirectory: true)
 			try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-			try "data".data(using: .utf8)!.write(to: dir.appendingPathComponent("Meshtastic.sqlite"))
+			try Data("data".utf8).write(to: dir.appendingPathComponent("Meshtastic.store"))
 		}
 
 		let indexData = try JSONEncoder().encode(index)
@@ -375,6 +416,3 @@ struct NodeBackupManagerTests {
 		#expect(manager.totalBackupSize == 3000)
 	}
 }
-
-// Need CryptoKit for test checksum computation
-import CryptoKit

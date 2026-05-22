@@ -81,13 +81,13 @@ The generated task list below reflects the original file-swap restore design. Th
 ### Tests for User Story 2
 
 - [X] T016 [P] [US2] Write unit test for restore success in `MeshtasticTests/NodeBackupManagerTests.swift`. The final implementation validates import-based restore behavior instead of file replacement/container recreation.
-- [X] T017 [P] [US2] Write unit test for `restoreBackup` with checksum mismatch (corrupt backup detection) in `MeshtasticTests/NodeBackupManagerTests.swift`
-- [X] T018 [P] [US2] Write unit test for `restoreBackup` when no backup exists (returns `.noBackupFound`) in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T017 [P] [US2] Write unit test for `restoreFromBackup(forNode:into:)` with checksum mismatch (corrupt backup detection) in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T018 [P] [US2] Write unit test for `restoreFromBackup(forNode:into:)` when no backup exists (returns `.noBackupFound`) in `MeshtasticTests/NodeBackupManagerTests.swift`
 
 ### Implementation for User Story 2
 
 - [X] T019 [US2] Integrate restore call in node-connect flow: after routing the UI away from bound models and running `clearDatabase()` + `MeshPackets.recreateShared()`, call `await NodeBackupManager.shared.restoreFromBackup(forNode:into:)` before connection steps in `Meshtastic/Views/Connect/Connect.swift`
-- [X] T020 [US2] Handle restore result: call `MeshPackets.recreateShared()` again on success, show toast on restore/skip in `Meshtastic/Views/Connect/Connect.swift`
+- [X] T020 [US2] Handle restore result: log and surface restore/skip outcomes in `Meshtastic/Views/Connect/Connect.swift` without recreating the container again after import restore
 - [X] T021 [US2] Add structured logging for restore operations using `Logger.backup` in `Meshtastic/Persistence/NodeBackupManager.swift`
 
 **Checkpoint**: Full round-trip works — switch away from Node A (backup), connect to Node B, reconnect to Node A (restore). Node A data is present.
