@@ -96,3 +96,10 @@ A user wants to see which node backups exist, how much space they consume, and o
 - The existing `PersistenceController` manages a single `ModelContainer` shared across the app.
 - Backups are stored locally on-device (not synced to iCloud unless explicitly decided).
 - The user typically connects to a small number of nodes (2–5) rather than dozens.
+- **The database contains only one node's data at a time** — the app clears previous node data before connecting to a new node. This means backup is a full SQLite file snapshot (not per-node filtered extraction).
+
+## Clarifications
+
+### Session 2026-05-22
+
+- Q: What is the backup granularity — full database snapshot or per-node filtered data? → A: Full SQLite file snapshot (the DB only ever contains one node's data at a time; it clears previous node data before connecting a new one).
