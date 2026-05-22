@@ -19,9 +19,9 @@
 
 **Purpose**: Project initialization — create files, directories, and shared utilities needed by all user stories
 
-- [ ] T001 Create `Meshtastic/Persistence/` directory structure for backup service files
-- [ ] T002 [P] Add `💾 Backup` Logger category (e.g., `static let backup = Logger(subsystem: subsystem, category: "💾 Backup")`) to the existing `Meshtastic/Extensions/Logger.swift`
-- [ ] T003 [P] Define `BackupEntry`, `BackupIndex`, and `NodeBackupResult` data types in `Meshtastic/Persistence/BackupModels.swift`
+- [X] T001 Create `Meshtastic/Persistence/` directory structure for backup service files
+- [X] T002 [P] Add `💾 Backup` Logger category (e.g., `static let backup = Logger(subsystem: subsystem, category: "💾 Backup")`) to the existing `Meshtastic/Extensions/Logger.swift`
+- [X] T003 [P] Define `BackupEntry`, `BackupIndex`, and `NodeBackupResult` data types in `Meshtastic/Persistence/BackupModels.swift`
 
 ---
 
@@ -31,12 +31,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Implement `NodeBackupManaging` protocol in `Meshtastic/Persistence/NodeBackupManaging.swift`
-- [ ] T005 Implement `NodeBackupManager` core class with singleton setup, backup directory initialization, and index load/save in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [ ] T006 Implement SHA-256 checksum computation helper in `NodeBackupManager` (private method) for `.sqlite` file integrity verification in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [ ] T007 Implement `createBackup(forNode:nodeName:)` method with SQLite file copy (`.sqlite`, `.sqlite-wal`, `.sqlite-shm`), checksum generation, index update, and retry-once logic in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [ ] T008 Implement `restoreBackup(forNode:)` method with checksum validation, file replacement, and retry-once logic in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [ ] T009 [P] Implement `hasBackup(forNode:)`, `listBackups()`, `deleteBackup(forNode:)`, and `totalBackupSize` computed property in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T004 Implement `NodeBackupManaging` protocol in `Meshtastic/Persistence/NodeBackupManaging.swift`
+- [X] T005 Implement `NodeBackupManager` core class with singleton setup, backup directory initialization, and index load/save in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T006 Implement SHA-256 checksum computation helper in `NodeBackupManager` (private method) for `.sqlite` file integrity verification in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T007 Implement `createBackup(forNode:nodeName:)` method with SQLite file copy (`.sqlite`, `.sqlite-wal`, `.sqlite-shm`), checksum generation, index update, and retry-once logic in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T008 Implement `restoreBackup(forNode:)` method with checksum validation, file replacement, and retry-once logic in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T009 [P] Implement `hasBackup(forNode:)`, `listBackups()`, `deleteBackup(forNode:)`, and `totalBackupSize` computed property in `Meshtastic/Persistence/NodeBackupManager.swift`
 
 **Checkpoint**: `NodeBackupManager` is fully functional and can be called by user story integration code
 
@@ -50,15 +50,15 @@
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Write unit test for `createBackup` success case (verify file copy and index update) in `MeshtasticTests/NodeBackupManagerTests.swift`
-- [ ] T011 [P] [US1] Write unit test for `createBackup` overwrite case (existing backup is replaced) in `MeshtasticTests/NodeBackupManagerTests.swift`
-- [ ] T012 [P] [US1] Write unit test for `createBackup` failure and retry-once logic in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T010 [P] [US1] Write unit test for `createBackup` success case (verify file copy and index update) in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T011 [P] [US1] Write unit test for `createBackup` overwrite case (existing backup is replaced) in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T012 [P] [US1] Write unit test for `createBackup` failure and retry-once logic in `MeshtasticTests/NodeBackupManagerTests.swift`
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Integrate backup call in node-switch flow: insert `await NodeBackupManager.shared.createBackup(forNode:nodeName:)` after `flushDebouncedSaves()` and before `clearDatabase()` in `Meshtastic/Views/Connect/Connect.swift`
-- [ ] T014 [US1] Add toast/indicator feedback for backup result (success indicator, skip warning) in `Meshtastic/Views/Connect/Connect.swift`
-- [ ] T015 [US1] Add structured logging statements for backup operations using `Logger.backup` within `Meshtastic/Persistence/NodeBackupManager.swift` (Logger category already added in T002)
+- [X] T013 [US1] Integrate backup call in node-switch flow: insert `await NodeBackupManager.shared.createBackup(forNode:nodeName:)` after `flushDebouncedSaves()` and before `clearDatabase()` in `Meshtastic/Views/Connect/Connect.swift`
+- [X] T014 [US1] Add toast/indicator feedback for backup result (success indicator, skip warning) in `Meshtastic/Views/Connect/Connect.swift`
+- [X] T015 [US1] Add structured logging statements for backup operations using `Logger.backup` within `Meshtastic/Persistence/NodeBackupManager.swift` (Logger category already added in T002)
 
 **Checkpoint**: Switching from Node A to Node B creates a backup file for Node A. Verify with unit tests and manual test.
 
@@ -72,15 +72,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T016 [P] [US2] Write unit test for `restoreBackup` success case (verify file replacement and container recreation signal) in `MeshtasticTests/NodeBackupManagerTests.swift`
-- [ ] T017 [P] [US2] Write unit test for `restoreBackup` with checksum mismatch (corrupt backup detection) in `MeshtasticTests/NodeBackupManagerTests.swift`
-- [ ] T018 [P] [US2] Write unit test for `restoreBackup` when no backup exists (returns `.noBackupFound`) in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T016 [P] [US2] Write unit test for `restoreBackup` success case (verify file replacement and container recreation signal) in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T017 [P] [US2] Write unit test for `restoreBackup` with checksum mismatch (corrupt backup detection) in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T018 [P] [US2] Write unit test for `restoreBackup` when no backup exists (returns `.noBackupFound`) in `MeshtasticTests/NodeBackupManagerTests.swift`
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Integrate restore call in node-connect flow: insert `await NodeBackupManager.shared.restoreBackup(forNode:)` after `clearDatabase()` + `MeshPackets.recreateShared()` and before connection steps in `Meshtastic/Views/Connect/Connect.swift`
-- [ ] T020 [US2] Handle restore result: call `MeshPackets.recreateShared()` again on success, show toast on restore/skip in `Meshtastic/Views/Connect/Connect.swift`
-- [ ] T021 [US2] Add structured logging for restore operations using `Logger.backup` in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T019 [US2] Integrate restore call in node-connect flow: insert `await NodeBackupManager.shared.restoreBackup(forNode:)` after `clearDatabase()` + `MeshPackets.recreateShared()` and before connection steps in `Meshtastic/Views/Connect/Connect.swift`
+- [X] T020 [US2] Handle restore result: call `MeshPackets.recreateShared()` again on success, show toast on restore/skip in `Meshtastic/Views/Connect/Connect.swift`
+- [X] T021 [US2] Add structured logging for restore operations using `Logger.backup` in `Meshtastic/Persistence/NodeBackupManager.swift`
 
 **Checkpoint**: Full round-trip works — switch away from Node A (backup), connect to Node B, reconnect to Node A (restore). Node A data is present.
 
@@ -94,10 +94,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T022 [P] [US3] Create `BackupRowView` displaying node name, backup date, and formatted file size in `Meshtastic/Views/Settings/BackupManagement/BackupRowView.swift`
-- [ ] T023 [US3] Create `BackupManagementView` with list of backups, total storage display, and swipe-to-delete in `Meshtastic/Views/Settings/BackupManagement/BackupManagementView.swift`
-- [ ] T024 [US3] Add delete confirmation alert and call `NodeBackupManager.shared.deleteBackup(forNode:)` on confirm in `Meshtastic/Views/Settings/BackupManagement/BackupManagementView.swift`
-- [ ] T025 [US3] Add navigation link to `BackupManagementView` from the Settings screen in `Meshtastic/Views/Settings/` (appropriate settings file). Acceptance: verify path is Settings → Backup Management (2 taps to list, 3rd tap to delete) satisfying SC-005.
+- [X] T022 [P] [US3] Create `BackupRowView` displaying node name, backup date, and formatted file size in `Meshtastic/Views/Settings/BackupManagement/BackupRowView.swift`
+- [X] T023 [US3] Create `BackupManagementView` with list of backups, total storage display, and swipe-to-delete in `Meshtastic/Views/Settings/BackupManagement/BackupManagementView.swift`
+- [X] T024 [US3] Add delete confirmation alert and call `NodeBackupManager.shared.deleteBackup(forNode:)` on confirm in `Meshtastic/Views/Settings/BackupManagement/BackupManagementView.swift`
+- [X] T025 [US3] Add navigation link to `BackupManagementView` from the Settings screen in `Meshtastic/Views/Settings/` (appropriate settings file). Acceptance: verify path is Settings → Backup Management (2 taps to list, 3rd tap to delete) satisfying SC-005.
 
 **Checkpoint**: Users can navigate to backup management, see all backups with metadata, and delete individual backups.
 
@@ -107,13 +107,13 @@
 
 **Purpose**: Edge cases, error handling improvements, and cleanup that span multiple user stories
 
-- [ ] T026 [P] Handle insufficient storage edge case: check available disk space before backup, return `.skipped(reason:)` with appropriate toast in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [ ] T027 [P] Handle rapid node-switch edge case: ensure concurrent backup/restore calls are serialized (actor isolation) in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [ ] T028 [P] Delete corrupt backup files when checksum validation fails during restore in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [ ] T029 Handle app termination mid-backup: verify backup index consistency on launch and clean up orphaned files in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [ ] T030 Run SwiftLint on all new files and fix any violations
-- [ ] T031 Validate implementation against quickstart.md scenarios (build + manual test)
-- [ ] T032 [P] Verify SC-004 (non-blocking UI): assert that file I/O in `NodeBackupManager` runs via `Task.detached` off `@MainActor`, and add a unit test confirming backup/restore do not execute on the main thread in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T026 [P] Handle insufficient storage edge case: check available disk space before backup, return `.skipped(reason:)` with appropriate toast in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T027 [P] Handle rapid node-switch edge case: ensure concurrent backup/restore calls are serialized (actor isolation) in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T028 [P] Delete corrupt backup files when checksum validation fails during restore in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T029 Handle app termination mid-backup: verify backup index consistency on launch and clean up orphaned files in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T030 Run SwiftLint on all new files and fix any violations
+- [X] T031 Validate implementation against quickstart.md scenarios (build + manual test)
+- [X] T032 [P] Verify SC-004 (non-blocking UI): assert that file I/O in `NodeBackupManager` runs via `Task.detached` off `@MainActor`, and add a unit test confirming backup/restore do not execute on the main thread in `MeshtasticTests/NodeBackupManagerTests.swift`
 
 ---
 
