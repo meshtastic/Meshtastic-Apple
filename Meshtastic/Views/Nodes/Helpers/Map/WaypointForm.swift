@@ -116,7 +116,7 @@ struct WaypointForm: View {
 						Spacer()
 						TextField("Select an emoji", text: $icon)
 							.keyboardType(.emoji)
-							.font(.title)
+							.font(.system(size: 34))
 							.focused($iconIsFocused)
 							.onChange(of: icon) { _, value in
 								// If a second emoji is entered delete the first one
@@ -424,18 +424,6 @@ struct WaypointForm: View {
 					}
 				}
 				.padding(.top)
-#if targetEnvironment(macCatalyst)
-				Spacer()
-				Button {
-					dismiss()
-				} label: {
-					Label("Close", systemImage: "xmark")
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-#endif
 			}
 		}
 	}
@@ -493,6 +481,22 @@ struct WaypointForm: View {
 		}
 		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
 		.presentationDragIndicator(.visible)
+
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
+		}
+		#endif
 	}
 	
 	@MainActor
