@@ -479,6 +479,7 @@
         FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
 		DD000BACKUP001000000002 /* BackupModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP001000000001 /* BackupModels.swift */; };
 		DD000BACKUP002000000002 /* NodeBackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP002000000001 /* NodeBackupManager.swift */; };
+        DD000BACKUP007000000002 /* NodeBackupManager+Import.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP007000000001 /* NodeBackupManager+Import.swift */; };
 		DD000BACKUP003000000002 /* NodeBackupManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP003000000001 /* NodeBackupManaging.swift */; };
 		DD000BACKUP004000000002 /* BackupManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP004000000001 /* BackupManagementView.swift */; };
 		DD000BACKUP005000000002 /* BackupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP005000000001 /* BackupRowView.swift */; };
@@ -1076,6 +1077,7 @@
         FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
 		DD000BACKUP001000000001 /* BackupModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupModels.swift; sourceTree = "<group>"; };
 		DD000BACKUP002000000001 /* NodeBackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManager.swift; sourceTree = "<group>"; };
+        DD000BACKUP007000000001 /* NodeBackupManager+Import.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeBackupManager+Import.swift"; sourceTree = "<group>"; };
 		DD000BACKUP003000000001 /* NodeBackupManaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManaging.swift; sourceTree = "<group>"; };
 		DD000BACKUP004000000001 /* BackupManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManagementView.swift; sourceTree = "<group>"; };
 		DD000BACKUP005000000001 /* BackupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupRowView.swift; sourceTree = "<group>"; };
@@ -2168,6 +2170,7 @@
                 DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
 				DD000BACKUP001000000001 /* BackupModels.swift */,
 				DD000BACKUP002000000001 /* NodeBackupManager.swift */,
+                DD000BACKUP007000000001 /* NodeBackupManager+Import.swift */,
 				DD000BACKUP003000000001 /* NodeBackupManaging.swift */,
             );
             path = Persistence;
@@ -2745,6 +2748,7 @@
                 DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DD000BACKUP001000000002 /* BackupModels.swift in Sources */,
 				DD000BACKUP002000000002 /* NodeBackupManager.swift in Sources */,
+                DD000BACKUP007000000002 /* NodeBackupManager+Import.swift in Sources */,
 				DD000BACKUP003000000002 /* NodeBackupManaging.swift in Sources */,
 				DD000BACKUP004000000002 /* BackupManagementView.swift in Sources */,
 				DD000BACKUP005000000002 /* BackupRowView.swift in Sources */,

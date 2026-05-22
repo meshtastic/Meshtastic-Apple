@@ -123,8 +123,8 @@ extension AccessoryManager {
 
 	func handleNodeInfo(_ nodeInfo: NodeInfo) async {
 		if let continuation = self.firstDatabaseNodeInfoContinuation {
-			continuation.resume()
 			self.firstDatabaseNodeInfoContinuation = nil
+			continuation.resume()
 		}
 		
 		guard nodeInfo.num > 0 else {
