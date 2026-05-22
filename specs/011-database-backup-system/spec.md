@@ -2,7 +2,7 @@
 
 **Feature Branch**: `copilot/spec-database-backup-system`  
 **Created**: 2025-07-14  
-**Status**: Draft  
+**Status**: Implemented
 **Input**: User description: "Automatically back up the database of the currently connected node when connecting to another node, and automatically restore the backup when a user connects to a previously connected node again."
 
 ## User Scenarios & Testing *(mandatory)*
@@ -67,7 +67,7 @@ A user wants to see which node backups exist, how much space they consume, and o
 ### Functional Requirements
 
 - **FR-001**: The system MUST automatically create a backup of the current node's database state when the user initiates a connection to a different node.
-- **FR-002**: The system MUST automatically restore a previously backed-up database state when the user reconnects to a node that has an existing backup.
+- **FR-002**: The system MUST automatically restore a previously backed-up database state when the user reconnects to a node that has an existing backup, without replacing the live `ModelContainer`.
 - **FR-003**: The system MUST identify nodes uniquely to associate backups correctly.
 - **FR-004**: The system MUST retry a failed backup/restore once automatically; if the retry also fails, skip with a non-blocking toast warning and proceed with the node connection.
 - **FR-005**: The system MUST provide a UI for viewing and managing existing backups.
@@ -94,6 +94,7 @@ A user wants to see which node backups exist, how much space they consume, and o
 - The app uses SwiftData exclusively for persistence (per project convention).
 - Each node is uniquely identifiable by its node number (`num` field on `NodeInfoEntity`).
 - The existing `PersistenceController` manages a single `ModelContainer` shared across the app.
+- The working implementation keeps that shared `ModelContainer` alive during radio switches and restores data by importing backup contents into the live store after `clearDatabase()`.
 - Backups are stored locally on-device (not synced to iCloud unless explicitly decided).
 - The user typically connects to a small number of nodes (2–5) rather than dozens.
 - **The database contains only one node's data at a time** — the app clears previous node data before connecting to a new node. This means backup is a full SQLite file snapshot (not per-node filtered extraction).
@@ -111,3 +112,9 @@ A user wants to see which node backups exist, how much space they consume, and o
 4. **Restore UX** — Q: How is the user informed when a restore happens? → A: Fully automatic and silent. A brief non-blocking toast/indicator is shown (e.g., "Restored Node A data") but no user action is required.
 
 5. **Error handling** — Q: What happens when a backup or restore operation fails? → A: Retry once automatically. If the retry also fails, silently skip with a brief toast warning; the node connection proceeds regardless. Failed backups will be retried on the next node switch.
+
+6. **Restore mechanism** — Q: Does restore replace the active SQLite files or recreate the app's `ModelContainer`? → A: No. The working implementation opens the backup as a read-only SwiftData container and imports all entities into the already-live container after the database is cleared.
+
+7. **Switch safety** — Q: How does the implementation avoid SwiftData crashes while clearing the current radio's data? → A: The switch flow first navigates the UI back to the Connect tab and clears router selection state so views stop holding stale model references before `clearDatabase()` runs.
+
+8. **Target node lookup** — Q: What if the selected device has no `device.num` yet when switching back? → A: The switch flow resolves the target node number from backup metadata using the stored `peripheralId` before clearing the database.

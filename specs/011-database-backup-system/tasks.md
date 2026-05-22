@@ -7,6 +7,14 @@
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
+## Implementation Update (2026-05-22)
+
+The generated task list below reflects the original file-swap restore design. The working implementation diverged in three important ways:
+
+- Restore no longer swaps active SQLite files or recreates the app `ModelContainer`; it imports entities from a read-only backup container into the existing live container.
+- The switch flow now routes the UI back to Connect and clears router selection state before `clearDatabase()` to avoid stale SwiftData model crashes.
+- Repeated switch testing also required hardening node and traceroute views against stale or duplicate model identities (`node.num`-based IDs, safe fetches).
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
@@ -34,8 +42,8 @@
 - [X] T004 Implement `NodeBackupManaging` protocol in `Meshtastic/Persistence/NodeBackupManaging.swift`
 - [X] T005 Implement `NodeBackupManager` core class with singleton setup, backup directory initialization, and index load/save in `Meshtastic/Persistence/NodeBackupManager.swift`
 - [X] T006 Implement SHA-256 checksum computation helper in `NodeBackupManager` (private method) for `.sqlite` file integrity verification in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [X] T007 Implement `createBackup(forNode:nodeName:)` method with SQLite file copy (`.sqlite`, `.sqlite-wal`, `.sqlite-shm`), checksum generation, index update, and retry-once logic in `Meshtastic/Persistence/NodeBackupManager.swift`
-- [X] T008 Implement `restoreBackup(forNode:)` method with checksum validation, file replacement, and retry-once logic in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T007 Implement `createBackup(forNode:nodeName:)` method with SQLite file copy (`.store`, `.store-wal`, `.store-shm`), checksum generation, index update, and retry-once logic in `Meshtastic/Persistence/NodeBackupManager.swift`
+- [X] T008 Implement restore support in `NodeBackupManager` with checksum validation, backup lookup, and retry-once logic. Final implementation uses `restoreFromBackup(forNode:into:)` to import entities into the live container rather than replacing store files.
 - [X] T009 [P] Implement `hasBackup(forNode:)`, `listBackups()`, `deleteBackup(forNode:)`, and `totalBackupSize` computed property in `Meshtastic/Persistence/NodeBackupManager.swift`
 
 **Checkpoint**: `NodeBackupManager` is fully functional and can be called by user story integration code
@@ -46,7 +54,7 @@
 
 **Goal**: When a user switches from Node A to Node B, automatically create a backup of Node A's database before clearing it
 
-**Independent Test**: Connect to Node A, accumulate data, connect to Node B. Verify a backup snapshot for Node A is created automatically at `Application Support/NodeBackups/{nodeANum}/Meshtastic.sqlite`
+**Independent Test**: Connect to Node A, accumulate data, connect to Node B. Verify a backup snapshot for Node A is created automatically at `Application Support/NodeBackups/{nodeANum}/Meshtastic.store`
 
 ### Tests for User Story 1
 
@@ -72,13 +80,13 @@
 
 ### Tests for User Story 2
 
-- [X] T016 [P] [US2] Write unit test for `restoreBackup` success case (verify file replacement and container recreation signal) in `MeshtasticTests/NodeBackupManagerTests.swift`
+- [X] T016 [P] [US2] Write unit test for restore success in `MeshtasticTests/NodeBackupManagerTests.swift`. The final implementation validates import-based restore behavior instead of file replacement/container recreation.
 - [X] T017 [P] [US2] Write unit test for `restoreBackup` with checksum mismatch (corrupt backup detection) in `MeshtasticTests/NodeBackupManagerTests.swift`
 - [X] T018 [P] [US2] Write unit test for `restoreBackup` when no backup exists (returns `.noBackupFound`) in `MeshtasticTests/NodeBackupManagerTests.swift`
 
 ### Implementation for User Story 2
 
-- [X] T019 [US2] Integrate restore call in node-connect flow: insert `await NodeBackupManager.shared.restoreBackup(forNode:)` after `clearDatabase()` + `MeshPackets.recreateShared()` and before connection steps in `Meshtastic/Views/Connect/Connect.swift`
+- [X] T019 [US2] Integrate restore call in node-connect flow: after routing the UI away from bound models and running `clearDatabase()` + `MeshPackets.recreateShared()`, call `await NodeBackupManager.shared.restoreFromBackup(forNode:into:)` before connection steps in `Meshtastic/Views/Connect/Connect.swift`
 - [X] T020 [US2] Handle restore result: call `MeshPackets.recreateShared()` again on success, show toast on restore/skip in `Meshtastic/Views/Connect/Connect.swift`
 - [X] T021 [US2] Add structured logging for restore operations using `Logger.backup` in `Meshtastic/Persistence/NodeBackupManager.swift`
 

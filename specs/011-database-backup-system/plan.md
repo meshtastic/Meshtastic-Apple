@@ -5,13 +5,13 @@
 
 ## Summary
 
-Implement an automatic database backup and restore system that snapshots the SQLite/SwiftData store file when switching between Meshtastic nodes, and restores a previous snapshot when reconnecting to a previously-used node. The approach uses direct SQLite file copy (via `FileManager`) since the database contains only one node's data at a time, with backup metadata tracked in a lightweight plist/JSON index. Integration hooks into the existing `AccessoryManager` connection lifecycle ensure backups happen synchronously before database clearing.
+Implement an automatic database backup and restore system that snapshots the SQLite/SwiftData store file when switching between Meshtastic nodes, and restores a previous node state by importing entities from a read-only backup container into the existing live store. The working approach keeps the shared `ModelContainer` alive, uses direct SQLite file copy only for backup creation, and tracks backup metadata in a lightweight JSON index. Integration hooks into the existing `AccessoryManager` connection lifecycle ensure backups happen synchronously before database clearing.
 
 ## Technical Context
 
 **Language/Version**: Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`)  
 **Primary Dependencies**: SwiftData, SwiftUI, Foundation (FileManager), OSLog  
-**Storage**: SwiftData (`ModelContainer` with SQLite backing store), file-level SQLite snapshots for backups  
+**Storage**: SwiftData (`ModelContainer` with SQLite backing store), file-level SQLite snapshots for backups, entity-level import restore into the live store
 **Testing**: Swift Testing framework (`@Suite`, `@Test`, `#expect`, `#require`)  
 **Target Platform**: iOS 17+, iPadOS 17+, macOS 14+ (via Mac Catalyst)  
 **Project Type**: Mobile app (feature addition)  
@@ -26,7 +26,7 @@ Implement an automatic database backup and restore system that snapshots the SQL
 | Principle | Status | Notes |
 |-----------|--------|-------|
 | I. SwiftUI-Native | ✅ PASS | Backup management UI will be pure SwiftUI in `Views/Settings/` |
-| II. SwiftData Persistence | ✅ PASS | Backup operates at file level below SwiftData; restore replaces the store file and recreates `ModelContainer`. No custom persistence outside SwiftData for app data. |
+| II. SwiftData Persistence | ✅ PASS | Backup operates at file level below SwiftData; restore imports into the existing live container instead of replacing store files or recreating `ModelContainer`. No custom persistence outside SwiftData for app data. |
 | III. Protocol-Oriented Transport | ✅ PASS | Backup hooks into `AccessoryManager` connection lifecycle; no direct BLE/network calls |
 | IV. Structured Logging | ✅ PASS | Will use `Logger` with new `.backup` category |
 | V. Protobuf Contract Fidelity | ✅ PASS | No protobuf changes needed |
@@ -59,21 +59,25 @@ Meshtastic/
 ├── Persistence/
 │   └── NodeBackupManager.swift          # Core backup/restore service
 ├── Extensions/
-│   └── Logger+Backup.swift              # Logger category for backup subsystem
+│   ├── Logger+Backup.swift              # Logger category for backup subsystem
+│   └── SwiftData/NodeInfoEntityExtension.swift  # Safe trace-route fetch helpers
 ├── Views/
 │   └── Settings/
 │       └── BackupManagement/
 │           ├── BackupManagementView.swift   # List of backups
 │           └── BackupRowView.swift          # Individual backup row
 ├── Views/
-│   └── Connect/
-│       └── Connect.swift                   # Modified: hook backup before clear (existing file)
+│   ├── Connect/
+│   │   └── Connect.swift                   # Modified: backup, UI detachment, clear, import restore, connect
+│   └── Nodes/
+│       ├── NodeList.swift                  # Modified: stable node identity and de-duplication
+│       └── TraceRouteLog.swift             # Modified: safe fetch-based trace route display
 
 MeshtasticTests/
 └── NodeBackupManagerTests.swift         # Unit tests for backup service
 ```
 
-**Structure Decision**: Mobile app feature addition following existing conventions. New files integrate into the established folder structure (`Persistence/` for service logic, `Model/` for entities, `Views/Settings/` for management UI). The backup service is a standalone manager class injected into the connection lifecycle.
+**Structure Decision**: Mobile app feature addition following existing conventions. New files integrate into the established folder structure (`Persistence/` for service logic, `Views/Settings/` for management UI). The backup service is a standalone manager class injected into the connection lifecycle, while the working switch flow also requires small stability changes in node and traceroute views to avoid stale SwiftData model identity issues during repeated radio switches.
 
 ## Complexity Tracking
 

@@ -6,18 +6,22 @@
 
 ## Research Questions & Findings
 
-### R1: SQLite File Copy Safety with SwiftData
+### R1: Backup File Copy Safety with SwiftData
 
-**Question**: How to safely copy the SQLite backing store while SwiftData/ModelContainer is active?
+**Question**: How to safely create a backup copy of the SwiftData backing store while SwiftData/ModelContainer is active?
 
-**Decision**: Use a two-phase approach — flush pending writes via `modelContext.save()`, then close the `ModelContainer` (or use SQLite's `VACUUM INTO` for a hot copy), then perform `FileManager.copyItem(at:to:)` on the `.sqlite`, `.sqlite-wal`, and `.sqlite-shm` files.
+**Decision**: For backup creation, flush pending writes via `flushDebouncedSaves()` and `modelContext.save()`, then copy the `.store`, `.store-wal`, and `.store-shm` files with `FileManager`. Do not apply the same file-swap approach to restore.
 
-**Rationale**: SwiftData uses SQLite with WAL mode. Copying without flushing WAL risks incomplete data. The safest approach is:
+**Rationale**: SwiftData uses SQLite with WAL mode. Copying without flushing WAL risks incomplete data. The working backup approach is:
 1. Call `modelContext.save()` to flush pending changes
-2. Use `sqlite3_file_control` with `SQLITE_FCNTL_PERSIST_WAL` or simply checkpoint the WAL before copying
-3. Alternatively, since the app already calls `clearDatabase()` after backup, we can tear down the `ModelContainer`, copy the files, then recreate the container for the new node
+2. Copy the active `.store`, `.store-wal`, and `.store-shm` files into `NodeBackups/{nodeNum}/`
+3. Treat the copied store as a snapshot artifact that will later be opened read-only for import
 
-Since `MeshPackets.recreateShared()` already destroys and recreates the model actor, and the existing flow calls `clearDatabase` followed by `MeshPackets.recreateShared()`, we can insert the file copy between `flushDebouncedSaves()` and `clearDatabase()`.
+The abandoned restore approaches were:
+- swapping SQLite files while the active container still held file descriptors
+- recreating the app `ModelContainer` and forcing the UI to rebind
+
+Both produced more aggressive SwiftData crashes than the original problem.
 
 **Alternatives considered**:
 - `NSPersistentStoreCoordinator` migration API — not available for SwiftData
@@ -35,7 +39,7 @@ Since `MeshPackets.recreateShared()` already destroys and recreates the model ac
 - `Application Support` is the standard iOS location for app-generated data files that are not user-visible documents
 - It is included in device backups (iTunes/Finder) and excluded from iCloud by default
 - Organizing by node number creates a clean 1:1 mapping structure
-- Files: `Meshtastic.sqlite`, `Meshtastic.sqlite-wal`, `Meshtastic.sqlite-shm` per node subfolder
+- Files: `Meshtastic.store`, `Meshtastic.store-wal`, `Meshtastic.store-shm` per node subfolder
 
 **Alternatives considered**:
 - Documents directory — visible in Files app, inappropriate for internal data
@@ -47,7 +51,7 @@ Since `MeshPackets.recreateShared()` already destroys and recreates the model ac
 
 **Question**: How to detect backup corruption and ensure integrity (FR-007)?
 
-**Decision**: Use SHA-256 checksum of the `.sqlite` file stored in the metadata index. On restore, recompute and compare before proceeding.
+**Decision**: Use SHA-256 checksum of the `.store` file stored in the metadata index. On restore, recompute and compare before proceeding.
 
 **Rationale**:
 - SHA-256 is fast enough for files up to 50MB (< 100ms on modern Apple silicon)
@@ -69,8 +73,8 @@ Since `MeshPackets.recreateShared()` already destroys and recreates the model ac
 
 **Rationale**:
 - A JSON file is simple, human-readable, and doesn't require the SwiftData container to be active to read
-- The backup index must be accessible *before* any `ModelContainer` is initialized (to decide whether to restore)
-- Using SwiftData for metadata would create a chicken-and-egg problem: the container might need to be replaced during restore
+- The backup index must be accessible before opening any backup snapshot for restore
+- Using SwiftData for metadata would create an unnecessary second persistence system for simple file metadata
 - `Codable` struct maps cleanly to JSON with minimal code
 
 **Alternatives considered**:
@@ -100,18 +104,18 @@ Since `MeshPackets.recreateShared()` already destroys and recreates the model ac
 
 **Question**: How and when does restore happen during connection?
 
-**Decision**: Check for existing backup in the connection sequence after the `ModelContainer` is initialized but before the device starts sending data. Specifically, after `clearDatabase` + `MeshPackets.recreateShared()`, check the backup index for the target node number and, if found, replace the SQLite files before the actor begins processing packets.
+**Decision**: Check for an existing backup in the node-switch sequence after the app has navigated away from model-bound views and after `clearDatabase` + `MeshPackets.recreateShared()`. If a backup exists, open it as a read-only `ModelContainer` and import all entities into the already-live container before the new connection begins processing packets.
 
 **Rationale**:
 - The restore must happen *after* clearing (to have a fresh slate) but *before* new data arrives
-- The connection flow uses `SequentialSteps` with 8 steps — restore fits between container recreation and step 1
-- After replacing files, the `ModelContainer` must be re-initialized to pick up the restored data
-- Flow: clear old → recreate container → check backup exists → if yes: copy backup files over → recreate container again → proceed with connection
+- Keeping the same app `ModelContainer` avoids SwiftData "destroyed backing data" failures during repeated switches
+- Importing from a read-only backup container preserves full historical entities the radio will not resend, such as messages, trace routes, telemetry history, and waypoints
+- Flow: backup current node → disconnect → route UI away from bound models → clear live DB → recreate `MeshPackets` → import target backup into live container → connect new radio
 
 **Alternatives considered**:
-- Restore before clear — would mix old node data with restored data if same container
+- Restore by swapping SQLite files under the live store — unsafe with an active SwiftData container
+- Restore by recreating the app `ModelContainer` and forcing `.id()`-based UI teardown — caused stale model crashes
 - Restore during `AccessoryManager.connect()` — too late, packets may have arrived
-- Lazy restore on first query — complex, risks partial state
 
 ### R7: Concurrency & Thread Safety
 
@@ -124,6 +128,7 @@ Since `MeshPackets.recreateShared()` already destroys and recreates the model ac
 - `FileManager` operations are synchronous but fast (file copy, not network I/O)
 - For databases up to 50MB, copy takes < 1 second on modern devices
 - The `@MainActor` isolation of `AccessoryManager` and `PersistenceController` means we need to hop off main for the file I/O
+- Restore helper methods that read from backup snapshots must be `nonisolated` when called from detached tasks
 
 **Alternatives considered**:
 - `DispatchQueue.global().async` — old-style, doesn't integrate with Swift Concurrency

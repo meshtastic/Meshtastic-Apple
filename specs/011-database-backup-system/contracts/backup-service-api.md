@@ -31,6 +31,14 @@ protocol NodeBackupManaging: Sendable {
     /// - Returns: Result indicating success, skip, or no backup found
     /// - Note: Validates checksum before restoring. Returns `.skipped` if corrupt.
     func restoreBackup(forNode nodeNum: Int64) async -> NodeBackupResult
+
+    /// Restores a full backup by importing all entities from a backup snapshot into the live container.
+    /// Call this after `clearDatabase()` has emptied the active store.
+    ///
+    /// - Parameters:
+    ///   - nodeNum: The node number whose backup should be imported
+    ///   - container: The live container to import into
+    func restoreFromBackup(forNode nodeNum: Int64, into container: ModelContainer) async -> NodeBackupResult
     
     /// Checks whether a backup exists for the specified node.
     ///
@@ -93,20 +101,22 @@ MeshPackets.recreateShared()
 ### Restore Trigger (in node-connect flow)
 
 ```swift
-// Called after clearDatabase + recreateShared, before connection steps begin
+// Called after UI state is detached from live model objects,
+// after clearDatabase + recreateShared, and before connection steps begin
 // Pseudo-code showing integration contract:
 
-let targetNodeNum = /* node number being connected to */
+let resolvedTargetNodeNum = await NodeBackupManager.shared.resolveNodeNum(forPeripheralId: device.id.uuidString)
+let targetNodeNum = device.num ?? resolvedTargetNodeNum
 
 // 1. Attempt restore
-let restoreResult = await NodeBackupManager.shared.restoreBackup(
-    forNode: targetNodeNum
+let restoreResult = await NodeBackupManager.shared.restoreFromBackup(
+    forNode: targetNodeNum,
+    into: PersistenceController.shared.container
 )
 
-// 2. If restored, recreate container to pick up new files
+// 2. Handle restore result
 switch restoreResult {
 case .success(let entry):
-    MeshPackets.recreateShared()
     showToast("Restored \(entry.nodeName ?? "node") data")
 case .skipped(let reason):
     Logger.backup.warning("Restore skipped: \(reason)")
@@ -125,7 +135,7 @@ case .noBackupFound:
 | Backup succeeds | Proceed normally | Brief success indicator (optional) |
 | Backup fails, retry succeeds | Proceed normally | None |
 | Backup fails twice | Skip, proceed with connection | Non-blocking toast: "Backup skipped" |
-| Restore succeeds | Recreate container, proceed | Toast: "Restored {nodeName} data" |
+| Restore succeeds | Import entities into live container, proceed | Toast: "Restored {nodeName} data" |
 | Restore checksum mismatch | Skip, delete corrupt backup | Toast: "Could not restore backup" |
 | Restore fails twice | Skip, proceed normally | Toast: "Could not restore backup" |
 | Insufficient storage | Skip backup with reason | Toast: "Not enough storage for backup" |
@@ -134,5 +144,6 @@ case .noBackupFound:
 
 - `NodeBackupManager` is `@MainActor`-isolated for state consistency
 - File I/O operations run on a background thread via `Task.detached` with `.userInitiated` priority
+- Restore import helpers can be `nonisolated` so they can execute from detached tasks while the manager itself remains `@MainActor`
 - All public methods are `async` — callers must `await` to ensure ordering
 - The backup index file is accessed exclusively through the manager (no concurrent writes)
