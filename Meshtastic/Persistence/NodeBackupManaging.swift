@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 /// Public contract for the node database backup/restore service.
 /// All methods are async and safe to call from any actor context.
@@ -27,6 +28,15 @@ protocol NodeBackupManaging: Sendable {
 	/// - Returns: Result indicating success, skip, or no backup found
 	/// - Note: Validates checksum before restoring. Returns `.skipped` if corrupt.
 	func restoreBackup(forNode nodeNum: Int64) async -> NodeBackupResult
+
+	/// Restores a full backup by importing all entities from the backup SQLite into the live container.
+	/// Call after `clearDatabase()` has emptied the live database.
+	///
+	/// - Parameters:
+	///   - nodeNum: The node number whose backup to restore
+	///   - container: The live ModelContainer to import into
+	/// - Returns: Result indicating success, skip, or no backup found
+	func restoreFromBackup(forNode nodeNum: Int64, into container: ModelContainer) async -> NodeBackupResult
 
 	/// Checks whether a backup exists for the specified node.
 	///

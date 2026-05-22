@@ -32,10 +32,11 @@ struct TraceRouteLog: View {
 	@State var animation: Animation?
 
 	var body: some View {
+		let traceRoutes = node.safeTraceRoutes()
 		HStack(alignment: .top) {
 			VStack {
 				VStack {
-					List(node.traceRoutes.reversed(), id: \.self, selection: $selectedRoute) { route in
+					List(traceRoutes, id: \.self, selection: $selectedRoute) { route in
 						Label {
 							let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
 							if route.response && route.hopsTowards == route.hopsBack {

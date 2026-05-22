@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 import MeshtasticProtobufs
 import CoreBluetooth
 import OSLog

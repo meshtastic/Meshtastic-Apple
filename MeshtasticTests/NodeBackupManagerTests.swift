@@ -25,7 +25,7 @@ struct NodeBackupManagerTests {
 	/// Creates a fake SQLite database file in the given directory.
 	private func createFakeDatabase(at directory: URL, content: String = "fake-sqlite-data") throws -> URL {
 		try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-		let sqliteURL = directory.appendingPathComponent("default.store")
+		let sqliteURL = directory.appendingPathComponent("Meshtastic.store")
 		try content.data(using: .utf8)!.write(to: sqliteURL)
 		return sqliteURL
 	}

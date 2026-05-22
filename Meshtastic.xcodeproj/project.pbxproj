@@ -477,6 +477,12 @@
         E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
         EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */; };
         FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
+		DD000BACKUP001000000002 /* BackupModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP001000000001 /* BackupModels.swift */; };
+		DD000BACKUP002000000002 /* NodeBackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP002000000001 /* NodeBackupManager.swift */; };
+		DD000BACKUP003000000002 /* NodeBackupManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP003000000001 /* NodeBackupManaging.swift */; };
+		DD000BACKUP004000000002 /* BackupManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP004000000001 /* BackupManagementView.swift */; };
+		DD000BACKUP005000000002 /* BackupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP005000000001 /* BackupRowView.swift */; };
+		DD000BACKUP006000000002 /* NodeBackupManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP006000000001 /* NodeBackupManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1068,6 +1074,12 @@
         F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
         F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanView.swift; sourceTree = "<group>"; };
         FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
+		DD000BACKUP001000000001 /* BackupModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupModels.swift; sourceTree = "<group>"; };
+		DD000BACKUP002000000001 /* NodeBackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManager.swift; sourceTree = "<group>"; };
+		DD000BACKUP003000000001 /* NodeBackupManaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManaging.swift; sourceTree = "<group>"; };
+		DD000BACKUP004000000001 /* BackupManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManagementView.swift; sourceTree = "<group>"; };
+		DD000BACKUP005000000001 /* BackupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupRowView.swift; sourceTree = "<group>"; };
+		DD000BACKUP006000000001 /* NodeBackupManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -1534,6 +1546,7 @@
                 DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */,
                 AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
                 AA003DOC0000001000000008 /* DocTranslationTests.swift */,
+				DD000BACKUP006000000001 /* NodeBackupManagerTests.swift */,
             );
             path = MeshtasticTests;
             sourceTree = "<group>";
@@ -1771,6 +1784,7 @@
                 1D5AD8037A0D583C614B0597 /* Tools.swift */,
                 71084780865585DCE48BD08F /* Discovery */,
                 AA003DOC0000003000000001 /* HelpAndDocumentation */,
+				DD000BACKUP000GRP0000001 /* BackupManagement */,
             );
             path = Settings;
             sourceTree = "<group>";
@@ -2152,6 +2166,9 @@
                 DDC4D567275499A500A4208E /* Persistence.swift */,
                 DD964FC52975DBFD007C176F /* QuerySwiftData.swift */,
                 DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
+				DD000BACKUP001000000001 /* BackupModels.swift */,
+				DD000BACKUP002000000001 /* NodeBackupManager.swift */,
+				DD000BACKUP003000000001 /* NodeBackupManaging.swift */,
             );
             path = Persistence;
             sourceTree = "<group>";
@@ -2260,6 +2277,15 @@
             path = Widgets;
             sourceTree = "<group>";
         };
+		DD000BACKUP000GRP0000001 /* BackupManagement */ = {
+			isa = PBXGroup;
+			children = (
+				DD000BACKUP004000000001 /* BackupManagementView.swift */,
+				DD000BACKUP005000000001 /* BackupRowView.swift */,
+			);
+			path = BackupManagement;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -2582,6 +2608,7 @@
                 DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */,
                 DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */,
                 DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */,
+                DD000BACKUP006000000002 /* NodeBackupManagerTests.swift in Sources */,
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -2716,6 +2743,11 @@
                 2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */,
                 23C2BD2B2EE8993800F6A997 /* DeviceHardwareImage.swift in Sources */,
                 DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
+				DD000BACKUP001000000002 /* BackupModels.swift in Sources */,
+				DD000BACKUP002000000002 /* NodeBackupManager.swift in Sources */,
+				DD000BACKUP003000000002 /* NodeBackupManaging.swift in Sources */,
+				DD000BACKUP004000000002 /* BackupManagementView.swift in Sources */,
+				DD000BACKUP005000000002 /* BackupRowView.swift in Sources */,
                 DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */,
                 DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */,
                 AA11223344556677AABB0001 /* DiscoveryTips.swift in Sources */,

@@ -606,36 +606,7 @@ struct ManualConnectionMenu: View {
 			Button("Connect to new radio?", role: .destructive) {
 				Task {
 					if let device = deviceForManualConnection {
-						UserDefaults.preferredPeripheralId = device.id.uuidString
-						UserDefaults.preferredPeripheralNum = 0
-						if accessoryManager.allowDisconnect {
-							try await accessoryManager.disconnect()
-						}
-						await MeshPackets.shared.flushDebouncedSaves()
-						// Backup current node before clearing
-						if let currentNodeNum = accessoryManager.activeDeviceNum {
-							let backupResult = await NodeBackupManager.shared.createBackup(
-								forNode: currentNodeNum,
-								nodeName: node?.user?.longName
-							)
-							if case .skipped(let reason) = backupResult {
-								Logger.backup.warning("Backup skipped: \(reason, privacy: .public)")
-							}
-						}
-						await MeshPackets.shared.clearDatabase(includeRoutes: false)
-						MeshPackets.recreateShared()
-						// Restore backup for the target node if available
-						let targetNodeNum = Int64(UserDefaults.preferredPeripheralNum)
-						if targetNodeNum > 0 {
-							let restoreResult = await NodeBackupManager.shared.restoreBackup(forNode: targetNodeNum)
-							if case .success = restoreResult {
-								MeshPackets.recreateShared()
-							}
-						}
-						clearNotifications()
-						try await selectedTransport?.transport.manuallyConnect(toDevice: device)
-						
-						// Clean up just in case
+						await switchToDevice(device, accessoryManager: accessoryManager, appState: accessoryManager.appState)
 						deviceForManualConnection = nil
 					}
 				}
@@ -664,9 +635,6 @@ struct DeviceConnectRow: View {
 			VStack(alignment: .leading) {
 				Button(action: {
 					if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-						if accessoryManager.allowDisconnect {
-							Task { try await accessoryManager.disconnect() }
-						}
 						presentingSwitchPreferredPeripheral = true
 					} else {
 						Task {
@@ -707,42 +675,108 @@ struct DeviceConnectRow: View {
 			.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
 				Button("Connect to new radio?", role: .destructive) {
 					Task {
-						UserDefaults.preferredPeripheralId = device.id.uuidString
-						UserDefaults.preferredPeripheralNum = 0
-						if accessoryManager.allowDisconnect {
-							try await accessoryManager.disconnect()
-						}
-						// Flush pending saves, clear database via the MeshPackets actor
-						// (not the main context) to avoid destroying model instances that
-						// views still reference, then recreate with a fresh ModelContext.
-						await MeshPackets.shared.flushDebouncedSaves()
-						// Backup current node before clearing
-						if let currentNodeNum = accessoryManager.activeDeviceNum {
-							let backupResult = await NodeBackupManager.shared.createBackup(
-								forNode: currentNodeNum,
-								nodeName: device.longName
-							)
-							if case .skipped(let reason) = backupResult {
-								Logger.backup.warning("Backup skipped: \(reason, privacy: .public)")
-							}
-						}
-						await MeshPackets.shared.clearDatabase(includeRoutes: false)
-						MeshPackets.recreateShared()
-						// Restore backup for the target node if available
-						let targetNodeNum = Int64(UserDefaults.preferredPeripheralNum)
-						if targetNodeNum > 0 {
-							let restoreResult = await NodeBackupManager.shared.restoreBackup(forNode: targetNodeNum)
-							if case .success = restoreResult {
-								MeshPackets.recreateShared()
-							}
-						}
-						clearNotifications()
-						
-						try await accessoryManager.connect(to: device)
-						
+						await switchToDevice(device, accessoryManager: accessoryManager, appState: accessoryManager.appState)
 					}
 				}
 			}
+	}
+}
+
+// MARK: - Node Switch Helper
+
+/// Handles the full node-switch lifecycle: backup, clear, restore, connect.
+///
+/// Flow:
+/// 1. Capture current node number
+/// 2. Flush pending writes
+/// 3. Create backup of current node's database (full SQLite file copy)
+/// 4. Disconnect from current device
+/// 5. Clear database via MeshPackets actor (empties @Query results safely)
+/// 6. Swap database files and recreate ModelContainer (full restore)
+/// 7. Trigger UI reset so views rebind to the new container
+/// 8. Connect to new device (radio sends updates on top of restored data)
+@MainActor
+func switchToDevice(_ device: Device, accessoryManager: AccessoryManager, appState: AppState) async {
+	// 1. Capture current node info before disconnect clears it
+	let currentNodeNum = accessoryManager.activeDeviceNum ?? {
+		let num = Int64(UserDefaults.preferredPeripheralNum)
+		return num > 0 ? num : nil
+	}()
+	let currentNodeName = currentNodeNum.flatMap { num in
+		accessoryManager.devices.first(where: { $0.num == num })?.longName
+	}
+	let resolvedTargetNodeNum = await NodeBackupManager.shared.resolveNodeNum(forPeripheralId: device.id.uuidString)
+	let targetNodeNum = device.num ?? resolvedTargetNodeNum
+	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
+
+	// 2. Flush pending writes before backup
+	await MeshPackets.shared.flushDebouncedSaves()
+	try? accessoryManager.context.save()
+
+	// 3. Backup current node's database (full SQLite snapshot)
+	if let currentNodeNum {
+		Logger.backup.info("💾 Creating backup for current node \(currentNodeNum)")
+		let backupResult = await NodeBackupManager.shared.createBackup(
+			forNode: currentNodeNum,
+			nodeName: currentNodeName
+		)
+		switch backupResult {
+		case .success(let entry):
+			Logger.backup.info("💾 Backup created: \(entry.fileSize) bytes for node \(currentNodeNum)")
+		case .skipped(let reason):
+			Logger.backup.warning("💾 Backup skipped: \(reason, privacy: .public)")
+		case .noBackupFound:
+			break
+		}
+	} else {
+		Logger.backup.warning("💾 No current node num — skipping backup")
+	}
+
+	// 4. Disconnect from current device
+	if accessoryManager.allowDisconnect {
+		try? await accessoryManager.disconnect()
+	}
+
+	// 5. Move the UI away from any views that may still bind to live model objects
+	// before deleting the current database contents.
+	appState.router.popToRoot(tab: .messages)
+	appState.router.popToRoot(tab: .nodes)
+	appState.router.popToRoot(tab: .map)
+	appState.router.popToRoot(tab: .settings)
+	appState.router.selectedTab = .connect
+	await Task.yield()
+
+	// 6. Clear database and recreate MeshPackets actor
+	await MeshPackets.shared.flushDebouncedSaves()
+	await MeshPackets.shared.clearDatabase(includeRoutes: false)
+	MeshPackets.recreateShared()
+	Logger.backup.info("💾 Database cleared and MeshPackets recreated")
+
+	// 7. Restore target node's backup by importing entities into the live container
+	if let targetNodeNum {
+		let restoreResult = await NodeBackupManager.shared.restoreFromBackup(
+			forNode: targetNodeNum,
+			into: PersistenceController.shared.container
+		)
+		switch restoreResult {
+		case .success:
+			Logger.backup.info("💾 Backup restored for target node \(targetNodeNum)")
+		case .skipped(let reason):
+			Logger.backup.warning("💾 Restore skipped: \(reason, privacy: .public)")
+		case .noBackupFound:
+			Logger.backup.info("💾 No backup for target node \(targetNodeNum) — radio will populate fresh data")
+		}
+	} else {
+		Logger.backup.warning("💾 Target node num is nil — cannot restore, radio will populate fresh data")
+	}
+
+	// 8. Clear notifications and connect to new device
+	clearNotifications()
+	do {
+		try await accessoryManager.connect(to: device)
+		Logger.backup.info("💾 Connected to target device successfully")
+	} catch {
+		Logger.backup.error("💾 Failed to connect to target: \(error.localizedDescription, privacy: .public)")
 	}
 }
 

@@ -102,7 +102,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		if isTest {
 			return MeshtasticAPI(container: nil)
 		}
-		return MeshtasticAPI(container: PersistenceController.shared.container)
+		return MeshtasticAPI(container: MainActor.assumeIsolated { PersistenceController.shared.container })
 	}()
 	
 	// MARK: - Constants

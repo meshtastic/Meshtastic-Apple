@@ -27,7 +27,7 @@ class PersistenceController {
 		return result
 	}()
 
-	let container: ModelContainer
+	private(set) var container: ModelContainer
 
 	var context: ModelContext {
 		container.mainContext
