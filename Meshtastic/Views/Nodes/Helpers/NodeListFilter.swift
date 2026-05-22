@@ -30,7 +30,7 @@ struct NodeListFilter: View {
 
 		NavigationStack {
 			Form {
-				Section(header: Text(filterTitle)) {
+				Section {
 					Toggle(isOn: $filters.viaLora) {
 
 						Label {
@@ -194,23 +194,30 @@ struct NodeListFilter: View {
 				}
 			}
 			.listStyle(.insetGrouped)
-#if targetEnvironment(macCatalyst)
-			Spacer()
+			.navigationTitle(filterTitle)
+			.navigationBarTitleDisplayMode(.inline)
+		}
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
 			Button {
 				dismiss()
 			} label: {
-				Label("Close", systemImage: "xmark")
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
 			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding(.bottom)
-#endif
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
+		#endif
 		.presentationDetents([.large])
 		.presentationContentInteraction(.scrolls)
 		.presentationDragIndicator(.visible)
 		.presentationBackgroundInteraction(.enabled(upThrough: .large))
+
+
 	}
 }
 
