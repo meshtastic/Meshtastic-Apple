@@ -1,7 +1,7 @@
 # Backup Service API Contract
 
-**Feature**: 011-database-backup-system  
-**Date**: 2025-07-14  
+**Feature**: 011-database-backup-system
+**Date**: 2025-07-14
 **Type**: Internal Swift API (no external network interface)
 
 ## Overview
@@ -15,7 +15,7 @@ The backup system is an internal service with no external-facing APIs. It expose
 /// All methods are async and safe to call from any actor context.
 @MainActor
 protocol NodeBackupManaging: Sendable {
-    
+
     /// Creates a backup of the current database state for the specified node.
     ///
     /// - Parameters:
@@ -24,7 +24,7 @@ protocol NodeBackupManaging: Sendable {
     /// - Returns: Result indicating success or skip reason
     /// - Note: Retries once automatically on failure before returning `.skipped`
     func createBackup(forNode nodeNum: Int64, nodeName: String?) async -> NodeBackupResult
-    
+
     /// Restores a full backup by importing all entities from a backup snapshot into the live container.
     /// Call this after `clearDatabase()` has emptied the active store.
     ///
@@ -33,25 +33,25 @@ protocol NodeBackupManaging: Sendable {
     ///   - container: The live container to import into
     /// - Note: Validates the stored `.store` checksum before importing. Corrupt backups are deleted.
     func restoreFromBackup(forNode nodeNum: Int64, into container: ModelContainer) async -> NodeBackupResult
-    
+
     /// Checks whether a backup exists for the specified node.
     ///
     /// - Parameter nodeNum: The node number to check
     /// - Returns: `true` if a valid backup entry exists in the index
     func hasBackup(forNode nodeNum: Int64) -> Bool
-    
+
     /// Returns metadata for all existing backups.
     ///
     /// - Returns: Array of backup entries sorted by most recent first
     func listBackups() -> [BackupEntry]
-    
+
     /// Deletes the backup for the specified node, freeing storage.
     ///
     /// - Parameter nodeNum: The node number whose backup should be deleted
     /// - Returns: `true` if backup was found and deleted, `false` if no backup existed
     @discardableResult
     func deleteBackup(forNode nodeNum: Int64) -> Bool
-    
+
     /// Returns the total disk space consumed by all backups in bytes.
     var totalBackupSize: Int64 { get }
 }

@@ -1,6 +1,6 @@
 # Quickstart: Automatic Node Database Backup & Restore
 
-**Feature**: 011-database-backup-system  
+**Feature**: 011-database-backup-system
 **Date**: 2025-07-14
 
 ## Overview

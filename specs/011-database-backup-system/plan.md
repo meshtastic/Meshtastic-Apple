@@ -9,14 +9,14 @@ Implement an automatic database backup and restore system that snapshots the SQL
 
 ## Technical Context
 
-**Language/Version**: Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`)  
-**Primary Dependencies**: SwiftData, SwiftUI, Foundation (FileManager), OSLog  
+**Language/Version**: Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`)
+**Primary Dependencies**: SwiftData, SwiftUI, Foundation (FileManager), OSLog
 **Storage**: SwiftData (`ModelContainer` with SQLite backing store), file-level SQLite snapshots for backups, entity-level import restore into the live store
-**Testing**: Swift Testing framework (`@Suite`, `@Test`, `#expect`, `#require`)  
-**Target Platform**: iOS 17+, iPadOS 17+, macOS 14+ (via Mac Catalyst)  
-**Project Type**: Mobile app (feature addition)  
-**Performance Goals**: Backup/restore completes within 5 seconds for databases with up to 10,000 entities; non-blocking UI  
-**Constraints**: Must not block main thread; single backup per node (1:1 mapping); local storage only  
+**Testing**: Swift Testing framework (`@Suite`, `@Test`, `#expect`, `#require`)
+**Target Platform**: iOS 17+, iPadOS 17+, macOS 14+ (via Mac Catalyst)
+**Project Type**: Mobile app (feature addition)
+**Performance Goals**: Backup/restore completes within 5 seconds for databases with up to 10,000 entities; non-blocking UI
+**Constraints**: Must not block main thread; single backup per node (1:1 mapping); local storage only
 **Scale/Scope**: 2–5 nodes per user typically; single SQLite file ~5–50MB per backup
 
 ## Constitution Check

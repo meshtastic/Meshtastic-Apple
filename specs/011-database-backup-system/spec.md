@@ -1,7 +1,7 @@
 # Feature Specification: Automatic Node Database Backup & Restore
 
-**Feature Branch**: `copilot/spec-database-backup-system`  
-**Created**: 2025-07-14  
+**Feature Branch**: `copilot/spec-database-backup-system`
+**Created**: 2025-07-14
 **Status**: Implemented
 **Input**: User description: "Automatically back up the database of the currently connected node when connecting to another node, and automatically restore the backup when a user connects to a previously connected node again."
 

@@ -1,7 +1,7 @@
 # Research: Automatic Node Database Backup & Restore
 
-**Feature**: 011-database-backup-system  
-**Date**: 2025-07-14  
+**Feature**: 011-database-backup-system
+**Date**: 2025-07-14
 **Status**: Complete
 
 ## Research Questions & Findings
@@ -35,7 +35,7 @@ Both produced more aggressive SwiftData crashes than the original problem.
 
 **Decision**: Store in `Application Support/NodeBackups/{nodeNum}/` directory.
 
-**Rationale**: 
+**Rationale**:
 - `Application Support` is the standard iOS location for app-generated data files that are not user-visible documents
 - It is included in device backups (iTunes/Finder) and excluded from iCloud by default
 - Organizing by node number creates a clean 1:1 mapping structure
