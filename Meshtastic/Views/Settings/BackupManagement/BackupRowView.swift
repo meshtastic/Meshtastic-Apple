@@ -10,7 +10,9 @@ import SwiftUI
 /// Displays a single backup entry with node name, backup date, and formatted file size.
 struct BackupRowView: View {
 	let entry: BackupEntry
+	var showRestoreButton = false
 	var showDeleteButton = false
+	var onRestore: (() -> Void)?
 	var onDelete: (() -> Void)?
 
 	var body: some View {
@@ -38,6 +40,13 @@ struct BackupRowView: View {
 			Text(formattedSize)
 				.font(.subheadline)
 				.foregroundColor(.secondary)
+
+			if showRestoreButton, let onRestore {
+				Button(action: onRestore) {
+					Image(systemName: "arrow.counterclockwise")
+				}
+				.buttonStyle(.borderless)
+			}
 
 			if showDeleteButton, let onDelete {
 				Button(role: .destructive, action: onDelete) {

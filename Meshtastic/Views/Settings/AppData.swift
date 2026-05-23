@@ -22,6 +22,18 @@ struct AppData: View {
 	@State private var isExporting = false
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
+	private var activeDatabaseFiles: [URL] {
+		applicationSupportFiles.filter(isActiveDatabaseFile)
+	}
+
+	private var nonDatabaseApplicationSupportFiles: [URL] {
+		applicationSupportFiles.filter { !isActiveDatabaseFile($0) }
+	}
+
+	private var activeDatabaseTotalSize: Int64 {
+		activeDatabaseFiles.reduce(0) { $0 + Int64($1.fileSize) }
+	}
+
 	var body: some View {
 
 		VStack {
@@ -62,9 +74,18 @@ struct AppData: View {
 		}
 
 		List {
-			if !applicationSupportFiles.isEmpty {
+			if !activeDatabaseFiles.isEmpty {
+				Section(header: Text("Active Database")) {
+					databaseSizeRow(title: "Store", fileName: "Meshtastic.store")
+					databaseSizeRow(title: "WAL", fileName: "Meshtastic.store-wal")
+					databaseSizeRow(title: "SHM", fileName: "Meshtastic.store-shm")
+					LabeledContent("Total", value: ByteCountFormatter.string(fromByteCount: activeDatabaseTotalSize, countStyle: .file))
+				}
+			}
+
+			if !nonDatabaseApplicationSupportFiles.isEmpty {
 				Section(header: Text("Application Support")) {
-					ForEach(applicationSupportFiles, id: \.self) { file in
+					ForEach(nonDatabaseApplicationSupportFiles, id: \.self) { file in
 						fileRow(file)
 					}
 				}
@@ -145,22 +166,43 @@ struct AppData: View {
 		}
 	}
 
+	private func isActiveDatabaseFile(_ file: URL) -> Bool {
+		guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first,
+			file.deletingLastPathComponent() == appSupport else {
+			return false
+		}
+
+		let name = file.lastPathComponent
+		return name == "Meshtastic.store" || name == "Meshtastic.store-wal" || name == "Meshtastic.store-shm"
+	}
+
+	private func fileDisplayName(for file: URL) -> String {
+		guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+			return file.lastPathComponent
+		}
+
+		let appSupportPath = appSupport.path + "/"
+		if file.path.hasPrefix(appSupportPath) {
+			return String(file.path.dropFirst(appSupportPath.count))
+		}
+
+		return file.lastPathComponent
+	}
+
+	@ViewBuilder
+	private func databaseSizeRow(title: String, fileName: String) -> some View {
+		let file = activeDatabaseFiles.first { $0.lastPathComponent == fileName }
+		LabeledContent(title, value: file.map(\.fileSizeString) ?? "Missing")
+	}
+
 	@ViewBuilder
 	private func fileRow(_ file: URL) -> some View {
+		let displayName = fileDisplayName(for: file)
 		HStack {
 			VStack(alignment: .leading ) {
-				if file.lastPathComponent.hasPrefix("Meshtastic.store") {
+				if file.pathExtension.contains("sqlite") {
 					Label {
-						Text("Active Database \(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
-					} icon: {
-						Image(systemName: "internaldrive")
-							.symbolRenderingMode(.hierarchical)
-							.font(idiom == .phone ? .callout : .title)
-							.frame(width: 35)
-					}
-				} else if file.pathExtension.contains("sqlite") {
-					Label {
-						Text("Node Core Data Backup \(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
+						Text("Node Core Data Backup \(displayName) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
 					} icon: {
 						Image(systemName: "cylinder.split.1x2")
 							.symbolRenderingMode(.hierarchical)
@@ -169,7 +211,7 @@ struct AppData: View {
 					}
 				} else {
 					Label {
-						Text("\(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
+						Text("\(displayName) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
 					} icon: {
 						Image(systemName: "doc.text")
 							.symbolRenderingMode(.hierarchical)

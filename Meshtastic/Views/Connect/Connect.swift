@@ -33,6 +33,21 @@ struct Connect: View {
 	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
 	@Environment(\.scenePhase) private var scenePhase
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
+	@State private var isSwitchingRadio = false
+
+	private var sortedAvailableDevices: [Device] {
+		accessoryManager.devices.sorted { lhs, rhs in
+			let preferredId = UserDefaults.preferredPeripheralId
+			let lhsIsPreferred = lhs.id.uuidString == preferredId
+			let rhsIsPreferred = rhs.id.uuidString == preferredId
+
+			if lhsIsPreferred != rhsIsPreferred {
+				return lhsIsPreferred
+			}
+
+			return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+		}
+	}
 	
 	var body: some View {
 		NavigationStack {
@@ -280,16 +295,16 @@ struct Connect: View {
 							Section(header: HStack {
 								Text("Available Radios").font(.title)
 								Spacer()
-								ManualConnectionMenu()
+								ManualConnectionMenu(isSwitchingRadio: $isSwitchingRadio)
 							}) {
-								ForEach(accessoryManager.devices.sorted(by: { $0.name < $1.name })) { device in
-									DeviceConnectRow(device: device)
+									ForEach(sortedAvailableDevices) { device in
+										DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
 								}
 							}
 						if manualConnections.connectionsList.count > 0 {
 							Section(header: Text("Manual Connections").font(.title)) {
 								ForEach(manualConnections.connectionsList) { device in
-									DeviceConnectRow(device: device)
+										DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
 #if targetEnvironment(macCatalyst)
 										.contextMenu {
 											Button {
@@ -346,9 +361,27 @@ struct Connect: View {
 					Spacer()
 				}
 				.padding(.bottom, 10)
-				
 			}
 			.background(Color(.systemGroupedBackground))
+			.disabled(isSwitchingRadio)
+			.overlay {
+				if isSwitchingRadio {
+					ZStack {
+						Color.black.opacity(0.2)
+							.ignoresSafeArea()
+
+						VStack(spacing: 14) {
+							ProgressView()
+								.controlSize(.large)
+							Text("Switching Radio")
+								.font(.headline)
+						}
+						.padding(.horizontal, 28)
+						.padding(.vertical, 22)
+						.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+					}
+				}
+			}
 			.navigationTitle("Connect")
 			.toolbar {
 				ToolbarItem(placement: .topBarLeading) {
@@ -363,7 +396,6 @@ struct Connect: View {
 					)
 				}
 			}
-			
 		}
 		// TODO: REMOVING VERSION STUFF?
 		//		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
@@ -541,6 +573,7 @@ struct ManualConnectionMenu: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
+	@Binding var isSwitchingRadio: Bool
 
 	private struct IterableTransport: Identifiable {
 		let id: UUID
@@ -551,8 +584,9 @@ struct ManualConnectionMenu: View {
 	
 	private var transports: [IterableTransport]
 	
-	init() {
-		self.transports = AccessoryManager.shared.transports.filter { $0.supportsManualConnection}.map { transport in
+	init(isSwitchingRadio: Binding<Bool>) {
+		self._isSwitchingRadio = isSwitchingRadio
+		self.transports = AccessoryManager.shared.transports.filter { $0.supportsManualConnection }.map { transport in
 			IterableTransport(id: UUID(), icon: transport.type.icon, title: transport.type.rawValue, transport: transport)
 		}
 	}
@@ -560,8 +594,6 @@ struct ManualConnectionMenu: View {
 	@State private var selectedTransport: IterableTransport?
 	@State private var showAlert: Bool = false
 	@State private var connectionString = ""
-	@State var presentingSwitchPreferredPeripheral = false
-	@State var deviceForManualConnection: Device?
 
 	var body: some View {
 		Menu {
@@ -598,21 +630,13 @@ struct ManualConnectionMenu: View {
 								try await selectedTransport.transport.manuallyConnect(toDevice: device)
 							}
 						} else {
-							deviceForManualConnection = device
-							presentingSwitchPreferredPeripheral = true
+							Task {
+								await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+							}
 						}
 					}
 				}
 			})
-		}.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-			Button("Connect to new radio?", role: .destructive) {
-				Task {
-					if let device = deviceForManualConnection {
-						await switchToDevice(device, accessoryManager: accessoryManager, appState: accessoryManager.appState)
-						deviceForManualConnection = nil
-					}
-				}
-			}
 		}
 	}
 }
@@ -620,8 +644,8 @@ struct ManualConnectionMenu: View {
 struct DeviceConnectRow: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State var presentingSwitchPreferredPeripheral = false
 	let device: Device
+	@Binding var isSwitchingRadio: Bool
 	
 	var body: some View {
 		HStack {
@@ -637,7 +661,9 @@ struct DeviceConnectRow: View {
 			VStack(alignment: .leading) {
 				Button(action: {
 					if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-						presentingSwitchPreferredPeripheral = true
+						Task {
+							await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+						}
 					} else {
 						Task {
 							try? await accessoryManager.connect(to: device)
@@ -674,14 +700,89 @@ struct DeviceConnectRow: View {
 				}
 			}
 		}.padding([.bottom, .top])
-			.confirmationDialog("Connecting to a new radio will clear all app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-				Button("Connect to new radio?", role: .destructive) {
-					Task {
-						await switchToDevice(device, accessoryManager: accessoryManager, appState: accessoryManager.appState)
-					}
-				}
-			}
 	}
+}
+
+@MainActor
+func performRadioSwitch(_ device: Device, isSwitchingRadio: Binding<Bool>, accessoryManager: AccessoryManager) async {
+	isSwitchingRadio.wrappedValue = true
+
+	await switchToDevice(
+		device,
+		accessoryManager: accessoryManager,
+		appState: accessoryManager.appState,
+		onRestoreComplete: {
+			isSwitchingRadio.wrappedValue = false
+		}
+	)
+}
+
+@MainActor
+func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, accessoryManager: AccessoryManager) async {
+	let currentNodeNum = accessoryManager.activeDeviceNum ?? {
+		let num = Int64(UserDefaults.preferredPeripheralNum)
+		return num > 0 ? num : nil
+	}()
+	let currentNodeName = currentNodeNum.flatMap { num in
+		accessoryManager.devices.first(where: { $0.num == num })?.longName
+	}
+
+	await MeshPackets.shared.flushDebouncedSaves()
+	try? accessoryManager.context.save()
+
+	if let currentNodeNum, currentNodeNum != targetNodeNum {
+		Logger.backup.info("💾 Creating backup for current node \(currentNodeNum) before restore")
+		let backupResult = await NodeBackupManager.shared.createBackup(
+			forNode: currentNodeNum,
+			nodeName: currentNodeName
+		)
+		switch backupResult {
+		case .success(let entry):
+			Logger.backup.info("💾 Backup created: \(entry.fileSize) bytes for node \(currentNodeNum)")
+		case .skipped(let reason):
+			Logger.backup.warning("💾 Backup skipped: \(reason, privacy: .public)")
+		case .noBackupFound:
+			break
+		}
+	} else if currentNodeNum == targetNodeNum {
+		Logger.backup.info("💾 Skipping current backup because target backup is for the active node")
+	} else {
+		Logger.backup.warning("💾 No current node num — skipping backup")
+	}
+}
+
+@MainActor
+func backupCurrentAndRestoreDatabase(
+	forNode targetNodeNum: Int64,
+	accessoryManager: AccessoryManager,
+	appState: AppState,
+	selectedTab: NavigationState.Tab,
+	disconnectCurrentDevice: Bool = false
+) async -> NodeBackupResult {
+	await backupCurrentDatabase(forTargetNode: targetNodeNum, accessoryManager: accessoryManager)
+
+	if disconnectCurrentDevice, accessoryManager.allowDisconnect {
+		Logger.backup.info("💾 Disconnecting current device before restore")
+		try? await accessoryManager.disconnect()
+	}
+
+	appState.router.popToRoot(tab: .messages)
+	appState.router.popToRoot(tab: .nodes)
+	appState.router.popToRoot(tab: .map)
+	appState.router.popToRoot(tab: .settings)
+	appState.router.selectedTab = selectedTab
+	await Task.yield()
+
+	await MeshPackets.shared.flushDebouncedSaves()
+	await MeshPackets.shared.clearDatabase(includeRoutes: false)
+	MeshPackets.recreateShared()
+	Logger.backup.info("💾 Database cleared and MeshPackets recreated")
+
+	let restoreResult = await NodeBackupManager.shared.restoreFromBackup(
+		forNode: targetNodeNum,
+		into: PersistenceController.shared.container
+	)
+	return restoreResult
 }
 
 // MARK: - Node Switch Helper
@@ -698,67 +799,33 @@ struct DeviceConnectRow: View {
 /// 7. Trigger UI reset so views rebind to the new container
 /// 8. Connect to new device (radio sends updates on top of restored data)
 @MainActor
-func switchToDevice(_ device: Device, accessoryManager: AccessoryManager, appState: AppState) async {
-	// 1. Capture current node info before disconnect clears it
+func switchToDevice(
+	_ device: Device,
+	accessoryManager: AccessoryManager,
+	appState: AppState,
+	onRestoreComplete: (@MainActor () -> Void)? = nil
+) async {
+	let resolvedTargetNodeNum = await NodeBackupManager.shared.resolveNodeNum(forPeripheralId: device.id.uuidString)
+	let targetNodeNum = device.num ?? resolvedTargetNodeNum
 	let currentNodeNum = accessoryManager.activeDeviceNum ?? {
 		let num = Int64(UserDefaults.preferredPeripheralNum)
 		return num > 0 ? num : nil
 	}()
-	let currentNodeName = currentNodeNum.flatMap { num in
-		accessoryManager.devices.first(where: { $0.num == num })?.longName
-	}
-	let resolvedTargetNodeNum = await NodeBackupManager.shared.resolveNodeNum(forPeripheralId: device.id.uuidString)
-	let targetNodeNum = device.num ?? resolvedTargetNodeNum
 	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
-
-	// 2. Flush pending writes before backup
-	await MeshPackets.shared.flushDebouncedSaves()
-	try? accessoryManager.context.save()
-
-	// 3. Backup current node's database (full SQLite snapshot)
-	if let currentNodeNum {
-		Logger.backup.info("💾 Creating backup for current node \(currentNodeNum)")
-		let backupResult = await NodeBackupManager.shared.createBackup(
-			forNode: currentNodeNum,
-			nodeName: currentNodeName
-		)
-		switch backupResult {
-		case .success(let entry):
-			Logger.backup.info("💾 Backup created: \(entry.fileSize) bytes for node \(currentNodeNum)")
-		case .skipped(let reason):
-			Logger.backup.warning("💾 Backup skipped: \(reason, privacy: .public)")
-		case .noBackupFound:
-			break
-		}
-	} else {
-		Logger.backup.warning("💾 No current node num — skipping backup")
-	}
 
 	// 4. Disconnect from current device
 	if accessoryManager.allowDisconnect {
 		try? await accessoryManager.disconnect()
 	}
 
-	// 5. Move the UI away from any views that may still bind to live model objects
-	// before deleting the current database contents.
-	appState.router.popToRoot(tab: .messages)
-	appState.router.popToRoot(tab: .nodes)
-	appState.router.popToRoot(tab: .map)
-	appState.router.popToRoot(tab: .settings)
-	appState.router.selectedTab = .connect
-	await Task.yield()
+	await backupCurrentDatabase(forTargetNode: targetNodeNum, accessoryManager: accessoryManager)
 
-	// 6. Clear database and recreate MeshPackets actor
-	await MeshPackets.shared.flushDebouncedSaves()
-	await MeshPackets.shared.clearDatabase(includeRoutes: false)
-	MeshPackets.recreateShared()
-	Logger.backup.info("💾 Database cleared and MeshPackets recreated")
-
-	// 7. Restore target node's backup by importing entities into the live container
 	if let targetNodeNum {
-		let restoreResult = await NodeBackupManager.shared.restoreFromBackup(
+		let restoreResult = await backupCurrentAndRestoreDatabase(
 			forNode: targetNodeNum,
-			into: PersistenceController.shared.container
+			accessoryManager: accessoryManager,
+			appState: appState,
+			selectedTab: .connect
 		)
 		switch restoreResult {
 		case .success:
@@ -772,10 +839,12 @@ func switchToDevice(_ device: Device, accessoryManager: AccessoryManager, appSta
 		Logger.backup.warning("💾 Target node num is nil — cannot restore, radio will populate fresh data")
 	}
 
+	onRestoreComplete?()
+
 	// 8. Clear notifications and connect to new device
 	clearNotifications()
 	do {
-		try await accessoryManager.connect(to: device)
+		try await accessoryManager.connect(to: device, refreshDeviceHardwareFromAPI: true)
 		Logger.backup.info("💾 Connected to target device successfully")
 	} catch {
 		Logger.backup.error("💾 Failed to connect to target: \(error.localizedDescription, privacy: .public)")

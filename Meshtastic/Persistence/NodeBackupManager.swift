@@ -8,6 +8,7 @@
 import Foundation
 import CryptoKit
 import OSLog
+import SQLite3
 import SwiftData
 
 /// Core backup/restore service for node database snapshots.
@@ -241,8 +242,94 @@ final class NodeBackupManager: NodeBackupManaging {
 		backupIndex.entries[nodeNum] = entry
 		enforceBackupLimit(keeping: nodeNum)
 		saveIndex()
+		scheduleBackupCompaction(for: entry)
 
 		return entry
+	}
+
+	private func scheduleBackupCompaction(for entry: BackupEntry) {
+		Task.detached(priority: .utility) { [backupBaseURL] in
+			do {
+				let compactedEntry = try Self.compactBackupSnapshot(entry, backupBaseURL: backupBaseURL)
+				await MainActor.run {
+					guard self.backupIndex.entries[entry.nodeNum]?.createdAt == entry.createdAt else {
+						return
+					}
+					self.backupIndex.entries[entry.nodeNum] = compactedEntry
+					self.saveIndex()
+					Logger.backup.info("Compacted backup for node \(entry.nodeNum) to \(compactedEntry.fileSize) bytes")
+				}
+			} catch {
+				Logger.backup.warning("Failed to compact backup for node \(entry.nodeNum): \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
+	nonisolated private static func compactBackupSnapshot(_ entry: BackupEntry, backupBaseURL: URL) throws -> BackupEntry {
+		let fileManager = FileManager.default
+		let backupDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
+		let storeURL = backupDir.appendingPathComponent(storeFileName)
+		let walURL = backupDir.appendingPathComponent(walFileName)
+		let shmURL = backupDir.appendingPathComponent(shmFileName)
+
+		guard fileManager.fileExists(atPath: storeURL.path) else {
+			throw BackupError.fileNotFound
+		}
+
+		if fileManager.fileExists(atPath: walURL.path) || fileManager.fileExists(atPath: shmURL.path) {
+			try runSQLiteCompaction(at: storeURL)
+			try removeBackupSidecarIfPresent(at: walURL, fileManager: fileManager)
+			try removeBackupSidecarIfPresent(at: shmURL, fileManager: fileManager)
+		}
+
+		let attrs = try fileManager.attributesOfItem(atPath: storeURL.path)
+		let compactedSize = (attrs[.size] as? Int64) ?? entry.fileSize
+		let compactedChecksum = try computeChecksumSync(for: storeURL)
+
+		var compactedEntry = entry
+		compactedEntry.fileSize = compactedSize
+		compactedEntry.checksum = compactedChecksum
+		return compactedEntry
+	}
+
+	nonisolated private static func removeBackupSidecarIfPresent(at fileURL: URL, fileManager: FileManager) throws {
+		guard fileManager.fileExists(atPath: fileURL.path) else {
+			return
+		}
+
+		try fileManager.removeItem(at: fileURL)
+	}
+
+	nonisolated private static func runSQLiteCompaction(at storeURL: URL) throws {
+		var database: OpaquePointer?
+		let openFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX
+		guard sqlite3_open_v2(storeURL.path, &database, openFlags, nil) == SQLITE_OK, let database else {
+			let message = database.flatMap { sqlite3_errmsg($0).map { String(cString: $0) } } ?? "Unable to open backup database"
+			sqlite3_close(database)
+			throw AccessoryError.appError(message)
+		}
+		defer {
+			sqlite3_close(database)
+		}
+
+		try executeSQLite("PRAGMA wal_checkpoint(TRUNCATE);", database: database)
+		try executeSQLite("PRAGMA journal_mode=DELETE;", database: database)
+		try executeSQLite("VACUUM;", database: database)
+	}
+
+	nonisolated private static func executeSQLite(_ sql: String, database: OpaquePointer) throws {
+		var errorMessage: UnsafeMutablePointer<CChar>?
+		guard sqlite3_exec(database, sql, nil, nil, &errorMessage) == SQLITE_OK else {
+			let message = errorMessage.map { String(cString: $0) } ?? "SQLite command failed"
+			sqlite3_free(errorMessage)
+			throw AccessoryError.appError(message)
+		}
+	}
+
+	nonisolated private static func computeChecksumSync(for fileURL: URL) throws -> String {
+		let data = try Data(contentsOf: fileURL)
+		let digest = SHA256.hash(data: data)
+		return digest.map { String(format: "%02x", $0) }.joined()
 	}
 
 	private func enforceBackupLimit(keeping nodeNum: Int64) {

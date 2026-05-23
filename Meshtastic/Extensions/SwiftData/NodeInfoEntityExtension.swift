@@ -131,7 +131,7 @@ extension NodeInfoEntity {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num
 		let descriptor = FetchDescriptor<TraceRouteEntity>(
-			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum && $0.response == true }
+			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum }
 		)
 		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
@@ -163,7 +163,7 @@ extension NodeInfoEntity {
 		guard let ctx = modelContext else { return [] }
 		let nodeNum = self.num
 		var descriptor = FetchDescriptor<TraceRouteEntity>(
-			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum && $0.response == true },
+			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum },
 			sortBy: [SortDescriptor(\TraceRouteEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 500

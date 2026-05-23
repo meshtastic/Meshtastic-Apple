@@ -1,40 +1,51 @@
 ## What changed?
 
-Implements and hardens automatic per-node database backup and restore when switching radios, using the final import-based approach rather than swapping the live SwiftData container.
+Implements and hardens per-node database backup and restore when switching radios, then follows through on the real-world issues found while validating that flow.
 
-### Automatic backup and restore
+### Radio switching and node backup/restore
 
-- Before switching away from a connected node, the app snapshots the full SwiftData store files for that node
-- When reconnecting to a previously seen node, the app restores that node by importing the backup into the existing live container after clearing the current database
-- Backup resolution supports reconnecting by node number and by stored peripheral identifier
-- Backup integrity validation now runs on the real restore path
+- Back up the active SwiftData store before switching radios
+- Restore a previously connected radio by importing its backup into the live container instead of swapping database files
+- Reuse the same backup/clear/restore flow from both the Connect view and Backup Management
+- Show blocking switch/restore progress UI while the database handoff is happening
+- Keep the currently active database backed up even when the target node number is not yet known
 
-### Approach changes and cleanup
+### Backup management and storage polish
 
-- Removed obsolete restore paths from the earlier file-swap/container-recreation attempts
-- Split the large import helper block out of `NodeBackupManager` into `NodeBackupManager+Import.swift`
-- Kept the live `ModelContainer` stable to avoid stale-model crashes during node switching
+- Add restore and delete actions to Backup Management, including Mac Catalyst-friendly inline actions
+- Cap retained backups and keep the backup index in sync with current snapshots
+- Compact copied backups after creation so the copied `.store-wal` and `.store-shm` contents are merged into the copied store and the sidecar files are removed
+- Expand App Data file visibility with active database size breakdown, relative file paths, and export/delete actions
 
-### Additional bug fixes
+### Connection and data integrity fixes
 
-- Fixed traceroute history fetching so completed traceroutes are shown again instead of flooding the UI with sent-only records
-- Fixed a serial disconnect crash when disconnecting while node import was still in progress
-- Made disconnect teardown idempotent and dropped late in-flight events during shutdown to avoid teardown races
-- Fixed continuation cleanup ordering for database retrieval so disconnect/cancel paths do not double-resume continuations
+- Fix serial disconnect/import crashes by tightening teardown ordering and continuation cleanup
+- Fix database clearing so route-preservation logic no longer keeps `TraceRouteEntity` rows and duplicates them on restore
+- Restore pending trace routes in the Trace Route Log instead of only showing completed responses
+- Refresh bundled device hardware data immediately after switch-time `wantConfig`, then refresh the Meshtastic hardware API catalog in the background
+
+### Docs and supporting assets
+
+- Update the user and developer docs for radio switching and transport sequencing
+- Rebuild bundled docs output for the in-app documentation viewer
+- Refresh bundled device hardware resources and generated image/docs manifests as part of the branch changes
 
 ## Why did it change?
 
-The original backup/restore goal required restoring the whole database for each node, not just selected entities. Earlier restore attempts based on swapping database files or recreating the SwiftData container were unstable and caused more aggressive crashes. Importing a backed-up store into the existing live container preserves the full node-specific database while avoiding those SwiftData lifecycle issues.
+The original feature goal was to preserve a full local database per radio and restore it safely when returning to that radio. Earlier file-swap and container-recreation approaches were brittle under SwiftData and caused crashes or stale model references. The import-based restore path keeps the live container stable while still restoring the full node-specific dataset.
 
-The follow-up bug fixes in this PR close the regressions and race conditions found while validating the feature in real radio-switching and serial-disconnect flows.
+Once that core flow worked, additional validation exposed practical issues around disconnect races, trace route duplication, backup ergonomics, and stale hardware catalog data after switching radios. This branch addresses those follow-on issues so the switching experience is reliable enough for regular use.
 
 ## How is this tested?
 
 - Manual testing of switching between previously connected radios and verifying full database restoration
-- Manual testing of traceroute history after backup/restore changes
+- Manual testing of Backup Management restore/delete flows
+- Manual testing of trace route visibility after the restore and clear-database fixes
 - Manual testing of disconnecting a serial node while database retrieval/import is still in progress
-- Mac Catalyst build verification:
+- Repeated Mac Catalyst build verification:
 	- `xcodebuild -workspace Meshtastic.xcworkspace -scheme Meshtastic -destination 'platform=macOS,variant=Mac Catalyst' build`
+- Documentation rebuild verification:
+	- `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta`
 
 Note: targeted tests were not run locally because of the current macOS host / test target version mismatch.
 

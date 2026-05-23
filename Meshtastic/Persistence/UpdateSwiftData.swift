@@ -164,8 +164,7 @@ extension MeshPackets {
 
 		let allModels: [any PersistentModel.Type] = MeshtasticSchema.allModels
 		for modelType in allModels {
-			let typeName = String(describing: modelType)
-			if !includeRoutes && (typeName.contains("Route") || typeName.contains("Location")) {
+			if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
 				continue
 			}
 			if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
