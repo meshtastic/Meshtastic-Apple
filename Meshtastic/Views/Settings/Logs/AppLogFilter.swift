@@ -141,10 +141,10 @@ struct AppLogFilter: View {
 					List(LogLevels.allCases, selection: $levels) { level in
 						Text(level.description)
 							.foregroundStyle(level.color)
-					}
 					.listStyle(.plain)
 					.environment(\.editMode, $editMode) /// bind it here!
 					.frame(minHeight: 210, maxHeight: .infinity)
+				}
 				}
 			}
 		}

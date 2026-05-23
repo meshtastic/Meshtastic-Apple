@@ -86,6 +86,8 @@ struct MetricsColumnDetail: View {
 =======
 		.listStyle(.insetGrouped)
 		.listSectionSpacing(12)
+		.navigationTitle("Metrics")
+		.navigationBarTitleDisplayMode(.inline)
 #if targetEnvironment(macCatalyst)
 >>>>>>> 6f3c5e33 (Fix Mac Catalyst sheet dismiss buttons)
 		.overlay(alignment: .topLeading) {
