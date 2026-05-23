@@ -70,6 +70,10 @@ struct Settings: View {
 		return deviceRole == .tak || deviceRole == .takTracker
 	}
 
+	private var showsDevelopersSection: Bool {
+		Bundle.main.isDebug || Bundle.main.isTestFlight
+	}
+
 	// MARK: Views
 
 	var radioConfigurationSection: some View {
@@ -357,13 +361,6 @@ struct Settings: View {
 					Image(systemName: "scroll")
 				}
 			}
-			NavigationLink(value: SettingsNavigationState.backupManagement) {
-				Label {
-					Text("Backup Management")
-				} icon: {
-					Image(systemName: "externaldrive")
-				}
-			}
 		}
 	}
 
@@ -383,6 +380,13 @@ struct Settings: View {
 					} icon: {
 						Image(systemName: "hammer")
 					}
+				}
+			}
+			NavigationLink(value: SettingsNavigationState.backupManagement) {
+				Label {
+					Text("Backup Management")
+				} icon: {
+					Image(systemName: "externaldrive")
 				}
 			}
 			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
@@ -556,9 +560,9 @@ struct Settings: View {
 					deviceConfigurationSection
 					moduleConfigurationSection
 					loggingSection
-#if DEBUG
+					if showsDevelopersSection {
 					developersSection
-#endif
+					}
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
@@ -646,7 +650,7 @@ struct Settings: View {
 				case .helpDocs:
 					DocBrowserView()
 				case .backupManagement:
-					BackupManagementView()
+					BackupManagement()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

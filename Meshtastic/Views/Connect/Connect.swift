@@ -152,7 +152,8 @@ struct Connect: View {
 										}
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-									}.disabled(!accessoryManager.allowDisconnect)
+									}
+									.disabled(!accessoryManager.allowDisconnect)
 								}
 							}
 							.contextMenu {
@@ -249,7 +250,8 @@ struct Connect: View {
 											}
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-										}.disabled(!accessoryManager.allowDisconnect)
+										}
+										.disabled(!accessoryManager.allowDisconnect)
 									}
 								}
 								

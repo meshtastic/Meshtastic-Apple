@@ -27,6 +27,7 @@ final class NodeBackupManager: NodeBackupManaging {
 	private static let storeFileName = "Meshtastic.store"
 	private static let walFileName = "Meshtastic.store-wal"
 	private static let shmFileName = "Meshtastic.store-shm"
+	private static let maximumBackupCount = 50
 	/// Minimum free disk space required for backup (50 MB)
 	private static let minimumFreeDiskSpace: Int64 = 50 * 1024 * 1024
 
@@ -238,9 +239,26 @@ final class NodeBackupManager: NodeBackupManaging {
 			backupPath: nodeDirName
 		)
 		backupIndex.entries[nodeNum] = entry
+		enforceBackupLimit(keeping: nodeNum)
 		saveIndex()
 
 		return entry
+	}
+
+	private func enforceBackupLimit(keeping nodeNum: Int64) {
+		guard backupIndex.entries.count > Self.maximumBackupCount else { return }
+
+		let overflowEntries = backupIndex.entries.values
+			.filter { $0.nodeNum != nodeNum }
+			.sorted { $0.createdAt < $1.createdAt }
+			.prefix(max(0, backupIndex.entries.count - Self.maximumBackupCount))
+
+		for entry in overflowEntries {
+			let nodeBackupDir = backupBaseURL.appendingPathComponent(entry.backupPath, isDirectory: true)
+			try? fileManager.removeItem(at: nodeBackupDir)
+			backupIndex.entries.removeValue(forKey: entry.nodeNum)
+			Logger.backup.info("Pruned oldest backup for node \(entry.nodeNum) to enforce limit of \(Self.maximumBackupCount)")
+		}
 	}
 
 	// MARK: - T009: Query Methods

@@ -9,11 +9,19 @@ import SwiftUI
 import OSLog
 
 /// Settings screen showing all node backups with total storage usage and swipe-to-delete.
-struct BackupManagementView: View {
+struct BackupManagement: View {
 	@State private var backups: [BackupEntry] = []
 	@State private var totalSize: Int64 = 0
 	@State private var showDeleteConfirmation = false
 	@State private var entryToDelete: BackupEntry?
+
+	private var showsInlineDeleteButton: Bool {
+		#if targetEnvironment(macCatalyst)
+		true
+		#else
+		false
+		#endif
+	}
 
 	var body: some View {
 		List {
@@ -39,7 +47,23 @@ struct BackupManagementView: View {
 						.italic()
 				} else {
 					ForEach(backups, id: \.nodeNum) { entry in
-						BackupRowView(entry: entry)
+						BackupRowView(
+							entry: entry,
+							showDeleteButton: showsInlineDeleteButton,
+							onDelete: {
+								entryToDelete = entry
+								showDeleteConfirmation = true
+							}
+						)
+						.contextMenu {
+							Button(role: .destructive) {
+								entryToDelete = entry
+								showDeleteConfirmation = true
+							} label: {
+								Label("Delete", systemImage: "trash")
+							}
+						}
+						#if !targetEnvironment(macCatalyst)
 							.swipeActions(edge: .trailing, allowsFullSwipe: false) {
 								Button(role: .destructive) {
 									entryToDelete = entry
@@ -48,6 +72,7 @@ struct BackupManagementView: View {
 									Label("Delete", systemImage: "trash")
 								}
 							}
+						#endif
 					}
 				}
 			}
@@ -79,6 +104,6 @@ struct BackupManagementView: View {
 
 #Preview {
 	NavigationStack {
-		BackupManagementView()
+		BackupManagement()
 	}
 }

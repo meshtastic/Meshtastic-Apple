@@ -9,12 +9,17 @@ import SwiftUI
 import OSLog
 import SwiftData
 import Foundation
+import UniformTypeIdentifiers
 
 struct AppData: View {
-
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State private var files = [URL]()
+	@State private var documentsFiles = [URL]()
+	@State private var applicationSupportFiles = [URL]()
+	@State private var exportDocument = BinaryFileDocument(data: Data())
+	@State private var exportFilename = ""
+	@State private var exportContentType: UTType = .data
+	@State private var isExporting = false
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
 	var body: some View {
@@ -49,82 +54,57 @@ struct AppData: View {
 							.font(.caption)
 							.foregroundColor(.secondary)
 					}
+					.padding(.horizontal)
+					.padding(.vertical, 4)
 				}
 			}
 			Divider()
 		}
 
-		List(files, id: \.self) { file in
-			HStack {
-				VStack(alignment: .leading ) {
-					if file.pathExtension.contains("sqlite") {
-						Label {
-							Text("Node Core Data Backup \(file.pathComponents[(idiom == .phone || idiom == .pad) ? 9 : 10])/\(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
-								.swipeActions {
-									Button(role: .destructive) {
-										do {
-											try FileManager.default.removeItem(at: file)
-										} catch {
-											Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
-										}
-									} label: {
-										Label("Delete", systemImage: "trash")
-									}
-								}
-						} icon: {
-							Image(systemName: "cylinder.split.1x2")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .callout : .title)
-								.frame(width: 35)
-						}
-					} else {
-						Label {
-							Text("\(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
-								.swipeActions {
-									Button(role: .destructive) {
-										do {
-											try FileManager.default.removeItem(at: file)
-										} catch {
-											Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
-										}
-									} label: {
-										Label("Delete", systemImage: "trash")
-									}
-								}
-						} icon: {
-							Image(systemName: "doc.text")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .callout : .title)
-								.frame(width: 35)
-						}
+		List {
+			if !applicationSupportFiles.isEmpty {
+				Section(header: Text("Application Support")) {
+					ForEach(applicationSupportFiles, id: \.self) { file in
+						fileRow(file)
 					}
 				}
-#if targetEnvironment(macCatalyst)
-				Spacer()
-				VStack(alignment: .trailing) {
-					Button {
-						do {
-							try FileManager.default.removeItem(at: file)
-							loadFiles()
-						} catch {
-							Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
-						}
-					} label: {
-						Label("", systemImage: "trash")
+			}
+
+			if !documentsFiles.isEmpty {
+				Section(header: Text("Documents")) {
+					ForEach(documentsFiles, id: \.self) { file in
+						fileRow(file)
 					}
 				}
-#endif
 			}
 		}
 		.navigationBarTitle("File Storage", displayMode: .inline)
 		.onAppear(perform: {
 			loadFiles()
 		})
+		.fileExporter(
+			isPresented: $isExporting,
+			document: exportDocument,
+			contentType: exportContentType,
+			defaultFilename: exportFilename,
+			onCompletion: { result in
+				switch result {
+				case .success:
+					Logger.services.info("File export succeeded for \(exportFilename, privacy: .public)")
+					isExporting = false
+				case .failure(let error):
+					Logger.services.error("File export failed: \(error.localizedDescription, privacy: .public)")
+				}
+			}
+		)
 		.listStyle(.inset)
 	}
 
 	private func loadFiles() {
-		files = []
+		documentsFiles = []
+		applicationSupportFiles = []
+		loadApplicationSupportFiles()
+
 		guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
 			Logger.data.error("🗂️ nil default document directory path for backup, core data backup failed.")
 			return
@@ -134,13 +114,150 @@ struct AppData: View {
 				do {
 					let fileAttributes = try fileURL.resourceValues(forKeys: [.isRegularFileKey])
 					if fileAttributes.isRegularFile! {
-						files.append(fileURL)
+						documentsFiles.append(fileURL)
 					}
 				} catch {
 					Logger.services.error("📁 Load file: \(fileURL, privacy: .public) error: \(error, privacy: .public)")
 				}
 			}
 		}
+
+		documentsFiles.sort { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
+		applicationSupportFiles.sort { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
+	}
+
+	private func loadApplicationSupportFiles() {
+		guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+			return
+		}
+
+		if let enumerator = FileManager.default.enumerator(at: appSupport, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+			for case let fileURL as URL in enumerator {
+				do {
+					let fileAttributes = try fileURL.resourceValues(forKeys: [.isRegularFileKey])
+					if fileAttributes.isRegularFile! {
+						applicationSupportFiles.append(fileURL)
+					}
+				} catch {
+					Logger.services.error("📁 Load file: \(fileURL, privacy: .public) error: \(error, privacy: .public)")
+				}
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func fileRow(_ file: URL) -> some View {
+		HStack {
+			VStack(alignment: .leading ) {
+				if file.lastPathComponent.hasPrefix("Meshtastic.store") {
+					Label {
+						Text("Active Database \(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
+					} icon: {
+						Image(systemName: "internaldrive")
+							.symbolRenderingMode(.hierarchical)
+							.font(idiom == .phone ? .callout : .title)
+							.frame(width: 35)
+					}
+				} else if file.pathExtension.contains("sqlite") {
+					Label {
+						Text("Node Core Data Backup \(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
+					} icon: {
+						Image(systemName: "cylinder.split.1x2")
+							.symbolRenderingMode(.hierarchical)
+							.font(idiom == .phone ? .callout : .title)
+							.frame(width: 35)
+					}
+				} else {
+					Label {
+						Text("\(file.lastPathComponent) - \(file.creationDate?.formatted(date: .numeric, time: .shortened) ?? "") - \(file.fileSizeString)")
+					} icon: {
+						Image(systemName: "doc.text")
+							.symbolRenderingMode(.hierarchical)
+							.font(idiom == .phone ? .callout : .title)
+							.frame(width: 35)
+					}
+				}
+			}
+#if targetEnvironment(macCatalyst)
+			Spacer()
+			HStack(spacing: 12) {
+				Button {
+					beginExport(for: file)
+				} label: {
+					Label("", systemImage: "square.and.arrow.down")
+				}
+				.buttonStyle(.borderless)
+
+				Button {
+					deleteFile(file)
+				} label: {
+					Label("", systemImage: "trash")
+				}
+				.buttonStyle(.borderless)
+			}
+#endif
+		}
+		.swipeActions {
+			downloadFileButton(for: file)
+			deleteFileButton(for: file)
+		}
+	}
+
+	@ViewBuilder
+	private func downloadFileButton(for file: URL) -> some View {
+		Button {
+			beginExport(for: file)
+		} label: {
+			Label("Download", systemImage: "square.and.arrow.down")
+		}
+		.tint(.accentColor)
+	}
+
+	@ViewBuilder
+	private func deleteFileButton(for file: URL) -> some View {
+		Button(role: .destructive) {
+			deleteFile(file)
+		} label: {
+			Label("Delete", systemImage: "trash")
+		}
+	}
+
+	private func beginExport(for file: URL) {
+		exportDocument = BinaryFileDocument(url: file)
+		exportFilename = file.deletingPathExtension().lastPathComponent
+		exportContentType = UTType(filenameExtension: file.pathExtension) ?? .data
+		isExporting = true
+	}
+
+	private func deleteFile(_ file: URL) {
+		do {
+			try FileManager.default.removeItem(at: file)
+			loadFiles()
+		} catch {
+			Logger.services.error("🗑️ Delete file error: \(error, privacy: .public)")
+		}
+	}
+}
+
+struct BinaryFileDocument: FileDocument {
+	static var readableContentTypes: [UTType] { [.data] }
+
+	let data: Data
+
+	init(data: Data) {
+		self.data = data
+	}
+
+	init(url: URL) {
+		self.data = (try? Data(contentsOf: url)) ?? Data()
+	}
+
+	init(configuration: ReadConfiguration) throws {
+		self.data = configuration.file.regularFileContents ?? Data()
+	}
+
+	func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+		FileWrapper(regularFileWithContents: data)
 	}
 }
 
