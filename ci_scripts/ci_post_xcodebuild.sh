@@ -38,15 +38,8 @@ fi
 
 # Install datadog-ci if not already present
 if ! command -v datadog-ci >/dev/null 2>&1; then
-	echo "datadog-ci not found, installing..."
-	if command -v npm >/dev/null 2>&1; then
-		npm install -g @datadog/datadog-ci
-	elif command -v brew >/dev/null 2>&1; then
-		brew install datadog/datadog-ci/datadog-ci
-	else
-		echo "ERROR: Neither npm nor brew found — cannot install datadog-ci."
-		exit 1
-	fi
+	echo "datadog-ci not found, installing via npm..."
+	npm install -g @datadog/datadog-ci
 fi
 
 # Verify installation succeeded
