@@ -36,10 +36,23 @@ if [ -z "$DATADOG_API_KEY" ]; then
 	exit 0
 fi
 
+# Install datadog-ci if not already present
+if ! command -v datadog-ci >/dev/null 2>&1; then
+	echo "datadog-ci not found, installing via Homebrew..."
+	brew install datadog/datadog-ci/datadog-ci
+fi
+
+# Verify installation succeeded
+if ! command -v datadog-ci >/dev/null 2>&1; then
+	echo "ERROR: datadog-ci still not found after install attempt."
+	echo "PATH: $PATH"
+	exit 1
+fi
+
 # Upload dSYMs
 export DATADOG_SITE="us5.datadoghq.com"
 echo "Uploading dSYMs to Datadog ($DATADOG_SITE)..."
-npx --yes @datadog/datadog-ci dsyms upload "$DSYM_DIR"
+datadog-ci dsyms upload "$DSYM_DIR"
 UPLOAD_EXIT=$?
 
 if [ $UPLOAD_EXIT -ne 0 ]; then
