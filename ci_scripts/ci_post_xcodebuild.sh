@@ -21,6 +21,9 @@ fi
 
 DSYM_COUNT=$(find "$DSYM_DIR" -name "*.dSYM" -type d | wc -l | tr -d ' ')
 echo "Found $DSYM_COUNT dSYM bundles in $DSYM_DIR"
+find "$DSYM_DIR" -name "*.dSYM" -type d | while read -r dsym; do
+	echo "  $dsym"
+done
 
 if [ "$DSYM_COUNT" -eq 0 ]; then
 	echo "No dSYM files to upload."
@@ -33,14 +36,23 @@ if [ -z "$DATADOG_API_KEY" ]; then
 	exit 0
 fi
 
-# Install datadog-ci
-npm install -g @datadog/datadog-ci
+# Install datadog-ci if not already present
+if ! command -v datadog-ci >/dev/null 2>&1; then
+	npm install -g @datadog/datadog-ci
+fi
 
 # Upload dSYMs
 export DATADOG_SITE="us5.datadoghq.com"
 echo "Uploading dSYMs to Datadog ($DATADOG_SITE)..."
 datadog-ci dsyms upload "$DSYM_DIR"
+UPLOAD_EXIT=$?
 
+if [ $UPLOAD_EXIT -ne 0 ]; then
+	echo "ERROR: dSYM upload failed with exit code $UPLOAD_EXIT"
+	exit $UPLOAD_EXIT
+fi
+
+echo "dSYM upload succeeded."
 echo "Stage: POST-Xcode Build is DONE .... "
 
 exit 0
