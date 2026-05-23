@@ -193,8 +193,9 @@ struct MapSettingsForm: View {
 					}
 				}
 			}
+			.navigationTitle("Map Options")
+			.navigationBarTitleDisplayMode(.inline)
 		}
-
 		#if targetEnvironment(macCatalyst)
 		.overlay(alignment: .topLeading) {
 			Button {
@@ -212,14 +213,14 @@ struct MapSettingsForm: View {
 		#endif
 		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.onAppear {
 			// Initialize map data manager
 			mapDataManager.initialize()
 		}
-
-
 
 	}
 }

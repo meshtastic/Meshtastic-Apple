@@ -165,6 +165,8 @@ struct LogDetail: View {
 		}
 		#endif
 		.presentationDetents([.fraction(0.75), .fraction(0.85), .fraction(1.0)])
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
 	}
 }

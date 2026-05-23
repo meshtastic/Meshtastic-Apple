@@ -160,29 +160,34 @@ struct MeshMap: View {
 								selectedPosition = nil
 							} label: {
 								Image(systemName: "xmark.circle.fill")
-									.font(.title)
+									.font(.system(size: 34))
 									.symbolRenderingMode(.palette)
 									.foregroundStyle(.white, Color(.systemGray3))
 							}
 							.buttonStyle(.plain)
-							.padding()
+							.padding(.top, 12)
+							.padding(.leading, 14)
 						}
 						#endif
 						.presentationDetents([.large])
+						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
+						#endif
 					}
 				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
-						.padding()
 						.presentationDetents([.large]) // full screen
+						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
+						#endif
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
-						.padding()
 						.presentationDetents([.large])
+						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
+						#endif
 				}
 
 				.sheet(isPresented: $editingSettings) {
@@ -217,11 +222,13 @@ struct MeshMap: View {
 					MapLegend(isMeshMap: true)
 						.presentationDetents([.large])
 						.presentationContentInteraction(.scrolls)
+						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
+						#endif
 						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 				}
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
-					HStack {
+					HStack(spacing: 12) {
 						Spacer()
 						Button(action: {
 							withAnimation {
@@ -253,7 +260,8 @@ struct MeshMap: View {
 						.glassButtonStyle()
 					}
 					.controlSize(.regular)
-					.padding(5)
+					.padding(.horizontal, 12)
+					.padding(.vertical, 8)
 				}
 			}
 			.toolbar {

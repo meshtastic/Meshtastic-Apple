@@ -79,6 +79,8 @@ struct MetricsColumnDetail: View {
 			}
 			.listStyle(.insetGrouped)
 			.listSectionSpacing(12)
+			.navigationTitle("Metrics")
+			.navigationBarTitleDisplayMode(.inline)
 		}
 
 		#if targetEnvironment(macCatalyst)
@@ -98,7 +100,9 @@ struct MetricsColumnDetail: View {
 		#endif
 		.presentationDetents([.medium, .large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.interactiveDismissDisabled(false)
 

@@ -227,7 +227,9 @@ struct ShareChannels: View {
 			.sheet(isPresented: $showingHelp) {
 				ChannelsHelp()
 					.presentationDetents([.large])
+					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
+					#endif
 			}
 			.safeAreaInset(edge: .bottom, alignment: .leading) {
 				HStack {

@@ -147,8 +147,10 @@ struct AppLogFilter: View {
 						.environment(\.editMode, $editMode) /// bind it here!
 						.frame(minHeight: 210, maxHeight: .infinity)
 					}
-				}
 			}
+		}
+		.navigationTitle(filterTitle)
+		.navigationBarTitleDisplayMode(.inline)
 		}
 
 		#if targetEnvironment(macCatalyst)
@@ -168,7 +170,9 @@ struct AppLogFilter: View {
 		#endif
 		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 
 

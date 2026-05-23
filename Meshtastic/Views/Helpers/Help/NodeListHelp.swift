@@ -209,7 +209,9 @@ struct NodeListHelp: View {
 		#endif
 		.presentationDetents([.large])
 		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 
 
