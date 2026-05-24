@@ -23,7 +23,6 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
-
 		case .admin:
 			return "🏛 Admin"
 		case .data:
@@ -42,6 +41,27 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 			return "🚚 Transport"
 		}
 	}
+
+	var color: Color {
+		switch self {
+		case .admin:
+			return .brown
+		case .data:
+			return .indigo
+		case .mesh:
+			return .green
+		case .mqtt:
+			return .blue
+		case .radio:
+			return .orange
+		case .services:
+			return .mint
+		case .stats:
+			return .purple
+		case .transport:
+			return .teal
+		}
+	}
 }
 
 enum LogLevels: Int, CaseIterable, Identifiable {
@@ -56,7 +76,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 	var level: String {
 		switch self {
 		case .debug:
-			return  "debug"
+			return "debug"
 		case .info:
 			return "info"
 		case .notice:
@@ -67,10 +87,11 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 			return "fault"
 		}
 	}
+
 	var description: String {
 		switch self {
 		case .debug:
-			return  "🪲 Debug"
+			return "🪲 Debug"
 		case .info:
 			return "ℹ️ Info"
 		case .notice:
@@ -81,6 +102,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 			return "💥 Fault"
 		}
 	}
+
 	var color: Color {
 		switch self {
 		case .debug:
@@ -115,7 +137,7 @@ struct AppLogFilter: View {
 					ForEach(LogCategories.allCases) { category in
 						selectionRow(
 							title: category.description,
-							color: .primary,
+							color: category.color,
 							isSelected: categories.contains(category.id)
 						) {
 							toggleCategory(category.id)
