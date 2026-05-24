@@ -22783,6 +22783,7 @@
       }
     },
     "Coordinates:" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23276,7 +23277,11 @@
         }
       }
     },
+    "Created by" : {
+
+    },
     "Created by:" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -23341,6 +23346,7 @@
       }
     },
     "Created: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -30321,6 +30327,7 @@
       }
     },
     "Drop Pin in Maps" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -34127,6 +34134,7 @@
       }
     },
     "Expires: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -46109,7 +46117,11 @@
         }
       }
     },
+    "Last updated by" : {
+
+    },
     "Last updated by:" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -47796,6 +47808,9 @@
           }
         }
       }
+    },
+    "Location" : {
+
     },
     "Location:" : {
       "localizations" : {
@@ -58442,6 +58457,9 @@
           }
         }
       }
+    },
+    "Open in Maps" : {
+
     },
     "Open Local File..." : {
       "localizations" : {
@@ -89364,6 +89382,9 @@
         }
       }
     },
+    "Timestamps" : {
+
+    },
     "Timing and Overrides" : {
       "localizations" : {
         "de" : {
@@ -93335,6 +93356,7 @@
       }
     },
     "Updated: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {

@@ -155,42 +155,39 @@ struct MeshMap: View {
 							NodeDetail(node: node, showMapLink: false)
 						}
 						#if targetEnvironment(macCatalyst)
-						.overlay(alignment: .topTrailing) {
+						.overlay(alignment: .topLeading) {
 							Button {
 								selectedPosition = nil
 							} label: {
-								ZStack {
-									Circle()
-										.fill(Color(white: 0.19))
-									Image(systemName: "xmark")
-										.resizable()
-										.scaledToFit()
-										.font(.body.weight(.bold))
-										.scaleEffect(0.416)
-										.foregroundColor(Color(white: 0.62))
-								}
-								.frame(width: 36, height: 36)
+								Image(systemName: "xmark.circle.fill")
+									.font(.system(size: 34))
+									.symbolRenderingMode(.palette)
+									.foregroundStyle(.white, Color(.systemGray3))
 							}
 							.buttonStyle(.plain)
-							.padding(.top, 14)
-							.padding(.trailing, 14)
+							.padding(.top, 12)
+							.padding(.leading, 14)
 						}
 						#endif
 						.presentationDetents([.large])
+						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
+						#endif
 					}
 				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
-						.padding()
 						.presentationDetents([.large]) // full screen
+						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
+						#endif
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
-						.padding()
 						.presentationDetents([.large])
+						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
+						#endif
 				}
 
 				.sheet(isPresented: $editingSettings) {
@@ -225,11 +222,13 @@ struct MeshMap: View {
 					MapLegend(isMeshMap: true)
 						.presentationDetents([.large])
 						.presentationContentInteraction(.scrolls)
+						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
+						#endif
 						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 				}
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
-					HStack {
+					HStack(spacing: 12) {
 						Spacer()
 						Button(action: {
 							withAnimation {
@@ -261,7 +260,8 @@ struct MeshMap: View {
 						.glassButtonStyle()
 					}
 					.controlSize(.regular)
-					.padding(5)
+					.padding(.horizontal, 12)
+					.padding(.vertical, 8)
 				}
 			}
 			.toolbar {

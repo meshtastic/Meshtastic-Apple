@@ -211,7 +211,9 @@ struct Channels: View {
 				#endif
 				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
 					.presentationDetents([.large])
+					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
+					#endif
 				.onFirstAppear {
 					supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
 				}
@@ -318,7 +320,9 @@ struct Channels: View {
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
 				.presentationDetents([.large])
+				#if !targetEnvironment(macCatalyst)
 				.presentationDragIndicator(.visible)
+				#endif
 		}
 		.safeAreaInset(edge: .bottom, alignment: .leading) {
 			HStack {

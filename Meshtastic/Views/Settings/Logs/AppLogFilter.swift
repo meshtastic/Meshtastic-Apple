@@ -23,7 +23,6 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
-
 		case .admin:
 			return "🏛 Admin"
 		case .data:
@@ -42,6 +41,27 @@ enum LogCategories: Int, CaseIterable, Identifiable {
 			return "🚚 Transport"
 		}
 	}
+
+	var color: Color {
+		switch self {
+		case .admin:
+			return .brown
+		case .data:
+			return .indigo
+		case .mesh:
+			return .green
+		case .mqtt:
+			return .blue
+		case .radio:
+			return .orange
+		case .services:
+			return .mint
+		case .stats:
+			return .purple
+		case .transport:
+			return .teal
+		}
+	}
 }
 
 enum LogLevels: Int, CaseIterable, Identifiable {
@@ -56,7 +76,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 	var level: String {
 		switch self {
 		case .debug:
-			return  "debug"
+			return "debug"
 		case .info:
 			return "info"
 		case .notice:
@@ -67,10 +87,11 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 			return "fault"
 		}
 	}
+
 	var description: String {
 		switch self {
 		case .debug:
-			return  "🪲 Debug"
+			return "🪲 Debug"
 		case .info:
 			return "ℹ️ Info"
 		case .notice:
@@ -81,6 +102,7 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 			return "💥 Fault"
 		}
 	}
+
 	var color: Color {
 		switch self {
 		case .debug:
@@ -105,66 +127,106 @@ struct AppLogFilter: View {
 	var filterTitle = "App Log Filters"
 	@Binding var categories: Set<Int>
 	@Binding var levels: Set<Int>
-	@State var editMode = EditMode.active
 
 	var body: some View {
-
-		Form {
-			Section(header: HStack {
-				Text("Categories")
-				Spacer()
-				Button {
+		NavigationStack {
+			Form {
+				Section(header: sectionHeader(title: "Categories") {
 					categories.formUnion(LogCategories.allCases.map(\.id))
-				} label: {
-					Text("All")
-				}
-			}) {
-				VStack {
-					List(LogCategories.allCases, selection: $categories) { cat in
-						Text(cat.description)
+				}) {
+					ForEach(LogCategories.allCases) { category in
+						selectionRow(
+							title: category.description,
+							color: category.color,
+							isSelected: categories.contains(category.id)
+						) {
+							toggleCategory(category.id)
+						}
 					}
-					.listStyle(.plain)
-					.environment(\.editMode, $editMode) /// bind it here!
-					.frame(minHeight: 338, maxHeight: .infinity)
 				}
-			}
-			Section(header: HStack {
-				Text("Log Levels")
-				Spacer()
-				Button {
+
+				Section(header: sectionHeader(title: "Log Levels") {
 					levels.formUnion(LogLevels.allCases.map(\.id))
-				} label: {
-					Text("All")
-				}
-			}) {
-				VStack {
-					List(LogLevels.allCases, selection: $levels) { level in
-						Text(level.description)
-							.foregroundStyle(level.color)
+				}) {
+					ForEach(LogLevels.allCases) { level in
+						selectionRow(
+							title: level.description,
+							color: level.color,
+							isSelected: levels.contains(level.id)
+						) {
+							toggleLevel(level.id)
+						}
 					}
-					.listStyle(.plain)
-					.environment(\.editMode, $editMode) /// bind it here!
-					.frame(minHeight: 210, maxHeight: .infinity)
 				}
 			}
+			.navigationTitle(filterTitle)
+			.navigationBarTitleDisplayMode(.inline)
 		}
 
-#if targetEnvironment(macCatalyst)
-		Spacer()
-		Button {
-			dismiss()
-		} label: {
-			Label("Close", systemImage: "xmark")
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding(.bottom)
-#endif
+		#endif
 		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+	}
+
+	private func sectionHeader(title: String, action: @escaping () -> Void) -> some View {
+		HStack {
+			Text(title)
+			Spacer()
+			Button("All", action: action)
+		}
+	}
+
+	private func selectionRow(
+		title: String,
+		color: Color,
+		isSelected: Bool,
+		action: @escaping () -> Void
+	) -> some View {
+		Button(action: action) {
+			HStack(spacing: 12) {
+				Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+					.foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+				Text(title)
+					.foregroundStyle(color)
+				Spacer()
+			}
+			.contentShape(Rectangle())
+		}
+		.buttonStyle(.plain)
+	}
+
+	private func toggleCategory(_ id: Int) {
+		if categories.contains(id) {
+			categories.remove(id)
+		} else {
+			categories.insert(id)
+		}
+	}
+
+	private func toggleLevel(_ id: Int) {
+		if levels.contains(id) {
+			levels.remove(id)
+		} else {
+			levels.insert(id)
+		}
 	}
 }
 

@@ -36,12 +36,9 @@ struct WaypointForm: View {
 	@State private var lastUpdatedByNode: NodeInfoEntity?
 
 	var body: some View {
+		NavigationStack {
 		Group {
 		if editMode {
-			VStack {
-			Text((waypoint.id > 0) ? "Editing Waypoint" : "Create Waypoint")
-				.font(.largeTitle)
-			Divider()
 			Form {
 				if let cl = LocationsHandler.currentLocation {
 					let distance = CLLocation(latitude: cl.latitude, longitude: cl.longitude).distance(from: CLLocation(latitude: waypoint.mapCoordinate.latitude, longitude: waypoint.mapCoordinate.longitude ))
@@ -116,7 +113,7 @@ struct WaypointForm: View {
 						Spacer()
 						TextField("Select an emoji", text: $icon)
 							.keyboardType(.emoji)
-							.font(.title)
+							.font(.system(size: 34))
 							.focused($iconIsFocused)
 							.onChange(of: icon) { _, value in
 								// If a second emoji is entered delete the first one
@@ -279,166 +276,143 @@ struct WaypointForm: View {
 					.padding(.bottom)
 				}
 			}
-			} // VStack
+			.navigationTitle((waypoint.id > 0) ? "Editing Waypoint" : "Create Waypoint")
+			.navigationBarTitleDisplayMode(.inline)
+			// end Form
 		} else {
-			VStack {
-				HStack {
-					CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 50)
-					Spacer()
-					Text(waypoint.name ?? "?")
-						.font(.largeTitle)
-					Spacer()
-					if waypoint.locked {
-						Image(systemName: "lock.fill")
-							.font(.largeTitle)
-					} else {
-						Button {
-							editMode = true
-							selectedDetent = .fraction(0.85)
-						} label: {
-							Image(systemName: "square.and.pencil" )
-								.font(.largeTitle)
-								.symbolRenderingMode(.hierarchical)
-								.foregroundColor(.accentColor)
-						}
-					}
-				}
-				Divider()
-				VStack(alignment: .leading) {
-					
-					// Nodes who created/modified
-					VStack(alignment: .leading, spacing: 12) {
-						if let created = createdByNode {
-							VStack(alignment: .leading, spacing: 6) {
-								Text("Created by:")
-									.font(.headline)
-								
-								HStack(spacing: 8) {
-									CircleText(
-										text: created.user?.shortName ?? "?",
-										color: Color(UIColor(hex: UInt32(created.user?.num ?? 0x808080)))
-									)
-									Text(created.user?.longName ?? "Unknown")
-										.font(.body)
-								}
-							}
-						}
-
-						if let updated = lastUpdatedByNode {
-							VStack(alignment: .leading, spacing: 6) {
-								Text("Last updated by:")
-									.font(.headline)
-								
-								HStack(spacing: 8) {
-									CircleText(
-										text: updated.user?.shortName ?? "?",
-										color: Color(UIColor(hex: UInt32(updated.user?.num ?? 0x808080)))
-									)
-									Text(updated.user?.longName ?? "Unknown")
-										.font(.body)
-								}
+			List {
+				Section {
+					if let created = createdByNode {
+						HStack(spacing: 8) {
+							CircleText(
+								text: created.user?.shortName ?? "?",
+								color: Color(UIColor(hex: UInt32(created.user?.num ?? 0x808080)))
+							)
+							VStack(alignment: .leading) {
+								Text("Created by")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+								Text(created.user?.longName ?? "Unknown")
+									.font(.body)
 							}
 						}
 					}
-					.padding(.bottom)
 
-					// Description
+					if let updated = lastUpdatedByNode {
+						HStack(spacing: 8) {
+							CircleText(
+								text: updated.user?.shortName ?? "?",
+								color: Color(UIColor(hex: UInt32(updated.user?.num ?? 0x808080)))
+							)
+							VStack(alignment: .leading) {
+								Text("Last updated by")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+								Text(updated.user?.longName ?? "Unknown")
+									.font(.body)
+							}
+						}
+					}
+
 					if (waypoint.longDescription ?? "").count > 0 {
 						Label {
 							Text(waypoint.longDescription ?? "")
 								.foregroundColor(.primary)
-								.multilineTextAlignment(.leading)
-								.fixedSize(horizontal: false, vertical: true)
 								.textSelection(.enabled)
 						} icon: {
 							Image(systemName: "doc.plaintext")
 						}
-						.padding(.bottom)
 					}
-					/// Coordinate
+				} header: {
+					HStack {
+						CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 36)
+						Text(waypoint.name ?? "Waypoint")
+							.font(.headline)
+					}
+				}
+
+				Section {
 					Label {
-						Text("Coordinates:")
-							.foregroundColor(.primary)
 						Text("\(String(format: "%.6f", waypoint.mapCoordinate.latitude)), \(String(format: "%.6f", waypoint.mapCoordinate.longitude))")
 							.textSelection(.enabled)
 							.foregroundColor(.secondary)
-							.font(.caption2)
 					} icon: {
 						Image(systemName: "mappin.circle")
 					}
-					.padding(.bottom)
-					// Drop Maps Pin
-					Button(action: {
-						if let url = URL(string: "http://maps.apple.com/?ll=\(waypoint.mapCoordinate.latitude),\(waypoint.mapCoordinate.longitude)&q=\(waypoint.name ?? "Dropped Pin")") {
-							UIApplication.shared.open(url)
-						}
-					}) {
-						Label("Drop Pin in Maps", systemImage: "mappin.and.ellipse")
-					}
-					.padding(.bottom)
-					/// Created
-					Label {
-						Text("Created: \(waypoint.created?.formatted(date: .numeric, time: .shortened) ?? "?")")
-							.foregroundColor(.primary)
-					} icon: {
-						Image(systemName: "clock.badge.checkmark")
-							.symbolRenderingMode(.hierarchical)
-					}
-					.padding(.bottom)
-					/// Updated
-					if waypoint.lastUpdated != nil {
-						Label {
-							Text("Updated: \(waypoint.lastUpdated?.formatted(date: .numeric, time: .shortened) ?? "?")")
-								.foregroundColor(.primary)
-						} icon: {
-							Image(systemName: "clock.arrow.circlepath")
-								.symbolRenderingMode(.hierarchical)
-						}
-						.padding(.bottom)
-					}
-					/// Expires
-					if waypoint.expire != nil {
-						Label {
-							Text("Expires: \(waypoint.expire?.formatted(date: .numeric, time: .shortened) ?? "?")")
-								.foregroundColor(.primary)
-						} icon: {
-							Image(systemName: "hourglass.bottomhalf.filled")
-								.symbolRenderingMode(.hierarchical)
-						}
-						.padding(.bottom, 5)
-					}
-					/// Distance
+
 					if let cl = LocationsHandler.currentLocation {
 						let metersAway = waypoint.mapCoordinate.distance(from: cl)
 						if metersAway > 0.0 {
 							Label {
-								Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
-									.foregroundColor(.primary)
+								Text(distanceFormatter.string(fromDistance: Double(metersAway)))
 							} icon: {
 								Image(systemName: "lines.measurement.horizontal")
 									.symbolRenderingMode(.hierarchical)
-									.frame(width: 35)
 							}
-							.padding(.bottom, 5)
+						}
+					}
+
+					Button {
+						if let url = URL(string: "http://maps.apple.com/?ll=\(waypoint.mapCoordinate.latitude),\(waypoint.mapCoordinate.longitude)&q=\(waypoint.name ?? "Dropped Pin")") {
+							UIApplication.shared.open(url)
+						}
+					} label: {
+						Label("Open in Maps", systemImage: "mappin.and.ellipse")
+					}
+				} header: {
+					Text("Location")
+				}
+
+				Section {
+					Label {
+						Text(waypoint.created?.formatted(date: .numeric, time: .shortened) ?? "?")
+							.foregroundStyle(.secondary)
+					} icon: {
+						Image(systemName: "clock.badge.checkmark")
+							.symbolRenderingMode(.hierarchical)
+					}
+
+					if waypoint.lastUpdated != nil {
+						Label {
+							Text(waypoint.lastUpdated?.formatted(date: .numeric, time: .shortened) ?? "?")
+								.foregroundStyle(.secondary)
+						} icon: {
+							Image(systemName: "clock.arrow.circlepath")
+								.symbolRenderingMode(.hierarchical)
+						}
+					}
+
+					if waypoint.expire != nil {
+						Label {
+							Text(waypoint.expire?.formatted(date: .numeric, time: .shortened) ?? "?")
+								.foregroundStyle(.secondary)
+						} icon: {
+							Image(systemName: "hourglass.bottomhalf.filled")
+								.symbolRenderingMode(.hierarchical)
+						}
+					}
+				} header: {
+					Text("Timestamps")
+				}
+			}
+			.navigationTitle(waypoint.name ?? "Waypoint")
+			.navigationBarTitleDisplayMode(.inline)
+			.toolbar {
+				if !waypoint.locked {
+					ToolbarItem(placement: .topBarTrailing) {
+						Button {
+							editMode = true
+							selectedDetent = .fraction(0.85)
+						} label: {
+							Image(systemName: "square.and.pencil")
 						}
 					}
 				}
-				.padding(.top)
-#if targetEnvironment(macCatalyst)
-				Spacer()
-				Button {
-					dismiss()
-				} label: {
-					Label("Close", systemImage: "xmark")
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-#endif
 			}
 		}
-	}
+		} // Group
+		} // NavigationStack
+		.background(Color(.systemGroupedBackground))
 		.alert("Waypoint Failed to Send", isPresented: $waypointFailedAlert) {
 					Button("OK", role: .cancel) {
 						context.delete(waypoint)
@@ -492,7 +466,25 @@ struct WaypointForm: View {
 			}
 		}
 		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
+
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
+		}
+		#endif
 	}
 	
 	@MainActor
