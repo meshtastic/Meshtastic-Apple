@@ -78,28 +78,21 @@ struct MetricsColumnDetail: View {
 		}
 		.listStyle(.insetGrouped)
 		.listSectionSpacing(12)
-		.navigationTitle("Metrics")
-		.navigationBarTitleDisplayMode(.inline)
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
+#if targetEnvironment(macCatalyst)
+		Spacer()
+		Button {
+			dismiss()
+		} label: {
+			Label("Close", systemImage: "xmark")
 		}
-		#endif
+		.buttonStyle(.bordered)
+		.buttonBorderShape(.capsule)
+		.controlSize(.large)
+		.padding(.bottom)
+#endif
 		.presentationDetents([.medium, .large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
-		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
-		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.interactiveDismissDisabled(false)
 	}

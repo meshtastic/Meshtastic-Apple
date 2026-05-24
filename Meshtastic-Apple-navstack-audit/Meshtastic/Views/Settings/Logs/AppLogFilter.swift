@@ -141,36 +141,29 @@ struct AppLogFilter: View {
 					List(LogLevels.allCases, selection: $levels) { level in
 						Text(level.description)
 							.foregroundStyle(level.color)
+					}
 					.listStyle(.plain)
 					.environment(\.editMode, $editMode) /// bind it here!
 					.frame(minHeight: 210, maxHeight: .infinity)
 				}
-				}
 			}
 		}
-		.navigationTitle(filterTitle)
-		.navigationBarTitleDisplayMode(.inline)
 
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
+#if targetEnvironment(macCatalyst)
+		Spacer()
+		Button {
+			dismiss()
+		} label: {
+			Label("Close", systemImage: "xmark")
 		}
-		#endif
+		.buttonStyle(.bordered)
+		.buttonBorderShape(.capsule)
+		.controlSize(.large)
+		.padding(.bottom)
+#endif
 		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
-		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
-		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 	}
 }

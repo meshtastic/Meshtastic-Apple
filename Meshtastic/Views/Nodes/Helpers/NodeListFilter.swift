@@ -27,104 +27,60 @@ struct NodeListFilter: View {
 	@ObservedObject var filters: NodeFilterParameters
 	
 	var body: some View {
-		Form {
-			Section(header: Text(filterTitle)) {
-				Toggle(isOn: $filters.viaLora) {
-
-					Label {
-						Text("Via Lora")
-					} icon: {
-						Image(systemName: "dot.radiowaves.left.and.right")
-							.rotationEffect(.degrees(-90))
-							.symbolRenderingMode(.multicolor)
+		NavigationStack {
+			Form {
+				Section {
+					Toggle(isOn: $filters.viaLora) {
+						Label("Via Lora", systemImage: "dot.radiowaves.left.and.right")
 					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Toggle(isOn: $filters.viaMqtt) {
+					.labelStyle(.titleAndIcon)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					Label {
-						Text("Via Mqtt")
-					} icon: {
-						Image(systemName: "dot.radiowaves.up.forward")
-							.symbolRenderingMode(.multicolor)
+					Toggle(isOn: $filters.viaMqtt) {
+						Label("Via Mqtt", systemImage: "dot.radiowaves.up.forward")
 					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
 
-				Toggle(isOn: $filters.isOnline) {
-
-					Label {
-						Text("Online")
-					} icon: {
-						Image(systemName: "checkmark.circle.fill")
-							.foregroundColor(.green)
-							.symbolRenderingMode(.hierarchical)
+					Toggle(isOn: $filters.isOnline) {
+						Label("Online", systemImage: "checkmark.circle.fill")
 					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
 
-				Toggle(isOn: $filters.isPkiEncrypted) {
-
-					Label {
-						Text("Encrypted")
-					} icon: {
-						Image(systemName: "lock.fill")
-							.foregroundColor(.green)
-							.symbolRenderingMode(.hierarchical)
+					Toggle(isOn: $filters.isPkiEncrypted) {
+						Label("Encrypted", systemImage: "lock.fill")
 					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
 
-				Toggle(isOn: $filters.isFavorite) {
-
-					Label {
-						Text("Favorites")
-					} icon: {
-
-						Image(systemName: "star.fill")
-							.symbolRenderingMode(.multicolor)
+					Toggle(isOn: $filters.isFavorite) {
+						Label("Favorites", systemImage: "star.fill")
 					}
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				.listRowSeparator(.visible)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
 
-				if filterTitle == "Node Filters" {
-					Toggle(isOn: $filters.isIgnored) {
-
-						Label {
-							Text("Ignored")
-						} icon: {
-
-							Image(systemName: "minus.circle.fill")
-								.symbolRenderingMode(.multicolor)
+					if filterTitle == "Node Filters" {
+						Toggle(isOn: $filters.isIgnored) {
+							Label("Ignored", systemImage: "minus.circle.fill")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
 
-					Toggle(isOn: $filters.isEnvironment) {
-						Label {
-							Text("Environment")
-						} icon: {
-							Image(systemName: "cloud.sun")
-								.symbolRenderingMode(.multicolor)
+						Toggle(isOn: $filters.isEnvironment) {
+							Label("Environment", systemImage: "cloud.sun")
 						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
-					}
-				Toggle(isOn: $filters.distanceFilter) {
-						Label {
-							Text("Distance")
-						} icon: {
-							Image(systemName: "map")
-						}
+
+					Toggle(isOn: $filters.distanceFilter) {
+						Label("Distance", systemImage: "map")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(LocationsHandler.currentPreciseLocation == nil)
 					.listRowSeparator(filters.distanceFilter ? .hidden : .visible)
+
 					if filters.distanceFilter {
 						if LocationsHandler.currentPreciseLocation == nil {
 							Text("Requires a precise GPS fix from your phone")
@@ -143,6 +99,7 @@ struct NodeListFilter: View {
 							}
 						}
 					}
+
 					VStack(alignment: .leading) {
 						Label("Hops Away", systemImage: "hare")
 						Slider(
@@ -156,40 +113,49 @@ struct NodeListFilter: View {
 						} maximumValueLabel: {
 							Text("7")
 						}
+
 						if filters.hopsAway >= 0 {
 							if filters.hopsAway == 0 {
 								Text("Direct")
 							} else if filters.hopsAway == 1 {
 								Text("1 hop away")
 							} else {
-								Text("\(Int(filters.hopsAway)) or less hops away")							}
-						}
-					}
-					Toggle(isOn: $filters.roleFilter) {
-
-						Label {
-							Text("Roles")
-						} icon: {
-							Image(systemName: "apps.iphone")
-						}
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				if filters.roleFilter {
-					VStack {
-						List(DeviceRoles.allCases, selection: $filters.deviceRoles) { dr in
-							Label {
-								Text("\(dr.name)")
-							} icon: {
-								Image(systemName: dr.systemName)
+								Text("\(Int(filters.hopsAway)) or less hops away")
 							}
 						}
-						.listStyle(.plain)
-						.environment(\.editMode, $editMode) /// bind it here!
-						.frame(minHeight: 510, maxHeight: .infinity)
+					}
+
+					Toggle(isOn: $filters.roleFilter) {
+						Label("Roles", systemImage: "apps.iphone")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+					if filters.roleFilter {
+						VStack {
+							List(DeviceRoles.allCases, selection: $filters.deviceRoles) { dr in
+								Label {
+									Text(dr.name)
+								} icon: {
+									Image(systemName: dr.systemName)
+								}
+							}
+							.listStyle(.plain)
+							.environment(\.editMode, $editMode)
+							.frame(minHeight: 510, maxHeight: .infinity)
+						}
 					}
 				}
 			}
 			.listStyle(.insetGrouped)
+			.navigationTitle(filterTitle)
+			.navigationBarTitleDisplayMode(.inline)
+		}
+		.presentationDetents([.large])
+		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
+		.presentationDragIndicator(.visible)
+		#endif
+		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 		#if targetEnvironment(macCatalyst)
 		.overlay(alignment: .topLeading) {
 			Button {
@@ -204,32 +170,7 @@ struct NodeListFilter: View {
 			.padding(.top, 12)
 			.padding(.leading, 14)
 		}
-<<<<<<< HEAD
 		#endif
-=======
-		.listStyle(.insetGrouped)
-#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
-		}
-#endif
->>>>>>> 6f3c5e33 (Fix Mac Catalyst sheet dismiss buttons)
-		.presentationDetents([.large])
-		.presentationContentInteraction(.scrolls)
-		#if !targetEnvironment(macCatalyst)
-		.presentationDragIndicator(.visible)
-		#endif
-		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }
 
