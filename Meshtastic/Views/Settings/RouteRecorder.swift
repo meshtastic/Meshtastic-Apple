@@ -85,8 +85,7 @@ struct RouteRecorder: View {
 				.padding()
 			}
 			.sheet(isPresented: $isShowingDetails) {
-				NavigationStack {
-					VStack {
+				VStack {
 						if locationsHandler.isRecording {
 							HStack(alignment: .center) {
 								Image(systemName: "record.circle.fill")
@@ -280,7 +279,6 @@ struct RouteRecorder: View {
 
 						}
 					}
-				}
 				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDragIndicator(.hidden)
 				.interactiveDismissDisabled(false)

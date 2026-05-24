@@ -25,9 +25,8 @@ struct ChannelForm: View {
 	@Binding var supportedVersion: Bool
 
 	var body: some View {
-		NavigationStack {
-			Form {
-				Section(header: Text("Channel Details")) {
+		Form {
+			Section(header: Text("Channel Details")) {
 					HStack {
 						Text("Name")
 						Spacer()
@@ -181,71 +180,70 @@ struct ChannelForm: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
+		}
+		.onChange(of: channelName) {
+			hasChanges = true
+		}
+		.onChange(of: channelKeySize) {
+			if channelKeySize == -1 {
+				channelKey = "AQ=="
+			} else {
+				let key = generateChannelKey(size: channelKeySize)
+				channelKey = key
 			}
-			.onChange(of: channelName) {
-				hasChanges = true
+			hasChanges = true
+		}
+		.onChange(of: channelKey) {
+			hasChanges = true
+		}
+		.onChange(of: channelKeySize) {
+			if channelKeySize == -1 {
+				if channelRole == 0 {
+					preciseLocation = false
+				}
+				channelKey = "AQ=="
 			}
-			.onChange(of: channelKeySize) {
-				if channelKeySize == -1 {
-					channelKey = "AQ=="
+		}
+		.onChange(of: channelRole) {
+			hasChanges = true
+		}
+		.onChange(of: preciseLocation) { _, loc in
+			if loc == true {
+				if channelKey == "AQ==" || channelKeySize <= 1 {
+					preciseLocation = false
 				} else {
-					let key = generateChannelKey(size: channelKeySize)
-					channelKey = key
+					positionPrecision = 32
 				}
-				hasChanges = true
+			} else {
+				positionPrecision = 14
 			}
-			.onChange(of: channelKey) {
-				hasChanges = true
-			}
-			.onChange(of: channelKeySize) {
-				if channelKeySize == -1 {
-					if channelRole == 0 {
-						preciseLocation = false
-					}
-					channelKey = "AQ=="
+			hasChanges = true
+		}
+		.onChange(of: positionPrecision) {
+			hasChanges = true
+		}
+		.onChange(of: positionsEnabled) { _, pe in
+			if pe {
+				if positionPrecision == 0 {
+					positionPrecision = 15
 				}
+			} else {
+				positionPrecision = 0
 			}
-			.onChange(of: channelRole) {
-				hasChanges = true
-			}
-			.onChange(of: preciseLocation) { _, loc in
-				if loc == true {
-					if channelKey == "AQ==" || channelKeySize <= 1 {
-						preciseLocation = false
-					} else {
-						positionPrecision = 32
-					}
-				} else {
-					positionPrecision = 14
-				}
-				hasChanges = true
-			}
-			.onChange(of: positionPrecision) {
-				hasChanges = true
-			}
-			.onChange(of: positionsEnabled) { _, pe in
-				if pe {
-					if positionPrecision == 0 {
-						positionPrecision = 15
-					}
-				} else {
-					positionPrecision = 0
-				}
-				hasChanges = true
-			}
-			.onChange(of: uplink) {
-				hasChanges = true
-			}
-			.onChange(of: downlink) {
-				hasChanges = true
-			}
-			.onFirstAppear {
-				let tempKey = Data(base64Encoded: channelKey) ?? Data()
-				if tempKey.count == channelKeySize || channelKeySize == -1 {
-					hasValidKey = true
-				} else {
-					hasValidKey = false
-				}
+			hasChanges = true
+		}
+		.onChange(of: uplink) {
+			hasChanges = true
+		}
+		.onChange(of: downlink) {
+			hasChanges = true
+		}
+		.onFirstAppear {
+			let tempKey = Data(base64Encoded: channelKey) ?? Data()
+			if tempKey.count == channelKeySize || channelKeySize == -1 {
+				hasValidKey = true
+			} else {
+				hasValidKey = false
 			}
 		}
 	}
