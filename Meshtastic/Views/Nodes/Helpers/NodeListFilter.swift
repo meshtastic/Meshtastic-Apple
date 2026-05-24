@@ -27,98 +27,95 @@ struct NodeListFilter: View {
 	@ObservedObject var filters: NodeFilterParameters
 	
 	var body: some View {
+		Form {
+			Section(header: Text(filterTitle)) {
+				Toggle(isOn: $filters.viaLora) {
 
-		NavigationStack {
-			Form {
-				Section {
-					Toggle(isOn: $filters.viaLora) {
+					Label {
+						Text("Via Lora")
+					} icon: {
+						Image(systemName: "dot.radiowaves.left.and.right")
+							.rotationEffect(.degrees(-90))
+							.symbolRenderingMode(.multicolor)
+					}
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Toggle(isOn: $filters.viaMqtt) {
+
+					Label {
+						Text("Via Mqtt")
+					} icon: {
+						Image(systemName: "dot.radiowaves.up.forward")
+							.symbolRenderingMode(.multicolor)
+					}
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.listRowSeparator(.visible)
+
+				Toggle(isOn: $filters.isOnline) {
+
+					Label {
+						Text("Online")
+					} icon: {
+						Image(systemName: "checkmark.circle.fill")
+							.foregroundColor(.green)
+							.symbolRenderingMode(.hierarchical)
+					}
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.listRowSeparator(.visible)
+
+				Toggle(isOn: $filters.isPkiEncrypted) {
+
+					Label {
+						Text("Encrypted")
+					} icon: {
+						Image(systemName: "lock.fill")
+							.foregroundColor(.green)
+							.symbolRenderingMode(.hierarchical)
+					}
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.listRowSeparator(.visible)
+
+				Toggle(isOn: $filters.isFavorite) {
+
+					Label {
+						Text("Favorites")
+					} icon: {
+
+						Image(systemName: "star.fill")
+							.symbolRenderingMode(.multicolor)
+					}
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.listRowSeparator(.visible)
+
+				if filterTitle == "Node Filters" {
+					Toggle(isOn: $filters.isIgnored) {
 
 						Label {
-							Text("Via Lora")
+							Text("Ignored")
 						} icon: {
-							Image(systemName: "dot.radiowaves.left.and.right")
-								.rotationEffect(.degrees(-90))
+
+							Image(systemName: "minus.circle.fill")
 								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $filters.viaMqtt) {
-
-						Label {
-							Text("Via Mqtt")
-						} icon: {
-							Image(systemName: "dot.radiowaves.up.forward")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
-
-					Toggle(isOn: $filters.isOnline) {
-
-						Label {
-							Text("Online")
-						} icon: {
-							Image(systemName: "checkmark.circle.fill")
-								.foregroundColor(.green)
-								.symbolRenderingMode(.hierarchical)
-						}
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
-
-					Toggle(isOn: $filters.isPkiEncrypted) {
-
-						Label {
-							Text("Encrypted")
-						} icon: {
-							Image(systemName: "lock.fill")
-								.foregroundColor(.green)
-								.symbolRenderingMode(.hierarchical)
-						}
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
-
-					Toggle(isOn: $filters.isFavorite) {
-
-						Label {
-							Text("Favorites")
-						} icon: {
-
-							Image(systemName: "star.fill")
-								.symbolRenderingMode(.multicolor)
-						}
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
-
-					if filterTitle == "Node Filters" {
-						Toggle(isOn: $filters.isIgnored) {
-
-							Label {
-								Text("Ignored")
-							} icon: {
-
-								Image(systemName: "minus.circle.fill")
-									.symbolRenderingMode(.multicolor)
-							}
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
 
-						Toggle(isOn: $filters.isEnvironment) {
-							Label {
-								Text("Environment")
-							} icon: {
-								Image(systemName: "cloud.sun")
-									.symbolRenderingMode(.multicolor)
-							}
+					Toggle(isOn: $filters.isEnvironment) {
+						Label {
+							Text("Environment")
+						} icon: {
+							Image(systemName: "cloud.sun")
+								.symbolRenderingMode(.multicolor)
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.listRowSeparator(.visible)
 					}
-					Toggle(isOn: $filters.distanceFilter) {
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+					}
+				Toggle(isOn: $filters.distanceFilter) {
 						Label {
 							Text("Distance")
 						} icon: {
@@ -177,26 +174,22 @@ struct NodeListFilter: View {
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if filters.roleFilter {
-						VStack {
-							List(DeviceRoles.allCases, selection: $filters.deviceRoles) { dr in
-								Label {
-									Text("\(dr.name)")
-								} icon: {
-									Image(systemName: dr.systemName)
-								}
+				if filters.roleFilter {
+					VStack {
+						List(DeviceRoles.allCases, selection: $filters.deviceRoles) { dr in
+							Label {
+								Text("\(dr.name)")
+							} icon: {
+								Image(systemName: dr.systemName)
 							}
-							.listStyle(.plain)
-							.environment(\.editMode, $editMode) /// bind it here!
-							.frame(minHeight: 510, maxHeight: .infinity)
 						}
+						.listStyle(.plain)
+						.environment(\.editMode, $editMode) /// bind it here!
+						.frame(minHeight: 510, maxHeight: .infinity)
 					}
 				}
 			}
 			.listStyle(.insetGrouped)
-			.navigationTitle(filterTitle)
-			.navigationBarTitleDisplayMode(.inline)
-		}
 		#if targetEnvironment(macCatalyst)
 		.overlay(alignment: .topLeading) {
 			Button {
@@ -218,8 +211,6 @@ struct NodeListFilter: View {
 		.presentationDragIndicator(.visible)
 		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .large))
-
-
 	}
 }
 

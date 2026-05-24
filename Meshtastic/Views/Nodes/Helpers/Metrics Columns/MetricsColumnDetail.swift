@@ -25,56 +25,54 @@ struct MetricsColumnDetail: View {
 	@State private var selectedView: ViewOption = .chart
 	
 	var body: some View {
-		NavigationStack {
-			Form {
-				Section {
-					Picker("", selection: $selectedView) {
-						ForEach(ViewOption.allCases) { option in
-							Text(option.rawValue)
-								.tag(option)
+		Form {
+			Section {
+				Picker("", selection: $selectedView) {
+					ForEach(ViewOption.allCases) { option in
+						Text(option.rawValue)
+							.tag(option)
+					}
+				}
+				.pickerStyle(.segmented)
+			}.listRowBackground(Color.clear)
+			
+			switch selectedView {
+			case .chart:
+				ForEach(seriesList) { series in
+					HStack {
+						Path { path in
+							path.move(to: CGPoint(x: 10, y: 0))
+							path.addLine(to: CGPoint(x: 10, y: 20))
 						}
-					}
-					.pickerStyle(.segmented)
-				}.listRowBackground(Color.clear)
-				
-				switch selectedView {
-				case .chart:
-					ForEach(seriesList) { series in
-						HStack {
-							Path { path in
-								path.move(to: CGPoint(x: 10, y: 0))
-								path.addLine(to: CGPoint(x: 10, y: 20))
-							}
-							.stroke(series.foregroundStyle(0.0...100.0) ?? AnyShapeStyle(.clear),
-									style: series.strokeStyle)
-							.frame(width: 20.0, height: 20.0)
-							.rotationEffect(.degrees(90.0))
-							Text(series.name)
-							Spacer()
-							if series.visible {
-								Image(systemName: "checkmark")
-									.foregroundColor(.blue)
-							}
-						}.contentShape(Rectangle())  // Ensures the entire row is tappable
-							.onTapGesture {
-								seriesList.toggleVisibity(for: series)
-							}
-					}
-				case .table:
-					ForEach(columnList.columns) { column in
-						HStack {
-							Text(column.name)
-							Spacer()
-							if column.visible {
-								Image(systemName: "checkmark")
-									.foregroundColor(.blue)
-							}
-						}.contentShape(Rectangle())  // Ensures the entire row is tappable
-							.onTapGesture {
-								columnList.objectWillChange.send()
-								columnList.toggleVisibity(for: column)
-							}
-					}
+						.stroke(series.foregroundStyle(0.0...100.0) ?? AnyShapeStyle(.clear),
+								style: series.strokeStyle)
+						.frame(width: 20.0, height: 20.0)
+						.rotationEffect(.degrees(90.0))
+						Text(series.name)
+						Spacer()
+						if series.visible {
+							Image(systemName: "checkmark")
+								.foregroundColor(.blue)
+						}
+					}.contentShape(Rectangle())  // Ensures the entire row is tappable
+						.onTapGesture {
+							seriesList.toggleVisibity(for: series)
+						}
+				}
+			case .table:
+				ForEach(columnList.columns) { column in
+					HStack {
+						Text(column.name)
+						Spacer()
+						if column.visible {
+							Image(systemName: "checkmark")
+								.foregroundColor(.blue)
+						}
+					}.contentShape(Rectangle())  // Ensures the entire row is tappable
+						.onTapGesture {
+							columnList.objectWillChange.send()
+							columnList.toggleVisibity(for: column)
+						}
 				}
 			}
 			.listStyle(.insetGrouped)
@@ -105,8 +103,6 @@ struct MetricsColumnDetail: View {
 		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.interactiveDismissDisabled(false)
-
-
 	}
 }
 

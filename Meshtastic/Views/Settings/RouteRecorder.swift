@@ -86,8 +86,7 @@ struct RouteRecorder: View {
 				.padding()
 			}
 			.sheet(isPresented: $isShowingDetails) {
-				NavigationStack {
-					VStack {
+				VStack {
 						if locationsHandler.isRecording {
 							HStack(alignment: .center) {
 								Image(systemName: "record.circle.fill")
@@ -270,24 +269,23 @@ struct RouteRecorder: View {
 
 						}
 					}
+				.presentationDetents([.fraction(0.45), .fraction(0.65)])
+				#if targetEnvironment(macCatalyst)
+				.overlay(alignment: .topLeading) {
+					Button {
+						isShowingDetails = false
+					} label: {
+						Image(systemName: "xmark.circle.fill")
+							.font(.system(size: 34))
+							.symbolRenderingMode(.palette)
+							.foregroundStyle(.white, Color(.systemGray3))
+					}
+					.buttonStyle(.plain)
+					.padding(.top, 12)
+					.padding(.leading, 14)
 				}
-
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
-		}
-		#endif
-		.presentationDetents([.fraction(0.45), .fraction(0.65)])
+				#endif
+				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDragIndicator(.hidden)
 				.interactiveDismissDisabled(false)
 				.onAppear {

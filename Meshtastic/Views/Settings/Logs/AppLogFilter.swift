@@ -109,49 +109,47 @@ struct AppLogFilter: View {
 
 	var body: some View {
 
-		NavigationStack {
-			Form {
-				Section(header: HStack {
-					Text("Categories")
-					Spacer()
-					Button {
-						categories.formUnion(LogCategories.allCases.map(\.id))
-					} label: {
-						Text("All")
-					}
-				}) {
-					VStack {
-						List(LogCategories.allCases, selection: $categories) { cat in
-							Text(cat.description)
-						}
-						.listStyle(.plain)
-						.environment(\.editMode, $editMode) /// bind it here!
-						.frame(minHeight: 338, maxHeight: .infinity)
-					}
+		Form {
+			Section(header: HStack {
+				Text("Categories")
+				Spacer()
+				Button {
+					categories.formUnion(LogCategories.allCases.map(\.id))
+				} label: {
+					Text("All")
 				}
-				Section(header: HStack {
-					Text("Log Levels")
-					Spacer()
-					Button {
-						levels.formUnion(LogLevels.allCases.map(\.id))
-					} label: {
-						Text("All")
+			}) {
+				VStack {
+					List(LogCategories.allCases, selection: $categories) { cat in
+						Text(cat.description)
 					}
-				}) {
-					VStack {
-						List(LogLevels.allCases, selection: $levels) { level in
-							Text(level.description)
-								.foregroundStyle(level.color)
-						}
-						.listStyle(.plain)
-						.environment(\.editMode, $editMode) /// bind it here!
-						.frame(minHeight: 210, maxHeight: .infinity)
+					.listStyle(.plain)
+					.environment(\.editMode, $editMode) /// bind it here!
+					.frame(minHeight: 338, maxHeight: .infinity)
+				}
+			}
+			Section(header: HStack {
+				Text("Log Levels")
+				Spacer()
+				Button {
+					levels.formUnion(LogLevels.allCases.map(\.id))
+				} label: {
+					Text("All")
+				}
+			}) {
+				VStack {
+					List(LogLevels.allCases, selection: $levels) { level in
+						Text(level.description)
+							.foregroundStyle(level.color)
 					}
+					.listStyle(.plain)
+					.environment(\.editMode, $editMode) /// bind it here!
+					.frame(minHeight: 210, maxHeight: .infinity)
+				}
 			}
 		}
 		.navigationTitle(filterTitle)
 		.navigationBarTitleDisplayMode(.inline)
-		}
 
 		#if targetEnvironment(macCatalyst)
 		.overlay(alignment: .topLeading) {
@@ -174,8 +172,6 @@ struct AppLogFilter: View {
 		.presentationDragIndicator(.visible)
 		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
-
-
 	}
 }
 
