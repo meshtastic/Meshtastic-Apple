@@ -12,20 +12,8 @@ struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
 	@State var editMode = EditMode.active
 	var filterTitle = "Node Filters"
-//	@Binding var viaLora: Bool
-//	@Binding var viaMqtt: Bool
-//	@Binding var isOnline: Bool
-//	@Binding var isPkiEncrypted: Bool
-//	@Binding var isFavorite: Bool
-//	@Binding var isIgnored: Bool
-//	@Binding var isEnvironment: Bool
-//	@Binding var distanceFilter: Bool
-//	@Binding var maximumDistance: Double
-//	@Binding var hopsAway: Double
-//	@Binding var roleFilter: Bool
-//	@Binding var deviceRoles: Set<Int>
 	@ObservedObject var filters: NodeFilterParameters
-	
+
 	var body: some View {
 		NavigationStack {
 			Form {
@@ -150,12 +138,6 @@ struct NodeListFilter: View {
 			.navigationTitle(filterTitle)
 			.navigationBarTitleDisplayMode(.inline)
 		}
-		.presentationDetents([.large])
-		.presentationContentInteraction(.scrolls)
-		#if !targetEnvironment(macCatalyst)
-		.presentationDragIndicator(.visible)
-		#endif
-		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 		#if targetEnvironment(macCatalyst)
 		.overlay(alignment: .topLeading) {
 			Button {
@@ -171,6 +153,12 @@ struct NodeListFilter: View {
 			.padding(.leading, 14)
 		}
 		#endif
+		.presentationDetents([.large])
+		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
+		.presentationDragIndicator(.visible)
+		#endif
+		.presentationBackgroundInteraction(.enabled(upThrough: .large))
 	}
 }
 

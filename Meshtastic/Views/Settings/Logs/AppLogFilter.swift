@@ -105,51 +105,41 @@ struct AppLogFilter: View {
 	var filterTitle = "App Log Filters"
 	@Binding var categories: Set<Int>
 	@Binding var levels: Set<Int>
-	@State var editMode = EditMode.active
 
 	var body: some View {
-
-		Form {
-			Section(header: HStack {
-				Text("Categories")
-				Spacer()
-				Button {
+		NavigationStack {
+			Form {
+				Section(header: sectionHeader(title: "Categories") {
 					categories.formUnion(LogCategories.allCases.map(\.id))
-				} label: {
-					Text("All")
-				}
-			}) {
-				VStack {
-					List(LogCategories.allCases, selection: $categories) { cat in
-						Text(cat.description)
+				}) {
+					ForEach(LogCategories.allCases) { category in
+						selectionRow(
+							title: category.description,
+							color: .primary,
+							isSelected: categories.contains(category.id)
+						) {
+							toggleCategory(category.id)
+						}
 					}
-					.listStyle(.plain)
-					.environment(\.editMode, $editMode) /// bind it here!
-					.frame(minHeight: 338, maxHeight: .infinity)
 				}
-			}
-			Section(header: HStack {
-				Text("Log Levels")
-				Spacer()
-				Button {
+
+				Section(header: sectionHeader(title: "Log Levels") {
 					levels.formUnion(LogLevels.allCases.map(\.id))
-				} label: {
-					Text("All")
-				}
-			}) {
-				VStack {
-					List(LogLevels.allCases, selection: $levels) { level in
-						Text(level.description)
-							.foregroundStyle(level.color)
-					.listStyle(.plain)
-					.environment(\.editMode, $editMode) /// bind it here!
-					.frame(minHeight: 210, maxHeight: .infinity)
-				}
+				}) {
+					ForEach(LogLevels.allCases) { level in
+						selectionRow(
+							title: level.description,
+							color: level.color,
+							isSelected: levels.contains(level.id)
+						) {
+							toggleLevel(level.id)
+						}
+					}
 				}
 			}
+			.navigationTitle(filterTitle)
+			.navigationBarTitleDisplayMode(.inline)
 		}
-		.navigationTitle(filterTitle)
-		.navigationBarTitleDisplayMode(.inline)
 
 		#if targetEnvironment(macCatalyst)
 		.overlay(alignment: .topLeading) {
@@ -172,6 +162,49 @@ struct AppLogFilter: View {
 		.presentationDragIndicator(.visible)
 		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+	}
+
+	private func sectionHeader(title: String, action: @escaping () -> Void) -> some View {
+		HStack {
+			Text(title)
+			Spacer()
+			Button("All", action: action)
+		}
+	}
+
+	private func selectionRow(
+		title: String,
+		color: Color,
+		isSelected: Bool,
+		action: @escaping () -> Void
+	) -> some View {
+		Button(action: action) {
+			HStack(spacing: 12) {
+				Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+					.foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+				Text(title)
+					.foregroundStyle(color)
+				Spacer()
+			}
+			.contentShape(Rectangle())
+		}
+		.buttonStyle(.plain)
+	}
+
+	private func toggleCategory(_ id: Int) {
+		if categories.contains(id) {
+			categories.remove(id)
+		} else {
+			categories.insert(id)
+		}
+	}
+
+	private func toggleLevel(_ id: Int) {
+		if levels.contains(id) {
+			levels.remove(id)
+		} else {
+			levels.insert(id)
+		}
 	}
 }
 
