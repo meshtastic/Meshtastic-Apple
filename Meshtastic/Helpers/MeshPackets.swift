@@ -276,6 +276,12 @@ actor MeshPackets {
 					if channel.settings.hasModuleSettings {
 						newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
 						newChannel.mute = channel.settings.moduleSettings.isMuted
+					} else {
+						// When moduleSettings is absent, use proto3 defaults (0/false)
+						// rather than the entity default of 32, which would incorrectly
+						// enable full-precision position sharing.
+						newChannel.positionPrecision = 0
+						newChannel.mute = false
 					}
 					savePendingChanges()
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")

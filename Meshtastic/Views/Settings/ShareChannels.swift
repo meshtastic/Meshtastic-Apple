@@ -332,6 +332,8 @@ struct ShareChannels: View {
 					channelSettings.name = ch.name!
 					channelSettings.psk = ch.psk!
 					channelSettings.id = UInt32(ch.id)
+					channelSettings.moduleSettings.positionPrecision = UInt32(ch.positionPrecision)
+					channelSettings.moduleSettings.isMuted = ch.mute
 					channelSet.settings.append(channelSettings)
 				}
 			}
