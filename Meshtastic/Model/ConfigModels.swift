@@ -331,6 +331,27 @@ final class TAKConfigEntity {
 }
 
 @Model
+final class TrafficManagementConfigEntity {
+	var enabled: Bool = false
+	var positionDedupEnabled: Bool = false
+	var positionPrecisionBits: Int32 = 0
+	var positionMinIntervalSecs: Int32 = 0
+	var nodeinfoDirectResponse: Bool = false
+	var nodeinfoDirectResponseMaxHops: Int32 = 0
+	var rateLimitEnabled: Bool = false
+	var rateLimitWindowSecs: Int32 = 0
+	var rateLimitMaxPackets: Int32 = 0
+	var dropUnknownEnabled: Bool = false
+	var unknownPacketThreshold: Int32 = 0
+	var exhaustHopTelemetry: Bool = false
+	var exhaustHopPosition: Bool = false
+	var routerPreserveHops: Bool = false
+	var trafficManagementConfigNode: NodeInfoEntity?
+
+	init() {}
+}
+
+@Model
 final class TelemetryConfigEntity {
 	var airQualityEnabled: Bool = false
 	var airQualityInterval: Int32 = 0

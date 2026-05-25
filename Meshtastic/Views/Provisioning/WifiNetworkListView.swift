@@ -58,7 +58,10 @@ private struct NetworkRow: View {
 				onCancel: { showPasswordSheet = false }
 			)
 			.presentationDetents([.medium])
+			.presentationBackground(.regularMaterial)
+			#if !targetEnvironment(macCatalyst)
 			.presentationDragIndicator(.visible)
+			#endif
 		}
 	}
 }
@@ -158,7 +161,10 @@ struct WifiNetworkListView: View {
 				onCancel: { showOtherSheet = false }
 			)
 			.presentationDetents([.medium])
+			.presentationBackground(.regularMaterial)
+			#if !targetEnvironment(macCatalyst)
 			.presentationDragIndicator(.visible)
+			#endif
 		}
 	}
 }

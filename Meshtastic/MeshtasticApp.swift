@@ -156,7 +156,9 @@ struct MeshtasticAppleApp: App {
 						addChannels: link.add, // <-- Uses the now reliable 'add' boolean
 						accessoryManager: accessoryManager				)
 					.presentationDetents([.large])
+					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
+					#endif
 				}
 				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 					Logger.mesh.debug("URL received \(userActivity, privacy: .public)")

@@ -16,7 +16,6 @@ struct RouteRecorder: View {
 
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
 	@Environment(\.modelContext) private var context
-	@Environment(\.dismiss) private var dismiss
 	@State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic)
 	@State var isShowingDetails = false
@@ -264,27 +263,22 @@ struct RouteRecorder: View {
 									.controlSize(.large)
 									.padding(.bottom)
 								}
+#if targetEnvironment(macCatalyst)
+								Button(role: .cancel) {
+									isShowingDetails = false
+								} label: {
+									Label("Close", systemImage: "xmark")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
+								.padding(.bottom)
+#endif
 								Spacer()
 							}
 
 						}
 					}
-#if targetEnvironment(macCatalyst)
-					.overlay(alignment: .topLeading) {
-						Button {
-							isShowingDetails = false
-						} label: {
-							Image(systemName: "xmark.circle.fill")
-								.font(.system(size: 34))
-								.symbolRenderingMode(.palette)
-								.foregroundStyle(.white, Color(.systemGray3))
-						}
-						.buttonStyle(.plain)
-						.padding(.top, 12)
-						.padding(.leading, 14)
-					}
-#endif
-				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDragIndicator(.hidden)
 				.interactiveDismissDisabled(false)

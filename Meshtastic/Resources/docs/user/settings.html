@@ -171,6 +171,98 @@
 <td>Telemetry</td>
 <td>Device, environment, and air-quality sensor reporting.</td>
 </tr>
+<tr>
+<td>Traffic Management</td>
+<td>Mesh traffic optimisation — deduplication, rate limiting, and hop management. Requires firmware 2.8.0+.</td>
+</tr>
+</tbody>
+</table>
+<h3>Traffic Management</h3>
+<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enabled</td>
+<td>Master enable for the traffic management module.</td>
+</tr>
+<tr>
+<td><strong>Position Deduplication</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Position Dedup</td>
+<td>Drop redundant position broadcasts from the same node.</td>
+</tr>
+<tr>
+<td>Precision Bits</td>
+<td>Number of bits of precision for position deduplication (0–32). Lower values merge more positions.</td>
+</tr>
+<tr>
+<td>Min Interval (s)</td>
+<td>Minimum seconds between position updates from the same node.</td>
+</tr>
+<tr>
+<td><strong>NodeInfo Direct Response</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Direct Response</td>
+<td>Respond to NodeInfo requests directly from local cache instead of flooding the mesh.</td>
+</tr>
+<tr>
+<td>Max Hops</td>
+<td>Minimum hop distance from requestor before responding to NodeInfo requests.</td>
+</tr>
+<tr>
+<td><strong>Rate Limiting</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Rate Limiting</td>
+<td>Enable per-node rate limiting to throttle chatty nodes.</td>
+</tr>
+<tr>
+<td>Window (s)</td>
+<td>Time window in seconds for rate limiting calculations.</td>
+</tr>
+<tr>
+<td>Max Packets</td>
+<td>Maximum packets allowed per node within the rate limit window.</td>
+</tr>
+<tr>
+<td><strong>Unknown Packet Handling</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Drop Unknown</td>
+<td>Enable dropping of unknown/undecryptable packets.</td>
+</tr>
+<tr>
+<td>Threshold</td>
+<td>Number of unknown packets received from a node before dropping.</td>
+</tr>
+<tr>
+<td><strong>Hop Management</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Exhaust Hop Telemetry</td>
+<td>Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected).</td>
+</tr>
+<tr>
+<td>Exhaust Hop Position</td>
+<td>Set hop_limit to 0 for relayed position broadcasts (own packets unaffected).</td>
+</tr>
+<tr>
+<td>Router Preserve Hops</td>
+<td>Preserve hop_limit for router-to-router traffic.</td>
+</tr>
 </tbody>
 </table>
 <h2>Firmware Updates</h2>

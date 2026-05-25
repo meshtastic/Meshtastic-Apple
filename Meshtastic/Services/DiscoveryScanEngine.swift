@@ -223,7 +223,7 @@ final class DiscoveryScanEngine {
 		loraConfig.modemPreset = preset.protoEnumValue()
 
 		// Copy existing config values if available
-		if let existingConfig = connectedNode.loRaConfig {
+		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
 			loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(existingConfig.regionCode)) ?? .unset
 			loraConfig.hopLimit = UInt32(existingConfig.hopLimit)
 			loraConfig.txEnabled = existingConfig.txEnabled
@@ -593,7 +593,7 @@ extension DiscoveryScanEngine {
 		var loraConfig = Config.LoRaConfig()
 		loraConfig.modemPreset = homePreset.protoEnumValue()
 
-		if let existingConfig = connectedNode.loRaConfig {
+		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
 			loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(existingConfig.regionCode)) ?? .unset
 			loraConfig.hopLimit = UInt32(existingConfig.hopLimit)
 			loraConfig.txEnabled = existingConfig.txEnabled

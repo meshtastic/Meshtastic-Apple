@@ -31,7 +31,9 @@ struct MessageText: View {
 					accessoryManager: accessoryManager
 				)
 				.presentationDetents([.large])
+				#if !targetEnvironment(macCatalyst)
 				.presentationDragIndicator(.visible)
+				#endif
 			}
 			.confirmationDialog(
 				"Are you sure you want to delete this message?",

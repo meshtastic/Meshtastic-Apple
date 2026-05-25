@@ -61,18 +61,22 @@ struct MapLegend: View {
 			.navigationTitle("Map Legend")
 			.navigationBarTitleDisplayMode(.inline)
 		}
-#if targetEnvironment(macCatalyst)
-		Spacer()
-		Button {
-			dismiss()
-		} label: {
-			Label("Close", systemImage: "xmark")
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
+			Button {
+				dismiss()
+			} label: {
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
+			}
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding(.bottom)
-#endif
+		#endif
+
 	}
 
 	// MARK: - Sections

@@ -103,6 +103,33 @@ Optional feature modules. Only available when your connected node supports the m
 | Store & Forward | Store packets for nodes that are temporarily offline. |
 | Serial | UART serial output for integration with other hardware. |
 | Telemetry | Device, environment, and air-quality sensor reporting. |
+| Traffic Management | Mesh traffic optimisation — deduplication, rate limiting, and hop management. Requires firmware 2.8.0+. |
+
+### Traffic Management
+
+The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**.
+
+| Setting | Description |
+|---------|-------------|
+| Enabled | Master enable for the traffic management module. |
+| **Position Deduplication** | |
+| Position Dedup | Drop redundant position broadcasts from the same node. |
+| Precision Bits | Number of bits of precision for position deduplication (0–32). Lower values merge more positions. |
+| Min Interval (s) | Minimum seconds between position updates from the same node. |
+| **NodeInfo Direct Response** | |
+| Direct Response | Respond to NodeInfo requests directly from local cache instead of flooding the mesh. |
+| Max Hops | Minimum hop distance from requestor before responding to NodeInfo requests. |
+| **Rate Limiting** | |
+| Rate Limiting | Enable per-node rate limiting to throttle chatty nodes. |
+| Window (s) | Time window in seconds for rate limiting calculations. |
+| Max Packets | Maximum packets allowed per node within the rate limit window. |
+| **Unknown Packet Handling** | |
+| Drop Unknown | Enable dropping of unknown/undecryptable packets. |
+| Threshold | Number of unknown packets received from a node before dropping. |
+| **Hop Management** | |
+| Exhaust Hop Telemetry | Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected). |
+| Exhaust Hop Position | Set hop_limit to 0 for relayed position broadcasts (own packets unaffected). |
+| Router Preserve Hops | Preserve hop_limit for router-to-router traffic. |
 
 ## Firmware Updates
 

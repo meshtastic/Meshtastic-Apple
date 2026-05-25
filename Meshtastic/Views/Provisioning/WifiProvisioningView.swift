@@ -273,6 +273,8 @@ struct WifiProvisioningView: View {
 			ActivityRow(systemImage: icon, label: message)
 			Spacer()
 		}
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
+		.background(Color(.systemGroupedBackground))
 	}
 
 	@ViewBuilder
