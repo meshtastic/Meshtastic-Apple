@@ -45,7 +45,7 @@ struct Settings: View {
 			.serialConfig,
 			.storeforwardConfig,
 			.telemetryConfig
-		]) || isTAKModuleSupported()
+		]) || isTAKModuleSupported() || isTrafficManagementModuleSupported()
 	}
 
 	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
@@ -68,6 +68,11 @@ struct Settings: View {
 		}
 
 		return deviceRole == .tak || deviceRole == .takTracker
+	}
+
+	private func isTrafficManagementModuleSupported() -> Bool {
+		guard moduleConfigurationNode != nil else { return false }
+		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
 	// MARK: Views
@@ -335,6 +340,16 @@ struct Settings: View {
 						Text("Telemetry")
 					} icon: {
 						Image(systemName: "chart.xyaxis.line")
+					}
+				}
+			}
+
+			if isTrafficManagementModuleSupported() {
+				NavigationLink(value: SettingsNavigationState.trafficManagement) {
+					Label {
+						Text("Traffic Management")
+					} icon: {
+						Image(systemName: "arrow.triangle.branch")
 					}
 				}
 			}
@@ -618,6 +633,8 @@ struct Settings: View {
 					StoreForwardConfig(node: configNode)
 				case .telemetry:
 					TelemetryConfig(node: configNode)
+				case .trafficManagement:
+					TrafficManagementConfig(node: configNode)
 				case .debugLogs:
 					AppLog()
 				case .appFiles:

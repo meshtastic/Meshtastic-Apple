@@ -154,6 +154,7 @@
 		AA000001303050030000B001 /* Color+Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002303050030000B001 /* Color+Brand.swift */; };
 		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
+		AA0001052F07A4B000600001 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */; };
 		AA00010A2F0CC00000600001 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010B2F0CC00000600001 /* AudioConfig.swift */; };
 		AA000201CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
 		AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */; };
@@ -671,6 +672,7 @@
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
 		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
+		AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
 		AA00010B2F0CC00000600001 /* AudioConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfig.swift; sourceTree = "<group>"; };
 		AA0002012F07A4B000600001 /* NeighborInfoConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeighborInfoConfig.swift; sourceTree = "<group>"; };
 		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
@@ -1831,6 +1833,7 @@
 				DD6193782863875F00E59241 /* SerialConfig.swift */,
 				DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */,
 				AA0001042F07A4B000600001 /* TAKModuleConfig.swift */,
+				AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */,
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
 			);
 			path = Module;
@@ -2970,6 +2973,7 @@
 				FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */,
 				A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */,
 				AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */,
+				AA0001052F07A4B000600001 /* TrafficManagementConfig.swift in Sources */,
 				DCC919C6B47C15BB0795456C /* Tools.swift in Sources */,
 				8398407DBA32EE7CFC16A385 /* TAKDataPackageGenerator.swift in Sources */,
 				655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */,
