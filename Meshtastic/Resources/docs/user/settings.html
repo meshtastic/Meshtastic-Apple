@@ -59,6 +59,50 @@
 <p>Device role, serial output, debug log streaming, and node info broadcast interval.</p>
 <h3>Display</h3>
 <p>Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.</p>
+<h4>Compass Orientation</h4>
+<p>Controls which direction the on-device compass points when the screen is at rest. Use this when your radio is mounted at an angle or upside-down.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0°</td>
+<td>Default orientation — north at the top.</td>
+</tr>
+<tr>
+<td>90°</td>
+<td>Rotated 90° clockwise.</td>
+</tr>
+<tr>
+<td>180°</td>
+<td>Rotated 180° (upside-down).</td>
+</tr>
+<tr>
+<td>270°</td>
+<td>Rotated 270° clockwise (90° counter-clockwise).</td>
+</tr>
+<tr>
+<td>0° Inverted</td>
+<td>Default orientation with the display flipped (mirrored).</td>
+</tr>
+<tr>
+<td>90° Inverted</td>
+<td>90° clockwise with the display flipped.</td>
+</tr>
+<tr>
+<td>180° Inverted</td>
+<td>180° with the display flipped.</td>
+</tr>
+<tr>
+<td>270° Inverted</td>
+<td>270° clockwise with the display flipped.</td>
+</tr>
+</tbody>
+</table>
 <h3>Network</h3>
 <p>Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).</p>
 <h3>Position</h3>
@@ -80,6 +124,10 @@
 <td>Control NeoPixel/LED lighting on supported hardware.</td>
 </tr>
 <tr>
+<td>Audio</td>
+<td>Codec2 voice communication settings. Only available when LoRa region is set to <strong>LORA_24</strong> (2.4 GHz). Configure Codec2 encoding, bitrate, PTT pin, and I2S GPIO pins.</td>
+</tr>
+<tr>
 <td>Canned Messages</td>
 <td>Pre-programmed message shortcuts accessible from the device buttons.</td>
 </tr>
@@ -96,12 +144,16 @@
 <td>Uplink/downlink messages to an MQTT broker for internet bridging.</td>
 </tr>
 <tr>
+<td>Neighbor Info</td>
+<td>Periodically broadcasts information about directly-heard neighbors to help visualise mesh topology. Update interval ranges from 4 hours (default) to 72 hours. Enable <strong>Transmit over LoRa</strong> to share neighbour data over the radio in addition to MQTT and PhoneAPI.</td>
+</tr>
+<tr>
 <td>Range Test</td>
 <td>Automated range testing with position logging.</td>
 </tr>
 <tr>
 <td>Pax Counter</td>
-<td>Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection.</td>
+<td>Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. Configure WiFi Threshold (dBm) and BLE Threshold (dBm) to control the RSSI sensitivity for device counting — default is −80 dBm for both.</td>
 </tr>
 <tr>
 <td>Ringtone</td>

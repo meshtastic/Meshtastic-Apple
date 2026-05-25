@@ -8,7 +8,7 @@
 import SwiftUI
 import CoreLocation
 import MapKit
-import SwiftData
+@preconcurrency import SwiftData
 
 struct NodeInfoItem: View {
 

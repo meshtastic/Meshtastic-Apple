@@ -38,10 +38,12 @@ enum SettingsNavigationState: String {
 	case position
 	case power
 	case ambientLighting
+	case audio
 	case cannedMessages
 	case detectionSensor
 	case externalNotification
 	case mqtt
+	case neighborInfo
 	case rangeTest
 	case paxCounter
 	case ringtone
@@ -64,10 +66,10 @@ enum SettingsNavigationState: String {
 struct NavigationState: Hashable {
 	enum Tab: String, Hashable {
 		case messages
-		case connect
 		case nodes
 		case map
 		case settings
+		case connect
 	}
 
 	var selectedTab: Tab = .connect

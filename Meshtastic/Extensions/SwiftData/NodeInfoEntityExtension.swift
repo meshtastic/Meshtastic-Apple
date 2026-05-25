@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 
 extension NodeInfoEntity {
 
@@ -142,6 +142,19 @@ extension NodeInfoEntity {
 
 	var isStoreForwardRouter: Bool {
 		return storeForwardConfig?.isRouter ?? false
+	}
+
+	/// Safely fetches telemetries of a given type using FetchDescriptor.
+	/// This avoids crashes when relationship arrays contain references to deleted entities.
+	func safeTelemetries(ofType metricsType: Int32) -> [TelemetryEntity] {
+		guard let ctx = modelContext else { return [] }
+		let nodeNum = self.num
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 500
+		return (try? ctx.fetch(descriptor)) ?? []
 	}
 
 	var isOnline: Bool {

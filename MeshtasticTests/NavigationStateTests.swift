@@ -145,6 +145,7 @@ struct SettingsNavigationStateTests {
 			(.position, "position"),
 			(.power, "power"),
 			(.ambientLighting, "ambientLighting"),
+			(.audio, "audio"),
 			(.cannedMessages, "cannedMessages"),
 			(.detectionSensor, "detectionSensor"),
 			(.externalNotification, "externalNotification"),

@@ -99,7 +99,9 @@ struct NodeMapSwiftUI: View {
 				MapLegend(isMeshMap: false)
 					.presentationDetents([.medium, .large])
 					.presentationContentInteraction(.scrolls)
+					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
+					#endif
 					.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 			}
 			.onChange(of: selectedMapLayer) { _, newMapLayer in

@@ -30,6 +30,9 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .cascade, inverse: \AmbientLightingConfigEntity.ambientLightingConfigNode)
 	var ambientLightingConfig: AmbientLightingConfigEntity?
 
+	@Relationship(deleteRule: .cascade, inverse: \AudioConfigEntity.audioConfigNode)
+	var audioConfig: AudioConfigEntity?
+
 	@Relationship(deleteRule: .cascade, inverse: \BluetoothConfigEntity.bluetoothConfigNode)
 	var bluetoothConfig: BluetoothConfigEntity?
 
@@ -56,6 +59,9 @@ final class NodeInfoEntity {
 
 	@Relationship(deleteRule: .nullify, inverse: \MQTTConfigEntity.mqttConfigNode)
 	var mqttConfig: MQTTConfigEntity?
+
+	@Relationship(deleteRule: .nullify, inverse: \NeighborInfoConfigEntity.neighborInfoConfigNode)
+	var neighborInfoConfig: NeighborInfoConfigEntity?
 
 	@Relationship(deleteRule: .nullify, inverse: \MyInfoEntity.myInfoNode)
 	var myInfo: MyInfoEntity?

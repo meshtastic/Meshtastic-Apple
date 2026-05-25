@@ -31,6 +31,10 @@ Things that trip up first-time contributors — check these before requesting re
 Keep the last 5–8 entries and trim older ones from the bottom.
 -->
 
+**May 2026** — [Deep Links](developer/deep-links) — Added `audio` and `neighborInfo` deep links for new module config screens.
+
+**May 2026** — [Settings](developer/architecture) — Audio, Neighbor Info module config screens; Pax Counter threshold fields; Compass Orientation picker; `IntervalConfiguration.neighborInfo` enum case for update interval picker.
+
 **May 2026** — [Translate](developer/architecture) — Docs Translation Pipeline (`009`): markdown-level translation with community CDN feed, manifest-based caching, and automatic contribution back to `meshtastic/translations` repo.
 
 **May 2026** — [Architecture](developer/architecture) — Automatic Docs Translation (`008`): on-device Apple Translation framework integration for in-app docs, with file-based cache in Application Support.

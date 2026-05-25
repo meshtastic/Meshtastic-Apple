@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 import StoreKit
 import OSLog
 import SwiftDraw

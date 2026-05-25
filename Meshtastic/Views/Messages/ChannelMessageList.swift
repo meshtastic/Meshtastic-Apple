@@ -5,7 +5,7 @@
 //  Created by Garth Vander Houwen on 12/24/21.
 //
 
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI

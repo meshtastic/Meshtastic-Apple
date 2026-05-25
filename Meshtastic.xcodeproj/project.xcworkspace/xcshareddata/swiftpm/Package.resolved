@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/emqx/CocoaMQTT",
       "state" : {
-        "revision" : "69461a4291599711dd4bf386880f670623dca871",
-        "version" : "2.2.5"
+        "revision" : "7ad043c42b91944958bc81f8694eba1fde55ff0d",
+        "version" : "2.2.3"
       }
     },
     {
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/DataDog/dd-sdk-ios.git",
       "state" : {
-        "revision" : "d5e75dd7fdc721a5234c415a111664c0605f2164",
-        "version" : "3.11.0"
+        "revision" : "2cddcb47c021365c5a6ebc377cb379aa979c450e",
+        "version" : "3.4.0"
       }
     },
     {
@@ -29,15 +29,6 @@
       }
     },
     {
-      "identity" : "kscrash",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kstenerud/KSCrash.git",
-      "state" : {
-        "revision" : "95a8895d75f3c22aa9ad9f2a15d2fbd97b0a55e2",
-        "version" : "2.5.1"
-      }
-    },
-    {
       "identity" : "mqttcocoaasyncsocket",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/leeway1208/MqttCocoaAsyncSocket",
@@ -47,12 +38,21 @@
       }
     },
     {
-      "identity" : "opentelemetry-swift-core",
+      "identity" : "opentelemetry-swift-packages",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/open-telemetry/opentelemetry-swift-core",
+      "location" : "https://github.com/DataDog/opentelemetry-swift-packages.git",
       "state" : {
-        "revision" : "240c8d5e36c3c7b774ed961325369f0b1f2c965f",
-        "version" : "2.3.0"
+        "revision" : "4a7295600d4ebb9525a23c11586c5fdb74ae8b7e",
+        "version" : "1.13.1"
+      }
+    },
+    {
+      "identity" : "plcrashreporter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/microsoft/plcrashreporter.git",
+      "state" : {
+        "revision" : "8c61e5e38e9f737dd68512ed1ea5ab081244ad65",
+        "version" : "1.12.0"
       }
     },
     {
@@ -62,15 +62,6 @@
       "state" : {
         "revision" : "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
         "version" : "4.0.8"
-      }
-    },
-    {
-      "identity" : "swift-atomics",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-atomics.git",
-      "state" : {
-        "revision" : "b601256eab081c0f92f059e12818ac1d4f178ff7",
-        "version" : "1.3.0"
       }
     },
     {
@@ -105,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "f6506eaa86ed2e01cb0ae14a75035b7fdbf0918f",
-        "version" : "1.38.0"
+        "revision" : "c169a5744230951031770e27e475ff6eefe51f9d",
+        "version" : "1.33.3"
       }
     },
     {

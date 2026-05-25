@@ -7,7 +7,7 @@
 
 import SwiftUI
 import CoreLocation
-import SwiftData
+@preconcurrency import SwiftData
 import OSLog
 
 struct NavigateToButton: View {

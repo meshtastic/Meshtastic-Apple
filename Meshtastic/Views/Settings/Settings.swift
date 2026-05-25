@@ -34,10 +34,12 @@ struct Settings: View {
 	private var showsAnyModuleConfiguration: Bool {
 		isAnySupported([
 			.ambientlightingConfig,
+			.audioConfig,
 			.cannedmsgConfig,
 			.detectionsensorConfig,
 			.extnotifConfig,
 			.mqttConfig,
+			.neighborinfoConfig,
 			.rangetestConfig,
 			.paxcounterConfig,
 			.serialConfig,
@@ -208,6 +210,16 @@ struct Settings: View {
 				}
 			}
 
+			if isModuleSupported(.audioConfig) {
+				NavigationLink(value: SettingsNavigationState.audio) {
+					Label {
+						Text("Audio")
+					} icon: {
+						Image(systemName: "waveform")
+					}
+				}
+			}
+
 			if isModuleSupported(.cannedmsgConfig) {
 				NavigationLink(value: SettingsNavigationState.cannedMessages) {
 					Label {
@@ -244,6 +256,16 @@ struct Settings: View {
 						Text("MQTT")
 					} icon: {
 						Image(systemName: "dot.radiowaves.up.forward")
+					}
+				}
+			}
+
+			if isModuleSupported(.neighborinfoConfig) {
+				NavigationLink(value: SettingsNavigationState.neighborInfo) {
+					Label {
+						Text("Neighbor Info")
+					} icon: {
+						Image(systemName: "network")
 					}
 				}
 			}
@@ -585,6 +607,8 @@ struct Settings: View {
 					PowerConfig(node: configNode)
 				case .ambientLighting:
 					AmbientLightingConfig(node: node)
+				case .audio:
+					AudioConfig(node: configNode)
 				case .cannedMessages:
 					CannedMessagesConfig(node: configNode)
 				case .detectionSensor:
@@ -593,6 +617,8 @@ struct Settings: View {
 					ExternalNotificationConfig(node: configNode)
 				case .mqtt:
 					MQTTConfig(node: configNode)
+				case .neighborInfo:
+					NeighborInfoConfig(node: configNode)
 				case .rangeTest:
 					RangeTestConfig(node: configNode)
 				case .paxCounter:

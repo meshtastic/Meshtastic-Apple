@@ -21,6 +21,20 @@ final class AmbientLightingConfigEntity {
 }
 
 @Model
+final class AudioConfigEntity {
+	var codec2Enabled: Bool = false
+	var pttPin: Int32 = 0
+	var bitrate: Int32 = 0
+	var i2sWs: Int32 = 0
+	var i2sSd: Int32 = 0
+	var i2sDin: Int32 = 0
+	var i2sSck: Int32 = 0
+	var audioConfigNode: NodeInfoEntity?
+
+	init() {}
+}
+
+@Model
 final class BluetoothConfigEntity {
 	var deviceLoggingEnabled: Bool = false
 	var enabled: Bool = false
@@ -87,6 +101,7 @@ final class DeviceConfigEntity {
 @Model
 final class DisplayConfigEntity {
 	var compassNorthTop: Bool = false
+	var compassOrientation: Int32 = 0
 	var displayMode: Int32 = 0
 	var flipScreen: Bool = false
 	var headingBold: Bool = true
@@ -168,18 +183,30 @@ final class MQTTConfigEntity {
 
 @Model
 final class NetworkConfigEntity {
+	var addressMode: Int32 = 0
 	var dns: Int32 = 0
 	var enabledProtocols: Int32 = 0
 	var ethEnabled: Bool = false
 	var gateway: Int32 = 0
 	var ip: Int32 = 0
 	var ntpServer: String?
+	var rsyslogServer: String?
 	var subnet: Int32 = 0
 	var wifiEnabled: Bool = false
 	var wifiMode: Int32 = 0
 	var wifiPsk: String?
 	var wifiSsid: String?
 	var networkConfigNode: NodeInfoEntity?
+
+	init() {}
+}
+
+@Model
+final class NeighborInfoConfigEntity {
+	var enabled: Bool = false
+	var transmitOverLora: Bool = false
+	var updateInterval: Int32 = 0
+	var neighborInfoConfigNode: NodeInfoEntity?
 
 	init() {}
 }
@@ -326,6 +353,8 @@ final class TrafficManagementConfigEntity {
 
 @Model
 final class TelemetryConfigEntity {
+	var airQualityEnabled: Bool = false
+	var airQualityInterval: Int32 = 0
 	var deviceTelemetryEnabled: Bool = false
 	var deviceUpdateInterval: Int32 = 0
 	var environmentDisplayFahrenheit: Bool = false

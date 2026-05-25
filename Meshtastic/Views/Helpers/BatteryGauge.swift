@@ -16,8 +16,7 @@ struct BatteryGauge: View {
 
 	var body: some View {
 
-		let deviceMetrics = node.telemetries.filter { $0.metricsType == 0 }
-		let mostRecent = deviceMetrics.last
+		let mostRecent = node.latestDeviceMetrics
 		// For VoiceOver purposes, detect when device is plugged in (battery > 100%)
 		let isPluggedIn = (mostRecent?.batteryLevel ?? 0) > 100
 		// Use a capped battery level for UI display
@@ -70,18 +69,18 @@ struct BatteryGauge: View {
 /// A dedicated view for showing a device is plugged in
 /// With proper VoiceOver support that matches the visual indication
 struct PluggedInIndicator: View {
-    var body: some View {
-        // This view is isolated from any battery measurement
-        // to ensure VoiceOver doesn't pick up any percentages
-        Image(systemName: "powerplug")
-            .font(.largeTitle)
-            .foregroundColor(.accentColor)
-            .symbolRenderingMode(.hierarchical)
-            // Override the accessibility to ensure correct VoiceOver announcement
-            .accessibilityElement(children: .ignore)
+	var body: some View {
+		// This view is isolated from any battery measurement
+		// to ensure VoiceOver doesn't pick up any percentages
+		Image(systemName: "powerplug")
+			.font(.largeTitle)
+			.foregroundColor(.accentColor)
+			.symbolRenderingMode(.hierarchical)
+			// Override the accessibility to ensure correct VoiceOver announcement
+			.accessibilityElement(children: .ignore)
 			.accessibilityLabel("Battery Level".localized)
 			.accessibilityValue("Plugged in".localized)
-    }
+	}
 }
 
 struct BatteryGauge_Previews: PreviewProvider {

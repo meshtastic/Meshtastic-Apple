@@ -35,6 +35,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			FirmwareReleaseEntity.self,
 			// Config entities
 			AmbientLightingConfigEntity.self,
+			AudioConfigEntity.self,
 			BluetoothConfigEntity.self,
 			CannedMessageConfigEntity.self,
 			DetectionSensorConfigEntity.self,
@@ -43,6 +44,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			ExternalNotificationConfigEntity.self,
 			LoRaConfigEntity.self,
 			MQTTConfigEntity.self,
+			NeighborInfoConfigEntity.self,
 			NetworkConfigEntity.self,
 			PaxCounterConfigEntity.self,
 			PositionConfigEntity.self,

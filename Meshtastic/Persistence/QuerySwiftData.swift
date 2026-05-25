@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 
 func getNodeInfo(id: Int64, context: ModelContext) -> NodeInfoEntity? {
 	let num = id

@@ -200,6 +200,7 @@ struct RouterTests {
 		("position", SettingsNavigationState.position),
 		("power", SettingsNavigationState.power),
 		("ambientLighting", SettingsNavigationState.ambientLighting),
+		("audio", SettingsNavigationState.audio),
 		("cannedMessages", SettingsNavigationState.cannedMessages),
 		("detectionSensor", SettingsNavigationState.detectionSensor),
 		("externalNotification", SettingsNavigationState.externalNotification),

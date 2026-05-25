@@ -117,8 +117,7 @@ final class NodeFilterParameters: ObservableObject {
 
 		// Environment filter
 		if isEnvironment {
-			let hasEnvironmentTelemetry = node.telemetries.contains { $0.metricsType == 1 }
-			if !hasEnvironmentTelemetry { return false }
+			if !node.hasEnvironmentMetrics { return false }
 		}
 
 		// Distance filter
