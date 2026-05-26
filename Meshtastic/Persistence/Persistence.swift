@@ -44,10 +44,16 @@ class PersistenceController {
 			allowsSave: true
 		)
 
+		// ── Step 0: guard Core Data store from being clobbered ───────────────
+		// Both the App Store (Core Data) build and this (SwiftData) build use
+		// "Meshtastic.sqlite".  If we let SwiftData open the file first it will
+		// corrupt the Core Data content.  Rename it out of the way so SwiftData
+		// creates a fresh store; migration reads from the renamed file below.
+		if !inMemory && !isTestEnvironment {
+			CoreDataMigrationService.prepareForMigration()
+		}
+
 		// ── Step 1: build the SwiftData container ────────────────────────────
-		// The store is opened before migration so we have a valid context to
-		// write into.  The legacy Core Data store is at a separate URL and will
-		// not conflict with this file.
 		do {
 			if inMemory {
 				container = try ModelContainer(

@@ -27,8 +27,36 @@ import OSLog
 
 enum CoreDataMigrationService {
 
-	/// Returns `true` when a legacy Core Data store exists at the standard
-	/// Application-Support URL and has not yet been migrated.
+	/// Renames the App-Store Core Data store out of the way so that SwiftData
+	/// can create a fresh store at the same path without clobbering user data.
+	///
+	/// Must be called **before** the SwiftData `ModelContainer` is initialised.
+	/// Safe to call on every launch — it is a no-op when:
+	///   - The candidate file does not exist, or
+	///   - The candidate file is not a Core Data store, or
+	///   - The renamed legacy file already exists (rename already done).
+	static func prepareForMigration() {
+		let fm = FileManager.default
+		// Nothing to do if the candidate is already gone or the rename is done.
+		guard fm.fileExists(atPath: candidateStoreURL.path),
+			  !fm.fileExists(atPath: legacyStoreURL.path) else { return }
+		// Only rename if the file is actually a Core Data store.
+		guard isCoreDataStore(at: candidateStoreURL) else { return }
+
+		Logger.data.info("⬆️ CoreDataMigrationService: renaming Core Data store before SwiftData init")
+		for suffix in ["", "-shm", "-wal"] {
+			let src = candidateStoreURL
+				.deletingPathExtension()
+				.appendingPathExtension("sqlite\(suffix)")
+			let dst = legacyStoreURL
+				.deletingPathExtension()
+				.appendingPathExtension("sqlite\(suffix)")
+			try? fm.moveItem(at: src, to: dst)
+		}
+	}
+
+	/// Returns `true` when a renamed legacy Core Data store exists and has not
+	/// yet been migrated into SwiftData.
 	static func legacyStoreExists() -> Bool {
 		FileManager.default.fileExists(atPath: legacyStoreURL.path)
 	}
@@ -89,18 +117,37 @@ enum CoreDataMigrationService {
 
 private extension CoreDataMigrationService {
 
-	/// The URL of the pre-existing Core Data SQLite file.
-	static var legacyStoreURL: URL {
+	/// The original path used by the App Store (Core Data) build.
+	/// SwiftData also uses this path, so we must rename before SwiftData opens.
+	static var candidateStoreURL: URL {
 		applicationSupportURL.appendingPathComponent("Meshtastic.sqlite")
 	}
 
-	/// Where we rename the old store after migration.
+	/// The URL we rename the Core Data store to before SwiftData opens.
+	/// `legacyStoreExists()` checks this file, not the candidate.
+	static var legacyStoreURL: URL {
+		applicationSupportURL.appendingPathComponent("Meshtastic-coredata-legacy.sqlite")
+	}
+
+	/// Where we move the legacy store after a successful migration.
 	static var backupStoreURL: URL {
 		applicationSupportURL.appendingPathComponent("Meshtastic-coredata-backup.sqlite")
 	}
 
 	static var applicationSupportURL: URL {
 		FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+	}
+
+	/// Returns `true` when the SQLite file at `url` is a Core Data store.
+	///
+	/// Uses `NSPersistentStoreCoordinator.metadataForPersistentStore` which is
+	/// read-only — it does not modify the file.
+	static func isCoreDataStore(at url: URL) -> Bool {
+		guard let metadata = try? NSPersistentStoreCoordinator.metadataForPersistentStore(
+			ofType: NSSQLiteStoreType,
+			at: url
+		) else { return false }
+		return metadata[NSStoreModelVersionHashesKey] != nil
 	}
 }
 
