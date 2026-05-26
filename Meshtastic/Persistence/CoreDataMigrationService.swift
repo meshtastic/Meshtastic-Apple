@@ -161,7 +161,7 @@ private extension CoreDataMigrationService {
 	/// is handled transparently.
 	static func makeCoreDataContainer() throws -> NSPersistentContainer {
 		guard let modelURL = Bundle.main.url(
-			forResource: "MeshtasticDataModel",
+			forResource: "Meshtastic",
 			withExtension: "momd"
 		) else {
 			throw MigrationError.modelNotFound
