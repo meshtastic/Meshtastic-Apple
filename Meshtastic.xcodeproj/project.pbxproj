@@ -154,7 +154,7 @@
 		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
 		AA00010A2F0CC00000600001 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010B2F0CC00000600001 /* AudioConfig.swift */; };
-		AA0002052F07A4B000600001 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */; };
+		AA0001052F07A4B000600001 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */; };
 		AA000101CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
 		AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */; };
 		AA0002022F07A4B000600001 /* NeighborInfoConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012F07A4B000600001 /* NeighborInfoConfig.swift */; };
@@ -672,8 +672,8 @@
 		8D3F8A3D2D44B137009EAAA4 /* MeshtasticDataModelV 49.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 49.xcdatamodel"; sourceTree = "<group>"; };
 		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
 		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
-		915570362F07A4B000600001 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
-		AA00010C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
+		AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
+		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
 		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
 		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
 		AA000002303050030000B001 /* Color+Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Brand.swift"; sourceTree = "<group>"; };
