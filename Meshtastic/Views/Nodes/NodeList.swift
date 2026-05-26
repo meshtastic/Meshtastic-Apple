@@ -249,7 +249,9 @@ private struct FilteredNodeList: View {
 	var body: some View {
 		// If the connected node passes filters, always show it first
 		let nodesWithConnectedFirst = filteredNodes.filter { $0.num == accessoryManager.activeDeviceNum } + filteredNodes.filter { $0.num != accessoryManager.activeDeviceNum }
-		List(nodesWithConnectedFirst, id: \.self, selection: $selectedNodeNum) { node in
+		var seenNodeNums = Set<Int64>()
+		let uniqueNodes = nodesWithConnectedFirst.filter { seenNodeNums.insert($0.num).inserted }
+		List(uniqueNodes, id: \.num, selection: $selectedNodeNum) { node in
 			NavigationLink(value: node.num) {
 				switch nodeListDensity {
 				case .compact:

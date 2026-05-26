@@ -102,7 +102,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		if isTest {
 			return MeshtasticAPI(container: nil)
 		}
-		return MeshtasticAPI(container: PersistenceController.shared.container)
+		return MeshtasticAPI(container: MainActor.assumeIsolated { PersistenceController.shared.container })
 	}()
 	
 	// MARK: - Constants
@@ -187,28 +187,23 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		await MainActor.run {
 			self.isLoadingDeviceList = true
 		}
-
-		// PHASE 1: Network (Async) - Get the JSON first
-		var apiData: Data?
-		do {
-			apiData = try await Self.deviceURLEndpoint.data(timeout: 5.0)
-		} catch {
-			Logger.services.error("Unable to fetch device hardware from network: \(error.localizedDescription, privacy: .public)")
-		}
-		
-		// Fallback to local bundle
-		if apiData == nil {
-			if let bundledJsonURL = Bundle.main.url(forResource: "DeviceHardware.json", withExtension: nil) {
-				apiData = try? Data(contentsOf: bundledJsonURL)
+		defer {
+			Task { @MainActor in
+				self.isLoadingDeviceList = false
 			}
 		}
-		
-		guard let finalData = apiData else {
-			throw MeshtasticAPIError.unableToRetreviveJSON
-		}
-		
-		// Decode Swift Structs (Safe to do off the DB thread)
-		let decodedDevices = try decoder.decode([DeviceHardware].self, from: finalData)
+
+		let apiData = try await Self.deviceURLEndpoint.data(timeout: 5.0)
+		try await refreshDevices(from: apiData, preferBundledImages: false)
+	}
+
+	func refreshBundledDevicesData() async throws {
+		let bundledData = try Self.bundledDeviceHardwareData()
+		try await refreshDevices(from: bundledData, preferBundledImages: true)
+	}
+
+	private func refreshDevices(from data: Data, preferBundledImages: Bool) async throws {
+		let decodedDevices = try decoder.decode([DeviceHardware].self, from: data)
 
 		// PHASE 2: Database on mainContext so @Query observers see changes
 		try await MainActor.run {
@@ -273,7 +268,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				group.addTask {
 					guard let imagesList = device.images else { return }
 					for imageName in imagesList {
-						await self.processImage(imageName: imageName, platform: device.platformioTarget)
+						await self.processImage(imageName: imageName, platform: device.platformioTarget, preferBundledAsset: preferBundledImages)
 					}
 				}
 			}
@@ -286,10 +281,14 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			try? context.save()
 		}
 		
-		await MainActor.run {
-			self.isLoadingDeviceList = false
-		}
+	}
 
+	private static func bundledDeviceHardwareData() throws -> Data {
+		guard let bundledJsonURL = Bundle.main.url(forResource: "DeviceHardware.json", withExtension: nil),
+			  let bundledData = try? Data(contentsOf: bundledJsonURL) else {
+			throw MeshtasticAPIError.unableToRetreviveJSON
+		}
+		return bundledData
 	}
 	
 	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType, context: ModelContext) {
@@ -324,8 +323,15 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	}
 	
 	/// Handles the logic of checking ETag -> Checking DB -> Downloading -> Bundle Fallback -> Saving
-	private func processImage(imageName: String, platform: String ) async {
+	private func processImage(imageName: String, platform: String, preferBundledAsset: Bool = false) async {
 		let url = Self.imageURLPrefix.appendingPathComponent(imageName)
+
+		if preferBundledAsset,
+		   let bundleURL = Bundle.main.url(forResource: imageName, withExtension: nil, subdirectory: "images"),
+		   let bundleData = try? Data(contentsOf: bundleURL) {
+			await saveDeviceImage(data: bundleData, eTag: "bundled", imageName: imageName, platform: platform)
+			return
+		}
 
 		// 1. Network: Try to get ETag (Optional - might fail if offline or timeout)
 		let remoteETag = try? await url.eTag()
@@ -386,6 +392,10 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			return
 		}
 
+		await saveDeviceImage(data: finalData, eTag: finalETag, imageName: imageName, platform: platform)
+	}
+
+	private func saveDeviceImage(data: Data, eTag: String, imageName: String, platform: String) async {
 		await MainActor.run {
 			let context = container!.mainContext
 
@@ -412,8 +422,8 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			}
 
 			imageEntity.fileName = imageName
-			imageEntity.eTag = finalETag
-			imageEntity.svgData = finalData
+			imageEntity.eTag = eTag
+			imageEntity.svgData = data
 
 			// Create Relationship
 			imageEntity.device = deviceEntity
@@ -422,7 +432,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			}
 
 			try? context.save()
-			Logger.services.info("Saving \(imageName) in database. eTag=\(finalETag)")
+			Logger.services.info("Saving \(imageName) in database. eTag=\(eTag)")
 		}
 	}
 

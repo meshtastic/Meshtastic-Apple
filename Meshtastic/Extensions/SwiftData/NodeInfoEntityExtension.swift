@@ -131,7 +131,7 @@ extension NodeInfoEntity {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num
 		let descriptor = FetchDescriptor<TraceRouteEntity>(
-			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum && $0.response == true }
+			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum }
 		)
 		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
@@ -152,6 +152,19 @@ extension NodeInfoEntity {
 		var descriptor = FetchDescriptor<TelemetryEntity>(
 			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 500
+		return (try? ctx.fetch(descriptor)) ?? []
+	}
+
+	/// Safely fetches trace routes using FetchDescriptor.
+	/// This avoids stale relationship arrays after reconnects or restore/import flows.
+	func safeTraceRoutes() -> [TraceRouteEntity] {
+		guard let ctx = modelContext else { return [] }
+		let nodeNum = self.num
+		var descriptor = FetchDescriptor<TraceRouteEntity>(
+			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum },
+			sortBy: [SortDescriptor(\TraceRouteEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 500
 		return (try? ctx.fetch(descriptor)) ?? []

@@ -1,55 +1,61 @@
 ## What changed?
 
-Adds **message formatting toolbar** (iOS 18+) and **link styling** for message bubbles.
+Implements and hardens per-node database backup and restore when switching radios, then follows through on the real-world issues found while validating that flow.
 
-### Message Formatting Toolbar (iOS 18+)
+### Radio switching and node backup/restore
 
-A markdown formatting toolbar in the message compose UI. Users type/see raw markdown; a live preview shows rendered output. Gated to iOS 18+ / macOS 15+ — iOS 17 users see the unchanged compose field.
+- Back up the active SwiftData store before switching radios
+- Restore a previously connected radio by importing its backup into the live container instead of swapping database files
+- Reuse the same backup/clear/restore flow from both the Connect view and Backup Management
+- Show blocking switch/restore progress UI while the database handoff is happening
+- Keep the currently active database backed up even when the target node number is not yet known
 
-- **Bold**, **Italic**, **Strikethrough**, **Code**, and **Link** formatting buttons in a compact scrollable toolbar row
-- Select text + tap to wrap with delimiters; tap again to toggle off
-- Tap with collapsed cursor to insert delimiter pairs and type between them
-- Link button opens a URL entry dialog; wraps selection as `[text](url)`
-- Live preview bubble above compose field (hidden when no markdown present)
-- Markdown rendered in channel/user message list previews
-- Mac Catalyst: Enter sends, Shift+Enter inserts line break; character palette retained
+### Backup management and storage polish
 
-### Link Styling in Message Bubbles
+- Add restore and delete actions to Backup Management, including Mac Catalyst-friendly inline actions
+- Cap retained backups and keep the backup index in sync with current snapshots
+- Compact copied backups after creation so the copied `.store-wal` and `.store-shm` contents are merged into the copied store and the sidecar files are removed
+- Expand App Data file visibility with active database size breakdown, relative file paths, and export/delete actions
 
-- Links in message bubbles (URLs, Meshtastic channel/contact links, markdown links) now use the **design standards v1.4 Link color** (Blue 400 `#9BA8E0`) with underline styling
-- `MeshtasticLink` color asset updated to Blue 400 `#9BA8E0` (same value for light and dark mode per design standards v1.4)
-- `MessageText.underlineLinks(in:)` sets both `foregroundColor` and `underlineStyle` on `AttributedString` link runs
-- `.tint` modifier on message bubbles uses `MeshtasticLink` for consistency
+### Connection and data integrity fixes
 
-### Files Changed
+- Fix serial disconnect/import crashes by tightening teardown ordering and continuation cleanup
+- Fix database clearing so route-preservation logic no longer keeps `TraceRouteEntity` rows and duplicates them on restore
+- Restore pending trace routes in the Trace Route Log instead of only showing completed responses
+- Refresh bundled device hardware data immediately after switch-time `wantConfig`, then refresh the Meshtastic hardware API catalog in the background
 
-| File | Change |
-|------|--------|
-| `Meshtastic/Views/Messages/MessageText.swift` | Link color → `MeshtasticLink`, underline styling via `underlineLinks(in:)` |
-| `Meshtastic/Assets.xcassets/Colors/MeshtasticLink.colorset/Contents.json` | Updated to Blue 400 `#9BA8E0` per design standards v1.4 |
-| `Meshtastic/Views/Messages/TextMessageField/TextMessageField.swift` | Formatting toolbar, live preview, Mac Catalyst Enter key handling |
-| `specs/004-message-formatting-toolbar/spec.md` | Added FR-031 for link color styling |
-| `docs/user/messages.md` | Added Link Appearance section with screenshot |
-| `MeshtasticTests/SwiftUIViewSnapshotTests.swift` | Added `MessageTextLink` snapshot tests (light + dark) |
+### Docs and supporting assets
+
+- Update the user and developer docs for radio switching and transport sequencing
+- Rebuild bundled docs output for the in-app documentation viewer
+- Refresh bundled device hardware resources and generated image/docs manifests as part of the branch changes
 
 ## Why did it change?
 
-1. **Formatting toolbar**: Users had no way to format messages with bold, italic, etc. without manually typing markdown syntax. The toolbar makes formatting discoverable and accessible.
-2. **Link styling**: Links in message bubbles were visually indistinct from regular text, making them hard to identify as tappable. The design standards v1.4 introduced a dedicated Link color token (Blue 400 `#9BA8E0`) which provides clear visual distinction with WCAG-compliant contrast.
+The original feature goal was to preserve a full local database per radio and restore it safely when returning to that radio. Earlier file-swap and container-recreation approaches were brittle under SwiftData and caused crashes or stale model references. The import-based restore path keeps the live container stable while still restoring the full node-specific dataset.
+
+Once that core flow worked, additional validation exposed practical issues around disconnect races, trace route duplication, backup ergonomics, and stale hardware catalog data after switching radios. This branch addresses those follow-on issues so the switching experience is reliable enough for regular use.
 
 ## How is this tested?
 
-- **Snapshot tests**: `MessageTextLinkSnapshotTests` — light and dark mode snapshots of link-styled message bubbles; `MessagePreviewSnapshotTests` — formatting toolbar, bold preview, mixed preview, compose area
-- **Manual testing**: Verified link color rendering on device in both light and dark mode; tested URL tapping for external links, Meshtastic channel URLs, and contact URLs; verified formatting toolbar on iOS 18 and fallback on iOS 17
+- Manual testing of switching between previously connected radios and verifying full database restoration
+- Manual testing of Backup Management restore/delete flows
+- Manual testing of trace route visibility after the restore and clear-database fixes
+- Manual testing of disconnecting a serial node while database retrieval/import is still in progress
+- Repeated Mac Catalyst build verification:
+	- `xcodebuild -workspace Meshtastic.xcworkspace -scheme Meshtastic -destination 'platform=macOS,variant=Mac Catalyst' build`
+- Documentation rebuild verification:
+	- `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta`
+
+Note: targeted tests were not run locally because of the current macOS host / test target version mismatch.
 
 ## Screenshots/Videos (when applicable)
 
-<!-- Attach screenshots of: link-styled message bubbles (light + dark), formatting toolbar -->
+Not applicable.
 
 ## Checklist
 
 - [x] My code adheres to the project's coding and style guidelines.
 - [x] I have conducted a self-review of my code.
-- [x] I have commented my code, particularly in complex areas.
 - [x] I have verified whether these changes require an update to existing documentation or if new documentation is needed, and created an issue in the [docs repo](http://github.com/meshtastic/meshtastic/issues) if applicable.
 - [x] I have tested the change to ensure that it works as intended.

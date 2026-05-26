@@ -588,6 +588,37 @@ struct NodeInfoEntityComputedTests {
 		#expect(node.hasTraceRoutes == false)
 	}
 
+	@Test @MainActor func safeTraceRoutes_includesPendingRoutes() throws {
+		let container = try makeTestContainer()
+		let context = container.mainContext
+		let node = NodeInfoEntity()
+		node.num = Int64.random(in: 900_000...999_999)
+		context.insert(node)
+
+		let pendingRoute = TraceRouteEntity()
+		pendingRoute.node = node
+		pendingRoute.time = Date().addingTimeInterval(-60)
+		pendingRoute.sent = true
+		pendingRoute.response = false
+		context.insert(pendingRoute)
+
+		let respondedRoute = TraceRouteEntity()
+		respondedRoute.node = node
+		respondedRoute.time = Date()
+		respondedRoute.sent = true
+		respondedRoute.response = true
+		context.insert(respondedRoute)
+
+		try context.save()
+
+		let routes = node.safeTraceRoutes()
+		#expect(node.hasTraceRoutes == true)
+		#expect(routes.count == 2)
+		#expect(routes[0].response == true)
+		#expect(routes[1].response == false)
+		#expect(routes.contains { $0.sent && !$0.response })
+	}
+
 	@Test @MainActor func isStoreForwardRouter_noConfig_returnsFalse() throws {
 		let node = try makeNode()
 		#expect(node.isStoreForwardRouter == false)

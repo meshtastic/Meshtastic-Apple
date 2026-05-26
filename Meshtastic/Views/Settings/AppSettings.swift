@@ -201,25 +201,9 @@ struct AppSettings: View {
 								await TranslationCache.shared.clearAll()
 								await DocTranslationService.shared.clearUIStringCache()
 								
-								/// Delete any database backups too
-								if var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-									url = url.appendingPathComponent("backup").appendingPathComponent(String(UserDefaults.preferredPeripheralNum))
-									do {
-										try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite"))
-										/// Delete -shm file
-										do {
-											try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-wal"))
-											do {
-												try FileManager.default.removeItem(at: url.appendingPathComponent("Meshtastic.sqlite-shm"))
-											} catch {
-												Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-shm file \(error, privacy: .public)")
-											}
-										} catch {
-											Logger.services.error("🗄 Error Deleting Meshtastic.sqlite-wal file \(error, privacy: .public)")
-										}
-									} catch {
-										Logger.services.error("🗄 Error Deleting Meshtastic.sqlite file \(error, privacy: .public)")
-									}
+								/// Delete any node database backups too.
+								for entry in NodeBackupManager.shared.listBackups() {
+									_ = NodeBackupManager.shared.deleteBackup(forNode: entry.nodeNum)
 								}
 								await MeshPackets.shared.flushDebouncedSaves()
 								await MeshPackets.shared.clearDatabase(includeRoutes: true)

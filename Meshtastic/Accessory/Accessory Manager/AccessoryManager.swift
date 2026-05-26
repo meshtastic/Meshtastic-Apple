@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 import MeshtasticProtobufs
 import CoreBluetooth
 import OSLog
@@ -180,6 +181,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	var heartbeatTimer: ResettableTimer?
 	var heartbeatResponseTimer: ResettableTimer?
+	private var isClosingConnection = false
 
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
@@ -212,8 +214,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	func sendWantConfig() async throws {
 		if let inProgressWantConfigContinuation = wantConfigContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Config). Cancelling.")
-			inProgressWantConfigContinuation.resume(throwing: CancellationError())
 			wantConfigContinuation = nil
+			inProgressWantConfigContinuation.resume(throwing: CancellationError())
 		}
 		guard let connection = activeConnection?.connection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
@@ -245,8 +247,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	func sendWantDatabase() async throws {
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
-			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
 			self.firstDatabaseNodeInfoContinuation = nil
+			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
 		}
 		
 		guard let connection = activeConnection?.connection else {
@@ -282,6 +284,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// If you are calling this in response to an error, then you should have
 	// exposed the error to the UI or handled the error prior to calling this.
 	func closeConnection() async throws {
+		guard !isClosingConnection else {
+			Logger.transport.debug("[AccessoryManager] closeConnection ignored while teardown is already in progress")
+			return
+		}
+		isClosingConnection = true
+		defer { isClosingConnection = false }
+
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
 		if let activeConnection {
@@ -332,6 +341,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	// Should only be called by UI-facing callers.
 	func disconnect() async throws {
+		guard !isClosingConnection else { return }
 		self.userRequestedConnectionCancellation = true
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
@@ -422,10 +432,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func didReceive(_ event: ConnectionEvent) async {
+		let shouldIgnoreTransientEvent = isClosingConnection || userRequestedConnectionCancellation || activeConnection == nil
+
 		packetsReceived += 1
 
 		switch event {
 		case .data(let fromRadio):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping data event during disconnect teardown")
+				return
+			}
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
 			await self.processFromRadio(fromRadio)
 			Task {
@@ -434,6 +450,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 
 		case .logMessage(let message):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping log event during disconnect teardown")
+				return
+			}
 			self.didReceiveLog(message: message)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
@@ -441,6 +461,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 		
 		case .rssiUpdate(let rssi):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping RSSI update during disconnect teardown")
+				return
+			}
 			guard let deviceId = self.activeConnection?.device.id else {
 				Logger.transport.error("Could not update RSSI, no active connection")
 				return
@@ -776,8 +800,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
 				if let firstDatabaseNodeInfoContinuation {
-					firstDatabaseNodeInfoContinuation.resume()
 					self.firstDatabaseNodeInfoContinuation = nil
+					firstDatabaseNodeInfoContinuation.resume()
 				}
 				
 				// Perform a single batch save after database retrieval completes

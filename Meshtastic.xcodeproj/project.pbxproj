@@ -35,7 +35,6 @@
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
 		231B3F272D0885240069A07D /* MetricsColumnDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F262D0885240069A07D /* MetricsColumnDetail.swift */; };
-		232785F22FC106EA007AA153 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = AA009SMD0000000000000002 /* Markdown */; };
 		232ED4C32E2C5E89009DA392 /* TCPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232ED4C22E2C5E89009DA392 /* TCPTransport.swift */; };
 		232ED4C52E2C5EDD009DA392 /* TCPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232ED4C42E2C5EDD009DA392 /* TCPConnection.swift */; };
 		2339EA982E6C65570032C234 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 2339EA972E6C65570032C234 /* AppIcon.icon */; };
@@ -154,9 +153,9 @@
 		AA000001303050030000B001 /* Color+Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002303050030000B001 /* Color+Brand.swift */; };
 		AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010022E2730EC0060000 /* ConnectViewTests.swift */; };
 		AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F07A4B000600001 /* TAKModuleConfig.swift */; };
-		AA0001052F07A4B000600001 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */; };
 		AA00010A2F0CC00000600001 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010B2F0CC00000600001 /* AudioConfig.swift */; };
-		AA000201CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
+		AA0001052F07A4B000600001 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */; };
+		AA000101CPLAY000000000002 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */; };
 		AA000201CPLAY000000000004 /* CarPlayIntentDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */; };
 		AA0002022F07A4B000600001 /* NeighborInfoConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012F07A4B000600001 /* NeighborInfoConfig.swift */; };
 		AA000301CPTST000000000002 /* CarPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000301CPTST000000000001 /* CarPlayTests.swift */; };
@@ -289,6 +288,13 @@
 		DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */; };
 		DD00003ASUPPORTLVL0000001 /* SupportLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */; };
 		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
+		DD000BACKUP001000000002 /* BackupModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP001000000001 /* BackupModels.swift */; };
+		DD000BACKUP002000000002 /* NodeBackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP002000000001 /* NodeBackupManager.swift */; };
+		DD000BACKUP003000000002 /* NodeBackupManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP003000000001 /* NodeBackupManaging.swift */; };
+		DD000BACKUP004000000002 /* BackupManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP004000000001 /* BackupManagement.swift */; };
+		DD000BACKUP005000000002 /* BackupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP005000000001 /* BackupRowView.swift */; };
+		DD000BACKUP006000000002 /* NodeBackupManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP006000000001 /* NodeBackupManagerTests.swift */; };
+		DD000BACKUP007000000002 /* NodeBackupManager+Import.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000BACKUP007000000001 /* NodeBackupManager+Import.swift */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD09240001E7FAD600E70001 /* MapLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD09240002E7FAD600E70001 /* MapLegend.swift */; };
@@ -366,6 +372,7 @@
 		DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */; };
 		DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */; };
 		DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */; };
+		DD8769082FC118EA00546DE9 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = AA009SMD0000000000000002 /* Markdown */; };
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */; };
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
@@ -665,6 +672,7 @@
 		8D3F8A3D2D44B137009EAAA4 /* MeshtasticDataModelV 49.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 49.xcdatamodel"; sourceTree = "<group>"; };
 		8D3F8A3E2D44BB02009EAAA4 /* PowerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetrics.swift; sourceTree = "<group>"; };
 		8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMetricsLog.swift; sourceTree = "<group>"; };
+		AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
 		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
 		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
@@ -672,7 +680,6 @@
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
 		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
-		AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
 		AA00010B2F0CC00000600001 /* AudioConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfig.swift; sourceTree = "<group>"; };
 		AA0002012F07A4B000600001 /* NeighborInfoConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeighborInfoConfig.swift; sourceTree = "<group>"; };
 		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
@@ -820,6 +827,13 @@
 		DD00002FSHRDTSTCNT000000 /* SharedTestContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTestContainer.swift; sourceTree = "<group>"; };
 		DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFirmwareNotificationTests.swift; sourceTree = "<group>"; };
 		DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportLevel.swift; sourceTree = "<group>"; };
+		DD000BACKUP001000000001 /* BackupModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupModels.swift; sourceTree = "<group>"; };
+		DD000BACKUP002000000001 /* NodeBackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManager.swift; sourceTree = "<group>"; };
+		DD000BACKUP003000000001 /* NodeBackupManaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManaging.swift; sourceTree = "<group>"; };
+		DD000BACKUP004000000001 /* BackupManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManagement.swift; sourceTree = "<group>"; };
+		DD000BACKUP005000000001 /* BackupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupRowView.swift; sourceTree = "<group>"; };
+		DD000BACKUP006000000001 /* NodeBackupManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManagerTests.swift; sourceTree = "<group>"; };
+		DD000BACKUP007000000001 /* NodeBackupManager+Import.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeBackupManager+Import.swift"; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 55.xcdatamodel"; sourceTree = "<group>"; };
@@ -1161,7 +1175,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				232785F22FC106EA007AA153 /* Markdown in Frameworks */,
+				DD8769082FC118EA00546DE9 /* Markdown in Frameworks */,
 				102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */,
 				25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
 				102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */,
@@ -1241,18 +1255,6 @@
 				231B3F262D0885240069A07D /* MetricsColumnDetail.swift */,
 			);
 			path = "Metrics Columns";
-			sourceTree = "<group>";
-		};
-		232785F32FC106EA007AA153 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				AA003DOC0000001000000007 /* TranslationCache.swift */,
-				AA003FM00000001000000001 /* FoundationModelAvailability.swift */,
-				AA009MDC0000001000000001 /* MarkdownConverter.swift */,
-				AA009DTU0000001000000001 /* DocsTranslationUploader.swift */,
-				AA009CTF0000001000000001 /* CommunityTranslationFetcher.swift */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		233E99B42D849C2D00CC3A77 /* Compact Widgets */ = {
@@ -1544,6 +1546,7 @@
 				DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */,
 				AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
 				AA003DOC0000001000000008 /* DocTranslationTests.swift */,
+				DD000BACKUP006000000001 /* NodeBackupManagerTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -1702,6 +1705,15 @@
 			path = TextMessageField;
 			sourceTree = "<group>";
 		};
+		DD000BACKUP000GRP0000001 /* BackupManagement */ = {
+			isa = PBXGroup;
+			children = (
+				DD000BACKUP004000000001 /* BackupManagement.swift */,
+				DD000BACKUP005000000001 /* BackupRowView.swift */,
+			);
+			path = BackupManagement;
+			sourceTree = "<group>";
+		};
 		DD007BB12AA59B9A00F5FA12 /* SwiftData */ = {
 			isa = PBXGroup;
 			children = (
@@ -1781,6 +1793,7 @@
 				1D5AD8037A0D583C614B0597 /* Tools.swift */,
 				71084780865585DCE48BD08F /* Discovery */,
 				AA003DOC0000003000000001 /* HelpAndDocumentation */,
+				DD000BACKUP000GRP0000001 /* BackupManagement */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1820,6 +1833,7 @@
 		DD61937B2863877A00E59241 /* Module */ = {
 			isa = PBXGroup;
 			children = (
+				AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */,
 				DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */,
 				AA00010B2F0CC00000600001 /* AudioConfig.swift */,
 				DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */,
@@ -1833,7 +1847,6 @@
 				DD6193782863875F00E59241 /* SerialConfig.swift */,
 				DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */,
 				AA0001042F07A4B000600001 /* TAKModuleConfig.swift */,
-				AA0001062F07A4B000600001 /* TrafficManagementConfig.swift */,
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
 			);
 			path = Module;
@@ -1890,6 +1903,18 @@
 				AA10D0002D00000000000001 /* DiscoverySummaryPDF.swift */,
 			);
 			path = Export;
+			sourceTree = "<group>";
+		};
+		DD8769092FC118EA00546DE9 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				AA003DOC0000001000000007 /* TranslationCache.swift */,
+				AA003FM00000001000000001 /* FoundationModelAvailability.swift */,
+				AA009MDC0000001000000001 /* MarkdownConverter.swift */,
+				AA009DTU0000001000000001 /* DocsTranslationUploader.swift */,
+				AA009CTF0000001000000001 /* CommunityTranslationFetcher.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		DD8ED9C6289CE4A100B3B0AB /* Enums */ = {
@@ -1966,7 +1991,7 @@
 				AA0005WTCH00000000GR0001 /* Meshtastic Watch App */,
 				DDC2E15526CE248E0042C5E4 /* Products */,
 				DD8EDE9226F97A2B00A5A10B /* Frameworks */,
-				232785F32FC106EA007AA153 /* Recovered References */,
+				DD8769092FC118EA00546DE9 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 			usesTabs = 1;
@@ -2164,6 +2189,10 @@
 				DDC4D567275499A500A4208E /* Persistence.swift */,
 				DD964FC52975DBFD007C176F /* QuerySwiftData.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
+				DD000BACKUP001000000001 /* BackupModels.swift */,
+				DD000BACKUP002000000001 /* NodeBackupManager.swift */,
+				DD000BACKUP007000000001 /* NodeBackupManager+Import.swift */,
+				DD000BACKUP003000000001 /* NodeBackupManaging.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -2594,6 +2623,7 @@
 				DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */,
 				DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */,
 				DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */,
+				DD000BACKUP006000000002 /* NodeBackupManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2728,6 +2758,12 @@
 				2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */,
 				23C2BD2B2EE8993800F6A997 /* DeviceHardwareImage.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
+				DD000BACKUP001000000002 /* BackupModels.swift in Sources */,
+				DD000BACKUP002000000002 /* NodeBackupManager.swift in Sources */,
+				DD000BACKUP007000000002 /* NodeBackupManager+Import.swift in Sources */,
+				DD000BACKUP003000000002 /* NodeBackupManaging.swift in Sources */,
+				DD000BACKUP004000000002 /* BackupManagement.swift in Sources */,
+				DD000BACKUP005000000002 /* BackupRowView.swift in Sources */,
 				DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */,
 				DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */,
 				AA11223344556677AABB0001 /* DiscoveryTips.swift in Sources */,
@@ -2937,6 +2973,7 @@
 				DDA9515E2BC6F56F00CEA535 /* IndoorAirQuality.swift in Sources */,
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				2346A71D2E2FB9C500CB9239 /* SerialTransport.swift in Sources */,
+				AA0001052F07A4B000600001 /* TrafficManagementConfig.swift in Sources */,
 				BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				2349A04A2EAE4DA30060A581 /* ManualConnectionList.swift in Sources */,
@@ -2973,7 +3010,6 @@
 				FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */,
 				A5339E2F74E83F8FC41EEE33 /* TAKServerConfig.swift in Sources */,
 				AA0001032F07A4B000600001 /* TAKModuleConfig.swift in Sources */,
-				AA0001052F07A4B000600001 /* TrafficManagementConfig.swift in Sources */,
 				DCC919C6B47C15BB0795456C /* Tools.swift in Sources */,
 				8398407DBA32EE7CFC16A385 /* TAKDataPackageGenerator.swift in Sources */,
 				655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */,

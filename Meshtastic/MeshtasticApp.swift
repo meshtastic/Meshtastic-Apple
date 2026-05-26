@@ -207,7 +207,6 @@ struct MeshtasticAppleApp: App {
 				.environmentObject(accessoryManager)
 				.environmentObject(appState.router)
 				.environmentObject(MeshtasticAPI.shared)
-				.tint(.accentColor)
 			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in

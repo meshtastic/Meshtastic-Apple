@@ -75,6 +75,10 @@ struct Settings: View {
 		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
+	private var showsDevelopersSection: Bool {
+		Bundle.main.isDebug || Bundle.main.isTestFlight
+	}
+
 	// MARK: Views
 
 	var radioConfigurationSection: some View {
@@ -393,6 +397,13 @@ struct Settings: View {
 					}
 				}
 			}
+			NavigationLink(value: SettingsNavigationState.backupManagement) {
+				Label {
+					Text("Backup Management")
+				} icon: {
+					Image(systemName: "externaldrive")
+				}
+			}
 			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
 				Label {
 					Text("Data Browser")
@@ -564,9 +575,9 @@ struct Settings: View {
 					deviceConfigurationSection
 					moduleConfigurationSection
 					loggingSection
-#if DEBUG
+					if showsDevelopersSection {
 					developersSection
-#endif
+					}
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
@@ -655,6 +666,8 @@ struct Settings: View {
 					DiscoveryScanView()
 				case .helpDocs:
 					DocBrowserView()
+				case .backupManagement:
+					BackupManagement()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

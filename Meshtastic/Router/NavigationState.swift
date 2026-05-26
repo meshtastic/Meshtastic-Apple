@@ -61,6 +61,7 @@ enum SettingsNavigationState: String {
 	case coreDataBrowser
 	case localMeshDiscovery
 	case helpDocs
+	case backupManagement
 }
 
 struct NavigationState: Hashable {
