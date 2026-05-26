@@ -426,6 +426,8 @@
 		DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
 		DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */; };
 		DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
+		DD0000CDMIG001000000001 /* CoreDataMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000CDMIG000000000001 /* CoreDataMigrationService.swift */; };
+		DD0000CDMOD001000000001 /* Meshtastic.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */; };
 		DDC94FC129CE063B0082EA6E /* BatteryLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */; };
 		DDC94FC229CE063B0082EA6E /* BatteryLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */; };
 		DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */; };
@@ -1009,6 +1011,7 @@
 		DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorConfig.swift; sourceTree = "<group>"; };
 		DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV16.xcdatamodel; sourceTree = "<group>"; };
 		DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		DD0000CDMIG000000000001 /* CoreDataMigrationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataMigrationService.swift; sourceTree = "<group>"; };
 		DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevel.swift; sourceTree = "<group>"; };
 		DDC94FC329CED7280082EA6E /* MeshtasticDataModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV10.xcdatamodel; sourceTree = "<group>"; };
 		DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RtttlConfig.swift; sourceTree = "<group>"; };
@@ -2187,6 +2190,7 @@
 			isa = PBXGroup;
 			children = (
 				DDC4D567275499A500A4208E /* Persistence.swift */,
+				DD0000CDMIG000000000001 /* CoreDataMigrationService.swift */,
 				DD964FC52975DBFD007C176F /* QuerySwiftData.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
 				DD000BACKUP001000000001 /* BackupModels.swift */,
@@ -2495,6 +2499,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
+				DD0000CDMOD001000000001 /* Meshtastic.xcdatamodeld in Resources */,
 				AA000401SIRI000000000002 /* AppIntentVocabulary.plist in Resources */,
 				DD98EB292E7A42CC0016320A /* AppIcon_Chirpy.icon in Resources */,
 				25AECD4F2C2F723200862C8E /* Localizable.xcstrings in Resources */,
@@ -2758,6 +2763,7 @@
 				2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */,
 				23C2BD2B2EE8993800F6A997 /* DeviceHardwareImage.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
+				DD0000CDMIG001000000001 /* CoreDataMigrationService.swift in Sources */,
 				DD000BACKUP001000000002 /* BackupModels.swift in Sources */,
 				DD000BACKUP002000000002 /* NodeBackupManager.swift in Sources */,
 				DD000BACKUP007000000002 /* NodeBackupManager+Import.swift in Sources */,

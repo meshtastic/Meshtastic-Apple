@@ -44,6 +44,16 @@ class PersistenceController {
 			allowsSave: true
 		)
 
+		// ── Step 0: guard Core Data store from being clobbered ───────────────
+		// Both the App Store (Core Data) build and this (SwiftData) build use
+		// "Meshtastic.sqlite".  If we let SwiftData open the file first it will
+		// corrupt the Core Data content.  Rename it out of the way so SwiftData
+		// creates a fresh store; migration reads from the renamed file below.
+		if !inMemory && !isTestEnvironment {
+			CoreDataMigrationService.prepareForMigration()
+		}
+
+		// ── Step 1: build the SwiftData container ────────────────────────────
 		do {
 			if inMemory {
 				container = try ModelContainer(
@@ -60,18 +70,23 @@ class PersistenceController {
 			container.mainContext.autosaveEnabled = false
 			Logger.data.info("💾 SwiftData store initialized successfully")
 		} catch {
-			Logger.data.error("SwiftData Error: \(error.localizedDescription, privacy: .public). Attempting to recreate database.")
-			// Attempt recovery by creating in-memory store
-			let fallbackConfig = ModelConfiguration(
-				"Meshtastic",
-				schema: schema,
-				isStoredInMemoryOnly: true
-			)
+			// Do NOT fall back to an in-memory store — that silently destroys all
+			// user data.  Crash with a diagnostic message instead so we can fix
+			// the underlying problem.
+			Logger.data.critical("SwiftData store failed to open: \(error.localizedDescription, privacy: .public)")
+			fatalError("Failed to create SwiftData ModelContainer: \(error.localizedDescription)")
+		}
+
+		// ── Step 2: one-time Core Data → SwiftData migration ─────────────────
+		// Runs only when upgrading from 2.7.12 (or earlier) which used Core Data.
+		guard !inMemory, !isTestEnvironment else { return }
+		if CoreDataMigrationService.legacyStoreExists() {
 			do {
-				container = try ModelContainer(for: schema, configurations: fallbackConfig)
-				Logger.data.error("SwiftData database recreated in-memory. All app data has been lost.")
+				try CoreDataMigrationService.migrate(into: container)
 			} catch {
-				fatalError("Failed to create ModelContainer: \(error.localizedDescription)")
+				// Log but do not crash — the SwiftData store is usable even if
+				// migration fails; the user will simply start fresh on this device.
+				Logger.data.error("⬆️ CoreDataMigrationService failed: \(error.localizedDescription, privacy: .public)")
 			}
 		}
 	}
