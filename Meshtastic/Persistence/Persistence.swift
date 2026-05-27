@@ -70,11 +70,35 @@ class PersistenceController {
 			container.mainContext.autosaveEnabled = false
 			Logger.data.info("💾 SwiftData store initialized successfully")
 		} catch {
-			// Do NOT fall back to an in-memory store — that silently destroys all
-			// user data.  Crash with a diagnostic message instead so we can fix
-			// the underlying problem.
-			Logger.data.critical("SwiftData store failed to open: \(error.localizedDescription, privacy: .public)")
-			fatalError("Failed to create SwiftData ModelContainer: \(error.localizedDescription)")
+			// The store could not be opened (e.g. a Core Data file that
+			// prepareForMigration() did not rename, or a corrupt store from a
+			// previous build).  Log the error, rename the broken file so it is
+			// preserved for diagnosis, and retry with a fresh empty store.
+			// A fatalError here would leave users permanently unable to open
+			// the app, so we recover instead and accept the data loss.
+			Logger.data.critical("💾 SwiftData store failed to open, attempting recovery: \(error.localizedDescription, privacy: .public)")
+			let fm = FileManager.default
+			let base = config.url.deletingPathExtension()
+			let broken = base
+				.deletingLastPathComponent()
+				.appendingPathComponent(base.lastPathComponent + "-broken-\(Int(Date().timeIntervalSince1970))")
+			for ext in ["sqlite", "sqlite-shm", "sqlite-wal"] {
+				try? fm.moveItem(
+					at: base.appendingPathExtension(ext),
+					to: broken.appendingPathExtension(ext)
+				)
+			}
+			do {
+				container = try ModelContainer(
+					for: schema,
+					migrationPlan: MeshtasticMigrationPlan.self,
+					configurations: config
+				)
+				container.mainContext.autosaveEnabled = false
+				Logger.data.warning("💾 SwiftData store recreated after recovery — local data has been reset on this device")
+			} catch let recoveryError {
+				fatalError("💾 SwiftData store unrecoverable even after reset: \(recoveryError.localizedDescription)")
+			}
 		}
 
 		// ── Step 2: one-time Core Data → SwiftData migration ─────────────────

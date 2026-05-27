@@ -146,8 +146,19 @@ private extension CoreDataMigrationService {
 		guard let metadata = try? NSPersistentStoreCoordinator.metadataForPersistentStore(
 			ofType: NSSQLiteStoreType,
 			at: url
-		) else { return false }
-		return metadata[NSStoreModelVersionHashesKey] != nil
+		) else {
+			// metadataForPersistentStore threw — the file exists but is not a
+			// recognized SQLite/Core Data store (e.g. it is a SwiftData store
+			// or a corrupt file).  Do not rename it.
+			return false
+		}
+		// NSStoreModelVersionHashesKey is present in every Core Data store that
+		// has been opened at least once with a versioned model.  Older stores
+		// that predate model versioning may lack it, so fall back to checking
+		// NSStoreTypeKey as a secondary signal.
+		if metadata[NSStoreModelVersionHashesKey] != nil { return true }
+		if let type = metadata[NSStoreTypeKey] as? String, type == NSSQLiteStoreType { return true }
+		return false
 	}
 }
 
@@ -160,11 +171,25 @@ private extension CoreDataMigrationService {
 	/// migration is enabled so any minor schema drift across device upgrades
 	/// is handled transparently.
 	static func makeCoreDataContainer() throws -> NSPersistentContainer {
-		guard let modelURL = Bundle.main.url(
+		guard let momdURL = Bundle.main.url(
 			forResource: "Meshtastic",
 			withExtension: "momd"
 		) else {
 			throw MigrationError.modelNotFound
+		}
+
+		// Load the V58 model directly by path inside the .momd bundle so this
+		// is immune to Xcode resetting .xccurrentversion.  The 2.7.12 App Store
+		// wrote stores with MeshtasticDataModelV 58.xcdatamodel — loading it by
+		// explicit URL means migration always uses the correct schema regardless
+		// of which version .xccurrentversion points to.
+		let v58URL = momdURL.appendingPathComponent("MeshtasticDataModelV 58.mom")
+		let modelURL: URL
+		if FileManager.default.fileExists(atPath: v58URL.path) {
+			modelURL = v58URL
+		} else {
+			// Fallback: let Core Data use whatever .xccurrentversion says.
+			modelURL = momdURL
 		}
 
 		guard let model = NSManagedObjectModel(contentsOf: modelURL) else {
