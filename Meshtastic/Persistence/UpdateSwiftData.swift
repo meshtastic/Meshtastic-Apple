@@ -39,15 +39,20 @@ extension MeshPackets {
 					return lastHeard < expireDate
 				}
 			}
+			guard !staleNodes.isEmpty else {
+				Logger.data.info("💾 [NodeInfoEntity] No stale nodes to clear")
+				return false
+			}
 			let deletedNodes = staleNodes.count
 			for node in staleNodes {
 				modelContext.delete(node)
 			}
 			try modelContext.save()
 			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
-			return deletedNodes > 0
+			return true
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes")
+			Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -65,7 +70,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing pax: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -83,7 +89,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing positions: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -104,7 +111,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing telemetry: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -123,7 +131,8 @@ extension MeshPackets {
 			}
 			try modelContext.save()
 		} catch {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 [MessageEntity] Error deleting channel messages: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
@@ -138,7 +147,8 @@ extension MeshPackets {
 		do {
 			try modelContext.save()
 		} catch {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 [MessageEntity] Error deleting user messages: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
@@ -212,7 +222,8 @@ extension MeshPackets {
 		do {
 			try modelContext.save()
 		} catch {
-			Logger.data.error("Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
