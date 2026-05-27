@@ -171,11 +171,25 @@ private extension CoreDataMigrationService {
 	/// migration is enabled so any minor schema drift across device upgrades
 	/// is handled transparently.
 	static func makeCoreDataContainer() throws -> NSPersistentContainer {
-		guard let modelURL = Bundle.main.url(
+		guard let momdURL = Bundle.main.url(
 			forResource: "Meshtastic",
 			withExtension: "momd"
 		) else {
 			throw MigrationError.modelNotFound
+		}
+
+		// Load the V58 model directly by path inside the .momd bundle so this
+		// is immune to Xcode resetting .xccurrentversion.  The 2.7.12 App Store
+		// wrote stores with MeshtasticDataModelV 58.xcdatamodel — loading it by
+		// explicit URL means migration always uses the correct schema regardless
+		// of which version .xccurrentversion points to.
+		let v58URL = momdURL.appendingPathComponent("MeshtasticDataModelV 58.mom")
+		let modelURL: URL
+		if FileManager.default.fileExists(atPath: v58URL.path) {
+			modelURL = v58URL
+		} else {
+			// Fallback: let Core Data use whatever .xccurrentversion says.
+			modelURL = momdURL
 		}
 
 		guard let model = NSManagedObjectModel(contentsOf: modelURL) else {
