@@ -146,8 +146,19 @@ private extension CoreDataMigrationService {
 		guard let metadata = try? NSPersistentStoreCoordinator.metadataForPersistentStore(
 			ofType: NSSQLiteStoreType,
 			at: url
-		) else { return false }
-		return metadata[NSStoreModelVersionHashesKey] != nil
+		) else {
+			// metadataForPersistentStore threw — the file exists but is not a
+			// recognized SQLite/Core Data store (e.g. it is a SwiftData store
+			// or a corrupt file).  Do not rename it.
+			return false
+		}
+		// NSStoreModelVersionHashesKey is present in every Core Data store that
+		// has been opened at least once with a versioned model.  Older stores
+		// that predate model versioning may lack it, so fall back to checking
+		// NSStoreTypeKey as a secondary signal.
+		if metadata[NSStoreModelVersionHashesKey] != nil { return true }
+		if let type = metadata[NSStoreTypeKey] as? String, type == NSSQLiteStoreType { return true }
+		return false
 	}
 }
 
