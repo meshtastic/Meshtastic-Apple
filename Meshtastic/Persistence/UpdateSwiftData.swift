@@ -537,7 +537,14 @@ extension MeshPackets {
 				
 				/// Don't save empty position packets from null island or apple park
 				if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
-					let fetchedNode = try modelContext.fetch(fetchNodePositionRequest)
+					var fetchedNode = try modelContext.fetch(fetchNodePositionRequest)
+					// Create a stub node if one doesn't exist yet — it will be updated when the NodeInfo packet arrives
+					if fetchedNode.isEmpty {
+						let newNode = createNodeInfo(num: Int64(packet.from), context: modelContext)
+						newNode.lastHeard = Date()
+						fetchedNode = [newNode]
+						Logger.data.info("📍 [Position] created stub node for: \(packet.from.toHex(), privacy: .public)")
+					}
 					if fetchedNode.count == 1 {
 						
 						// Unset the current latest position for this node
