@@ -113,6 +113,30 @@ class PersistenceController {
 				Logger.data.error("⬆️ CoreDataMigrationService failed: \(error.localizedDescription, privacy: .public)")
 			}
 		}
+
+		// ── Step 3: backfill isDirectMessage for existing messages ────────────
+		// One-time migration for users upgrading from builds before isDirectMessage
+		// was added. Sets isDirectMessage = true for any message that has a toUser.
+		let backfillKey = "didBackfillIsDirectMessage"
+		if !UserDefaults.standard.bool(forKey: backfillKey) {
+			let ctx = container.mainContext
+			let descriptor = FetchDescriptor<MessageEntity>(
+				predicate: #Predicate<MessageEntity> { $0.toUser != nil }
+			)
+			do {
+				let dmMessages = try ctx.fetch(descriptor)
+				if !dmMessages.isEmpty {
+					for msg in dmMessages {
+						msg.isDirectMessage = true
+					}
+					try ctx.save()
+					Logger.data.info("⬆️ Backfilled isDirectMessage for \(dmMessages.count) existing DMs")
+				}
+				UserDefaults.standard.set(true, forKey: backfillKey)
+			} catch {
+				Logger.data.error("⬆️ Failed to backfill isDirectMessage: \(error.localizedDescription, privacy: .public)")
+			}
+		}
 	}
 
 	@MainActor

@@ -14,7 +14,7 @@ extension MyInfoEntity {
 		let context = PersistenceController.shared.context
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.toUser == nil && msg.isEmoji == false
+				msg.isDirectMessage == false && msg.isEmoji == false
 			},
 			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
 		)
@@ -25,7 +25,7 @@ extension MyInfoEntity {
 	func unreadMessages(context: ModelContext) -> Int {
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.toUser == nil && msg.isEmoji == false && msg.read == false
+				msg.isDirectMessage == false && msg.isEmoji == false && msg.read == false
 			}
 		)
 		return (try? context.fetchCount(descriptor)) ?? 0

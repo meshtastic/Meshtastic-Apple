@@ -35,12 +35,12 @@ class AppState: ObservableObject {
 	func refreshBadgeCount(context: ModelContext) {
 		let channelDescriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.toUser == nil && msg.isEmoji == false && msg.read == false
+				msg.isDirectMessage == false && msg.isEmoji == false && msg.read == false
 			}
 		)
 		let dmDescriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.toUser != nil && msg.isEmoji == false && msg.read == false && msg.admin == false
+				msg.isDirectMessage == true && msg.isEmoji == false && msg.read == false && msg.admin == false
 			}
 		)
 		let channelCount = (try? context.fetchCount(channelDescriptor)) ?? 0

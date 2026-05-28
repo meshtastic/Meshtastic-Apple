@@ -36,7 +36,7 @@ struct ChannelMessageList: View {
 		let channelIndex = channel.index
 		_allPrivateMessages = Query(
 			filter: #Predicate<MessageEntity> {
-				$0.channel == channelIndex && $0.toUser == nil && $0.isEmoji == false
+				$0.channel == channelIndex && $0.isDirectMessage == false && $0.isEmoji == false
 			},
 			sort: \MessageEntity.messageTimestamp
 		)

@@ -420,7 +420,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate { message in
-				message.read == false && message.toUser == nil
+				message.read == false && message.isDirectMessage == false
 			}
 		)
 		let results = (try? context.fetch(descriptor)) ?? []
@@ -511,7 +511,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				message.read == false &&
 				message.admin == false &&
 				message.isEmoji == false &&
-				message.toUser == nil &&
+				message.isDirectMessage == false &&
 				message.channel == channelIndex
 			},
 			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]

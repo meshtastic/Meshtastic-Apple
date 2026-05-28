@@ -370,6 +370,7 @@ private extension CoreDataMigrationService {
 			if let cdTo = obj.value(forKey: "toUser") as? NSManagedObject,
 			   let sdTo = userMap[cdTo.objectID] {
 				sd.toUser = sdTo
+				sd.isDirectMessage = true
 			}
 			sdContext.insert(sd)
 		}

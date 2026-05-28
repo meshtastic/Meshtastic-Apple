@@ -121,7 +121,7 @@ extension MeshPackets {
 		let channelIndex = channel.index
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+				msg.channel == channelIndex && msg.isDirectMessage == false && msg.isEmoji == false
 			}
 		)
 		do {

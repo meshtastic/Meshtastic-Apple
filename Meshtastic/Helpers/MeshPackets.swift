@@ -1011,6 +1011,7 @@ actor MeshPackets {
 					if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != Constants.maximumNodeNum {
 						if !storeForwardBroadcast {
 							newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+							newMessage.isDirectMessage = true
 						} else if storeForwardBroadcast {
 							// For S&F broadcast messages, treat as a channel message (not a DM)
 							newMessage.toUser = nil
@@ -1018,6 +1019,7 @@ actor MeshPackets {
 							do {
 								let newUser = try createUser(num: Int64(truncatingIfNeeded: packet.to), context: modelContext)
 								newMessage.toUser = newUser
+								newMessage.isDirectMessage = true
 							} catch PersistenceError.invalidInput(let message) {
 								Logger.data.error("Error Creating a new UserEntity (Invalid Input) from node number: \(packet.to, privacy: .public) Error:  \(message, privacy: .public)")
 							} catch {

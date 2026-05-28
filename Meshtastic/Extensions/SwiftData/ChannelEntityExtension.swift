@@ -15,7 +15,7 @@ extension ChannelEntity {
 		let channelIndex = self.index
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+				msg.channel == channelIndex && msg.isDirectMessage == false && msg.isEmoji == false
 			},
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .forward)]
 		)
@@ -28,7 +28,7 @@ extension ChannelEntity {
 		let channelIndex = self.index
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+				msg.channel == channelIndex && msg.isDirectMessage == false && msg.isEmoji == false
 			},
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
 		)
@@ -41,7 +41,7 @@ extension ChannelEntity {
 		let channelIndex = self.index
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false && msg.read == false
+				msg.channel == channelIndex && msg.isDirectMessage == false && msg.isEmoji == false && msg.read == false
 			}
 		)
 		return (try? context.fetchCount(descriptor)) ?? 0

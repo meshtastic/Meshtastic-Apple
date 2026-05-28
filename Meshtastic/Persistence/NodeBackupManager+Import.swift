@@ -245,6 +245,7 @@ extension NodeBackupManager {
 			}
 			if let toNum = src.toUser?.num, let liveUser = usersByNum[toNum] {
 				dst.toUser = liveUser
+				dst.isDirectMessage = true
 			}
 			liveContext.insert(dst)
 		}

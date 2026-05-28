@@ -36,6 +36,11 @@ final class MessageEntity {
 	var showTranslatedMessage: Bool = false
 	var snr: Float = 0.0
 
+	/// Denormalized flag: true when this message is a direct message (toUser != nil).
+	/// Used in @Query predicates to avoid relationship traversal that can crash
+	/// under concurrent SwiftData access on iOS 26.x.
+	var isDirectMessage: Bool = false
+
 	var fromUser: UserEntity?
 	var toUser: UserEntity?
 

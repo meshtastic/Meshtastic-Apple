@@ -70,7 +70,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			} else if conversationId.hasPrefix("channel-"), let channelIndex = Int32(conversationId.replacingOccurrences(of: "channel-", with: "")) {
 				let descriptor = FetchDescriptor<MessageEntity>(
 					predicate: #Predicate { message in
-						message.read == false && message.toUser == nil && message.channel == channelIndex
+						message.read == false && message.isDirectMessage == false && message.channel == channelIndex
 					}
 				)
 				let messages = try context.fetch(descriptor)

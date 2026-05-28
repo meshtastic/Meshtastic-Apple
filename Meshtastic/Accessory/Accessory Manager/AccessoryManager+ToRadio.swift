@@ -299,6 +299,7 @@ extension AccessoryManager {
 					newMessage.read = true
 					if toUserNum > 0 {
 						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+						newMessage.isDirectMessage = true
 						newMessage.toUser?.lastMessage = Date()
 						if newMessage.toUser?.pkiEncrypted ?? false {
 							newMessage.publicKey = newMessage.toUser?.publicKey
