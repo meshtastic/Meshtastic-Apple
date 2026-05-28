@@ -14,9 +14,26 @@ import OSLog
 extension AccessoryManager {
 
 	func handleMqttClientProxyMessage(_ mqttClientProxyMessage: MqttClientProxyMessage) {
-		Logger.services.info("handleMqttClientProxyMessage: \(mqttClientProxyMessage.debugDescription)")
+		Logger.services.info("handleMqttClientProxyMessage topic: \(mqttClientProxyMessage.topic, privacy: .public)")
+
+		// MqttClientProxyMessage carries its payload in a oneof — either binary
+		// `data` (service envelope / map report protobuf) or `text` (JSON / stat
+		// topics).  Previously this always read `.data`, which silently produced
+		// an empty payload whenever the firmware used the `.text` variant — the
+		// root cause of map-report packets never reaching the MQTT broker.
+		let payload: [UInt8]
+		switch mqttClientProxyMessage.payloadVariant {
+		case .data(let bytes):
+			payload = [UInt8](bytes)
+		case .text(let string):
+			payload = [UInt8](string.utf8)
+		case .none:
+			Logger.services.warning("📲 [MQTT Client Proxy] received proxy message with no payload on topic: \(mqttClientProxyMessage.topic, privacy: .public)")
+			return
+		}
+
 		let message = CocoaMQTTMessage(topic: mqttClientProxyMessage.topic,
-									   payload: [UInt8](mqttClientProxyMessage.data),
+									   payload: payload,
 									   retained: mqttClientProxyMessage.retained)
 		MqttClientProxyManager.shared.mqttClientProxy?.publish(message)
 	}
