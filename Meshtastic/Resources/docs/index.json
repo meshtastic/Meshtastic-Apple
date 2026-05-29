@@ -358,6 +358,7 @@
         "keywords": [
             "node",
             "from",
+            "packets",
             "nodes",
             "key",
             "device",
@@ -384,10 +385,9 @@
             "short",
             "sensor",
             "row",
-            "router",
-            "reduces"
+            "router"
         ],
-        "charCount": 3885
+        "charCount": 4406
     },
     {
         "id": "settings",
@@ -512,11 +512,12 @@
         "section": "user",
         "navOrder": 8,
         "keywords": [
+            "node",
             "telemetry",
             "sensor",
-            "node",
             "quality",
             "air",
+            "packets",
             "environment",
             "data",
             "humidity",
@@ -527,23 +528,22 @@
             "metrics",
             "device",
             "description",
+            "readings",
             "power",
+            "nodes",
             "interval",
             "from",
             "channel",
             "wind",
+            "stats",
             "speed",
+            "reported",
             "relative",
-            "readings",
             "often",
-            "meshtastic",
-            "low",
-            "level",
-            "icon",
-            "hpa",
-            "detection"
+            "noise",
+            "meshtastic"
         ],
-        "charCount": 3248
+        "charCount": 3882
     },
     {
         "id": "translate",
