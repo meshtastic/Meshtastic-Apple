@@ -111,10 +111,11 @@ struct NodeListItemCompact: View {
 		}
 		return desc
 	}
-	
-	@Bindable var node: NodeInfoEntity
-	var isDirectlyConnected: Bool
-	var connectedNode: Int64
+
+		@Bindable var node: NodeInfoEntity
+		@State private var rowSummary: NodeListRowSummary?
+		var isDirectlyConnected: Bool
+		var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 	
 	var userKeyStatus: (String, Color) {
@@ -132,8 +133,8 @@ struct NodeListItemCompact: View {
 		return (image, color)
 	}
 	
-	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.latestPosition else {
+	func locationData(for lastPosition: PositionEntity?) -> (PositionEntity, CLLocation)? {
+		guard let lastPosition else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
@@ -142,8 +143,8 @@ struct NodeListItemCompact: View {
 		
 		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
 		
-		if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-			return (lastPostion, myCoord)
+		if lastPosition.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+			return (lastPosition, myCoord)
 		}
 		return nil
 	}
@@ -163,14 +164,15 @@ struct NodeListItemCompact: View {
 	
 	var body: some View {
 		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
-		// Cache all expensive computed properties ONCE to avoid repeated FetchDescriptor queries
-		let cachedMetrics = node.latestDeviceMetrics
-		let cachedLocationData = locationData
-		let cachedHasPositions = node.hasPositions
-		let cachedHasDeviceMetrics = cachedMetrics != nil
-		let cachedHasEnvironmentMetrics = node.hasEnvironmentMetrics
-		let cachedHasDetectionSensorMetrics = node.hasDetectionSensorMetrics
-		let cachedHasTraceRoutes = node.hasTraceRoutes
+		let cachedMetrics = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.latestDeviceMetrics : nil
+		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num)
+		let cachedLatestPosition = needsLatestPosition ? rowSummary?.latestPosition : nil
+		let cachedLocationData = (shouldShowLocation && connectedNode != node.num) ? locationData(for: cachedLatestPosition) : nil
+		let cachedHasPositions = shouldShowTelemetry ? cachedLatestPosition != nil : false
+		let cachedHasDeviceMetrics = shouldShowTelemetry && cachedMetrics != nil
+		let cachedHasEnvironmentMetrics = shouldShowTelemetry ? rowSummary?.hasEnvironmentMetrics ?? false : false
+		let cachedHasDetectionSensorMetrics = shouldShowTelemetry ? rowSummary?.hasDetectionSensorMetrics ?? false : false
+		let cachedHasTraceRoutes = shouldShowTelemetry ? rowSummary?.hasTraceRoutes ?? false : false
 		LazyVStack(alignment: .leading) {
 			HStack {
 				// First Column
@@ -281,10 +283,20 @@ struct NodeListItemCompact: View {
 				// End Second Column
 			}
 		}
-		.padding(.top, 2)
-		.padding(.bottom, 2)
-		.accessibilityElement(children: .ignore)
-		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
+			.padding(.top, 2)
+			.padding(.bottom, 2)
+			.task(id: node.lastHeard) {
+				rowSummary = await MainActor.run {
+					NodeListRowSummary(
+						node: node,
+						includeDeviceMetrics: shouldShowPower || shouldShowTelemetry,
+						includePosition: needsLatestPosition,
+						includeLogAvailability: shouldShowTelemetry
+					)
+				}
+			}
+			.accessibilityElement(children: .ignore)
+			.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
 	}
 }
 

@@ -610,21 +610,24 @@ extension MeshPackets {
 						// Assign position to node via relationship
 						position.nodePosition = fetchedNode[0]
 
-						// Prune: keep at most 5000 positions per node
-						let countDescriptor = FetchDescriptor<PositionEntity>(
-							predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum }
-						)
-						let totalCount = try modelContext.fetchCount(countDescriptor)
-						if totalCount > 5000 {
-							let excess = totalCount - 5000
-							var pruneDescriptor = FetchDescriptor<PositionEntity>(
-								predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == false },
-								sortBy: [SortDescriptor(\PositionEntity.time, order: .forward)]
+						// Keep the history cap as a soft cap during packet bursts; the
+						// count/sort/delete prune pass is expensive with large node stores.
+						if shouldPrunePositionHistory(for: posNum) {
+							let countDescriptor = FetchDescriptor<PositionEntity>(
+								predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum }
 							)
-							pruneDescriptor.fetchLimit = excess
-							let toDelete = try modelContext.fetch(pruneDescriptor)
-							for old in toDelete {
-								modelContext.delete(old)
+							let totalCount = try modelContext.fetchCount(countDescriptor)
+							if totalCount > MeshPackets.maxPositionHistoryPerNode {
+								let excess = totalCount - MeshPackets.maxPositionHistoryPerNode
+								var pruneDescriptor = FetchDescriptor<PositionEntity>(
+									predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == false },
+									sortBy: [SortDescriptor(\PositionEntity.time, order: .forward)]
+								)
+								pruneDescriptor.fetchLimit = excess
+								let toDelete = try modelContext.fetch(pruneDescriptor)
+								for old in toDelete {
+									modelContext.delete(old)
+								}
 							}
 						}
 

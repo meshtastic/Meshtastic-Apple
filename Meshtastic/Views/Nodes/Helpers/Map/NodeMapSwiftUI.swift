@@ -31,12 +31,16 @@ private struct NodeMapContentEquatableWrapper<Content: View>: View, Equatable {
 }
 
 struct NodeMapSwiftUI: View {
+	private let visiblePositionLimit = 1_000
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	/// Parameters
 	@Bindable var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
-	@State var positions: [PositionEntity] = []
+	@State private var positions: [PositionEntity] = []
+	@State private var totalPositionCount = 0
+	@State private var mostRecentPosition: PositionEntity?
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
@@ -59,14 +63,22 @@ struct NodeMapSwiftUI: View {
 
 	@State private var mapRegion = MKCoordinateRegion.init()
 
-	@Query(sort: \WaypointEntity.name, order: .reverse)
-	private var waypoints: [WaypointEntity]
-
 	var body: some View {
-		if node.hasPositions {
-			mapWithNavigation
-		} else {
-			ContentUnavailableView("No Positions", systemImage: "mappin.slash")
+		Group {
+			if totalPositionCount > 0 {
+				mapWithNavigation
+			} else {
+				ContentUnavailableView("No Positions", systemImage: "mappin.slash")
+			}
+		}
+		.onChange(of: node) {
+			handleNodeChange()
+		}
+		.onChange(of: node.lastHeard) {
+			refreshPositions()
+		}
+		.onAppear {
+			handleAppear()
 		}
 	}
 
@@ -76,7 +88,7 @@ struct NodeMapSwiftUI: View {
 				configuredMap
 			}
 		}
-		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(node.positions.count) points")), displayMode: .inline)
+		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(totalPositionCount) points")), displayMode: .inline)
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
@@ -107,11 +119,14 @@ struct NodeMapSwiftUI: View {
 			.onChange(of: selectedMapLayer) { _, newMapLayer in
 				updateMapStyle(for: newMapLayer)
 			}
-			.onChange(of: node) {
-				handleNodeChange()
+			.onChange(of: showNodeHistory) {
+				refreshPositions()
 			}
-			.onAppear {
-				handleAppear()
+			.onChange(of: showRouteLines) {
+				refreshPositions()
+			}
+			.onChange(of: showConvexHull) {
+				refreshPositions()
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				controlButtons
@@ -122,15 +137,15 @@ struct NodeMapSwiftUI: View {
 	}
 
 	private var mapContentSignature: NodeMapContentSignature {
-		let positionCount = node.positions.count
-		let lastPositionTime = node.positions.last?.time
+		let positionCount = positions.count
+		let lastPositionTime = positions.first?.time
 		return NodeMapContentSignature(nodeNum: node.num, positionCount: positionCount, lastPositionTime: lastPositionTime, showNodeHistory: showNodeHistory, showRouteLines: showRouteLines, showConvexHull: showConvexHull, favorite: node.favorite)
 	}
 
 	private var baseMap: some View {
 		NodeMapContentEquatableWrapper(signature: mapContentSignature) {
 			Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
-				NodeMapContent(node: node)
+				NodeMapContent(node: node, positions: positions)
 			}
 		}
 		.mapScope(mapScope)
@@ -207,7 +222,7 @@ struct NodeMapSwiftUI: View {
 				.glassButtonStyle()
 			}
 
-			if node.positions.count > 1 {
+			if totalPositionCount > 1 {
 				Button(action: {
 					if isLookingAround {
 						isLookingAround = false
@@ -252,10 +267,11 @@ struct NodeMapSwiftUI: View {
 	}
 
 	private func handleNodeChange() {
+		refreshPositions()
 		isLookingAround = false
 		isShowingAltitude = false
-		let newMostRecent = node.positions.last
-		if node.positions.count > 1 {
+		let newMostRecent = mostRecentPosition
+		if totalPositionCount > 1 {
 			position = .automatic
 
 		} else if let mrCoord = newMostRecent?.nodeCoordinate {
@@ -272,8 +288,9 @@ struct NodeMapSwiftUI: View {
 	private func handleAppear() {
 		UIApplication.shared.isIdleTimerDisabled = true
 		updateMapStyle(for: selectedMapLayer)
-		let mostRecent = node.positions.last
-		if node.positions.count > 1 {
+		refreshPositions()
+		let mostRecent = mostRecentPosition
+		if totalPositionCount > 1 {
 			position = .automatic
 
 		} else if let mrCoord = mostRecent?.nodeCoordinate {
@@ -286,6 +303,15 @@ struct NodeMapSwiftUI: View {
 			}
 		}
 	}
+
+	private func refreshPositions() {
+		totalPositionCount = node.positionCount(context: context)
+		let limit = (showNodeHistory || showRouteLines || showConvexHull) ? visiblePositionLimit : 1
+		let latestPositions = node.positionsSortedByTime(context: context, ascending: false, limit: limit)
+		mostRecentPosition = latestPositions.first
+		positions = limit == 1 ? latestPositions : Array(latestPositions.reversed())
+	}
+
 	/// Get the look around scene
 	private func fetchScene(for coordinate: CLLocationCoordinate2D) async throws -> MKLookAroundScene? {
 		let lookAroundScene = MKLookAroundSceneRequest(coordinate: coordinate)

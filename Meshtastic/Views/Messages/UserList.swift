@@ -69,6 +69,7 @@ struct UserList: View {
 
 private struct FilteredUserList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var appState: AppState
 	@Environment(\.modelContext) private var context
 
 	@Query(sort: [SortDescriptor(\UserEntity.lastMessage, order: .reverse),
@@ -79,6 +80,7 @@ private struct FilteredUserList: View {
 
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	@State private var userToDeleteMessages: UserEntity?
+	@State private var directMessageSummaries: [Int64: DirectMessageSummary] = [:]
 	private var filters: NodeFilterParameters
 
 	init(withFilters: NodeFilterParameters, node: Binding<NodeInfoEntity?>, userSelection: Binding<UserEntity?>) {
@@ -88,204 +90,353 @@ private struct FilteredUserList: View {
 	}
 
 	private var users: [UserEntity] {
-		allUsers.filter { filters.matches(user: $0) }
-	}
-
-	// MARK: - Precomputed message info cache
-
-	/// Batch-fetch most recent messages and unread counts for all visible users in two queries
-	/// instead of 2N individual queries (one per row).
-	private var messageInfo: [Int64: (mostRecent: MessageEntity?, unreadCount: Int)] {
-		let userNums = Set(users.map(\.num))
-		guard !userNums.isEmpty else { return [:] }
-
-		// Fetch all non-emoji, non-admin messages for visible users in one query
-		let detectionSensorPortNum: Int32 = 10
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-			},
-			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+		let searchText = filters.searchText.lowercased()
+		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
+		let distanceBounds = filters.currentPreciseDistanceBounds
+		let filterLookup = UserListFilterLookup(
+			users: allUsers,
+			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
+			context: context
 		)
-		let allMessages = (try? context.fetch(descriptor)) ?? []
-
-		var result: [Int64: (mostRecent: MessageEntity?, unreadCount: Int)] = [:]
-		for num in userNums {
-			result[num] = (mostRecent: nil, unreadCount: 0)
+		return allUsers.filter {
+			filters.matches(
+				user: $0,
+				normalizedSearchText: searchText,
+				onlineThreshold: onlineThreshold,
+				distanceBounds: distanceBounds,
+				lookup: filterLookup
+			)
 		}
-		for message in allMessages {
-			let fromNum = message.fromUser?.num
-			let toNum = message.toUser?.num
-			// Check if this message belongs to any of the visible users
-			for num in [fromNum, toNum].compactMap({ $0 }) where userNums.contains(num) {
-				var entry = result[num]!
-				if entry.mostRecent == nil {
-					entry.mostRecent = message
-				}
-				if !message.read {
-					entry.unreadCount += 1
-				}
-				result[num] = entry
-			}
-		}
-		return result
 	}
 
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
-		let cachedInfo = messageInfo
+		let activeDeviceNum = Int64(accessoryManager.activeDeviceNum ?? 0)
+		let visibleUsers = users.filter { $0.num != activeDeviceNum }
+		let summaryUsers = allUsers.filter { $0.num != activeDeviceNum && $0.lastMessage != nil }
+		let summaryRefreshKey = directMessageSummaryRefreshKey(for: summaryUsers)
+		let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 
-		List(users, selection: $userSelection) { user in
-			let info = cachedInfo[user.num]
-			let mostRecent = info?.mostRecent
-			let hasMessages = mostRecent != nil
-			let hasUnreadMessages = (info?.unreadCount ?? 0) > 0
-			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
-			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-			let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-			if user.num != accessoryManager.activeDeviceNum ?? 0 {
-				NavigationLink(value: user) {
-					ZStack {
-						Image(systemName: "circle.fill")
-							.opacity(hasUnreadMessages ? 1 : 0)
-							.font(.system(size: 10))
-							.foregroundColor(.accentColor)
-							.brightness(0.2)
-					}
+		List(visibleUsers, selection: $userSelection) { user in
+			DirectMessageUserRow(
+				user: user,
+				node: node,
+				summary: directMessageSummaries[user.num],
+				dateFormatString: dateFormatString,
+				currentDay: currentDay,
+				isPresentingDeleteUserMessagesConfirm: $isPresentingDeleteUserMessagesConfirm,
+				userToDeleteMessages: $userToDeleteMessages
+			)
+		}
+		.listStyle(.plain)
+		.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(visibleUsers.count)))
+		.onAppear {
+			refreshDirectMessageSummaries(for: summaryUsers)
+		}
+		.onChange(of: summaryRefreshKey) {
+			refreshDirectMessageSummaries(for: summaryUsers)
+		}
+		.onChange(of: appState.unreadDirectMessages) {
+			refreshDirectMessageSummaries(for: summaryUsers)
+		}
+	}
 
-					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
+	private func directMessageSummaryRefreshKey(for users: [UserEntity]) -> Int64 {
+		var key = Int64(users.count)
+		for user in users {
+			key = key &* 31 &+ user.num
+			if let lastMessage = user.lastMessage {
+				key = key &* 31 &+ Int64(lastMessage.timeIntervalSince1970)
+			}
+		}
+		return key
+	}
 
-					VStack(alignment: .leading) {
-						HStack {
-							if user.pkiEncrypted {
-								if !user.keyMatch {
-									/// Public Key on the User and the Public Key on the Last Message don't match
-									Image(systemName: "key.slash")
-										.foregroundColor(.red)
-								} else {
-									Image(systemName: "lock.fill")
-										.foregroundColor(.green)
-								}
-							} else {
-								Image(systemName: "lock.open.fill")
-									.foregroundColor(.yellow)
-							}
-							Text(user.longName ?? "Unknown".localized)
-								.font(.headline)
-								.allowsTightening(true)
-							Spacer()
-							if user.userNode?.favorite ?? false {
-								Image(systemName: "star.fill")
-									.foregroundColor(.yellow)
-							}
-							if hasMessages {
-								if lastMessageDay == currentDay {
-									Text(lastMessageTime, style: .time )
-										.font(.footnote)
-										.foregroundColor(.onSurfaceVariant)
-								} else if lastMessageDay == (currentDay - 1) {
-									Text("Yesterday")
-										.font(.footnote)
-										.foregroundColor(.onSurfaceVariant)
-								} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-									Text(lastMessageTime.formattedDate(format: dateFormatString))
-										.font(.footnote)
-										.foregroundColor(.onSurfaceVariant)
-								} else if lastMessageDay < (currentDay - 1800) {
-									Text(lastMessageTime.formattedDate(format: dateFormatString))
-										.font(.footnote)
-										.foregroundColor(.onSurfaceVariant)
-								}
-							}
-						}
+	private func refreshDirectMessageSummaries(for users: [UserEntity]) {
+		let userNums = Set(users.map(\.num))
+		guard !userNums.isEmpty else {
+			directMessageSummaries = [:]
+			return
+		}
 
-						if hasMessages {
-							HStack(alignment: .top) {
-									Text(LocalizedStringKey(mostRecent?.messagePayload ?? " "))
-									.font(.footnote)
-									.foregroundColor(.onSurfaceVariant)
-							}
-						}
-					}
+		do {
+			let detectionSensorPortNum: Int32 = 10
+			let descriptor = FetchDescriptor<MessageEntity>(
+				predicate: #Predicate<MessageEntity> {
+					$0.toUser != nil
+					&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+				},
+				sortBy: [
+					SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
+					SortDescriptor(\MessageEntity.messageId, order: .reverse)
+				]
+			)
+			let messages = try context.fetch(descriptor)
+			var accumulators = [Int64: DirectMessageSummaryAccumulator](minimumCapacity: userNums.count)
+			for message in messages {
+				let fromNum = message.fromUser?.num
+				record(message, peerNum: fromNum, userNums: userNums, accumulators: &accumulators)
+				let toNum = message.toUser?.num
+				if toNum != fromNum {
+					record(message, peerNum: toNum, userNums: userNums, accumulators: &accumulators)
 				}
-				.frame(height: 62)
-				.alignmentGuide(.listRowSeparatorLeading) {
-					$0[.leading]
-				}
-				.contextMenu {
-					Button {
-						guard let userNode = user.userNode, let node else { return }
-						if !(userNode.favorite) {
-							userNode.favorite = true
-							Task {
-								try await accessoryManager.setFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
-								Logger.data.info("Favorited a node")
-							}
+			}
+			directMessageSummaries = accumulators.compactMapValues(\.summary)
+		} catch {
+			Logger.data.error("Failed to load direct message summaries: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	private func record(
+		_ message: MessageEntity,
+		peerNum: Int64?,
+		userNums: Set<Int64>,
+		accumulators: inout [Int64: DirectMessageSummaryAccumulator]
+	) {
+		guard let peerNum, userNums.contains(peerNum) else { return }
+		accumulators[peerNum, default: DirectMessageSummaryAccumulator()].record(message)
+	}
+}
+
+private struct DirectMessageSummary: Equatable {
+	let messageId: Int64
+	let timestamp: Int32
+	let payload: String
+	let unreadCount: Int
+}
+
+private struct DirectMessageSummaryAccumulator {
+	private var latestMessageId: Int64 = Int64.min
+	private var latestTimestamp: Int32 = Int32.min
+	private var latestPayload: String = " "
+	private var unreadCount = 0
+
+	var summary: DirectMessageSummary? {
+		guard latestMessageId != Int64.min else { return nil }
+		return DirectMessageSummary(
+			messageId: latestMessageId,
+			timestamp: latestTimestamp,
+			payload: latestPayload,
+			unreadCount: unreadCount
+		)
+	}
+
+	mutating func record(_ message: MessageEntity) {
+		if !message.read {
+			unreadCount += 1
+		}
+		if message.messageTimestamp > latestTimestamp
+			|| (message.messageTimestamp == latestTimestamp && message.messageId > latestMessageId) {
+			latestMessageId = message.messageId
+			latestTimestamp = message.messageTimestamp
+			latestPayload = message.messagePayload ?? " "
+		}
+	}
+}
+
+private struct DirectMessageUserRow: View {
+	@Environment(\.modelContext) private var context
+	@EnvironmentObject var accessoryManager: AccessoryManager
+
+	@Bindable var user: UserEntity
+	let node: NodeInfoEntity?
+	let summary: DirectMessageSummary?
+	let dateFormatString: String
+	let currentDay: Int
+	@Binding var isPresentingDeleteUserMessagesConfirm: Bool
+	@Binding var userToDeleteMessages: UserEntity?
+
+	private var hasMessages: Bool { summary != nil }
+	private var hasUnreadMessages: Bool { (summary?.unreadCount ?? 0) > 0 }
+
+	var body: some View {
+		NavigationLink(value: user) {
+			ZStack {
+				Image(systemName: "circle.fill")
+					.opacity(hasUnreadMessages ? 1 : 0)
+					.font(.system(size: 10))
+					.foregroundColor(.accentColor)
+					.brightness(0.2)
+			}
+
+			CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
+
+			VStack(alignment: .leading) {
+				HStack {
+					if user.pkiEncrypted {
+						if !user.keyMatch {
+							Image(systemName: "key.slash")
+								.foregroundColor(.red)
 						} else {
-							userNode.favorite = false
-							Task {
-								try await accessoryManager.removeFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
-								Logger.data.info("Unfavorited a node")
-							}
+							Image(systemName: "lock.fill")
+								.foregroundColor(.green)
 						}
-						do {
-							try context.save()
-						} catch {
-							Logger.data.error("Save Node Favorite Error")
-						}
-					} label: {
-						Label((user.userNode?.favorite ?? false) ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
+					} else {
+						Image(systemName: "lock.open.fill")
+							.foregroundColor(.yellow)
 					}
-					Button {
-						user.mute = !user.mute
-						do {
-							try context.save()
-						} catch {
-							Logger.data.error("Save User Mute Error")
-						}
-					} label: {
-						Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
+					Text(user.longName ?? "Unknown".localized)
+						.font(.headline)
+						.allowsTightening(true)
+					Spacer()
+					if user.userNode?.favorite ?? false {
+						Image(systemName: "star.fill")
+							.foregroundColor(.yellow)
 					}
-					if hasMessages {
-						Button(role: .destructive) {
-							isPresentingDeleteUserMessagesConfirm = true
-							userToDeleteMessages = user
-						} label: {
-							Label("Delete Messages", systemImage: "trash")
-						}
+					if let summary {
+						messageTimeText(summary)
 					}
 				}
-				.confirmationDialog(
-					"This conversation will be deleted.",
-					isPresented: $isPresentingDeleteUserMessagesConfirm,
-					titleVisibility: .visible
-				) {
-					Button(role: .destructive) {
-						Task {
-							if let userToDelete = userToDeleteMessages {
-								await MeshPackets.shared.deleteUserMessages(user: userToDelete)
-							}
-						}
-					} label: {
-						Text("Delete")
+
+				if let summary {
+					HStack(alignment: .top) {
+						Text(LocalizedStringKey(summary.payload))
+							.font(.footnote)
+							.foregroundColor(.onSurfaceVariant)
 					}
 				}
 			}
 		}
-		.listStyle(.plain)
-		.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(users.count)))
+		.frame(height: 62)
+		.alignmentGuide(.listRowSeparatorLeading) {
+			$0[.leading]
+		}
+		.contextMenu {
+			Button {
+				guard let userNode = user.userNode, let node else { return }
+				if !(userNode.favorite) {
+					userNode.favorite = true
+					Task {
+						try await accessoryManager.setFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
+						Logger.data.info("Favorited a node")
+					}
+				} else {
+					userNode.favorite = false
+					Task {
+						try await accessoryManager.removeFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
+						Logger.data.info("Unfavorited a node")
+					}
+				}
+				do {
+					try context.save()
+				} catch {
+					Logger.data.error("Save Node Favorite Error")
+				}
+			} label: {
+				Label((user.userNode?.favorite ?? false) ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
+			}
+			Button {
+				user.mute = !user.mute
+				do {
+					try context.save()
+				} catch {
+					Logger.data.error("Save User Mute Error")
+				}
+			} label: {
+				Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
+			}
+			if hasMessages {
+				Button(role: .destructive) {
+					isPresentingDeleteUserMessagesConfirm = true
+					userToDeleteMessages = user
+				} label: {
+					Label("Delete Messages", systemImage: "trash")
+				}
+			}
+		}
+		.confirmationDialog(
+			"This conversation will be deleted.",
+			isPresented: $isPresentingDeleteUserMessagesConfirm,
+			titleVisibility: .visible
+		) {
+			Button(role: .destructive) {
+				Task {
+					if let userToDelete = userToDeleteMessages {
+						await MeshPackets.shared.deleteUserMessages(user: userToDelete)
+					}
+				}
+			} label: {
+				Text("Delete")
+			}
+		}
+	}
+
+	@ViewBuilder
+	private func messageTimeText(_ summary: DirectMessageSummary) -> some View {
+		let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64(summary.timestamp)))
+		let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+		if lastMessageDay == currentDay {
+			Text(lastMessageTime, style: .time)
+				.font(.footnote)
+				.foregroundColor(.onSurfaceVariant)
+		} else if lastMessageDay == (currentDay - 1) {
+			Text("Yesterday")
+				.font(.footnote)
+				.foregroundColor(.onSurfaceVariant)
+		} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+			Text(lastMessageTime.formattedDate(format: dateFormatString))
+				.font(.footnote)
+				.foregroundColor(.onSurfaceVariant)
+		} else if lastMessageDay < (currentDay - 1800) {
+			Text(lastMessageTime.formattedDate(format: dateFormatString))
+				.font(.footnote)
+				.foregroundColor(.onSurfaceVariant)
+		}
 	}
 }
+
+private struct UserListFilterLookup {
+	private let distanceNodeNums: Set<Int64>?
+
+	init(users: [UserEntity], distanceBounds: NodeDistanceFilterBounds?, context: ModelContext) {
+		guard let distanceBounds else {
+			self.distanceNodeNums = nil
+			return
+		}
+		let nodeNums = Array(Set(users.map(\.num)))
+		self.distanceNodeNums = Self.fetchDistanceNodeNums(nodeNums: nodeNums, bounds: distanceBounds, context: context)
+	}
+
+	func isWithinDistance(_ user: UserEntity) -> Bool {
+		distanceNodeNums?.contains(user.num) ?? false
+	}
+
+	private static func fetchDistanceNodeNums(
+		nodeNums: [Int64],
+		bounds: NodeDistanceFilterBounds,
+		context: ModelContext
+	) -> Set<Int64> {
+		guard !nodeNums.isEmpty else { return [] }
+		let descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> {
+				$0.latest == true
+				&& $0.nodePosition != nil
+				&& ($0.nodePosition.flatMap { nodeNums.contains($0.num) } ?? false)
+			}
+		)
+		let positions = (try? context.fetch(descriptor)) ?? []
+		return Set(positions.compactMap { position in
+			guard bounds.contains(position) else { return nil }
+			return position.nodePosition?.num
+		})
+	}
+}
+
 fileprivate extension NodeFilterParameters {
 	/// In-memory filter matching for use with @Query results
-	func matches(user: UserEntity) -> Bool {
+	func matches(
+		user: UserEntity,
+		normalizedSearchText: String,
+		onlineThreshold: Date?,
+		distanceBounds: NodeDistanceFilterBounds?,
+		lookup: UserListFilterLookup
+	) -> Bool {
 		// Search text
-		if !searchText.isEmpty {
-			let text = searchText.lowercased()
+		if !normalizedSearchText.isEmpty {
 			let matchesSearch = [user.userId, user.numString, user.hwModel, user.hwDisplayName, user.longName, user.shortName]
 				.compactMap { $0?.lowercased() }
-				.contains { $0.contains(text) }
+				.contains { $0.contains(normalizedSearchText) }
 			if !matchesSearch { return false }
 		}
 		// Mqtt and lora
@@ -310,39 +461,20 @@ fileprivate extension NodeFilterParameters {
 		}
 		// Online
 		if isOnline {
-			let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date()) ?? Date.distantPast
-			if let lastHeard = user.userNode?.lastHeard, lastHeard < twoHoursAgo { return false }
-			if user.userNode?.lastHeard == nil { return false }
+			guard let lastHeard = user.userNode?.lastHeard,
+				  let onlineThreshold else {
+				return false
+			}
+			if lastHeard < onlineThreshold { return false }
 		}
 		// Favorites
 		if isFavorite {
 			if user.userNode?.favorite != true { return false }
 		}
 		// Distance — only apply when we have a valid, precise phone GPS fix
-		if distanceFilter {
-		if let poi = LocationsHandler.currentPreciseLocation {
-				let d = maxDistance * 1.1
-				let r: Double = 6371009
-				let meanLat = poi.latitude * .pi / 180
-				let deltaLat = d / r * 180 / .pi
-				let deltaLon = d / (r * cos(meanLat)) * 180 / .pi
-				let minLatI = Int32((poi.latitude - deltaLat) * 1e7)
-				let maxLatI = Int32((poi.latitude + deltaLat) * 1e7)
-				let minLonI = Int32((poi.longitude - deltaLon) * 1e7)
-				let maxLonI = Int32((poi.longitude + deltaLon) * 1e7)
-				if let nodeNum = user.userNode?.num, let ctx = user.modelContext {
-					let descriptor = FetchDescriptor<PositionEntity>(
-						predicate: #Predicate<PositionEntity> {
-							$0.nodePosition?.num == nodeNum && $0.latest == true
-							&& $0.latitudeI >= minLatI && $0.latitudeI <= maxLatI
-							&& $0.longitudeI >= minLonI && $0.longitudeI <= maxLonI
-						}
-					)
-					let count = (try? ctx.fetchCount(descriptor)) ?? 0
-					if count == 0 { return false }
-				} else {
-					return false
-				}
+		if distanceFilter, distanceBounds != nil {
+			guard lookup.isWithinDistance(user) else {
+				return false
 			}
 		}
 		// Unmessagable filter

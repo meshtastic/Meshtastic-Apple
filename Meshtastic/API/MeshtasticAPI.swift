@@ -102,6 +102,13 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		if isTest {
 			return MeshtasticAPI(container: nil)
 		}
+#if DEBUG
+		let environment = ProcessInfo.processInfo.environment
+		let arguments = ProcessInfo.processInfo.arguments
+		if arguments.contains("--meshtastic-perf-seed") || environment["MESHTASTIC_PERF_SEED_NODES"] != nil {
+			return MeshtasticAPI(container: nil)
+		}
+#endif
 		return MeshtasticAPI(container: MainActor.assumeIsolated { PersistenceController.shared.container })
 	}()
 	

@@ -18,28 +18,14 @@ struct DetectionSensorLog: View {
 	@State var isExporting = false
 	@State var exportString = ""
 	@Bindable var node: NodeInfoEntity
-	@Query private var detections: [MessageEntity]
+	@State private var detections: [MessageEntity] = []
+	@State private var chartData: [MessageEntity] = []
 
 	init(node: NodeInfoEntity) {
 		self.node = node
-		let nodeNum = node.user?.num ?? 0
-		let portNum: Int32 = 10
-		let sevenDaysAgoTimestamp = Int32((Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast).timeIntervalSince1970)
-		_detections = Query(
-			filter: #Predicate<MessageEntity> {
-				$0.portNum == portNum && $0.messageTimestamp >= sevenDaysAgoTimestamp && $0.fromUser?.num == nodeNum
-			},
-			sort: \MessageEntity.messageTimestamp,
-			order: .reverse
-		)
 	}
 
 	var body: some View {
-		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
-		let chartData = detections
-			.filter { $0.timestamp >= oneDayAgo! }
-			.sorted { $0.timestamp < $1.timestamp }
-
 		VStack {
 			if chartData.count > 0 {
 				GroupBox(label: Label("\(chartData.count) Total Detection Events", systemImage: "sensor")) {
@@ -116,6 +102,12 @@ struct DetectionSensorLog: View {
 				}
 			}
 		}
+		.onAppear {
+			refreshDetections()
+		}
+		.onChange(of: node.lastHeard) {
+			refreshDetections()
+		}
 		HStack {
 			Button {
 				exportString = detectionsToCsv(detections: chartData)
@@ -150,7 +142,29 @@ struct DetectionSensorLog: View {
 					Logger.services.error("Detection Sensor log download failed: \(error.localizedDescription, privacy: .public).")
 				}
 			}
+			)
+	}
+
+	private func refreshDetections() {
+		guard let nodeNum = node.user?.num else {
+			detections = []
+			chartData = []
+			return
+		}
+		let portNum: Int32 = 10
+		let sevenDaysAgoTimestamp = Int32((Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast).timeIntervalSince1970)
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.portNum == portNum && $0.messageTimestamp >= sevenDaysAgoTimestamp && $0.fromUser?.num == nodeNum
+			},
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
 		)
+		descriptor.fetchLimit = 500
+		detections = (try? context.fetch(descriptor)) ?? []
+		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date.distantPast
+		chartData = detections
+			.filter { $0.timestamp >= oneDayAgo }
+			.sorted { $0.timestamp < $1.timestamp }
 	}
 }
 

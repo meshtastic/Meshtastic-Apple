@@ -9,7 +9,8 @@ struct ChannelMessageRow: View {
 	// Core Data object observed for changes (like Tapbacks being received)
 	@Bindable var message: MessageEntity
 	
-	let allMessages: [MessageEntity] // The full list for reply lookup
+	let replyMessage: MessageEntity?
+	let tapbacks: [MessageEntity]
 	let previousMessage: MessageEntity?
 	let preferredPeripheralNum: Int
 	let channel: ChannelEntity
@@ -18,7 +19,6 @@ struct ChannelMessageRow: View {
 	@FocusState.Binding var messageFieldFocused: Bool
 	@Binding var messageToHighlight: Int64
 	let scrollView: ScrollViewProxy
-	let onInteractionComplete: () -> Void
 	let onTapback: (MessageEntity) -> Void
 
 	private var isCurrentUser: Bool {
@@ -26,7 +26,8 @@ struct ChannelMessageRow: View {
 	}
 	
 	init(message: MessageEntity,
-	     allMessages: [MessageEntity],
+	     replyMessage: MessageEntity?,
+	     tapbacks: [MessageEntity],
 	     previousMessage: MessageEntity?,
 	     preferredPeripheralNum: Int,
 	     channel: ChannelEntity,
@@ -34,11 +35,11 @@ struct ChannelMessageRow: View {
 	     messageFieldFocused: FocusState<Bool>.Binding,
 	     messageToHighlight: Binding<Int64>,
 	     scrollView: ScrollViewProxy,
-	     onInteractionComplete: @escaping () -> Void,
 	     onTapback: @escaping (MessageEntity) -> Void) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
-		self.allMessages = allMessages
+		self.replyMessage = replyMessage
+		self.tapbacks = tapbacks
 		self.previousMessage = previousMessage
 		self.preferredPeripheralNum = preferredPeripheralNum
 		self.channel = channel
@@ -46,7 +47,6 @@ struct ChannelMessageRow: View {
 		self._messageFieldFocused = messageFieldFocused
 		self._messageToHighlight = messageToHighlight
 		self.scrollView = scrollView
-		self.onInteractionComplete = onInteractionComplete
 		self.onTapback = onTapback
 	}
 
@@ -64,13 +64,11 @@ struct ChannelMessageRow: View {
 			
 			// Reply Message Block
 			if message.replyID > 0 {
-				let messageReply = allMessages.first(where: { $0.messageId == message.replyID })
-				
 				HStack {
 					Spacer(minLength: isCurrentUser ? 50 : 0)
 					
 					Button {
-						if let messageNum = messageReply?.messageId {
+						if let messageNum = replyMessage?.messageId {
 							withAnimation(.easeInOut(duration: 0.5)) {
 								messageToHighlight = messageNum
 							}
@@ -84,7 +82,7 @@ struct ChannelMessageRow: View {
 							}
 						}
 					} label: {
-						Text(messageReply?.displayedPayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+						Text(replyMessage?.displayedPayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
 							.padding(10)
 							.overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.blue, lineWidth: 0.5))
 						Image(systemName: "arrowshape.turn.up.left.fill")
@@ -133,8 +131,7 @@ struct ChannelMessageRow: View {
 						}
 					}
 					
-					// Tapback Responses - Pass the closure to trigger the parent redraw
-					TapbackResponses(message: message, onRead: onInteractionComplete)
+					TapbackResponses(tapbacks: tapbacks)
 					
 					// ACK Status / Error
 					HStack {
