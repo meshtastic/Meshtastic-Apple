@@ -10,11 +10,11 @@ import SwiftUI
 
 struct NetworkConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State var hasChanges: Bool = false
 	@State var wifiEnabled = false
@@ -22,8 +22,14 @@ struct NetworkConfig: View {
 	@State var wifiPsk = ""
 	@State var wifiMode = 0
 	@State var ntpServer = ""
+	@State var rsyslogServer = ""
 	@State var ethEnabled = false
 	@State var ethMode = 0
+	@State var addressMode = 0
+	@State var staticIp = ""
+	@State var staticGateway = ""
+	@State var staticSubnet = ""
+	@State var staticDns = ""
 	@State var udpEnabled = false
 	
 	var body: some View {
@@ -38,7 +44,7 @@ struct NetworkConfig: View {
 							Label("Enabled", systemImage: "wifi")
 							Text("Enabling WiFi will disable the bluetooth connection to the app.")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 						
 						HStack {
 							Label("SSID", systemImage: "network")
@@ -88,6 +94,76 @@ struct NetworkConfig: View {
 				}
 				
 				if node.metadata?.hasEthernet ?? false || node.metadata?.hasWifi ?? false {
+					Section(header: Text("Network Servers")) {
+						HStack {
+							Label("NTP Server", systemImage: "clock")
+							TextField("meshtastic.pool.ntp.org", text: $ntpServer)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: ntpServer) {
+									var totalBytes = ntpServer.utf8.count
+									while totalBytes > 32 {
+										ntpServer = String(ntpServer.dropLast())
+										totalBytes = ntpServer.utf8.count
+									}
+								}
+						}
+						.keyboardType(.default)
+						HStack {
+							Label("Rsyslog Server", systemImage: "server.rack")
+							TextField("Server:Port", text: $rsyslogServer)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: rsyslogServer) {
+									var totalBytes = rsyslogServer.utf8.count
+									while totalBytes > 32 {
+										rsyslogServer = String(rsyslogServer.dropLast())
+										totalBytes = rsyslogServer.utf8.count
+									}
+								}
+						}
+						.keyboardType(.default)
+					}
+
+					Section(header: Text("Address Mode")) {
+						Picker("Address Mode", selection: $addressMode) {
+							Text("DHCP").tag(0)
+							Text("Static").tag(1)
+						}
+						.pickerStyle(.segmented)
+					}
+
+					if addressMode == 1 {
+						Section(header: Text("Static IPv4 Configuration")) {
+							HStack {
+								Label("IP", systemImage: "number")
+								TextField("0.0.0.0", text: $staticIp)
+									.foregroundColor(.gray)
+									.keyboardType(.decimalPad)
+							}
+							HStack {
+								Label("Gateway", systemImage: "arrow.triangle.branch")
+								TextField("0.0.0.0", text: $staticGateway)
+									.foregroundColor(.gray)
+									.keyboardType(.decimalPad)
+							}
+							HStack {
+								Label("Subnet", systemImage: "circle.grid.cross")
+								TextField("255.255.255.0", text: $staticSubnet)
+									.foregroundColor(.gray)
+									.keyboardType(.decimalPad)
+							}
+							HStack {
+								Label("DNS", systemImage: "magnifyingglass")
+								TextField("0.0.0.0", text: $staticDns)
+									.foregroundColor(.gray)
+									.keyboardType(.decimalPad)
+							}
+						}
+					}
+
 					Section(header: Text("UDP Broadcast")) {
 						Toggle(isOn: $udpEnabled) {
 							Label("Enabled", systemImage: "point.3.connected.trianglepath.dotted")
@@ -102,34 +178,42 @@ struct NetworkConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.networkConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					if let deviceNum = accessoryManager.activeDeviceNum, let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-						var network = Config.NetworkConfig()
-						network.wifiEnabled = self.wifiEnabled
-						network.wifiSsid = self.wifiSsid
-						network.wifiPsk = self.wifiPsk
-						network.ethEnabled = self.ethEnabled
-						network.enabledProtocols = self.udpEnabled ? UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) : UInt32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue)
-						// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
-						Task {
-							_ = try await accessoryManager.saveNetworkConfig(config: network, fromUser: connectedNode.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var network = Config.NetworkConfig()
+					network.wifiEnabled = self.wifiEnabled
+					network.wifiSsid = self.wifiSsid
+					network.wifiPsk = self.wifiPsk
+					network.ntpServer = self.ntpServer
+					network.rsyslogServer = self.rsyslogServer
+					network.ethEnabled = self.ethEnabled
+					network.enabledProtocols = self.udpEnabled ? UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) : UInt32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue)
+					network.addressMode = Config.NetworkConfig.AddressMode(rawValue: self.addressMode) ?? .dhcp
+					if self.addressMode == 1 {
+						var ipv4 = Config.NetworkConfig.IpV4Config()
+						ipv4.ip = self.ipStringToUInt32(self.staticIp)
+						ipv4.gateway = self.ipStringToUInt32(self.staticGateway)
+						ipv4.subnet = self.ipStringToUInt32(self.staticSubnet)
+						ipv4.dns = self.ipStringToUInt32(self.staticDns)
+						network.ipv4Config = ipv4
 					}
+					_ = try await accessoryManager.saveNetworkConfig(config: network, fromUser: fromUser, toUser: toUser)
 				}
+			}
 			}
 		}
 		.navigationTitle("Network Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			}
-		)
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onAppear {
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if accessoryManager.isConnected && node?.networkConfig == nil {
@@ -142,31 +226,13 @@ struct NetworkConfig: View {
 			}
 		}
 		.onFirstAppear {
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.networkConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired network config requesting via PKI admin")
-										try await accessoryManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Network config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.networkConfig == nil },
+				request: accessoryManager.requestNetworkConfig
+			)
 		}
 		.onChange(of: wifiEnabled) { _, newEnabled in
 			if newEnabled != node?.networkConfig?.wifiEnabled { hasChanges = true }
@@ -182,7 +248,29 @@ struct NetworkConfig: View {
 		}
 		.onChange(of: ethEnabled) { _, newEthEnabled in
 			if newEthEnabled != node?.networkConfig?.ethEnabled { hasChanges = true }
-		}.onChange(of: udpEnabled) {_, newUdpEnabled in
+		}
+		.onChange(of: ntpServer) { _, newValue in
+			if newValue != (node?.networkConfig?.ntpServer ?? "") { hasChanges = true }
+		}
+		.onChange(of: rsyslogServer) { _, newValue in
+			if newValue != (node?.networkConfig?.rsyslogServer ?? "") { hasChanges = true }
+		}
+		.onChange(of: addressMode) { _, newValue in
+			if newValue != Int(node?.networkConfig?.addressMode ?? 0) { hasChanges = true }
+		}
+		.onChange(of: staticIp) { _, newValue in
+			if newValue != self.uint32ToIpString(UInt32(bitPattern: node?.networkConfig?.ip ?? 0)) { hasChanges = true }
+		}
+		.onChange(of: staticGateway) { _, newValue in
+			if newValue != self.uint32ToIpString(UInt32(bitPattern: node?.networkConfig?.gateway ?? 0)) { hasChanges = true }
+		}
+		.onChange(of: staticSubnet) { _, newValue in
+			if newValue != self.uint32ToIpString(UInt32(bitPattern: node?.networkConfig?.subnet ?? 0)) { hasChanges = true }
+		}
+		.onChange(of: staticDns) { _, newValue in
+			if newValue != self.uint32ToIpString(UInt32(bitPattern: node?.networkConfig?.dns ?? 0)) { hasChanges = true }
+		}
+		.onChange(of: udpEnabled) {_, newUdpEnabled in
 			if let netConfig = node?.networkConfig {
 				let newValue: UInt32
 				if newUdpEnabled {
@@ -203,9 +291,37 @@ struct NetworkConfig: View {
 		self.wifiSsid = node?.networkConfig?.wifiSsid ?? ""
 		self.wifiPsk = node?.networkConfig?.wifiPsk ?? ""
 		self.wifiMode = Int(node?.networkConfig?.wifiMode ?? 0)
+		self.ntpServer = node?.networkConfig?.ntpServer ?? ""
+		self.rsyslogServer = node?.networkConfig?.rsyslogServer ?? ""
 		self.ethEnabled = node?.networkConfig?.ethEnabled ?? false
+		self.addressMode = Int(node?.networkConfig?.addressMode ?? 0)
+		self.staticIp = self.uint32ToIpString(UInt32(bitPattern: node?.networkConfig?.ip ?? 0))
+		self.staticGateway = self.uint32ToIpString(UInt32(bitPattern: node?.networkConfig?.gateway ?? 0))
+		self.staticSubnet = self.uint32ToIpString(UInt32(bitPattern: node?.networkConfig?.subnet ?? 0))
+		self.staticDns = self.uint32ToIpString(UInt32(bitPattern: node?.networkConfig?.dns ?? 0))
 		let enabledProtocols = UInt32(node?.networkConfig?.enabledProtocols ?? Int32(Config.NetworkConfig.ProtocolFlags.noBroadcast.rawValue))
 		self.udpEnabled = enabledProtocols & UInt32(Config.NetworkConfig.ProtocolFlags.udpBroadcast.rawValue) != 0
 		self.hasChanges = false
 	}
+
+	func ipStringToUInt32(_ ipString: String) -> UInt32 {
+		let parts = ipString.split(separator: ".").compactMap { UInt32($0) }
+		guard parts.count == 4, parts.allSatisfy({ $0 <= 255 }) else { return 0 }
+		return (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]
+	}
+
+	func uint32ToIpString(_ value: UInt32) -> String {
+		if value == 0 { return "" }
+		let a = (value >> 24) & 0xFF
+		let b = (value >> 16) & 0xFF
+		let c = (value >> 8) & 0xFF
+		let d = value & 0xFF
+		return "\(a).\(b).\(c).\(d)"
+	}
+}
+
+#Preview {
+	NetworkConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

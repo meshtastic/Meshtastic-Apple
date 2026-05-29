@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Mesh Discovery</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="discovery">
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Local Mesh Discovery</h1>
+<p>Local Mesh Discovery scans your area to find nearby Meshtastic radios operating on different frequency settings. Use it to identify which LoRa configuration is most active in your location before setting up a new node.</p>
+<h2>What It Does</h2>
+<p>The scanner switches through a series of LoRa modem presets and frequency slots, listens for a set period on each, and records how many nodes it hears and how busy the airwaves are (channel utilisation). It then presents a ranked list of settings ordered by activity.</p>
+<p>On supported devices running iOS 26+, the on-device AI assistant analyses the scan results and recommends the best configuration for your location — no internet connection required.</p>
+<h2>Running a Scan</h2>
+<p><img src="../assets/screenshots/radarActive.png" alt="Radar sweep active — scan in progress" /></p>
+<ol>
+<li>Go to <strong>Settings → Local Mesh Discovery</strong>.</li>
+<li>Tap <strong>Start Scan</strong>.</li>
+<li>The scanner cycles through settings automatically. Each cycle takes a few minutes — do not close the app during a scan.</li>
+<li>When the scan completes, results appear ranked by node count and channel activity.</li>
+</ol>
+<h2>Reading Results</h2>
+<p><img src="../assets/screenshots/summaryTwoPresets.png" alt="Discovery results summary with two presets" /></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preset</td>
+<td>LoRa modem preset (e.g., Long Fast, Long Slow)</td>
+</tr>
+<tr>
+<td>Nodes Heard</td>
+<td>Number of distinct nodes detected on this setting</td>
+</tr>
+<tr>
+<td>Channel Utilisation</td>
+<td>Percentage of airtime used — higher means more active</td>
+</tr>
+<tr>
+<td>Recommendation</td>
+<td>✅ Best match for your area</td>
+</tr>
+</tbody>
+</table>
+<h2>Applying a Setting</h2>
+<p>Tap a result row and then <strong>Apply Setting</strong> to configure your connected radio to match the most active setting in your area. This updates the LoRa configuration on the radio directly.</p>
+<hr />
+<div class="tips-callout"><strong>Tip — What does this do?</strong>
+This tool scans your local area to find nearby Meshtastic radios on different frequency settings. It switches between settings automatically, listens for a few minutes on each one, and then shows you which setting works best for your location based on how many radios it finds and how busy the airwaves are. On supported devices, local on-device AI will analyse your scan results and recommend the best setting — no internet connection required.</div>
+</body>
+</html>

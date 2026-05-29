@@ -36,3 +36,14 @@ struct MessageTemplate: View {
 
 	}
 }
+
+#Preview {
+	let user = UserEntity()
+	user.longName = "Test User"
+	user.shortName = "TU"
+	let message = MessageEntity()
+	message.messagePayload = "Hello, World!"
+	message.messageTimestamp = Int32(Date().timeIntervalSince1970)
+	message.replyID = 0
+	MessageTemplate(user: user, message: message)
+}

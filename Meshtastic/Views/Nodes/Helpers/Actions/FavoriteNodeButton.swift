@@ -1,13 +1,13 @@
-import CoreData
+import SwiftData
 import OSLog
 import SwiftUI
 
 struct FavoriteNodeButton: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State var isShowingClientBaseConfirmation = false
 
 	var body: some View {
@@ -69,7 +69,6 @@ struct FavoriteNodeButton: View {
 				do {
 					try context.save()
 				} catch {
-					context.rollback()
 					Logger.data.error("Save Node Favorite Error")
 				}
 				Logger.data.debug("Favorited a node")
@@ -79,3 +78,18 @@ struct FavoriteNodeButton: View {
 		}
 	}
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let user = UserEntity()
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	FavoriteNodeButton(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
+}
+*/

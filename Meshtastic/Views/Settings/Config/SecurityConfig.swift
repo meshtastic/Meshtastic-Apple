@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import OSLog
 import CryptoKit
@@ -15,11 +15,11 @@ import CryptoKit
 struct SecurityConfig: View {
 	
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State var hasChanges = false
 	@State var publicKey = ""
@@ -200,20 +200,24 @@ struct SecurityConfig: View {
 					Label("Serial Console", systemImage: "terminal")
 					Text("Serial Console over the Stream API.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				Toggle(isOn: $debugLogApiEnabled) {
 					Label("Debug Logs", systemImage: "ant.fill")
 					Text("Output live debug logging over serial, view and export position-redacted device logs over Bluetooth.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 			}
-			if adminKey.length > 0 || UserDefaults.enableAdministration {
-				Section(header: Text("Administration")) {
-					Toggle(isOn: $isManaged) {
-						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
-						Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+			Section(header: Text("Administration")) {
+				Toggle(isOn: $isManaged) {
+					Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+					Text("Device is managed by a mesh administrator, the user is unable to access any of the device settings.")
+				}
+				.tint(.accentColor)
+				.disabled(adminKey.length == 0)
+				if adminKey.length == 0 {
+					Label("An admin key must be set before enabling managed mode.", systemImage: "exclamationmark.triangle.fill")
+						.font(.caption)
+						.foregroundStyle(.orange)
 				}
 			}
 		}
@@ -256,9 +260,8 @@ struct SecurityConfig: View {
 									try context.save()
 									Logger.data.info("💾 Saved UserEntity Public Key to Core Data for \(node?.num ?? 0, privacy: .public)")
 								} catch {
-									context.rollback()
 									let nsError = error as NSError
-									Logger.data.error("Error Updating Core Data UserEntity: \(nsError, privacy: .public)")
+									Logger.data.error("Error Updating UserEntity: \(nsError, privacy: .public)")
 								}
 							}
 						}
@@ -282,9 +285,11 @@ struct SecurityConfig: View {
 		}
 		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Security Config")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+	ToolbarItem(placement: .topBarTrailing) {
+		ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+	}
+}
 		.onChange(of: node) { _, _ in
 			setSecurityValues()
 		}
@@ -344,32 +349,13 @@ struct SecurityConfig: View {
 			if key != node?.securityConfig?.adminKey3?.base64EncodedString() ?? "" && hasValidAdminKey3 { hasChanges = true }
 		}
 		.onFirstAppear {
-			// Need to request a SecurityConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				if let connectedNode = getNodeInfo(id: deviceNum, context: context) {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.securityConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired security config requesting via PKI admin")
-										try await accessoryManager.requestSecurityConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Security config request failed")
-									}
-								}
-							}
-						} else {
-							if node.deviceConfig == nil {
-								/// Legacy Administration
-								Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-							}
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.securityConfig == nil },
+				request: accessoryManager.requestSecurityConfig
+			)
 		}
 	}
 	
@@ -427,4 +413,10 @@ struct SecurityConfig: View {
 			return nil
 		}
 	}
+}
+
+#Preview {
+	SecurityConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

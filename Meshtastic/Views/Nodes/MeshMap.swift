@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+@preconcurrency import SwiftData
 import CoreLocation
 import Foundation
 import OSLog
@@ -14,11 +14,14 @@ import MapKit
 
 struct MeshMap: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
+	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+	@Environment(\.openWindow) private var openWindow
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@ObservedObject
 	var router: Router
+	var showOpenWindowButton: Bool = true
 
 	/// Parameters
 	@State var showUserLocation: Bool = true
@@ -30,6 +33,7 @@ struct MeshMap: View {
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
 	@Namespace var mapScope
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
@@ -41,13 +45,41 @@ struct MeshMap: View {
 	@State var selectedWaypointId: String?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
+	@State private var showLegend = false
 	/// Filter
 	@StateObject var filters = NodeFilterParameters()
+	/// Track whether a detached Mesh Map window is currently open.
+	@State private var isMapWindowOpen = false
+
+	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true },
+		   sort: \PositionEntity.time, order: .reverse)
+	private var allLatestPositions: [PositionEntity]
+
+	/// Positions filtered once per render using the full NodeFilterParameters,
+	/// passed to MeshMapContent to avoid repeated relationship faulting.
+	private var filteredPositions: [PositionEntity] {
+		allLatestPositions.filter { position in
+			guard let node = position.nodePosition else { return false }
+			return filters.matches(node)
+		}
+	}
+
+	/// Keep the detached map window fully populated while still starving the
+	/// main tabbed Mesh Map when it is off-screen.
+	private var isMapVisible: Bool {
+		showOpenWindowButton ? router.selectedTab == .map : true
+	}
+
+	/// Positions actually passed to the map — empty when the tab is off-screen
+	/// so MapKit drops its annotation view trees and reduces memory.
+	private var visiblePositions: [PositionEntity] {
+		isMapVisible ? filteredPositions : []
+	}
 
 	var body: some View {
 		NavigationStack {
 			ZStack {
-				MapReader { reader in
+			MapReader { reader in
 					Map(
 						position: $position,
 						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
@@ -60,9 +92,11 @@ struct MeshMap: View {
 							selectedMapLayer: $selectedMapLayer,
 							selectedPosition: $selectedPosition,
 							selectedWaypoint: $selectedWaypoint,
-							enabledOverlayConfigs: $enabledOverlayConfigs
+							enabledOverlayConfigs: $enabledOverlayConfigs,
+							filteredPositions: visiblePositions
 						)
 					}
+					.id(meshMapDistance)
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
 					.mapControls {
@@ -100,7 +134,7 @@ struct MeshMap: View {
 									centerMapAt(coordinate: coordinate)
 
 									newWaypointCoord = coordinate
-									editingWaypoint = WaypointEntity(context: context)
+									editingWaypoint = WaypointEntity()
 									editingWaypoint!.name = "Waypoint Pin"
 									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
 									editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
@@ -115,22 +149,52 @@ struct MeshMap: View {
 					.ignoresSafeArea()
 				}
 				.sheet(item: $selectedPosition) { selection in
-					PositionPopover(position: selection, popover: false)
-						.padding()
+					if let nodeNum = selection.nodePosition?.num,
+					   let node = getNodeInfo(id: Int64(nodeNum), context: context) {
+						NavigationStack {
+							NodeDetail(node: node, showMapLink: false)
+						}
+						#if targetEnvironment(macCatalyst)
+						.overlay(alignment: .topLeading) {
+							Button {
+								selectedPosition = nil
+							} label: {
+								Image(systemName: "xmark.circle.fill")
+									.font(.system(size: 34))
+									.symbolRenderingMode(.palette)
+									.foregroundStyle(.white, Color(.systemGray3))
+							}
+							.buttonStyle(.plain)
+							.padding(.top, 12)
+							.padding(.leading, 14)
+						}
+						#endif
+						.presentationDetents([.large])
+						#if !targetEnvironment(macCatalyst)
+						.presentationDragIndicator(.visible)
+						#endif
+					}
 				}
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
-						.presentationDetents([.large])
+						.presentationDetents([.large]) // full screen
+						#if !targetEnvironment(macCatalyst)
+						.presentationDragIndicator(.visible)
+						#endif
 				}
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
 						.presentationDetents([.large])
+						#if !targetEnvironment(macCatalyst)
+						.presentationDragIndicator(.visible)
+						#endif
 				}
+
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 				}
-				.onChange(of: router.navigationState) {
-					guard case .map = router.navigationState.selectedTab else { return }
+				.onChange(of: router.mapState) {
+					guard case .map = router.selectedTab else { return }
 					// TODO: handle deep link for waypoints
 				}
 				.onChange(of: selectedMapLayer) { _, newMapLayer in
@@ -150,35 +214,82 @@ struct MeshMap: View {
 				}
 				.sheet(isPresented: $editingFilters) {
 					NodeListFilter(
+						filterTitle: "Map Filters",
 						filters: filters
 					)
 				}
+				.sheet(isPresented: $showLegend) {
+					MapLegend(isMeshMap: true)
+						.presentationDetents([.large])
+						.presentationContentInteraction(.scrolls)
+						#if !targetEnvironment(macCatalyst)
+						.presentationDragIndicator(.visible)
+						#endif
+						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
+				}
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
-					HStack {
+					HStack(spacing: 12) {
 						Spacer()
+						Button(action: {
+							withAnimation {
+								editingFilters = !editingFilters
+							}
+						}) {
+							Image(systemName: filters.isFiltering ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+						}
+						.accessibilityLabel(editingFilters ? "Hide node filters" : "Show node filters")
+						.accessibilityHint(editingFilters ? "Hides the node filter options." : "Shows the node filter options.")
+						.glassButtonStyle()
+						Button(action: {
+							withAnimation {
+								showLegend = !showLegend
+							}
+						}) {
+							Image(systemName: showLegend ? "map.fill" : "map")
+						}
+						.accessibilityLabel(showLegend ? "Hide map legend" : "Show map legend")
+						.accessibilityHint(showLegend ? "Hides the map legend." : "Shows the map legend.")
+						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								editingSettings = !editingSettings
 							}
 						}) {
 							Image(systemName: editingSettings ? "info.circle.fill" : "info.circle")
-								.padding(.vertical, 5)
 						}
-						.tint(Color(UIColor.secondarySystemBackground))
-						.foregroundColor(.accentColor)
-						.buttonStyle(.borderedProminent)
+						.glassButtonStyle()
 					}
 					.controlSize(.regular)
-					.padding(5)
+					.padding(.horizontal, 12)
+					.padding(.vertical, 8)
 				}
 			}
-			.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-			})
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo()
+				}
+				ToolbarItem(placement: .topBarTrailing) {
+					HStack {
+						if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
+							Button {
+								if router.selectedTab == .map {
+									router.selectedTab = .nodes
+								}
+								openWindow(id: "meshmap-window")
+								isMapWindowOpen = true
+							} label: {
+								Image(systemName: "macwindow.badge.plus")
+							}
+						}
+						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+					}
+				}
+			}
 			.toolbarBackground(.hidden, for: .navigationBar)
 		}
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
+			refreshMapWindowOpenState()
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
@@ -196,12 +307,34 @@ struct MeshMap: View {
 		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
+			GeoJSONOverlayManager.shared.clearCache()
 		})
+		.onChange(of: router.selectedTab) { _, newTab in
+			if newTab == .map {
+				refreshMapWindowOpenState()
+				UIApplication.shared.isIdleTimerDisabled = true
+			} else {
+				UIApplication.shared.isIdleTimerDisabled = false
+				GeoJSONOverlayManager.shared.clearCache()
+			}
+		}
 		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
 			if let deletedFileId = notification.object as? UUID {
 				enabledOverlayConfigs.remove(deletedFileId)
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: UIScene.didActivateNotification)) { _ in
+			refreshMapWindowOpenState()
+		}
+		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
+			refreshMapWindowOpenState()
+		}
+	}
+
+	private func refreshMapWindowOpenState() {
+		// One primary app window plus one detached window means > 1 attached scenes.
+		let attachedScenes = UIApplication.shared.connectedScenes.filter { $0.activationState != .unattached }
+		isMapWindowOpen = attachedScenes.count > 1
 	}
 
 	// moves the map to a new coordinate

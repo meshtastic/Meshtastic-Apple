@@ -1,5 +1,5 @@
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct ConfigHeader<T>: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -36,4 +36,14 @@ struct ConfigHeader<T>: View {
 				.foregroundColor(.orange)
 		}
 	}
+}
+
+#Preview {
+	ConfigHeader(
+		title: "Bluetooth Configuration",
+		config: \NodeInfoEntity.bluetoothConfig,
+		node: nil,
+		onAppear: { }
+	)
+	.environmentObject(AccessoryManager.shared)
 }

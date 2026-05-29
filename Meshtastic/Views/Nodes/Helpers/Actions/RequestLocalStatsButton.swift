@@ -9,7 +9,7 @@ struct RequestLocalStatsButton: View {
 	@State
 	private var isPresentingLocalStatsSentAlert: Bool = false
 
-    var body: some View {
+	var body: some View {
 		RateLimitedButton(key: "localstats", rateLimit: 30.0) {
 			Task {
 				do {
@@ -17,7 +17,7 @@ struct RequestLocalStatsButton: View {
 						destNum: node.user?.num ?? 0,
 						wantResponse: true
 					)
-					Task {
+					Task { @MainActor in
 						isPresentingLocalStatsSentAlert = true
 					}
 				} catch {
@@ -37,15 +37,15 @@ struct RequestLocalStatsButton: View {
 				Label {
 					Text("Request Local Stats")
 				} icon: {
-				    Image(systemName: "chart.bar")
-					   .symbolRenderingMode(.hierarchical)
-			    }
-		   }
+					Image(systemName: "chart.bar")
+						.symbolRenderingMode(.hierarchical)
+				}
+			}
 		}
 		.alert("Local Stats Requested", isPresented: $isPresentingLocalStatsSentAlert) {
 			Button("OK", role: .cancel) { }
 		} message: {
-			Text("A local stats request has been sent to \(node.user?.longName ?? "this node"). Responses can some time.")
+			Text("A local stats request has been sent to \(node.user?.longName ?? "this node"). Responses can take some time.")
 		}
-    }
+	}
 }

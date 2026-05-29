@@ -10,7 +10,7 @@ import OSLog
 
 struct DeviceMetricsLog: View {
 
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
@@ -21,7 +21,7 @@ struct DeviceMetricsLog: View {
 	@State private var batteryChartColor: Color = .blue
 	@State private var airtimeChartColor: Color = .yellow
 	@State private var channelUtilizationChartColor: Color = .green
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
 	@State private var chartSelection: Date?
@@ -30,10 +30,10 @@ struct DeviceMetricsLog: View {
 		VStack {
 			if node.hasDeviceMetrics {
 				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
+				let deviceMetrics = node.safeTelemetries(ofType: 0)
 				let chartData = deviceMetrics
-						.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
-						.sorted { $0.time! < $1.time! }
+						.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+						.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 						Chart {
@@ -103,14 +103,12 @@ struct DeviceMetricsLog: View {
 					}
 					.frame(minHeight: 240)
 				}
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
 				if idiom == .phone {
 					/// Single Cell Compact display for phones
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
 							HStack {
-								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+								Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 									.font(.caption)
 									.fontWeight(.semibold)
 								Spacer()
@@ -177,7 +175,7 @@ struct DeviceMetricsLog: View {
 						}
 						.width(min: 100)
 						TableColumn("Timestamp") { dm in
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+							Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -233,15 +231,16 @@ struct DeviceMetricsLog: View {
 		}
 		.navigationTitle("Device Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("Device Metrics Log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Device Metrics Log".localized) \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -254,3 +253,18 @@ struct DeviceMetricsLog: View {
 		)
 	}
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let user = UserEntity()
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	DeviceMetricsLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
+}
+*/

@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 import MeshtasticProtobufs
 import CoreBluetooth
 import OSLog
@@ -77,7 +78,7 @@ enum AccessoryManagerState: Equatable {
 	case idle
 	case discovering
 	case connecting
-	case retrying(attempt: Int)
+	case retrying(attempt: Int, maxAttempts: Int)
 	case retrievingDatabase(nodeCount: Int)
 	case communicating
 	case subscribed
@@ -92,8 +93,8 @@ enum AccessoryManagerState: Equatable {
 			return "Discovering"
 		case .connecting:
 			return "Connecting"
-		case .retrying(let attempt):
-			return "Retrying Connection (\(attempt))"
+		case .retrying(let attempt, let maxAttempts):
+			return "Retrying Connection (\(attempt) of \(maxAttempts))"
 		case .communicating:
 			return "Communicating"
 		case .subscribed:
@@ -116,13 +117,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Constants
 	let NONCE_ONLY_CONFIG = 69420
 	let NONCE_ONLY_DB = 69421
-	let minimumVersion = "2.3.15"
+	let minimumVersion = "2.5.18"
+	let securityVersion = "2.6.0"
 
 	// Global Objects
 	// Chicken/Egg problem.  Set in the App object immediately after
 	// AppState and AccessoryManager are created
 	var appState: AppState!
-	let context = PersistenceController.shared.container.viewContext
+	lazy var context = PersistenceController.shared.context
 	let mqttManager = MqttClientProxyManager.shared
 
 	// Published Stuff
@@ -136,8 +138,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var isConnected: Bool = false
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
+	@Published var firmwareEdition: FirmwareEditions = .vanilla
 
 	var activeConnection: (device: Device, connection: any Connection)?
+
+	/// Reference to the active discovery scan engine, if any
+	var discoveryScanEngine: DiscoveryScanEngine?
+
+	/// Shared discovery scan engine that persists across navigation
+	let discoveryEngine = DiscoveryScanEngine()
 
 	let transports: [any Transport]
 
@@ -151,14 +160,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	var connectionSteps: SequentialSteps?
 	
 	// Public due to file separation
+	var otaInProgress: Bool = false
 	var discoveryTask: Task<Void, Never>?
 	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
 	var connectionStepper: SequentialSteps?
 	
-	// Flash subjects
-	@Published var packetsSent: Int = 0
-	@Published var packetsReceived: Int = 0
+	// Flash counters — NOT @Published to avoid triggering re-renders of all observing views.
+	// RXTXIndicatorWidget observes these via onChange polling.
+	var packetsSent: Int = 0
+	var packetsReceived: Int = 0
 	
 	// Continuations
 	var wantConfigContinuation: CheckedContinuation<Void, Error>?
@@ -170,11 +181,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	var heartbeatTimer: ResettableTimer?
 	var heartbeatResponseTimer: ResettableTimer?
-	
+	private var isClosingConnection = false
+
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
 		self.state = .uninitialized
 		self.mqttManager.delegate = self
+
+		// Listen for system memory warnings to proactively save pending changes
+		if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
+			NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
+				guard let self else { return }
+				try? self.context.save()
+				Logger.data.warning("⚠️ [AccessoryManager] Memory warning — saved context")
+			}
+		}
 	}
 
 	func transportForType(_ type: TransportType) -> Transport? {
@@ -193,8 +214,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	func sendWantConfig() async throws {
 		if let inProgressWantConfigContinuation = wantConfigContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for wantConfig(Config). Cancelling.")
-			inProgressWantConfigContinuation.resume(throwing: CancellationError())
 			wantConfigContinuation = nil
+			inProgressWantConfigContinuation.resume(throwing: CancellationError())
 		}
 		guard let connection = activeConnection?.connection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
@@ -215,8 +236,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] NONCE_ONLY_CONFIG Done")
 		} onCancel: {
 			Task { @MainActor in
-				wantConfigContinuation?.resume(throwing: CancellationError())
-				wantConfigContinuation = nil
+				if let continuation = wantConfigContinuation {
+					wantConfigContinuation = nil
+					continuation.resume(throwing: CancellationError())
+				}
 			}
 		}
 	}
@@ -224,8 +247,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	func sendWantDatabase() async throws {
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
-			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
 			self.firstDatabaseNodeInfoContinuation = nil
+			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
 		}
 		
 		guard let connection = activeConnection?.connection else {
@@ -245,8 +268,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB first NodeInfo received.")
 		} onCancel: {
 			Task { @MainActor in
-				firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
-				firstDatabaseNodeInfoContinuation = nil
+				if let continuation = firstDatabaseNodeInfoContinuation {
+					firstDatabaseNodeInfoContinuation = nil
+					continuation.resume(throwing: CancellationError())
+				}
 			}
 		}
 	}
@@ -259,12 +284,20 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// If you are calling this in response to an error, then you should have
 	// exposed the error to the UI or handled the error prior to calling this.
 	func closeConnection() async throws {
+		guard !isClosingConnection else {
+			Logger.transport.debug("[AccessoryManager] closeConnection ignored while teardown is already in progress")
+			return
+		}
+		isClosingConnection = true
+		defer { isClosingConnection = false }
+
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
 		if let activeConnection {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
+		self.activeDeviceNum = nil
 		
 		connectionEventTask?.cancel()
 		connectionEventTask = nil
@@ -277,25 +310,44 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		heartbeatTimer = nil
 		heartbeatResponseTimer = nil
 		
-		// Clean up continuations
-		wantConfigContinuation?.resume(throwing: CancellationError())
-		wantConfigContinuation = nil
-		firstDatabaseNodeInfoContinuation?.resume(throwing: CancellationError())
-		firstDatabaseNodeInfoContinuation = nil
+		// Clean up continuations — nil before resume to prevent double-resume races
+		if let continuation = wantConfigContinuation {
+			wantConfigContinuation = nil
+			continuation.resume(throwing: CancellationError())
+		}
+		if let continuation = firstDatabaseNodeInfoContinuation {
+			firstDatabaseNodeInfoContinuation = nil
+			continuation.resume(throwing: CancellationError())
+		}
 		
 		await wantDatabaseGate.cancelAll()
 		await wantDatabaseGate.reset()
+
+		// Save any pending changes and let SwiftData manage object lifecycle on disconnect.
+		try? context.save()
+		Logger.data.info("💾 [AccessoryManager] Saved context on disconnect")
 		
 		// Turn off the disconnect buttons
 		allowDisconnect = false
+		
+		// Cancel any existing discovery task so startDiscovery() always creates a fresh one.
+		// Without this, if discovery was still running from before the connection attempt,
+		// startDiscovery() would silently no-op and the device would never reappear in the list.
+		discoveryTask?.cancel()
+		discoveryTask = nil
+		
 		self.startDiscovery()
 	}
 	
 	// Should only be called by UI-facing callers.
 	func disconnect() async throws {
+		guard !isClosingConnection else { return }
 		self.userRequestedConnectionCancellation = true
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
+
+		// Flush any debounced position/telemetry saves before disconnecting
+		await MeshPackets.shared.flushDebouncedSaves()
 
 		// Close out the connection
 		if let activeConnection = activeConnection {
@@ -319,6 +371,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				device[keyPath: key] = value
 				self.activeConnection = (device: device, connection: activeConnection.connection)
+				
+			}
+			// Make sure activeDeviceNum is up to date.
+			if key == \.num, self.activeDeviceNum != device.num {
 				self.activeDeviceNum = device.num
 			}
 		}
@@ -351,6 +407,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		case .uninitialized, .idle, .discovering:
 			self.isConnected = false
 			self.isConnecting = false
+			self.firmwareEdition = .vanilla
 		case .connecting, .communicating, .retrying:
 			self.isConnected = false
 			self.isConnecting = true
@@ -375,10 +432,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func didReceive(_ event: ConnectionEvent) async {
+		let shouldIgnoreTransientEvent = isClosingConnection || userRequestedConnectionCancellation || activeConnection == nil
+
 		packetsReceived += 1
-		
+
 		switch event {
 		case .data(let fromRadio):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping data event during disconnect teardown")
+				return
+			}
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
 			await self.processFromRadio(fromRadio)
 			Task {
@@ -387,6 +450,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 
 		case .logMessage(let message):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping log event during disconnect teardown")
+				return
+			}
 			self.didReceiveLog(message: message)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
@@ -394,6 +461,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 		
 		case .rssiUpdate(let rssi):
+			guard !shouldIgnoreTransientEvent else {
+				Logger.transport.debug("[Accessory] Dropping RSSI update during disconnect teardown")
+				return
+			}
 			guard let deviceId = self.activeConnection?.device.id else {
 				Logger.transport.error("Could not update RSSI, no active connection")
 				return
@@ -489,6 +560,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	private func processFromRadio(_ decodedInfo: FromRadio) async {
+		// Logger.transport.info("📻 [processFromRadio] Processing: \(String(describing: decodedInfo.payloadVariant), privacy: .public)")
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
 			handleMqttClientProxyMessage(mqttClientProxyMessage)
@@ -509,6 +581,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 			// Dispatch based on packet contents.
 			if case let .decoded(data) = packet.payloadVariant {
+				// Forward packets to discovery scan engine if active
+				if let engine = discoveryScanEngine, engine.isScanning {
+					engine.handleMeshPacket(packet, portNum: data.portnum)
+				}
+
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
 					await handleTextMessageAppPacket(packet)
@@ -524,6 +601,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .positionApp:
 					await MeshPackets.shared.upsertPositionPacket(packet: packet)
+					WatchSessionManager.shared.sendNodesToWatch()
 					// Broadcast position to TAK clients
 					if let position = try? Position(serializedBytes: data.payload) {
 						Logger.tak.debug("Position received, calling broadcast")
@@ -538,19 +616,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					// Broadcast waypoint to TAK clients
 					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
 						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")
-						// Ensure bridge is initialized before calling (not optional chaining, or lazy init won't run)
 						let server = TAKServerManager.shared
-						if server.meshToCotEnabled && server.isRunning && !server.connectedClients.isEmpty {
-							// Force bridge initialization if needed
-							if server.bridge == nil {
-								Logger.tak.info("Initializing bridge on demand")
-								let bridge = TAKMeshtasticBridge(
-									accessoryManager: AccessoryManager.shared,
-									takServerManager: server
-								)
-								bridge.context = AccessoryManager.shared.context
-								server.bridge = bridge
-							}
+						if server.ensureBridgeReadyForMeshToCot() {
 							await server.bridge?.broadcastMeshWaypointToTAK(waypoint: waypoint, from: packet.from)
 						} else {
 							Logger.tak.info("Waypoint broadcast skipped: server not ready or no clients")
@@ -632,7 +699,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					handleTraceRouteApp(packet)
 				case .neighborinfoApp:
 					if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
-						Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+						if let engine = discoveryScanEngine, engine.isScanning {
+							engine.handleNeighborInfo(neighborInfo, packet: decodedInfo.packet)
+						} else {
+							Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+						}
 					}
 				case .paxcounterApp:
 					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet)
@@ -644,18 +715,29 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.services.info("MAX PORT NUM OF 511")
 				case .atakPlugin:
 					handleATAKPluginPacket(packet)
+				case .atakPluginV2:
+					handleATAKPluginV2Packet(packet)
 				case .powerstressApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .reticulumTunnelApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .keyVerificationApp:
 					Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
-				case .unknownApp:
-					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				case .cayenneApp:
 					Logger.mesh.info("🕸️ MESH PACKET received Cayenne App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .groupalarmApp:
+					Logger.mesh.info("🕸️ MESH PACKET received Group Alarm App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .lorawanBridge:
+					Logger.mesh.info("🕸️ MESH PACKET received for LoRaWAN Bridge UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .remoteShellApp:
+					Logger.mesh.info("🕸️ MESH PACKET received for Remote Shell UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				case .unknownApp:
+					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 				}
 			}
+			// Save any pending updateAnyPacketFrom changes for packets that
+			// don't have a dedicated handler (UNHANDLED cases above).
+			await MeshPackets.shared.savePendingChanges()
 
 		case .nodeInfo(let nodeInfo):
 			await handleNodeInfo(nodeInfo)
@@ -707,6 +789,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
 				if let continuation = wantConfigContinuation {
+					wantConfigContinuation = nil
 					continuation.resume()
 				}
 				
@@ -717,8 +800,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
 				if let firstDatabaseNodeInfoContinuation {
-					firstDatabaseNodeInfoContinuation.resume()
 					self.firstDatabaseNodeInfoContinuation = nil
+					firstDatabaseNodeInfoContinuation.resume()
 				}
 				
 				// Perform a single batch save after database retrieval completes
@@ -726,8 +809,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				do {
 					try context.save()
 					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+
+					// Push updated node data to the companion Watch app
+					WatchSessionManager.shared.sendNodesToWatch()
 				} catch {
-					context.rollback()
 					let nsError = error as NSError
 					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
 				}
@@ -762,11 +847,42 @@ extension AccessoryManager {
 	}
 
 	func checkIsVersionSupported(forVersion: String) -> Bool {
-		let myVersion = connectedVersion ?? "0.0.0"
-		let supportedVersion = UserDefaults.firmwareVersion == "0.0.0" ||
-		forVersion.compare(myVersion, options: .numeric) == .orderedAscending ||
-		forVersion.compare(myVersion, options: .numeric) == .orderedSame
-		return supportedVersion
+		// Prefer the live `connectedVersion` (full string including build hash,
+		// e.g. "2.8.0.3a0c08b"). Fall back to the persisted UserDefaults value
+		// (stripped of trailing hash, e.g. "2.8.0") because
+		// `activeConnection?.device.firmwareVersion` is briefly nil during
+		// reconnects before `handleDeviceMetadata` repopulates it — using only
+		// `connectedVersion` in that window collapses `myVersion` to "0.0.0"
+		// and incorrectly returns false for every capability check.
+		let storedVersion = UserDefaults.firmwareVersion
+		let myVersion: String
+		if let live = connectedVersion, !live.isEmpty {
+			myVersion = live
+		} else if storedVersion != "0.0.0" {
+			myVersion = storedVersion
+		} else {
+			// No firmware info at all — be permissive (matches the prior
+			// "first-launch" behavior; newer firmware is the common case).
+			return true
+		}
+
+		let comparison = forVersion.compare(myVersion, options: .numeric)
+		return comparison == .orderedAscending || comparison == .orderedSame
+	}
+
+	/// Whether the connected radio supports the v2 TAK port (ATAK_PLUGIN_V2 = 78)
+	/// with TAKPacketV2 + zstd dictionary compression via TAKPacket-SDK.
+	///
+	/// Firmware **>= 2.8.0** supports v2 (full typed CoT payloads — PLI, GeoChat,
+	/// DrawnShape, Marker, Route, Aircraft, Casevac, Emergency, Task — under
+	/// the 237 B LoRa MTU). Firmware **<= 2.7.x** falls back to the legacy
+	/// ATAK_PLUGIN port (72) with the original `TAKPacket` schema, which only
+	/// supports PLI and GeoChat (no shapes, markers, routes, etc.).
+	///
+	/// Returns `true` when the firmware version is unknown (radio not yet
+	/// handshook) since v2 is now the predominant firmware in the field.
+	var supportsTAKv2: Bool {
+		checkIsVersionSupported(forVersion: "2.8.0")
 	}
 }
 

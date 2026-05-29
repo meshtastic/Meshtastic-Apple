@@ -1,0 +1,5 @@
+versions:
+  - tag: beta
+    label: "Beta"
+    url: /beta/
+    current: true

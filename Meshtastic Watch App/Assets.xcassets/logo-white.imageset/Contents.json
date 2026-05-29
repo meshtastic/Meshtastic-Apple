@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "Mesh_Logo_White.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -1,83 +1,120 @@
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
-import DatadogSessionReplay
+#if !targetEnvironment(macCatalyst)
+import Translation
+#endif
 
 struct MessageText: View {
-	static let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
-	static let localeDateFormat = DateFormatter.dateFormat(
-		fromTemplate: "yyMMddjmmssa",
-		options: 0,
-		locale: Locale.current
-	)
-	static let localeTimeFormat = DateFormatter.dateFormat(
-		fromTemplate: "jmmssa",
-		options: 0,
-		locale: Locale.current
-	)
-	static let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
-	static let timeFormatString = (localeTimeFormat ?? "j:mm:ss:a")
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	
 	let message: MessageEntity
 	let tapBackDestination: MessageDestination
 	let isCurrentUser: Bool
 	let onReply: () -> Void
+	let onTapback: () -> Void
 	// State for handling channel URL sheet
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var isShowingDeleteConfirmation = false
-	@State private var tapbackText = ""
-	@FocusState private var isTapbackInputFocused: Bool
+	@State private var isShowingTranslationPresentation = false
 	
 	var body: some View {
-		SessionReplayPrivacyView(textAndInputPrivacy: .maskAll) {
-			messageContent
-				.environment(\.openURL, OpenURLAction { url in
-					handleURL(url)
-				})
-				.sheet(item: $saveChannelLink) { link in
-					SaveChannelQRCode(
-						channelSetLink: link.data,
-						addChannels: link.add,
-						accessoryManager: accessoryManager
-					)
-					.presentationDetents([.large])
-					.presentationDragIndicator(.visible)
+		messageContent
+			.environment(\.openURL, OpenURLAction { url in
+				handleURL(url)
+			})
+			.sheet(item: $saveChannelLink) { link in
+				SaveChannelQRCode(
+					channelSetLink: link.data,
+					addChannels: link.add,
+					accessoryManager: accessoryManager
+				)
+				.presentationDetents([.large])
+				#if !targetEnvironment(macCatalyst)
+				.presentationDragIndicator(.visible)
+				#endif
+			}
+			.confirmationDialog(
+				"Are you sure you want to delete this message?",
+				isPresented: $isShowingDeleteConfirmation,
+				titleVisibility: .visible
+			) {
+				Button("Delete Message", role: .destructive) {
+					deleteMessage()
 				}
-				.confirmationDialog(
-					"Are you sure you want to delete this message?",
-					isPresented: $isShowingDeleteConfirmation,
-					titleVisibility: .visible
-				) {
-					Button("Delete Message", role: .destructive) {
-						deleteMessage()
-					}
-					Button("Cancel", role: .cancel) {}
-				}
-		}
+				Button("Cancel", role: .cancel) {}
+			}
 	}
 	
+	private var sourceMessageText: String {
+		message.messagePayload ?? "EMPTY MESSAGE"
+	}
+
+	private var hasTranslatedText: Bool { message.hasTranslatedPayload }
+
+	private var isShowingTranslatedText: Bool {
+		message.showTranslatedMessage && hasTranslatedText
+	}
+
+	private var canTranslate: Bool {
+		guard !sourceMessageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+		#if targetEnvironment(macCatalyst)
+		return false
+		#else
+		if #available(iOS 17.4, macOS 14.4, *) {
+			return true
+		}
+		return false
+		#endif
+	}
+
 	private var messageContent: some View {
-		let markdownText = LocalizedStringKey(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
-		return Text(markdownText)
-			.tint(Self.linkBlue)
+		#if !targetEnvironment(macCatalyst)
+		if #available(iOS 17.4, macOS 14.4, *), canTranslate {
+			return AnyView(
+				baseMessageContent
+					.translationPresentation(
+						isPresented: $isShowingTranslationPresentation,
+						text: sourceMessageText,
+						attachmentAnchor: .rect(.bounds),
+						arrowEdge: .top,
+						replacementAction: { replacement in
+							saveTranslatedText(replacement)
+						}
+					)
+			)
+		}
+		#endif
+
+		return AnyView(baseMessageContent)
+	}
+
+	private func underlineLinks(in source: AttributedString) -> AttributedString {
+		var result = source
+		let linkColor = Color("Colors/MeshtasticLink")
+		for run in result.runs where run.link != nil {
+			result[run.range].underlineStyle = .single
+			result[run.range].foregroundColor = linkColor
+		}
+		return result
+	}
+
+	private var baseMessageContent: some View {
+		let payload = message.displayedMarkdownPayload
+		return Group {
+			if let attributed = try? AttributedString(markdown: payload, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+				Text(underlineLinks(in: attributed))
+			} else {
+				Text(LocalizedStringKey(payload))
+			}
+		}
+			.tint(Color("Colors/MeshtasticLink"))
 			.padding(.vertical, 10)
 			.padding(.horizontal, 8)
-			.foregroundColor(.white)
-			.background(isCurrentUser ? .accentColor : Color(.gray))
+			.foregroundColor(isCurrentUser ? .white : Color("Colors/MeshtasticBubbleText"))
+			.background(isCurrentUser ? .accentColor : Color("Colors/MeshtasticBubble"))
 			.cornerRadius(15)
-			.background {
-				TextField("", text: $tapbackText)
-					.keyboardType(.emoji)
-					.scrollDismissesKeyboard(.immediately)
-					.focused($isTapbackInputFocused)
-					.frame(width: 0, height: 0)
-					.opacity(0)
-					.onChange(of: tapbackText) {
-						processTapback()
-					}
-			}
 			.overlay(messageOverlays)
 			.contextMenu {
 				MessageContextMenuItems(
@@ -85,11 +122,14 @@ struct MessageText: View {
 					tapBackDestination: tapBackDestination,
 					isCurrentUser: isCurrentUser,
 					isShowingDeleteConfirmation: $isShowingDeleteConfirmation,
-					isShowingTapbackInput: Binding(
-						get: { isTapbackInputFocused },
-						set: { isTapbackInputFocused = $0 }
-					),
-					onReply: onReply
+					onTapback: onTapback,
+					onReply: onReply,
+					canTranslate: canTranslate,
+						hasTranslatedText: hasTranslatedText,
+					isShowingTranslatedText: isShowingTranslatedText,
+					onTranslate: { isShowingTranslationPresentation = true },
+						onToggleTranslatedText: { toggleTranslatedText() },
+						onClearTranslation: { clearTranslation() }
 				)
 			}
 	}
@@ -131,6 +171,14 @@ struct MessageText: View {
 				.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 				.offset(x: 20, y: -20)
 		}
+		if isShowingTranslatedText {
+			Image(systemName: "translate")
+				.font(.system(size: 20))
+				.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+				.foregroundStyle(Color.blue)
+				.symbolRenderingMode(.hierarchical)
+				.offset(x: 38, y: 8)
+		}
 	}
 	
 	private func handleURL(_ url: URL) -> OpenURLAction.Result {
@@ -170,35 +218,40 @@ struct MessageText: View {
 			Logger.data.error("Failed to delete message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
-	private func processTapback() {
-		guard !tapbackText.isEmpty else { return }
-		let emojiToSend = tapbackText
-		
-		Task {
-			do {
-				try await accessoryManager.sendMessage(
-					message: emojiToSend,
-					toUserNum: tapBackDestination.userNum,
-					channel: tapBackDestination.channelNum,
-					isEmoji: true,
-					replyID: message.messageId
-				)
-				await MainActor.run {
-					switch tapBackDestination {
-					case let .channel(channel):
-						context.refresh(channel, mergeChanges: true)
-					case let .user(user):
-						context.refresh(user, mergeChanges: true)
-					}
-				}
-			} catch {
-				Logger.services.warning("Failed to send tapback.")
-			}
+
+	private func saveTranslatedText(_ replacement: String) {
+		message.messagePayloadTranslated = replacement
+		message.messagePayloadTranslatedMarkdown = generateMessageMarkdown(message: replacement)
+		message.showTranslatedMessage = true
+
+		do {
+			try context.save()
+		} catch {
+			Logger.data.error("Failed to save translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
 		}
-		
-		tapbackText = ""
-		isTapbackInputFocused = false
+	}
+
+	private func toggleTranslatedText() {
+		guard hasTranslatedText else { return }
+		message.showTranslatedMessage.toggle()
+
+		do {
+			try context.save()
+		} catch {
+			Logger.data.error("Failed to toggle translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	private func clearTranslation() {
+		message.messagePayloadTranslated = nil
+		message.messagePayloadTranslatedMarkdown = nil
+		message.showTranslatedMessage = false
+
+		do {
+			try context.save()
+		} catch {
+			Logger.data.error("Failed to clear translated message \(message.messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+		}
 	}
 }
 

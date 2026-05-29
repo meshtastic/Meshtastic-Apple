@@ -43,3 +43,17 @@ struct TraceRouteButton: View {
 		}
     }
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let user = UserEntity()
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	TraceRouteButton(node: node)
+		.environmentObject(AccessoryManager.shared)
+}
+*/

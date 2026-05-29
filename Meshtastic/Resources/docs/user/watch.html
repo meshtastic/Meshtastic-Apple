@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple Watch App</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="watch">
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Apple Watch App</h1>
+<p>The Meshtastic Apple Watch app is a companion to the iPhone app that puts two features on your wrist: a <strong>Foxhunt compass</strong> for radio direction-finding and a <strong>phone connectivity panel</strong> to confirm your Watch is in sync.</p>
+<p>Node data is pushed to the Watch automatically whenever the iPhone app is in range via WatchConnectivity. No Bluetooth connection to your Meshtastic radio is required on the Watch itself.</p>
+<h2>Requirements</h2>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Apple Watch</td>
+<td>watchOS paired with iPhone</td>
+</tr>
+<tr>
+<td>iPhone app</td>
+<td>Meshtastic iPhone app open and connected to a radio</td>
+</tr>
+<tr>
+<td>Location</td>
+<td>Watch Location Services enabled for direction-finding</td>
+</tr>
+<tr>
+<td>Proximity</td>
+<td>Watch and iPhone within normal Bluetooth/Wi-Fi range of each other</td>
+</tr>
+</tbody>
+</table>
+<h2>Tabs</h2>
+<p>The Watch app uses a vertical page layout. Swipe up or down to switch between the two tabs.</p>
+<h3>Foxhunt</h3>
+<p>The Foxhunt tab lists mesh nodes that are within <strong>½ mile (≈ 800 m)</strong> of your current Watch location and have a known GPS position. Nodes marked as foxhunt targets from the iPhone app always appear at the top of the list, regardless of distance.</p>
+<p>Each row shows:</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coloured circle</td>
+<td>Node short name, colour derived from node number</td>
+</tr>
+<tr>
+<td>Name</td>
+<td>Node long name</td>
+</tr>
+<tr>
+<td>Distance</td>
+<td>Distance from your current location, colour-coded by proximity</td>
+</tr>
+<tr>
+<td>Arrow</td>
+<td>Mini bearing arrow pointing toward the node, rotates with your heading</td>
+</tr>
+</tbody>
+</table>
+<p>Tap any row to open the <strong>Foxhunt Compass</strong> for that node.</p>
+<h4>Foxhunt Compass</h4>
+<p>The compass points toward the selected node using your Watch's heading sensor. It is designed for radio direction-finding (foxhunting) — walk until the arrow points straight ahead and the distance reads zero.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rotating dial</td>
+<td>Cardinal directions (N/NE/E…) rotate with your physical heading</td>
+</tr>
+<tr>
+<td>Orange triangle</td>
+<td>Fixed north indicator at the top of the ring</td>
+</tr>
+<tr>
+<td>Coloured arrow</td>
+<td>Bearing arrow pointing toward the target node</td>
+</tr>
+<tr>
+<td>Direction cone</td>
+<td>Translucent wedge highlighting the target direction</td>
+</tr>
+<tr>
+<td>Centre circle</td>
+<td>Current heading in degrees, bearing to target, and distance</td>
+</tr>
+<tr>
+<td>Node circle</td>
+<td>Short name badge of the target node</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Distance colour coding:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Colour</th>
+<th>Distance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Red</td>
+<td>Far (&gt; ⅔ of ½ mile)</td>
+</tr>
+<tr>
+<td>Yellow</td>
+<td>Mid-range (⅓ – ⅔ of ½ mile)</td>
+</tr>
+<tr>
+<td>Green</td>
+<td>Close (&lt; ⅓ of ½ mile)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Haptic feedback:</strong> The Watch taps your wrist when you are facing within 10° of the target node's bearing — useful when you can't look at the screen.</p>
+<h3>Phone</h3>
+<p>The Phone tab shows the connectivity status between your Watch and the companion iPhone app.</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phone Connected (green)</td>
+<td>iPhone app is reachable; node count shown</td>
+</tr>
+<tr>
+<td>Phone Not Reachable</td>
+<td>Watch is out of range or iPhone app is not running</td>
+</tr>
+</tbody>
+</table>
+<p>Tap <strong>Refresh</strong> to request an updated node list from the iPhone app. If the phone is temporarily unreachable, the Watch falls back to the most recently received node data.</p>
+<h2>Setting Foxhunt Targets</h2>
+<p>From the iPhone app, mark a node as a foxhunt target from its detail view. Marked nodes are pushed to the Watch and pinned at the top of the Foxhunt list regardless of distance — useful when you know which node you are hunting before you are within ½ mile range.</p>
+</body>
+</html>

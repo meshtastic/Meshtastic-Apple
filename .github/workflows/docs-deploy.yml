@@ -1,0 +1,117 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-snapshots:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app/Contents/Developer
+
+      - name: Regenerate doc snapshots
+        run: |
+          xcodebuild test \
+            -workspace Meshtastic.xcworkspace \
+            -scheme Meshtastic \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -only-testing:MeshtasticTests/SwiftUIViewSnapshotTests \
+            2>&1 | tail -20
+        continue-on-error: false
+
+      - name: Copy snapshots to docs
+        run: bash scripts/copy-snapshots.sh --output Meshtastic/Resources/docs/assets/screenshots
+
+      - name: Verify charCount freshness
+        run: |
+          if [[ ! -f Meshtastic/Resources/docs/index.json ]]; then
+            echo "error: docs/index.json missing — run build-docs.sh first" >&2
+            exit 1
+          fi
+          # Fail if any charCount is 0 (indicates a build-docs.sh was not run)
+          python3 -c "
+          import json, sys
+          with open('Meshtastic/Resources/docs/index.json') as f:
+              entries = json.load(f)
+          stale = [e['id'] for e in entries if e.get('charCount', 0) == 0]
+          if stale:
+              print('error: stale charCount (0) for pages:', stale, file=sys.stderr)
+              sys.exit(1)
+          print(f'charCount check passed for {len(entries)} pages')
+          "
+
+      - name: Upload snapshots artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc-snapshots
+          path: Meshtastic/Resources/docs/assets/screenshots/
+
+  build:
+    runs-on: ubuntu-latest
+    needs: build-snapshots
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download snapshots
+        uses: actions/download-artifact@v4
+        with:
+          name: doc-snapshots
+          path: Meshtastic/Resources/docs/assets/screenshots/
+
+      - name: Copy snapshots for Jekyll
+        run: |
+          mkdir -p docs/assets/screenshots
+          cp Meshtastic/Resources/docs/assets/screenshots/*.png docs/assets/screenshots/
+
+      - name: Install cmark-gfm
+        run: sudo apt-get install -y cmark-gfm
+
+      - name: Build docs bundle
+        run: bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: docs
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        working-directory: docs
+        run: bundle exec jekyll build --destination ../_site --baseurl "/Meshtastic-Apple"
+        env:
+          JEKYLL_ENV: production
+          PAGES_REPO_NWO: meshtastic/Meshtastic-Apple
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

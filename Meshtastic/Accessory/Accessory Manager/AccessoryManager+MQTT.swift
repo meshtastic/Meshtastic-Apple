@@ -8,6 +8,7 @@
 import Foundation
 import CocoaMQTT
 import OSLog
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 
 extension AccessoryManager {
@@ -18,13 +19,18 @@ extension AccessoryManager {
 			return
 		}
 
-		let fetchNodeInfoRequest = NodeInfoEntity.fetchRequest()
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(deviceNum))
+		let nodeNum = Int64(deviceNum)
+		let descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.num == nodeNum }
+		)
 		do {
-			let fetchedNodeInfo = try context.fetch(fetchNodeInfoRequest)
+			let fetchedNodeInfo = try context.fetch(descriptor)
 			if fetchedNodeInfo.count == 1 {
 				// Subscribe to Mqtt Client Proxy if enabled
 				if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
+					// Brief delay so CFNetwork callbacks don't fire before the app is fully
+					// initialised — prevents a launch-time SIGABRT in CocoaMQTT's stream parser.
+					try? await Task.sleep(for: .seconds(1))
 					mqttManager.connectFromConfigSettings(node: fetchedNodeInfo[0])
 				} else {
 					if mqttProxyConnected {
@@ -85,4 +91,3 @@ extension AccessoryManager {
 		Logger.services.info("📲 [MQTT Client Proxy] onMqttError: \(message, privacy: .public)")
 	}
 }
-

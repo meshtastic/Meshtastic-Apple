@@ -1,9 +1,10 @@
 import SwiftUI
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
 struct PowerConfig: View {
-	@Environment(\.managedObjectContext) private var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 
@@ -20,8 +21,8 @@ struct PowerConfig: View {
 	@State private var lsSecs = 300
 	@State private var minWakeSecs = 10
 
-	@State private var currentDevice: DeviceHardware?
-
+	@State private var architecture: Architecture?
+	
 	@State private var hasChanges: Bool = false
 	@FocusState private var isFocused: Bool
 
@@ -30,17 +31,17 @@ struct PowerConfig: View {
 			ConfigHeader(title: "Power Config", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
-				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
+				if let architecture, (architecture == .esp32 || architecture == .esp32S3) || (architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6)) {
 					Toggle(isOn: $isPowerSaving) {
 						Label("Power Saving", systemImage: "bolt")
 						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 				}
 				Toggle(isOn: $shutdownOnPowerLoss) {
 					Label("Shutdown on Power Loss", systemImage: "power")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				if shutdownOnPowerLoss {
 					UpdateIntervalPicker(
 						config: .all,
@@ -51,19 +52,19 @@ struct PowerConfig: View {
 			} header: {
 				Text("Power")
 			}
-			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
+			if let architecture, architecture == .esp32 || architecture == .esp32S3 {
 				Section {
 					Toggle(isOn: $adcOverride) {
 						Text("ADC Override")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 
 					if adcOverride {
 						HStack {
 							Text("Multiplier")
 							Spacer()
 							FloatField(title: "Multiplier", number: $adcMultiplier) {
-								(2.0 ... 6.0).contains($0)
+								$0 > 0.0
 							}
 							.focused($isFocused)
 							Spacer()
@@ -77,14 +78,14 @@ struct PowerConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard let deviceNum = accessoryManager.activeDeviceNum,
-						  let connectedNode = getNodeInfo(id: deviceNum, context: context),
-						  let fromUser = connectedNode.user,
-						  let toUser = node?.user else {
-						return
-					}
-					
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
 					var config = Config.PowerConfig()
 					config.isPowerSaving = isPowerSaving
 					config.onBatteryShutdownAfterSecs = shutdownOnPowerLoss ? UInt32(shutdownAfterSecs.intValue) : 0
@@ -92,27 +93,21 @@ struct PowerConfig: View {
 					config.waitBluetoothSecs = UInt32(waitBluetoothSecs)
 					config.lsSecs = UInt32(lsSecs)
 					config.minWakeSecs = UInt32(minWakeSecs)
-					Task {
-						_ = try await accessoryManager.savePowerConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
-					}
+					_ = try await accessoryManager.savePowerConfig(
+						config: config,
+						fromUser: fromUser,
+						toUser: toUser
+					)
 				}
+			}
 			}
 		}
 		.navigationTitle("Power Config")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.toolbar {
 			ToolbarItemGroup(placement: .keyboard) {
 				Spacer()
@@ -123,40 +118,26 @@ struct PowerConfig: View {
 			}
 		}
 		.onFirstAppear {
-			Api().loadDeviceHardwareData { (hw) in
-				for device in hw {
-					let currentHardware = node?.user?.hwModel ?? "UNSET"
-					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
-					if deviceString == currentHardware {
-						currentDevice = device
-					}
+			if let hwModelId = node?.user?.hwModelId {
+				let hwModelValue = Int64(hwModelId)
+				let descriptor = FetchDescriptor<DeviceHardwareEntity>(
+					predicate: #Predicate { $0.hwModel == hwModelValue }
+				)
+				if let hardwareEntity = try? context.fetch(descriptor).first,
+				   let archString = hardwareEntity.architecture,
+				   let arch = Architecture(rawValue: archString) {
+					architecture = arch
 				}
 			}
-			// Need to request a NetworkConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.powerConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired power config requesting via PKI admin")
-										try await accessoryManager.requestPowerConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.info("🚨 Power config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.powerConfig == nil },
+				request: accessoryManager.requestPowerConfig
+			)
 		}
 		.onChange(of: isPowerSaving) { oldIsPowerSaving, newIsPowerSaving in
 			if oldIsPowerSaving != newIsPowerSaving && newIsPowerSaving != node?.powerConfig?.isPowerSaving { hasChanges = true }
@@ -167,22 +148,22 @@ struct PowerConfig: View {
 			}
 		}
 		.onChange(of: shutdownAfterSecs.intValue) { oldShutdownAfterSecs, newShutdownAfterSecs in
-			if oldShutdownAfterSecs != newShutdownAfterSecs && newShutdownAfterSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
+			if oldShutdownAfterSecs != newShutdownAfterSecs && newShutdownAfterSecs != (node?.powerConfig?.minWakeSecs ?? -1) { hasChanges = true }
 		}
 		.onChange(of: adcOverride) {
 			hasChanges = true
 		}
 		.onChange(of: adcMultiplier) { _, newAdcMultiplier in
-			if  newAdcMultiplier != node?.powerConfig?.adcMultiplierOverride ?? -1 { hasChanges = true }
+			if  newAdcMultiplier != (node?.powerConfig?.adcMultiplierOverride ?? -1) { hasChanges = true }
 		}
 		.onChange(of: waitBluetoothSecs) { oldWaitBluetoothSecs, newWaitBluetoothSecs in
-			if oldWaitBluetoothSecs != newWaitBluetoothSecs && newWaitBluetoothSecs != node?.powerConfig?.waitBluetoothSecs ?? -1 { hasChanges = true }
+			if oldWaitBluetoothSecs != newWaitBluetoothSecs && newWaitBluetoothSecs != (node?.powerConfig?.waitBluetoothSecs ?? -1) { hasChanges = true }
 		}
 		.onChange(of: lsSecs) { _, newLsSecs in
-			if newLsSecs != node?.powerConfig?.lsSecs ?? -1 { hasChanges = true }
+			if newLsSecs != (node?.powerConfig?.lsSecs ?? -1) { hasChanges = true }
 		}
 		.onChange(of: minWakeSecs) { _, newMinWakeSecs in
-			if newMinWakeSecs != node?.powerConfig?.minWakeSecs ?? -1 { hasChanges = true }
+			if newMinWakeSecs != (node?.powerConfig?.minWakeSecs ?? -1) { hasChanges = true }
 		}
 	}
 
@@ -225,4 +206,10 @@ private struct FloatField: View {
 				typingNumber = number
 			}
 	}
+}
+
+#Preview {
+	PowerConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

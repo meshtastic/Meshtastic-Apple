@@ -161,7 +161,7 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .all:
-			return "Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params.".localized
+			return "Rebroadcast any observed message, if it was on our private channel or from another channel with the same lora params.".localized
 		case .allSkipDecoding:
 			return "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior.".localized
 		case .localOnly:

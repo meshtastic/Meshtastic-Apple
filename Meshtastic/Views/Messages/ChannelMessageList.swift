@@ -5,7 +5,7 @@
 //  Created by Garth Vander Houwen on 12/24/21.
 //
 
-import CoreData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
@@ -13,31 +13,33 @@ import SwiftUI
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@Environment(\.scenePhase) var scenePhase
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@FocusState var messageFieldFocused: Bool
-	@ObservedObject var myInfo: MyInfoEntity
-	@ObservedObject var channel: ChannelEntity
+	@Bindable var myInfo: MyInfoEntity
+	@Bindable var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 	@State private var messageToHighlight: Int64 = 0
-	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
+	@State private var needsReadSync: Bool = false
+	@State private var messageLimit: Int = 50
+	@State private var tapbackTargetMessage: MessageEntity?
+	@State private var tapbackText = ""
+	@FocusState var tapbackFocused: Bool
+	@Query private var allPrivateMessages: [MessageEntity]
 	
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
 		self.myInfo = myInfo
 		self.channel = channel
 		
-		// Configure fetch request here
-		let request: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-		request.sortDescriptors = [
-			NSSortDescriptor(keyPath: \MessageEntity.messageTimestamp, ascending: true)
-		]
-		request.predicate = NSPredicate(
-			format: "channel == %ld AND toUser == nil AND isEmoji == false",
-			channel.index
+		let channelIndex = channel.index
+		_allPrivateMessages = Query(
+			filter: #Predicate<MessageEntity> {
+				$0.channel == channelIndex && $0.toUser == nil && $0.isEmoji == false
+			},
+			sort: \MessageEntity.messageTimestamp
 		)
-		_allPrivateMessages = FetchRequest(fetchRequest: request)
 	}
 	
 	func handleInteractionComplete() {
@@ -53,20 +55,43 @@ struct ChannelMessageList: View {
 			try context.save()
 			Logger.data.info("📖 [App] All unread messages marked as read.")
 			appState.unreadChannelMessages = myInfo.unreadMessages
-			context.refresh(myInfo, mergeChanges: true)
 		} catch {
 			Logger.data.error("Failed to read messages: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
 	private func routerIsShowingThisChannel() -> Bool {
-		guard appState.router.navigationState.selectedTab == .messages else { return false }
+		guard appState.router.selectedTab == .messages else { return false }
 		return scenePhase == .active
 	}
 
+	private func processTapback() {
+		guard !tapbackText.isEmpty, let target = tapbackTargetMessage else { return }
+		let emojiToSend = tapbackText
+		let destination = MessageDestination.channel(channel)
+
+		Task {
+			do {
+				try await accessoryManager.sendMessage(
+					message: emojiToSend,
+					toUserNum: destination.userNum,
+					channel: destination.channelNum,
+					isEmoji: true,
+					replyID: target.messageId
+				)
+			} catch {
+				Logger.services.warning("Failed to send tapback.")
+			}
+		}
+
+		tapbackText = ""
+		tapbackFocused = false
+		tapbackTargetMessage = nil
+	}
+
 	var body: some View {
-		// Cast allPrivateMessages to an array for easier indexing and ForEach.
-		let messages: [MessageEntity] = Array(allPrivateMessages)
+		// Show only the most recent N messages to limit memory usage
+		let messages = allPrivateMessages.suffix(messageLimit)
 
 		// Precompute previous message
 		let previousByID: [Int64: MessageEntity?] = {
@@ -79,6 +104,17 @@ struct ChannelMessageList: View {
 		ScrollViewReader { scrollView in
 			ScrollView {
 				LazyVStack {
+					if allPrivateMessages.count > messageLimit {
+						Button {
+							messageLimit += 50
+						} label: {
+							Label("Load Earlier Messages", systemImage: "arrow.up.circle")
+								.font(.caption)
+								.foregroundColor(.accentColor)
+						}
+						.buttonStyle(.borderless)
+						.padding(.vertical, 8)
+					}
 					ForEach(messages, id: \.messageId) { message in
 						  let previousMessage: MessageEntity? = previousByID[message.messageId] ?? nil
 						  
@@ -92,19 +128,30 @@ struct ChannelMessageList: View {
 							  messageFieldFocused: $messageFieldFocused,
 							  messageToHighlight: $messageToHighlight,
 							  scrollView: scrollView,
-							  onInteractionComplete: handleInteractionComplete
+							  onInteractionComplete: handleInteractionComplete,
+							  onTapback: { message in
+								  tapbackFocused = false
+								  tapbackTargetMessage = message
+								  DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+									  tapbackFocused = true
+									  #if targetEnvironment(macCatalyst)
+									  DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+										  if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+											  let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+											  if nsApp.responds(to: selector) {
+												  nsApp.perform(selector, with: nil)
+											  }
+										  }
+									  }
+									  #endif
+								  }
+							  }
 						  )
 						  .onAppear {
-							  // Only mark as read if the app is in the foreground
 							  if !message.read && UIApplication.shared.applicationState == .active {
 								  message.read = true
 								  LocalNotificationManager().cancelNotificationForMessageId(message.messageId)
-								  // Race condition, sometimes the app doesn't update unread count if we run this too early
-								  // So, run it in the main queue after everything saves and stabilizes
-								  DispatchQueue.main.async {
-									  markMessagesAsRead()
-									  scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-								  }
+								  needsReadSync = true
 							  }
 						  }
 
@@ -115,9 +162,21 @@ struct ChannelMessageList: View {
 				}
 			}
 			.defaultScrollAnchor(.bottom)
-			.defaultScrollAnchorTopAlignment()
 			.defaultScrollAnchorBottomSizeChanges()
 			.scrollDismissesKeyboard(.immediately)
+			.onAppear {
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+					scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+				}
+			}
+			.task(id: needsReadSync) {
+				guard needsReadSync else { return }
+				// Brief delay so multiple .onAppear calls can batch before saving
+				try? await Task.sleep(for: .milliseconds(250))
+				guard !Task.isCancelled else { return }
+				needsReadSync = false
+				markMessagesAsRead()
+			}
 			.onChange(of: messageFieldFocused) {
 				if messageFieldFocused {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -125,11 +184,32 @@ struct ChannelMessageList: View {
 					}
 				}
 			}
+			.onChange(of: tapbackFocused) {
+				if tapbackFocused, let target = tapbackTargetMessage {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+						withAnimation {
+							scrollView.scrollTo(target.messageId, anchor: .center)
+						}
+					}
+				}
+			}
+			.background {
+				TextField("", text: $tapbackText)
+					.keyboardType(.emoji)
+					.focused($tapbackFocused)
+					.frame(width: 1, height: 1)
+					.opacity(0.01)
+					.allowsHitTesting(false)
+					.onChange(of: tapbackText) {
+						processTapback()
+					}
+			}
 			TextMessageField(
 				destination: .channel(channel),
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused
 			)
+			.fixedSize(horizontal: false, vertical: true)
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {

@@ -1,0 +1,36 @@
+{
+  "workflow": "speckit",
+  "specName": "001-local-mesh-discovery",
+  "branch": "001-local-mesh-discovery",
+  "selectedAt": "2026-04-27T05:11:55.083Z",
+  "currentStep": "tasks",
+  "status": "tasking",
+  "stepHistory": {
+    "tasks": {
+      "startedAt": "2026-04-27T05:15:15.625Z",
+      "completedAt": null
+    }
+  },
+  "transitions": [
+    {
+      "step": "tasks",
+      "substep": null,
+      "from": {
+        "step": "specify",
+        "substep": null
+      },
+      "by": "extension",
+      "at": "2026-04-27T05:15:14.003Z"
+    },
+    {
+      "step": "tasks",
+      "substep": null,
+      "from": {
+        "step": "tasks",
+        "substep": null
+      },
+      "by": "extension",
+      "at": "2026-04-27T05:15:15.625Z"
+    }
+  ]
+}

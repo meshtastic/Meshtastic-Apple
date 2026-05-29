@@ -4,41 +4,36 @@
 //
 //  Copyright(c) Benjamin Faershtein 1/17/26.
 //
+
 import SwiftUI
 import Charts
 import OSLog
+import TipKit
 
 struct LocalStatsLog: View {
 
-	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	private let noiseFloorTip = NoiseFloorTip()
 
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
 
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
 	@State private var chartSelection: Date?
 
 	private var localStats: [TelemetryEntity] {
-		let filtered = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4"))
-		return (filtered?.reversed() as? [TelemetryEntity]) ?? []
-	}
-
-	private var hasLocalStats: Bool {
-		!localStats.isEmpty
+		node.safeTelemetries(ofType: 4)
 	}
 
 	private var chartData: [TelemetryEntity] {
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-		return localStats.filter { $0.time != nil && $0.time! >= oneWeekAgo! }.sorted { $0.time! < $1.time! }
-	}
-
-	private var hasChartData: Bool {
-		!chartData.isEmpty
+		return localStats
+			.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 	}
 
 	private var dateFormatString: String {
@@ -48,8 +43,12 @@ struct LocalStatsLog: View {
 
 	var body: some View {
 		VStack {
-			if hasLocalStats {
-				if hasChartData {
+			if node.hasLocalStats {
+				TipView(noiseFloorTip, arrowEdge: .top)
+					.tipViewStyle(PersistentTipStyle())
+					.padding(.horizontal)
+
+				if !chartData.isEmpty {
 					chartView
 				}
 				tableView
@@ -60,15 +59,16 @@ struct LocalStatsLog: View {
 		}
 		.navigationTitle("Local Stats Log")
 		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(trailing:
-			ZStack {
-			ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("Local Stats Log".localized)"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("Local Stats Log".localized) \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -87,12 +87,12 @@ struct LocalStatsLog: View {
 				if let pointTime = point.time, let noiseFloor = point.noiseFloor {
 					LineMark(
 						x: .value("Time", pointTime),
-						y: .value("Noise Floor", noiseFloor)
+						y: .value("Noise Floor", Int(noiseFloor))
 					)
 					.foregroundStyle(Color.accentColor)
 					.interpolationMethod(.linear)
 				}
-				RuleMark(y: .value("Icky", -85))
+				RuleMark(y: .value("Threshold (-85 dBm)", -85))
 					.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
 					.foregroundStyle(.red)
 			}
@@ -128,8 +128,8 @@ struct LocalStatsLog: View {
 					Spacer()
 				}
 				HStack {
-					if let noiseFloor = ls.noiseFloor, noiseFloor != 0 {
-						Text("Noise Floor \(noiseFloor.formatted(.number.precision(.fractionLength(1)))) dBm")
+					if let noiseFloor = ls.noiseFloor {
+						Text("Noise Floor \(noiseFloor) dBm")
 							.foregroundColor(noiseFloorColor(noiseFloor))
 					} else {
 						Text("Noise Floor No Reading")
@@ -152,8 +152,8 @@ struct LocalStatsLog: View {
 	private var macTableView: some View {
 		Table(localStats, selection: $selection, sortOrder: $sortOrder) {
 			TableColumn("Noise Floor") { ls in
-				if let noiseFloor = ls.noiseFloor, noiseFloor != 0 {
-					Text("\(noiseFloor.formatted(.number.precision(.fractionLength(1)))) dBm")
+				if let noiseFloor = ls.noiseFloor {
+					Text("\(noiseFloor) dBm")
 						.foregroundColor(noiseFloorColor(noiseFloor))
 				} else {
 					Text("No Reading")
@@ -224,10 +224,12 @@ struct LocalStatsLog: View {
 				titleVisibility: .visible
 			) {
 				Button("Delete all local stats?", role: .destructive) {
-					if clearTelemetry(destNum: node.num, metricsType: 4, context: context) {
-						Logger.data.notice("Cleared Local Stats for \(node.num, privacy: .public)")
-					} else {
-						Logger.data.error("Clear Local Stats Log Failed")
+					Task {
+						if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 4) {
+							Logger.data.notice("Cleared Local Stats for \(node.num, privacy: .public)")
+						} else {
+							Logger.data.error("Clear Local Stats Log Failed")
+						}
 					}
 				}
 			}
@@ -252,15 +254,36 @@ struct LocalStatsLog: View {
 		}
 	}
 
-	private func noiseFloorColor(_ value: Float) -> Color {
-		if value < -100 {
-			return .green
-		} else if value < -95 {
+	private func noiseFloorColor(_ value: Int32) -> Color {
+		if value < -95 {
 			return .green
 		} else if value < -90 {
 			return .orange
 		} else {
 			return .red
 		}
+	}
+}
+
+private struct NoiseFloorTip: Tip {
+	var id: String {
+		"tip.localStats.noiseFloor"
+	}
+
+	var title: Text {
+		Text("Noise Floor")
+	}
+
+	var message: Text? {
+		Text("Noise floor is a directional diagnostic. Readings can vary quickly, and external filters can lower or skew the displayed value due to insertion loss or in-band interference.")
+	}
+
+	var image: Image? {
+		Image(systemName: "waveform.path.ecg")
+	}
+
+	var options: [TipOption] {
+		Tips.IgnoresDisplayFrequency(true)
+		Tips.MaxDisplayCount(3)
 	}
 }

@@ -1,0 +1,360 @@
+/* Meshtastic Documentation CSS
+ * Light/dark support via prefers-color-scheme.
+ * Colours sourced from Meshtastic Client Design Standards v1.3.
+ * Used by cmark-gfm generated HTML pages (in-app bundle + GitHub Pages).
+ */
+
+/* ── Light mode (Meshtastic palette: Neutral 50 bg, Neutral 800 text) ── */
+:root {
+    --bg:          #F5F6FA; /* Neutral 50 */
+    --surface:     #FFFFFF; /* surfaceContainerLowest */
+    --text:        #2C2D3C; /* Neutral 800 */
+    --text-muted:  #555668; /* Neutral 600 */
+    --link:        #5C6BC0; /* Blue 600 — Info (WCAG-safe on light) */
+    --link-hover:  #2855A8; /* Blue 700 */
+    --code-bg:     #ECEDF3; /* Neutral 100 */
+    --code-text:   #2C2D3C; /* Neutral 800 */
+    --border:      #B8BAC8; /* Neutral 300 */
+    --divider:     #D5D6E0; /* Neutral 200 */
+    --callout-bg:  #E5FCEE; /* Green 100 — success tint for tips */
+    --callout-border: #3FB86D; /* Green 600 */
+    --pre-bg:      #ECEDF3; /* Neutral 100 */
+    --table-head:  #D5D6E0; /* Neutral 200 */
+    --table-alt:   #F5F6FA; /* Neutral 50 */
+    --warning-bg:  #FFF3E0; /* Warning Light */
+    --warning-border: #E8A33E; /* Warning */
+}
+
+/* ── Dark mode (Meshtastic palette: Neutral 900 bg, Neutral 100 text) ── */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg:          #1A1B26; /* Neutral 900 */
+        --surface:     #0F1017; /* Neutral 950 / surfaceContainerLowest dark */
+        --text:        #ECEDF3; /* Neutral 100 */
+        --text-muted:  #B8BAC8; /* Neutral 300 */
+        --link:        #B0BFF0; /* Blue 300 — WCAG-safe on dark */
+        --link-hover:  #D0D8F5; /* Blue 200 */
+        --code-bg:     #2C2D3C; /* Neutral 800 */
+        --code-text:   #ECEDF3; /* Neutral 100 */
+        --border:      #444660; /* NV 700 */
+        --divider:     #3D3E50; /* Neutral 700 */
+        --callout-bg:  #003D1A; /* Green 900 */
+        --callout-border: #67EA94; /* Green 500 / brand accent */
+        --pre-bg:      #2C2D3C; /* Neutral 800 */
+        --table-head:  #2C2D3C; /* Neutral 800 */
+        --table-alt:   #242533; /* surfaceContainer dark */
+        --warning-bg:  #2C2D3C;
+        --warning-border: #E8A33E;
+    }
+}
+
+/* ── Base ── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px; /* Design Standards §5: default body 16px */
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    font-size: 1rem;
+    line-height: 1.65;
+    margin: 0 auto;
+    padding: 16px 20px 40px;
+    max-width: 100%;
+}
+
+@media (min-width: 1536px) {
+    body {
+        max-width: 900px;
+        padding: 24px 32px 48px;
+    }
+}
+
+/* ── Headings ── */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text);
+    line-height: 1.3;
+    margin-top: 1.5em;
+    margin-bottom: 0.4em;
+    font-weight: 600;
+}
+
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.375rem; border-bottom: 1px solid var(--divider); padding-bottom: 0.25em; }
+h3 { font-size: 1.125rem; }
+
+/* ── Links ── */
+a {
+    color: var(--link);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+}
+
+/* ── Paragraphs ── */
+p {
+    margin: 0.75em 0;
+}
+
+/* ── Code ── */
+code {
+    background-color: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 4px;
+    padding: 0.15em 0.4em;
+    font-size: 0.9em;
+    font-family: "SF Mono", Menlo, Monaco, "Courier New", monospace;
+}
+
+pre {
+    background-color: var(--pre-bg);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin: 1em 0;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: 0.875rem;
+}
+
+/* ── Blockquote ── */
+blockquote {
+    border-left: 4px solid var(--border);
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    color: var(--text-muted);
+}
+
+/* ── Tables ── */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    font-size: 0.9375rem;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+th {
+    background-color: var(--table-head);
+    color: var(--text);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+}
+
+/* First column (icon / symbol) — fixed width so all icon tables align consistently */
+td:first-child, th:first-child {
+    width: 90px;
+    min-width: 90px;
+}
+
+/* Firmware progress icons are larger than standard icons — let them size naturally */
+td img[src$="progressZero.png"],
+td img[src$="progressHalf.png"],
+td img[src$="progressComplete.png"],
+td img[src$="progressError.png"] {
+    height: auto;
+    width: 80px;
+}
+
+/* Any cell whose sole content is an image — centre both axes */
+td:has(> img) {
+    text-align: center;
+    vertical-align: middle;
+}
+
+td:has(> img) img {
+    margin: 0 auto;
+}
+
+td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--divider);
+    vertical-align: top;
+}
+
+tr:nth-child(even) td {
+    background-color: var(--table-alt);
+}
+
+/* ── Task lists ── */
+ul.contains-task-list {
+    padding-left: 1.5em;
+    list-style: none;
+}
+
+.task-list-item {
+    margin: 0.3em 0;
+}
+
+/* ── Images ── */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    margin: 1em 0;
+}
+
+/* ── Inline icons inside table cells ── */
+td img, th img {
+    display: inline;
+    height: 44px;
+    width: auto;
+    max-width: none; /* prevent max-width:100% from the base img rule squishing icons */
+    vertical-align: middle;
+    border-radius: 3px;
+    margin: 0 6px 0 0;
+}
+
+/* Node circle icon — circular treatment */
+td img[src$="circleTextDefault.png"], th img[src$="circleTextDefault.png"] {
+    height: 44px;
+    border-radius: 50%;
+}
+
+/* Gradient signal meter — cap width so it doesn't overwhelm the table row */
+td img[src$="gradientMeter.png"] {
+    height: auto;
+    max-width: 100px;
+}
+
+/* Telemetry page — environment/AQI compact widget tiles are richer and need 3× height */
+body[data-page="telemetry"] td img[src$="humidityWithDew.png"],
+body[data-page="telemetry"] td img[src$="humidityNoDew.png"],
+body[data-page="telemetry"] td img[src$="pressureHigh.png"],
+body[data-page="telemetry"] td img[src$="pressureLow.png"],
+body[data-page="telemetry"] td img[src$="windFull.png"],
+body[data-page="telemetry"] td img[src$="windMinimal.png"],
+body[data-page="telemetry"] td img[src$="radiation.png"] {
+    height: 132px;
+    border-radius: 8px;
+}
+
+/*
+ * Dark mode — invert monochrome icons (rendered dark-on-transparent in light mode).
+ * Coloured icons (lock, status indicators, distance, favourite, etc.) are excluded
+ * because inverting them produces wrong hues.
+ */
+@media (prefers-color-scheme: dark) {
+    td img[src$="logDeviceMetrics.png"],
+    td img[src$="logPositions.png"],
+    td img[src$="logEnvironment.png"],
+    td img[src$="logDetectionSensor.png"],
+    td img[src$="logTraceRoutes.png"],
+    td img[src$="longPress.png"],
+    td img[src$="hopsAway.png"],
+    td img[src$="channelBadge.png"],
+    td img[src$="roleClient.png"],
+    td img[src$="roleClientMute.png"],
+    td img[src$="roleClientHidden.png"],
+    td img[src$="roleRouter.png"],
+    td img[src$="roleRouterLate.png"],
+    td img[src$="roleClientBase.png"],
+    td img[src$="roleTracker.png"],
+    td img[src$="roleSensor.png"],
+    td img[src$="roleTak.png"],
+    td img[src$="roleTakTracker.png"],
+    td img[src$="roleLostAndFound.png"] {
+        filter: invert(1);
+    }
+}
+
+/* ── Horizontal rule ── */
+hr {
+    border: none;
+    border-top: 1px solid var(--divider);
+    margin: 1.5em 0;
+}
+
+/*
+ * Light/dark image switching — _dark.png suffix convention.
+ * Images named *_dark.png are hidden in light mode; their paired light counterparts
+ * are hidden in dark mode. Both variants must appear in the HTML for this to work.
+ *
+ * NOTE: <img> elements inside <picture> elements are excluded — the browser's
+ * native <picture>/<source media="(prefers-color-scheme:dark)"> logic handles
+ * image selection for those; the CSS fallback must not interfere.
+ */
+img[src$="_dark.png"] {
+    display: none;
+}
+
+/* <picture> img must never be hidden by CSS — let the browser's picture logic decide */
+picture img {
+    display: block !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    img[src$="compact_directConnected_allInfo.png"],
+    img[src$="compact_multiHop.png"],
+    img[src$="compact_withPosition.png"],
+    img[src$="compact_pkiMismatch.png"],
+    img[src$="compact_mqtt.png"],
+    img[src$="standard_directConnected.png"],
+    img[src$="standard_multiHop.png"],
+    img[src$="standard_mqtt.png"],
+    img[src$="mapAnnotations.png"] {
+        display: none;
+    }
+    img[src$="_dark.png"] {
+        display: block;
+    }
+}
+
+/* ── Tips callout ── */
+.tips-callout {
+    background-color: var(--callout-bg);
+    border-left: 4px solid var(--callout-border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 1.25em 0;
+}
+
+.tips-callout strong:first-child {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--callout-border);
+}
+
+/* ── Warning callout ── */
+.warning-callout {
+    background-color: var(--warning-bg);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 1.25em 0;
+}
+
+.warning-callout strong:first-child {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--warning-border);
+}
+
+/* ── Pre-release warning banner ── */
+.pre-release-banner {
+    background-color: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+}

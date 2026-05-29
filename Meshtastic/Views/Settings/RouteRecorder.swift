@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 import MapKit
 import CoreLocation
 import CoreMotion
@@ -15,7 +15,8 @@ import OSLog
 struct RouteRecorder: View {
 
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
+	@Environment(\.dismiss) private var dismiss
 	@State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic)
 	@State var isShowingDetails = false
@@ -74,8 +75,7 @@ struct RouteRecorder: View {
 									.symbolRenderingMode(.multicolor)
 									.foregroundColor(.red)
 							}
-							.buttonStyle(.bordered)
-							.foregroundColor(.red)
+							.glassButtonStyle()
 							.buttonBorderShape(.circle)
 							.matchedGeometryEffect(id: "Details Button", in: namespace)
 
@@ -86,8 +86,7 @@ struct RouteRecorder: View {
 				.padding()
 			}
 			.sheet(isPresented: $isShowingDetails) {
-				NavigationStack {
-					VStack {
+				VStack {
 						if locationsHandler.isRecording {
 							HStack(alignment: .center) {
 								Image(systemName: "record.circle.fill")
@@ -183,7 +182,8 @@ struct RouteRecorder: View {
 										locationsHandler.elevationGain = 0.0
 										locationsHandler.locationsArray.removeAll()
 										locationsHandler.recordingStarted = Date()
-										let newRoute = RouteEntity(context: context)
+										let newRoute = RouteEntity()
+										context.insert(newRoute)
 										newRoute.date = Date()
 										let at = ActivityType(rawValue: activity)
 										newRoute.name = "\(newRoute.date?.relativeTimeOfDay() ?? "morning".localized) \(at?.fileNameString ?? "hike")"
@@ -196,7 +196,6 @@ struct RouteRecorder: View {
 											try context.save()
 											Logger.data.info("💾 Saved a new route")
 										} catch {
-											context.rollback()
 											let nsError = error as NSError
 											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}
@@ -242,7 +241,6 @@ struct RouteRecorder: View {
 											rec.enabled = true
 											rec.distance = locationsHandler.distanceTraveled
 											rec.elevationGain = locationsHandler.elevationGain
-											context.refresh(rec, mergeChanges: true)
 										}
 										locationsHandler.isRecording = false
 										locationsHandler.isRecordingPaused = false
@@ -254,7 +252,6 @@ struct RouteRecorder: View {
 											try context.save()
 											Logger.data.info("💾 Saved a route finish")
 										} catch {
-											context.rollback()
 											let nsError = error as NSError
 											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
 										}
@@ -267,23 +264,27 @@ struct RouteRecorder: View {
 									.controlSize(.large)
 									.padding(.bottom)
 								}
-#if targetEnvironment(macCatalyst)
-								Button(role: .cancel) {
-									isShowingDetails = false
-								} label: {
-									Label("Close", systemImage: "xmark")
-								}
-								.buttonStyle(.bordered)
-								.buttonBorderShape(.capsule)
-								.controlSize(.large)
-								.padding(.bottom)
-#endif
 								Spacer()
 							}
 
 						}
 					}
-				}
+#if targetEnvironment(macCatalyst)
+					.overlay(alignment: .topLeading) {
+						Button {
+							isShowingDetails = false
+						} label: {
+							Image(systemName: "xmark.circle.fill")
+								.font(.system(size: 34))
+								.symbolRenderingMode(.palette)
+								.foregroundStyle(.white, Color(.systemGray3))
+						}
+						.buttonStyle(.plain)
+						.padding(.top, 12)
+						.padding(.leading, 14)
+					}
+#endif
+				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDragIndicator(.hidden)
 				.interactiveDismissDisabled(false)
@@ -297,7 +298,8 @@ struct RouteRecorder: View {
 					if locationsHandler.isRecording {
 						if let loc = newLoc {
 							if recording != nil {
-								let locationEntity = LocationEntity(context: context)
+								let locationEntity = LocationEntity()
+								context.insert(locationEntity)
 								locationEntity.routeLocation = recording
 								locationEntity.id = Int32(locationsHandler.count)
 								locationEntity.altitude = Int32(loc.altitude)
@@ -309,7 +311,6 @@ struct RouteRecorder: View {
 									try context.save()
 									Logger.data.info("💾 Saved a new route location")
 								} catch {
-									context.rollback()
 									let nsError = error as NSError
 									Logger.data.error("Error Saving LocationEntity from the Route Recorder \(nsError, privacy: .public)")
 								}

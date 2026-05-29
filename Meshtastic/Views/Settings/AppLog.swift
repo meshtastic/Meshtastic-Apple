@@ -171,7 +171,7 @@ struct AppLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("Meshtastic Application Logs"),
+			defaultFilename: String("Meshtastic Application Logs \(Date.now.exportTimestamp)"),
 			onCompletion: { result in
 				switch result {
 				case .success:
@@ -271,3 +271,7 @@ extension AppLog {
 }
 
 extension OSLogEntry: @retroactive Identifiable { }
+
+#Preview {
+	AppLog()
+}

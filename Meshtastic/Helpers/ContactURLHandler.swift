@@ -5,7 +5,7 @@
 //  Created by Benjamin Faershtein on 6/27/25.
 //
 import SwiftUI
-import CoreData
+import SwiftData
 import OSLog
 import TipKit
 import MeshtasticProtobufs

@@ -11,16 +11,13 @@ import MapKit
 struct PositionPopover: View {
 	
 	@ObservedObject var locationsHandler = LocationsHandler.shared
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var appState: AppState
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@Environment(\.dismiss) private var dismiss
 	@Environment(\.openURL) var openURL
 	var position: PositionEntity
-	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
 	
-	@State private var detentSelection: PresentationDetent = .fraction(0.65)
 	@State private var navigateToCompass = false
 
 	var body: some View {
@@ -29,34 +26,27 @@ struct PositionPopover: View {
 		NavigationStack {
 			VStack {
 				HStack {
-					ZStack {
-						Button {
-							if let nodeNum = position.nodePosition?.num {
-								appState.router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
-								dismiss()
-							}
-						} label: {
-							CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
-						}
-				}
+					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
 					Text(position.nodePosition?.user?.longName ?? "Unknown")
 						.font(.largeTitle)
 				}
 				Divider()
 				HStack(alignment: .center) {
 					VStack(alignment: .leading) {
-						Button {
-							detentSelection = .large
-							DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+						if position.isPreciseLocation {
+							Button {
 								navigateToCompass = true
+							} label: {
+								Label {
+									Text("Open Compass")
+								} icon: {
+									Image(systemName: "safari")
+										.symbolRenderingMode(.hierarchical)
+										.frame(width: 35)
+								}
 							}
-						} label: {
-							HStack {
-								Image(systemName: "safari")
-								Text("Open Compass")
-							}
+							.padding(.bottom, 5)
 						}
-						.padding(.bottom, 5)
 						
 						/// Time
 						Label {
@@ -76,7 +66,7 @@ struct PositionPopover: View {
 						.padding(.bottom, 5)
 						/// Coordinate
 						Label {
-							Text("\(String(format: "%.6f", position.coordinate.latitude)), \(String(format: "%.6f", position.coordinate.longitude))")
+							Text("\(String(format: "%.6f", position.nodeCoordinate?.latitude ?? 0)), \(String(format: "%.6f", position.nodeCoordinate?.longitude ?? 0))")
 								.textSelection(.enabled)
 								.foregroundColor(.primary)
 								.font(idiom == .phone ? .callout : .body)
@@ -164,7 +154,8 @@ struct PositionPopover: View {
 						if let lastLocation = locationsHandler.locationsArray.last {
 							/// Distance
 							if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
-								let metersAway = position.coordinate.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
+								let posCoord = position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+								let metersAway = posCoord.distance(from: CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
 								Label {
 									Text("Distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 										.foregroundColor(.primary)
@@ -174,6 +165,7 @@ struct PositionPopover: View {
 										.symbolRenderingMode(.hierarchical)
 										.frame(width: 35)
 								}
+								.padding(.bottom, 5)
 							}
 						}
 						/// Speed
@@ -236,30 +228,20 @@ struct PositionPopover: View {
 					}
 				}
 				.padding(.top)
-				if !popover {
-#if targetEnvironment(macCatalyst)
-					Spacer()
-					Button {
-						dismiss()
-					} label: {
-						Label("Close", systemImage: "xmark")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-#endif
-				}
 			}
-			.presentationDetents([.fraction(0.65), .large], selection: $detentSelection)
-			.presentationContentInteraction(.scrolls)
-			.presentationDragIndicator(.visible)
-			.presentationBackgroundInteraction(.enabled(upThrough: .large))
+			.frame(idealWidth: 350, maxHeight: .infinity)
+			.fixedSize(horizontal: false, vertical: true)
 			.navigationDestination(isPresented: $navigateToCompass) {
 				CompassView(
-					waypointLocation: position.coordinate,
-					waypointName: position.nodePosition?.user?.longName ?? "Unknown node",
-					color: (position.nodePosition?.user?.num != nil && position.nodePosition?.user?.num != 0) ? Color(UIColor(hex: UInt32(position.nodePosition!.user!.num))) : .orange
+					waypointLocation: position.nodeCoordinate ?? LocationsHandler.DefaultLocation,
+					waypointLongName: position.nodePosition?.user?.longName ?? "Unknown node",
+					waypointShortName: position.nodePosition?.user?.shortName ?? "???",
+					color: {
+					if let num = position.nodePosition?.user?.num, num != 0 {
+						return Color(UIColor(hex: UInt32(num)))
+					}
+					return .orange
+				}()
 				)
 			}
 		}

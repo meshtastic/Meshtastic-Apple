@@ -1,0 +1,397 @@
+//
+//  NodeListItemCompact.swift
+//  Meshtastic
+//
+//  Created by Chase Christiansen on 3/20/26.
+//  Branched from NodeListItem.swift on 3/20/26.
+//
+
+import SwiftUI
+import CoreLocation
+import Foundation
+
+struct NodeListItemCompact: View {
+	
+	@AppStorage(NodeListPreferences.shouldShowLocation.rawValue) private var shouldShowLocation = true
+	@AppStorage(NodeListPreferences.shouldShowPower.rawValue) private var shouldShowPower = true
+	@AppStorage(NodeListPreferences.shouldShowTelemetry.rawValue) private var shouldShowTelemetry = true
+	@AppStorage(NodeListPreferences.shouldShowLastHeard.rawValue) private var shouldShowLastHeard = true
+	@AppStorage(NodeListPreferences.lastHeardIsRelative.rawValue) private var lastHeardIsRelative = false
+	@AppStorage(NodeListPreferences.shouldShowRole.rawValue) private var shouldShowRole = true
+	@AppStorage(NodeListPreferences.shouldShowChannel.rawValue) private var shouldShowChannel = true
+	@AppStorage(NodeListPreferences.shouldShowHops.rawValue) private var shouldShowHops = true
+	@AppStorage(NodeListPreferences.shouldShowSignal.rawValue) private var shouldShowSignal = true
+
+	@ScaledMetric(relativeTo: .body) private var baseUnit: CGFloat = 24
+	@ScaledMetric(relativeTo: .body) private var minCircle: CGFloat = 36
+	@ScaledMetric(relativeTo: .body) private var maxCircle: CGFloat = 50
+	@ScaledMetric(relativeTo: .caption) private var rowSpacing: CGFloat = 2
+
+	private static let relativeDateFormatter: RelativeDateTimeFormatter = {
+		let f = RelativeDateTimeFormatter()
+		f.unitsStyle = .full
+		return f
+	}()
+
+	private static let distanceFormatter: LengthFormatter = {
+		let f = LengthFormatter()
+		f.unitStyle = .medium
+		return f
+	}()
+
+	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
+		var desc = ""
+		if let shortName = node.user?.shortName {
+			desc = shortName.formatNodeNameForVoiceOver()
+		} else if let longName = node.user?.longName {
+			desc = longName
+		} else {
+			desc = "Unknown".localized + " " + "Node".localized
+		}
+		if isDirectlyConnected {
+			desc += ", currently connected"
+		}
+		if node.favorite {
+			desc += ", favorite"
+		}
+		if let lastHeard = node.lastHeard {
+			let relative = Self.relativeDateFormatter.localizedString(for: lastHeard, relativeTo: Date())
+			desc += ", last heard " + relative
+		}
+		if node.isOnline {
+			desc += ", online"
+		} else {
+			desc += ", offline"
+		}
+		let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
+		if let roleName = role?.name {
+			desc += ", role: \(roleName)"
+		}
+		if node.hopsAway > 0 {
+			desc += ", \(node.hopsAway) hops away"
+		}
+		if let battery = cachedMetrics?.batteryLevel {
+			if battery > 100 {
+				desc += ", " + "Plugged in".localized
+			} else if battery == 100 {
+				desc += ", " + "Charging".localized
+			} else {
+				desc += ", battery \(battery)%"
+			}
+		}
+		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
+			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
+			let metersAway = nodeCoord.distance(from: myCoord)
+			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
+			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
+			let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
+			let heading = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+			let formattedHeading = heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0))))
+			desc += ", " + "Heading".localized + " " + formattedHeading
+		}
+		if node.snr != 0 && !node.viaMqtt {
+			let signalStrength: BLESignalStrength
+			if node.snr < -10 {
+				signalStrength = .weak
+			} else if node.snr < 5 {
+				signalStrength = .normal
+			} else {
+				signalStrength = .strong
+			}
+			let signalString: String
+			switch signalStrength {
+			case .weak:
+				signalString = "Signal strength weak".localized
+			case .normal:
+				signalString = "Signal strength normal".localized
+			case .strong:
+				signalString = "Signal strength strong".localized
+			}
+			desc += ", " + signalString
+		}
+		return desc
+	}
+	
+	@Bindable var node: NodeInfoEntity
+	var isDirectlyConnected: Bool
+	var connectedNode: Int64
+	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
+	
+	var userKeyStatus: (String, Color) {
+		var image = "lock.open.fill"
+		var color = Color.yellow
+		if node.user?.pkiEncrypted ?? false {
+			if !(node.user?.keyMatch ?? false) {
+				image = "key.slash"
+				color = .red
+			} else {
+				image = "lock.fill"
+				color = .green
+			}
+		}
+		return (image, color)
+	}
+	
+	var locationData: (PositionEntity, CLLocation)? {
+		guard let lastPostion = node.latestPosition else {
+			return nil
+		}
+		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
+			return nil
+		}
+		
+		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
+		
+		if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+			return (lastPostion, myCoord)
+		}
+		return nil
+	}
+	
+	var lineNums: Int {
+		var lines = 1
+		if shouldShowRole || shouldShowLocation || shouldShowTelemetry || shouldShowChannel || shouldShowHops || shouldShowSignal {
+			lines += 1
+		}
+		
+		if shouldShowLastHeard {
+			lines += 1
+		}
+		
+		return lines
+	}
+	
+	var body: some View {
+		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
+		// Cache all expensive computed properties ONCE to avoid repeated FetchDescriptor queries
+		let cachedMetrics = node.latestDeviceMetrics
+		let cachedLocationData = locationData
+		let cachedHasPositions = node.hasPositions
+		let cachedHasDeviceMetrics = cachedMetrics != nil
+		let cachedHasEnvironmentMetrics = node.hasEnvironmentMetrics
+		let cachedHasDetectionSensorMetrics = node.hasDetectionSensorMetrics
+		let cachedHasTraceRoutes = node.hasTraceRoutes
+		LazyVStack(alignment: .leading) {
+			HStack {
+				// First Column
+				VStack(alignment: .center) {
+					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
+						.padding(.trailing, 5)
+					if shouldShowPower, let batteryLevel = cachedMetrics?.batteryLevel {
+						BatteryCompact(batteryLevel: batteryLevel, font: .caption2, iconFont: .caption, color: .accentColor)
+							.padding(.trailing, 5)
+					}
+				}
+				// End First Column
+				// Second Column
+				VStack(alignment: .leading, spacing: rowSpacing) {
+					HStack(alignment: .firstTextBaseline) {
+						let (image, color) = userKeyStatus
+						IconAndText(systemName: image,
+									imageColor: color,
+									text: node.user?.longName?.addingVariationSelectors ?? "Unknown".localized,
+									textColor: .primary)
+						if node.favorite {
+							Spacer()
+							Image(systemName: "star.fill")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
+						
+						let lastHeardText = lastHeardIsRelative ?
+						node.lastHeard?.formatted(Date.RelativeFormatStyle()) :
+						node.lastHeard?.formatted()
+						
+						IconAndText(
+							systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
+							imageColor: node.isOnline ? .green : .orange,
+							text: lastHeardText ?? "Unknown Age".localized
+						)
+					}
+					// Distance, bearing, hops, signal, role, telemetry row
+					HStack(alignment: .center, spacing: 6) {
+						if shouldShowLocation && connectedNode != node.num {
+							if let (lastPostion, myCoord) = cachedLocationData {
+								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+								let metersAway = nodeCoord.distance(from: myCoord)
+								DistanceText(meters: metersAway, isCompact: true)
+									.font(.callout)
+									.foregroundColor(.gray)
+								let trueBearing = getBearingBetweenTwoPoints(point1: myCoord, point2: nodeCoord)
+								let headingDegrees = Measurement(value: trueBearing, unit: UnitAngle.degrees)
+								Image(systemName: "location.north")
+									.font(.callout)
+									.symbolRenderingMode(.multicolor)
+									.clipShape(Circle())
+									.rotationEffect(Angle(degrees: headingDegrees.value))
+							}
+						}
+						if shouldShowHops && node.hopsAway > 0 {
+							Divider().frame(height: 15)
+							DefaultIconCompact(systemName: "\(node.hopsAway).square")
+						}
+						if shouldShowSignal && node.hopsAway == 0 && node.snr != 0 && !node.viaMqtt {
+							Divider().frame(height: 15)
+							DefaultIconCompact(systemName: "dot.radiowaves.left.and.right")
+								.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+						}
+						if shouldShowChannel && node.channel > 0 {
+							Divider().frame(height: 15)
+							DefaultIconCompact(systemName: "\(node.channel).circle.fill")
+						}
+						// Device Role
+						if shouldShowRole {
+							Divider().frame(height: 15)
+							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
+							DefaultIconCompact(systemName: role?.systemName ?? "figure")
+							if node.user?.unmessagable ?? false {
+								DefaultIconCompact(systemName: "iphone.slash")
+							}
+							if node.isStoreForwardRouter {
+								DefaultIconCompact(systemName: "envelope.arrow.triangle.branch")
+							}
+							if node.viaMqtt && connectedNode != node.num {
+								DefaultIconCompact(systemName: "dot.radiowaves.up.forward")
+							}
+						}
+						// Telemetry
+						if shouldShowTelemetry && (cachedHasPositions || cachedHasEnvironmentMetrics || cachedHasDetectionSensorMetrics || cachedHasTraceRoutes) {
+							Divider().frame(height: 15)
+							if cachedHasDeviceMetrics {
+								DefaultIconCompact(systemName: "flipphone")
+							}
+							if cachedHasPositions {
+								DefaultIconCompact(systemName: "mappin.and.ellipse")
+							}
+							if cachedHasEnvironmentMetrics {
+								DefaultIconCompact(systemName: "cloud.sun.rain")
+							}
+							if cachedHasDetectionSensorMetrics {
+								DefaultIconCompact(systemName: "sensor")
+							}
+							if cachedHasTraceRoutes {
+								DefaultIconCompact(systemName: "signpost.right.and.left")
+							}
+						}
+					}
+					.padding(EdgeInsets(top: 0, leading: 6, bottom: 0, trailing: 0))
+				}
+				.frame(maxWidth: .infinity, alignment: .leading)
+				// End Second Column
+			}
+		}
+		.padding(.top, 2)
+		.padding(.bottom, 2)
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
+	}
+}
+
+struct DefaultIconCompact: View {
+	let systemName: String
+	
+	var body: some View {
+		Image(systemName: systemName)
+			.symbolRenderingMode(.hierarchical)
+			.padding(.top, 2)
+			.font(.callout)
+	}
+}
+
+#Preview {
+	List {
+		NodeListItemCompact(node: {
+			let nodeInfo = NodeInfoEntity()
+			let user = UserEntity()
+			let telemetryEntity = TelemetryEntity()
+			let positionEntity = PositionEntity()
+			
+			user.longName = "Hopscotch"
+			user.shortName = "HS01"
+			user.unmessagable = true
+			user.pkiEncrypted = true
+			user.role = 11
+			nodeInfo.user = user
+			
+			telemetryEntity.batteryLevel = 100
+			telemetryEntity.distance = 100
+			nodeInfo.telemetries = [telemetryEntity]
+			
+			positionEntity.latitudeI = 30
+			positionEntity.longitudeI = -90
+			nodeInfo.positions = [positionEntity]
+
+			nodeInfo.hopsAway = 0
+			nodeInfo.snr = -17
+			nodeInfo.viaMqtt = false
+			nodeInfo.favorite = true
+			nodeInfo.lastHeard = Date(timeIntervalSinceNow: 0)
+			
+			return nodeInfo
+		}(), isDirectlyConnected: true, connectedNode: 0, modemPreset: .medFast)
+		
+		NodeListItemCompact(node: {
+			let nodeInfo = NodeInfoEntity()
+			let storeForwardConfig = StoreForwardConfigEntity()
+			let telemetryEntity = TelemetryEntity()
+			let user = UserEntity()
+			
+			user.longName = "Brad!!"
+			user.shortName = "B"
+			user.unmessagable = false
+			nodeInfo.user = user
+			
+			storeForwardConfig.enabled = true
+			nodeInfo.storeForwardConfig = storeForwardConfig
+			
+			telemetryEntity.batteryLevel = 99
+			telemetryEntity.distance = 100.0
+			nodeInfo.telemetries = [telemetryEntity]
+
+			nodeInfo.hopsAway = 7
+			nodeInfo.lastHeard = Date(timeIntervalSinceNow: -3600)
+			
+			return nodeInfo
+		}(), isDirectlyConnected: false, connectedNode: 1, modemPreset: .medFast)
+		
+		NodeListItemCompact(node: {
+			let nodeInfo = NodeInfoEntity()
+			let user = UserEntity()
+			
+			user.longName = "MQTT Matt"
+			user.shortName = "MQTM"
+			user.unmessagable = false
+			user.role = 3
+			nodeInfo.user = user
+
+			nodeInfo.hopsAway = 3
+			nodeInfo.viaMqtt = true
+			nodeInfo.lastHeard = Date(timeIntervalSinceNow: -98200)
+			
+			return nodeInfo
+		}(), isDirectlyConnected: false, connectedNode: 1, modemPreset: .medFast)
+		
+		NodeListItemCompact(node: {
+			let nodeInfo = NodeInfoEntity()
+			let user = UserEntity()
+			let telemetryEntity = TelemetryEntity()
+			
+			user.longName = "Sneaky Little Roof Node 03"
+			user.shortName = "SLN"
+			user.unmessagable = false
+			
+			telemetryEntity.batteryLevel = 99
+			telemetryEntity.distance = 100.0
+			nodeInfo.telemetries = [telemetryEntity]
+
+			nodeInfo.hopsAway = 1
+			nodeInfo.lastHeard = Date(timeIntervalSinceNow: -300600)
+			nodeInfo.favorite = true
+
+			nodeInfo.user = user
+			
+			return nodeInfo
+		}(), isDirectlyConnected: false, connectedNode: 1, modemPreset: .medFast)
+	}
+}

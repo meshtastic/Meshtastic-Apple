@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Measurement &amp; Locale</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="measurement">
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Measurement &amp; Locale</h1>
+<p>How the app converts metric device data to locale-aware display values. All rules are defined in <a href="https://github.com/meshtastic/design/blob/master/standards/meshtastic_design_standards_latest.html">Meshtastic Design Standards v1.4, Section 10</a>.</p>
+<h2>Core Principle</h2>
+<p>Meshtastic devices transmit all data in <strong>metric SI units</strong>. The app wraps raw values in Swift <code>Measurement</code> types with the correct source unit, then lets the OS format them for the user's locale. No manual <code>if metric … else imperial</code> branching is needed for most quantities.</p>
+<pre><code>Device (protobuf, always metric)
+  → Wrap in Measurement&lt;Unit&gt;(value:, unit: .sourceUnit)
+  → Format with .formatted(.measurement(...)) or MeasurementFormatter
+  → Display (auto-converted to user's locale)
+</code></pre>
+<h2>Protobuf Source Units</h2>
+<p>These are the canonical units the device sends. Always use these as the source unit when constructing <code>Measurement</code> values:</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Device Unit</th>
+<th>Swift Unit Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Altitude</td>
+<td>meters</td>
+<td><code>UnitLength.meters</code></td>
+</tr>
+<tr>
+<td>Distance (sensor)</td>
+<td>millimeters</td>
+<td><code>UnitLength.millimeters</code></td>
+</tr>
+<tr>
+<td>Ground Speed</td>
+<td>km/h</td>
+<td><code>UnitSpeed.kilometersPerHour</code></td>
+</tr>
+<tr>
+<td>Wind Speed / Gust</td>
+<td>m/s</td>
+<td><code>UnitSpeed.metersPerSecond</code></td>
+</tr>
+<tr>
+<td>Temperature</td>
+<td>°C</td>
+<td><code>UnitTemperature.celsius</code></td>
+</tr>
+<tr>
+<td>Barometric Pressure</td>
+<td>hPa</td>
+<td><code>UnitPressure.hectopascals</code></td>
+</tr>
+<tr>
+<td>Rainfall (1h / 24h)</td>
+<td>mm</td>
+<td><code>UnitLength.millimeters</code></td>
+</tr>
+<tr>
+<td>Weight</td>
+<td>kg</td>
+<td><code>UnitMass.kilograms</code></td>
+</tr>
+</tbody>
+</table>
+<div class="warning-callout"><strong>Warning — <code>CLLocation.speed</code> returns m/s, not km/h.</strong> When wrapping GPS speed, use <code>UnitSpeed.metersPerSecond</code>. Getting the source unit wrong produces silently incorrect conversions.</div>
+<h2>Formatting APIs</h2>
+<h3><code>.formatted(.measurement(...))</code></h3>
+<p>Preferred for inline text. Auto-converts to the user's locale:</p>
+<pre><code class="language-swift">let speed = Measurement(value: newLocation.speed, unit: UnitSpeed.metersPerSecond)
+Text(speed.formatted(.measurement(width: .abbreviated,
+    numberFormatStyle: .number.precision(.fractionLength(0)))))
+// → &quot;12 km/h&quot; or &quot;7 mph&quot;
+</code></pre>
+<h3><code>MeasurementFormatter</code></h3>
+<p>Used when you need more control (e.g., natural scaling for distances):</p>
+<pre><code class="language-swift">let formatter = MeasurementFormatter()
+formatter.unitOptions = .naturalScale  // 500m stays &quot;500 m&quot;, 2500m → &quot;2.5 km&quot;
+formatter.numberFormatter.maximumFractionDigits = 1
+let distance = Measurement(value: meters, unit: UnitLength.meters)
+return formatter.string(from: distance)
+</code></pre>
+<h3><code>MKDistanceFormatter</code></h3>
+<p>Used for map-related distances. Automatically picks m/km or ft/mi:</p>
+<pre><code class="language-swift">let distanceFormatter = MKDistanceFormatter()
+Text(distanceFormatter.string(fromDistance: Double(meters)))
+</code></pre>
+<h3>Temperature</h3>
+<p>Use the <code>formattedTemperature()</code> extension on <code>Float</code> (defined in <code>Meshtastic/Extensions/Float.swift</code>):</p>
+<pre><code class="language-swift">// Auto-converts °C → °F based on locale
+Text(temperature.formattedTemperature())
+</code></pre>
+<p>When you need the raw converted value (e.g., for chart data points), use <code>localeTemperature()</code>:</p>
+<pre><code class="language-swift">let displayValue = temperature.localeTemperature()  // Double in user's preferred unit
+</code></pre>
+<p>Both methods use <code>kCFLocaleTemperatureUnitKey</code> to detect the user's temperature preference.</p>
+<h2>Locale Detection</h2>
+<h3>Temperature Unit</h3>
+<pre><code class="language-swift">let locale = NSLocale.current as NSLocale
+let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: &quot;kCFLocaleTemperatureUnitKey&quot;))
+if (localeUnit as? String) == &quot;Fahrenheit&quot; {
+    // Use .fahrenheit
+}
+</code></pre>
+<div class="warning-callout"><strong>Warning — Never force-unwrap locale queries.</strong> <code>localeUnit</code> can be <code>nil</code> on some OS versions. Always use <code>as? String</code> with a safe default (Celsius).</div>
+<h3>Measurement System</h3>
+<pre><code class="language-swift">let usesMetric = Locale.current.measurementSystem == .metric
+</code></pre>
+<p>Used for quantities where <code>Measurement</code> formatting doesn't fully apply (e.g., choosing decimal precision for rainfall: 0 decimals for mm, 1 for inches).</p>
+<h2>Units That Never Convert</h2>
+<p>These are displayed as-is regardless of locale:</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Unit</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Barometric Pressure</td>
+<td>hPa</td>
+<td>International meteorological standard</td>
+</tr>
+<tr>
+<td>Heading / Bearing</td>
+<td>° (degrees)</td>
+<td>Universal navigation convention</td>
+</tr>
+<tr>
+<td>Radiation</td>
+<td>µR/hr</td>
+<td>Standard dosimetry unit</td>
+</tr>
+<tr>
+<td>Coordinates</td>
+<td>decimal degrees</td>
+<td>Universal geographic standard</td>
+</tr>
+<tr>
+<td>Percentages (humidity, battery)</td>
+<td>%</td>
+<td>Universal</td>
+</tr>
+</tbody>
+</table>
+<h2>Charts &amp; Graphs</h2>
+<p>Chart axes, tooltips, and annotations must also display locale-aware units:</p>
+<pre><code class="language-swift">// Altitude chart Y-axis (PositionAltitudeChart.swift)
+AxisValueLabel(&quot;&quot;&quot;
+    \(value.as(PlottableMeasurement.self)!
+        .measurement
+        .converted(to: Locale.current.measurementSystem == .metric
+            ? .meters : .feet),
+        format: .measurement(width: .wide,
+            numberFormatStyle: .number.precision(.fractionLength(0))))
+&quot;&quot;&quot;)
+</code></pre>
+<h2>Date &amp; Time</h2>
+<table>
+<thead>
+<tr>
+<th>Use Case</th>
+<th>API</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Recency indicators</td>
+<td><code>RelativeDateTimeFormatter()</code></td>
+<td>&quot;5 min ago&quot;</td>
+</tr>
+<tr>
+<td>Timestamps</td>
+<td><code>Date.formatted(date: .numeric, time: .shortened)</code></td>
+<td>&quot;5/9/26, 2:30 PM&quot;</td>
+</tr>
+<tr>
+<td>Locale-aware templates</td>
+<td><code>DateFormatter.dateFormat(fromTemplate:options:locale:)</code></td>
+<td>Respects 12/24hr, date order</td>
+</tr>
+<tr>
+<td>Export (machine-readable)</td>
+<td><code>DateFormatter</code> with <code>en_US_POSIX</code> locale</td>
+<td>&quot;2026-05-09_143000&quot;</td>
+</tr>
+<tr>
+<td>TAK/CoT XML</td>
+<td><code>Date.ISO8601FormatStyle</code></td>
+<td>ISO 8601 with fractional seconds</td>
+</tr>
+</tbody>
+</table>
+<p>Never hardcode 12-hour or 24-hour format — let the OS handle it via locale-aware formatters.</p>
+<h2>File Map</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What It Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Extensions/Float.swift</code></td>
+<td><code>formattedTemperature()</code>, <code>localeTemperature()</code></td>
+</tr>
+<tr>
+<td><code>Views/Settings/GPSStatus.swift</code></td>
+<td>GPS speed formatting (m/s source)</td>
+</tr>
+<tr>
+<td><code>Views/Helpers/Weather/LocalWeatherConditions.swift</code></td>
+<td>WeatherKit temperature &amp; wind</td>
+</tr>
+<tr>
+<td><code>Views/Helpers/Weather/NodeWeatherForecast.swift</code></td>
+<td>Hourly forecast temperature conversion</td>
+</tr>
+<tr>
+<td><code>Views/Nodes/Helpers/Map/PositionAltitudeChart.swift</code></td>
+<td>Locale-aware altitude chart axis</td>
+</tr>
+<tr>
+<td><code>Views/Nodes/Helpers/NodeDetail.swift</code></td>
+<td>Weight, rainfall, wind, soil temp display</td>
+</tr>
+<tr>
+<td><code>Views/Nodes/Helpers/Metrics Columns/EnvironmentDefaultColumns.swift</code></td>
+<td>Telemetry table columns</td>
+</tr>
+<tr>
+<td><code>Views/Nodes/Helpers/Metrics Columns/EnvironmentDefaultSeries.swift</code></td>
+<td>Chart gradient temperature thresholds</td>
+</tr>
+<tr>
+<td><code>Views/Helpers/DistanceText.swift</code></td>
+<td><code>MKDistanceFormatter</code> wrapper</td>
+</tr>
+<tr>
+<td><code>Views/Helpers/CompassView.swift</code></td>
+<td><code>MeasurementFormatter</code> with <code>.naturalScale</code></td>
+</tr>
+<tr>
+<td><code>Measurement/CustomFormatters.swift</code></td>
+<td>Shared <code>altitudeFormatter</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Checklist for New Telemetry Fields</h2>
+<p>When adding a new sensor value or telemetry display:</p>
+<ol>
+<li>Identify the protobuf source unit from the device schema</li>
+<li>Wrap in <code>Measurement&lt;Unit&gt;(value:, unit:)</code> with the correct source unit</li>
+<li>Format with <code>.formatted(.measurement(...))</code> — do not hardcode unit strings</li>
+<li>If it's a chart, ensure axis labels use the same locale-aware conversion</li>
+<li>If it's a universal unit (hPa, degrees, %), display as-is</li>
+<li>Test with both US and Metric measurement system settings in the Simulator</li>
+</ol>
+</body>
+</html>

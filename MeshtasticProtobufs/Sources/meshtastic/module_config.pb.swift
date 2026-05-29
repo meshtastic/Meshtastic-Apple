@@ -228,6 +228,16 @@ public struct ModuleConfig: Sendable {
     set {payloadVariant = .trafficManagement(newValue)}
   }
 
+  ///
+  /// TAK team/role configuration for TAK_TRACKER
+  public var tak: ModuleConfig.TAKConfig {
+    get {
+      if case .tak(let v)? = payloadVariant {return v}
+      return ModuleConfig.TAKConfig()
+    }
+    set {payloadVariant = .tak(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -278,6 +288,9 @@ public struct ModuleConfig: Sendable {
     ///
     /// Traffic management module config for mesh network optimization
     case trafficManagement(ModuleConfig.TrafficManagementConfig)
+    ///
+    /// TAK team/role configuration for TAK_TRACKER
+    case tak(ModuleConfig.TAKConfig)
 
   }
 
@@ -1391,6 +1404,28 @@ public struct ModuleConfig: Sendable {
     public init() {}
   }
 
+  ///
+  /// TAK team/role configuration
+  public struct TAKConfig: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Team color.
+    /// Default Unspecifed_Color -> firmware uses Cyan
+    public var team: Team = .unspecifedColor
+
+    ///
+    /// Member role.
+    /// Default Unspecifed -> firmware uses TeamMember
+    public var role: MemberRole = .unspecifed
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -1428,7 +1463,7 @@ extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
 
 extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0\u{1}tak\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1631,6 +1666,19 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .trafficManagement(v)
         }
       }()
+      case 16: try {
+        var v: ModuleConfig.TAKConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .tak(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .tak(v)
+        }
+      }()
       default: break
       }
     }
@@ -1701,6 +1749,10 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .trafficManagement?: try {
       guard case .trafficManagement(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
+    }()
+    case .tak?: try {
+      guard case .tak(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
     }()
     case nil: break
     }
@@ -2723,6 +2775,41 @@ extension ModuleConfig.StatusMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
 
   public static func ==(lhs: ModuleConfig.StatusMessageConfig, rhs: ModuleConfig.StatusMessageConfig) -> Bool {
     if lhs.nodeStatus != rhs.nodeStatus {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleConfig.TAKConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TAKConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}team\0\u{1}role\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.team) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.role) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.team != .unspecifedColor {
+      try visitor.visitSingularEnumField(value: self.team, fieldNumber: 1)
+    }
+    if self.role != .unspecifed {
+      try visitor.visitSingularEnumField(value: self.role, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ModuleConfig.TAKConfig, rhs: ModuleConfig.TAKConfig) -> Bool {
+    if lhs.team != rhs.team {return false}
+    if lhs.role != rhs.role {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

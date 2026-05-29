@@ -1,12 +1,59 @@
-# Meshtastic Apple Clients
+<h1 align="center">Meshtastic Apple</h1>
+
+<p align="center">
+  <strong>iOS · iPadOS · macOS · watchOS · visionOS</strong><br>
+  Open-source LoRa mesh networking for Apple platforms
+</p>
+
+<p align="center">
+  <a href="https://github.com/meshtastic/Meshtastic-Apple/actions"><img src="https://github.com/meshtastic/Meshtastic-Apple/actions/workflows/docs-deploy.yml/badge.svg" alt="Docs CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL%20v3-blue.svg" alt="License: GPL v3"></a>
+  <img src="https://img.shields.io/badge/Swift-6-orange.svg" alt="Swift 6">
+  <img src="https://img.shields.io/badge/platform-iOS%20%7C%20iPadOS%20%7C%20macOS%20%7C%20watchOS%20%7C%20visionOS-lightgrey.svg" alt="Platforms">
+</p>
+
+<p align="center">
+  <a href="https://meshtastic.github.io/Meshtastic-Apple/">User Guide</a> •
+  <a href="https://meshtastic.github.io/Meshtastic-Apple/developer.html">Developer Guide</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="LICENSE">License</a>
+</p>
+
+---
 
 ## Overview
 
-SwiftUI client applications for iOS, iPadOS and macOS.
+SwiftUI client applications for iOS, iPadOS, macOS, visionOS and watchOS that communicate with [Meshtastic](https://meshtastic.org) LoRa mesh radio devices over Bluetooth, TCP, and serial.
+
+## Key Features
+
+- **Mesh messaging** — channel and direct messages over LoRa, with CarPlay and Siri support for hands-free use while driving
+- **Live map** — node positions, waypoints, and GeoJSON overlays with offline tile support
+- **Node management** — signal meter, device roles, encryption status, trace routes, and telemetry
+- **Full radio configuration** — LoRa, channels, security, Bluetooth, device, display, network, position, power, and all module configs
+- **Apple Watch companion** — node list and fox hunt compass on your wrist
+- **TAK integration** — CoT position relay and TAK server connectivity
+- **In-app documentation** — full offline help browser with dark-mode support and AI-powered search (iOS 26+)
+
+## What's New
+
+### For Users
+
+- **May 2026** — **Docs Translation Pipeline** — Community-sourced translations: each device contributes on-device translations that are shared via a CDN feed so future users get instant localized docs.
+- **May 2026** — **Automatic Docs Translation** — On iOS 26+, in-app documentation is automatically translated into your device language using the Apple Translation framework.
+- **May 2026** — **Message Formatting Toolbar** — Markdown formatting toolbar in the message compose UI (iOS 18+/macOS 15+). Apply bold, italic, strikethrough, code, and links with one tap; live preview shows rendered output before sending.
+- **May 2026** — **Node List Layout** — Switchable Complete and Compact density modes for the node list. Compact mode reduces row height for large meshes (100+ nodes) with configurable detail toggles.
+- **May 2026** — [Signal Meter](https://meshtastic.github.io/Meshtastic-Apple/user/signal-meter.html) — New deep-dive page explaining how the LoRa signal quality meter works, why negative SNR values are normal, and how to interpret RSSI vs. SNR for your mesh.
+- **May 2026** — [Apple Watch App](https://meshtastic.github.io/Meshtastic-Apple/user/watch.html) — New page covering the companion watch app: node list, fox hunt compass, and how it syncs with your iPhone.
+- **Apr 2026** — **Local Mesh Discovery** — A diagnostic tool that cycles through multiple LoRa modem presets to audit the local RF environment, collecting nodes and telemetry across presets with configurable dwell times.
+
+### For Developers
+
+- **May 2026** — [Testing](https://meshtastic.github.io/Meshtastic-Apple/developer/testing.html) — Snapshot test conventions established: consolidated multi-state views into single combined images (light + dark pairs), use `assertViewSnapshot` helper with explicit `width`/`height` and `transparent: true` for icon snapshots.
+- **May 2026** — [Architecture](https://meshtastic.github.io/Meshtastic-Apple/developer/architecture.html) — In-app documentation system added: markdown source under `docs/` is converted to HTML by `scripts/build-docs.sh` and bundled at `Meshtastic/Resources/docs/`. Navigation is driven by `index.json`.
+- **May 2026** — **App Docs (Jekyll + In-App)** — Full offline documentation system: markdown source under `docs/`, GitHub Pages Jekyll site, in-app WKWebView browser with dark-mode support, and AI-powered search via Foundation Models (iOS 26+).
 
 ## Getting Started
-
-This project always uses the latest release version of XCode.
 
 1. Clone the repo.
     ```sh
@@ -26,106 +73,28 @@ This project always uses the latest release version of XCode.
     ```
 5. Build and run the `Meshtastic` target.
 
-## Technical Standards
+See [docs/developer/contributing.md](docs/developer/contributing.md) for code style, branch naming, PR checklist, and all other contribution guidelines.
 
-### Supported Operating Systems
+## Documentation
 
-The last two major operating system versions are supported on iOS, iPadOS and macOS.
-
-### Code Standards
-
-- Use SwiftUI
-- Use SFSymbols for icons
-- Use Core Data for persistence
-
-## Updating Protobufs:
-
-1. run
-```bash
-./scripts/gen_protos.sh
-```
-2. Build, test, and commit the changes.
-
-## Deep Links
-
-The app supports deep links using the `meshtastic:///` URL scheme, for use with shortcuts, intents, and web pages.
-
-### Messages
-
-| URL | Description |
-|-----|-------------|
-| `meshtastic:///messages` | Messages tab |
-| `meshtastic:///messages?channelId={channelId}&messageId={messageId}` | Channel messages (`messageId` is optional) |
-| `meshtastic:///messages?userNum={userNum}&messageId={messageId}` | Direct messages (`messageId` is optional) |
-
-### Connect
-
-| URL | Description |
-|-----|-------------|
-| `meshtastic:///connect` | Connect tab |
-
-### Nodes
-
-| URL | Description |
-|-----|-------------|
-| `meshtastic:///nodes` | Nodes tab |
-| `meshtastic:///nodes?nodenum={nodenum}` | Selected node |
-
-### Mesh Map
-
-| URL | Description |
-|-----|-------------|
-| `meshtastic:///map` | Map tab |
-| `meshtastic:///map?nodenum={nodenum}` | Node on map |
-| `meshtastic:///map?waypointId={waypointId}` | Waypoint on map |
-
-### Settings
-
-Each settings item has an associated deep link. No parameters are supported for settings URLs.
-
-| URL | Description |
-|-----|-------------|
-| `meshtastic:///settings/about` | About Meshtastic |
-| `meshtastic:///settings/appSettings` | App Settings |
-| `meshtastic:///settings/routes` | Routes |
-| `meshtastic:///settings/routeRecorder` | Route Recorder |
-| **Radio Config** | |
-| `meshtastic:///settings/lora` | LoRa Config |
-| `meshtastic:///settings/channels` | Channels |
-| `meshtastic:///settings/security` | Security Config |
-| `meshtastic:///settings/shareQRCode` | Share QR Code |
-| **Device Config** | |
-| `meshtastic:///settings/user` | User Config |
-| `meshtastic:///settings/bluetooth` | Bluetooth Config |
-| `meshtastic:///settings/device` | Device Config |
-| `meshtastic:///settings/display` | Display Config |
-| `meshtastic:///settings/network` | Network Config |
-| `meshtastic:///settings/position` | Position Config |
-| `meshtastic:///settings/power` | Power Config |
-| **Module Config** | |
-| `meshtastic:///settings/ambientLighting` | Ambient Lighting |
-| `meshtastic:///settings/cannedMessages` | Canned Messages |
-| `meshtastic:///settings/detectionSensor` | Detection Sensor |
-| `meshtastic:///settings/externalNotification` | External Notification |
-| `meshtastic:///settings/mqtt` | MQTT |
-| `meshtastic:///settings/paxCounter` | Pax Counter |
-| `meshtastic:///settings/rangeTest` | Range Test |
-| `meshtastic:///settings/ringtone` | Ringtone |
-| `meshtastic:///settings/serial` | Serial |
-| `meshtastic:///settings/storeAndForward` | Store & Forward |
-| `meshtastic:///settings/telemetry` | Telemetry |
-| **TAK** | |
-| `meshtastic:///settings/tak` | TAK Config |
-| **Logging** | |
-| `meshtastic:///settings/debugLogs` | Debug Logs |
-| **Developers** | |
-| `meshtastic:///settings/appFiles` | App Files |
-| `meshtastic:///settings/firmwareUpdates` | Firmware Updates |
+| Resource | Link |
+|----------|------|
+| User Guide | https://meshtastic.github.io/Meshtastic-Apple/ |
+| Developer Guide | https://meshtastic.github.io/Meshtastic-Apple/developer.html |
+| In-app | Settings → Help & Documentation |
 
 ## Release Process
 
-For more information on how a new release of Meshtastic is managed, please refer to [RELEASING.md](./RELEASING.md)
+For more information on how a new release of Meshtastic is managed, please refer to [RELEASING.md](./RELEASING.md).
 
 ## License
 
 This project is licensed under the GPL v3. See the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <a href="https://meshtastic.org">meshtastic.org</a> · 
+  <a href="https://github.com/meshtastic">GitHub @meshtastic</a>
+</p>
+

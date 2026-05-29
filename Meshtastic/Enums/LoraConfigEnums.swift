@@ -34,6 +34,14 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case ph915 = 21
 	case kz433 = 23
 	case kz863 = 24
+	case np865 = 25
+	case br902 = 26
+	case itu12M = 27
+	case itu232M = 28
+	case eu866 = 29
+	case eu874 = 30
+	case eu917 = 31
+	case euN868 = 32
 	case lora24 = 13
 	var topic: String {
 		switch self {
@@ -85,6 +93,22 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"KZ_433"
 		case .kz863:
 			"KZ_863"
+		case .np865:
+			"NP_865"
+		case .br902:
+			"BR_902"
+		case .itu12M:
+			"ITU1_2M"
+		case .itu232M:
+			"ITU23_2M"
+		case .eu866:
+			"EU_866"
+		case .eu874:
+			"EU_874"
+		case .eu917:
+			"EU_917"
+		case .euN868:
+			"EU_N_868"
 		case .lora24:
 			"LORA_24"
 		} }
@@ -139,6 +163,22 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Kazakhstan 433MHz".localized
 		case .kz863:
 			return "Kazakhstan 863MHz".localized
+		case .np865:
+			return "Nepal 865MHz".localized
+		case .br902:
+			return "Brazil 902MHz".localized
+		case .itu12M:
+			return "ITU Region 1 / Amateur 2m".localized
+		case .itu232M:
+			return "ITU Region 2 & 3 / Amateur 2m".localized
+		case .eu866:
+			return "European Union 866MHz".localized
+		case .eu874:
+			return "European Union 874MHz".localized
+		case .eu917:
+			return "European Union 917MHz".localized
+		case .euN868:
+			return "European Union 868MHz (Narrow)".localized
 		case .lora24:
 			return "2.4 Ghz".localized
 		}
@@ -195,6 +235,22 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return 100
 		case .kz863:
 			return 100
+		case .np865:
+			return 100
+		case .br902:
+			return 100
+		case .itu12M:
+			return 100
+		case .itu232M:
+			return 100
+		case .eu866:
+			return 10
+		case .eu874:
+			return 10
+		case .eu917:
+			return 10
+		case .euN868:
+			return 10
 		}
 	}
 	var isCountry: Bool {
@@ -249,6 +305,22 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return true
 		case .kz863:
 			return true
+		case .np865:
+			return true
+		case .br902:
+			return true
+		case .itu12M:
+			return false
+		case .itu232M:
+			return false
+		case .eu866:
+			return false
+		case .eu874:
+			return false
+		case .eu917:
+			return false
+		case .euN868:
+			return false
 		}
 	}
 	func protoEnumValue() -> Config.LoRaConfig.RegionCode {
@@ -304,6 +376,22 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.kz433
 		case .kz863:
 			return Config.LoRaConfig.RegionCode.kz863
+		case .np865:
+			return Config.LoRaConfig.RegionCode.np865
+		case .br902:
+			return Config.LoRaConfig.RegionCode.br902
+		case .itu12M:
+			return Config.LoRaConfig.RegionCode.itu12M
+		case .itu232M:
+			return Config.LoRaConfig.RegionCode.itu232M
+		case .eu866:
+			return Config.LoRaConfig.RegionCode.eu866
+		case .eu874:
+			return Config.LoRaConfig.RegionCode.eu874
+		case .eu917:
+			return Config.LoRaConfig.RegionCode.eu917
+		case .euN868:
+			return Config.LoRaConfig.RegionCode.euN868
 		}
 	}
 }
@@ -319,6 +407,28 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	case shortSlow = 5
 	case shortFast = 6
 	case shortTurbo = 8
+	case liteFast = 10
+	case liteSlow = 11
+	case narrowFast = 12
+	case narrowSlow = 13
+
+	/// Presets that should appear in user-facing pickers (LoRa config,
+	/// discovery scan). The Lite (125 kHz EU 866) and Narrow (62.5 kHz
+	/// EU 868) presets are intentionally hidden from selection for now —
+	/// they still exist as cases so a radio already configured on one of
+	/// them round-trips through protobuf and renders the correct label in
+	/// node lists, but the user can't pick them yet. Add the matching
+	/// cases back to this array when the firmware/UI rollout is ready.
+	static var userSelectable: [ModemPresets] {
+		allCases.filter { preset in
+			switch preset {
+			case .liteFast, .liteSlow, .narrowFast, .narrowSlow:
+				return false
+			default:
+				return true
+			}
+		}
+	}
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -341,6 +451,14 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "Short Range - Fast".localized
 		case .shortTurbo:
 			return "Short Range - Turbo".localized
+		case .liteFast:
+			return "Lite - Fast".localized
+		case .liteSlow:
+			return "Lite - Slow".localized
+		case .narrowFast:
+			return "Narrow - Fast".localized
+		case .narrowSlow:
+			return "Narrow - Slow".localized
 		}
 	}
 	var name: String {
@@ -363,6 +481,14 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "ShortFast"
 		case .shortTurbo:
 			return "ShortTurbo"
+		case .liteFast:
+			return "LiteFast"
+		case .liteSlow:
+			return "LiteSlow"
+		case .narrowFast:
+			return "NarrowFast"
+		case .narrowSlow:
+			return "NarrowSlow"
 		}
 	}
 	func snrLimit() -> Float {
@@ -385,6 +511,17 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return -7.5
 		case .shortTurbo:
 			return -7.5
+		case .liteFast:
+			// Lite presets are 125kHz, comparable link-budget to LongFast / ShortSlow.
+			// Conservative middle-of-the-road SNR floor pending field data.
+			return -12.5
+		case .liteSlow:
+			return -15
+		case .narrowFast:
+			// 62.5kHz narrow presets — similar to shortSlow link budget.
+			return -10
+		case .narrowSlow:
+			return -12.5
 		}
 	}
 	func protoEnumValue() -> Config.LoRaConfig.ModemPreset {
@@ -407,6 +544,14 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.ModemPreset.shortFast
 		case .shortTurbo:
 			return Config.LoRaConfig.ModemPreset.shortTurbo
+		case .liteFast:
+			return Config.LoRaConfig.ModemPreset.liteFast
+		case .liteSlow:
+			return Config.LoRaConfig.ModemPreset.liteSlow
+		case .narrowFast:
+			return Config.LoRaConfig.ModemPreset.narrowFast
+		case .narrowSlow:
+			return Config.LoRaConfig.ModemPreset.narrowSlow
 		}
 	}
 }

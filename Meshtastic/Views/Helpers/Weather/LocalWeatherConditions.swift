@@ -113,8 +113,12 @@ func calculateDewPoint(temp: Float, relativeHumidity: Float, convertToLocale: Bo
 	let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
 	var format: UnitTemperature = .celsius
 
-	if localeUnit! as? String == "Fahrenheit" {
+	if (localeUnit as? String) == "Fahrenheit" {
 		format = .fahrenheit
 	}
 	return dewPointUnit.converted(to: format).value
+}
+
+#Preview {
+	LocalWeatherConditions(location: CLLocation(latitude: 47.6062, longitude: -122.3321))
 }

@@ -5,17 +5,17 @@
 //  Copyright (c) Garth Vander Houwen 6/13/22.
 //
 import MeshtasticProtobufs
-import CoreData
+import SwiftData
 import OSLog
 import SwiftUI
 
 struct RangeTestConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -23,7 +23,7 @@ struct RangeTestConfig: View {
 	@State var save = false
 	@State private var sender: UpdateInterval = UpdateInterval(from: 0)
 	private var isPrimaryChannelPublic: Bool {
-		guard let channels = node?.myInfo?.channels?.array as? [ChannelEntity] else {
+		guard let channels = node?.myInfo?.channels else {
 			return false
 		}
 		// Treat the primary channel on this node as "public" when it is effectively unencrypted
@@ -35,16 +35,29 @@ struct RangeTestConfig: View {
 		return hexLen < 3
 	}
 
-	
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Range", config: \.rangeTestConfig, node: node, onAppear: setRangeTestValues)
-			
+
+			if isPrimaryChannelPublic {
+				Section {
+					Label("Range test requires an encrypted private channel. The primary channel on this node is using a default or empty key.", systemImage: "lock.open.fill")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
+			} else if accessoryManager.isConnected && node != nil && node?.rangeTestConfig == nil {
+				Section {
+					Label("Range test configuration has not been received from the radio. Try reconnecting to the device.", systemImage: "exclamationmark.triangle.fill")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
+			}
+
 			Section(header: Text("Options")) {
 				Toggle(isOn: $enabled) {
 					Label("Enabled", systemImage: "figure.walk")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.listRowSeparator(.visible)
 				UpdateIntervalPicker(
 					config: .rangeTestSender,
@@ -60,7 +73,7 @@ struct RangeTestConfig: View {
 					Label("Save", systemImage: "square.and.arrow.down.fill")
 					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.tint(.accentColor)
 				.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
 				
 			}
@@ -68,60 +81,37 @@ struct RangeTestConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.rangeTestConfig == nil || isPrimaryChannelPublic)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-					if connectedNode != nil {
-						var rtc = ModuleConfig.RangeTestConfig()
-						let effectiveEnabled = isPrimaryChannelPublic ? false : enabled
-						rtc.enabled = effectiveEnabled
-						rtc.save = save
-						rtc.sender = UInt32(sender.intValue)
-						Task {
-							_ = try await accessoryManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!)
-							Task { @MainActor in
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
-						}
-					}
-				}}}
-		.navigationTitle("Range Test Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
-			}
-		)
-		.onFirstAppear {
-			// Need to request a RangeTestModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != connectedNode.num {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.rangeTestConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired range test module config requesting via PKI admin")
-										try await accessoryManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Request Range test module config failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
+					var rtc = ModuleConfig.RangeTestConfig()
+					let effectiveEnabled = isPrimaryChannelPublic ? false : enabled
+					rtc.enabled = effectiveEnabled
+					rtc.save = save
+					rtc.sender = UInt32(sender.intValue)
+					_ = try await accessoryManager.saveRangeTestModuleConfig(config: rtc, fromUser: fromUser, toUser: toUser)
 				}
+			}}}
+		.navigationTitle("Range Test Config")
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.rangeTestConfig == nil },
+				request: accessoryManager.requestRangeTestModuleConfig,
+				requestForConnectedNode: true
+			)
 		}
 		.onChange(of: enabled) { _, newEnabled in
 			if newEnabled != node?.rangeTestConfig?.enabled { hasChanges = true }
@@ -142,4 +132,10 @@ struct RangeTestConfig: View {
 		self.sender = UpdateInterval(from: Int(node?.rangeTestConfig?.sender ?? 0))
 		self.hasChanges = false
 	}
+}
+
+#Preview {
+	RangeTestConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

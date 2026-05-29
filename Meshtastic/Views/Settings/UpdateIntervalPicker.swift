@@ -48,10 +48,18 @@ struct UpdateIntervalPicker: View {
 	}
 	private var isOutOfRange: Bool {
 		switch selectedInterval.type {
-			case .manual:
+		case .manual:
 			return true
 		case .fixed(let fixedCase):
 			return !config.allowedCases.contains(fixedCase)
 		}
 	}
+}
+
+#Preview {
+	UpdateIntervalPicker(
+		config: .broadcastShort,
+		pickerLabel: "Update Interval",
+		selectedInterval: .constant(UpdateInterval(from: 30))
+	)
 }

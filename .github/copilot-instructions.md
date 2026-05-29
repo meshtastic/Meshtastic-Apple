@@ -1,0 +1,232 @@
+# GitHub Copilot Instructions for Meshtastic-Apple
+
+## Project Overview
+
+Meshtastic-Apple is a SwiftUI client for iOS, iPadOS, and macOS (via Mac Catalyst) that communicates with Meshtastic LoRa mesh radio devices over BLE, TCP, and serial transports. The app handles mesh networking, messaging, node management, mapping, and radio configuration.
+
+## Architecture
+
+### App Entry Point
+- `Meshtastic/MeshtasticApp.swift` — `@main` `App` struct; initialises `AppState`, `Router`, `AccessoryManager`, `PersistenceController`, and Datadog observability.
+- `Meshtastic/MeshtasticAppDelegate.swift` — `UIApplicationDelegate` for SiriKit intent handling (CarPlay messaging via `INSendMessageIntent` etc.).
+
+### State & Navigation
+- `Router` (`Meshtastic/Router/Router.swift`) is a `@MainActor` `ObservableObject` that owns a `NavigationState` struct and drives tab/deep-link routing.
+- `NavigationState` and the per-tab enums (`MessagesNavigationState`, `MapNavigationState`, `SettingsNavigationState`) live in `Meshtastic/Router/NavigationState.swift`.
+- Deep links use the `meshtastic:///` URL scheme (see `docs/developer/deep-links.md` for the full table). `Router.route(url:)` dispatches them.
+- `AppState` wraps `Router` and is passed as an `@EnvironmentObject` throughout the view hierarchy.
+
+### Connectivity
+- `AccessoryManager` (`Meshtastic/Accessory/Accessory Manager/`) is the central BLE/TCP/serial manager. It is split across extension files:
+  - `AccessoryManager+Discovery.swift` — device scanning & connection
+  - `AccessoryManager+Connect.swift` — connection lifecycle
+  - `AccessoryManager+ToRadio.swift` — packets sent to the radio (including `sendWaypoint`)
+  - `AccessoryManager+FromRadio.swift` — packets received from the radio
+  - `AccessoryManager+Position.swift` — GPS position sharing
+  - `AccessoryManager+MQTT.swift` — MQTT proxy
+  - `AccessoryManager+TAK.swift` — TAK/CoT integration
+- Transport protocols are in `Meshtastic/Accessory/Transports/`.
+
+### Persistence
+- SwiftData is the sole persistence layer. `PersistenceController.shared` owns the `ModelContainer`; use `@Environment(\.modelContext)` or `@Query` in views, and the `MeshPackets` `@ModelActor` for background writes.
+- Model types are defined with `@Model` in `Meshtastic/Model/`. Schema evolution uses `VersionedSchema` and `SchemaMigrationPlan` in `Meshtastic/Model/MeshtasticSchema.swift`.
+- Query helpers: `QueryCoreData.swift` (`getNodeInfo`, etc.); update helpers: `UpdateCoreData.swift`.
+
+### Protobufs
+- The `MeshtasticProtobufs` Swift Package (`MeshtasticProtobufs/Package.swift`) wraps the protobuf-generated Swift sources.
+- Regenerate with `./scripts/gen_protos.sh` whenever `protobufs/` submodule changes, then build and commit.
+
+## Design Standards
+
+You are an expert Meshtastic Apple Developer. All UI and UX code must strictly adhere to the official cross-platform standards located at:
+`.standards/meshtastic_design_standards_latest.md`
+Never hallucinate design specs; if a value (color, padding, font size) is not in your immediate context, reference that file.
+
+## Code Style
+
+### Language & Frameworks
+- **Swift only.** No Objective-C.
+- **SwiftUI** for all UI. Do not use UIKit directly unless unavoidable (e.g., `UIApplicationDelegateAdaptor`).
+- **SF Symbols** for all icons — never embed image assets for icons.
+- **SwiftData** for all persistence — do not introduce SQLite, Realm, Core Data, or other persistence libraries.
+- **OSLog / `Logger`** for all logging — never use `print()`. The project's SwiftLint config enforces this with a custom `disable_print` rule. Use the typed loggers defined in `Meshtastic/Extensions/Logger.swift`:
+  - `Logger.admin`, `Logger.data`, `Logger.mesh`, `Logger.mqtt`, `Logger.radio`, `Logger.services`, `Logger.statistics`, `Logger.transport`, `Logger.tak`
+
+### Platform Support
+- Target the **last two major OS versions** of iOS, iPadOS, and macOS (Mac Catalyst).
+- Guard iOS-only APIs with `#if !targetEnvironment(macCatalyst)` or `#if canImport(UIKit)`.
+
+### SwiftLint
+- SwiftLint is enforced on every commit via `scripts/setup-hooks.sh`. Ensure no new errors or warnings are introduced.
+- Key limits (see `.swiftlint.yml`): line length 400, file length warning 3500, type body length warning 400, function body length warning 200, cyclomatic complexity warning 60.
+- Disabled rules: `operator_whitespace`, `multiple_closures_with_trailing_closure`, `todo`, `trailing_whitespace`.
+
+### Formatting Conventions
+- Indent with **tabs**.
+- Opening braces on the same line as the declaration.
+- `// MARK: -` comments to separate logical sections within a file.
+- `// MARK: FileName` or file-level copyright comment at the top of files.
+- Extensions grouped by functionality in separate files (e.g., `AccessoryManager+ToRadio.swift`).
+- Prefer `guard` for early exit; avoid deeply nested `if` blocks.
+- Use trailing closure syntax; omit argument labels where idiomatic.
+
+### Naming
+- Types: `UpperCamelCase`, max 60 chars (warning at 60, error at 70).
+- Variables/functions: `lowerCamelCase`, min 1 char, max 60 chars.
+- Enum raw values that map to URL path segments use `lowerCamelCase` (e.g., `SettingsNavigationState.appSettings`).
+- File names match the primary type they define.
+
+### Concurrency
+- `Router` is `@MainActor`; all property reads and method calls must be `await`-ed in async contexts and tests.
+- Prefer `async/await` over callback-based APIs for new code.
+- Use `Task` for fire-and-forget async work; propagate cancellation via `Task.checkCancellation()`.
+
+## Testing
+
+- Test target: `MeshtasticTests/`.
+- Use **Swift Testing** (`import Testing`, `@Suite`, `@Test`, `#expect`, `#require`) for all new tests. Do not use XCTest for new test files.
+- Tests are run via Xcode — there is no Makefile or CLI test runner.
+- Ensure all existing tests pass before submitting a PR.
+- Write tests for new features and bug fixes.
+
+### Snapshot Tests
+- SwiftUI view snapshot tests live in `MeshtasticTests/SwiftUIViewSnapshotTests.swift`.
+- Use the custom `renderImage` helper (not swift-snapshot-testing's API) — it uses `UIHostingController` + `drawHierarchy(in:afterScreenUpdates: true)` with safe-area inset negation via `additionalSafeAreaInsets`.
+- Pass `forDocs: true` to `assertViewSnapshot` when the snapshot is referenced in a docs markdown file. These PNGs are saved to `docs/assets/screenshots/`. Test-only snapshots (without `forDocs`) are saved to `MeshtasticTests/__Snapshots__/`.
+- `copy-snapshots.sh` copies only doc-referenced PNGs into the app bundle — test-only snapshots are never bundled.
+- For views that use `ScrollView` or don't have intrinsic height, pass an explicit `height:` parameter to `renderImage`.
+- Each `@Suite` groups tests for one view component. Name suites `<ViewName>SnapshotTests`.
+- Compare snapshots using `cgImage.width`/`cgImage.height` (pixel dimensions), not `UIImage.size` (which is scale-dependent).
+
+## Git & PR Workflow
+
+- Branch from and target **`main`** (trunk-based development).
+- Use **rebase** instead of merge to incorporate upstream changes (`git config pull.rebase true`).
+- Keep branches small and focused on a single task.
+- Commit messages: imperative mood subject line (e.g., `Fix crash when BLE device disconnects`). Explain *what* and *why* in the body.
+- PR description must answer: what changed, why it changed, how it was tested, and include screenshots/videos when UI is affected (see `.github/pull_request_template.md`).
+- Self-review code before requesting review; comment complex areas.
+
+## Deep Links
+
+The app registers the `meshtastic:///` URL scheme. Use `Router.route(url:)` to handle incoming URLs. When adding a new deep link:
+1. Add a case to the appropriate `*NavigationState` enum in `NavigationState.swift`.
+2. Update `Router`'s routing helpers.
+3. Document the URL in `docs/developer/deep-links.md`.
+
+## Adding or Updating Protobufs
+
+1. Update the `protobufs/` git submodule.
+2. Run `./scripts/gen_protos.sh`.
+3. Build, test, and commit the generated changes.
+
+## SwiftData Schema Changes
+
+1. Add or modify `@Model` types in `Meshtastic/Model/`.
+2. Add a new `VersionedSchema` conformance and update the `SchemaMigrationPlan` in `MeshtasticSchema.swift`.
+3. Provide a `MigrationStage` (lightweight or custom) for the version transition.
+
+## In-App Documentation
+
+The app ships a complete offline documentation system (feature `003-app-docs-markdown`). Source markdown lives under `docs/user/` and `docs/developer/`. A build script converts it to HTML at `Meshtastic/Resources/docs/` for bundling.
+
+### When to update docs
+
+**Always** update the corresponding `docs/user/` page when any of these change:
+- User-visible UI strings, labels, or navigation structure
+- A new settings screen, sheet, or menu option is added or removed
+- Icon colours, status indicators, or symbol meanings change
+- Any user-facing flow changes (onboarding, connection, messaging, map, etc.)
+- A new TipKit tip is added to `Meshtastic/Tips/`
+
+**Always** update the corresponding `docs/developer/` page when:
+- Architecture, data flow, or module responsibilities change
+- A new transport, persistence layer, or concurrency pattern is introduced
+- The testing strategy or snapshot test conventions change
+
+### View → doc page mapping
+
+| Changed source path | Doc page to update |
+|---|---|
+| `Meshtastic/Views/Messages/` | `docs/user/messages.md` |
+| `Meshtastic/Views/Nodes/` | `docs/user/nodes.md` |
+| `Meshtastic/Views/Map/` | `docs/user/map.md` |
+| `Meshtastic/Views/Settings/Bluetooth/` | `docs/user/bluetooth.md` |
+| `Meshtastic/Views/Settings/Discovery/` | `docs/user/discovery.md` |
+| `Meshtastic/Views/Settings/MQTT/` | `docs/user/mqtt.md` |
+| `Meshtastic/Views/Settings/TAK/` | `docs/user/tak.md` |
+| `Meshtastic/Views/Settings/Firmware/` | `docs/user/firmware.md` |
+| `Meshtastic/Views/Settings/` (telemetry/sensor) | `docs/user/telemetry.md` |
+| `Meshtastic/Views/Settings/` (general) | `docs/user/settings.md` |
+| `Meshtastic/Views/Settings/HelpAndDocumentation/` | `docs/index.md` |
+| `Meshtastic Watch App/` | `docs/user/watch.md` |
+| `Meshtastic/CarPlay/` | `docs/user/carplay.md` (user guide) and `docs/developer/carplay.md` (architecture) |
+| `Meshtastic/Model/` | `docs/developer/swiftdata.md` or `docs/developer/architecture.md` |
+| `Meshtastic/Accessory/Transports/` | `docs/developer/transport.md` |
+| `MeshtasticTests/` (snapshot conventions) | `docs/developer/testing.md` |
+
+### Doc authoring conventions
+
+- **Screenshots**: Snapshot tests with `forDocs: true` write PNGs to `docs/assets/screenshots/`. Reference them in markdown with `![alt](../assets/screenshots/NAME.png)`. Run `copy-snapshots.sh` to bundle only doc-referenced images into the app.
+- **Dark/light image pairs**: When a view is snapshotted in both light and dark mode (e.g. `foo_light.png` + `foo_dark.png`), never embed both `![]()` tags side-by-side — both will render simultaneously. Instead use an HTML `<picture>` element with a `prefers-color-scheme` media query:
+  ```html
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/foo_dark.png">
+    <img src="../assets/screenshots/foo_light.png" alt="Description">
+  </picture>
+  ```
+  `cmark-gfm` is invoked with `--unsafe` so raw HTML passes through to both the Jekyll site and the in-app `WKWebView` renderer.
+- **Icons in tables**: Use `![icon](../assets/screenshots/NAME.png)` inside a markdown table with at minimum `| Icon | Description |` columns. Do not use standalone `![]()` blocks for icon references — use tables (FR-032).
+- **Icon snapshots**: Use `transparent: true`, plain `Image` views (not `Button`/wrapper components), `.font(.title).padding(2)`. Connection-status icons use `systemOrange`. Lock icons use portrait canvas widths (`lockClosed/Open/Red` → `width: 30`).
+- **Callout blocks**: Always use the **two-line format** — title on the first `>` line, body on one or more continuation `>` lines:
+  ```markdown
+  > **Tip — Short title**
+  > Body text here. Can span multiple sentences.
+
+  > **Warning — Short title**
+  > Body text here.
+  ```
+  The build script and on-device `MarkdownConverter` both detect `<strong>…Tip…</strong>` / `<strong>…Warning…</strong>` inside a `<blockquote>` and convert them to styled `<div class="tips-callout">` / `<div class="warning-callout">` elements.
+
+  **Rules for translation safety** (the translation pipeline segments callouts):
+  - Keep the title short (3–6 words). Long titles are awkward in all languages.
+  - Never put the body inline on the same line as the title (e.g. `> **Tip — Title** body here` or `> **Tip — Title**: body here`). Use the two-line format.
+  - Do not use a `: ` separator between title and body — use the two-line format instead.
+  - The `**` closing the title must be immediately adjacent to the last word (no trailing space): `> **Tip — Title**` ✓, `> **Tip — Title **` ✗.
+- **After editing any `.md` file under `docs/`**, regenerate the bundled HTML and commit it:
+  ```bash
+  bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta
+  ```
+  Then copy updated snapshots if needed:
+  ```bash
+  bash scripts/copy-snapshots.sh --output Meshtastic/Resources/docs/assets/screenshots
+  ```
+
+### PR checklist for doc changes
+
+The `.github/workflows/docs-staleness.yml` action posts an advisory comment on any PR that modifies `Meshtastic/Views/`, `Meshtastic/Model/`, `Meshtastic/Tips/`, or `Meshtastic/Accessory/` without also touching `docs/`. If a doc update is genuinely not required (e.g., internal refactor, bug fix, test change), add the **`skip-docs-check`** label to the PR to dismiss the warning.
+
+## CI
+
+CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modify CI scripts without understanding the Xcode Cloud build environment.
+
+## Active Technologies
+- Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+) (001-local-mesh-discovery)
+- SwiftData (`ModelContainer` / `ModelContext`) (001-local-mesh-discovery)
+- Swift (latest stable) for app code; bash for build scripts; YAML for GitHub Actions workflows + WebKit (`WKWebView`), FoundationModels (iOS 26+), `cmark-gfm` CLI (Homebrew), GitHub Actions (`actions/deploy-pages`), `just-the-docs` Jekyll theme (003-app-docs-markdown)
+- Main app bundle — `Meshtastic/Resources/docs/` copied via Xcode Copy Files build phase; no SwiftData models required (003-app-docs-markdown)
+- Swift (latest stable), Swift Concurrency (`async/await`, `@MainActor`) + SwiftUI (`TextEditor`, `TextSelection`), SF Symbols (004-message-formatting-toolbar)
+- SwiftData (existing `MessageEntity` — no schema changes required) (004-message-formatting-toolbar)
+- Swift (latest stable) + SwiftUI (TextEditor, TextSelection — iOS 18+) (004-message-formatting-toolbar)
+- N/A (no schema changes — raw markdown stored in existing `messagePayload`) (004-message-formatting-toolbar)
+- Swift (latest stable), iOS 26+ for translation APIs + Translation framework, FoundationModels, SwiftUI, WKWebView (existing DocPageView) (008-docs-auto-translation)
+- Application Support directory (file-based cache — translated .md files + metadata JSON) (008-docs-auto-translation)
+
+## Recent Changes
+- 001-local-mesh-discovery: Added Swift (latest stable), Swift Concurrency (`async`/`await`, `@MainActor`) + SwiftUI, MapKit, CoreBluetooth (via AccessoryManager), MeshtasticProtobufs, FoundationModels (iOS 26+)
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+at `specs/011-database-backup-system/plan.md`
+<!-- SPECKIT END -->

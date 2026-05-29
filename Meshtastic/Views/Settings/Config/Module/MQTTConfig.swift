@@ -11,17 +11,16 @@ import SwiftUI
 
 struct MQTTConfig: View {
 	
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
-	var node: NodeInfoEntity?
+	let node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	@State var enabled = false
 	@State var proxyToClientEnabled = false
 	@State var address = ""
 	@State var defaultServer = true
-	@State var showTls = true
 	@State var username = ""
 	@State var password = ""
 	@State var encryptionEnabled = true
@@ -58,14 +57,14 @@ struct MQTTConfig: View {
 					Toggle(isOn: $enabled) {
 						Label("Enabled", systemImage: "dot.radiowaves.up.forward")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					Toggle(isOn: $proxyToClientEnabled) {
 						
 						Label("MQTT Client Proxy", systemImage: "iphone.radiowaves.left.and.right")
 						Text("Utilizes the network connection on your phone to connect to MQTT.")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					if enabled && proxyToClientEnabled && node?.mqttConfig?.proxyToClientEnabled ?? false == true {
 						Toggle(isOn: $mqttConnected) {
@@ -77,20 +76,20 @@ struct MQTTConfig: View {
 							}
 							
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 					
 					Toggle(isOn: $encryptionEnabled) {
 						Label("Encryption Enabled", systemImage: "lock.icloud")
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					
 					if !proxyToClientEnabled {
 						Toggle(isOn: $jsonEnabled) {
 							Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
 							Text("JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 				}
 				
@@ -101,7 +100,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 							.font(.caption)
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.tint(.accentColor)
 					if mapReportingEnabled {
 						Text("Consent to Share Unencrypted Node Data via MQTT")
 						Text("By enabling this feature, you acknowledge and expressly consent to the transmission of your device’s real-time geographic location over the MQTT protocol without encryption. This location data may be used for purposes such as live map reporting, device tracking, and related telemetry functions.")
@@ -115,7 +114,7 @@ struct MQTTConfig: View {
 								.foregroundColor(.gray)
 								.font(.callout)
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 					if mapReportingEnabled && mapReportingOptIn {
 						UpdateIntervalPicker(
@@ -148,7 +147,7 @@ struct MQTTConfig: View {
 							.onChange(of: root) {
 								var totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
-								while totalBytes > 30 {
+								while totalBytes > 31 {
 									root = String(root.dropLast())
 									totalBytes = root.utf8.count
 								}
@@ -186,11 +185,10 @@ struct MQTTConfig: View {
 							.onChange(of: address) {
 								var totalBytes = address.utf8.count
 								// Only mess with the value if it is too big
-								while totalBytes > 62 {
+								while totalBytes > 63 {
 									address = String(address.dropLast())
 									totalBytes = address.utf8.count
 								}
-								hasChanges = true
 							}
 							.keyboardType(.default)
 					}
@@ -205,11 +203,10 @@ struct MQTTConfig: View {
 								.onChange(of: username) {
 									var totalBytes = username.utf8.count
 									// Only mess with the value if it is too big
-									while totalBytes > 62 {
+									while totalBytes > 63 {
 										username = String(username.dropLast())
 										totalBytes = username.utf8.count
 									}
-									hasChanges = true
 								}
 								.foregroundColor(.gray)
 						}
@@ -223,23 +220,31 @@ struct MQTTConfig: View {
 								.onChange(of: password) {
 									var totalBytes = password.utf8.count
 									// Only mess with the value if it is too big
-									while totalBytes > 30 {
+									while totalBytes > 31 {
 										password = String(password.dropLast())
 										totalBytes = password.utf8.count
 									}
-									hasChanges = true
 								}
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
 						.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					}
-					if showTls {
+					if defaultServer {
+						if accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
+							Toggle(isOn: $tlsEnabled) {
+								Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+								Text("TLS is required for the public Meshtastic MQTT server.")
+							}
+							.tint(.accentColor)
+							.disabled(true)
+						}
+					} else {
 						Toggle(isOn: $tlsEnabled) {
 							Label("TLS Enabled", systemImage: "checkmark.shield.fill")
 							Text("Your MQTT Server must support TLS.")
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.tint(.accentColor)
 					}
 				}
 				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
@@ -249,87 +254,80 @@ struct MQTTConfig: View {
 			.disabled(!accessoryManager.isConnected || node?.mqttConfig == nil)
 			.safeAreaInset(edge: .bottom, alignment: .center) {
 				HStack(spacing: 0) {
-					SaveConfigButton(node: node, hasChanges: $hasChanges) {
-						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-						if connectedNode != nil {
-							var mqtt = ModuleConfig.MQTTConfig()
-							mqtt.enabled = self.enabled
-							mqtt.proxyToClientEnabled = self.proxyToClientEnabled
-							mqtt.address = self.address
-							mqtt.username = self.username
-							mqtt.password = self.password
-							mqtt.root = self.root
-							mqtt.encryptionEnabled = self.encryptionEnabled
-							mqtt.jsonEnabled = self.jsonEnabled
-							mqtt.tlsEnabled = self.tlsEnabled
-							mqtt.mapReportingEnabled = self.mapReportingEnabled
-							mqtt.mapReportSettings.shouldReportLocation = UserDefaults.mapReportingOptIn
-							mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
-							mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs.intValue)
-							Task {
-								do {
-									_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!)
-									Task { @MainActor in
-										// Should show a saved successfully alert once I know that to be true
-										// for now just disable the button after a successful save
-										hasChanges = false
-										goBack()
-									}
-								}
-							}
-						}
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					performConfigSave(
+						node: node,
+						context: context,
+						accessoryManager: accessoryManager,
+						hasChanges: $hasChanges,
+						dismiss: goBack
+					) { fromUser, toUser in
+						var mqtt = ModuleConfig.MQTTConfig()
+						mqtt.enabled = self.enabled
+						mqtt.proxyToClientEnabled = self.proxyToClientEnabled
+						mqtt.address = self.address
+						mqtt.username = self.username
+						mqtt.password = self.password
+						mqtt.root = self.root
+						mqtt.encryptionEnabled = self.encryptionEnabled
+						mqtt.jsonEnabled = self.jsonEnabled
+						mqtt.tlsEnabled = self.tlsEnabled
+						mqtt.mapReportingEnabled = self.mapReportingEnabled
+						mqtt.mapReportSettings.shouldReportLocation = UserDefaults.mapReportingOptIn
+						mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
+						mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs.intValue)
+						_ = try await accessoryManager.saveMQTTConfig(config: mqtt, fromUser: fromUser, toUser: toUser)
 					}
 				}
-			}.onChange(of: enabled) { _, newEnabled in
-				if newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
+				}
+			}.onChange(of: enabled) { oldEnabled, newEnabled in
+				if oldEnabled != newEnabled && newEnabled != node?.mqttConfig?.enabled { hasChanges = true }
 			}
-			.onChange(of: proxyToClientEnabled) { _, newProxyToClientEnabled in
+			.onChange(of: proxyToClientEnabled) { oldProxy, newProxyToClientEnabled in
 				if newProxyToClientEnabled {
 					jsonEnabled = false
-					tlsEnabled = false
 				}
-				if newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
+				if oldProxy != newProxyToClientEnabled && newProxyToClientEnabled != node?.mqttConfig?.proxyToClientEnabled { hasChanges = true }
 			}
-			.onChange(of: address) { _, newAddress in
-				if address.lowercased() == "mqtt.meshtastic.org" {
+			.onChange(of: address) { oldAddress, newAddress in
+				if newAddress.lowercased() == "mqtt.meshtastic.org" {
 					username = "meshdev"
 					password = "large4cats"
 					defaultServer = true
-					if proxyToClientEnabled {
-						showTls = false
+					if accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
+						tlsEnabled = true
 					}
 				} else {
 					defaultServer = false
-					showTls = true
 				}
-				if newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
+				if oldAddress != newAddress && newAddress != node?.mqttConfig?.address ?? "" { hasChanges = true }
 			}
-			.onChange(of: username) { _, newUsername in
-				if newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
+			.onChange(of: username) { oldUsername, newUsername in
+				if oldUsername != newUsername && newUsername != node?.mqttConfig?.username ?? "" { hasChanges = true }
 			}
-			.onChange(of: password) { _, newPassword in
-				if newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
+			.onChange(of: password) { oldPassword, newPassword in
+				if oldPassword != newPassword && newPassword != node?.mqttConfig?.password ?? "" { hasChanges = true }
 			}
-			.onChange(of: root) { _, newRoot in
-				if newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
+			.onChange(of: root) { oldRoot, newRoot in
+				if oldRoot != newRoot && newRoot != node?.mqttConfig?.root ?? "" { hasChanges = true }
 			}
 			.onChange(of: selectedTopic) { _, newSelectedTopic in
 				root = newSelectedTopic
 			}
-			.onChange(of: encryptionEnabled) { _, newEncryptionEnabled in
-				if newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
+			.onChange(of: encryptionEnabled) { oldEncryption, newEncryptionEnabled in
+				if oldEncryption != newEncryptionEnabled && newEncryptionEnabled != node?.mqttConfig?.encryptionEnabled { hasChanges = true }
 			}
-			.onChange(of: jsonEnabled) { _, newJsonEnabled in
+			.onChange(of: jsonEnabled) { oldJson, newJsonEnabled in
 				if newJsonEnabled {
 					proxyToClientEnabled = false
 				}
-				if newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
+				if oldJson != newJsonEnabled && newJsonEnabled != node?.mqttConfig?.jsonEnabled { hasChanges = true }
 			}
-			.onChange(of: tlsEnabled) { _, newTlsEnabled in
-				if defaultServer {
-					tlsEnabled = false
-				} else {
-					if newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
+			.onChange(of: tlsEnabled) { oldTls, newTlsEnabled in
+				if defaultServer && accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
+					tlsEnabled = true
+				} else if !defaultServer {
+					if oldTls != newTlsEnabled && newTlsEnabled != node?.mqttConfig?.tlsEnabled { hasChanges = true }
 				}
 			}
 			.onChange(of: mqttConnected) { _, newMqttConnected in
@@ -343,48 +341,27 @@ struct MQTTConfig: View {
 					}
 				}
 			}
-			.onChange(of: mapReportingEnabled) { _, newMapReportingEnabled in
-				if newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
+			.onChange(of: mapReportingEnabled) { oldMapReporting, newMapReportingEnabled in
+				if oldMapReporting != newMapReportingEnabled && newMapReportingEnabled != node?.mqttConfig?.mapReportingEnabled { hasChanges = true }
 			}
-			.onChange(of: mapPublishIntervalSecs.intValue) { _, newMapPublishIntervalSecs in
-				if newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
+			.onChange(of: mapPublishIntervalSecs.intValue) { oldMapInterval, newMapPublishIntervalSecs in
+				if oldMapInterval != newMapPublishIntervalSecs && newMapPublishIntervalSecs != node?.mqttConfig?.mapPublishIntervalSecs ?? -1 { hasChanges = true }
 			}
 		}
 		.navigationTitle("MQTT Config")
-		.navigationBarItems(
-			trailing: ZStack {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?"
-				)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
-		)
+		}
 		.onFirstAppear {
-			// Need to request a MqttModuleConfig from the remote node before allowing changes
-			if let deviceNum = accessoryManager.activeDeviceNum, let node {
-				let connectedNode = getNodeInfo(id: deviceNum, context: context)
-				if let connectedNode {
-					if node.num != deviceNum {
-						if UserDefaults.enableAdministration && node.num != deviceNum {
-							/// 2.5 Administration with session passkey
-							let expiration = node.sessionExpiration ?? Date()
-							if expiration < Date() || node.mqttConfig == nil {
-								Task {
-									do {
-										Logger.mesh.info("⚙️ Empty or expired mqtt module config requesting via PKI admin")
-										try await accessoryManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node.user!)
-									} catch {
-										Logger.mesh.error("🚨 Mqtt module config request failed")
-									}
-								}
-							}
-						} else {
-							/// Legacy Administration
-							Logger.mesh.info("☠️ Using insecure legacy admin that is no longer supported, please upgrade your firmware.")
-						}
-					}
-				}
-			}
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.mqttConfig == nil },
+				request: accessoryManager.requestMqttModuleConfig
+			)
 		}
 	}
 	
@@ -446,7 +423,11 @@ struct MQTTConfig: View {
 		self.root = node?.mqttConfig?.root ?? "msh"
 		self.encryptionEnabled = node?.mqttConfig?.encryptionEnabled ?? false
 		self.jsonEnabled = node?.mqttConfig?.jsonEnabled ?? false
-		self.tlsEnabled = node?.mqttConfig?.tlsEnabled ?? false
+		if defaultServer && accessoryManager.checkIsVersionSupported(forVersion: "2.7.3") {
+			self.tlsEnabled = true
+		} else {
+			self.tlsEnabled = node?.mqttConfig?.tlsEnabled ?? false
+		}
 		self.mqttConnected = accessoryManager.mqttProxyConnected
 		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
 		if node?.mqttConfig?.mapPublishIntervalSecs ?? 0 < 3600 {
@@ -458,9 +439,13 @@ struct MQTTConfig: View {
 		self.mapReportingOptIn = UserDefaults.mapReportingOptIn
 		if mapPositionPrecision < 11 || mapPositionPrecision > 14 {
 			self.mapPositionPrecision = 14
-			self.hasChanges = true
-		} else {
-			self.hasChanges = false
 		}
+		self.hasChanges = false
 	}
+}
+
+#Preview {
+	MQTTConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }

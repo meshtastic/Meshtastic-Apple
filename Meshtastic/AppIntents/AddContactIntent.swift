@@ -27,7 +27,7 @@ struct AddContactIntent: AppIntent {
 			// Extract contact information from the URL
 			if let contactData = components.last {
 				let decodedString = contactData.base64urlToBase64()
-				if let _ = Data(base64Encoded: decodedString) {
+				if Data(base64Encoded: decodedString) != nil {
 					do {
 						try await AccessoryManager.shared.addContactFromURL(base64UrlString: contactData)
 					} catch {

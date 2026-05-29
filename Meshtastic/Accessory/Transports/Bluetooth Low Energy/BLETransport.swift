@@ -6,6 +6,7 @@
 //
 
 import Foundation
+@preconcurrency import SwiftData
 @preconcurrency import CoreBluetooth
 import SwiftUI
 import OSLog
@@ -16,7 +17,12 @@ actor BLETransport: Transport {
 	private let kCentralRestoreID = "com.meshtastic.central"
 
 	let type: TransportType = .ble
-	private var centralManager: CBCentralManager
+	private var centralManager: CBCentralManager!
+	/// Dedicated serial queue for CBCentralManager delegate callbacks.
+	/// Using a serial queue (instead of `.global()`) guarantees that delegate
+	/// callbacks arrive in the order CoreBluetooth fires them, so the
+	/// `Task { await … }` hops to the actor preserve that ordering.
+	private let centralQueue = DispatchQueue(label: "com.meshtastic.ble.central", qos: .utility)
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
@@ -39,10 +45,15 @@ actor BLETransport: Transport {
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
 		self.setupCompleteGate = AsyncGate()
-		centralManager = CBCentralManager(delegate: delegate,
-										  queue: .global(qos: .utility),
-										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
-		)
+		// Only create CBCentralManager immediately if Bluetooth authorization is already
+		// determined. This avoids showing the system permission prompt before the
+		// onboarding Bluetooth screen has a chance to present it in context.
+		if CBCentralManager.authorization != .notDetermined {
+			centralManager = CBCentralManager(delegate: delegate,
+											  queue: centralQueue,
+											  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+			)
+		}
 		self.delegate.setTransport(self)
 	}
 
@@ -50,11 +61,22 @@ actor BLETransport: Transport {
 		self.discoveredDeviceContinuation = cont
 	}
 
+	private func createCentralManager() {
+		centralManager = CBCentralManager(delegate: delegate,
+										  queue: centralQueue,
+										  options: [CBCentralManagerOptionRestoreIdentifierKey: kCentralRestoreID]
+		)
+	}
+
 	func discoverDevices() -> AsyncStream<DiscoveryEvent> {
 		AsyncStream { cont in
 			Task {
 				await self.setDiscoveredDeviceContinuation(cont)
-				
+
+				// Create the CBCentralManager now if it was deferred (authorization was .notDetermined at init).
+				if await self.centralManager == nil {
+					await self.createCentralManager()
+				}
 				// This gate is opened when the CBCentralManager is in poweredOn state.
 				// Its probably open already, but just to be sure in case we get here too quickly.
 				try await self.setupCompleteGate.wait()
@@ -106,6 +128,13 @@ actor BLETransport: Transport {
 
 	private func stopScanning() {
 		Logger.transport.debug("🛜 [BLE] Stop Scanning: BLE Discovery has been stopped.")
+		guard centralManager != nil else {
+			discoveredPeripherals.removeAll()
+			discoveredDeviceContinuation = nil
+			cleanupTask?.cancel()
+			cleanupTask = nil
+			return
+		}
 		centralManager.stopScan()
 		discoveredPeripherals.removeAll()
 		discoveredDeviceContinuation = nil
@@ -220,6 +249,10 @@ actor BLETransport: Transport {
 					}
 					self.connectContinuation = cont
 					self.connectingPeripheral = peripheral.peripheral
+					guard centralManager != nil else {
+						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
+						return
+					}
 					centralManager.connect(peripheral.peripheral)
 				}
 				self.activeConnection = newConnection
@@ -238,13 +271,22 @@ actor BLETransport: Transport {
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
-		if let connection = self.activeConnection {
+		if let continuation = self.connectContinuation,
+		   self.connectingPeripheral?.identifier == peripheral.identifier {
+			// Disconnect arrived while still waiting for didConnect — resume the
+			// pending continuation so the caller doesn't hang.
+			Logger.transport.debug("🛜 [BLETransport] Clean disconnect during connection phase. Resuming continuation with error.")
+			continuation.resume(throwing: AccessoryError.connectionFailed("Peripheral disconnected before connection completed"))
+			self.connectContinuation = nil
+			self.connectingPeripheral = nil
+			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
+			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
+		} else if let connection = self.activeConnection {
 			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
 			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
 			Task {
 				if await connection.peripheral.identifier == peripheral.identifier {
 					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
-					await self.connectionDidDisconnect(fromPeripheral: peripheral)
 				}
 			}
 		}
@@ -277,9 +319,10 @@ actor BLETransport: Transport {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Resuming connection continuation with error.")
 			continuation.resume(throwing: error)
 			self.connectContinuation = nil
+			self.connectingPeripheral = nil
 		} else if let activeConnection = self.activeConnection {
 			// Inform the active connection that there was an error and it should disconnect
-			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Disconnecting the active connection.")
+			Logger.transport.debug("🛜 [BLETransport] Error on active connection. Disconnecting.")
 			Task {
 				try? await activeConnection.disconnect(withError: error, shouldReconnect: shouldReconnect)
 				await self.connectionDidDisconnect(fromPeripheral: peripheral)
@@ -324,7 +367,7 @@ actor BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
-	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) {
+	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
 		/// GVH - To test this you need to simulate the app getting killed in the background by the OS you can do this by stopping  the debugger while the app is connected to a device in the background
 		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
 		/// look in the logs for the messages below.
@@ -348,20 +391,27 @@ actor BLETransport: Transport {
 		
 		// Get the device name
 		if let nodeNum {
-			let fetchMyInfoRequest = NodeInfoEntity.fetchRequest()
-			fetchMyInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-			do {
-				let fetchedMyInfo = try PersistenceController.shared.container.viewContext.fetch(fetchMyInfoRequest)
-				if fetchedMyInfo.count > 0 {
-					if let longName = fetchedMyInfo[0].user?.longName {
-						device.longName = longName
+			let nodeNumVal = Int64(nodeNum)
+			let names: (String?, String?) = await MainActor.run {
+				do {
+					let descriptor = FetchDescriptor<NodeInfoEntity>(
+						predicate: #Predicate { $0.num == nodeNumVal }
+					)
+					let context = PersistenceController.shared.context
+					let fetchedNodes = try context.fetch(descriptor)
+					if let first = fetchedNodes.first {
+						return (first.user?.longName, first.user?.shortName)
 					}
-					if let shortName = fetchedMyInfo[0].user?.shortName {
-						device.shortName = shortName
-					}
+				} catch {
+					// No-op
 				}
-			} catch {
-				// No-op
+				return (nil, nil)
+			}
+			if let longName = names.0 {
+				device.longName = longName
+			}
+			if let shortName = names.1 {
+				device.shortName = shortName
 			}
 		}
 		

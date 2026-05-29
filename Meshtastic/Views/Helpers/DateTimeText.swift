@@ -16,15 +16,20 @@ struct DateTimeText: View {
 	var dateTime: Date?
 
 	let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
-	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssa", options: 0, locale: Locale.current)
 
 	var body: some View {
-		let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss a")
-
 		if dateTime != nil && dateTime! >= sixMonthsAgo! {
-			Text(" \(dateTime!.formattedDate(format: dateFormatString))")
+			Text(" \(dateTime!.formatted(date: .numeric, time: .standard))")
 		} else {
 			Text("Unknown Age")
 		}
+	}
+}
+
+#Preview {
+	VStack {
+		DateTimeText(dateTime: Date())
+		DateTimeText(dateTime: Calendar.current.date(byAdding: .day, value: -1, to: Date()))
+		DateTimeText(dateTime: nil)
 	}
 }

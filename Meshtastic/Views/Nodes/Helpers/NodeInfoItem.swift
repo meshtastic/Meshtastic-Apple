@@ -8,81 +8,131 @@
 import SwiftUI
 import CoreLocation
 import MapKit
+@preconcurrency import SwiftData
 
 struct NodeInfoItem: View {
 
-	@ObservedObject var node: NodeInfoEntity
-	@State private var currentDevice: DeviceHardware?
+	@Bindable var node: NodeInfoEntity
+	@Query var hardware: [DeviceHardwareEntity]
+	@EnvironmentObject var meshtasticAPI: MeshtasticAPI
+
+	init(node: NodeInfoEntity) {
+		self.node = node
+		let hwModel = Int64(node.user?.hwModelId ?? 0)
+		_hardware = Query(filter: #Predicate<DeviceHardwareEntity> { hw in
+			hw.hwModel == hwModel
+		}, sort: [SortDescriptor(\.hwModelSlug)])
+	}
+
+	private var hasDevice: Bool {
+		hardware.first != nil
+	}
+
+	private var isActivelySupported: Bool {
+		hardware.first?.activelySupported ?? false
+	}
+
+	private var supportRosette: some View {
+		Image(systemName: isActivelySupported ? "checkmark.seal.fill" : "xmark.seal.fill")
+			.foregroundStyle(isActivelySupported ? .green : .secondary)
+	}
+
+	private var modelName: String {
+		node.user?.hwDisplayName ?? node.user?.hwModel ?? "Unknown"
+	}
+
+	private var supportLevel: SupportLevel {
+		guard let device = hardware.first else { return .discontinued }
+		return SupportLevel(rawValue: device.supportLevel) ?? .discontinued
+	}
+
+	private var sectionTitle: String {
+		if node.user?.hwModel == "UNSET" { return "Hardware" }
+		switch supportLevel {
+		case .flagship:
+			return "Supported Hardware"
+		case .niche:
+			return "Niche Hardware"
+		case .legacy:
+			return "Legacy Hardware"
+		case .discontinued:
+			return "Discontinued Hardware"
+		}
+	}
 
 	var body: some View {
+		Section(sectionTitle) {
 		if let user = node.user {
-		ViewThatFits(in: .horizontal) {
-			HStack {
-				Spacer()
-					if user.hwModel != "UNSET" {
-						VStack(alignment: .center) {
-							Spacer()
-							Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "seal.fill")
-								.resizable()
-								.aspectRatio(contentMode: .fill)
-								.frame(width: 75, height: 75)
-								.foregroundStyle(currentDevice?.activelySupported ?? false ? .green : .red)
-							Text( currentDevice?.activelySupported ?? false ? "Full Support" : "Community Support")
-								.foregroundStyle(.gray)
-								.font(.callout)
-						}
-						.accessibilityElement(children: .combine)
-						Spacer()
+			if user.hwModel == "UNSET" {
+				// MARK: - Unset / Incomplete
+				HStack {
+					Image(systemName: "flipphone")
+						.symbolRenderingMode(.hierarchical)
+						.font(.title2)
+						.foregroundStyle(.secondary)
+					Text("Incomplete")
+						.foregroundStyle(.secondary)
+				}
+			} else if meshtasticAPI.isLoadingDeviceList && !hasDevice {
+				// MARK: - Loading
+				HStack {
+					ProgressView()
+					Text("Loading hardware info…")
+						.font(.subheadline)
+						.foregroundStyle(.secondary)
+				}
+				.listRowSeparator(.hidden)
+			} else if hasDevice && supportLevel == .flagship {
+				// MARK: - Flagship Device (Hero Layout)
+				VStack(spacing: 12) {
+					ZStack(alignment: .bottomTrailing) {
+						DeviceHardwareImage(hwId: user.hwModelId)
+							.frame(maxWidth: .infinity)
+							.frame(height: 200)
+							.cornerRadius(12)
+						supportRosette
+							.font(.title2)
+							.padding(8)
 					}
-					VStack(alignment: .center) {
-						HStack {
-							if user.hardwareImage != "UNSET" {
-								Image(user.hardwareImage ?? "UNSET")
-									.resizable()
-									.aspectRatio(contentMode: .fit)
-									.frame(maxHeight: 150)
-									.cornerRadius(5)
-							} else {
-								Image(systemName: "person.crop.circle.badge.questionmark")
-									.resizable()
-									.aspectRatio(contentMode: .fit)
-									.frame(width: 75, height: 75)
-									.cornerRadius(5)
-							}
-						}
-						.accessibilityElement(children: .combine)
+					Text(modelName)
+						.font(.headline)
+						.frame(maxWidth: .infinity, alignment: .center)
+				}
+				.listRowSeparator(.hidden)
+			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy) {
+				// MARK: - Niche / Legacy Device
+				HStack(spacing: 16) {
+					DeviceHardwareImage(hwId: user.hwModelId)
+						.frame(width: 60, height: 60)
+						.cornerRadius(8)
+						.opacity(0.6)
+					Text(modelName)
+						.font(.subheadline)
+						.foregroundStyle(.secondary)
+					Spacer()
+					supportRosette
+						.font(.title2)
+				}
+				.listRowSeparator(.hidden)
+			} else {
+				// MARK: - Discontinued / Unknown Device
+				HStack(spacing: 16) {
+					supportRosette
+						.font(.system(size: 40))
+					VStack(alignment: .leading, spacing: 4) {
+						Text(modelName)
+							.font(.subheadline)
+							.foregroundStyle(.secondary)
+						Text(supportLevel.description)
+							.font(.caption)
+							.foregroundStyle(.tertiary)
 					}
 					Spacer()
 				}
-				.accessibilityElement(children: .combine)
-				.onAppear {
-					Api().loadDeviceHardwareData { (hw) in
-						for device in hw {
-							let currentHardware = node.user?.hwModel ?? "UNSET"
-							let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "").uppercased()
-							if deviceString == currentHardware {
-								currentDevice = device
-							}
-						}
-					}
-				}
+				.listRowSeparator(.hidden)
 			}
-			.listRowSeparator(.hidden)
-			HStack {
-				Label {
-					Text("Model")
-				} icon: {
-					Image(systemName: "flipphone")
-						.symbolRenderingMode(.hierarchical)
-				}
-				Spacer()
-				if user.hwModel != "UNSET" {
-					Text(String(node.user?.hwDisplayName ?? (node.user?.hwModel ?? "Unset".localized)))
-				} else {
-					Text(String("Incomplete".localized))
-				}
-			}
-			.accessibilityElement(children: .combine)
 		}
+		}
+		.accessibilityElement(children: .combine)
 	}
 }

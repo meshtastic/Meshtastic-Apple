@@ -98,12 +98,14 @@ struct ConnectedDevice: View {
 	NavigationView {
 		Text("Connect screen")
 			.navigationTitle("Connect")
-			.navigationBarItems(
-				leading: MeshtasticLogo(),
-				trailing: ZStack {
+			.toolbar {
+				ToolbarItem(placement: .topBarLeading) {
+					MeshtasticLogo()
+				}
+				ToolbarItem(placement: .topBarTrailing) {
 					ConnectedDevice(deviceConnected: true, name: "MEMO", mqttProxyConnected: false)
 						.environmentObject(AccessoryManager.shared)
 				}
-			)
+			}
 	}
 }

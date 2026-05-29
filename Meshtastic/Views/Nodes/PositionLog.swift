@@ -8,7 +8,7 @@ import SwiftUI
 import OSLog
 
 struct PositionLog: View {
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
 	@Environment(\.horizontalSizeClass) var horizontalSizeClass: UserInterfaceSizeClass?
@@ -18,18 +18,16 @@ struct PositionLog: View {
 	}
 	@State var isExporting = false
 	@State var exportString = ""
-	@ObservedObject var node: NodeInfoEntity
+	@Bindable var node: NodeInfoEntity
 	@State private var isPresentingClearLogConfirm = false
 	@State private var sortOrder = [KeyPathComparator(\PositionEntity.time)]
 
 	var body: some View {
 		VStack {
 			if node.hasPositions {
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 				if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
 					// Add a table for mac and ipad
-					let positions = node.positions?.reversed() as? [PositionEntity] ?? []
+					let positions = node.positions.reversed()
 					Table(positions, sortOrder: $sortOrder) {
 						TableColumn("Latitude") { position in
 							Text(String(format: "%.5f", position.latitude ?? 0))
@@ -60,7 +58,7 @@ struct PositionLog: View {
 							Text("\(String(format: "%.2f", position.snr)) dB")
 						}
 						TableColumn("Time Stamp") { position in
-							Text(position.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+							Text(position.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
 						.width(min: 180)
 					}
@@ -93,8 +91,7 @@ struct PositionLog: View {
 									.font(.caption2)
 									.fontWeight(.bold)
 							}
-							if let positions = node.positions?.reversed() as? [PositionEntity] {
-								ForEach(positions, id: \.self) { (mappin: PositionEntity) in
+							ForEach(node.positions.reversed(), id: \.self) { (mappin: PositionEntity) in
 									let altitude = Measurement(value: Double(mappin.altitude), unit: UnitLength.meters)
 									GridRow {
 										Text(String(format: "%.5f", mappin.latitude ?? 0))
@@ -105,11 +102,10 @@ struct PositionLog: View {
 											.font(.caption2)
 										Text(altitude.formatted())
 											.font(.caption2)
-										Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+									Text(mappin.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 											.font(.caption2)
 									}
 								}
-							}
 						}
 					}
 					.padding(.leading)
@@ -141,7 +137,7 @@ struct PositionLog: View {
 						}
 					}
 					Button {
-						exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
+						exportString = positionToCsvFile(positions: node.positions)
 						isExporting = true
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
@@ -156,7 +152,7 @@ struct PositionLog: View {
 					isPresented: $isExporting,
 					document: CsvDocument(emptyCsv: exportString),
 					contentType: .commaSeparatedText,
-					defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
+					defaultFilename: String("\(node.user?.longName ?? "Node") Position Log \(Date.now.exportTimestamp)"),
 					onCompletion: { result in
 						switch result {
 						case .success:
@@ -172,12 +168,26 @@ struct PositionLog: View {
 				ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 			}
 		}
-		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")
-		.navigationBarItems(
-			trailing:
-				ZStack {
-					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
-
-		})
+		.navigationTitle("Position Log \(node.positions.count) Points")
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 	}
 }
+
+// TODO: Fix preview for SwiftData
+/*
+#Preview {
+	let node = NodeInfoEntity()
+	node.num = 123456789
+	let user = UserEntity()
+	user.longName = "Test Node"
+	user.shortName = "TN"
+	node.user = user
+	PositionLog(node: node)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
+}
+*/

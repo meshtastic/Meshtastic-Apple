@@ -300,6 +300,17 @@ public struct LocalModuleConfig: @unchecked Sendable {
   public mutating func clearTrafficManagement() {_uniqueStorage()._trafficManagement = nil}
 
   ///
+  /// TAK Config
+  public var tak: ModuleConfig.TAKConfig {
+    get {return _storage._tak ?? ModuleConfig.TAKConfig()}
+    set {_uniqueStorage()._tak = newValue}
+  }
+  /// Returns true if `tak` has been explicitly set.
+  public var hasTak: Bool {return _storage._tak != nil}
+  /// Clears the value of `tak`. Subsequent reads from it will return its default value.
+  public mutating func clearTak() {_uniqueStorage()._tak = nil}
+
+  ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
@@ -447,7 +458,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalModuleConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}version\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}version\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0\u{1}tak\0")
 
   fileprivate class _StorageClass {
     var _mqtt: ModuleConfig.MQTTConfig? = nil
@@ -465,6 +476,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _paxcounter: ModuleConfig.PaxcounterConfig? = nil
     var _statusmessage: ModuleConfig.StatusMessageConfig? = nil
     var _trafficManagement: ModuleConfig.TrafficManagementConfig? = nil
+    var _tak: ModuleConfig.TAKConfig? = nil
     var _version: UInt32 = 0
 
       // This property is used as the initial default value for new instances of the type.
@@ -491,6 +503,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _paxcounter = source._paxcounter
       _statusmessage = source._statusmessage
       _trafficManagement = source._trafficManagement
+      _tak = source._tak
       _version = source._version
     }
   }
@@ -526,6 +539,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 14: try { try decoder.decodeSingularMessageField(value: &_storage._paxcounter) }()
         case 15: try { try decoder.decodeSingularMessageField(value: &_storage._statusmessage) }()
         case 16: try { try decoder.decodeSingularMessageField(value: &_storage._trafficManagement) }()
+        case 17: try { try decoder.decodeSingularMessageField(value: &_storage._tak) }()
         default: break
         }
       }
@@ -586,6 +600,9 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._trafficManagement {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
       } }()
+      try { if let v = _storage._tak {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -610,6 +627,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._paxcounter != rhs_storage._paxcounter {return false}
         if _storage._statusmessage != rhs_storage._statusmessage {return false}
         if _storage._trafficManagement != rhs_storage._trafficManagement {return false}
+        if _storage._tak != rhs_storage._tak {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }

@@ -5,14 +5,15 @@
 //  Copyright(c) Garth Vander Houwen 10/1/2025
 //
 
-import CoreData
+import SwiftData
 import MeshtasticProtobufs
 import SwiftUI
 
 struct UserMessageRow: View {
 	
 	@EnvironmentObject var appState: AppState
-	@ObservedObject var message: MessageEntity
+	@Environment(\.modelContext) private var context
+	@Bindable var message: MessageEntity
 	let allMessages: [MessageEntity]
 	let previousMessage: MessageEntity?
 	let preferredPeripheralNum: Int
@@ -22,23 +23,27 @@ struct UserMessageRow: View {
 	@Binding var messageToHighlight: Int64
 	let scrollView: ScrollViewProxy
 	let onInteractionComplete: () -> Void
+	let onTapback: (MessageEntity) -> Void
 	
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
 	}
 	
-	init(message: MessageEntity,
-		 allMessages: [MessageEntity],
-		 previousMessage: MessageEntity?,
-		 preferredPeripheralNum: Int,
-		 user: UserEntity,
-		 replyMessageId: Binding<Int64>,
-		 messageFieldFocused: FocusState<Bool>.Binding,
-		 messageToHighlight: Binding<Int64>,
-		 scrollView: ScrollViewProxy,
-		 onInteractionComplete: @escaping () -> Void) {
+	init(
+		message: MessageEntity,
+		allMessages: [MessageEntity],
+		previousMessage: MessageEntity?,
+		preferredPeripheralNum: Int,
+		user: UserEntity,
+		replyMessageId: Binding<Int64>,
+		messageFieldFocused: FocusState<Bool>.Binding,
+		messageToHighlight: Binding<Int64>,
+		scrollView: ScrollViewProxy,
+		onInteractionComplete: @escaping () -> Void,
+		onTapback: @escaping (MessageEntity) -> Void
+	) {
 		// Initialize ObservedObject with the concrete instance
-		self._message = ObservedObject(initialValue: message)
+		self.message = message
 		self.allMessages = allMessages
 		self.previousMessage = previousMessage
 		self.preferredPeripheralNum = preferredPeripheralNum
@@ -48,6 +53,7 @@ struct UserMessageRow: View {
 		self._messageToHighlight = messageToHighlight
 		self.scrollView = scrollView
 		self.onInteractionComplete = onInteractionComplete
+		self.onTapback = onTapback
 	}
 	
 	var body: some View {
@@ -88,7 +94,7 @@ struct UserMessageRow: View {
 							Image(systemName: "arrowshape.turn.up.left.fill")
 								.symbolRenderingMode(.hierarchical).imageScale(.large)
 								.foregroundColor(.accentColor).padding(.leading)
-							Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+							Text(messageReply?.displayedPayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
 						}
 						.padding(10)
 						.overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.blue, lineWidth: 0.5))
@@ -102,13 +108,11 @@ struct UserMessageRow: View {
 				
 				// Node Detail Tap
 				if !isCurrentUser {
-					CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 50)
-						.onTapGesture(count: 2) {
-							if let nodeNum = message.fromUser?.num {
-								appState.router.navigateToNodeDetail(nodeNum: Int64(nodeNum))
-							}
-						}
-						.padding(.all, 5).offset(y: -7)
+					NavigationLink(value: Int64(message.fromUser?.num ?? 0)) {
+						CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 50)
+					}
+					.buttonStyle(.plain)
+					.padding(.all, 5).offset(y: -7)
 				}
 				
 				VStack(alignment: isCurrentUser ? .trailing : .leading) {
@@ -127,8 +131,8 @@ struct UserMessageRow: View {
 							isCurrentUser: isCurrentUser
 						) {
 							self.replyMessageId = message.messageId
-							self.messageFieldFocused = true
-						}
+							self.messageFieldFocused = true						} onTapback: {
+							onTapback(message)						}
 						
 						if isCurrentUser && message.canRetry || (isCurrentUser && message.receivedACK && !message.realACK) {
 							RetryButton(message: message, destination: .user(user))

@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+@preconcurrency import SwiftData
 import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 
@@ -14,21 +14,29 @@ struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@FocusState var messageFieldFocused: Bool
-	@ObservedObject var user: UserEntity
+	@Bindable var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
 	@State private var messageToHighlight: Int64 = 0
 	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
-	@FetchRequest private var allPrivateMessages: FetchedResults<MessageEntity>
+	@State private var tapbackTargetMessage: MessageEntity?
+	@State private var tapbackText = ""
+	@FocusState var tapbackFocused: Bool
+	@Query private var allPrivateMessages: [MessageEntity]
 
 	init(user: UserEntity) {
 		self.user = user
-
-		// Configure fetch request here
-		let request: NSFetchRequest<MessageEntity> = user.messageFetchRequest
-		_allPrivateMessages = FetchRequest(fetchRequest: request)
+		let userNum = user.num
+		let detectionSensorPortNum: Int32 = 10
+		_allPrivateMessages = Query(
+			filter: #Predicate<MessageEntity> {
+				($0.fromUser?.num == userNum || $0.toUser?.num == userNum)
+				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+			},
+			sort: \MessageEntity.messageTimestamp
+		)
 	}
 
 	func handleInteractionComplete() {
@@ -49,16 +57,38 @@ struct UserMessageList: View {
 			   let connectedUser = connectedNode.user {
 				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
 			}
-
-			context.refresh(user, mergeChanges: true)
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}
 	}
 
 	private func routerIsShowingThisUser() -> Bool {
-		guard appState.router.navigationState.selectedTab == .messages else { return false }
+		guard appState.router.selectedTab == .messages else { return false }
 		return scenePhase == .active
+	}
+
+	private func processTapback() {
+		guard !tapbackText.isEmpty, let target = tapbackTargetMessage else { return }
+		let emojiToSend = tapbackText
+		let destination = MessageDestination.user(user)
+
+		Task {
+			do {
+				try await accessoryManager.sendMessage(
+					message: emojiToSend,
+					toUserNum: destination.userNum,
+					channel: destination.channelNum,
+					isEmoji: true,
+					replyID: target.messageId
+				)
+			} catch {
+				Logger.services.warning("Failed to send tapback.")
+			}
+		}
+
+		tapbackText = ""
+		tapbackFocused = false
+		tapbackTargetMessage = nil
 	}
 
 	var body: some View {
@@ -90,7 +120,24 @@ struct UserMessageList: View {
 								messageFieldFocused: $messageFieldFocused,
 								messageToHighlight: $messageToHighlight,
 								scrollView: scrollView,
-								onInteractionComplete: handleInteractionComplete
+								onInteractionComplete: handleInteractionComplete,
+								onTapback: { message in
+									tapbackFocused = false
+									tapbackTargetMessage = message
+									DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+										tapbackFocused = true
+										#if targetEnvironment(macCatalyst)
+										DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+											if let nsApp = NSClassFromString("NSApplication")?.value(forKeyPath: "sharedApplication") as? NSObject {
+												let selector = NSSelectorFromString("orderFrontCharacterPalette:")
+												if nsApp.responds(to: selector) {
+													nsApp.perform(selector, with: nil)
+												}
+											}
+										}
+										#endif
+									}
+								}
 							)
 							.onAppear {
 								// Only mark as read if the app is in the foreground
@@ -114,9 +161,13 @@ struct UserMessageList: View {
 					}
 				}
 				.defaultScrollAnchor(.bottom)
-				.defaultScrollAnchorTopAlignment()
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
+				.onAppear {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+					}
+				}
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -124,12 +175,33 @@ struct UserMessageList: View {
 						}
 					}
 				}
+				.onChange(of: tapbackFocused) {
+					if tapbackFocused, let target = tapbackTargetMessage {
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+							withAnimation {
+								scrollView.scrollTo(target.messageId, anchor: .center)
+							}
+						}
+					}
+				}
+				.background {
+					TextField("", text: $tapbackText)
+						.keyboardType(.emoji)
+						.focused($tapbackFocused)
+						.frame(width: 1, height: 1)
+						.opacity(0.01)
+						.allowsHitTesting(false)
+						.onChange(of: tapbackText) {
+							processTapback()
+						}
+				}
 			}
 			TextMessageField(
 				destination: .user(user),
 				replyMessageId: $replyMessageId,
 				isFocused: $messageFieldFocused
 			)
+			.fixedSize(horizontal: false, vertical: true)
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {

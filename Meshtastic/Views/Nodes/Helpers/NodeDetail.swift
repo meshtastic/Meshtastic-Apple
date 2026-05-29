@@ -19,583 +19,664 @@ struct NodeDetail: View {
 	var modemPreset: ModemPresets = ModemPresets(
 		rawValue: UserDefaults.modemPreset
 	) ?? ModemPresets.longFast
-	@Environment(\.managedObjectContext) var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var dateFormatRelative: Bool = true
-	var connectedNode: NodeInfoEntity?
-	@ObservedObject	var node: NodeInfoEntity
+	@Bindable	var node: NodeInfoEntity
+	var showMapLink: Bool = true
 	@State private var environmentSectionHeight: CGFloat = 0
+
+	/// The currently BLE-connected (or remotely administered) node, derived reactively
+	/// from accessoryManager.activeDeviceNum so it stays current if the connection changes.
+	private var connectedNode: NodeInfoEntity? {
+		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		return getNodeInfo(id: num, context: context)
+	}
+	private var administrationUserPair: (fromUser: UserEntity, toUser: UserEntity)? {
+		guard let fromUser = connectedNode?.user,
+			  let toUser = node.user else {
+			return nil
+		}
+		return (fromUser, toUser)
+	}
 	@State var showingCompassSheet = false
 	
 	var body: some View {
-		NavigationStack {
-			ScrollViewReader { scrollView in
-				Color.clear
-					.frame(height: 0) // Ensure it has no height
-					.id("topOfList")
-				List {
-					let connectedNode = getNodeInfo(
-						id: accessoryManager.activeDeviceNum ?? -1,
-						context: context
-					)
-					Section("Hardware") {
-						
-						NodeInfoItem(node: node)
-						//	.id("topOfList")
+		ScrollViewReader { scrollView in
+			Color.clear
+				.frame(height: 0) // Ensure it has no height
+				.id("topOfList")
+			nodeDetailList
+			.sheet(isPresented: $showingCompassSheet) {
+				CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointLongName: node.user?.longName ?? nil, waypointShortName: node.user?.shortName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+					}
+			.onAppear {
+				scrollView.scrollTo("topOfList", anchor: .top)
+			}
+			.contentMargins(.top, 0, for: .scrollContent)
+			.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
+			.navigationBarTitleDisplayMode(.inline)
+		}
+	}
+
+	@ViewBuilder
+	private var nodeDetailList: some View {
+		List {
+			NodeInfoItem(node: node)
+			nodeSection
+			environmentSection
+			powerSection
+			logsSection
+			actionsSection
+			administrationSection
+		}
+		.listStyle(.insetGrouped)
+	}
+
+	// MARK: - Node Section
+
+	@ViewBuilder
+	private var nodeSection: some View {
+		Section("Node") {
+			HStack(alignment: .center) {
+				Spacer()
+				CircleText(
+					text: node.user?.shortName ?? "?",
+					color: Color(UIColor(hex: UInt32(node.num))),
+					circleSize: 75
+				)
+				if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
+					Spacer()
+					VStack {
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
+						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+						Text("Signal \(signalStrength.description)").font(.footnote)
+						Text("SNR \(String(format: "%.2f", node.snr))dB")
+							.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
+							.font(.caption)
+						Text("RSSI \(node.rssi)dB")
+							.foregroundColor(getRssiColor(rssi: node.rssi))
+							.font(.caption)
 					}
 					.accessibilityElement(children: .combine)
-					Section("Node") { // Node
-						HStack(alignment: .center) {
-							Spacer()
-							CircleText(
-								text: node.user?.shortName ?? "?",
-								color: Color(UIColor(hex: UInt32(node.num))),
-								circleSize: 75
-							)
-							if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
-								Spacer()
-								VStack {
-									let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
-									LoRaSignalStrengthIndicator(signalStrength: signalStrength)
-									Text("Signal \(signalStrength.description)").font(.footnote)
-									Text("SNR \(String(format: "%.2f", node.snr))dB")
-										.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
-										.font(.caption)
-									Text("RSSI \(node.rssi)dB")
-										.foregroundColor(getRssiColor(rssi: node.rssi))
-										.font(.caption)
-								}
-								.accessibilityElement(children: .combine)
-							}
-							if node.telemetries?.count ?? 0 > 0 {
-								Spacer()
-								BatteryGauge(node: node)
-							}
-							Spacer()
+				}
+				if node.hasDeviceMetrics {
+					Spacer()
+					BatteryGauge(node: node)
+				}
+				Spacer()
+			}
+			.accessibilityElement(children: .combine)
+			.listRowSeparator(.hidden)
+			if let user = node.user {
+				if !user.keyMatch {
+					Label {
+						VStack(alignment: .leading) {
+							Text("Public Key Mismatch")
+								.font(.title3)
+								.foregroundStyle(.red)
+							Text("Verify who you are messaging with by comparing public keys in person or over the phone. The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again if the key change was due to a factory reset or other intentional action but this also may indicate a more serious security problem.")
+								.foregroundStyle(.secondary)
+								.font(.callout)
 						}
 						.accessibilityElement(children: .combine)
-						.listRowSeparator(.hidden)
-						if let user = node.user {
-							if !user.keyMatch {
-								Label {
-									VStack(alignment: .leading) {
-										Text("Public Key Mismatch")
-											.font(.title3)
-											.foregroundStyle(.red)
-										Text("Verify who you are messaging with by comparing public keys in person or over the phone. The most recent public key for this node does not match the previously recorded key. You can delete the node and let it exchange keys again if the key change was due to a factory reset or other intentional action but this also may indicate a more serious security problem.")
-											.foregroundStyle(.secondary)
-											.font(.callout)
-									}
-									.accessibilityElement(children: .combine)
-								} icon: {
-									Image(systemName: "key.slash.fill")
-										.symbolRenderingMode(.multicolor)
-										.foregroundStyle(.red)
-								}
-							}
-						}
+					} icon: {
+						Image(systemName: "key.slash.fill")
+							.symbolRenderingMode(.multicolor)
+							.foregroundStyle(.red)
+					}
+				}
+			}
+			HStack {
+				Label {
+					Text("Node Number")
+				} icon: {
+					Image(systemName: "number")
+						.symbolRenderingMode(.hierarchical)
+				}
+				Spacer()
+				Text(String(node.num))
+					.textSelection(.enabled)
+			}
+			.accessibilityElement(children: .combine)
+			HStack {
+				Label {
+					Text("User Id")
+				} icon: {
+					Image(systemName: "person")
+						.symbolRenderingMode(.multicolor)
+				}
+				Spacer()
+				Text(node.num.toHex())
+					.textSelection(.enabled)
+			}
+			.accessibilityElement(children: .combine)
+			if let user = node.user, user.keyMatch {
+				let publicKey = node.num == connectedNode?.num
+				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
+				: user.publicKey?.base64EncodedString() ?? ""
+				HStack {
+					Label {
+						Text("Public Key")
+					} icon: {
+						Image(systemName: "lock.fill")
+							.foregroundColor(.green)
+					}
+					Spacer()
+					Button(action: {
+						UIPasteboard.general.string = publicKey
+					}) {
 						HStack {
-							Label {
-								Text("Node Number")
-							} icon: {
-								Image(systemName: "number")
-									.symbolRenderingMode(.hierarchical)
-							}
-							Spacer()
-							Text(String(node.num))
+							Image(systemName: "key.horizontal.fill")
+							Text("Copy")
+						}
+					}
+				}
+				.accessibilityElement(children: .combine)
+			}
+			if let metadata = node.metadata {
+				HStack {
+					Label {
+						Text("Firmware Version")
+					} icon: {
+						Image(systemName: "memorychip")
+							.symbolRenderingMode(.multicolor)
+					}
+					Spacer()
+					Text(metadata.firmwareVersion ?? "Unknown".localized)
+				}
+				.accessibilityElement(children: .combine)
+			}
+			if let role = node.user?.role, let deviceRole = DeviceRoles(rawValue: Int(role)) {
+				HStack {
+					Label {
+						Text("Role")
+					} icon: {
+						Image(systemName: deviceRole.systemName)
+							.symbolRenderingMode(.multicolor)
+					}
+					Spacer()
+					Text(deviceRole.name)
+				}
+				.accessibilityElement(children: .combine)
+			}
+			if node.user?.unmessagable ?? false {
+				HStack {
+					Label {
+						Text("Messaging")
+					} icon: {
+						Image(systemName: "iphone.slash")
+							.symbolRenderingMode(.multicolor)
+					}
+					Spacer()
+					Text("Unmonitored")
+				}
+				.accessibilityElement(children: .combine)
+			}
+			if let dm = node.latestDeviceMetrics, let uptimeSeconds = dm.uptimeSeconds {
+				HStack {
+					Label {
+						Text("\("Uptime".localized)")
+					} icon: {
+						Image(systemName: "checkmark.circle.fill")
+							.foregroundColor(.green)
+							.symbolRenderingMode(.hierarchical)
+					}
+					Spacer()
+					let now = Date.now
+					let later = now + TimeInterval(uptimeSeconds)
+					let uptime = (now..<later).formatted(.components(style: .narrow))
+					Text(uptime)
+						.textSelection(.enabled)
+				}
+				.accessibilityElement(children: .combine)
+			}
+			if let firstHeard = node.firstHeard, firstHeard.timeIntervalSince1970 > 0 && firstHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
+				HStack {
+					Label {
+						Text("First heard")
+					} icon: {
+						Image(systemName: "clock")
+							.symbolRenderingMode(.multicolor)
+					}
+					Spacer()
+					if dateFormatRelative, let text = Self.relativeFormatter.string(for: firstHeard) {
+						Text(text)
+							.textSelection(.enabled)
+					} else {
+						Text(firstHeard.formatted())
+							.textSelection(.enabled)
+					}
+				}
+				.accessibilityElement(children: .combine)
+				.onTapGesture {
+					dateFormatRelative.toggle()
+				}
+			}
+			if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 && lastHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
+				HStack {
+					Label {
+						Text("Last heard")
+					} icon: {
+						Image(systemName: "clock.arrow.circlepath")
+							.symbolRenderingMode(.multicolor)
+					}
+					Spacer()
+					if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
+						if lastHeard.formatted() != "Unknown Age".localized {
+							Text(text)
 								.textSelection(.enabled)
 						}
-						.accessibilityElement(children: .combine)
-						HStack {
-							Label {
-								Text("User Id")
-							} icon: {
-								Image(systemName: "person")
-									.symbolRenderingMode(.multicolor)
+					} else {
+						Text(lastHeard.formatted())
+							.textSelection(.enabled)
+					}
+				}
+				.accessibilityElement(children: .combine)
+				.onTapGesture {
+					dateFormatRelative.toggle()
+				}
+			}
+		}
+	}
+
+	// MARK: - Environment Section
+
+	@ViewBuilder
+	private var environmentSection: some View {
+		if node.hasPositions && UserDefaults.environmentEnableWeatherKit
+			|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
+			Section("Environment") {
+				VStack(spacing: 0) {
+					if !node.hasEnvironmentMetrics {
+						LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
+							.frame(height: environmentSectionHeight)
+							.onPreferenceChange(WeatherKitTilesHeightKey.self) { newHeight in
+								self.environmentSectionHeight = newHeight
 							}
-							Spacer()
-							Text(node.num.toHex())
-								.textSelection(.enabled)
-						}
-						.accessibilityElement(children: .combine)
-						let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? 0, context: context)
-						if let user = node.user, user.keyMatch {
-							let publicKey = node.num == connectedNode?.num
-							? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
-							: user.publicKey?.base64EncodedString() ?? ""
-							HStack {
-								Label {
-									Text("Public Key")
-								} icon: {
-									Image(systemName: "lock.fill")
-										.foregroundColor(.green)
+					} else if let metrics = node.latestEnvironmentMetrics {
+						VStack {
+							if metrics.iaq ?? -1 > 0 {
+								IndoorAirQuality(iaq: Int(metrics.iaq ?? 0), displayMode: .gradient)
+									.padding(.vertical)
+							}
+							LazyVGrid(columns: gridItemLayout) {
+								if let temperature = metrics.temperature?.shortFormattedTemperature() {
+									WeatherConditionsCompactWidget(temperature: String(temperature), symbolName: "cloud.sun", description: "TEMP")
 								}
-								Spacer()
-								Button(action: {
-									context.perform {
-										UIPasteboard.general.string = publicKey
+								if let humidity = metrics.relativeHumidity {
+									if let temperature = metrics.temperature {
+										let dewPoint = calculateDewPoint(temp: temperature, relativeHumidity: humidity)
+											.formatted(.number.precision(.fractionLength(0))) + "°"
+										HumidityCompactWidget(humidity: Int(humidity), dewPoint: dewPoint)
+									} else {
+										HumidityCompactWidget(humidity: Int(humidity), dewPoint: nil)
 									}
-								}) {
-									HStack {
-										Image(systemName: "key.horizontal.fill")
-										Text("Copy")
-									}
+								}
+								if let pressure = metrics.barometricPressure {
+									PressureCompactWidget(pressure: pressure.formatted(.number.precision(.fractionLength(2))), unit: "hPA", low: pressure <= 1009.144)
+								}
+								if let windSpeed = metrics.windSpeed {
+									let windSpeedMeasurement = Measurement(value: Double(windSpeed), unit: UnitSpeed.metersPerSecond)
+									let windGust = metrics.windGust.map { Measurement(value: Double($0), unit: UnitSpeed.metersPerSecond) }
+									let direction = cardinalValue(from: Double(metrics.windDirection ?? 0))
+									WindCompactWidget(speed: windSpeedMeasurement.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
+													  gust: metrics.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
+								}
+								if let rainfall1h = metrics.rainfall1H {
+									let locale = NSLocale.current as NSLocale
+									let usesMetricSystem = locale.usesMetricSystem
+									let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
+									let unitLabel = usesMetricSystem ? "mm" : "in"
+									let measurement = Measurement(value: Double(rainfall1h), unit: UnitLength.millimeters)
+									let decimals = usesMetricSystem ? 0 : 1
+									let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
+									RainfallCompactWidget(timespan: .rainfall1H, rainfall: formattedRain, unit: unitLabel)
+								}
+								if let rainfall24h = metrics.rainfall24H {
+									let locale = NSLocale.current as NSLocale
+									let usesMetricSystem = locale.usesMetricSystem
+									let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
+									let unitLabel = usesMetricSystem ? "mm" : "in"
+									let measurement = Measurement(value: Double(rainfall24h), unit: UnitLength.millimeters)
+									let decimals = usesMetricSystem ? 0 : 1
+									let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
+									RainfallCompactWidget(timespan: .rainfall24H, rainfall: formattedRain, unit: unitLabel)
+								}
+								if let radiation = metrics.radiation {
+									RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
+								}
+								if let weight = metrics.weight {
+									let weightMeasurement = Measurement(value: Double(weight), unit: UnitMass.kilograms)
+									let usesMetric = Locale.current.measurementSystem == .metric
+									let weightUnit = usesMetric ? UnitMass.kilograms : UnitMass.pounds
+									let weightLabel = usesMetric ? "kg" : "lbs"
+									WeightCompactWidget(weight: weightMeasurement.converted(to: weightUnit).value.formatted(.number.precision(.fractionLength(1))), unit: weightLabel)
+								}
+								if let distance = metrics.distance {
+									let distMeasurement = Measurement(value: Double(distance), unit: UnitLength.millimeters)
+									let usesMetric = Locale.current.measurementSystem == .metric
+									let distUnit = usesMetric ? UnitLength.millimeters : UnitLength.inches
+									let distLabel = usesMetric ? "mm" : "in"
+									let distDecimals = usesMetric ? 0 : 1
+									DistanceCompactWidget(distance: distMeasurement.converted(to: distUnit).value.formatted(.number.precision(.fractionLength(distDecimals))), unit: distLabel)
+								}
+								if let soilTemperature = metrics.soilTemperature {
+									let locale = NSLocale.current as NSLocale
+									let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
+									let unit = (localeUnit as? String) == "Fahrenheit" ? "°F" : "°C"
+									SoilTemperatureCompactWidget(temperature: soilTemperature.localeTemperature().formatted(.number.precision(.fractionLength(0))), unit: unit)
+								}
+								if let soilMoisture = metrics.soilMoisture {
+									SoilMoistureCompactWidget(moisture: soilMoisture.formatted(.number.precision(.fractionLength(0))), unit: "%")
 								}
 							}
-							.accessibilityElement(children: .combine)
-						}
-						if let metadata = node.metadata {
-							HStack {
-								Label {
-									Text("Firmware Version")
-								} icon: {
-									Image(systemName: "memorychip")
-										.symbolRenderingMode(.multicolor)
-								}
-								Spacer()
-								Text(metadata.firmwareVersion ?? "Unknown".localized)
-							}
-							.accessibilityElement(children: .combine)
-						}
-						if let role = node.user?.role, let deviceRole = DeviceRoles(rawValue: Int(role)) {
-							HStack {
-								Label {
-									Text("Role")
-								} icon: {
-									Image(systemName: deviceRole.systemName)
-										.symbolRenderingMode(.multicolor)
-								}
-								Spacer()
-								Text(deviceRole.name)
-							}
-							.accessibilityElement(children: .combine)
-						}
-						if node.user?.unmessagable ?? false {
-							HStack {
-								Label {
-									Text("Messaging")
-								} icon: {
-									Image(systemName: "iphone.slash")
-										.symbolRenderingMode(.multicolor)
-								}
-								Spacer()
-								Text("Unmonitored")
-							}
-							.accessibilityElement(children: .combine)
-						}
-						if let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity, let uptimeSeconds = dm.uptimeSeconds {
-							HStack {
-								Label {
-									Text("\("Uptime".localized)")
-								} icon: {
-									Image(systemName: "checkmark.circle.fill")
-										.foregroundColor(.green)
-										.symbolRenderingMode(.hierarchical)
-								}
-								Spacer()
-								let now = Date.now
-								let later = now + TimeInterval(uptimeSeconds)
-								let uptime = (now..<later).formatted(.components(style: .narrow))
-								Text(uptime)
-									.textSelection(.enabled)
-							}
-							.accessibilityElement(children: .combine)
-						}
-						if let firstHeard = node.firstHeard, firstHeard.timeIntervalSince1970 > 0 && firstHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
-							HStack {
-								Label {
-									Text("First heard")
-								} icon: {
-									Image(systemName: "clock")
-										.symbolRenderingMode(.multicolor)
-								}
-								Spacer()
-								if dateFormatRelative, let text = Self.relativeFormatter.string(for: firstHeard) {
-									Text(text)
-										.textSelection(.enabled)
-								} else {
-									Text(firstHeard.formatted())
-										.textSelection(.enabled)
-								}
-							}
-							.accessibilityElement(children: .combine)
-							.onTapGesture {
-								dateFormatRelative.toggle()
-							}
-						}
-						if let lastHeard = node.lastHeard, lastHeard.timeIntervalSince1970 > 0 && lastHeard < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
-							HStack {
-								Label {
-									Text("Last heard")
-								} icon: {
-									Image(systemName: "clock.arrow.circlepath")
-										.symbolRenderingMode(.multicolor)
-								}
-								Spacer()
-								if dateFormatRelative, let text = Self.relativeFormatter.string(for: lastHeard) {
-									if lastHeard.formatted() != "Unknown Age".localized {
-										Text(text)
-											.textSelection(.enabled)
-									}
-								} else {
-									Text(lastHeard.formatted())
-										.textSelection(.enabled)
-								}
-							}
-							.accessibilityElement(children: .combine)
-							.onTapGesture {
-								dateFormatRelative.toggle()
-							}
+							.padding(metrics.iaq ?? -1 > 0 ? .bottom : .vertical)
 						}
 					}
-					if node.hasPositions && UserDefaults.environmentEnableWeatherKit
-						|| node.hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
-						Section("Environment") {
-							VStack(spacing: 0) {
-								if !node.hasEnvironmentMetrics {
-									LocalWeatherConditions(location: node.latestPosition?.nodeLocation)
-										.frame(height: environmentSectionHeight) // Use the state to set the frame
-										.onPreferenceChange(WeatherKitTilesHeightKey.self) { newHeight in
-											// Update the state with the new height
-											self.environmentSectionHeight = newHeight
-										}
-								} else if let metrics = node.latestEnvironmentMetrics { // 👈 REFACTORED: Unwraps metrics safely
-									VStack {
-										if metrics.iaq ?? -1 > 0 { // Use unwrapped 'metrics'
-											IndoorAirQuality(iaq: Int(metrics.iaq ?? 0), displayMode: .gradient)
-												.padding(.vertical)
-										}
-										LazyVGrid(columns: gridItemLayout) {
-											if let temperature = metrics.temperature?.shortFormattedTemperature() {
-												WeatherConditionsCompactWidget(temperature: String(temperature), symbolName: "cloud.sun", description: "TEMP")
-											}
-											if let humidity = metrics.relativeHumidity {
-												if let temperature = metrics.temperature {
-													let dewPoint = calculateDewPoint(temp: temperature, relativeHumidity: humidity)
-														.formatted(.number.precision(.fractionLength(0))) + "°"
-													HumidityCompactWidget(humidity: Int(humidity), dewPoint: dewPoint)
-												} else {
-													HumidityCompactWidget(humidity: Int(humidity), dewPoint: nil)
-												}
-											}
-											if let pressure = metrics.barometricPressure {
-												PressureCompactWidget(pressure: pressure.formatted(.number.precision(.fractionLength(2))), unit: "hPA", low: pressure <= 1009.144)
-											}
-											if let windSpeed = metrics.windSpeed {
-												let windSpeedMeasurement = Measurement(value: Double(windSpeed), unit: UnitSpeed.metersPerSecond)
-												let windGust = metrics.windGust.map { Measurement(value: Double($0), unit: UnitSpeed.metersPerSecond) }
-												let direction = cardinalValue(from: Double(metrics.windDirection ?? 0)) // Use unwrapped 'metrics'
-												WindCompactWidget(speed: windSpeedMeasurement.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))),
-																  gust: metrics.windGust ?? 0.0 > 0.0 ? windGust?.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))) : "", direction: direction)
-											}
-											if let rainfall1h = metrics.rainfall1H {
-												let locale = NSLocale.current as NSLocale
-												let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
-												let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
-												let unitLabel = usesMetricSystem ? "mm" : "in"
-												let measurement = Measurement(value: Double(rainfall1h), unit: UnitLength.millimeters)
-												let decimals = usesMetricSystem ? 0 : 1
-												let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
-												RainfallCompactWidget(timespan: .rainfall1H, rainfall: formattedRain, unit: unitLabel)
-											}
-											if let rainfall24h = metrics.rainfall24H {
-												let locale = NSLocale.current as NSLocale
-												let usesMetricSystem = locale.usesMetricSystem // Returns true for metric (mm), false for imperial (inches)
-												let unit = usesMetricSystem ? UnitLength.millimeters : UnitLength.inches
-												let unitLabel = usesMetricSystem ? "mm" : "in"
-												let measurement = Measurement(value: Double(rainfall24h), unit: UnitLength.millimeters)
-												let decimals = usesMetricSystem ? 0 : 1
-												let formattedRain = measurement.converted(to: unit).value.formatted(.number.precision(.fractionLength(decimals)))
-												RainfallCompactWidget(timespan: .rainfall24H, rainfall: formattedRain, unit: unitLabel)
-											}
-											if let radiation = metrics.radiation {
-												RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
-											}
-											if let weight = metrics.weight {
-												WeightCompactWidget(weight: weight.formatted(.number.precision(.fractionLength(1))), unit: "kg")
-											}
-											if let distance = metrics.distance {
-												DistanceCompactWidget(distance: distance.formatted(.number.precision(.fractionLength(0))), unit: "mm")
-											}
-											if let soilTemperature = metrics.soilTemperature {
-												let locale = NSLocale.current as NSLocale
-												let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-												let unit = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? "°F" : "°C"
-												SoilTemperatureCompactWidget(temperature: soilTemperature.localeTemperature().formatted(.number.precision(.fractionLength(0))), unit: unit)
-											}
-											if let soilMoisture = metrics.soilMoisture {
-												SoilMoistureCompactWidget(moisture: soilMoisture.formatted(.number.precision(.fractionLength(0))), unit: "%")
-											}
-										}
-										.padding(metrics.iaq ?? -1 > 0 ? .bottom : .vertical)
-									}
-								}
+				}
+				.accessibilityElement(children: .combine)
+			}
+		}
+	}
+
+	// MARK: - Power Section
+
+	@ViewBuilder
+	private var powerSection: some View {
+		if node.hasPowerMetrics && node.latestPowerMetrics != nil {
+			Section("Power") {
+				VStack {
+					if let metric = node.latestPowerMetrics {
+						PowerMetrics(metric: metric)
+					}
+				}
+				.accessibilityElement(children: .combine)
+			}
+		}
+	}
+
+	// MARK: - Logs Section
+
+	@ViewBuilder
+	private var logsSection: some View {
+		Section("Logs") {
+			NavigationLink {
+				DeviceMetricsLog(node: node)
+			} label: {
+				Label {
+					Text("Device Metrics Log")
+				} icon: {
+					Image(systemName: "flipphone")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!node.hasDeviceMetrics)
+			if showMapLink {
+				NavigationLink {
+					NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
+				} label: {
+					Label {
+						Text("Node Map")
+					} icon: {
+						Image(systemName: "map")
+							.symbolRenderingMode(.multicolor)
+					}
+				}
+				.disabled(!node.hasPositions)
+			}
+			NavigationLink {
+				PositionLog(node: node)
+			} label: {
+				Label {
+					Text("Position Log")
+				} icon: {
+					Image(systemName: "mappin.and.ellipse")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!node.hasPositions)
+			NavigationLink {
+				EnvironmentMetricsLog(node: node)
+			} label: {
+				Label {
+					Text("Environment Metrics Log")
+				} icon: {
+					Image(systemName: "cloud.sun.rain")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!node.hasEnvironmentMetrics)
+			NavigationLink {
+				TraceRouteLog(node: node)
+			} label: {
+				Label {
+					Text("Trace Route Log")
+				} icon: {
+					Image(systemName: "signpost.right.and.left")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(node.traceRoutes.count == 0)
+			NavigationLink {
+				PowerMetricsLog(node: node)
+			} label: {
+				Label {
+					Text("Power Metrics Log")
+				} icon: {
+					Image(systemName: "bolt")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!node.hasPowerMetrics)
+			NavigationLink {
+				DetectionSensorLog(node: node)
+			} label: {
+				Label {
+					Text("Detection Sensor Log")
+				} icon: {
+					Image(systemName: "sensor")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!node.hasDetectionSensorMetrics)
+			NavigationLink {
+				LocalStatsLog(node: node)
+			} label: {
+				Label {
+					Text("Local Stats Log")
+				} icon: {
+					Image(systemName: "chart.bar")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!node.hasLocalStats)
+			if node.hasPax {
+				NavigationLink {
+					PaxCounterLog(node: node)
+				} label: {
+					Label {
+						Text("paxcounter.log")
+					} icon: {
+						Image(systemName: "figure.walk.motion")
+							.symbolRenderingMode(.multicolor)
+					}
+				}
+				.disabled(!node.hasPax)
+			}
+		}
+	}
+
+	// MARK: - Actions Section
+
+	@ViewBuilder
+	private var actionsSection: some View {
+		Section("Actions") {
+			if let user = node.user {
+				NodeAlertsButton(
+					context: context,
+					node: node,
+					user: user
+				)
+			}
+			if let connectedNode {
+				FavoriteNodeButton(
+					node: node
+				)
+				if connectedNode.num != node.num {
+					if !(node.user?.unmessagable ?? true) {
+						Button(action: {
+							if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
+								UIApplication.shared.open(url)
 							}
-							.accessibilityElement(children: .combine)
+						}) {
+							Label("Message", systemImage: "message")
 						}
 					}
-					if node.hasPowerMetrics && node.latestPowerMetrics != nil {
-						Section("Power") {
-							VStack {
-								if let metric = node.latestPowerMetrics {
-									PowerMetrics(metric: metric)
-								}
-							}
-							.accessibilityElement(children: .combine)
-						}
+					ExchangePositionsButton(
+						node: node,
+						connectedNode: connectedNode
+					)
+					RequestLocalStatsButton(node: node)
+					ExchangeUserInfoButton(
+						node: node,
+						connectedNode: connectedNode
+					)
+					TraceRouteButton(
+						node: node
+					)
+					if node.isStoreForwardRouter {
+						ClientHistoryButton(
+							connectedNode: connectedNode,
+							node: node
+						)
 					}
-					Section("Logs") {
-						NavigationLink {
-							DeviceMetricsLog(node: node)
-						} label: {
-							Label {
-								Text("Device Metrics Log")
-							} icon: {
-								Image(systemName: "flipphone")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasDeviceMetrics)
-						NavigationLink {
-							NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
-						} label: {
-							Label {
-								Text("Node Map")
-							} icon: {
-								Image(systemName: "map")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasPositions)
-						NavigationLink {
-							PositionLog(node: node)
-						} label: {
-							Label {
-								Text("Position Log")
-							} icon: {
-								Image(systemName: "mappin.and.ellipse")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasPositions)
-						NavigationLink {
-							EnvironmentMetricsLog(node: node)
-						} label: {
-							Label {
-								Text("Environment Metrics Log")
-							} icon: {
-								Image(systemName: "cloud.sun.rain")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasEnvironmentMetrics)
-						NavigationLink {
-							TraceRouteLog(node: node)
-						} label: {
-							Label {
-								Text("Trace Route Log")
-							} icon: {
-								Image(systemName: "signpost.right.and.left")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(node.traceRoutes?.count ?? 0 == 0)
-						NavigationLink {
-							PowerMetricsLog(node: node)
-						} label: {
-							Label {
-								Text("Power Metrics Log")
-							} icon: {
-								Image(systemName: "bolt")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasPowerMetrics)
-						NavigationLink {
-							DetectionSensorLog(node: node)
-						} label: {
-							Label {
-								Text("Detection Sensor Log")
-							} icon: {
-								Image(systemName: "sensor")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(!node.hasDetectionSensorMetrics)
-						NavigationLink {
-							LocalStatsLog(node: node)
-						} label: {
-							Label {
-								Text("Local Stats Log")
-							} icon: {
-								Image(systemName: "chart.bar")
-									.symbolRenderingMode(.multicolor)
-							}
-						}
-						.disabled(node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 4")).count ?? 0 == 0)
-						if node.hasPax {
-							NavigationLink {
-								PaxCounterLog(node: node)
-							} label: {
-								Label {
-									Text("paxcounter.log")
-								} icon: {
-									Image(systemName: "figure.walk.motion")
-										.symbolRenderingMode(.multicolor)
-								}
-							}
-							.disabled(!node.hasPax)
-						}
-					}
-					Section("Actions") {
-						if let user = node.user {
-							NodeAlertsButton(
-								context: context,
-								node: node,
-								user: user
-							)
-						}
-						if let connectedNode {
-							FavoriteNodeButton(
-								node: node
-							)
-							if connectedNode.num != node.num {
-								if !(node.user?.unmessagable ?? true) {
-									Button(action: {
-										if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
-											UIApplication.shared.open(url)
-										}
-									}) {
-										Label("Message", systemImage: "message")
-									}
-								}
-								ExchangePositionsButton(
-									node: node,
-									connectedNode: connectedNode
-								)
-								RequestLocalStatsButton(node: node)
-								ExchangeUserInfoButton(
-									node: node,
-									connectedNode: connectedNode
-								)
-								TraceRouteButton(
-									node: node
-								)
-								if node.isStoreForwardRouter {
-									ClientHistoryButton(
-										connectedNode: connectedNode,
-										node: node
-									)
-								}
-								if node.hasPositions {
-								#if !targetEnvironment(macCatalyst)
-									Button {
-										showingCompassSheet = true
-									} label: {
-										Label {
-											Text("Open Compass")
-										} icon: {
-											Image(systemName: "safari")
-										}
-									}
-								#endif
-									NavigateToButton(node: node)
-								}
-								IgnoreNodeButton(
-									node: node
-								)
-								DeleteNodeButton(
-									connectedNode: connectedNode,
-									node: node
-								)
-							}
-						}
-					}
-					if let metadata = node.metadata,
-					   let connectedNode,
-					   accessoryManager.isConnected {
-						Section("Administration") {
-							if UserDefaults.enableAdministration {
-								Button {
-									Task {
-										do {
-											_ = try await accessoryManager.requestDeviceMetadata(
-												fromUser: connectedNode.user!,
-												toUser: node.user!
-											)
-											Logger.mesh.info("Sent node metadata request from node details")
-										} catch {
-											Logger.mesh.error("Faild to send node metadata request from node details")
-										}
-									}
-								} label: {
-									Label {
-										Text("Refresh device metadata")
-									} icon: {
-										Image(systemName: "arrow.clockwise")
-									}
-								}
-							}
-							if metadata.canShutdown {
-								Button {
-									showingShutdownConfirm = true
-								} label: {
-									Label("Power Off", systemImage: "power")
-								}.confirmationDialog(
-									"Are you sure?",
-									isPresented: $showingShutdownConfirm
-								) {
-									Button("Shutdown Node?", role: .destructive) {
-										Task {
-											do {
-												try await accessoryManager.sendShutdown(
-													fromUser: connectedNode.user!,
-													toUser: node.user!
-												)
-											} catch {
-												Logger.mesh.warning("Shutdown Failed")
-											}
-										}
-									}
-								}
-							}
+					if node.hasPositions {
+					#if !targetEnvironment(macCatalyst)
+						if node.latestPosition?.isPreciseLocation == true {
 							Button {
-								showingRebootConfirm = true
+								showingCompassSheet = true
 							} label: {
-								Label(
-									"Reboot",
-									systemImage: "arrow.triangle.2.circlepath"
+								Label {
+									Text("Open Compass")
+								} icon: {
+									Image(systemName: "safari")
+								}
+							}
+						}
+					#endif
+						NavigateToButton(node: node)
+					}
+					#if !targetEnvironment(macCatalyst)
+					if WatchSessionManager.shared.isWatchAvailable {
+						Button {
+							WatchSessionManager.shared.sendNodeForFoxhunt(node.num)
+						} label: {
+							Label {
+								Text("Foxhunt on your watch")
+							} icon: {
+								Image("custom.foxhunt")
+							}
+						}
+					}
+					#endif
+					IgnoreNodeButton(
+						node: node
+					)
+					DeleteNodeButton(
+						connectedNode: connectedNode,
+						node: node
+					)
+				}
+			}
+		}
+	}
+
+	// MARK: - Administration Section
+
+	@ViewBuilder
+	private var administrationSection: some View {
+		if let metadata = node.metadata,
+		   connectedNode != nil,
+		   accessoryManager.isConnected {
+			Section("Administration") {
+				let administrationUserPair = self.administrationUserPair
+				if UserDefaults.enableAdministration {
+					Button {
+						Task {
+							guard let administrationUserPair else { return }
+							do {
+								_ = try await accessoryManager.requestDeviceMetadata(
+									fromUser: administrationUserPair.fromUser,
+									toUser: administrationUserPair.toUser
 								)
-							}.confirmationDialog(
-								"Are you sure?",
-								isPresented: $showingRebootConfirm
-							) {
-								Button("Reboot node?", role: .destructive) {
-									Task {
-										do {
-											try await accessoryManager.sendReboot(
-												fromUser: connectedNode.user!,
-												toUser: node.user! )
-										} catch {
-											Logger.mesh.warning("Reboot Failed")
-										}
-									}
+								Logger.mesh.info("Sent node metadata request from node details")
+							} catch {
+								Logger.mesh.error("Failed to send node metadata request from node details")
+							}
+						}
+					} label: {
+						Label {
+							Text("Refresh device metadata")
+						} icon: {
+							Image(systemName: "arrow.clockwise")
+						}
+					}
+					.disabled(administrationUserPair == nil)
+				}
+				if metadata.canShutdown {
+					Button {
+						showingShutdownConfirm = true
+					} label: {
+						Label("Power Off", systemImage: "power")
+					}.confirmationDialog(
+						"Are you sure?",
+						isPresented: $showingShutdownConfirm
+					) {
+						Button("Shutdown Node?", role: .destructive) {
+							Task {
+								guard let administrationUserPair else { return }
+								do {
+									try await accessoryManager.sendShutdown(
+										fromUser: administrationUserPair.fromUser,
+										toUser: administrationUserPair.toUser
+									)
+								} catch {
+									Logger.mesh.warning("Shutdown Failed")
 								}
 							}
 						}
 					}
+					.disabled(administrationUserPair == nil)
 				}
-				.sheet(isPresented: $showingCompassSheet) {
-					CompassView(waypointLocation: node.latestPosition?.nodeCoordinate ?? nil, waypointName: node.user?.longName ?? nil, color: Color(UIColor(hex: UInt32(node.num))))
+				Button {
+					showingRebootConfirm = true
+				} label: {
+					Label(
+						"Reboot",
+						systemImage: "arrow.triangle.2.circlepath"
+					)
+				}.confirmationDialog(
+					"Are you sure?",
+					isPresented: $showingRebootConfirm
+				) {
+					Button("Reboot node?", role: .destructive) {
+						Task {
+							guard let administrationUserPair else { return }
+							do {
+								try await accessoryManager.sendReboot(
+									fromUser: administrationUserPair.fromUser,
+									toUser: administrationUserPair.toUser
+								)
+							} catch {
+								Logger.mesh.warning("Reboot Failed")
+							}
 						}
-				.onAppear {
-					scrollView.scrollTo("topOfList", anchor: .top)
+					}
 				}
-				.listStyle(.insetGrouped)
-				.navigationTitle(String(node.user?.longName?.addingVariationSelectors ?? "Unknown".localized))
-				.navigationBarTitleDisplayMode(.inline)
+				.disabled(administrationUserPair == nil)
 			}
 		}
 	}

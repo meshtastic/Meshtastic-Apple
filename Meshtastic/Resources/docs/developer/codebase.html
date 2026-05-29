@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codebase Guide</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="codebase">
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Codebase Guide</h1>
+<h2>Top-Level Structure</h2>
+<pre><code>Meshtastic/
+├── MeshtasticApp.swift         # @main App struct
+├── MeshtasticAppDelegate.swift # UIApplicationDelegate (SiriKit)
+├── AppState.swift              # @EnvironmentObject root state
+├── Accessory/                  # BLE/TCP/serial connectivity
+├── API/                        # REST API helpers
+├── AppIntents/                 # Siri / Shortcuts intents
+├── CarPlay/                    # CarPlay scene
+├── Enums/                      # Shared enumerations
+├── Extensions/                 # Swift extensions (Logger, Date, String…)
+├── Helpers/                    # Utility types (no UI)
+├── Intents/                    # INIntent handlers
+├── Measurement/                # Unit/measurement formatting
+├── Model/                      # @Model SwiftData types
+├── Persistence/                # PersistenceController, MeshPackets actor
+├── Resources/                  # Assets, docs bundle, Info.plist
+├── Router/                     # Router + NavigationState
+├── Tips/                       # TipKit tips
+└── Views/                      # SwiftUI views
+    ├── Bluetooth/              # BLE connect view
+    ├── Map/                    # Map + overlay views
+    ├── Messages/               # Channel + DM views
+    ├── Nodes/                  # Node list + detail
+    └── Settings/               # All settings views
+MeshtasticProtobufs/            # Swift Package wrapping generated protobufs
+MeshtasticTests/                # Test target (Swift Testing)
+scripts/                        # Build and utility scripts
+specs/                          # Feature specs (speckit workflow)
+</code></pre>
+<h2>Key Files</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Router/Router.swift</code></td>
+<td>Central navigation controller (<code>@MainActor</code>)</td>
+</tr>
+<tr>
+<td><code>Router/NavigationState.swift</code></td>
+<td>Per-tab navigation state enums</td>
+</tr>
+<tr>
+<td><code>Extensions/Logger.swift</code></td>
+<td>Typed OSLog loggers for all subsystems</td>
+</tr>
+<tr>
+<td><code>Persistence/PersistenceController.swift</code></td>
+<td>SwiftData <code>ModelContainer</code> setup</td>
+</tr>
+<tr>
+<td><code>Model/MeshtasticSchema.swift</code></td>
+<td><code>VersionedSchema</code> + <code>SchemaMigrationPlan</code></td>
+</tr>
+<tr>
+<td><code>Accessory/Accessory Manager/AccessoryManager.swift</code></td>
+<td>BLE/TCP manager root class</td>
+</tr>
+</tbody>
+</table>
+<h2>Extension File Pattern</h2>
+<p>Large manager classes are split into <code>+Extension</code> files grouped by concern:</p>
+<pre><code class="language-swift">// AccessoryManager.swift — properties and init only
+// AccessoryManager+Connect.swift — connection lifecycle
+// AccessoryManager+ToRadio.swift — outbound packet methods
+// AccessoryManager+FromRadio.swift — inbound packet handling
+</code></pre>
+<p>Follow the same pattern when adding new subsystems to <code>AccessoryManager</code> or other large classes.</p>
+<h2>Logging</h2>
+<p>All logging uses typed <code>Logger</code> instances from <code>Meshtastic/Extensions/Logger.swift</code>. Never use <code>print()</code>.</p>
+<pre><code class="language-swift">Logger.mesh.debug(&quot;Packet received: \(packet.id)&quot;)
+Logger.transport.error(&quot;BLE write failed: \(error)&quot;)
+</code></pre>
+<p>Available categories: <code>.admin</code>, <code>.data</code>, <code>.docs</code>, <code>.mesh</code>, <code>.mqtt</code>, <code>.radio</code>, <code>.services</code>, <code>.statistics</code>, <code>.transport</code>, <code>.tak</code></p>
+<h2>View Hierarchy</h2>
+<p>Views are in <code>Meshtastic/Views/</code>. Each major feature has its own subdirectory. The root <code>ContentView</code> hosts a <code>TabView</code> keyed on <code>NavigationState</code>.</p>
+<p>Views that need connectivity inject <code>@EnvironmentObject var bleManager: BLEManager</code> (legacy name; newer code uses <code>AccessoryManager</code>). Views that need navigation inject <code>@EnvironmentObject var router: Router</code>.</p>
+<h2>Localization</h2>
+<p>All user-visible strings must use <code>String(localized:)</code> or <code>LocalizedStringKey</code>. The source strings file is <code>Localizable.xcstrings</code> in the project root.</p>
+</body>
+</html>

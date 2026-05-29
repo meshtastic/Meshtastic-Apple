@@ -10,14 +10,16 @@ import SwiftUI
 import OSLog
 
 struct PaxCounterConfig: View {
-	@Environment(\.managedObjectContext) private var context
+	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.dismiss) private var goBack
 	
 	let node: NodeInfoEntity?
 	
 	@State private var enabled = false
-	@State private var paxcounterUpdateInterval: UpdateInterval = UpdateInterval(from: 0)
+	@State private var paxcounterUpdateInterval: UpdateInterval = UpdateInterval(from: 3600)
+	@State private var wifiThreshold: Int32 = -80
+	@State private var bleThreshold: Int32 = -80
 	@State private var hasChanges: Bool = false
 	
 	var body: some View {
@@ -41,6 +43,34 @@ struct PaxCounterConfig: View {
 					Text("How often we can send a message to the mesh when people are detected.")
 						.foregroundColor(.gray)
 						.font(.callout)
+					HStack {
+						Label("WiFi Threshold", systemImage: "wifi")
+						Spacer()
+						TextField("WiFi Threshold", value: $wifiThreshold, format: .number)
+							.foregroundColor(.gray)
+							.multilineTextAlignment(.trailing)
+							.keyboardType(.numbersAndPunctuation)
+						Text("dBm")
+							.foregroundColor(.gray)
+					}
+					.listRowSeparator(.hidden)
+					Text("RSSI threshold for WiFi device counting. Default is −80 dBm.")
+						.foregroundColor(.gray)
+						.font(.callout)
+					HStack {
+						Label("BLE Threshold", systemImage: "antenna.radiowaves.left.and.right")
+						Spacer()
+						TextField("BLE Threshold", value: $bleThreshold, format: .number)
+							.foregroundColor(.gray)
+							.multilineTextAlignment(.trailing)
+							.keyboardType(.numbersAndPunctuation)
+						Text("dBm")
+							.foregroundColor(.gray)
+					}
+					.listRowSeparator(.hidden)
+					Text("RSSI threshold for BLE device counting. Default is −80 dBm.")
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 			} header: {
 				Text("Options")
@@ -49,40 +79,34 @@ struct PaxCounterConfig: View {
 		.disabled(!accessoryManager.isConnected || node?.powerConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				SaveConfigButton(node: node, hasChanges: $hasChanges) {
-					guard let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context),
-						  let fromUser = connectedNode.user,
-						  let toUser = node?.user else {
-						return
-					}
-					
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				performConfigSave(
+					node: node,
+					context: context,
+					accessoryManager: accessoryManager,
+					hasChanges: $hasChanges,
+					dismiss: goBack
+				) { fromUser, toUser in
 					var config = ModuleConfig.PaxcounterConfig()
 					config.enabled = enabled
 					config.paxcounterUpdateInterval = UInt32(paxcounterUpdateInterval.intValue)
-					
-					Task {
-						_ = try await accessoryManager.savePaxcounterModuleConfig(
-							config: config,
-							fromUser: fromUser,
-							toUser: toUser
-						)
-						Task { @MainActor in
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
-					}
+					config.wifiThreshold = wifiThreshold
+					config.bleThreshold = bleThreshold
+					_ = try await accessoryManager.savePaxcounterModuleConfig(
+						config: config,
+						fromUser: fromUser,
+						toUser: toUser
+					)
 				}
+			}
 			}
 		}
 		.navigationTitle("PAX Counter Config")
-		.navigationBarItems(trailing: ZStack {
-			ConnectedDevice(
-				deviceConnected: accessoryManager.isConnected,
-				name: "\(accessoryManager.activeConnection?.device.shortName ?? "?")"
-			)
-		})
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
 		.onFirstAppear {
 			// Need to request a PaxCounterModuleConfig from the remote node before allowing changes
 			if let deviceNum = accessoryManager.activeDeviceNum, let node {
@@ -111,15 +135,45 @@ struct PaxCounterConfig: View {
 			}
 		}
 		.onChange(of: enabled) { oldEnabled, newEnabled in
-			if oldEnabled != newEnabled && newEnabled != node?.paxCounterConfig?.enabled { hasChanges = true }
+			if oldEnabled != newEnabled && newEnabled != (node?.paxCounterConfig?.enabled ?? false) { hasChanges = true }
 		}
 		.onChange(of: paxcounterUpdateInterval.intValue) { oldPaxcounterUpdateInterval, newPaxcounterUpdateInterval in
-			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval && newPaxcounterUpdateInterval != node?.paxCounterConfig?.updateInterval ?? -1 { hasChanges = true }
+			if oldPaxcounterUpdateInterval != newPaxcounterUpdateInterval {
+				let stored = Int(node?.paxCounterConfig?.updateInterval ?? 0)
+				let effective = stored == 0 ? 3600 : stored
+				if newPaxcounterUpdateInterval != effective { hasChanges = true }
+			}
+		}
+		.onChange(of: wifiThreshold) { oldWifiThreshold, newWifiThreshold in
+			if oldWifiThreshold != newWifiThreshold {
+				let stored = node?.paxCounterConfig?.wifiThreshold ?? 0
+				let effective = stored == 0 ? Int32(-80) : stored
+				if newWifiThreshold != effective { hasChanges = true }
+			}
+		}
+		.onChange(of: bleThreshold) { oldBleThreshold, newBleThreshold in
+			if oldBleThreshold != newBleThreshold {
+				let stored = node?.paxCounterConfig?.bleThreshold ?? 0
+				let effective = stored == 0 ? Int32(-80) : stored
+				if newBleThreshold != effective { hasChanges = true }
+			}
 		}
 	}
 	
 	private func setPaxValues() {
 		enabled = node?.paxCounterConfig?.enabled ?? enabled
-		paxcounterUpdateInterval = UpdateInterval(from: Int(node?.paxCounterConfig?.updateInterval ?? 1800))
+		let storedInterval = Int(node?.paxCounterConfig?.updateInterval ?? 0)
+		paxcounterUpdateInterval = UpdateInterval(from: storedInterval == 0 ? 3600 : storedInterval)
+		let storedWifi = node?.paxCounterConfig?.wifiThreshold ?? 0
+		wifiThreshold = storedWifi == 0 ? -80 : storedWifi
+		let storedBle = node?.paxCounterConfig?.bleThreshold ?? 0
+		bleThreshold = storedBle == 0 ? -80 : storedBle
+		hasChanges = false
 	}
+}
+
+#Preview {
+	PaxCounterConfig(node: nil)
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(PersistenceController.preview.container)
 }
