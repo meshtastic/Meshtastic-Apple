@@ -170,7 +170,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .itu12M:
 			return "ITU Region 1 / Amateur 2m".localized
 		case .itu22M:
-			return "ITU Region 2 & 3 / Amateur 2m".localized
+			return "ITU Region 2 / Amateur 2m".localized
 		case .eu866:
 			return "European Union 866MHz".localized
 		case .eu874:
