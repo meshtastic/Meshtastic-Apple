@@ -43,6 +43,19 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case eu917 = 31
 	case euN868 = 32
 	case lora24 = 13
+
+	/// Regions not available until firmware 2.8.
+	static var userSelectable: [RegionCodes] {
+		allCases.filter { region in
+			switch region {
+			case .itu12M, .itu22M, .eu866, .eu874, .eu917, .euN868:
+				return false
+			default:
+				return true
+			}
+		}
+	}
+
 	var topic: String {
 		switch self {
 		case .unset:
