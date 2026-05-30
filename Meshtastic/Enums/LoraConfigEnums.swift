@@ -100,7 +100,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .itu12M:
 			"ITU1_2M"
 		case .itu22M:
-			"ITU23_2M"
+			"ITU2_2M"
 		case .eu866:
 			"EU_866"
 		case .eu874:
