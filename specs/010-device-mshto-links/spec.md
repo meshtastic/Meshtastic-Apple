@@ -123,3 +123,46 @@ A user browsing for new hardware wants to explore all available msh.to links. A 
 - The bundled files are updated before each release (no runtime network fetch in v1).
 - Marketplace shipping regions are maintained manually in `marketplaces.json` and updated when retailers change their coverage.
 - Currently configured marketplaces: Rokland (prefix, 19 regions), Hexaspot (prefix, 28 EU/EEA regions), AliExpress (suffix, worldwide), Amazon (suffix, 11 regions), Tindie (suffix, 7 regions), Muzi Works (prefix, 30 regions).
+
+## Implementation Notes
+
+These notes document decisions made during implementation that are not obvious from the requirements.
+They are especially important for Android/cross-platform teams implementing the same feature.
+
+### Architecture Field Must Be a String (Not an Enum)
+
+`DeviceHardware.json` contains an `architecture` field. **Do not decode this into a closed/exhaustive enum.**
+
+During iOS implementation, decoding `architecture` as an enum caused `decoder.decode([DeviceHardware].self)` to throw a `DecodingError` for any device using the `portduino` architecture (Linux/native targets). This silently aborted the entire `refreshBundledDevicesData()` call, meaning `importDeviceLinks()` never ran, and no `DeviceLinkEntity` records were created — so the "I want one" section never appeared.
+
+**Fix**: Decode `architecture` as a plain `String`. Convert to a typed enum only when needed for firmware flashing, using optional/nil-safe binding so unknown values are handled gracefully. This is forward-compatible with any future architectures added to the API.
+
+### isVendor Determination
+
+`isVendor` is NOT determined from the URL's domain name. It is determined by checking whether the short code is itself a known `platformioTarget`:
+
+```
+platformioTargets = Set of all DeviceHardwareEntity.platformioTarget values
+isVendor = platformioTargets.contains(shortCode)
+```
+
+This is the only reliable signal — vendor links in `urls.json` use the exact `platformioTarget` as their short code (e.g., `rak_wismeshtag`, `heltec-v4`). Marketplace links use a marketplace prefix/suffix (e.g., `rokland-heltec-v4`, `heltec-v4_aliexpress`).
+
+### Refresh Lifecycle — Catalog Must Be Populated After Any Database Clear
+
+`importDeviceLinks()` must be called any time the SwiftData store is cleared or recreated. The four trigger points in iOS are:
+
+1. **App launch** (`MeshtasticAPI.shared` init) — `refreshBundledDevicesData()` → `importDeviceLinks()`
+2. **Every BLE/TCP connect**, after config handshake completes — `refreshBundledDevicesData()` → `importDeviceLinks()`
+3. **Background network refresh** (when connectivity available on connect) — `refreshDevicesAPIData()` → `importDeviceLinks()`
+4. **After "Erase All App Data"** — explicit `refreshBundledDevicesData()` call → `importDeviceLinks()`
+
+If your platform auto-reconnects or recreates the database without triggering a re-import, links will be absent until the next trigger. Add a `refreshBundledDevicesData()` call explicitly after any store reset.
+
+### Matching Does Not Use hwModelSlug
+
+An earlier design (see tasks.md) used `hwModelSlug` substring matching. The final implementation uses only `platformioTarget` for matching. `hwModelSlug` is not used in device link matching.
+
+### No Many-to-Many Relationship on DeviceHardwareEntity
+
+`DeviceHardwareEntity` has no `links` relationship. `DeviceLinksSection` uses `@Query` to load all `DeviceLinkEntity` records and filters in memory using the device's `platformioTarget`. This avoids join complexity and is fast for the current scale (~200 short codes).

@@ -94,15 +94,23 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T021 [P] Update `docs/user/nodes.md` with documentation about the Links section in node info view
-- [ ] T022 [P] Update `docs/user/settings.md` with documentation about the Device Links directory
-- [ ] T023 Run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta` to regenerate bundled HTML
+- [x] T021 [P] Update `docs/user/nodes.md` with documentation about hardware info panel (support tiers), and the "I want one" device purchase links section
+- [x] T022 [P] Update `docs/user/settings.md` with documentation about the Device Links directory and Erase All App Data repopulating the device catalog
+- [x] T023 Run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta` to regenerate bundled HTML
 - [ ] T024 Run quickstart.md validation — build, launch, verify links appear for a known device
 - [x] T025 Verify SwiftLint passes with no new warnings (`swiftlint lint`)
 
 ---
 
-## Dependencies & Execution Order
+## Post-Implementation Bug Fixes
+
+### Architecture Decode Failure (Critical)
+
+After initial implementation, the "I want one" section never appeared. Root cause: `DeviceHardware.json` contains `architecture: "portduino"` for two devices (RAK6421 Hat+, Elecrow Meshstick 1262), and `portduino` was absent from the `Architecture` Swift enum. This caused `decoder.decode([DeviceHardware].self)` to throw, aborting `refreshBundledDevicesData()` before `importDeviceLinks()` could run.
+
+**Fix**: Changed `DeviceHardware.architecture` from `Architecture` (enum) to `String`. The `Architecture` enum is still used at point-of-use (firmware flashing) via optional binding.
+
+**Android note**: Do not decode `architecture` into a closed/exhaustive enum. Use a string and convert optionally where needed. See `spec.md` → Implementation Notes.
 
 ### Phase Dependencies
 
