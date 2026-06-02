@@ -228,11 +228,5 @@ CI is handled by Xcode Cloud via `ci_scripts/ci_pre_xcodebuild.sh`. Do not modif
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/010-device-mshto-links/plan.md`
-
-Key artifacts:
-- Plan: `specs/010-device-mshto-links/plan.md`
-- Research: `specs/010-device-mshto-links/research.md`
-- Data Model: `specs/010-device-mshto-links/data-model.md`
-- Quickstart: `specs/010-device-mshto-links/quickstart.md`
+at `specs/011-database-backup-system/plan.md`
 <!-- SPECKIT END -->

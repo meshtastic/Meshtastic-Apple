@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 7/13/22.
 //
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 import OSLog
 import MeshtasticProtobufs
 

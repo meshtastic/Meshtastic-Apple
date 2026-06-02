@@ -4,7 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/3/22.
 
-import SwiftData
+@preconcurrency import SwiftData
 import MeshtasticProtobufs
 import OSLog
 
@@ -39,15 +39,20 @@ extension MeshPackets {
 					return lastHeard < expireDate
 				}
 			}
+			guard !staleNodes.isEmpty else {
+				Logger.data.info("💾 [NodeInfoEntity] No stale nodes to clear")
+				return false
+			}
 			let deletedNodes = staleNodes.count
 			for node in staleNodes {
 				modelContext.delete(node)
 			}
 			try modelContext.save()
 			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
-			return deletedNodes > 0
+			return true
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes")
+			Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -65,7 +70,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing pax: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -83,7 +89,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing positions: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -104,7 +111,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing telemetry: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -123,7 +131,8 @@ extension MeshPackets {
 			}
 			try modelContext.save()
 		} catch {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 [MessageEntity] Error deleting channel messages: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
@@ -138,7 +147,8 @@ extension MeshPackets {
 		do {
 			try modelContext.save()
 		} catch {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 [MessageEntity] Error deleting user messages: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
@@ -164,8 +174,7 @@ extension MeshPackets {
 
 		let allModels: [any PersistentModel.Type] = MeshtasticSchema.allModels
 		for modelType in allModels {
-			let typeName = String(describing: modelType)
-			if !includeRoutes && (typeName.contains("Route") || typeName.contains("Location")) {
+			if !includeRoutes && (modelType == RouteEntity.self || modelType == LocationEntity.self) {
 				continue
 			}
 			if modelType == DeviceHardwareTagEntity.self || modelType == DeviceHardwareImageEntity.self {
@@ -213,7 +222,8 @@ extension MeshPackets {
 		do {
 			try modelContext.save()
 		} catch {
-			Logger.data.error("Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
@@ -527,7 +537,14 @@ extension MeshPackets {
 				
 				/// Don't save empty position packets from null island or apple park
 				if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
-					let fetchedNode = try modelContext.fetch(fetchNodePositionRequest)
+					var fetchedNode = try modelContext.fetch(fetchNodePositionRequest)
+					// Create a stub node if one doesn't exist yet — it will be updated when the NodeInfo packet arrives
+					if fetchedNode.isEmpty {
+						let newNode = createNodeInfo(num: Int64(packet.from), context: modelContext)
+						newNode.lastHeard = Date()
+						fetchedNode = [newNode]
+						Logger.data.info("📍 [Position] created stub node for: \(packet.from.toHex(), privacy: .public)")
+					}
 					if fetchedNode.count == 1 {
 						
 						// Unset the current latest position for this node
@@ -734,6 +751,7 @@ extension MeshPackets {
 					newDisplayConfig.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
 					newDisplayConfig.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 					newDisplayConfig.compassNorthTop = config.compassNorthTop
+					newDisplayConfig.compassOrientation = Int32(config.compassOrientation.rawValue)
 					newDisplayConfig.flipScreen = config.flipScreen
 					newDisplayConfig.oledType = Int32(config.oled.rawValue)
 					newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
@@ -745,6 +763,7 @@ extension MeshPackets {
 					fetchedNode[0].displayConfig?.screenOnSeconds = Int32(truncatingIfNeeded: config.screenOnSecs)
 					fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(truncatingIfNeeded: config.autoScreenCarouselSecs)
 					fetchedNode[0].displayConfig?.compassNorthTop = config.compassNorthTop
+					fetchedNode[0].displayConfig?.compassOrientation = Int32(config.compassOrientation.rawValue)
 					fetchedNode[0].displayConfig?.flipScreen = config.flipScreen
 					fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 					fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
@@ -853,15 +872,29 @@ extension MeshPackets {
 					newNetworkConfig.wifiEnabled = config.wifiEnabled
 					newNetworkConfig.wifiSsid = config.wifiSsid
 					newNetworkConfig.wifiPsk = config.wifiPsk
+					newNetworkConfig.ntpServer = config.ntpServer
 					newNetworkConfig.ethEnabled = config.ethEnabled
 					newNetworkConfig.enabledProtocols = Int32(config.enabledProtocols)
+					newNetworkConfig.addressMode = Int32(config.addressMode.rawValue)
+					newNetworkConfig.rsyslogServer = config.rsyslogServer
+					newNetworkConfig.ip = Int32(bitPattern: config.ipv4Config.ip)
+					newNetworkConfig.gateway = Int32(bitPattern: config.ipv4Config.gateway)
+					newNetworkConfig.subnet = Int32(bitPattern: config.ipv4Config.subnet)
+					newNetworkConfig.dns = Int32(bitPattern: config.ipv4Config.dns)
 					fetchedNode[0].networkConfig = newNetworkConfig
 				} else {
 					fetchedNode[0].networkConfig?.ethEnabled = config.ethEnabled
 					fetchedNode[0].networkConfig?.wifiEnabled = config.wifiEnabled
 					fetchedNode[0].networkConfig?.wifiSsid = config.wifiSsid
 					fetchedNode[0].networkConfig?.wifiPsk = config.wifiPsk
+					fetchedNode[0].networkConfig?.ntpServer = config.ntpServer
 					fetchedNode[0].networkConfig?.enabledProtocols = Int32(config.enabledProtocols)
+					fetchedNode[0].networkConfig?.addressMode = Int32(config.addressMode.rawValue)
+					fetchedNode[0].networkConfig?.rsyslogServer = config.rsyslogServer
+					fetchedNode[0].networkConfig?.ip = Int32(bitPattern: config.ipv4Config.ip)
+					fetchedNode[0].networkConfig?.gateway = Int32(bitPattern: config.ipv4Config.gateway)
+					fetchedNode[0].networkConfig?.subnet = Int32(bitPattern: config.ipv4Config.subnet)
+					fetchedNode[0].networkConfig?.dns = Int32(bitPattern: config.ipv4Config.dns)
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1046,6 +1079,52 @@ extension MeshPackets {
 		}
 	}
 	
+	func upsertAudioModuleConfigPacket(config: ModuleConfig.AudioConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Audio module config received: %@".localized, String(nodeNum))
+		Logger.data.info("🔊 \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+			fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].audioConfig == nil {
+					let newAudioConfig = AudioConfigEntity()
+					modelContext.insert(newAudioConfig)
+					newAudioConfig.codec2Enabled = config.codec2Enabled
+					newAudioConfig.pttPin = Int32(config.pttPin)
+					newAudioConfig.bitrate = Int32(config.bitrate.rawValue)
+					newAudioConfig.i2sWs = Int32(config.i2SWs)
+					newAudioConfig.i2sSd = Int32(config.i2SSd)
+					newAudioConfig.i2sDin = Int32(config.i2SDin)
+					newAudioConfig.i2sSck = Int32(config.i2SSck)
+					fetchedNode[0].audioConfig = newAudioConfig
+				} else {
+					fetchedNode[0].audioConfig?.codec2Enabled = config.codec2Enabled
+					fetchedNode[0].audioConfig?.pttPin = Int32(config.pttPin)
+					fetchedNode[0].audioConfig?.bitrate = Int32(config.bitrate.rawValue)
+					fetchedNode[0].audioConfig?.i2sWs = Int32(config.i2SWs)
+					fetchedNode[0].audioConfig?.i2sSd = Int32(config.i2SSd)
+					fetchedNode[0].audioConfig?.i2sDin = Int32(config.i2SDin)
+					fetchedNode[0].audioConfig?.i2sSck = Int32(config.i2SSck)
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+					Logger.data.info("💾 [AudioConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+			} else {
+				Logger.data.error("💥 [AudioConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Audio Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [AudioConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
 	func upsertAmbientLightingModuleConfigPacket(config: ModuleConfig.AmbientLightingConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Ambient Lighting module config received: %@".localized, String(nodeNum))
@@ -1265,6 +1344,44 @@ extension MeshPackets {
 		}
 	}
 	
+	func upsertNeighborInfoModuleConfigPacket(config: ModuleConfig.NeighborInfoConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Neighbor Info config received: %@".localized, String(nodeNum))
+		Logger.data.info("🏘️ \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+			fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].neighborInfoConfig == nil {
+					let newConfig = NeighborInfoConfigEntity()
+					modelContext.insert(newConfig)
+					newConfig.enabled = config.enabled
+					newConfig.updateInterval = Int32(config.updateInterval)
+					newConfig.transmitOverLora = config.transmitOverLora
+					fetchedNode[0].neighborInfoConfig = newConfig
+				} else {
+					fetchedNode[0].neighborInfoConfig?.enabled = config.enabled
+					fetchedNode[0].neighborInfoConfig?.updateInterval = Int32(config.updateInterval)
+					fetchedNode[0].neighborInfoConfig?.transmitOverLora = config.transmitOverLora
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+					Logger.data.info("💾 [NeighborInfoConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
+			} else {
+				Logger.data.error("💥 [NeighborInfoConfigEntity] No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Neighbor Info Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [NeighborInfoConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
 	func upsertPaxCounterModuleConfigPacket(config: ModuleConfig.PaxcounterConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("PAX Counter config received: %@".localized, String(nodeNum))
@@ -1282,10 +1399,14 @@ extension MeshPackets {
 					modelContext.insert(newPaxCounterConfig)
 					newPaxCounterConfig.enabled = config.enabled
 					newPaxCounterConfig.updateInterval = Int32(config.paxcounterUpdateInterval)
+					newPaxCounterConfig.wifiThreshold = config.wifiThreshold
+					newPaxCounterConfig.bleThreshold = config.bleThreshold
 					fetchedNode[0].paxCounterConfig = newPaxCounterConfig
 				} else {
 					fetchedNode[0].paxCounterConfig?.enabled = config.enabled
 					fetchedNode[0].paxCounterConfig?.updateInterval = Int32(config.paxcounterUpdateInterval)
+					fetchedNode[0].paxCounterConfig?.wifiThreshold = config.wifiThreshold
+					fetchedNode[0].paxCounterConfig?.bleThreshold = config.bleThreshold
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
@@ -1547,6 +1668,8 @@ extension MeshPackets {
 					newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 					newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 					newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+					newTelemetryConfig.airQualityEnabled = config.airQualityEnabled
+					newTelemetryConfig.airQualityInterval = Int32(truncatingIfNeeded: config.airQualityInterval)
 					newTelemetryConfig.powerMeasurementEnabled = config.powerMeasurementEnabled
 					newTelemetryConfig.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 					newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
@@ -1558,6 +1681,8 @@ extension MeshPackets {
 					fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 					fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
 					fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+					fetchedNode[0].telemetryConfig?.airQualityEnabled = config.airQualityEnabled
+					fetchedNode[0].telemetryConfig?.airQualityInterval = Int32(truncatingIfNeeded: config.airQualityInterval)
 					fetchedNode[0].telemetryConfig?.powerMeasurementEnabled = config.powerMeasurementEnabled
 					fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 					fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
@@ -1612,6 +1737,66 @@ extension MeshPackets {
 		} catch {
 			let nsError = error as NSError
 			Logger.data.error("💥 [TAKConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
+	func upsertTrafficManagementModuleConfigPacket(config: ModuleConfig.TrafficManagementConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Traffic Management module config received: %@".localized, String(nodeNum))
+		Logger.data.info("🚦 \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+		var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+		fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].trafficManagementConfig == nil {
+					let newConfig = TrafficManagementConfigEntity()
+					modelContext.insert(newConfig)
+					newConfig.enabled = config.enabled
+					newConfig.positionDedupEnabled = config.positionDedupEnabled
+					newConfig.positionPrecisionBits = Int32(config.positionPrecisionBits)
+					newConfig.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
+					newConfig.nodeinfoDirectResponse = config.nodeinfoDirectResponse
+					newConfig.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
+					newConfig.rateLimitEnabled = config.rateLimitEnabled
+					newConfig.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
+					newConfig.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
+					newConfig.dropUnknownEnabled = config.dropUnknownEnabled
+					newConfig.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
+					newConfig.exhaustHopTelemetry = config.exhaustHopTelemetry
+					newConfig.exhaustHopPosition = config.exhaustHopPosition
+					newConfig.routerPreserveHops = config.routerPreserveHops
+					fetchedNode[0].trafficManagementConfig = newConfig
+				} else {
+					fetchedNode[0].trafficManagementConfig?.enabled = config.enabled
+					fetchedNode[0].trafficManagementConfig?.positionDedupEnabled = config.positionDedupEnabled
+					fetchedNode[0].trafficManagementConfig?.positionPrecisionBits = Int32(config.positionPrecisionBits)
+					fetchedNode[0].trafficManagementConfig?.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
+					fetchedNode[0].trafficManagementConfig?.nodeinfoDirectResponse = config.nodeinfoDirectResponse
+					fetchedNode[0].trafficManagementConfig?.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
+					fetchedNode[0].trafficManagementConfig?.rateLimitEnabled = config.rateLimitEnabled
+					fetchedNode[0].trafficManagementConfig?.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
+					fetchedNode[0].trafficManagementConfig?.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
+					fetchedNode[0].trafficManagementConfig?.dropUnknownEnabled = config.dropUnknownEnabled
+					fetchedNode[0].trafficManagementConfig?.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
+					fetchedNode[0].trafficManagementConfig?.exhaustHopTelemetry = config.exhaustHopTelemetry
+					fetchedNode[0].trafficManagementConfig?.exhaustHopPosition = config.exhaustHopPosition
+					fetchedNode[0].trafficManagementConfig?.routerPreserveHops = config.routerPreserveHops
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+				Logger.data.info("💾 [TrafficManagementConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+			} else {
+				Logger.data.error("💥 [TrafficManagementConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Traffic Management Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [TrafficManagementConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
 		}
 	}
 }

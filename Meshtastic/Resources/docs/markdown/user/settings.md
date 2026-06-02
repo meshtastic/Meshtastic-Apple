@@ -57,6 +57,21 @@ Device role, serial output, debug log streaming, and node info broadcast interva
 
 Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.
 
+#### Compass Orientation
+
+Controls which direction the on-device compass points when the screen is at rest. Use this when your radio is mounted at an angle or upside-down.
+
+| Option | Description |
+|--------|-------------|
+| 0° | Default orientation — north at the top. |
+| 90° | Rotated 90° clockwise. |
+| 180° | Rotated 180° (upside-down). |
+| 270° | Rotated 270° clockwise (90° counter-clockwise). |
+| 0° Inverted | Default orientation with the display flipped (mirrored). |
+| 90° Inverted | 90° clockwise with the display flipped. |
+| 180° Inverted | 180° with the display flipped. |
+| 270° Inverted | 270° clockwise with the display flipped. |
+
 ### Network
 
 Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).
@@ -76,16 +91,45 @@ Optional feature modules. Only available when your connected node supports the m
 | Module | Description |
 |--------|-------------|
 | Ambient Lighting | Control NeoPixel/LED lighting on supported hardware. |
+| Audio | Codec2 voice communication settings. Only available when LoRa region is set to **LORA_24** (2.4 GHz). Configure Codec2 encoding, bitrate, PTT pin, and I2S GPIO pins. |
 | Canned Messages | Pre-programmed message shortcuts accessible from the device buttons. |
 | Detection Sensor | Configure PIR motion or contact sensors. |
 | External Notification | Buzzer or LED alerts for incoming messages. |
 | MQTT | Uplink/downlink messages to an MQTT broker for internet bridging. |
+| Neighbor Info | Periodically broadcasts information about directly-heard neighbors to help visualise mesh topology. Update interval ranges from 4 hours (default) to 72 hours. Enable **Transmit over LoRa** to share neighbour data over the radio in addition to MQTT and PhoneAPI. |
 | Range Test | Automated range testing with position logging. |
-| Pax Counter | Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. |
+| Pax Counter | Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. Configure WiFi Threshold (dBm) and BLE Threshold (dBm) to control the RSSI sensitivity for device counting — default is −80 dBm for both. |
 | Ringtone | Custom RTTTL melodies for notification tones. |
 | Store & Forward | Store packets for nodes that are temporarily offline. |
 | Serial | UART serial output for integration with other hardware. |
 | Telemetry | Device, environment, and air-quality sensor reporting. |
+| Traffic Management | Mesh traffic optimisation — deduplication, rate limiting, and hop management. Requires firmware 2.8.0+. |
+
+### Traffic Management
+
+The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**.
+
+| Setting | Description |
+|---------|-------------|
+| Enabled | Master enable for the traffic management module. |
+| **Position Deduplication** | |
+| Position Dedup | Drop redundant position broadcasts from the same node. |
+| Precision Bits | Number of bits of precision for position deduplication (0–32). Lower values merge more positions. |
+| Min Interval (s) | Minimum seconds between position updates from the same node. |
+| **NodeInfo Direct Response** | |
+| Direct Response | Respond to NodeInfo requests directly from local cache instead of flooding the mesh. |
+| Max Hops | Minimum hop distance from requestor before responding to NodeInfo requests. |
+| **Rate Limiting** | |
+| Rate Limiting | Enable per-node rate limiting to throttle chatty nodes. |
+| Window (s) | Time window in seconds for rate limiting calculations. |
+| Max Packets | Maximum packets allowed per node within the rate limit window. |
+| **Unknown Packet Handling** | |
+| Drop Unknown | Enable dropping of unknown/undecryptable packets. |
+| Threshold | Number of unknown packets received from a node before dropping. |
+| **Hop Management** | |
+| Exhaust Hop Telemetry | Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected). |
+| Exhaust Hop Position | Set hop_limit to 0 for relayed position broadcasts (own packets unaffected). |
+| Router Preserve Hops | Preserve hop_limit for router-to-router traffic. |
 
 ## Firmware Updates
 

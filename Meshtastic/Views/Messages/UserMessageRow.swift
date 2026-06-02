@@ -29,17 +29,19 @@ struct UserMessageRow: View {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
 	}
 	
-	init(message: MessageEntity,
-		 allMessages: [MessageEntity],
-		 previousMessage: MessageEntity?,
-		 preferredPeripheralNum: Int,
-		 user: UserEntity,
-		 replyMessageId: Binding<Int64>,
-		 messageFieldFocused: FocusState<Bool>.Binding,
-		 messageToHighlight: Binding<Int64>,
-		 scrollView: ScrollViewProxy,
-		 onInteractionComplete: @escaping () -> Void,
-		 onTapback: @escaping (MessageEntity) -> Void) {
+	init(
+		message: MessageEntity,
+		allMessages: [MessageEntity],
+		previousMessage: MessageEntity?,
+		preferredPeripheralNum: Int,
+		user: UserEntity,
+		replyMessageId: Binding<Int64>,
+		messageFieldFocused: FocusState<Bool>.Binding,
+		messageToHighlight: Binding<Int64>,
+		scrollView: ScrollViewProxy,
+		onInteractionComplete: @escaping () -> Void,
+		onTapback: @escaping (MessageEntity) -> Void
+	) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
 		self.allMessages = allMessages

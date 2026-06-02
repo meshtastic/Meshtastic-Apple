@@ -14,8 +14,16 @@ private let maxRetries = 2
 private let retryDelay: Duration = .seconds(2)
 
 extension AccessoryManager {
-	func connect(to device: Device, withConnection: Connection? = nil, wantConfig: Bool = true, wantDatabase: Bool = true, versionCheck: Bool = true, retries: Int? = nil) async throws {
-		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck))")
+	func connect(
+		to device: Device,
+		withConnection: Connection? = nil,
+		wantConfig: Bool = true,
+		wantDatabase: Bool = true,
+		versionCheck: Bool = true,
+		refreshDeviceHardwareFromAPI: Bool = false,
+		retries: Int? = nil
+	) async throws {
+		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck), refreshDeviceHardwareFromAPI: \(refreshDeviceHardwareFromAPI))")
 		// Prevent new connection if one is active
 		if activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
@@ -94,6 +102,25 @@ extension AccessoryManager {
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 3: Send wantConfig (config)")
 				try await self.sendWantConfig()
+				if refreshDeviceHardwareFromAPI {
+					do {
+						Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
+						try await MeshtasticAPI.shared.refreshBundledDevicesData()
+						Logger.services.info("✅ [MeshtasticAPI] Refreshed bundled device hardware data after config completion")
+					} catch {
+						Logger.services.warning("Failed to refresh bundled device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
+					}
+
+					Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh Meshtastic device hardware API data")
+					Task.detached(priority: .utility) {
+						do {
+							try await MeshtasticAPI.shared.refreshDevicesAPIData()
+							Logger.services.info("✅ [MeshtasticAPI] Refreshed device hardware data after config completion")
+						} catch {
+							Logger.services.warning("Failed to refresh device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
+						}
+					}
+				}
 			}
 			
 			// Step 4: Send Heartbeat before wantConfig (database)

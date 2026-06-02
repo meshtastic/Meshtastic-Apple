@@ -26,16 +26,16 @@ struct ChannelMessageRow: View {
 	}
 	
 	init(message: MessageEntity,
-		 allMessages: [MessageEntity],
-		 previousMessage: MessageEntity?,
-		 preferredPeripheralNum: Int,
-		 channel: ChannelEntity,
-		 replyMessageId: Binding<Int64>,
-		 messageFieldFocused: FocusState<Bool>.Binding,
-		 messageToHighlight: Binding<Int64>,
-		 scrollView: ScrollViewProxy,
-		 onInteractionComplete: @escaping () -> Void,
-		 onTapback: @escaping (MessageEntity) -> Void) {
+	     allMessages: [MessageEntity],
+	     previousMessage: MessageEntity?,
+	     preferredPeripheralNum: Int,
+	     channel: ChannelEntity,
+	     replyMessageId: Binding<Int64>,
+	     messageFieldFocused: FocusState<Bool>.Binding,
+	     messageToHighlight: Binding<Int64>,
+	     scrollView: ScrollViewProxy,
+	     onInteractionComplete: @escaping () -> Void,
+	     onTapback: @escaping (MessageEntity) -> Void) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
 		self.allMessages = allMessages

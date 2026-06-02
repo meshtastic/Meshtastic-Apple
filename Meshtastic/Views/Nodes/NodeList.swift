@@ -7,7 +7,7 @@
 import SwiftUI
 import CoreLocation
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 import Foundation
 
 struct NodeList: View {
@@ -25,7 +25,6 @@ struct NodeList: View {
 	@State var isEditingFilters = false
 	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
-
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -153,7 +152,7 @@ struct NodeList: View {
 
 	@ViewBuilder
 	private var deleteNodeButton: some View {
-		Button("Delete Node", role: .destructive) {
+		Button("Remove", role: .destructive) {
 			let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
 			if connectedNode != nil {
 				if let node = deleteNode {
@@ -250,7 +249,9 @@ private struct FilteredNodeList: View {
 	var body: some View {
 		// If the connected node passes filters, always show it first
 		let nodesWithConnectedFirst = filteredNodes.filter { $0.num == accessoryManager.activeDeviceNum } + filteredNodes.filter { $0.num != accessoryManager.activeDeviceNum }
-		List(nodesWithConnectedFirst, id: \.self, selection: $selectedNodeNum) { node in
+		var seenNodeNums = Set<Int64>()
+		let uniqueNodes = nodesWithConnectedFirst.filter { seenNodeNums.insert($0.num).inserted }
+		List(uniqueNodes, id: \.num, selection: $selectedNodeNum) { node in
 			NavigationLink(value: node.num) {
 				switch nodeListDensity {
 				case .compact:
@@ -280,18 +281,11 @@ private struct FilteredNodeList: View {
 		node: NodeInfoEntity,
 		connectedNode: NodeInfoEntity?
 	) -> some View {
-		if let user = node.user {
-			NodeAlertsButton(context: context, node: node, user: user)
-			if !user.unmessagable && user.num == UserDefaults.preferredPeripheralNum {
-				Button(action: {
-					shareContactNode = node
-				}) {
-					Label("Share Contact QR", systemImage: "qrcode")
-				}
-			}
-		}
 		if let connectedNode {
 			FavoriteNodeButton(node: node)
+			if let user = node.user {
+				NodeAlertsButton(context: context, node: node, user: user)
+			}
 			if connectedNode.num != node.num {
 				if !(node.user?.unmessagable ?? true) {
 					Button(action: {
@@ -302,46 +296,9 @@ private struct FilteredNodeList: View {
 						Label("Message", systemImage: "message")
 					}
 				}
-				Button {
-					Task {
-						do {
-							try await accessoryManager.sendPosition(
-								channel: node.channel,
-								destNum: node.num,
-								wantResponse: true
-							)
-							Task { @MainActor in
-								// Update state to show alert
-							}
-						} catch {
-							Logger.mesh.warning("Failed to sendPosition")
-						}
-					}
-				} label: {
-					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
-				}
-				Button {
-					Task {
-						if let fromUser = connectedNode.user, let toUser = node.user {
-							do {
-								_ = try await accessoryManager.exchangeUserInfo(fromUser: fromUser, toUser: toUser)
-							} catch {
-								Logger.mesh.warning("Failed to exchange user info")
-							}
-						}
-					}
-				} label: {
-					Label("Exchange User Info", systemImage: "person.2.badge.gearshape")
-				}
 				TraceRouteButton(
 					node: node
 				)
-				if node.isStoreForwardRouter {
-					ClientHistoryButton(
-						connectedNode: connectedNode,
-						node: node
-					)
-				}
 				IgnoreNodeButton(
 					node: node
 				)
@@ -349,7 +306,7 @@ private struct FilteredNodeList: View {
 					deleteNodeId = node.num
 					isPresentingDeleteNodeAlert = true
 				} label: {
-					Label("Delete Node", systemImage: "trash")
+					Label("Remove", systemImage: "trash")
 				}
 			}
 		}
@@ -400,8 +357,7 @@ fileprivate extension NodeFilterParameters {
 
 		// Environment filter (requires to-many relationship traversal)
 		if isEnvironment {
-			let hasEnvironmentTelemetry = node.telemetries.contains { $0.metricsType == 1 }
-			if !hasEnvironmentTelemetry { return false }
+			if !node.hasEnvironmentMetrics { return false }
 		}
 
 		// Distance filter (requires to-many relationship + math)

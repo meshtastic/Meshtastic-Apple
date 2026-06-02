@@ -1,6 +1,6 @@
 import Combine
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 import SwiftUI
 
 class AppState: ObservableObject {

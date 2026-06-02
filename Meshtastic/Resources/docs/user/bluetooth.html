@@ -23,6 +23,7 @@
 <p>Long press a connected radio row to start a Live Activity (iOS 16.2+). The Live Activity shows mesh status on your Lock Screen and in Dynamic Island.</p>
 <h2>Managing Multiple Radios</h2>
 <p>You can pair multiple radios but only one is active at a time. Switch between them by tapping a different device in the Connect view.</p>
+<p>When you switch radios, the app restores the last saved local database for that radio if one exists, then reconnects and resumes syncing with the newly active device. After the new radio finishes its initial config handshake, the app first reapplies the bundled Meshtastic hardware catalog that ships with the app, then refreshes the same catalog from the Meshtastic API in the background so hardware names, images, and firmware-target metadata stay current.</p>
 <h2>BLE Signal Strength</h2>
 <p>The app displays the Bluetooth signal strength of nearby devices during scanning:</p>
 <p><img src="../assets/screenshots/bleSignalStrength.png" alt="BLE Signal Strength" /></p>

@@ -34,16 +34,18 @@ struct Settings: View {
 	private var showsAnyModuleConfiguration: Bool {
 		isAnySupported([
 			.ambientlightingConfig,
+			.audioConfig,
 			.cannedmsgConfig,
 			.detectionsensorConfig,
 			.extnotifConfig,
 			.mqttConfig,
+			.neighborinfoConfig,
 			.rangetestConfig,
 			.paxcounterConfig,
 			.serialConfig,
 			.storeforwardConfig,
 			.telemetryConfig
-		]) || isTAKModuleSupported()
+		]) || isTAKModuleSupported() || isTrafficManagementModuleSupported()
 	}
 
 	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
@@ -66,6 +68,15 @@ struct Settings: View {
 		}
 
 		return deviceRole == .tak || deviceRole == .takTracker
+	}
+
+	private func isTrafficManagementModuleSupported() -> Bool {
+		guard moduleConfigurationNode != nil else { return false }
+		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
+	}
+
+	private var showsDevelopersSection: Bool {
+		Bundle.main.isDebug || Bundle.main.isTestFlight
 	}
 
 	// MARK: Views
@@ -203,6 +214,16 @@ struct Settings: View {
 				}
 			}
 
+			if isModuleSupported(.audioConfig) {
+				NavigationLink(value: SettingsNavigationState.audio) {
+					Label {
+						Text("Audio")
+					} icon: {
+						Image(systemName: "waveform")
+					}
+				}
+			}
+
 			if isModuleSupported(.cannedmsgConfig) {
 				NavigationLink(value: SettingsNavigationState.cannedMessages) {
 					Label {
@@ -239,6 +260,16 @@ struct Settings: View {
 						Text("MQTT")
 					} icon: {
 						Image(systemName: "dot.radiowaves.up.forward")
+					}
+				}
+			}
+
+			if isModuleSupported(.neighborinfoConfig) {
+				NavigationLink(value: SettingsNavigationState.neighborInfo) {
+					Label {
+						Text("Neighbor Info")
+					} icon: {
+						Image(systemName: "network")
 					}
 				}
 			}
@@ -317,6 +348,16 @@ struct Settings: View {
 				}
 			}
 
+			if isTrafficManagementModuleSupported() {
+				NavigationLink(value: SettingsNavigationState.trafficManagement) {
+					Label {
+						Text("Traffic Management")
+					} icon: {
+						Image(systemName: "arrow.triangle.branch")
+					}
+				}
+			}
+
 			if !showsAnyModuleConfiguration {
 				Text("This node does not support any configurable modules.")
 					.foregroundColor(.secondary)
@@ -354,6 +395,13 @@ struct Settings: View {
 					} icon: {
 						Image(systemName: "hammer")
 					}
+				}
+			}
+			NavigationLink(value: SettingsNavigationState.backupManagement) {
+				Label {
+					Text("Backup Management")
+				} icon: {
+					Image(systemName: "externaldrive")
 				}
 			}
 			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
@@ -535,9 +583,9 @@ struct Settings: View {
 					deviceConfigurationSection
 					moduleConfigurationSection
 					loggingSection
-#if DEBUG
+					if showsDevelopersSection {
 					developersSection
-#endif
+					}
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
@@ -578,6 +626,8 @@ struct Settings: View {
 					PowerConfig(node: configNode)
 				case .ambientLighting:
 					AmbientLightingConfig(node: node)
+				case .audio:
+					AudioConfig(node: configNode)
 				case .cannedMessages:
 					CannedMessagesConfig(node: configNode)
 				case .detectionSensor:
@@ -586,6 +636,8 @@ struct Settings: View {
 					ExternalNotificationConfig(node: configNode)
 				case .mqtt:
 					MQTTConfig(node: configNode)
+				case .neighborInfo:
+					NeighborInfoConfig(node: configNode)
 				case .rangeTest:
 					RangeTestConfig(node: configNode)
 				case .paxCounter:
@@ -600,6 +652,8 @@ struct Settings: View {
 					StoreForwardConfig(node: configNode)
 				case .telemetry:
 					TelemetryConfig(node: configNode)
+				case .trafficManagement:
+					TrafficManagementConfig(node: configNode)
 				case .debugLogs:
 					AppLog()
 				case .appFiles:
@@ -622,6 +676,8 @@ struct Settings: View {
 					DiscoveryScanView()
 				case .helpDocs:
 					DocBrowserView()
+				case .backupManagement:
+					BackupManagement()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

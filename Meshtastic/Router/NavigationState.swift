@@ -38,10 +38,12 @@ enum SettingsNavigationState: String {
 	case position
 	case power
 	case ambientLighting
+	case audio
 	case cannedMessages
 	case detectionSensor
 	case externalNotification
 	case mqtt
+	case neighborInfo
 	case rangeTest
 	case paxCounter
 	case ringtone
@@ -49,6 +51,7 @@ enum SettingsNavigationState: String {
 	case security
 	case storeAndForward
 	case telemetry
+	case trafficManagement
 	case debugLogs
 	case appFiles
 	case firmwareUpdates
@@ -59,15 +62,16 @@ enum SettingsNavigationState: String {
 	case coreDataBrowser
 	case localMeshDiscovery
 	case helpDocs
+	case backupManagement
 }
 
 struct NavigationState: Hashable {
 	enum Tab: String, Hashable {
 		case messages
-		case connect
 		case nodes
 		case map
 		case settings
+		case connect
 	}
 
 	var selectedTab: Tab = .connect

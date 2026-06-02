@@ -193,23 +193,29 @@ struct MapSettingsForm: View {
 					}
 				}
 			}
-
-#if targetEnvironment(macCatalyst)
-			Spacer()
+			.navigationTitle("Map Options")
+			.navigationBarTitleDisplayMode(.inline)
+		}
+		#if targetEnvironment(macCatalyst)
+		.overlay(alignment: .topLeading) {
 			Button {
 				dismiss()
 			} label: {
-				Label("Close", systemImage: "xmark")
+				Image(systemName: "xmark.circle.fill")
+					.font(.system(size: 34))
+					.symbolRenderingMode(.palette)
+					.foregroundStyle(.white, Color(.systemGray3))
 			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding(.bottom)
-#endif
+			.buttonStyle(.plain)
+			.padding(.top, 12)
+			.padding(.leading, 14)
 		}
+		#endif
 		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
+		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
+		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.onAppear {
 			// Initialize map data manager

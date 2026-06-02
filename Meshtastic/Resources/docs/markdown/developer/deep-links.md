@@ -35,7 +35,7 @@ The app registers the `meshtastic:///` URL scheme. Use `Router.route(url:)` to h
 | [`meshtastic:///nodes`](meshtastic:///nodes) | Nodes tab |
 | `meshtastic:///nodes?nodenum={nodenum}` | Selected node |
 
-## Mesh Map
+## Map
 
 | URL | Description |
 |-----|-------------|
@@ -69,10 +69,12 @@ No parameters are supported for settings URLs.
 | [`meshtastic:///settings/power`](meshtastic:///settings/power) | Power Config |
 | **Module Config** | |
 | [`meshtastic:///settings/ambientLighting`](meshtastic:///settings/ambientLighting) | Ambient Lighting |
+| [`meshtastic:///settings/audio`](meshtastic:///settings/audio) | Audio (Codec2, requires LORA_24 region) |
 | [`meshtastic:///settings/cannedMessages`](meshtastic:///settings/cannedMessages) | Canned Messages |
 | [`meshtastic:///settings/detectionSensor`](meshtastic:///settings/detectionSensor) | Detection Sensor |
 | [`meshtastic:///settings/externalNotification`](meshtastic:///settings/externalNotification) | External Notification |
 | [`meshtastic:///settings/mqtt`](meshtastic:///settings/mqtt) | MQTT |
+| [`meshtastic:///settings/neighborInfo`](meshtastic:///settings/neighborInfo) | Neighbor Info |
 | [`meshtastic:///settings/paxCounter`](meshtastic:///settings/paxCounter) | Pax Counter |
 | [`meshtastic:///settings/rangeTest`](meshtastic:///settings/rangeTest) | Range Test |
 | [`meshtastic:///settings/ringtone`](meshtastic:///settings/ringtone) | Ringtone |

@@ -352,8 +352,11 @@ extension AccessoryManager {
 	/// TAKMeshIntegration used to hit before it standardised on 3.
 	func takBroadcastHopLimit(forDevice deviceNum: Int64) -> UInt32 {
 		let fallback: UInt32 = 3
-		guard let node = getNodeInfo(id: deviceNum, context: context) else { return fallback }
-		let configured = node.loRaConfig?.hopLimit ?? 0
+		guard let node = getNodeInfo(id: deviceNum, context: context),
+			  !node.isDeleted else { return fallback }
+		guard let loRaConfig = node.loRaConfig,
+			  !loRaConfig.isDeleted else { return fallback }
+		let configured = loRaConfig.hopLimit
 		return configured > 0 ? UInt32(truncatingIfNeeded: configured) : fallback
 	}
 
@@ -443,7 +446,7 @@ extension AccessoryManager {
 			"<precisionlocation[^>]*/>",                 // precision location metadata
 			"<precisionlocation[^>]*>.*?</precisionlocation>",
 			"<precisionLocation[^>]*/>",                 // iTAK camelCase variant
-			"<precisionLocation[^>]*>.*?</precisionLocation>",
+			"<precisionLocation[^>]*>.*?</precisionLocation>"
 		]
 		for pattern in patterns {
 			if let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) {
@@ -461,7 +464,7 @@ extension AccessoryManager {
 			#"\s+color\s*=\s*"[^"]*""#,           // link_attr color (SDK uses strokeColor)
 			#"\s+access\s*=\s*"[^"]*""#,          // access control
 			#"\s+callsign\s*=\s*"""#,             // empty callsign
-			#"\s+phone\s*=\s*"""#,                // empty phone
+			#"\s+phone\s*=\s*"""#                 // empty phone
 		]
 		for pattern in attrPatterns {
 			if let regex = try? NSRegularExpression(pattern: pattern) {

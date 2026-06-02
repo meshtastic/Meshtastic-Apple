@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SwiftData
+@preconcurrency import SwiftData
 import MapKit
 import CoreLocation
 import OSLog
@@ -116,15 +116,13 @@ struct MeshMapContent: MapContent {
 
 	private var reducedPrecisionCircleItems: [(nodeNum: Int64, circleKey: ReducedPrecisionMapCircleKey)] {
 		var lowestNumForKey: [ReducedPrecisionMapCircleKey: Int64] = [:]
-		for position in filteredPositions {
-			if 12...15 ~= position.precisionBits {
-				let nodeNum = position.nodePosition?.num ?? 0
-				let key = ReducedPrecisionMapCircleKey(latitudeI: position.latitudeI, longitudeI: position.longitudeI, precisionBits: position.precisionBits)
-				if let existing = lowestNumForKey[key] {
-					if nodeNum < existing { lowestNumForKey[key] = nodeNum }
-				} else {
-					lowestNumForKey[key] = nodeNum
-				}
+		for position in filteredPositions where 12...15 ~= position.precisionBits {
+			let nodeNum = position.nodePosition?.num ?? 0
+			let key = ReducedPrecisionMapCircleKey(latitudeI: position.latitudeI, longitudeI: position.longitudeI, precisionBits: position.precisionBits)
+			if let existing = lowestNumForKey[key] {
+				if nodeNum < existing { lowestNumForKey[key] = nodeNum }
+			} else {
+				lowestNumForKey[key] = nodeNum
 			}
 		}
 		return lowestNumForKey.map { ($0.value, $0.key) }.sorted { $0.nodeNum < $1.nodeNum }
