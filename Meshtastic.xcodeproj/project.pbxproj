@@ -300,6 +300,11 @@
         DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */; };
         DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */; };
         DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */; };
+        DEA1C1302F10002000A1B2C3 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */; };
+        DEA1C1322F10002000A1B2C3 /* NeighborInfoConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */; };
+        DEA1C1342F10002000A1B2C3 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */; };
+        DEA1C1362F10002000A1B2C3 /* BackupManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */; };
+        DEA1C1382F10002000A1B2C3 /* BackupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */; };
         DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
         DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
         DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */; };
@@ -422,6 +427,11 @@
         DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
         DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */; };
         DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
+        DEA1C1202F10001000A1B2C3 /* BackupModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1212F10001000A1B2C3 /* BackupModels.swift */; };
+        DEA1C1222F10001000A1B2C3 /* NodeBackupManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */; };
+        DEA1C1242F10001000A1B2C3 /* NodeBackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */; };
+        DEA1C1262F10001000A1B2C3 /* NodeBackupManager+Import.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1272F10001000A1B2C3 /* NodeBackupManager+Import.swift */; };
+        DEA1C0DE2F10000100A1B2C3 /* CoreDataMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C0DF2F10000100A1B2C3 /* CoreDataMigrationService.swift */; };
         DDC94FC129CE063B0082EA6E /* BatteryLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */; };
         DDC94FC229CE063B0082EA6E /* BatteryLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */; };
         DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */; };
@@ -837,6 +847,11 @@
         DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
         DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterConfig.swift; sourceTree = "<group>"; };
         DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterLog.swift; sourceTree = "<group>"; };
+        DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfig.swift; sourceTree = "<group>"; };
+        DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeighborInfoConfig.swift; sourceTree = "<group>"; };
+        DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
+        DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupManagement/BackupManagement.swift"; sourceTree = "<group>"; };
+        DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupManagement/BackupRowView.swift"; sourceTree = "<group>"; };
         DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
         DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
         DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAltitudeChart.swift; sourceTree = "<group>"; };
@@ -998,6 +1013,11 @@
         DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorConfig.swift; sourceTree = "<group>"; };
         DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV16.xcdatamodel; sourceTree = "<group>"; };
         DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+        DEA1C1212F10001000A1B2C3 /* BackupModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupModels.swift; sourceTree = "<group>"; };
+        DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManaging.swift; sourceTree = "<group>"; };
+        DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManager.swift; sourceTree = "<group>"; };
+        DEA1C1272F10001000A1B2C3 /* NodeBackupManager+Import.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeBackupManager+Import.swift"; sourceTree = "<group>"; };
+        DEA1C0DF2F10000100A1B2C3 /* CoreDataMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataMigrationService.swift; sourceTree = "<group>"; };
         DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevel.swift; sourceTree = "<group>"; };
         DDC94FC329CED7280082EA6E /* MeshtasticDataModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV10.xcdatamodel; sourceTree = "<group>"; };
         DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RtttlConfig.swift; sourceTree = "<group>"; };
@@ -1776,6 +1796,8 @@
                 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */,
                 1D5AD8037A0D583C614B0597 /* Tools.swift */,
                 71084780865585DCE48BD08F /* Discovery */,
+                DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */,
+                DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */,
                 AA003DOC0000003000000001 /* HelpAndDocumentation */,
             );
             path = Settings;
@@ -1817,10 +1839,12 @@
             isa = PBXGroup;
             children = (
                 DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */,
+                DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */,
                 DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */,
                 DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */,
                 DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */,
                 DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
+                DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */,
                 DD41582928585C32009B0E59 /* RangeTestConfig.swift */,
                 DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */,
                 DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */,
@@ -1828,6 +1852,7 @@
                 DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */,
                 AA0001042F07A4B000600001 /* TAKModuleConfig.swift */,
                 DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
+                DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */,
             );
             path = Module;
             sourceTree = "<group>";
@@ -2157,6 +2182,11 @@
         DDC4D5662754996200A4208E /* Persistence */ = {
             isa = PBXGroup;
             children = (
+                DEA1C1212F10001000A1B2C3 /* BackupModels.swift */,
+                DEA1C0DF2F10000100A1B2C3 /* CoreDataMigrationService.swift */,
+                DEA1C1272F10001000A1B2C3 /* NodeBackupManager+Import.swift */,
+                DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */,
+                DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */,
                 DDC4D567275499A500A4208E /* Persistence.swift */,
                 DD964FC52975DBFD007C176F /* QuerySwiftData.swift */,
                 DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
@@ -2720,11 +2750,20 @@
                 233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */,
                 DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
                 108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */,
+                DEA1C1302F10002000A1B2C3 /* AudioConfig.swift in Sources */,
+                DEA1C1362F10002000A1B2C3 /* BackupManagement.swift in Sources */,
+                DEA1C1382F10002000A1B2C3 /* BackupRowView.swift in Sources */,
                 DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */,
                 DDDB445229F8ACF900EE2349 /* Date.swift in Sources */,
                 2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */,
                 23C2BD2B2EE8993800F6A997 /* DeviceHardwareImage.swift in Sources */,
+                DEA1C1202F10001000A1B2C3 /* BackupModels.swift in Sources */,
+                DEA1C1262F10001000A1B2C3 /* NodeBackupManager+Import.swift in Sources */,
+                DEA1C1242F10001000A1B2C3 /* NodeBackupManager.swift in Sources */,
+                DEA1C1222F10001000A1B2C3 /* NodeBackupManaging.swift in Sources */,
+                DEA1C1322F10002000A1B2C3 /* NeighborInfoConfig.swift in Sources */,
                 DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
+                DEA1C0DE2F10000100A1B2C3 /* CoreDataMigrationService.swift in Sources */,
                 DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */,
                 DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */,
                 AA11223344556677AABB0001 /* DiscoveryTips.swift in Sources */,
@@ -2733,6 +2772,7 @@
                 EBC37722779D4F2E9D537D74 /* DeviceLinksSection.swift in Sources */,
                 FCEFC176A62447319948ACEF /* DeviceLinkDirectory.swift in Sources */,
                 D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */,
+                DEA1C1342F10002000A1B2C3 /* TrafficManagementConfig.swift in Sources */,
                 DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */,
                 23196A6E2EF1BA9100B1504B /* ESP32WifiOTAViewModel.swift in Sources */,
                 DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */,

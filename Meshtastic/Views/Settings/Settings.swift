@@ -552,21 +552,7 @@ struct Settings: View {
 								}
 								.pickerStyle(.navigationLink)
 								.onChange(of: selectedNode) { _, newValue in
-									if selectedNode > 0,
-									   let destinationNode = nodes.first(where: { $0.num == newValue }),
-									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
-									   let fromUser = connectedNode.user,
-									   connectedNode.myInfo != nil,  // not sure why, but this check was present in the initial code.
-									   let toUser = destinationNode.user {
-
-										preferredNodeNum = Int(connectedNode.num)
-										Task {
-											_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
-											Task { @MainActor in
-												Logger.mesh.info("Sent node metadata request from node details")
-											}
-										}
-									}
+									handleSelectedNodeChange(newValue)
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
 											.tipViewStyle(PersistentTipStyle())
@@ -730,6 +716,23 @@ struct Settings: View {
 			}
 		} else {
 			self.selectedNode = Int(accessoryManager.isConnected ? nodeNum: 0)
+		}
+	}
+
+	private func handleSelectedNodeChange(_ newValue: Int) {
+		guard selectedNode > 0,
+			let destinationNode = nodes.first(where: { $0.num == newValue }),
+			let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
+			let fromUser = connectedNode.user,
+			connectedNode.myInfo != nil,
+			let toUser = destinationNode.user else { return }
+
+		preferredNodeNum = Int(connectedNode.num)
+		Task {
+			_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
+			Task { @MainActor in
+				Logger.mesh.info("Sent node metadata request from node details")
+			}
 		}
 	}
 }
