@@ -252,7 +252,7 @@ actor MeshPackets {
 	
 	func channelPacket (channel: Channel, fromNum: Int64) {
 		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
-			let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
+			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
 			Logger.mesh.info("🎛️ \(logString, privacy: .public)")
 			
 			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })

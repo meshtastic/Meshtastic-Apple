@@ -134,5 +134,10 @@ struct NodeInfoItem: View {
 		}
 		}
 		.accessibilityElement(children: .combine)
+
+		// Device links section (shown only when device has a platformioTarget)
+		if let target = hardware.first?.platformioTarget {
+			DeviceLinksSection(platformioTarget: target)
+		}
 	}
 }
