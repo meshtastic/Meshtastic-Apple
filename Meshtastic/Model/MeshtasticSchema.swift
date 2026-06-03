@@ -13,11 +13,11 @@ import SwiftData
 enum MeshtasticSchema {
 	/// The current (latest) versioned schema.
 	static var current: any VersionedSchema.Type {
-		MeshtasticSchemaV2.self
+		MeshtasticSchemaV1.self
 	}
 
 	/// All model types from the current schema version.
 	static var allModels: [any PersistentModel.Type] {
-		MeshtasticSchemaV2.models
+		MeshtasticSchemaV1.models
 	}
 }

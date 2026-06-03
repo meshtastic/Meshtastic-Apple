@@ -19,8 +19,7 @@ enum MeshtasticMigrationPlan: SchemaMigrationPlan {
 	/// SwiftData uses this ordering to determine which migrations to apply.
 	static var schemas: [any VersionedSchema.Type] {
 		[
-			MeshtasticSchemaV1.self,
-			MeshtasticSchemaV2.self
+			MeshtasticSchemaV1.self
 		]
 	}
 
@@ -31,28 +30,9 @@ enum MeshtasticMigrationPlan: SchemaMigrationPlan {
 	/// Use `.custom` when you need to transform data programmatically.
 	static var stages: [MigrationStage] {
 		[
-			migrateV1toV2
+			// No migrations yet — V1 is the initial (unreleased) version, so
+			// model changes go directly into V1 rather than a new versioned
+			// schema + stage. Add migrations here only once V1 has shipped.
 		]
 	}
-
-	// MARK: - Migration Stages
-
-	static let migrateV1toV2 = MigrationStage.lightweight(
-		fromVersion: MeshtasticSchemaV1.self,
-		toVersion: MeshtasticSchemaV2.self
-	)
-
-	// For custom migrations that require data transformation:
-	//
-	// static let migrateV1toV2 = MigrationStage.custom(
-	//     fromVersion: MeshtasticSchemaV1.self,
-	//     toVersion: MeshtasticSchemaV2.self,
-	//     willMigrate: { context in
-	//         // Pre-migration: transform data in the old schema
-	//     },
-	//     didMigrate: { context in
-	//         // Post-migration: populate new fields, clean up, etc.
-	//         try context.save()
-	//     }
-	// )
 }

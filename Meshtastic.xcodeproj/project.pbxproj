@@ -122,7 +122,6 @@
         48E682ECE71246C3BFBD6B8F /* ChannelEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E6EDE744E3446FA1084499 /* ChannelEntity.swift */; };
         5D3AFC6F08ED4C909C830C55 /* TelemetryEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31483AF5F5354D3481698E32 /* TelemetryEntity.swift */; };
         6467579F9E9E4B0EAA009615 /* MeshtasticSchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */; };
-        BCCA0BB22F1D0001007648E5 /* MeshtasticSchemaV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BB12F1D0001007648E5 /* MeshtasticSchemaV2.swift */; };
         655AF7816E76D5F310DF87A6 /* FountainCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F203877F307073096C89179 /* FountainCodec.swift */; };
         6AC10554C1BCC1DF509C85EE /* NodeListHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A96594950B87789C0BB96DB /* NodeListHelp.swift */; };
         6C95257E7B3E55D4FED5694C /* MapWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B990EE65E4D5CABBA4DD8DC2 /* MapWindow.swift */; };
@@ -559,7 +558,6 @@
 10794B242F8C2C90000CA23F /* RouteDataPackageGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDataPackageGenerator.swift; sourceTree = "<group>"; };
         01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
         05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchemaV1.swift; sourceTree = "<group>"; };
-        BCCA0BB12F1D0001007648E5 /* MeshtasticSchemaV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchemaV2.swift; sourceTree = "<group>"; };
         0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
         09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
         0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchForMessagesIntentHandler.swift; sourceTree = "<group>"; };
@@ -1711,7 +1709,6 @@
             isa = PBXGroup;
             children = (
                 05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */,
-                BCCA0BB12F1D0001007648E5 /* MeshtasticSchemaV2.swift */,
                 1CAEAD87807B4F34820A60C2 /* MeshtasticMigrationPlan.swift */,
             );
             path = Schema;
@@ -2688,7 +2685,6 @@
                 AA00SDBF0003 /* FirmwareReleaseEntity.swift in Sources */,
                 10D80CF7AD2B4269BE0A4933 /* MeshtasticSchema.swift in Sources */,
                 6467579F9E9E4B0EAA009615 /* MeshtasticSchemaV1.swift in Sources */,
-                BCCA0BB22F1D0001007648E5 /* MeshtasticSchemaV2.swift in Sources */,
                 74BEA4429B3945AEBA11E977 /* MeshtasticMigrationPlan.swift in Sources */,
                 D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */,
                 85D0F28AE7CE44C39B6BEBF8 /* MyInfoEntity.swift in Sources */,
