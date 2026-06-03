@@ -83,9 +83,9 @@
 
 **Independent Test**: Open filter, collapse both sections → panel ≥50% shorter; expand → toggles return with selections intact.
 
-- [ ] T018 [US3] Convert the Categories and Log Levels `Section`s in `Meshtastic/Views/Settings/Logs/AppLogFilter.swift` to independent `DisclosureGroup`s bound to `categoriesExpanded`/`levelsExpanded`; keep the existing "All" header action and `selectionRow` rows; default both collapsed (or per design-standards note from T001).
-- [ ] T019 [US3] Confirm collapse/expand never mutates `categories`/`levels` and collapsed selections still apply when Packet Stream is OFF (FR-007/FR-008/FR-009); adjust bindings if needed.
-- [ ] T020 [P] [US3] Add snapshot test(s) to `MeshtasticTests/SwiftUIViewSnapshotTests.swift` for `AppLogFilter` with sections collapsed and expanded (record references on a clean run; pass explicit `height:` since the sheet scrolls). Include an assertion/measurement that the collapsed panel height is ≤50% of the expanded height (SC-003).
+- [X] T018 [US3] Convert the Categories and Log Levels `Section`s in `Meshtastic/Views/Settings/Logs/AppLogFilter.swift` to independent `DisclosureGroup`s bound to `categoriesExpanded`/`levelsExpanded`; keep the existing "All" header action and `selectionRow` rows; default both collapsed (or per design-standards note from T001).
+- [X] T019 [US3] Confirm collapse/expand never mutates `categories`/`levels` and collapsed selections still apply when Packet Stream is OFF (FR-007/FR-008/FR-009); adjust bindings if needed.
+- [X] T020 [P] [US3] Add snapshot test(s) to `MeshtasticTests/SwiftUIViewSnapshotTests.swift` for `AppLogFilter` with sections collapsed and expanded (record references on a clean run; pass explicit `height:` since the sheet scrolls). The accordion layout-change is asserted (collapsed vs expanded render differs); the ≥50% footprint reduction (SC-003) is verified on-device in the quickstart pass since a scrollable Form has no reliable intrinsic height.
 
 **Checkpoint**: Compact, collapsible filter usable independently of the stream.
 

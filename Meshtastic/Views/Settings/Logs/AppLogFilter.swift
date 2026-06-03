@@ -143,31 +143,37 @@ struct AppLogFilter: View {
 					Text("Live view of mesh packets crossing the network. Overrides the category and level filters below.")
 				}
 
-				Section(header: sectionHeader(title: "Categories") {
-					categories.formUnion(LogCategories.allCases.map(\.id))
-				}) {
-					ForEach(LogCategories.allCases) { category in
-						selectionRow(
-							title: category.description,
-							color: category.color,
-							isSelected: categories.contains(category.id)
-						) {
-							toggleCategory(category.id)
+				Section {
+					collapsibleSectionHeader(title: "Categories", isExpanded: $categoriesExpanded) {
+						categories.formUnion(LogCategories.allCases.map(\.id))
+					}
+					if categoriesExpanded {
+						ForEach(LogCategories.allCases) { category in
+							selectionRow(
+								title: category.description,
+								color: category.color,
+								isSelected: categories.contains(category.id)
+							) {
+								toggleCategory(category.id)
+							}
 						}
 					}
 				}
 				.disabled(isPacketStreamOn)
 
-				Section(header: sectionHeader(title: "Log Levels") {
-					levels.formUnion(LogLevels.allCases.map(\.id))
-				}) {
-					ForEach(LogLevels.allCases) { level in
-						selectionRow(
-							title: level.description,
-							color: level.color,
-							isSelected: levels.contains(level.id)
-						) {
-							toggleLevel(level.id)
+				Section {
+					collapsibleSectionHeader(title: "Log Levels", isExpanded: $levelsExpanded) {
+						levels.formUnion(LogLevels.allCases.map(\.id))
+					}
+					if levelsExpanded {
+						ForEach(LogLevels.allCases) { level in
+							selectionRow(
+								title: level.description,
+								color: level.color,
+								isSelected: levels.contains(level.id)
+							) {
+								toggleLevel(level.id)
+							}
 						}
 					}
 				}
@@ -200,11 +206,28 @@ struct AppLogFilter: View {
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 	}
 
-	private func sectionHeader(title: String, action: @escaping () -> Void) -> some View {
+	private func collapsibleSectionHeader(
+		title: String,
+		isExpanded: Binding<Bool>,
+		allAction: @escaping () -> Void
+	) -> some View {
 		HStack {
-			Text(title)
+			Button {
+				withAnimation { isExpanded.wrappedValue.toggle() }
+			} label: {
+				HStack(spacing: 6) {
+					Image(systemName: isExpanded.wrappedValue ? "chevron.down" : "chevron.right")
+						.font(.caption.weight(.semibold))
+						.foregroundStyle(.secondary)
+					Text(title)
+						.font(.headline)
+				}
+				.contentShape(Rectangle())
+			}
+			.buttonStyle(.plain)
 			Spacer()
-			Button("All", action: action)
+			Button("All", action: allAction)
+				.buttonStyle(.borderless)
 		}
 	}
 
