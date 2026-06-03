@@ -873,8 +873,11 @@ actor MeshPackets {
 							telemetry.numTxRelayCanceled = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTxRelayCanceled)
 							telemetry.numOnlineNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numOnlineNodes)
 							telemetry.numTotalNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTotalNodes)
-							// noiseFloor is 0 (proto3 default) on firmware that doesn't populate it.
-							// Real LoRa noise floors are always negative, so 0 means "not available."
+							// `noise_floor` is a plain proto3 scalar (not `optional`), so it has no
+							// presence tracking — firmware that doesn't report it is indistinguishable
+							// from a literal 0. Real LoRa noise floors are always strongly negative, so
+							// we treat 0 as "not available" (nil). If true nil-vs-0 is ever needed, make
+							// the field `optional` upstream and use `hasNoiseFloor`.
 							telemetry.noiseFloor = telemetryMessage.localStats.noiseFloor != 0 ? telemetryMessage.localStats.noiseFloor : nil
 							telemetry.metricsType = 4
 							Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Noise Floor: \(telemetryMessage.localStats.noiseFloor, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
