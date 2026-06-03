@@ -127,10 +127,22 @@ struct AppLogFilter: View {
 	var filterTitle = "App Log Filters"
 	@Binding var categories: Set<Int>
 	@Binding var levels: Set<Int>
+	@Binding var isPacketStreamOn: Bool
+	@Binding var categoriesExpanded: Bool
+	@Binding var levelsExpanded: Bool
 
 	var body: some View {
 		NavigationStack {
 			Form {
+				Section {
+					Toggle(isOn: $isPacketStreamOn) {
+						Label("Packet Stream", systemImage: "dot.radiowaves.left.and.right")
+							.foregroundStyle(LogCategories.mesh.color)
+					}
+				} footer: {
+					Text("Live view of mesh packets crossing the network. Overrides the category and level filters below.")
+				}
+
 				Section(header: sectionHeader(title: "Categories") {
 					categories.formUnion(LogCategories.allCases.map(\.id))
 				}) {
@@ -144,6 +156,7 @@ struct AppLogFilter: View {
 						}
 					}
 				}
+				.disabled(isPacketStreamOn)
 
 				Section(header: sectionHeader(title: "Log Levels") {
 					levels.formUnion(LogLevels.allCases.map(\.id))
@@ -158,6 +171,7 @@ struct AppLogFilter: View {
 						}
 					}
 				}
+				.disabled(isPacketStreamOn)
 			}
 			.navigationTitle(filterTitle)
 			.navigationBarTitleDisplayMode(.inline)
@@ -231,5 +245,11 @@ struct AppLogFilter: View {
 }
 
 #Preview {
-	AppLogFilter(categories: .constant(Set<Int>()), levels: .constant(Set<Int>()))
+	AppLogFilter(
+		categories: .constant(Set<Int>()),
+		levels: .constant(Set<Int>()),
+		isPacketStreamOn: .constant(false),
+		categoriesExpanded: .constant(true),
+		levelsExpanded: .constant(true)
+	)
 }

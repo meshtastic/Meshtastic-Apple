@@ -22,6 +22,11 @@ struct AppLog: View {
 	@State var isExporting = false
 	@State var exportString = ""
 	@State var isEditingFilters = false
+	@State private var isPacketStreamOn = false
+	@State private var categoriesExpanded = false
+	@State private var levelsExpanded = false
+	@StateObject private var streamModel = PacketStreamModel()
+	@Environment(\.scenePhase) private var scenePhase
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	private let dateFormatStyle = Date.FormatStyle()
@@ -31,6 +36,10 @@ struct AppLog: View {
 		.secondFraction(.fractional(3))
 
 	var body: some View {
+		Group {
+		if isPacketStreamOn {
+			packetStreamView
+		} else {
 		HStack {
 
 			if idiom == .phone {
@@ -126,6 +135,8 @@ struct AppLog: View {
 				}
 			}
 		}
+		}
+		}
 		.onChange(of: sortOrder) { _, sortOrder in
 			withAnimation {
 				logs.sort(using: sortOrder)
@@ -157,7 +168,13 @@ struct AppLog: View {
 			selectedLog = log
 		}
 		.sheet(isPresented: $isEditingFilters) {
-			AppLogFilter(categories: $categories, levels: $levels)
+			AppLogFilter(
+				categories: $categories,
+				levels: $levels,
+				isPacketStreamOn: $isPacketStreamOn,
+				categoriesExpanded: $categoriesExpanded,
+				levelsExpanded: $levelsExpanded
+			)
 		}
 		.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
 			LogDetail(log: log)
@@ -167,6 +184,13 @@ struct AppLog: View {
 			logs = await searchAppLogs()
 			logs.sort(using: sortOrder)
 		}
+		.onAppear { updateStreamingState() }
+		.onDisappear { streamModel.stop() }
+		.onChange(of: isPacketStreamOn) { _, on in
+			if on { streamModel.reset() }
+			updateStreamingState()
+		}
+		.onChange(of: scenePhase) { _, _ in updateStreamingState() }
 		.fileExporter(
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
@@ -182,7 +206,9 @@ struct AppLog: View {
 				}
 			}
 		)
-		.navigationBarTitle("Debug Logs\(logs.isEmpty ? "" : " (\(logs.count))")", displayMode: .inline)
+		.navigationBarTitle(isPacketStreamOn
+			? "Packet Stream\(streamModel.visibleEntries.isEmpty ? "" : " (\(streamModel.visibleEntries.count))")"
+			: "Debug Logs\(logs.isEmpty ? "" : " (\(logs.count))")", displayMode: .inline)
 		.toolbar {
 #if targetEnvironment(macCatalyst)
 			ToolbarItem(placement: .topBarLeading) {
@@ -196,11 +222,19 @@ struct AppLog: View {
 				}
 			}
 #endif
-			if !logs.isEmpty {
+			if !logs.isEmpty || (isPacketStreamOn && !streamModel.visibleEntries.isEmpty) {
 				ToolbarItem(placement: .navigationBarTrailing) {
 					Button(action: {
-						exportString = logToCsvFile(log: logs)
-						isExporting = true
+						if isPacketStreamOn {
+							Task {
+								let meshLogs = await streamModel.fetchAllForExport()
+								exportString = logToCsvFile(log: meshLogs)
+								isExporting = true
+							}
+						} else {
+							exportString = logToCsvFile(log: logs)
+							isExporting = true
+						}
 					}) {
 						Image(systemName: "square.and.arrow.down")
 					}
@@ -211,6 +245,72 @@ struct AppLog: View {
 	func didDismiss() {
 		selection = nil
 		selectedLog = nil
+	}
+
+	private func updateStreamingState() {
+		if isPacketStreamOn && scenePhase == .active {
+			streamModel.start()
+		} else {
+			streamModel.stop()
+		}
+	}
+
+	/// Live packet stream view, used for both phone and iPad/macCatalyst (single shared
+	/// implementation). Reuses the existing composed-message log row presentation.
+	private var packetStreamView: some View {
+		let entries = searchText.isEmpty
+			? streamModel.visibleEntries
+			: streamModel.visibleEntries.filter { $0.composedMessage.localizedCaseInsensitiveContains(searchText) }
+		return ScrollViewReader { proxy in
+			ScrollView {
+				LazyVStack(alignment: .leading, spacing: 2) {
+					ForEach(entries, id: \.id) { value in
+						Text(value.composedMessage)
+							.foregroundStyle(value.level.color)
+							.font(.caption)
+							.frame(maxWidth: .infinity, alignment: .leading)
+							.contentShape(Rectangle())
+							.onTapGesture { selectedLog = value }
+					}
+					Color.clear
+						.frame(height: 1)
+						.id("streamBottom")
+				}
+				.padding(.horizontal, 8)
+			}
+			.monospaced()
+			.scrollDismissesKeyboard(.immediately)
+			.overlay {
+				if entries.isEmpty {
+					ContentUnavailableView("Waiting for packets…", systemImage: "dot.radiowaves.left.and.right")
+				}
+			}
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+				if !streamModel.isPinnedToLiveEdge {
+					Button {
+						streamModel.setPinned(true)
+						withAnimation { proxy.scrollTo("streamBottom", anchor: .bottom) }
+					} label: {
+						Label("Live", systemImage: "arrow.down.to.line")
+							.padding(.vertical, 5)
+					}
+					.buttonStyle(.borderedProminent)
+					.controlSize(.regular)
+					.padding(5)
+				}
+			}
+			.gesture(
+				DragGesture().onChanged { value in
+					if value.translation.height > 12 { streamModel.setPinned(false) }
+				}
+			)
+			.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
+			.onChange(of: streamModel.visibleEntries.count) {
+				if streamModel.isPinnedToLiveEdge {
+					proxy.scrollTo("streamBottom", anchor: .bottom)
+				}
+			}
+		}
 	}
 }
 

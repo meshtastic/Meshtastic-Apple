@@ -82,7 +82,7 @@ A user opening the log filter wants the Packet Stream option to be immediately v
 - **Interaction with existing filters**: When Packet Stream is active, it overrides the Categories and Log Levels selections (forces the Mesh packet signal at all levels) and those toggles are visibly disabled/ignored; disabling Packet Stream restores them.
 - **Search text active**: When the user has search text entered and enables Packet Stream, the search continues to narrow the streamed packet entries.
 - **Backgrounding / screen change**: When the app is backgrounded or the user navigates away, streaming pauses to avoid unnecessary work and resumes when the screen is active again.
-- **Sharing/exporting logs**: When the user exports or copies logs while Packet Stream is active, the exported content reflects what is currently shown, and PII (location/coordinates) remains redacted via the existing privacy markers (FR-024).
+- **Sharing/exporting logs**: When the user exports or copies logs while Packet Stream is active, the export is the Mesh-category packet log (the stream is the Mesh category filtered, so the standard category-filtered export applies — the full Mesh log, not truncated to the on-screen display cap), and PII (location/coordinates) remains redacted via the existing privacy markers (FR-024).
 - **Location/PII in the stream**: Position packets appear in the stream; their coordinates use the app's private-redaction markers so exports and external log viewers redact them. On-screen, the in-app viewer shows the device's own log data as it does today.
 
 ## Clarifications
