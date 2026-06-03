@@ -18,6 +18,6 @@ enum MeshtasticSchema {
 
 	/// All model types from the current schema version.
 	static var allModels: [any PersistentModel.Type] {
-MeshtasticSchemaV1.models
+		MeshtasticSchemaV1.models
 	}
 }

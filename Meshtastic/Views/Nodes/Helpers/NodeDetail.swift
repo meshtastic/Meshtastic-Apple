@@ -511,6 +511,17 @@ struct NodeDetail: View {
 				}
 			}
 			.disabled(!hasDetectionSensorMetrics)
+			NavigationLink {
+				LocalStatsLog(node: node)
+			} label: {
+				Label {
+					Text("Local Stats Log")
+				} icon: {
+					Image(systemName: "chart.bar")
+						.symbolRenderingMode(.multicolor)
+				}
+			}
+			.disabled(!node.hasLocalStats)
 			if hasPax {
 				NavigationLink {
 					PaxCounterLog(node: node)
@@ -557,6 +568,7 @@ struct NodeDetail: View {
 						node: node,
 						connectedNode: connectedNode
 					)
+					RequestLocalStatsButton(node: node)
 					ExchangeUserInfoButton(
 						node: node,
 						connectedNode: connectedNode

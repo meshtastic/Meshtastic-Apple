@@ -185,6 +185,28 @@ extension NodeInfoEntity {
 		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
+	var latestLocalStats: TelemetryEntity? {
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		let metricsType: Int32 = 4
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
+	}
+
+	var hasLocalStats: Bool {
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let metricsType: Int32 = 4
+		let descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
+	}
+
 	var hasTraceRoutes: Bool {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num
