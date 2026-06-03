@@ -93,7 +93,10 @@ final class PacketStreamModel: ObservableObject {
 	// MARK: - Polling
 
 	private func runPollLoop() async {
-		await poll(initial: true)
+		// Backfill from boot only on a cold start; when resuming (toggled off/on,
+		// returned to the screen, or foregrounded) continue from the last-seen cursor
+		// so accumulated entries are kept and not duplicated.
+		await poll(initial: lastSeenDate == nil)
 		while !Task.isCancelled {
 			try? await Task.sleep(nanoseconds: pollIntervalNanos)
 			if Task.isCancelled { return }

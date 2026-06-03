@@ -40,101 +40,7 @@ struct AppLog: View {
 		if isPacketStreamOn {
 			packetStreamView
 		} else {
-		HStack {
-
-			if idiom == .phone {
-				Table(logs, selection: $selection, sortOrder: $sortOrder) {
-					TableColumn("Message", value: \.composedMessage) { value in
-						Text(value.composedMessage)
-							.foregroundStyle(value.level.color)
-							.font(.caption)
-					}
-					.width(ideal: 200, max: .infinity)
-				}
-				.monospaced()
-				.safeAreaInset(edge: .bottom, alignment: .trailing) {
-					HStack {
-						Button(action: {
-							withAnimation {
-								isEditingFilters = !isEditingFilters
-							}
-						}) {
-							Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-								.padding(.vertical, 5)
-						}
-						.tint(Color(UIColor.secondarySystemBackground))
-						.foregroundColor(.accentColor)
-						.buttonStyle(.borderedProminent)
-					}
-					.controlSize(.regular)
-					.padding(5)
-				}
-				.padding(.bottom, 5)
-				.padding(.trailing, 5)
-				.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
-				.disabled(selection != nil)
-				.overlay {
-					if logs.isEmpty {
-						ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
-					}
-				}
-				.refreshable {
-					await logs = searchAppLogs()
-					logs.sort(using: sortOrder)
-				}
-			} else {
-				Table(logs, selection: $selection, sortOrder: $sortOrder) {
-					TableColumn("Time") { value in
-						Text(value.date.formatted(dateFormatStyle))
-					}
-					.width(min: 125, max: 150)
-					TableColumn("Level") { value in
-						Text(value.level.description)
-							.foregroundStyle(value.level.color)
-					}
-					.width(min: 85, max: 110)
-					TableColumn("Category", value: \.category)
-						.width(min: 80, max: 130)
-					TableColumn("Message", value: \.composedMessage) { value in
-						Text(value.composedMessage)
-							.foregroundStyle(value.level.color)
-							.font(.body)
-					}
-					.width(ideal: 200, max: .infinity)
-				}
-				.monospaced()
-				.safeAreaInset(edge: .bottom, alignment: .trailing) {
-					HStack {
-						Button(action: {
-							withAnimation {
-								isEditingFilters = !isEditingFilters
-							}
-						}) {
-							Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-								.padding(.vertical, 5)
-						}
-						.tint(Color(UIColor.secondarySystemBackground))
-						.foregroundColor(.accentColor)
-						.buttonStyle(.borderedProminent)
-					}
-					.controlSize(.regular)
-					.padding(5)
-				}
-				.padding(.bottom, 5)
-				.padding(.trailing, 5)
-				.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
-				.disabled(selection != nil)
-				.overlay {
-					if logs.isEmpty {
-						ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
-					}
-				}
-				.refreshable {
-					await logs = searchAppLogs()
-					logs.sort(using: sortOrder)
-				}
-			}
-		}
+			mainLogView
 		}
 		}
 		.onChange(of: sortOrder) { _, sortOrder in
@@ -186,8 +92,9 @@ struct AppLog: View {
 		}
 		.onAppear { updateStreamingState() }
 		.onDisappear { streamModel.stop() }
-		.onChange(of: isPacketStreamOn) { _, on in
-			if on { streamModel.reset() }
+		.onChange(of: isPacketStreamOn) { _, _ in
+			// Keep accumulated stream entries when toggling in/out of stream mode;
+			// the model resumes from its last-seen cursor rather than clearing.
 			updateStreamingState()
 		}
 		.onChange(of: scenePhase) { _, _ in updateStreamingState() }
@@ -206,9 +113,8 @@ struct AppLog: View {
 				}
 			}
 		)
-		.navigationBarTitle(isPacketStreamOn
-			? "Packet Stream\(streamModel.visibleEntries.isEmpty ? "" : " (\(streamModel.visibleEntries.count))")"
-			: "Debug Logs\(logs.isEmpty ? "" : " (\(logs.count))")", displayMode: .inline)
+		.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
+		.navigationBarTitle(navTitle, displayMode: .inline)
 		.toolbar {
 #if targetEnvironment(macCatalyst)
 			ToolbarItem(placement: .topBarLeading) {
@@ -242,9 +148,122 @@ struct AppLog: View {
 			}
 		}
 	}
+	private var mainLogView: some View {
+		HStack {
+
+			if idiom == .phone {
+				phoneLogTable
+			} else {
+				desktopLogTable
+			}
+		}
+	}
+
+	private var phoneLogTable: some View {
+				Table(logs, selection: $selection, sortOrder: $sortOrder) {
+					TableColumn("Message", value: \.composedMessage) { value in
+						Text(value.composedMessage)
+							.foregroundStyle(value.level.color)
+							.font(.caption)
+					}
+					.width(ideal: 200, max: .infinity)
+				}
+				.monospaced()
+				.safeAreaInset(edge: .bottom, alignment: .trailing) {
+					HStack {
+						Button(action: {
+							withAnimation {
+								isEditingFilters = !isEditingFilters
+							}
+						}) {
+							Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+								.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
+					}
+					.controlSize(.regular)
+					.padding(5)
+				}
+				.padding(.bottom, 5)
+				.padding(.trailing, 5)
+				.disabled(selection != nil)
+				.overlay {
+					if logs.isEmpty {
+						ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
+					}
+				}
+				.refreshable {
+					await logs = searchAppLogs()
+					logs.sort(using: sortOrder)
+				}
+	}
+
+	private var desktopLogTable: some View {
+				Table(logs, selection: $selection, sortOrder: $sortOrder) {
+					TableColumn("Time") { value in
+						Text(value.date.formatted(dateFormatStyle))
+					}
+					.width(min: 125, max: 150)
+					TableColumn("Level") { value in
+						Text(value.level.description)
+							.foregroundStyle(value.level.color)
+					}
+					.width(min: 85, max: 110)
+					TableColumn("Category", value: \.category)
+						.width(min: 80, max: 130)
+					TableColumn("Message", value: \.composedMessage) { value in
+						Text(value.composedMessage)
+							.foregroundStyle(value.level.color)
+							.font(.body)
+					}
+					.width(ideal: 200, max: .infinity)
+				}
+				.monospaced()
+				.safeAreaInset(edge: .bottom, alignment: .trailing) {
+					HStack {
+						Button(action: {
+							withAnimation {
+								isEditingFilters = !isEditingFilters
+							}
+						}) {
+							Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+								.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
+					}
+					.controlSize(.regular)
+					.padding(5)
+				}
+				.padding(.bottom, 5)
+				.padding(.trailing, 5)
+				.disabled(selection != nil)
+				.overlay {
+					if logs.isEmpty {
+						ContentUnavailableView("Loading Logs. . .", systemImage: "scroll")
+					}
+				}
+				.refreshable {
+					await logs = searchAppLogs()
+					logs.sort(using: sortOrder)
+				}
+	}
+
 	func didDismiss() {
 		selection = nil
 		selectedLog = nil
+	}
+
+	private var navTitle: String {
+		if isPacketStreamOn {
+			let count = streamModel.visibleEntries.count
+			return count == 0 ? "Packet Stream" : "Packet Stream (\(count))"
+		} else {
+			return logs.isEmpty ? "Debug Logs" : "Debug Logs (\(logs.count))"
+		}
 	}
 
 	private func updateStreamingState() {
@@ -341,7 +360,6 @@ struct AppLog: View {
 					if value.translation.height > 12 { streamModel.setPinned(false) }
 				}
 			)
-			.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
 			.onChange(of: streamModel.visibleEntries.count) {
 				if streamModel.isPinnedToLiveEdge {
 					proxy.scrollTo("streamBottom", anchor: .bottom)
