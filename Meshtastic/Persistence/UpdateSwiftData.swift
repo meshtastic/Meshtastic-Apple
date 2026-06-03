@@ -1021,7 +1021,7 @@ extension MeshPackets {
 	
 	func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
-		let logString = String.localizedStringWithFormat("mesh.log.security.config %@".localized, String(nodeNum))
+		let logString = String.localizedStringWithFormat("Security config received: @".localized, String(nodeNum))
 		Logger.data.info("🛡️ \(logString, privacy: .public)")
 		
 		let fetchNum = Int64(nodeNum)

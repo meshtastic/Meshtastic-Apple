@@ -102,15 +102,17 @@ extension AccessoryManager {
 				}
 				Logger.transport.info("🔗👟 [Connect] Step 3: Send wantConfig (config)")
 				try await self.sendWantConfig()
-				if refreshDeviceHardwareFromAPI {
-					do {
-						Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
-						try await MeshtasticAPI.shared.refreshBundledDevicesData()
-						Logger.services.info("✅ [MeshtasticAPI] Refreshed bundled device hardware data after config completion")
-					} catch {
-						Logger.services.warning("Failed to refresh bundled device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
-					}
+				// Always refresh bundled device catalog so hardware info and "I want one" links
+				// are present after any database clear, regardless of who initiated the connect.
+				do {
+					Logger.transport.info("🔗👟 [Connect] Step 3a: Refresh bundled Meshtastic device hardware data")
+					try await MeshtasticAPI.shared.refreshBundledDevicesData()
+					Logger.services.info("✅ [MeshtasticAPI] Refreshed bundled device hardware data after config completion")
+				} catch {
+					Logger.services.warning("Failed to refresh bundled device hardware data after config completion: \(error.localizedDescription, privacy: .public)")
+				}
 
+				if refreshDeviceHardwareFromAPI {
 					Logger.transport.info("🔗👟 [Connect] Step 3b: Refresh Meshtastic device hardware API data")
 					Task.detached(priority: .utility) {
 						do {

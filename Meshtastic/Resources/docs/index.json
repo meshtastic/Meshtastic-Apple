@@ -357,16 +357,25 @@
         "navOrder": 4,
         "keywords": [
             "node",
+            "device",
             "from",
+            "shown",
             "nodes",
             "key",
-            "device",
+            "hardware",
             "broadcasts",
-            "messages",
-            "client",
             "not",
             "name",
+            "messages",
+            "client",
+            "supported",
+            "shows",
+            "links",
+            "firmware",
             "channel",
+            "updates",
+            "status",
+            "section",
             "role",
             "remove",
             "public",
@@ -375,19 +384,10 @@
             "list",
             "heard",
             "direct",
-            "circle",
-            "view",
-            "tap",
-            "tak",
-            "shows",
-            "shown",
-            "short",
-            "sensor",
-            "row",
-            "router",
-            "reduces"
+            "devices",
+            "data"
         ],
-        "charCount": 3885
+        "charCount": 5179
     },
     {
         "id": "settings",
@@ -396,9 +396,9 @@
         "navOrder": 7,
         "keywords": [
             "app",
+            "device",
             "position",
             "node",
-            "device",
             "radio",
             "language",
             "from",
@@ -426,7 +426,7 @@
             "limiting",
             "enable"
         ],
-        "charCount": 7908
+        "charCount": 7970
     },
     {
         "id": "signal-meter",
