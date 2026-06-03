@@ -645,7 +645,7 @@ extension MeshPackets {
 	func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Bluetooth config received: %@".localized, String(nodeNum))
-		Logger.mesh.info("📶 \(logString, privacy: .public)")
+		Logger.admin.info("📶 \(logString, privacy: .public)")
 		
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
@@ -684,7 +684,7 @@ extension MeshPackets {
 	func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Device config received: %@".localized, String(nodeNum))
-		Logger.mesh.info("📟 \(logString, privacy: .public)")
+		Logger.admin.info("📟 \(logString, privacy: .public)")
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1

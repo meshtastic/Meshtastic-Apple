@@ -66,12 +66,12 @@
 
 **Note**: Independent of US1 code (different files). May proceed in parallel with US1; both are P1.
 
-- [ ] T012 [US2] Enumerate every `Logger.mesh.*` call site (e.g., `grep -rn "Logger.mesh" Meshtastic/`) and classify each as packet vs non-packet; record the audit list as `specs/012-packet-stream-log-filter/contracts/mesh-audit.md`.
-- [ ] T013 [P] [US2] Relocate non-packet config/admin/setup lines off `Logger.mesh` → `Logger.admin` in `Meshtastic/Helpers/MeshPackets.swift` (e.g., config-received, myInfo, canned/admin responses), preserving each line's existing `privacy:` markers verbatim.
-- [ ] T014 [P] [US2] Move persistence/save lines that leak onto `Logger.mesh` → `Logger.data` in `Meshtastic/Persistence/UpdateSwiftData.swift` (verify the device-config-received line at ~`:285` is reclassified); preserve `privacy:` markers.
-- [ ] T015 [US2] Move outbound over-the-air packet sends from `Logger.transport` → `Logger.mesh` in `Meshtastic/Accessory/Accessory Manager/AccessoryManager.swift` `send(_:)` (~`:421`) and `Meshtastic/Accessory/Accessory Manager/AccessoryManager+ToRadio.swift`; keep connect/handshake/link lines on `.transport`; preserve `privacy:` markers (FR-019).
-- [ ] T016 [US2] Verify inbound dispatch in `AccessoryManager.swift` `processFromRadio` (~`:589`) logs each handled packet under `.mesh` and that serial `didReceiveLog` (~`:514`) stays on `.radio` (no change beyond confirmation); add a one-line `.mesh` packet log at the dispatch point only if a packet type is currently silent.
-- [ ] T017 [US2] PII safety pass: diff the audit changes and confirm no `privacy: .private`/`.private(mask: .none)` was downgraded to `.public` (FR-024); spot-check coordinate-bearing position lines.
+- [X] T012 [US2] Enumerate every `Logger.mesh.*` call site (e.g., `grep -rn "Logger.mesh" Meshtastic/`) and classify each as packet vs non-packet; record the audit list as `specs/012-packet-stream-log-filter/contracts/mesh-audit.md`.
+- [X] T013 [P] [US2] Relocate non-packet config/admin/setup lines off `Logger.mesh` → `Logger.admin` in `Meshtastic/Helpers/MeshPackets.swift` (e.g., config-received, myInfo, canned/admin responses), preserving each line's existing `privacy:` markers verbatim.
+- [X] T014 [P] [US2] Move persistence/save lines that leak onto `Logger.mesh` → `Logger.data` in `Meshtastic/Persistence/UpdateSwiftData.swift` (verify the device-config-received line at ~`:285` is reclassified); preserve `privacy:` markers.
+- [X] T015 [US2] Move outbound over-the-air packet sends from `Logger.transport` → `Logger.mesh` in `Meshtastic/Accessory/Accessory Manager/AccessoryManager.swift` `send(_:)` (~`:421`) and `Meshtastic/Accessory/Accessory Manager/AccessoryManager+ToRadio.swift`; keep connect/handshake/link lines on `.transport`; preserve `privacy:` markers (FR-019).
+- [X] T016 [US2] Verify inbound dispatch in `AccessoryManager.swift` `processFromRadio` (~`:589`) logs each handled packet under `.mesh` and that serial `didReceiveLog` (~`:514`) stays on `.radio` (no change beyond confirmation); add a one-line `.mesh` packet log at the dispatch point only if a packet type is currently silent.
+- [X] T017 [US2] PII safety pass: diff the audit changes and confirm no `privacy: .private`/`.private(mask: .none)` was downgraded to `.public` (FR-024); spot-check coordinate-bearing position lines.
 
 **Checkpoint**: Mesh category is a clean, both-directions packet signal; Packet Stream (US1) now trustworthy.
 

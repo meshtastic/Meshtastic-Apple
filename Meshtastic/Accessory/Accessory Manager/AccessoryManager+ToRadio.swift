@@ -117,7 +117,7 @@ extension AccessoryManager {
 
 		try await send(toRadio)
 		if let adminDescription {
-			Logger.mesh.debug("\(adminDescription, privacy: .public)")
+			Logger.admin.debug("\(adminDescription, privacy: .public)")
 		}
 	}
 
@@ -373,6 +373,7 @@ extension AccessoryManager {
 					Task {
 						let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 						try await send(toRadio, debugDescription: logString)
+						Logger.mesh.info("💬 \(logString, privacy: .public)")
 					}
 					do {
 						try context.save()
