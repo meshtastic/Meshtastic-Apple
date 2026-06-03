@@ -255,8 +255,36 @@ struct AppLog: View {
 		}
 	}
 
-	/// Live packet stream view, used for both phone and iPad/macCatalyst (single shared
-	/// implementation). Reuses the existing composed-message log row presentation.
+	/// One streamed log row. Phone uses the compact composed-message row (matching the
+	/// phone Table); iPad/macCatalyst mirror the Mac log Table's Time/Level/Category/Message
+	/// columns so the streaming view matches the existing desktop log layout.
+	@ViewBuilder
+	private func streamRow(_ value: OSLogEntryLog) -> some View {
+		if idiom == .phone {
+			Text(value.composedMessage)
+				.foregroundStyle(value.level.color)
+				.font(.caption)
+				.frame(maxWidth: .infinity, alignment: .leading)
+		} else {
+			HStack(alignment: .top, spacing: 12) {
+				Text(value.date.formatted(dateFormatStyle))
+					.frame(width: 140, alignment: .leading)
+				Text(value.level.description)
+					.foregroundStyle(value.level.color)
+					.frame(width: 100, alignment: .leading)
+				Text(value.category)
+					.frame(width: 110, alignment: .leading)
+				Text(value.composedMessage)
+					.foregroundStyle(value.level.color)
+					.frame(maxWidth: .infinity, alignment: .leading)
+			}
+			.font(.body)
+		}
+	}
+
+	/// Live packet stream view, used for both phone and iPad/macCatalyst. The surrounding
+	/// scroll/auto-scroll/pause/empty infrastructure is shared; only the row layout differs
+	/// per idiom (see `streamRow`).
 	private var packetStreamView: some View {
 		let entries = searchText.isEmpty
 			? streamModel.visibleEntries
@@ -265,10 +293,7 @@ struct AppLog: View {
 			ScrollView {
 				LazyVStack(alignment: .leading, spacing: 2) {
 					ForEach(entries, id: \.id) { value in
-						Text(value.composedMessage)
-							.foregroundStyle(value.level.color)
-							.font(.caption)
-							.frame(maxWidth: .infinity, alignment: .leading)
+						streamRow(value)
 							.contentShape(Rectangle())
 							.onTapGesture { selectedLog = value }
 					}

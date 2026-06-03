@@ -136,8 +136,19 @@ struct AppLogFilter: View {
 			Form {
 				Section {
 					Toggle(isOn: $isPacketStreamOn) {
-						Label("Packet Stream", systemImage: "dot.radiowaves.left.and.right")
-							.foregroundStyle(LogCategories.mesh.color)
+						HStack {
+							Label("Packet Stream", systemImage: "dot.radiowaves.left.and.right")
+								.foregroundStyle(LogCategories.mesh.color)
+							if isPacketStreamOn {
+								Text("LIVE")
+									.font(.caption2.bold())
+									.padding(.horizontal, 6)
+									.padding(.vertical, 2)
+									.background(LogCategories.mesh.color.opacity(0.2), in: Capsule())
+									.foregroundStyle(LogCategories.mesh.color)
+								Spacer()
+							}
+						}
 					}
 				} footer: {
 					Text("Live view of mesh packets crossing the network. Overrides the category and level filters below.")

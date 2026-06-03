@@ -97,9 +97,9 @@
 
 **Independent Test**: Open filter → Packet Stream is the first control above both groups; enabling it shows active state and dims/disables Categories & Log Levels.
 
-- [ ] T021 [US4] In `Meshtastic/Views/Settings/Logs/AppLogFilter.swift`, position the Packet Stream control as the first element (top, above both `DisclosureGroup`s) with a clear active indication (FR-001/FR-010), following the T001 design-standards note.
-- [ ] T022 [US4] When `isPacketStreamOn`, disable/dim the Categories and Log Levels groups to reflect the override (FR-002); re-enable when off.
-- [ ] T023 [US4] Add/extend a snapshot test in `MeshtasticTests/SwiftUIViewSnapshotTests.swift` for the Packet-Stream-on filter state (top control prominent, groups disabled). (Not `[P]`: edits the same file as T020 — serialize the two.)
+- [X] T021 [US4] In `Meshtastic/Views/Settings/Logs/AppLogFilter.swift`, position the Packet Stream control as the first element (top, above both `DisclosureGroup`s) with a clear active indication (FR-001/FR-010), following the T001 design-standards note.
+- [X] T022 [US4] When `isPacketStreamOn`, disable/dim the Categories and Log Levels groups to reflect the override (FR-002); re-enable when off.
+- [X] T023 [US4] Add/extend a snapshot test in `MeshtasticTests/SwiftUIViewSnapshotTests.swift` for the Packet-Stream-on filter state (top control prominent, groups disabled). (Not `[P]`: edits the same file as T020 — serialize the two.)
 
 **Checkpoint**: Discoverable, override-aware filter layout complete.
 

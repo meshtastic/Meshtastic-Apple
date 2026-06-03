@@ -1972,4 +1972,22 @@ struct AppLogFilterAccordionTests {
 		#expect(renderImage(filter(expanded: false), width: 390).cgImage != nil)
 		#expect(renderImage(filter(expanded: true), width: 390).cgImage != nil)
 	}
+
+	@Test("Packet Stream on renders and differs from off (US4 placement/indication)")
+	func packetStreamOnState() {
+		let off = renderImage(filter(expanded: false), width: 390, height: 700).pngData()
+		let on = renderImage(
+			AppLogFilter(
+				categories: .constant(Set(LogCategories.allCases.map(\.id))),
+				levels: .constant(Set(LogLevels.allCases.map(\.id))),
+				isPacketStreamOn: .constant(true),
+				categoriesExpanded: .constant(false),
+				levelsExpanded: .constant(false)
+			),
+			width: 390,
+			height: 700
+		).pngData()
+		#expect(off != nil && on != nil)
+		#expect(off != on)
+	}
 }
