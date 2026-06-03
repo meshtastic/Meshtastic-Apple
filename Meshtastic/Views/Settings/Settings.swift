@@ -646,8 +646,6 @@ struct Settings: View {
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
-				case .deviceLinks:
-					DeviceLinkDirectory()
 				case .tools:
 					if #available(iOS 18, *) {
 						Tools()
