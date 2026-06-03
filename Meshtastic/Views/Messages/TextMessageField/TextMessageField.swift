@@ -10,6 +10,10 @@ struct TextMessageField: View {
 	let destination: MessageDestination
 	@Binding var replyMessageId: Int64
 	@FocusState.Binding var isFocused: Bool
+	/// Called on the main actor after a message is successfully sent, so the
+	/// (poll-based) message list can reload immediately instead of waiting for
+	/// the next refresh tick.
+	var onMessageSent: (@MainActor () -> Void)?
 
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
@@ -152,6 +156,8 @@ struct TextMessageField: View {
 					)
 					Logger.mesh.info("Location Sent")
 				}
+
+				await MainActor.run { onMessageSent?() }
 			} catch {
 				Logger.mesh.info("Error sending message")
 			}

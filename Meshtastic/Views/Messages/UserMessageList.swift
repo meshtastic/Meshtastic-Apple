@@ -346,6 +346,7 @@ struct UserMessageList: View {
 					isEmoji: true,
 					replyID: target.messageId
 				)
+				await MainActor.run { _ = refreshVisibleTapbacks(markReadAfterLoad: routerIsShowingThisUser()) }
 			} catch {
 				Logger.services.warning("Failed to send tapback.")
 			}
@@ -465,7 +466,8 @@ struct UserMessageList: View {
 			TextMessageField(
 				destination: .user(user),
 				replyMessageId: $replyMessageId,
-				isFocused: $messageFieldFocused
+				isFocused: $messageFieldFocused,
+				onMessageSent: { loadMessages(markReadAfterLoad: routerIsShowingThisUser()) }
 			)
 			.fixedSize(horizontal: false, vertical: true)
 		}

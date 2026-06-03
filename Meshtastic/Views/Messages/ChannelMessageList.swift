@@ -51,35 +51,12 @@ struct ChannelMessageList: View {
 	@State private var tapbackTargetMessage: MessageEntity?
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
-	@State private var redrawTapbacksTrigger = UUID()
-	/// All messages for this channel index, non-emoji. Does NOT include the toUser == nil
-	/// guard because comparing an optional relationship to nil in a #Predicate crashes
-	/// SwiftData on iOS 26. The channel-only filter is applied in the computed property below.
-	@Query private var allChannelMessages: [MessageEntity]
-
-	/// Channel (non-DM) messages only — filters out direct messages in Swift after the fetch.
-	private var allPrivateMessages: [MessageEntity] {
-		allChannelMessages.filter { $0.toUser == nil }
-	}
 
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
 		self.myInfo = myInfo
 		self.channel = channel
-		
-		let channelIndex = channel.index
-		_allChannelMessages = Query(
-			filter: #Predicate<MessageEntity> {
-				$0.channel == channelIndex && $0.isEmoji == false
-			},
-			sort: \MessageEntity.messageTimestamp
-		)
 	}
-	
-	func handleInteractionComplete() {
-		markMessagesAsRead()
-		redrawTapbacksTrigger = UUID()
-	}
-	
+
 	func markMessagesAsRead() {
 		do {
 			let channelIndex = channel.index
@@ -299,6 +276,7 @@ struct ChannelMessageList: View {
 					isEmoji: true,
 					replyID: target.messageId
 				)
+				await MainActor.run { _ = refreshVisibleTapbacks(markReadAfterLoad: routerIsShowingThisChannel()) }
 			} catch {
 				Logger.services.warning("Failed to send tapback.")
 			}
@@ -415,7 +393,8 @@ struct ChannelMessageList: View {
 			TextMessageField(
 				destination: .channel(channel),
 				replyMessageId: $replyMessageId,
-				isFocused: $messageFieldFocused
+				isFocused: $messageFieldFocused,
+				onMessageSent: { loadMessages(markReadAfterLoad: routerIsShowingThisChannel()) }
 			)
 			.fixedSize(horizontal: false, vertical: true)
 		}
