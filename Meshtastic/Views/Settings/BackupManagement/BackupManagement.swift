@@ -20,7 +20,6 @@ struct BackupManagement: View {
 	@State private var restoreErrorMessage: String?
 	@State private var isBackingUp = false
 	@State private var backupErrorMessage: String?
-	@State private var showBackupSuccessBanner = false
 
 	private var showsInlineDeleteButton: Bool {
 		#if targetEnvironment(macCatalyst)

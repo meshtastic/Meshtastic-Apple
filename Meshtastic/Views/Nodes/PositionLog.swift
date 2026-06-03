@@ -114,7 +114,7 @@ struct PositionLog: View {
 					.padding(.leading)
 				}
 				if totalPositionCount > positions.count {
-					Text("Showing latest \(positions.count) of \(totalPositionCount) positions. Export includes all positions.")
+					Text(String.localizedStringWithFormat("Showing latest %lld of %lld positions. Export includes all positions.".localized, positions.count, totalPositionCount))
 						.font(.caption2)
 						.foregroundColor(.secondary)
 						.padding(.horizontal)
