@@ -121,11 +121,8 @@ struct BackupManagement: View {
 				Button {
 					Task { await backupNow() }
 				} label: {
-					Image(systemName: isBackingUp ? "swiftdata" : "swiftdata")
+					Label("Backup Now", systemImage: "swiftdata")
 						.symbolEffect(.pulse, isActive: isBackingUp)
-						.imageScale(.large)
-						.padding(8)
-						.background(.thinMaterial, in: Circle())
 				}
 				.disabled(isBackingUp || isRestoringBackup)
 				.accessibilityLabel("Backup Now")
