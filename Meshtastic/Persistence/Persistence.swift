@@ -7,6 +7,7 @@
 
 import SwiftData
 import OSLog
+import Foundation
 
 @MainActor
 class PersistenceController {
@@ -33,6 +34,23 @@ class PersistenceController {
 		container.mainContext
 	}
 
+	private static func removeStoreFiles(at storeURL: URL) {
+		let fm = FileManager.default
+		let storeFiles = [
+			storeURL,
+			URL(fileURLWithPath: storeURL.path + "-shm"),
+			URL(fileURLWithPath: storeURL.path + "-wal")
+		]
+
+		for url in storeFiles where fm.fileExists(atPath: url.path) {
+			do {
+				try fm.removeItem(at: url)
+			} catch {
+				Logger.data.error("📈 [PerfSeed] Failed to remove existing store file \(url.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
 	init(inMemory: Bool = false, storeName: String = "Meshtastic") {
 		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
@@ -43,6 +61,12 @@ class PersistenceController {
 			isStoredInMemoryOnly: inMemory,
 			allowsSave: true
 		)
+
+#if DEBUG
+		if !inMemory && !isTestEnvironment && PerformanceSeedData.configuration?.resetStore == true {
+			Self.removeStoreFiles(at: config.url)
+		}
+#endif
 
 		// ── Step 0: guard Core Data store from being clobbered ───────────────
 		// Both the App Store (Core Data) build and this (SwiftData) build use
@@ -141,6 +165,14 @@ class PersistenceController {
 	@MainActor
 	public func clearDatabase(includeRoutes: Bool = true) {
 		do {
+			let hardwareDevices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+			for device in hardwareDevices {
+				device.tags.removeAll()
+			}
+			if container.mainContext.hasChanges {
+				try container.mainContext.save()
+			}
+
 			// Delete entities that are on the inverse side of many-to-many
 			// relationships first to avoid constraint trigger violations.
 			try container.mainContext.delete(model: DeviceHardwareTagEntity.self)

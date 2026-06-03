@@ -9,6 +9,27 @@ import SwiftUI
 import CoreLocation
 import Foundation
 
+struct NodeListRowSummary {
+	let latestDeviceMetrics: TelemetryEntity?
+	let latestPosition: PositionEntity?
+	let hasEnvironmentMetrics: Bool
+	let hasDetectionSensorMetrics: Bool
+	let hasTraceRoutes: Bool
+
+	@MainActor init(
+		node: NodeInfoEntity,
+		includeDeviceMetrics: Bool = true,
+		includePosition: Bool = true,
+		includeLogAvailability: Bool = true
+	) {
+		latestDeviceMetrics = includeDeviceMetrics ? node.latestDeviceMetrics : nil
+		latestPosition = includePosition ? node.latestPosition : nil
+		hasEnvironmentMetrics = includeLogAvailability ? node.hasEnvironmentMetrics : false
+		hasDetectionSensorMetrics = includeLogAvailability ? node.hasDetectionSensorMetrics : false
+		hasTraceRoutes = includeLogAvailability ? node.hasTraceRoutes : false
+	}
+}
+
 struct NodeListItem: View {
 
 	private static let relativeDateFormatter: RelativeDateTimeFormatter = {
@@ -97,6 +118,7 @@ struct NodeListItem: View {
 	}
 	
 	@Bindable var node: NodeInfoEntity
+	@State private var rowSummary: NodeListRowSummary?
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -116,8 +138,8 @@ struct NodeListItem: View {
 		return (image, color)
 	}
 	
-	var locationData: (PositionEntity, CLLocation)? {
-		guard let lastPostion = node.latestPosition else {
+	func locationData(for lastPosition: PositionEntity?) -> (PositionEntity, CLLocation)? {
+		guard let lastPosition else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
@@ -126,21 +148,21 @@ struct NodeListItem: View {
 		
 		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
 		
-		if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-			return (lastPostion, myCoord)
+		if lastPosition.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+			return (lastPosition, myCoord)
 		}
 		return nil
 	}
 	
 	var body: some View {
-		// Cache all expensive computed properties ONCE to avoid repeated FetchDescriptor queries
-		let cachedMetrics = node.latestDeviceMetrics
-		let cachedLocationData = locationData
-		let cachedHasPositions = node.hasPositions
+		let cachedMetrics = rowSummary?.latestDeviceMetrics
+		let cachedLatestPosition = rowSummary?.latestPosition
+		let cachedLocationData = connectedNode == node.num ? nil : locationData(for: cachedLatestPosition)
+		let cachedHasPositions = cachedLatestPosition != nil
 		let cachedHasDeviceMetrics = cachedMetrics != nil
-		let cachedHasEnvironmentMetrics = node.hasEnvironmentMetrics
-		let cachedHasDetectionSensorMetrics = node.hasDetectionSensorMetrics
-		let cachedHasTraceRoutes = node.hasTraceRoutes
+		let cachedHasEnvironmentMetrics = rowSummary?.hasEnvironmentMetrics ?? false
+		let cachedHasDetectionSensorMetrics = rowSummary?.hasDetectionSensorMetrics ?? false
+		let cachedHasTraceRoutes = rowSummary?.hasTraceRoutes ?? false
 		let cachedHasLogs = cachedHasPositions || cachedHasEnvironmentMetrics || cachedHasDetectionSensorMetrics || cachedHasTraceRoutes
 		LazyVStack(alignment: .leading) {
 			HStack {
@@ -264,6 +286,11 @@ struct NodeListItem: View {
 		}
 		.padding(.top, 3)
 		.padding(.bottom, 3)
+		.task(id: node.lastHeard) {
+			rowSummary = await MainActor.run {
+				NodeListRowSummary(node: node)
+			}
+		}
 		.accessibilityElement(children: .ignore)
 		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
 	}
