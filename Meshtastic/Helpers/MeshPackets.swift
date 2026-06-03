@@ -383,8 +383,11 @@ actor MeshPackets {
 	}
 
 	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false) -> PersistentIdentifier? {
+		// This path handles the connected device's local node-DB dump during wantConfig
+		// (FromRadio.nodeInfo), not packets that crossed the mesh — log it as admin/setup.
+		// Over-the-air NodeInfo arrives via upsertNodeInfoPacket and stays on .mesh.
 		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
-		Logger.mesh.info("📟 \(logString, privacy: .public)")
+		Logger.admin.info("📟 \(logString, privacy: .public)")
 
 		guard nodeInfo.num > 0 else { return nil }
 

@@ -279,11 +279,18 @@ extension MeshPackets {
 		}
 	}
 	
-	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false) {
-		
+	/// - Parameter overTheMesh: true when this NodeInfo arrived as an over-the-air packet from a
+	///   remote node — logged on .mesh so it appears in the Packet Stream. false for local updates
+	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
+	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true) {
+
 		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, packet.from.toHex())
-		Logger.mesh.info("📟 \(logString, privacy: .public)")
-		
+		if overTheMesh {
+			Logger.mesh.info("📟 \(logString, privacy: .public)")
+		} else {
+			Logger.data.info("📟 \(logString, privacy: .public)")
+		}
+
 		guard packet.from > 0 else { return }
 		
 		let fetchNum = Int64(packet.from)
