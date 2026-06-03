@@ -13,27 +13,32 @@ extension ChannelEntity {
 	var allPrivateMessages: [MessageEntity] {
 		let context = PersistenceController.shared.context
 		let channelIndex = self.index
+		// NOTE: toUser == nil is intentionally absent from the predicate — comparing an optional
+		// relationship to nil in a #Predicate crashes SwiftData on iOS 26. Filter in Swift instead.
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+				msg.channel == channelIndex && msg.isEmoji == false
 			},
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .forward)]
 		)
-		return (try? context.fetch(descriptor)) ?? []
+		let messages = (try? context.fetch(descriptor)) ?? []
+		return messages.filter { $0.toUser == nil }
 	}
 
 	@MainActor
 	var mostRecentPrivateMessage: MessageEntity? {
 		let context = PersistenceController.shared.context
 		let channelIndex = self.index
+		// Fetch a small batch and find the first channel message in Swift.
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+				msg.channel == channelIndex && msg.isEmoji == false
 			},
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
 		)
-		descriptor.fetchLimit = 1
-		return try? context.fetch(descriptor).first
+		descriptor.fetchLimit = 10
+		let batch = (try? context.fetch(descriptor)) ?? []
+		return batch.first { $0.toUser == nil }
 	}
 
 	@MainActor
@@ -41,10 +46,11 @@ extension ChannelEntity {
 		let channelIndex = self.index
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false && msg.read == false
+				msg.channel == channelIndex && msg.isEmoji == false && msg.read == false
 			}
 		)
-		return (try? context.fetchCount(descriptor)) ?? 0
+		let messages = (try? context.fetch(descriptor)) ?? []
+		return messages.filter { $0.toUser == nil }.count
 	}
 
 	@MainActor
