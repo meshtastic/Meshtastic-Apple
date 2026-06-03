@@ -420,12 +420,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate { message in
-				message.read == false && message.toUser == nil
+				message.read == false
 			}
 		)
 		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int32: Int]()
-		for message in results where channelSet.contains(message.channel) {
+		for message in results where message.toUser == nil && channelSet.contains(message.channel) {
 			counts[message.channel, default: 0] += 1
 		}
 		return counts
@@ -511,14 +511,15 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				message.read == false &&
 				message.admin == false &&
 				message.isEmoji == false &&
-				message.toUser == nil &&
 				message.channel == channelIndex
 			},
 			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
 		)
-		descriptor.fetchLimit = 1
+		// toUser == nil intentionally absent from predicate (crashes SwiftData on iOS 26).
+		// Fetch a small batch and pick the first channel message in Swift.
+		descriptor.fetchLimit = 5
 
-		guard let message = (try? context.fetch(descriptor))?.first,
+		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser == nil }),
 			  let fromUser = message.fromUser else { return }
 
 		postCommunicationNotification(
