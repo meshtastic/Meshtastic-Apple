@@ -63,7 +63,7 @@ struct LoRaConfig: View {
 
 				VStack(alignment: .leading) {
 					Picker("Region", selection: $region ) {
-						ForEach(RegionCodes.allCases) { r in
+						ForEach(RegionCodes.userSelectable) { r in
 							Text(r.description)
 						}
 					}

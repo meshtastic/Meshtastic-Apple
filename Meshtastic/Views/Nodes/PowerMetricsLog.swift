@@ -25,10 +25,9 @@ struct PowerMetricsLog: View {
 	@State var exportString = ""
 
 	@State private var channelSelection = 0
-
-	var powerMetrics: [TelemetryEntity] {
-		return node.safeTelemetries(ofType: 2)
-	}
+	@State private var powerMetrics: [TelemetryEntity] = []
+	@State private var chartData: [TelemetryEntity] = []
+	@State private var totalReadings = 0
 
 	var minMax: (min: Double, max: Double) {
 		let allValues = powerMetrics.flatMap { [
@@ -50,14 +49,9 @@ struct PowerMetricsLog: View {
 
 	var body: some View {
 		VStack {
-			if node.hasPowerMetrics {
-				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-
-				let chartData = powerMetrics
-					.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
-					.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+			if totalReadings > 0 {
 				if chartData.count > 0 {
-					GroupBox(label: Label("\(powerMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+					GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 
 						// allow switching between different channels
 						Picker("Select Channel", selection: $channelSelection) {
@@ -237,13 +231,17 @@ struct PowerMetricsLog: View {
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
 					) {
-						Button("Delete Power metrics?", role: .destructive) {
-							Task {
-								if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 2) {
-									Logger.data.notice("Cleared Power Metrics for \(node.num, privacy: .public)")
-								} else {
-									Logger.data.error("Clear Power Metrics Log Failed")
-								}
+							Button("Delete Power metrics?", role: .destructive) {
+								Task {
+									if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 2) {
+										Logger.data.notice("Cleared Power Metrics for \(node.num, privacy: .public)")
+										await MainActor.run {
+											refreshMetrics()
+											NotificationCenter.default.post(name: .nodeLogAvailabilityDidChange, object: node.num)
+										}
+									} else {
+										Logger.data.error("Clear Power Metrics Log Failed")
+									}
 							}
 						}
 					}
@@ -270,6 +268,12 @@ struct PowerMetricsLog: View {
 				ContentUnavailableView("No Power Metrics", systemImage: "slash.circle")
 			}
 		}
+		.onAppear {
+			refreshMetrics()
+		}
+		.onChange(of: node.lastHeard) {
+			refreshMetrics()
+		}
 		.navigationTitle("Power Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -291,7 +295,16 @@ struct PowerMetricsLog: View {
 					Logger.services.error("Power metrics log download failed: \(error.localizedDescription, privacy: .public)")
 				}
 			}
-		)
+			)
+	}
+
+	private func refreshMetrics() {
+		totalReadings = node.telemetryCount(ofType: 2, context: context)
+		powerMetrics = node.safeTelemetries(ofType: 2)
+		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
+		chartData = powerMetrics
+			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
+			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 	}
 }
 

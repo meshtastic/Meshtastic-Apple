@@ -209,6 +209,11 @@ struct AppSettings: View {
 								await MeshPackets.shared.clearDatabase(includeRoutes: true)
 								MeshPackets.recreateShared()
 								clearNotifications()
+								// Repopulate device catalog immediately — no reconnect happens after a full reset.
+								try? await MeshtasticAPI.shared.refreshBundledDevicesData()
+								Task.detached(priority: .utility) {
+									try? await MeshtasticAPI.shared.refreshDevicesAPIData()
+								}
 							}
 						}
 					}

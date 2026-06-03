@@ -381,6 +381,27 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
+			NavigationLink(value: SettingsNavigationState.backupManagement) {
+				Label {
+					Text("Backup Management")
+				} icon: {
+					Image(systemName: "externaldrive")
+				}
+			}
+			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
+				Label {
+					Text("Data Browser")
+				} icon: {
+					Image(systemName: "tablecells")
+				}
+			}
+			NavigationLink(value: SettingsNavigationState.deviceLinks) {
+				Label {
+					Text("Device Links")
+				} icon: {
+					Image(systemName: "link")
+				}
+			}
 			NavigationLink(value: SettingsNavigationState.appFiles) {
 				Label {
 					Text("App Files")
@@ -395,20 +416,6 @@ struct Settings: View {
 					} icon: {
 						Image(systemName: "hammer")
 					}
-				}
-			}
-			NavigationLink(value: SettingsNavigationState.backupManagement) {
-				Label {
-					Text("Backup Management")
-				} icon: {
-					Image(systemName: "externaldrive")
-				}
-			}
-			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
-				Label {
-					Text("Data Browser")
-				} icon: {
-					Image(systemName: "tablecells")
 				}
 			}
 		}
@@ -544,21 +551,7 @@ struct Settings: View {
 								}
 								.pickerStyle(.navigationLink)
 								.onChange(of: selectedNode) { _, newValue in
-									if selectedNode > 0,
-									   let destinationNode = nodes.first(where: { $0.num == newValue }),
-									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
-									   let fromUser = connectedNode.user,
-									   connectedNode.myInfo != nil,  // not sure why, but this check was present in the initial code.
-									   let toUser = destinationNode.user {
-
-										preferredNodeNum = Int(connectedNode.num)
-										Task {
-											_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
-											Task { @MainActor in
-												Logger.mesh.info("Sent node metadata request from node details")
-											}
-										}
-									}
+									handleSelectedNodeChange(newValue)
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
 											.tipViewStyle(PersistentTipStyle())
@@ -652,6 +645,8 @@ struct Settings: View {
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
+				case .deviceLinks:
+					DeviceLinkDirectory()
 				case .tools:
 					if #available(iOS 18, *) {
 						Tools()
@@ -720,6 +715,23 @@ struct Settings: View {
 			}
 		} else {
 			self.selectedNode = Int(accessoryManager.isConnected ? nodeNum: 0)
+		}
+	}
+
+	private func handleSelectedNodeChange(_ newValue: Int) {
+		guard selectedNode > 0,
+			let destinationNode = nodes.first(where: { $0.num == newValue }),
+			let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
+			let fromUser = connectedNode.user,
+			connectedNode.myInfo != nil,
+			let toUser = destinationNode.user else { return }
+
+		preferredNodeNum = Int(connectedNode.num)
+		Task {
+			_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
+			Task { @MainActor in
+				Logger.mesh.info("Sent node metadata request from node details")
+			}
 		}
 	}
 }

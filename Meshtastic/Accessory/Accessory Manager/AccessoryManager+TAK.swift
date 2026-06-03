@@ -175,10 +175,7 @@ extension AccessoryManager {
 				// The inter-tag collapse only targets whitespace that sits between
 				// `>` and `<` so we don't mangle multi-line text content (e.g. a
 				// `<remarks>` chat body with embedded newlines).
-				let cotXml = rawCotXml
-					.replacingOccurrences(of: #"^\s*<\?xml[^>]*\?>"#, with: "", options: .regularExpression)
-					.replacingOccurrences(of: #">\s+<"#, with: "><", options: .regularExpression)
-					.trimmingCharacters(in: .whitespacesAndNewlines)
+				let cotXml = MeshtasticTAK.CotMeshSanitizer.normalizeCotXml(rawCotXml)
 
 				// Logger.tak.debug("=== Received CoT XML (mesh, \(cotXml.count) chars) ===")
 				// Logger.tak.debug("\(cotXml)")
@@ -419,77 +416,12 @@ extension AccessoryManager {
 		return result
 	}
 
-	/// Strip non-essential XML elements before mesh compression to save wire bytes.
-	/// These elements add 100-200 bytes but aren't needed for rendering shapes,
-	/// routes, chats, or markers on the receiving end.
+	/// Strip non-essential CoT detail before mesh compression to save wire bytes.
+	/// Delegates to the SDK's `CotMeshSanitizer` so the strip rules live in ONE
+	/// golden-tested place shared with Android and can't drift between sides — a
+	/// drift here once stripped TAK-Talk <voice>/<marti> and broke the feature
+	/// end-to-end. Requires TAKPacket-SDK >= 0.5.0.
 	private static func stripNonEssentialElements(_ xml: String) -> String {
-		var result = xml
-		// Elements to strip — order doesn't matter, regex handles self-closing and paired
-		let patterns = [
-			"<takv[^>]*/>",                             // TAK version info
-			"<takv[^>]*>.*?</takv>",                     // TAK version (paired)
-			"<voice[^>]*/>",                             // voice chat state
-			"<voice[^>]*>.*?</voice>",
-			"<marti[^>]*/>",                             // empty marti
-			"<marti[^>]*>.*?</marti>",
-			"<__geofence[^>]*/>",                        // geofence config
-			"<__geofence[^>]*>.*?</__geofence>",
-			"<tog[^>]*/>",                               // toggle state
-			"<archive[^>]*/>",                           // archive marker
-			"<__shapeExtras[^>]*/>",                     // shape extras
-			"<__shapeExtras[^>]*>.*?</__shapeExtras>",
-			"<creator[^>]*/>",                           // creator info
-			"<creator[^>]*>.*?</creator>",
-			"<remarks[^>]*/>",                            // empty remarks (self-closing)
-			"<remarks[^>]*></remarks>",                   // empty remarks (paired)
-			"<strokeStyle[^>]*/>",                       // stroke style (SDK uses color fields)
-			"<precisionlocation[^>]*/>",                 // precision location metadata
-			"<precisionlocation[^>]*>.*?</precisionlocation>",
-			"<precisionLocation[^>]*/>",                 // iTAK camelCase variant
-			"<precisionLocation[^>]*>.*?</precisionLocation>"
-		]
-		for pattern in patterns {
-			if let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) {
-				result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "")
-			}
-		}
-		// Strip any attribute with value "???" — unknown/placeholder metadata
-		if let unknownAttr = try? NSRegularExpression(pattern: #"\s+\w+\s*=\s*"\?{3}""#) {
-			result = unknownAttr.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "")
-		}
-		// Strip specific display-only attributes the SDK doesn't use
-		let attrPatterns = [
-			#"\s+routetype\s*=\s*"[^"]*""#,      // route display type
-			#"\s+order\s*=\s*"[^"]*""#,           // checkpoint order label
-			#"\s+color\s*=\s*"[^"]*""#,           // link_attr color (SDK uses strokeColor)
-			#"\s+access\s*=\s*"[^"]*""#,          // access control
-			#"\s+callsign\s*=\s*"""#,             // empty callsign
-			#"\s+phone\s*=\s*"""#                 // empty phone
-		]
-		for pattern in attrPatterns {
-			if let regex = try? NSRegularExpression(pattern: pattern) {
-				result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "")
-			}
-		}
-		// Strip uid from route waypoint <link> elements — UIDs are full 36-char
-		// UUIDs that cost ~40 bytes each in the proto wire format. The receiving
-		// TAK client derives its own UIDs, so these are pure overhead. Only targets
-		// <link> elements with a point= attribute (route waypoints / shape vertices).
-		if let routeLinkRe = try? NSRegularExpression(pattern: #"<link\s[^>]*\bpoint="[^"]*"[^>]*/>"#),
-		   let uidAttrRe = try? NSRegularExpression(pattern: #"\s+uid="[^"]*""#) {
-			let matches = routeLinkRe.matches(in: result, range: NSRange(result.startIndex..., in: result))
-			for match in matches.reversed() {
-				if let range = Range(match.range, in: result) {
-					let linkStr = String(result[range])
-					let stripped = uidAttrRe.stringByReplacingMatches(
-						in: linkStr,
-						range: NSRange(linkStr.startIndex..., in: linkStr),
-						withTemplate: ""
-					)
-					result.replaceSubrange(range, with: stripped)
-				}
-			}
-		}
-		return result
+		MeshtasticTAK.CotMeshSanitizer.stripNonEssentialForMesh(xml)
 	}
 }

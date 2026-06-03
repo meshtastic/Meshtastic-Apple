@@ -68,6 +68,11 @@ func generateMessageMarkdown(message: String) -> String {
 
 @ModelActor
 actor MeshPackets {
+	private struct TelemetryPruneKey: Hashable {
+		let nodeNum: Int64
+		let metricsType: Int32
+	}
+
 	private static let _container: ModelContainer = {
 		MainActor.assumeIsolated { PersistenceController.shared.container }
 	}()
@@ -117,6 +122,15 @@ actor MeshPackets {
 	private static let debounceInterval: Duration = .seconds(2)
 	/// Maximum wall-clock time between flushes, even if packets keep arriving.
 	private static let maxDebounceDelay: Duration = .seconds(5)
+	static let maxPositionHistoryPerNode = 5_000
+	static let maxTelemetryPerType = 5_000
+	static let maxTotalMessages = 50_000
+	private static let positionPruneInterval = 128
+	private static let telemetryPruneInterval = 128
+	private static let messagePruneInterval = 256
+	private var positionInsertsSincePrune: [Int64: Int] = [:]
+	private var telemetryInsertsSincePrune: [TelemetryPruneKey: Int] = [:]
+	private var messageInsertsSincePrune = 0
 
 	/// Schedules a debounced save. Each call resets the 2-second timer. If packets
 	/// keep arriving continuously, a save is forced every 5 seconds.
@@ -143,6 +157,36 @@ actor MeshPackets {
 		debounceSaveTask = nil
 		savePendingChanges(caller: "flushDebouncedSaves")
 		lastDebouncedSaveTime = .now
+	}
+
+	func shouldPrunePositionHistory(for nodeNum: Int64) -> Bool {
+		let nextCount = (positionInsertsSincePrune[nodeNum] ?? 0) + 1
+		if nextCount >= Self.positionPruneInterval {
+			positionInsertsSincePrune[nodeNum] = 0
+			return true
+		}
+		positionInsertsSincePrune[nodeNum] = nextCount
+		return false
+	}
+
+	func shouldPruneTelemetryHistory(nodeNum: Int64, metricsType: Int32) -> Bool {
+		let key = TelemetryPruneKey(nodeNum: nodeNum, metricsType: metricsType)
+		let nextCount = (telemetryInsertsSincePrune[key] ?? 0) + 1
+		if nextCount >= Self.telemetryPruneInterval {
+			telemetryInsertsSincePrune[key] = 0
+			return true
+		}
+		telemetryInsertsSincePrune[key] = nextCount
+		return false
+	}
+
+	func shouldPruneMessageHistory() -> Bool {
+		messageInsertsSincePrune += 1
+		if messageInsertsSincePrune >= Self.messagePruneInterval {
+			messageInsertsSincePrune = 0
+			return true
+		}
+		return false
 	}
 
 	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) {
@@ -252,7 +296,7 @@ actor MeshPackets {
 
 	func channelPacket (channel: Channel, fromNum: Int64) {
 		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
-			let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
+			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
 			Logger.mesh.info("🎛️ \(logString, privacy: .public)")
 
 			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
@@ -692,7 +736,8 @@ actor MeshPackets {
 		Logger.mesh.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
 
 		let packetFrom = Int64(packet.from)
-		let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
+		var fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
+		fetchDescriptor.fetchLimit = 1
 
 		do {
 			let fetchedNode = try modelContext.fetch(fetchDescriptor)
@@ -707,7 +752,7 @@ actor MeshPackets {
 				newPax.time = Date()
 
 				if fetchedNode.count > 0 {
-					fetchedNode[0].pax.append(newPax)
+					newPax.paxNode = fetchedNode[0]
 					savePendingChanges()
 				} else {
 					Logger.data.info("Node Info Not Found")
@@ -849,25 +894,26 @@ actor MeshPackets {
 						// Assign via relationship without loading all telemetries
 						telemetry.nodeTelemetry = fetchedNode[0]
 
-						// Prune old telemetry using a targeted query instead of faulting the full relationship
+						// Keep telemetry bounded as a soft cap during bursts; counting
+						// and sorting every telemetry packet does not scale on large meshes.
 						let metricsType = telemetry.metricsType
-						let maxTelemetryPerType = 5000
 						let nodeNum = packetFrom
-						var countDescriptor = FetchDescriptor<TelemetryEntity>(
-							predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
-						)
-						countDescriptor.fetchLimit = maxTelemetryPerType + 1
-						let currentCount = (try? modelContext.fetchCount(countDescriptor)) ?? 0
-						if currentCount > maxTelemetryPerType {
-							let excess = currentCount - maxTelemetryPerType
-							var pruneDescriptor = FetchDescriptor<TelemetryEntity>(
-								predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
-								sortBy: [SortDescriptor(\TelemetryEntity.time, order: .forward)]
+						if shouldPruneTelemetryHistory(nodeNum: nodeNum, metricsType: metricsType) {
+							let countDescriptor = FetchDescriptor<TelemetryEntity>(
+								predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
 							)
-							pruneDescriptor.fetchLimit = excess
-							let toDelete = (try? modelContext.fetch(pruneDescriptor)) ?? []
-							for old in toDelete {
-								modelContext.delete(old)
+							let currentCount = (try? modelContext.fetchCount(countDescriptor)) ?? 0
+							if currentCount > MeshPackets.maxTelemetryPerType {
+								let excess = currentCount - MeshPackets.maxTelemetryPerType
+								var pruneDescriptor = FetchDescriptor<TelemetryEntity>(
+									predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+									sortBy: [SortDescriptor(\TelemetryEntity.time, order: .forward)]
+								)
+								pruneDescriptor.fetchLimit = excess
+								let toDelete = (try? modelContext.fetch(pruneDescriptor)) ?? []
+								for old in toDelete {
+									modelContext.delete(old)
+								}
 							}
 						}
 
@@ -1095,21 +1141,23 @@ actor MeshPackets {
 						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 
-						// Prune old messages to prevent unbounded growth
-						let maxTotalMessages = 50000
-						let countDescriptor = FetchDescriptor<MessageEntity>()
-						let totalMessages = (try? modelContext.fetchCount(countDescriptor)) ?? 0
-						if totalMessages > maxTotalMessages {
-							var oldestDescriptor = FetchDescriptor<MessageEntity>(
-								sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
-							)
-							oldestDescriptor.fetchLimit = totalMessages - maxTotalMessages
-							if let oldMessages = try? modelContext.fetch(oldestDescriptor) {
-								for old in oldMessages {
-									modelContext.delete(old)
+						// Keep message storage bounded without scanning the whole table
+						// after every incoming text.
+						if shouldPruneMessageHistory() {
+							let countDescriptor = FetchDescriptor<MessageEntity>()
+							let totalMessages = (try? modelContext.fetchCount(countDescriptor)) ?? 0
+							if totalMessages > MeshPackets.maxTotalMessages {
+								var oldestDescriptor = FetchDescriptor<MessageEntity>(
+									sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
+								)
+								oldestDescriptor.fetchLimit = totalMessages - MeshPackets.maxTotalMessages
+								if let oldMessages = try? modelContext.fetch(oldestDescriptor) {
+									for old in oldMessages {
+										modelContext.delete(old)
+									}
+									try modelContext.save()
+									Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(MeshPackets.maxTotalMessages))")
 								}
-								try modelContext.save()
-								Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(maxTotalMessages))")
 							}
 						}
 					} catch {

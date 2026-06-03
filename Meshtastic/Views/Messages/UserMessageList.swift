@@ -10,6 +10,23 @@ import SwiftUI
 import OSLog
 import MeshtasticProtobufs // Added to ensure RoutingError is accessible if needed
 
+private struct UserMessageTimelineCursor: Comparable {
+	let timestamp: Int32
+	let messageId: Int64
+
+	static func < (lhs: UserMessageTimelineCursor, rhs: UserMessageTimelineCursor) -> Bool {
+		if lhs.timestamp == rhs.timestamp {
+			return lhs.messageId < rhs.messageId
+		}
+		return lhs.timestamp < rhs.timestamp
+	}
+}
+
+private struct UserMessageListChangeToken: Equatable {
+	let latest: UserMessageTimelineCursor?
+	let count: Int
+}
+
 struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -19,37 +36,42 @@ struct UserMessageList: View {
 	@Bindable var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
 	@State private var messageToHighlight: Int64 = 0
-	@State private var redrawTapbacksTrigger = UUID()
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
+	@State private var messageLimit: Int = 100
+	@State private var messages: [MessageEntity] = []
+	@State private var previousByID: [Int64: MessageEntity] = [:]
+	@State private var repliesByID: [Int64: MessageEntity] = [:]
+	@State private var tapbacksByReplyID: [Int64: [MessageEntity]] = [:]
+	@State private var hasEarlierMessages = false
+	@State private var latestKnownMessageToken: UserMessageListChangeToken?
+	@State private var latestVisibleTapbackCursor: UserMessageTimelineCursor?
+	@State private var latestKnownConversationTapbackCursor: UserMessageTimelineCursor?
+	@State private var visibleTapbackCount = 0
 	@State private var tapbackTargetMessage: MessageEntity?
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
-	@Query private var allPrivateMessages: [MessageEntity]
 
 	init(user: UserEntity) {
 		self.user = user
-		let userNum = user.num
-		let detectionSensorPortNum: Int32 = 10
-		_allPrivateMessages = Query(
-			filter: #Predicate<MessageEntity> {
-				($0.fromUser?.num == userNum || $0.toUser?.num == userNum)
-				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-			},
-			sort: \MessageEntity.messageTimestamp
-		)
-	}
-
-	func handleInteractionComplete() {
-		markMessagesAsRead()
-		redrawTapbacksTrigger = UUID()
 	}
 
 	func markMessagesAsRead() {
 		do {
-			for unreadMessage in allPrivateMessages.filter({ !$0.read }) {
+			let unreadMessages = try fetchUnreadMessages()
+			let notificationManager = LocalNotificationManager()
+			var readMessageIDs = [Int64]()
+			for unreadMessage in unreadMessages {
 				unreadMessage.read = true
+				readMessageIDs.append(unreadMessage.messageId)
 			}
-			try context.save()
+			for unreadTapback in tapbacksByReplyID.values.flatMap({ $0 }) where !unreadTapback.read {
+				unreadTapback.read = true
+				readMessageIDs.append(unreadTapback.messageId)
+			}
+			notificationManager.cancelNotificationsForMessageIds(readMessageIDs)
+			if context.hasChanges {
+				try context.save()
+			}
 			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
 
 			if let connectedPeripheralNum = accessoryManager.activeDeviceNum,
@@ -60,6 +82,249 @@ struct UserMessageList: View {
 		} catch {
 			Logger.data.error("Failed to read direct messages: \(error.localizedDescription, privacy: .public)")
 		}
+	}
+
+	@MainActor
+	private func loadMessages(markReadAfterLoad: Bool = false) {
+		do {
+			let fetchedMessages = try fetchMessages(limit: messageLimit + 1)
+			hasEarlierMessages = fetchedMessages.count > messageLimit
+
+			let visibleMessages = Array(fetchedMessages.prefix(messageLimit).reversed())
+			let previousMessage = hasEarlierMessages ? fetchedMessages[messageLimit] : nil
+
+			messages = visibleMessages
+			previousByID = buildPreviousByID(for: visibleMessages, previousMessage: previousMessage)
+			repliesByID = try fetchReplies(for: visibleMessages)
+			replaceTapbacks(try fetchTapbacks(for: visibleMessages))
+			latestKnownMessageToken = try fetchMessageChangeToken(latestMessage: fetchedMessages.first)
+			latestKnownConversationTapbackCursor = try fetchLatestTapbackCursor()
+
+			if markReadAfterLoad {
+				markMessagesAsRead()
+			}
+		} catch {
+			Logger.data.error("Failed to fetch direct messages: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	private func fetchMessages(limit: Int) throws -> [MessageEntity] {
+		let incoming = try fetchIncomingMessages(limit: limit, unreadOnly: false)
+		let outgoing = try fetchOutgoingMessages(limit: limit, unreadOnly: false)
+
+		return Array((incoming + outgoing)
+			.sorted {
+				if $0.messageTimestamp == $1.messageTimestamp {
+					return $0.messageId > $1.messageId
+				}
+				return $0.messageTimestamp > $1.messageTimestamp
+			}
+			.prefix(limit))
+	}
+
+	private func fetchUnreadMessages() throws -> [MessageEntity] {
+		try fetchIncomingMessages(unreadOnly: true) + fetchOutgoingMessages(unreadOnly: true)
+	}
+
+	private func fetchMessageChangeToken(latestMessage: MessageEntity? = nil) throws -> UserMessageListChangeToken {
+		let latest = try latestMessage ?? fetchMessages(limit: 1).first
+		return UserMessageListChangeToken(
+			latest: latest.map(cursor(for:)),
+			count: try fetchIncomingMessageCount() + fetchOutgoingMessageCount()
+		)
+	}
+
+	private func fetchIncomingMessageCount() throws -> Int {
+		let userNum = user.num
+		let detectionSensorPortNum: Int32 = 10
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.fromUser?.num == userNum
+				&& $0.toUser != nil
+				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+			}
+		)
+		return try context.fetchCount(descriptor)
+	}
+
+	private func fetchOutgoingMessageCount() throws -> Int {
+		let userNum = user.num
+		let detectionSensorPortNum: Int32 = 10
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.toUser?.num == userNum
+				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+			}
+		)
+		return try context.fetchCount(descriptor)
+	}
+
+	private func fetchIncomingMessages(limit: Int? = nil, unreadOnly: Bool) throws -> [MessageEntity] {
+		let userNum = user.num
+		let detectionSensorPortNum: Int32 = 10
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.fromUser?.num == userNum
+				&& $0.toUser != nil
+				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+				&& (!unreadOnly || $0.read == false)
+			},
+			sortBy: [
+				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
+				SortDescriptor(\MessageEntity.messageId, order: .reverse)
+			]
+		)
+		if let limit {
+			descriptor.fetchLimit = limit
+		}
+		return try context.fetch(descriptor)
+	}
+
+	private func fetchOutgoingMessages(limit: Int? = nil, unreadOnly: Bool) throws -> [MessageEntity] {
+		let userNum = user.num
+		let detectionSensorPortNum: Int32 = 10
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.toUser?.num == userNum
+				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
+				&& (!unreadOnly || $0.read == false)
+			},
+			sortBy: [
+				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
+				SortDescriptor(\MessageEntity.messageId, order: .reverse)
+			]
+		)
+		if let limit {
+			descriptor.fetchLimit = limit
+		}
+		return try context.fetch(descriptor)
+	}
+
+	private func fetchLatestTapbackCursor() throws -> UserMessageTimelineCursor? {
+		try [fetchLatestIncomingTapbackCursor(), fetchLatestOutgoingTapbackCursor()].compactMap { $0 }.max()
+	}
+
+	private func fetchLatestIncomingTapbackCursor() throws -> UserMessageTimelineCursor? {
+		let userNum = user.num
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.fromUser?.num == userNum && $0.toUser != nil && $0.isEmoji == true && $0.replyID > 0
+			},
+			sortBy: [
+				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
+				SortDescriptor(\MessageEntity.messageId, order: .reverse)
+			]
+		)
+		descriptor.fetchLimit = 1
+		return try context.fetch(descriptor).first.map(cursor(for:))
+	}
+
+	private func fetchLatestOutgoingTapbackCursor() throws -> UserMessageTimelineCursor? {
+		let userNum = user.num
+		var descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> {
+				$0.toUser?.num == userNum && $0.isEmoji == true && $0.replyID > 0
+			},
+			sortBy: [
+				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
+				SortDescriptor(\MessageEntity.messageId, order: .reverse)
+			]
+		)
+		descriptor.fetchLimit = 1
+		return try context.fetch(descriptor).first.map(cursor(for:))
+	}
+
+	private func cursor(for message: MessageEntity) -> UserMessageTimelineCursor {
+		UserMessageTimelineCursor(timestamp: message.messageTimestamp, messageId: message.messageId)
+	}
+
+	private func buildPreviousByID(for visibleMessages: [MessageEntity], previousMessage: MessageEntity?) -> [Int64: MessageEntity] {
+		var result: [Int64: MessageEntity] = [:]
+		var previous = previousMessage
+		for message in visibleMessages {
+			if let previous {
+				result[message.messageId] = previous
+			}
+			previous = message
+		}
+		return result
+	}
+
+	private func fetchReplies(for visibleMessages: [MessageEntity]) throws -> [Int64: MessageEntity] {
+		var result = Dictionary(uniqueKeysWithValues: visibleMessages.map { ($0.messageId, $0) })
+		let missingReplyIDs = Array(Set(visibleMessages.map(\.replyID).filter { $0 > 0 && result[$0] == nil }))
+		guard !missingReplyIDs.isEmpty else {
+			return result
+		}
+
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { message in
+				missingReplyIDs.contains(message.messageId)
+			}
+		)
+		for reply in try context.fetch(descriptor) {
+			result[reply.messageId] = reply
+		}
+		return result
+	}
+
+	private func fetchTapbacks(for visibleMessages: [MessageEntity]) throws -> [MessageEntity] {
+		let visibleMessageIDs = visibleMessages.map(\.messageId)
+		guard !visibleMessageIDs.isEmpty else {
+			return []
+		}
+
+		let descriptor = FetchDescriptor<MessageEntity>(
+			predicate: #Predicate<MessageEntity> { message in
+				message.isEmoji == true && visibleMessageIDs.contains(message.replyID)
+			},
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
+		)
+		return try context.fetch(descriptor)
+	}
+
+	@MainActor
+	@discardableResult
+	private func refreshVisibleTapbacks(markReadAfterLoad: Bool) -> Bool {
+		do {
+			let tapbacks = try fetchTapbacks(for: messages)
+			let latestTapbackCursor = tapbacks.map(cursor(for:)).max()
+			guard latestTapbackCursor != latestVisibleTapbackCursor || tapbacks.count != visibleTapbackCount else {
+				return true
+			}
+			replaceTapbacks(tapbacks)
+			if markReadAfterLoad {
+				markMessagesAsRead()
+			}
+			return true
+		} catch {
+			Logger.data.error("Failed to refresh direct message tapbacks: \(error.localizedDescription, privacy: .public)")
+			return false
+		}
+	}
+
+	@MainActor
+	private func refreshIfNeeded() {
+		do {
+			if try fetchMessageChangeToken() != latestKnownMessageToken {
+				loadMessages(markReadAfterLoad: routerIsShowingThisUser())
+			} else {
+				let latestTapbackCursor = try fetchLatestTapbackCursor()
+				if latestTapbackCursor != latestKnownConversationTapbackCursor {
+					if refreshVisibleTapbacks(markReadAfterLoad: routerIsShowingThisUser()) {
+						latestKnownConversationTapbackCursor = latestTapbackCursor
+					}
+				}
+			}
+		} catch {
+			Logger.data.error("Failed to refresh direct messages: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	private func replaceTapbacks(_ tapbacks: [MessageEntity]) {
+		latestVisibleTapbackCursor = tapbacks.map(cursor(for:)).max()
+		visibleTapbackCount = tapbacks.count
+		tapbacksByReplyID = Dictionary(grouping: tapbacks, by: \.replyID)
 	}
 
 	private func routerIsShowingThisUser() -> Bool {
@@ -81,6 +346,7 @@ struct UserMessageList: View {
 					isEmoji: true,
 					replyID: target.messageId
 				)
+				await MainActor.run { _ = refreshVisibleTapbacks(markReadAfterLoad: routerIsShowingThisUser()) }
 			} catch {
 				Logger.services.warning("Failed to send tapback.")
 			}
@@ -92,35 +358,34 @@ struct UserMessageList: View {
 	}
 
 	var body: some View {
-		// Cast user.messageList to an array for easier indexing and ForEach.
-		let messages: [MessageEntity] = Array(allPrivateMessages)
-
-		// Precompute previous message
-		let previousByID: [Int64: MessageEntity?] = {
-			var dict = [Int64: MessageEntity?]()
-			var prev: MessageEntity?
-			for m in messages { dict[m.messageId] = prev; prev = m }
-			return dict
-		}()
-
 		VStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
+						if hasEarlierMessages {
+							Button {
+								messageLimit += 100
+								loadMessages(markReadAfterLoad: routerIsShowingThisUser())
+							} label: {
+								Label("Load Earlier Messages", systemImage: "arrow.up.circle")
+									.font(.caption)
+									.foregroundColor(.accentColor)
+							}
+							.buttonStyle(.borderless)
+							.padding(.vertical, 8)
+						}
 						ForEach(messages, id: \.messageId) { message in
-							let previousMessage: MessageEntity? = previousByID[message.messageId] ?? nil
-							
 							UserMessageRow(
 								message: message,
-								allMessages: messages,
-								previousMessage: previousMessage,
+								replyMessage: repliesByID[message.replyID],
+								tapbacks: tapbacksByReplyID[message.messageId] ?? [],
+								previousMessage: previousByID[message.messageId],
 								preferredPeripheralNum: preferredPeripheralNum,
 								user: user,
 								replyMessageId: $replyMessageId,
 								messageFieldFocused: $messageFieldFocused,
 								messageToHighlight: $messageToHighlight,
 								scrollView: scrollView,
-								onInteractionComplete: handleInteractionComplete,
 								onTapback: { message in
 									tapbackFocused = false
 									tapbackTargetMessage = message
@@ -139,19 +404,6 @@ struct UserMessageList: View {
 									}
 								}
 							)
-							.onAppear {
-								// Only mark as read if the app is in the foreground
-								if !message.read && UIApplication.shared.applicationState == .active {
-									message.read = true
-									LocalNotificationManager().cancelNotificationForMessageId(message.messageId)
-									// Race condition, sometimes the app doesn't update unread count if we run this too early
-									// So, run it in the main queue after everything saves and stabilizes
-									DispatchQueue.main.async {
-										markMessagesAsRead()
-										scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-									}
-								}
-							}
 
 						}
 						// Invisible spacer to detect reaching bottom
@@ -164,6 +416,21 @@ struct UserMessageList: View {
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+					}
+				}
+				.task(id: "\(routerIsShowingThisUser())-\(user.num)") {
+					let isVisible = routerIsShowingThisUser()
+					loadMessages(markReadAfterLoad: isVisible)
+					guard isVisible else { return }
+					while !Task.isCancelled {
+						try? await Task.sleep(for: .seconds(5))
+						guard !Task.isCancelled else { return }
+						refreshIfNeeded()
+					}
+				}
+				.onChange(of: messages.last?.messageId) {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 					}
@@ -199,7 +466,8 @@ struct UserMessageList: View {
 			TextMessageField(
 				destination: .user(user),
 				replyMessageId: $replyMessageId,
-				isFocused: $messageFieldFocused
+				isFocused: $messageFieldFocused,
+				onMessageSent: { loadMessages(markReadAfterLoad: routerIsShowingThisUser()) }
 			)
 			.fixedSize(horizontal: false, vertical: true)
 		}
