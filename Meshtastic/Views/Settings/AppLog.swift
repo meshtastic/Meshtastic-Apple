@@ -29,11 +29,16 @@ struct AppLog: View {
 	@Environment(\.scenePhase) private var scenePhase
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	private let dateFormatStyle = Date.FormatStyle()
-		.hour(.twoDigits(amPM: .omitted))
-		.minute()
-		.second()
-		.secondFraction(.fractional(3))
+	/// Fixed ISO 8601-style timestamp in local time, e.g. "2026-05-29 09:37:16.305".
+	/// `en_US_POSIX` keeps the format literal and locale-independent so log lines stay
+	/// sortable and unambiguous regardless of device region.
+	private static let logDateFormatter: DateFormatter = {
+		let formatter = DateFormatter()
+		formatter.locale = Locale(identifier: "en_US_POSIX")
+		formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+		formatter.timeZone = .current
+		return formatter
+	}()
 
 	var body: some View {
 		Group {
@@ -205,9 +210,9 @@ struct AppLog: View {
 	private var desktopLogTable: some View {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
 					TableColumn("Time") { value in
-						Text(value.date.formatted(dateFormatStyle))
+						Text(Self.logDateFormatter.string(from: value.date))
 					}
-					.width(min: 125, max: 150)
+					.width(min: 185, max: 210)
 					TableColumn("Level") { value in
 						Text(value.level.description)
 							.foregroundStyle(value.level.color)
@@ -288,8 +293,8 @@ struct AppLog: View {
 				.frame(maxWidth: .infinity, alignment: .leading)
 		} else {
 			HStack(alignment: .top, spacing: 12) {
-				Text(value.date.formatted(dateFormatStyle))
-					.frame(width: 140, alignment: .leading)
+				Text(Self.logDateFormatter.string(from: value.date))
+					.frame(width: 185, alignment: .leading)
 				Text(value.level.description)
 					.foregroundStyle(value.level.color)
 					.frame(width: 100, alignment: .leading)
