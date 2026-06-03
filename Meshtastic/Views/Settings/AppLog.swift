@@ -212,7 +212,7 @@ struct AppLog: View {
 					TableColumn("Time") { value in
 						Text(Self.logDateFormatter.string(from: value.date))
 					}
-					.width(min: 185, max: 210)
+					.width(min: 215, max: 240)
 					TableColumn("Level") { value in
 						Text(value.level.description)
 							.foregroundStyle(value.level.color)
@@ -294,7 +294,9 @@ struct AppLog: View {
 		} else {
 			HStack(alignment: .top, spacing: 12) {
 				Text(Self.logDateFormatter.string(from: value.date))
-					.frame(width: 185, alignment: .leading)
+					.lineLimit(1)
+					.fixedSize(horizontal: true, vertical: false)
+					.frame(width: 240, alignment: .leading)
 				Text(value.level.description)
 					.foregroundStyle(value.level.color)
 					.frame(width: 100, alignment: .leading)
