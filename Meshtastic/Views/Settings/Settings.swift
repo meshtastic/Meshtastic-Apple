@@ -381,6 +381,27 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
+			NavigationLink(value: SettingsNavigationState.backupManagement) {
+				Label {
+					Text("Backup Management")
+				} icon: {
+					Image(systemName: "externaldrive")
+				}
+			}
+			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
+				Label {
+					Text("Data Browser")
+				} icon: {
+					Image(systemName: "tablecells")
+				}
+			}
+			NavigationLink(value: SettingsNavigationState.deviceLinks) {
+				Label {
+					Text("Device Links")
+				} icon: {
+					Image(systemName: "link")
+				}
+			}
 			NavigationLink(value: SettingsNavigationState.appFiles) {
 				Label {
 					Text("App Files")
@@ -395,20 +416,6 @@ struct Settings: View {
 					} icon: {
 						Image(systemName: "hammer")
 					}
-				}
-			}
-			NavigationLink(value: SettingsNavigationState.backupManagement) {
-				Label {
-					Text("Backup Management")
-				} icon: {
-					Image(systemName: "externaldrive")
-				}
-			}
-			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
-				Label {
-					Text("Data Browser")
-				} icon: {
-					Image(systemName: "tablecells")
 				}
 			}
 		}
@@ -492,14 +499,6 @@ struct Settings: View {
 					}
 				}
 				.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
-
-				NavigationLink(value: SettingsNavigationState.deviceLinks) {
-					Label {
-						Text("Device Links")
-					} icon: {
-						Image(systemName: "link")
-					}
-				}
 
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					if accessoryManager.isConnected {

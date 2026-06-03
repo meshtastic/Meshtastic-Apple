@@ -22,21 +22,16 @@ struct EnvironmentMetricsLog: View {
 	@StateObject var seriesList = MetricsSeriesList.environmentDefaultChartSeries
 
 	@State var isEditingColumnConfiguration = false
-	
-	private var chartData: [TelemetryEntity] {
-		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
-		return node.safeTelemetries(ofType: 1)
-			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
-			.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
-	}
-	
+	@State private var chartData: [TelemetryEntity] = []
+	@State private var totalReadings = 0
+
 	var body: some View {
 		VStack {
-			if node.hasEnvironmentMetrics {
+			if totalReadings > 0 {
 				let chartRange = applyMargins(seriesList.chartRange(forData: chartData))
 				VStack {
 					if chartData.count > 0 {
-						GroupBox(label: Label("\(chartData.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+						GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 							Chart(seriesList.visible) { series in
 								ForEach(chartData, id: \.time) { dataPoint in
 									series.body(dataPoint, inChartRange: chartRange)
@@ -120,14 +115,20 @@ struct EnvironmentMetricsLog: View {
 						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
-					) {
-						Button("Delete all environment metrics?", role: .destructive) {
-							Task {
-								if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 1) {
-									Logger.services.error("Clear Environment Metrics Log Failed")
+						) {
+							Button("Delete all environment metrics?", role: .destructive) {
+								Task {
+									if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 1) {
+										Logger.services.info("Cleared Environment Metrics for \(node.num, privacy: .public)")
+										await MainActor.run {
+											refreshMetrics()
+											NotificationCenter.default.post(name: .nodeLogAvailabilityDidChange, object: node.num)
+										}
+									} else {
+										Logger.services.error("Clear Environment Metrics Log Failed")
+									}
 								}
 							}
-						}
 					}
 					Button {
 						exportString = telemetryToCsvFile(telemetry: chartData, metricsType: 1)
@@ -146,6 +147,12 @@ struct EnvironmentMetricsLog: View {
 			} else {
 				ContentUnavailableView("No Environment Metrics", systemImage: "slash.circle")
 			}
+		}
+		.onAppear {
+			refreshMetrics()
+		}
+		.onChange(of: node.lastHeard) {
+			refreshMetrics()
 		}
 
 		.navigationTitle("Environment Metrics Log")
@@ -179,6 +186,14 @@ struct EnvironmentMetricsLog: View {
 		let lower = range.lowerBound == 0.0 ? 0.0  : range.lowerBound - margin
 		let upper = range.upperBound + margin
 		return lower...upper
+	}
+
+	private func refreshMetrics() {
+		totalReadings = node.telemetryCount(ofType: 1, context: context)
+		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
+		chartData = node.safeTelemetries(ofType: 1)
+			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
+			.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
 	}
 }
 

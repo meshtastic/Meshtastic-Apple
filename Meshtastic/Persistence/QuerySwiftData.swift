@@ -39,9 +39,10 @@ func getTraceRoute(id: Int64, context: ModelContext) -> TraceRouteEntity? {
 
 func getUser(id: Int64, context: ModelContext) -> UserEntity {
 	let userNum = id
-	let descriptor = FetchDescriptor<UserEntity>(
+	var descriptor = FetchDescriptor<UserEntity>(
 		predicate: #Predicate { $0.num == userNum }
 	)
+	descriptor.fetchLimit = 1
 	if let existing = try? context.fetch(descriptor).first {
 		return existing
 	}
@@ -53,9 +54,10 @@ func getUser(id: Int64, context: ModelContext) -> UserEntity {
 
 func getWaypoint(id: Int64, context: ModelContext) -> WaypointEntity {
 	let waypointId = id
-	let descriptor = FetchDescriptor<WaypointEntity>(
+	var descriptor = FetchDescriptor<WaypointEntity>(
 		predicate: #Predicate { $0.id == waypointId }
 	)
+	descriptor.fetchLimit = 1
 	if let existing = try? context.fetch(descriptor).first {
 		return existing
 	}

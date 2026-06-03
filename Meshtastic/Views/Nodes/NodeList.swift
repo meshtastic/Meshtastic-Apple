@@ -41,7 +41,7 @@ struct NodeList: View {
 		} detail: {
 			NavigationStack {
 				if let selectedNum = router.selectedNodeNum,
-				   let node = getNodeInfo(id: selectedNum, context: context) {
+				   let node = router.cachedNodeInfo(id: selectedNum, context: context) {
 					NodeDetail(node: node)
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")
@@ -104,7 +104,6 @@ struct NodeList: View {
 		.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
 		.autocorrectionDisabled(true)
 		.scrollDismissesKeyboard(.immediately)
-		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(getNodeCount())))
 		.listStyle(.plain)
 		.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
@@ -143,13 +142,6 @@ struct NodeList: View {
 		}
 	}
 
-	// Helper to get the count of nodes for the navigation title
-	private func getNodeCount() -> Int {
-		var descriptor = FetchDescriptor<NodeInfoEntity>()
-		descriptor.predicate = filters.buildSwiftDataPredicate()
-		return (try? context.fetchCount(descriptor)) ?? 0
-	}
-
 	@ViewBuilder
 	private var deleteNodeButton: some View {
 		Button("Remove", role: .destructive) {
@@ -176,6 +168,7 @@ struct NodeList: View {
 //
 private struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var router: Router
 	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
 	private var allNodes: [NodeInfoEntity]
 	@Environment(\.modelContext) private var context
@@ -235,22 +228,54 @@ private struct FilteredNodeList: View {
 		)
 	}
 
-	private var filteredNodes: [NodeInfoEntity] {
-		allNodes
-			.filter { filters.matchesPostPredicate($0) }
-			.sorted {
-				if $0.ignored != $1.ignored { return !$0.ignored && $1.ignored }
-				if $0.favorite != $1.favorite { return $0.favorite && !$1.favorite }
-				return ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast)
+	private func displayNodes(activeNodeNum: Int64?) -> [NodeInfoEntity] {
+		let searchText = filters.searchText.lowercased()
+		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
+		let distanceBounds = filters.currentDistanceBounds
+		let filterLookup = NodeListFilterLookup(
+			nodes: allNodes,
+			needsEnvironment: filters.isEnvironment,
+			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
+			context: context
+		)
+		var seenNodeNums = Set<Int64>()
+		seenNodeNums.reserveCapacity(allNodes.count)
+		var connectedNode: NodeInfoEntity?
+		var favoriteNodes: [NodeInfoEntity] = []
+		var regularNodes: [NodeInfoEntity] = []
+		favoriteNodes.reserveCapacity(allNodes.count / 20)
+		regularNodes.reserveCapacity(allNodes.count)
+
+		for node in allNodes where filters.matchesPostPredicate(
+			node,
+			normalizedSearchText: searchText,
+			onlineThreshold: onlineThreshold,
+			distanceBounds: distanceBounds,
+			lookup: filterLookup
+		) {
+			guard seenNodeNums.insert(node.num).inserted else { continue }
+			if let activeNodeNum, node.num == activeNodeNum {
+				connectedNode = node
+			} else if node.favorite {
+				favoriteNodes.append(node)
+			} else {
+				regularNodes.append(node)
 			}
+		}
+
+		var nodes: [NodeInfoEntity] = []
+		nodes.reserveCapacity((connectedNode == nil ? 0 : 1) + favoriteNodes.count + regularNodes.count)
+		if let connectedNode {
+			nodes.append(connectedNode)
+		}
+		nodes.append(contentsOf: favoriteNodes)
+		nodes.append(contentsOf: regularNodes)
+		return nodes
 	}
 
 	// The body of the view
 	var body: some View {
-		// If the connected node passes filters, always show it first
-		let nodesWithConnectedFirst = filteredNodes.filter { $0.num == accessoryManager.activeDeviceNum } + filteredNodes.filter { $0.num != accessoryManager.activeDeviceNum }
-		var seenNodeNums = Set<Int64>()
-		let uniqueNodes = nodesWithConnectedFirst.filter { seenNodeNums.insert($0.num).inserted }
+		let uniqueNodes = displayNodes(activeNodeNum: accessoryManager.activeDeviceNum)
 		List(uniqueNodes, id: \.num, selection: $selectedNodeNum) { node in
 			NavigationLink(value: node.num) {
 				switch nodeListDensity {
@@ -273,6 +298,13 @@ private struct FilteredNodeList: View {
 					connectedNode: connectedNode
 				)
 			}
+		}
+		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(uniqueNodes.count)))
+		.onAppear {
+			router.updateNodeIndex(from: allNodes)
+		}
+		.onChange(of: allNodes.count) { _, _ in
+			router.updateNodeIndex(from: allNodes)
 		}
 	}
 
@@ -313,6 +345,72 @@ private struct FilteredNodeList: View {
 	}
 }
 
+private struct NodeListFilterLookup {
+	private let environmentNodeNums: Set<Int64>?
+	private let distanceNodeNums: Set<Int64>?
+
+	init(
+		nodes: [NodeInfoEntity],
+		needsEnvironment: Bool,
+		distanceBounds: NodeDistanceFilterBounds?,
+		context: ModelContext
+	) {
+		let nodeNums = Array(Set(nodes.map(\.num)))
+		if needsEnvironment {
+			self.environmentNodeNums = Self.fetchEnvironmentNodeNums(nodeNums: nodeNums, context: context)
+		} else {
+			self.environmentNodeNums = nil
+		}
+		if let distanceBounds {
+			self.distanceNodeNums = Self.fetchDistanceNodeNums(nodeNums: nodeNums, bounds: distanceBounds, context: context)
+		} else {
+			self.distanceNodeNums = nil
+		}
+	}
+
+	func hasEnvironmentMetrics(_ node: NodeInfoEntity) -> Bool {
+		environmentNodeNums?.contains(node.num) ?? node.hasEnvironmentMetrics
+	}
+
+	func isWithinDistance(_ node: NodeInfoEntity) -> Bool {
+		distanceNodeNums?.contains(node.num) ?? false
+	}
+
+	private static func fetchEnvironmentNodeNums(nodeNums: [Int64], context: ModelContext) -> Set<Int64> {
+		guard !nodeNums.isEmpty else { return [] }
+		let metricsType: Int32 = 1
+		let descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> {
+				$0.metricsType == metricsType
+				&& $0.nodeTelemetry != nil
+				&& ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false)
+			}
+		)
+		let metrics = (try? context.fetch(descriptor)) ?? []
+		return Set(metrics.compactMap { $0.nodeTelemetry?.num })
+	}
+
+	private static func fetchDistanceNodeNums(
+		nodeNums: [Int64],
+		bounds: NodeDistanceFilterBounds,
+		context: ModelContext
+	) -> Set<Int64> {
+		guard !nodeNums.isEmpty else { return [] }
+		let descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> {
+				$0.latest == true
+				&& $0.nodePosition != nil
+				&& ($0.nodePosition.flatMap { nodeNums.contains($0.num) } ?? false)
+			}
+		)
+		let positions = (try? context.fetch(descriptor)) ?? []
+		return Set(positions.compactMap { position in
+			guard bounds.contains(position) else { return nil }
+			return position.nodePosition?.num
+		})
+	}
+}
+
 //
 //  NodeFilterParameters+Predicate.swift
 //  Meshtastic
@@ -320,10 +418,15 @@ private struct FilteredNodeList: View {
 
 fileprivate extension NodeFilterParameters {
 	/// Filters already pushed into the @Query predicate: ignored, favorite, viaLora/viaMqtt, hopsAway.
-	func matchesPostPredicate(_ node: NodeInfoEntity) -> Bool {
+	func matchesPostPredicate(
+		_ node: NodeInfoEntity,
+		normalizedSearchText: String,
+		onlineThreshold: Date?,
+		distanceBounds: NodeDistanceFilterBounds?,
+		lookup: NodeListFilterLookup
+	) -> Bool {
 		// Search text (requires relationship traversal)
-		if !searchText.isEmpty {
-			let text = searchText.lowercased()
+		if !normalizedSearchText.isEmpty {
 			let matchesSearch = [
 				node.user?.userId,
 				node.user?.numString,
@@ -331,7 +434,7 @@ fileprivate extension NodeFilterParameters {
 				node.user?.hwDisplayName,
 				node.user?.longName,
 				node.user?.shortName
-			].compactMap { $0 }.contains { $0.localizedCaseInsensitiveContains(text) }
+			].compactMap { $0 }.contains { $0.localizedCaseInsensitiveContains(normalizedSearchText) }
 			if !matchesSearch { return false }
 		}
 
@@ -344,7 +447,7 @@ fileprivate extension NodeFilterParameters {
 		// Online filter (requires date computation)
 		if isOnline {
 			guard let lastHeard = node.lastHeard,
-				  let threshold = Calendar.current.date(byAdding: .minute, value: -120, to: Date()) else {
+				  let threshold = onlineThreshold else {
 				return false
 			}
 			if lastHeard < threshold { return false }
@@ -357,44 +460,16 @@ fileprivate extension NodeFilterParameters {
 
 		// Environment filter (requires to-many relationship traversal)
 		if isEnvironment {
-			if !node.hasEnvironmentMetrics { return false }
+			if !lookup.hasEnvironmentMetrics(node) { return false }
 		}
 
-		// Distance filter (requires to-many relationship + math)
-		if distanceFilter {
-			if let pointOfInterest = LocationsHandler.currentLocation {
-				if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude &&
-					pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-					let d: Double = maxDistance * 1.1
-					let r: Double = 6371009
-					let meanLatitude = pointOfInterest.latitude * .pi / 180
-					let deltaLatitude = d / r * 180 / .pi
-					let deltaLongitude = d / (r * cos(meanLatitude)) * 180 / .pi
-					let minLatitude = pointOfInterest.latitude - deltaLatitude
-					let maxLatitude = pointOfInterest.latitude + deltaLatitude
-					let minLongitude = pointOfInterest.longitude - deltaLongitude
-					let maxLongitude = pointOfInterest.longitude + deltaLongitude
-
-					let hasPositionInRange = node.positions.contains { position in
-						guard position.latest else { return false }
-						let lon = Double(position.longitudeI) / 1e7
-						let lat = Double(position.latitudeI) / 1e7
-						return lon >= minLongitude && lon <= maxLongitude && lat >= minLatitude && lat <= maxLatitude
-					}
-					if !hasPositionInRange { return false }
-				}
+		// Distance filter (requires latest position lookup)
+		if distanceFilter, distanceBounds != nil {
+			guard lookup.isWithinDistance(node) else {
+				return false
 			}
 		}
 
 		return true
-	}
-
-	/// SwiftData predicate for count queries — simplified version that handles the most common case (ignored filter)
-	func buildSwiftDataPredicate() -> Predicate<NodeInfoEntity>? {
-		if isIgnored {
-			return #Predicate<NodeInfoEntity> { $0.ignored == true }
-		} else {
-			return #Predicate<NodeInfoEntity> { $0.ignored == false }
-		}
 	}
 }
