@@ -51,6 +51,7 @@ struct ChannelMessageList: View {
 	@State private var tapbackTargetMessage: MessageEntity?
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
+	@State private var redrawTapbacksTrigger = UUID()
 	/// All messages for this channel index, non-emoji. Does NOT include the toUser == nil
 	/// guard because comparing an optional relationship to nil in a #Predicate crashes
 	/// SwiftData on iOS 26. The channel-only filter is applied in the computed property below.
