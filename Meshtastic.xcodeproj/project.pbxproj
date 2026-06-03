@@ -3570,71 +3570,71 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
-            requirement = {
-                kind = upToNextMinorVersion;
-                minimumVersion = 0.2.2;
-            };
-        };
-        102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
-            requirement = {
-                kind = versionRange;
-                maximumVersion = 4.0.0;
-                minimumVersion = 3.3.0;
-            };
-        };
-        2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/swhitty/SwiftDraw";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 0.25.3;
-            };
-        };
-        2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 4.16.0;
-            };
-        };
-        259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/apple/swift-protobuf.git";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 1.26.0;
-            };
-        };
-        DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 1.17.0;
-            };
-        };
-        DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/emqx/CocoaMQTT";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 2.0.0;
-            };
-        };
-        AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/swiftlang/swift-markdown";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 0.5.0;
-            };
-        };
+		10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.5.1;
+			};
+		};
+		102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
+			requirement = {
+				kind = versionRange;
+				maximumVersion = 4.0.0;
+				minimumVersion = 3.3.0;
+			};
+		};
+		2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swhitty/SwiftDraw";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.25.3;
+			};
+		};
+		2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.16.0;
+			};
+		};
+		259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.26.0;
+			};
+		};
+		AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-markdown";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.0;
+			};
+		};
+		DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.0;
+			};
+		};
+		DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/emqx/CocoaMQTT";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */

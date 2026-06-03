@@ -1136,6 +1136,10 @@ public struct Config: Sendable {
       ///
       /// Can not be auto detected but set by proto. Used for 128x128 screens
       case oledSh1107128128 // = 4
+
+      ///
+      /// Can not be auto detected but set by proto. Used for 64x128 rotated screens
+      case oledSh1107Rotated // = 5
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1149,6 +1153,7 @@ public struct Config: Sendable {
         case 2: self = .oledSh1106
         case 3: self = .oledSh1107
         case 4: self = .oledSh1107128128
+        case 5: self = .oledSh1107Rotated
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1160,6 +1165,7 @@ public struct Config: Sendable {
         case .oledSh1106: return 2
         case .oledSh1107: return 3
         case .oledSh1107128128: return 4
+        case .oledSh1107Rotated: return 5
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1171,6 +1177,7 @@ public struct Config: Sendable {
         .oledSh1106,
         .oledSh1107,
         .oledSh1107128128,
+        .oledSh1107Rotated,
       ]
 
     }
@@ -1610,8 +1617,8 @@ public struct Config: Sendable {
       case itu12M // = 27
 
       ///
-      /// ITU Region 2 / 3 Amateur Radio 2m band (144-148 MHz)
-      case itu232M // = 28
+      /// ITU Region 2 Amateur Radio 2m band (144-148 MHz)
+      case itu22M // = 28
 
       ///
       /// EU 866MHz band (Band no. 47b of 2006/771/EC and subsequent amendments) for Non-specific short-range devices (SRD)
@@ -1625,6 +1632,10 @@ public struct Config: Sendable {
       ///
       /// EU 868MHz band, with narrow presets
       case euN868 // = 32
+
+      ///
+      /// ITU Region 3 Amateur Radio 2m band (144-148 MHz)
+      case itu32M // = 33
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1661,11 +1672,12 @@ public struct Config: Sendable {
         case 25: self = .np865
         case 26: self = .br902
         case 27: self = .itu12M
-        case 28: self = .itu232M
+        case 28: self = .itu22M
         case 29: self = .eu866
         case 30: self = .eu874
         case 31: self = .eu917
         case 32: self = .euN868
+        case 33: self = .itu32M
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1700,11 +1712,12 @@ public struct Config: Sendable {
         case .np865: return 25
         case .br902: return 26
         case .itu12M: return 27
-        case .itu232M: return 28
+        case .itu22M: return 28
         case .eu866: return 29
         case .eu874: return 30
         case .eu917: return 31
         case .euN868: return 32
+        case .itu32M: return 33
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1739,11 +1752,12 @@ public struct Config: Sendable {
         .np865,
         .br902,
         .itu12M,
-        .itu232M,
+        .itu22M,
         .eu866,
         .eu874,
         .eu917,
         .euN868,
+        .itu32M,
       ]
 
     }
@@ -2779,7 +2793,7 @@ extension Config.DisplayConfig.DisplayUnits: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OLED_AUTO\0\u{1}OLED_SSD1306\0\u{1}OLED_SH1106\0\u{1}OLED_SH1107\0\u{1}OLED_SH1107_128_128\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OLED_AUTO\0\u{1}OLED_SSD1306\0\u{1}OLED_SH1106\0\u{1}OLED_SH1107\0\u{1}OLED_SH1107_128_128\0\u{1}OLED_SH1107_ROTATED\0")
 }
 
 extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
@@ -2990,7 +3004,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 }
 
 extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}US\0\u{1}EU_433\0\u{1}EU_868\0\u{1}CN\0\u{1}JP\0\u{1}ANZ\0\u{1}KR\0\u{1}TW\0\u{1}RU\0\u{1}IN\0\u{1}NZ_865\0\u{1}TH\0\u{1}LORA_24\0\u{1}UA_433\0\u{1}UA_868\0\u{1}MY_433\0\u{1}MY_919\0\u{1}SG_923\0\u{1}PH_433\0\u{1}PH_868\0\u{1}PH_915\0\u{1}ANZ_433\0\u{1}KZ_433\0\u{1}KZ_863\0\u{1}NP_865\0\u{1}BR_902\0\u{1}ITU1_2M\0\u{1}ITU23_2M\0\u{1}EU_866\0\u{1}EU_874\0\u{1}EU_917\0\u{1}EU_N_868\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}US\0\u{1}EU_433\0\u{1}EU_868\0\u{1}CN\0\u{1}JP\0\u{1}ANZ\0\u{1}KR\0\u{1}TW\0\u{1}RU\0\u{1}IN\0\u{1}NZ_865\0\u{1}TH\0\u{1}LORA_24\0\u{1}UA_433\0\u{1}UA_868\0\u{1}MY_433\0\u{1}MY_919\0\u{1}SG_923\0\u{1}PH_433\0\u{1}PH_868\0\u{1}PH_915\0\u{1}ANZ_433\0\u{1}KZ_433\0\u{1}KZ_863\0\u{1}NP_865\0\u{1}BR_902\0\u{1}ITU1_2M\0\u{1}ITU2_2M\0\u{1}EU_866\0\u{1}EU_874\0\u{1}EU_917\0\u{1}EU_N_868\0\u{1}ITU3_2M\0")
 }
 
 extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
