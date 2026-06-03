@@ -24206,6 +24206,7 @@
       }
     },
     "Debug Logs%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -60118,9 +60119,6 @@
       }
     },
     "Packet Stream" : {
-
-    },
-    "Packet Stream%@" : {
 
     },
     "Packets" : {

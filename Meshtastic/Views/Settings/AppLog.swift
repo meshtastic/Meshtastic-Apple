@@ -117,14 +117,16 @@ struct AppLog: View {
 		.navigationBarTitle(navTitle, displayMode: .inline)
 		.toolbar {
 #if targetEnvironment(macCatalyst)
-			ToolbarItem(placement: .topBarLeading) {
-				Button(action: {
-					Task {
-						await logs = searchAppLogs()
-						logs.sort(using: sortOrder)
+			if !isPacketStreamOn {
+				ToolbarItem(placement: .topBarLeading) {
+					Button(action: {
+						Task {
+							await logs = searchAppLogs()
+							logs.sort(using: sortOrder)
+						}
+					}) {
+						Image(systemName: "arrow.clockwise.circle")
 					}
-				}) {
-					Image(systemName: "arrow.clockwise.circle")
 				}
 			}
 #endif
