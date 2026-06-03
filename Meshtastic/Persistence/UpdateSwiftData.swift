@@ -121,12 +121,12 @@ extension MeshPackets {
 		let channelIndex = channel.index
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+				msg.channel == channelIndex && msg.isEmoji == false
 			}
 		)
 		do {
 			let objects = try modelContext.fetch(descriptor)
-			for object in objects {
+			for object in objects where object.toUser == nil {
 				modelContext.delete(object)
 			}
 			try modelContext.save()
