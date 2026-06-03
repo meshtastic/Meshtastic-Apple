@@ -359,11 +359,11 @@ struct MeshMap: View {
 				mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 			case .satellite:
 				mapStyle = MapStyle.imagery(elevation: .realistic)
-				case .offline:
-					mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-				}
-				refreshVisiblePositionSnapshots(from: positionState.positions)
+			case .offline:
+				mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 			}
+			refreshVisiblePositionSnapshots(from: positionState.positions)
+		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
 			GeoJSONOverlayManager.shared.clearCache()
