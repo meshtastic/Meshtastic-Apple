@@ -1,10 +1,11 @@
 <!--
 Sync Impact Report
-  Version change: 1.2.0 → 1.3.0
+  Version change: 1.3.0 → 1.3.1
   Modified principles: none
-  Updated sections: none
-  Added sections:
-    - Principle VIII (Meshtastic Design Standards Compliance)
+  Updated sections:
+    - Development Workflow → Documentation: user-facing changes now go in the
+      in-app docs "What's New" section; RELEASENOTES.md removed
+  Added sections: none
   Removed sections: N/A
   Templates requiring updates:
     - .specify/templates/plan-template.md ✅ no changes needed
@@ -197,7 +198,9 @@ cross-platform consistency as standards evolve.
 - **Protobuf Updates**: Run `scripts/gen_protos.sh`, build, test,
   and commit the generated changes.
 - **Documentation**: Update project documentation to reflect changes.
-  Release notes go in `Meshtastic/RELEASENOTES.md`.
+  User-facing changes go in the "What's New" section of the in-app
+  documentation (`Meshtastic/Resources/docs/markdown/user/help-and-docs.md`
+  and its generated `.html`).
 
 ## Governance
 
@@ -219,4 +222,4 @@ with these principles.
   MUST be justified in the PR description and approved by a
   maintainer.
 
-**Version**: 1.3.0 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-05-03
+**Version**: 1.3.1 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-06-03
