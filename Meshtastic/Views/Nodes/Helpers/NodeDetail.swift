@@ -41,7 +41,6 @@ struct NodeDetail: View {
 	@State private var dateFormatRelative: Bool = true
 	@Bindable	var node: NodeInfoEntity
 	var showMapLink: Bool = true
-	@State private var environmentSectionHeight: CGFloat = 0
 	@State private var latestPosition: PositionEntity?
 	@State private var latestDeviceMetrics: TelemetryEntity?
 	@State private var latestEnvironmentMetrics: TelemetryEntity?
@@ -320,10 +319,6 @@ struct NodeDetail: View {
 				VStack(spacing: 0) {
 					if latestEnvironmentMetrics == nil {
 						LocalWeatherConditions(location: latestPosition?.nodeLocation)
-							.frame(height: environmentSectionHeight)
-							.onPreferenceChange(WeatherKitTilesHeightKey.self) { newHeight in
-								self.environmentSectionHeight = newHeight
-							}
 					} else if let metrics = latestEnvironmentMetrics {
 						VStack {
 							if metrics.iaq ?? -1 > 0 {
