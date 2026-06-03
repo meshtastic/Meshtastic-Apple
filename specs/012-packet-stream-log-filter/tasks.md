@@ -17,7 +17,7 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Fetch and review the [Meshtastic Client Design Standards](https://raw.githubusercontent.com/meshtastic/design/refs/heads/master/standards/meshtastic_design_standards_latest.md) for list/filter/toggle conventions (Constitution VIII); capture the conventions to apply to the filter accordions and Packet Stream control as a short note in `specs/012-packet-stream-log-filter/research.md` (append under a "Design standards" heading).
+- [X] T001 Fetch and review the [Meshtastic Client Design Standards](https://raw.githubusercontent.com/meshtastic/design/refs/heads/master/standards/meshtastic_design_standards_latest.md) for list/filter/toggle conventions (Constitution VIII); capture the conventions to apply to the filter accordions and Packet Stream control as a short note in `specs/012-packet-stream-log-filter/research.md` (append under a "Design standards" heading).
 
 ---
 
@@ -109,9 +109,9 @@
 
 - [ ] T024 [P] Verify export/copy while streaming: open an exported CSV / Console with a position packet visible and confirm coordinates render redacted (`<private>`), not raw (FR-024/SC-010).
 - [ ] T025 [P] Performance check on a busy mesh (or `PerformanceSeedData`): confirm smooth scroll, bounded memory at the 1,000-entry cap, and ≤≈6/sec reveal (SC-005/SC-008).
-- [ ] T026 [P] Design-standards conformance pass over the final filter + stream UI against the T001 notes (Constitution VIII).
-- [ ] T027 [P] Update `Meshtastic/RELEASENOTES.md` (and any log-viewer docs) to mention Packet Stream and the accordion filter.
-- [ ] T028 Run the full test suite (Swift Testing + snapshots) and SwiftLint; ensure lint-clean per Constitution VI before PR.
+- [X] T026 [P] Design-standards conformance pass over the final filter + stream UI against the T001 notes (Constitution VIII).
+- [X] T027 [P] Update `Meshtastic/RELEASENOTES.md` (and any log-viewer docs) to mention Packet Stream and the accordion filter.
+- [X] T028 Run the full test suite (Swift Testing + snapshots) and SwiftLint; ensure lint-clean per Constitution VI before PR.
 - [ ] T029 Walk the [quickstart.md](quickstart.md) manual checklist end-to-end on device and confirm each FR/SC check passes.
 
 ---

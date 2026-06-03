@@ -75,3 +75,16 @@ All open unknowns from the Technical Context are resolved below. Spec clarificat
 | Packet signal source | Audit + reuse Mesh; outbound moved from Transport (R5) |
 | PII | Preserve `privacy:` markers verbatim (R6) |
 | Accordion UI | DisclosureGroups + top Packet Stream toggle (R7) |
+
+## Design standards review (T001 / T026, v1.4)
+
+Reviewed against Meshtastic Client Design Standards v1.4 (the `_latest` pointer resolves to `v1_4.md`). Findings for the filter + stream UI:
+
+- **List rows neutral** (checklist): stream rows color the *text* by log level (matching the existing log Table), not the row background. ✓ consistent with the existing log view.
+- **Native patterns / empty state**: native `Toggle`, `Form`/`Section`, `ContentUnavailableView` ("Waiting for packets…"), `ScrollViewReader`. ✓
+- **Iconography & labels**: the "Live" button is icon + text label. The filter button is icon-only — but it mirrors the app's existing icon-only filter button, so no new pattern is introduced (desktop tooltip guidance applies app-wide, not a regression here).
+- **Touch targets ≥44pt**: bordered-prominent buttons with padding; toggle/rows are standard Form controls. ✓
+- **Dynamic Type / 16px body**: macCatalyst stream rows use `.font(.body)`; phone uses `.caption` matching the existing phone log Table. ✓ (inherits app behavior)
+- **Color usage (Section 9)** — minor note: the "LIVE" badge and Packet Stream label use `LogCategories.mesh.color` (system green), reused from the existing Mesh filter row. On a light capsule this green-on-light could be below WCAG AA for small text. It matches existing app usage of that category color, so it's consistent; a future tweak could switch the badge text to Success Green 600 (`#3FB86D`) per Section 9. Not blocking.
+
+Conclusion: conforms at the level of the surrounding app; no blocking changes. Defaults (both accordion sections collapsed) kept.
