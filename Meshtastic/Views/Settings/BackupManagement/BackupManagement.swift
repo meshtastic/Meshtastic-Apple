@@ -18,6 +18,9 @@ struct BackupManagement: View {
 	@State private var entryToDelete: BackupEntry?
 	@State private var isRestoringBackup = false
 	@State private var restoreErrorMessage: String?
+	@State private var isBackingUp = false
+	@State private var backupErrorMessage: String?
+	@State private var showBackupSuccessBanner = false
 
 	private var showsInlineDeleteButton: Bool {
 		#if targetEnvironment(macCatalyst)
@@ -113,10 +116,33 @@ struct BackupManagement: View {
 		}
 		.navigationTitle("Backup Management")
 		.navigationBarTitleDisplayMode(.inline)
+		.toolbar {
+			ToolbarItem(placement: .primaryAction) {
+				Button {
+					Task { await backupNow() }
+				} label: {
+					Image(systemName: isBackingUp ? "swiftdata" : "swiftdata")
+						.symbolEffect(.pulse, isActive: isBackingUp)
+						.imageScale(.large)
+						.padding(8)
+						.background(.thinMaterial, in: Circle())
+				}
+				.disabled(isBackingUp || isRestoringBackup)
+				.accessibilityLabel("Backup Now")
+			}
+		}
 		.onAppear {
 			refreshBackups()
 		}
-		.disabled(isRestoringBackup)
+		.alert("Backup Failed", isPresented: Binding(
+			get: { backupErrorMessage != nil },
+			set: { if !$0 { backupErrorMessage = nil } }
+		)) {
+			Button("OK", role: .cancel) {}
+		} message: {
+			Text(backupErrorMessage ?? "")
+		}
+		.disabled(isRestoringBackup || isBackingUp)
 		.overlay {
 			if isRestoringBackup {
 				ZStack {
@@ -184,6 +210,31 @@ struct BackupManagement: View {
 			restoreErrorMessage = reason
 		case .noBackupFound:
 			restoreErrorMessage = "No backup was found for this node."
+		}
+	}
+
+	@MainActor
+	private func backupNow() async {
+		let nodeNum: Int64? = accessoryManager.activeDeviceNum ?? {
+			let num = Int64(UserDefaults.preferredPeripheralNum)
+			return num > 0 ? num : nil
+		}()
+		guard let nodeNum else {
+			backupErrorMessage = "No connected node found to back up."
+			return
+		}
+		let nodeName = accessoryManager.devices.first(where: { $0.num == nodeNum })?.longName
+		isBackingUp = true
+		defer { isBackingUp = false }
+
+		let result = await NodeBackupManager.shared.createBackup(forNode: nodeNum, nodeName: nodeName)
+		switch result {
+		case .success:
+			refreshBackups()
+		case .skipped(let reason):
+			backupErrorMessage = reason
+		case .noBackupFound:
+			backupErrorMessage = "Backup could not be created."
 		}
 	}
 }
