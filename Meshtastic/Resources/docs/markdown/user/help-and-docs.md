@@ -23,6 +23,7 @@ Welcome to the Meshtastic Apple app documentation. Browse the pages below or use
 
 ## What's New
 
+- **Packet Stream** — Watch mesh packets cross the network live in the Debug Logs view, paced for readability. The log filter's Categories and Log Levels are now collapsible, with Packet Stream as the top option. [Learn more](settings.md)
 - **Audio Module Config** — Codec2 voice communication settings for 2.4 GHz radios (LORA_24 region). [Learn more](settings.md)
 - **Neighbor Info Module Config** — Neighbor info broadcasting with configurable update interval (4–72 hours). [Learn more](settings.md)
 - **Pax Counter Thresholds** — WiFi and BLE RSSI threshold fields for device counting sensitivity. [Learn more](settings.md)
