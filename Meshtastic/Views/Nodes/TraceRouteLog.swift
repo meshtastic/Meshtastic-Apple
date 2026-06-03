@@ -19,7 +19,8 @@ struct TraceRouteLog: View {
 	@State var isExporting = false
 	@State var exportString = ""
 	@Bindable var node: NodeInfoEntity
-	@State private var selectedRoute: TraceRouteEntity?
+	@State private var traceRoutes: [TraceRouteEntity] = []
+	@State private var selectedRouteID: PersistentIdentifier?
 	// Map Configuration
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .all, showsTraffic: true)
@@ -31,12 +32,16 @@ struct TraceRouteLog: View {
 	@State var angle: Angle = .zero
 	@State var animation: Animation?
 
+	private var selectedRoute: TraceRouteEntity? {
+		guard let selectedRouteID else { return nil }
+		return traceRoutes.first { $0.persistentModelID == selectedRouteID }
+	}
+
 	var body: some View {
-		let traceRoutes = node.safeTraceRoutes()
 		HStack(alignment: .top) {
 			VStack {
 				VStack {
-					List(traceRoutes, id: \.self, selection: $selectedRoute) { route in
+					List(traceRoutes, id: \.persistentModelID, selection: $selectedRouteID) { route in
 						Label {
 							let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
 							if route.response && route.hopsTowards == route.hopsBack {
@@ -61,9 +66,13 @@ struct TraceRouteLog: View {
 						}
 						.swipeActions {
 							Button(role: .destructive) {
+								if selectedRouteID == route.persistentModelID {
+									selectedRouteID = nil
+								}
 								context.delete(route)
 								do {
 									try context.save()
+									refreshTraceRoutes()
 								} catch let error as NSError {
 									Logger.data.error("\(error.localizedDescription, privacy: .public)")
 								}
@@ -217,12 +226,26 @@ struct TraceRouteLog: View {
 			}
 			.navigationTitle("Trace Route Log")
 		}
+		.onAppear {
+			refreshTraceRoutes()
+		}
+		.onChange(of: node.lastHeard) {
+			refreshTraceRoutes()
+		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		}
 	}
+
+	private func refreshTraceRoutes() {
+		traceRoutes = node.safeTraceRoutes()
+		if let selectedRouteID, !traceRoutes.contains(where: { $0.persistentModelID == selectedRouteID }) {
+			self.selectedRouteID = nil
+		}
+	}
+
 	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
 		ForEach(0..<indexes, id: \.self) { idx in
 			TraceRouteComponent(animation: animation) {

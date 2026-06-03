@@ -22,20 +22,18 @@ struct DeviceMetricsLog: View {
 	@State private var airtimeChartColor: Color = .yellow
 	@State private var channelUtilizationChartColor: Color = .green
 	@Bindable var node: NodeInfoEntity
+	@State private var deviceMetrics: [TelemetryEntity] = []
+	@State private var chartData: [TelemetryEntity] = []
+	@State private var totalReadings = 0
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
 	@State private var chartSelection: Date?
 
 	var body: some View {
 		VStack {
-			if node.hasDeviceMetrics {
-				let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
-				let deviceMetrics = node.safeTelemetries(ofType: 0)
-				let chartData = deviceMetrics
-						.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
-						.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+			if totalReadings > 0 {
 				if chartData.count > 0 {
-					GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+					GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 						Chart {
 							ForEach(chartData, id: \.self) { point in
 								if let pointTime = point.time {
@@ -200,6 +198,10 @@ struct DeviceMetricsLog: View {
 							Task {
 								if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 0) {
 									Logger.data.notice("Cleared Device Metrics for \(node.num, privacy: .public)")
+									await MainActor.run {
+										refreshMetrics()
+										NotificationCenter.default.post(name: .nodeLogAvailabilityDidChange, object: node.num)
+									}
 								} else {
 									Logger.data.error("Clear Device Metrics Log Failed")
 								}
@@ -229,6 +231,12 @@ struct DeviceMetricsLog: View {
 				ContentUnavailableView("No Device Metrics", systemImage: "slash.circle")
 			}
 		}
+		.onAppear {
+			refreshMetrics()
+		}
+		.onChange(of: node.lastHeard) {
+			refreshMetrics()
+		}
 		.navigationTitle("Device Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -236,21 +244,30 @@ struct DeviceMetricsLog: View {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		}
-		.fileExporter(
-			isPresented: $isExporting,
-			document: CsvDocument(emptyCsv: exportString),
-			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \("Device Metrics Log".localized) \(Date.now.exportTimestamp)"),
-			onCompletion: { result in
-				switch result {
-				case .success:
-					self.isExporting = false
-					Logger.services.info("Device metrics log download succeeded.")
-				case .failure(let error):
-					Logger.services.error("Device metrics log download failed: \(error.localizedDescription, privacy: .public)")
+			.fileExporter(
+				isPresented: $isExporting,
+				document: CsvDocument(emptyCsv: exportString),
+				contentType: .commaSeparatedText,
+				defaultFilename: String("\(node.user?.longName ?? "Node") \("Device Metrics Log".localized) \(Date.now.exportTimestamp)"),
+				onCompletion: { result in
+					switch result {
+					case .success:
+						self.isExporting = false
+						Logger.services.info("Device metrics log download succeeded.")
+					case .failure(let error):
+						Logger.services.error("Device metrics log download failed: \(error.localizedDescription, privacy: .public)")
+					}
 				}
-			}
-		)
+			)
+	}
+
+	private func refreshMetrics() {
+		totalReadings = node.telemetryCount(ofType: 0, context: context)
+		deviceMetrics = node.safeTelemetries(ofType: 0)
+		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
+		chartData = deviceMetrics
+			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
+			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 	}
 }
 

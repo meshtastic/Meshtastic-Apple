@@ -8,21 +8,23 @@ struct AnimatedNodePin: View, Equatable {
 	let hasDetectionSensorMetrics: Bool
 	let isOnline: Bool
 	let calculatedDelay: Double
+	let showsPulse: Bool
 	private let swiftUIColor: Color
 
-	init(nodeColor: UIColor, shortName: String?, hasDetectionSensorMetrics: Bool, isOnline: Bool, calculatedDelay: Double) {
+	init(nodeColor: UIColor, shortName: String?, hasDetectionSensorMetrics: Bool, isOnline: Bool, calculatedDelay: Double, showsPulse: Bool = true) {
 		self.nodeColor = nodeColor
 		self.shortName = shortName
 		self.hasDetectionSensorMetrics = hasDetectionSensorMetrics
 		self.isOnline = isOnline
 		self.calculatedDelay = calculatedDelay
+		self.showsPulse = showsPulse
 		self.swiftUIColor = Color(nodeColor)
 	}
 
 	var body: some View {
 		ZStack {
 			// Pass the calculatedDelay to the PulsingCircle view
-			if isOnline {
+			if isOnline && showsPulse {
 				if #available(iOS 18, macOS 15, *) {
 					PulsingCircle(nodeColor: nodeColor, calculatedDelay: calculatedDelay)
 				}
@@ -47,7 +49,8 @@ struct AnimatedNodePin: View, Equatable {
 			   lhs.shortName == rhs.shortName &&
 			   lhs.hasDetectionSensorMetrics == rhs.hasDetectionSensorMetrics &&
 			   lhs.isOnline == rhs.isOnline &&
-			   lhs.calculatedDelay == rhs.calculatedDelay // Include calculatedDelay to ensure changes in animation timing trigger UI updates
+			   lhs.calculatedDelay == rhs.calculatedDelay &&
+			   lhs.showsPulse == rhs.showsPulse
 	}
 }
 

@@ -24,6 +24,12 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		UserDefaults.standard.register(defaults: ["meshMapRecentering": true])
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory": true])
 		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines": true])
+#if DEBUG
+		if PerformanceSeedData.configuration != nil {
+			Logger.services.info("📈 [PerfSeed] Skipping location, TAK, and Siri startup for simulator performance run")
+			return true
+		}
+#endif
 		UNUserNotificationCenter.current().delegate = self
 		let locationsHandler = LocationsHandler.shared
 		locationsHandler.startLocationUpdates()
@@ -37,9 +43,13 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		}
 		// Request Siri authorization so intent donations work and CarPlay messaging is available.
 		#if !targetEnvironment(macCatalyst)
+		#if targetEnvironment(simulator)
+		Logger.services.info("Skipping Siri authorization request in simulator benchmark harness")
+		#else
 		INPreferences.requestSiriAuthorization { status in
 			Logger.services.info("Siri authorization status: \(String(describing: status))")
 		}
+		#endif
 		#endif
 		return true
 	}

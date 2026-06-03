@@ -43,7 +43,10 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 				})
 
 				results = results.filter { message in
-					let isDM = message.fromUser.map { dmNums.contains($0.num) } ?? false
+					let isDM = message.toUser != nil && (
+						message.fromUser.map { dmNums.contains($0.num) } ?? false ||
+						message.toUser.map { dmNums.contains($0.num) } ?? false
+					)
 					let isChannel = message.toUser == nil && channelNums.contains(message.channel)
 					return isDM || isChannel
 				}
