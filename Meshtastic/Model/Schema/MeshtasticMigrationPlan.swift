@@ -30,31 +30,9 @@ enum MeshtasticMigrationPlan: SchemaMigrationPlan {
 	/// Use `.custom` when you need to transform data programmatically.
 	static var stages: [MigrationStage] {
 		[
-			// No migrations yet — V1 is the initial version.
-			// Future migrations go here, for example:
-			// migrateV1toV2,
+			// No migrations yet — V1 is the initial (unreleased) version, so
+			// model changes go directly into V1 rather than a new versioned
+			// schema + stage. Add migrations here only once V1 has shipped.
 		]
 	}
-
-	// MARK: - Migration Stages
-	// Uncomment and adapt when adding V2:
-	//
-	// static let migrateV1toV2 = MigrationStage.lightweight(
-	//     fromVersion: MeshtasticSchemaV1.self,
-	//     toVersion: MeshtasticSchemaV2.self
-	// )
-	//
-	// For custom migrations that require data transformation:
-	//
-	// static let migrateV1toV2 = MigrationStage.custom(
-	//     fromVersion: MeshtasticSchemaV1.self,
-	//     toVersion: MeshtasticSchemaV2.self,
-	//     willMigrate: { context in
-	//         // Pre-migration: transform data in the old schema
-	//     },
-	//     didMigrate: { context in
-	//         // Post-migration: populate new fields, clean up, etc.
-	//         try context.save()
-	//     }
-	// )
 }

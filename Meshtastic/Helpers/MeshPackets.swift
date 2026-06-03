@@ -68,6 +68,11 @@ func generateMessageMarkdown(message: String) -> String {
 
 @ModelActor
 actor MeshPackets {
+	private struct TelemetryPruneKey: Hashable {
+		let nodeNum: Int64
+		let metricsType: Int32
+	}
+
 	private static let _container: ModelContainer = {
 		MainActor.assumeIsolated { PersistenceController.shared.container }
 	}()
@@ -117,6 +122,15 @@ actor MeshPackets {
 	private static let debounceInterval: Duration = .seconds(2)
 	/// Maximum wall-clock time between flushes, even if packets keep arriving.
 	private static let maxDebounceDelay: Duration = .seconds(5)
+	static let maxPositionHistoryPerNode = 5_000
+	static let maxTelemetryPerType = 5_000
+	static let maxTotalMessages = 50_000
+	private static let positionPruneInterval = 128
+	private static let telemetryPruneInterval = 128
+	private static let messagePruneInterval = 256
+	private var positionInsertsSincePrune: [Int64: Int] = [:]
+	private var telemetryInsertsSincePrune: [TelemetryPruneKey: Int] = [:]
+	private var messageInsertsSincePrune = 0
 
 	/// Schedules a debounced save. Each call resets the 2-second timer. If packets
 	/// keep arriving continuously, a save is forced every 5 seconds.
@@ -145,6 +159,36 @@ actor MeshPackets {
 		lastDebouncedSaveTime = .now
 	}
 
+	func shouldPrunePositionHistory(for nodeNum: Int64) -> Bool {
+		let nextCount = (positionInsertsSincePrune[nodeNum] ?? 0) + 1
+		if nextCount >= Self.positionPruneInterval {
+			positionInsertsSincePrune[nodeNum] = 0
+			return true
+		}
+		positionInsertsSincePrune[nodeNum] = nextCount
+		return false
+	}
+
+	func shouldPruneTelemetryHistory(nodeNum: Int64, metricsType: Int32) -> Bool {
+		let key = TelemetryPruneKey(nodeNum: nodeNum, metricsType: metricsType)
+		let nextCount = (telemetryInsertsSincePrune[key] ?? 0) + 1
+		if nextCount >= Self.telemetryPruneInterval {
+			telemetryInsertsSincePrune[key] = 0
+			return true
+		}
+		telemetryInsertsSincePrune[key] = nextCount
+		return false
+	}
+
+	func shouldPruneMessageHistory() -> Bool {
+		messageInsertsSincePrune += 1
+		if messageInsertsSincePrune >= Self.messagePruneInterval {
+			messageInsertsSincePrune = 0
+			return true
+		}
+		return false
+	}
+
 	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) {
 		switch config.payloadVariant {
 		case .bluetooth:
@@ -169,7 +213,7 @@ actor MeshPackets {
 #endif
 		}
 	}
-	
+
 	func moduleConfig (config: ModuleConfig, nodeNum: Int64, nodeLongName: String) {
 		switch config.payloadVariant {
 		case .ambientLighting:
@@ -206,19 +250,19 @@ actor MeshPackets {
 #endif
 		}
 	}
-	
+
 	func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String) -> PersistentIdentifier? {
 		let logString = String.localizedStringWithFormat("MyInfo received: %@".localized, String(myInfo.myNodeNum))
 		Logger.admin.info("ℹ️ \(logString, privacy: .public)")
 		
 		let myNodeNum = Int64(myInfo.myNodeNum)
 		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myNodeNum })
-		
+
 		do {
 			let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
 			// Not Found Insert
 			if fetchedMyInfo.isEmpty {
-				
+
 				let myInfoEntity = MyInfoEntity()
 				modelContext.insert(myInfoEntity)
 				myInfoEntity.peripheralId = peripheralId
@@ -232,14 +276,14 @@ actor MeshPackets {
 				savePendingChanges()
 				return myInfoEntity.persistentModelID
 			} else {
-				
+
 				fetchedMyInfo[0].peripheralId = peripheralId
 				fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 				fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
 				if !myInfo.pioEnv.isEmpty {
 					fetchedMyInfo[0].pioEnv = myInfo.pioEnv
 				}
-				
+
 				Logger.data.info("💾 Updated myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
 				savePendingChanges()
 				return fetchedMyInfo[0].persistentModelID
@@ -249,14 +293,14 @@ actor MeshPackets {
 		}
 		return nil
 	}
-	
+
 	func channelPacket (channel: Channel, fromNum: Int64) {
 		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
 			Logger.admin.info("🎛️ \(logString, privacy: .public)")
 			
 			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
-			
+
 			do {
 				let fetchedMyInfo = try modelContext.fetch(fetchDescriptor)
 				if fetchedMyInfo.count == 1 {
@@ -291,14 +335,14 @@ actor MeshPackets {
 			}
 		}
 	}
-	
+
 	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) {
 		if metadata.isInitialized {
 			let logString = String.localizedStringWithFormat("Device Metadata received from: %@".localized, fromNum.toHex())
 			Logger.admin.info("🏷️ \(logString, privacy: .public)")
 			
 			let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == fromNum })
-			
+
 			do {
 				let fetchedNode = try modelContext.fetch(fetchDescriptor)
 				let newMetadata = DeviceMetadataEntity()
@@ -337,21 +381,21 @@ actor MeshPackets {
 			}
 		}
 	}
-	
+
 	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false) -> PersistentIdentifier? {
 		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
 		Logger.mesh.info("📟 \(logString, privacy: .public)")
-		
+
 		guard nodeInfo.num > 0 else { return nil }
-		
+
 		let nodeNum = Int64(nodeInfo.num)
 		let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
-		
+
 		do {
 			let fetchedNode = try modelContext.fetch(fetchDescriptor)
 			// Not Found Insert
 			if fetchedNode.isEmpty && nodeInfo.num > 0 {
-				
+
 				let newNode = NodeInfoEntity()
 					modelContext.insert(newNode)
 					newNode.id = Int64(nodeInfo.num)
@@ -360,7 +404,7 @@ actor MeshPackets {
 					newNode.favorite = nodeInfo.isFavorite
 					newNode.ignored = nodeInfo.isIgnored
 					newNode.hopsAway = Int32(nodeInfo.hopsAway)
-					
+
 					if nodeInfo.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
 						modelContext.insert(telemetry)
@@ -379,7 +423,7 @@ actor MeshPackets {
 					}
 					newNode.snr = nodeInfo.snr
 					if nodeInfo.hasUser {
-						
+
 						let newUser = UserEntity()
 						modelContext.insert(newUser)
 						newUser.userId = nodeInfo.num.toHex()
@@ -423,7 +467,7 @@ actor MeshPackets {
 							Logger.data.error("Error Creating a new UserEntity from node number: \(nodeInfo.num, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 						}
 					}
-					
+
 					if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
 						let position = PositionEntity()
 						modelContext.insert(position)
@@ -438,11 +482,11 @@ actor MeshPackets {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 						position.nodePosition = newNode
 					}
-					
+
 					// Look for a MyInfo
 					let myInfoNodeNum = Int64(nodeInfo.num)
 					let fetchMyInfoDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myInfoNodeNum })
-					
+
 					do {
 						let fetchedMyInfo = try modelContext.fetch(fetchMyInfoDescriptor)
 						if fetchedMyInfo.count > 0 {
@@ -457,7 +501,7 @@ actor MeshPackets {
 						Logger.data.error("Fetch MyInfo Error")
 					}
 				} else if nodeInfo.num > 0 {
-					
+
 					fetchedNode[0].id = Int64(nodeInfo.num)
 					fetchedNode[0].num = Int64(nodeInfo.num)
 					if nodeInfo.lastHeard > 0 {
@@ -471,7 +515,7 @@ actor MeshPackets {
 					fetchedNode[0].favorite = nodeInfo.isFavorite
 					fetchedNode[0].ignored = nodeInfo.isIgnored
 					fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
-					
+
 					if nodeInfo.hasUser {
 						if fetchedNode[0].user == nil {
 							let newUserEntity = UserEntity()
@@ -525,9 +569,9 @@ actor MeshPackets {
 							}
 						}
 					}
-					
+
 					if nodeInfo.hasDeviceMetrics {
-						
+
 						let newTelemetry = TelemetryEntity()
 						modelContext.insert(newTelemetry)
 						newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
@@ -536,11 +580,11 @@ actor MeshPackets {
 						newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
 						newTelemetry.nodeTelemetry = fetchedNode[0]
 					}
-					
+
 					if nodeInfo.hasPosition {
-						
+
 						if (nodeInfo.position.longitudeI != 0 && nodeInfo.position.latitudeI != 0) && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
-							
+
 							let position = PositionEntity()
 							modelContext.insert(position)
 							position.latitudeI = nodeInfo.position.latitudeI
@@ -550,13 +594,13 @@ actor MeshPackets {
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 							position.nodePosition = fetchedNode[0]
 						}
-						
+
 					}
-					
+
 					// Look for a MyInfo
 					let myInfoNodeNum2 = Int64(nodeInfo.num)
 					let fetchMyInfoDescriptor2 = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myInfoNodeNum2 })
-					
+
 					do {
 						let fetchedMyInfo = try modelContext.fetch(fetchMyInfoDescriptor2)
 						if fetchedMyInfo.count > 0 {
@@ -576,19 +620,19 @@ actor MeshPackets {
 		}
 		return nil
 	}
-	
+
 	func adminAppPacket (packet: MeshPacket) {
 		if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
-			
+
 			if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
-				
+
 				if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
 					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
 					Logger.admin.info("🥫 \(logString, privacy: .public)")
 					
 					let packetFrom = Int64(packet.from)
 					let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
-					
+
 					do {
 						let fetchedNode = try modelContext.fetch(fetchDescriptor)
 						if fetchedNode.count == 1 {
@@ -666,7 +710,7 @@ actor MeshPackets {
 			self.adminResponseAck(packet: packet)
 		}
 	}
-	
+
 	private func adminResponseAck (packet: MeshPacket) {
 		let requestID = Int64(packet.decoded.requestID)
 		let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
@@ -679,57 +723,58 @@ actor MeshPackets {
 				fetchedMessage[0].realACK = true
 				fetchedMessage[0].relayNode = Int64(packet.relayNode)
 				fetchedMessage[0].ackSNR = packet.rxSnr
-	
+
 				savePendingChanges()
 			}
 		} catch {
 			Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription, privacy: .public)")
 		}
 	}
-	
+
 	func paxCounterPacket (packet: MeshPacket) {
 		let logString = String.localizedStringWithFormat("PAX Counter message received from: %@".localized, String(packet.from))
 		Logger.mesh.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
-		
+
 		let packetFrom = Int64(packet.from)
-		let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
-		
+		var fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
+		fetchDescriptor.fetchLimit = 1
+
 		do {
 			let fetchedNode = try modelContext.fetch(fetchDescriptor)
-			
+
 			if let paxMessage = try? Paxcount(serializedBytes: packet.decoded.payload) {
-				
+
 				let newPax = PaxCounterEntity()
 				modelContext.insert(newPax)
 				newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
 				newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
 				newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
 				newPax.time = Date()
-				
+
 				if fetchedNode.count > 0 {
-					fetchedNode[0].pax.append(newPax)
+					newPax.paxNode = fetchedNode[0]
 					savePendingChanges()
 				} else {
 					Logger.data.info("Node Info Not Found")
 				}
 			}
 		} catch {
-			
+
 		}
 	}
-	
+
 	func routingPacket (packet: MeshPacket, connectedNodeNum: Int64) {
 		if let routingMessage = try? Routing(serializedBytes: packet.decoded.payload) {
-			
+
 			let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
-			
+
 			let routingErrorString = routingError?.display ?? "Unknown".localized
 			let logString = String.localizedStringWithFormat("Routing received for RequestID: %@ Ack Status: %@".localized, String(packet.decoded.requestID), routingErrorString)
 			Logger.mesh.info("🕸️ \(logString, privacy: .public)")
-			
+
 			let requestID = Int64(packet.decoded.requestID)
 			let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
-			
+
 			do {
 				let fetchedMessage = try modelContext.fetch(fetchDescriptor)
 				if fetchedMessage.count > 0 {
@@ -745,14 +790,14 @@ actor MeshPackets {
 						fetchedMessage[0].receivedACK = true
 						fetchedMessage[0].relays += 1
 					}
-					
+
 					fetchedMessage[0].ackSNR = packet.rxSnr
 					if packet.rxTime > 0 {
 						fetchedMessage[0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
 					} else {
 						fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 					}
-					
+
 				} else {
 					return
 				}
@@ -764,7 +809,7 @@ actor MeshPackets {
 			}
 		}
 	}
-	
+
 	func telemetryPacket(packet: MeshPacket, connectedNode: Int64) {
 		if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 			if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
@@ -828,8 +873,14 @@ actor MeshPackets {
 							telemetry.numTxRelayCanceled = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTxRelayCanceled)
 							telemetry.numOnlineNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numOnlineNodes)
 							telemetry.numTotalNodes = Int32(truncatingIfNeeded: telemetryMessage.localStats.numTotalNodes)
+							// `noise_floor` is a plain proto3 scalar (not `optional`), so it has no
+							// presence tracking — firmware that doesn't report it is indistinguishable
+							// from a literal 0. Real LoRa noise floors are always strongly negative, so
+							// we treat 0 as "not available" (nil). If true nil-vs-0 is ever needed, make
+							// the field `optional` upstream and use `hasNoiseFloor`.
+							telemetry.noiseFloor = telemetryMessage.localStats.noiseFloor != 0 ? telemetryMessage.localStats.noiseFloor : nil
 							telemetry.metricsType = 4
-							Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
+							Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Noise Floor: \(telemetryMessage.localStats.noiseFloor, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
 						} else if telemetryMessage.variant == Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 							Logger.data.info("📈 [Telemetry] Power Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
 							telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.hasCh1Voltage.then(telemetryMessage.powerMetrics.ch1Voltage)
@@ -846,25 +897,26 @@ actor MeshPackets {
 						// Assign via relationship without loading all telemetries
 						telemetry.nodeTelemetry = fetchedNode[0]
 
-						// Prune old telemetry using a targeted query instead of faulting the full relationship
+						// Keep telemetry bounded as a soft cap during bursts; counting
+						// and sorting every telemetry packet does not scale on large meshes.
 						let metricsType = telemetry.metricsType
-						let maxTelemetryPerType = 5000
 						let nodeNum = packetFrom
-						var countDescriptor = FetchDescriptor<TelemetryEntity>(
-							predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
-						)
-						countDescriptor.fetchLimit = maxTelemetryPerType + 1
-						let currentCount = (try? modelContext.fetchCount(countDescriptor)) ?? 0
-						if currentCount > maxTelemetryPerType {
-							let excess = currentCount - maxTelemetryPerType
-							var pruneDescriptor = FetchDescriptor<TelemetryEntity>(
-								predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
-								sortBy: [SortDescriptor(\TelemetryEntity.time, order: .forward)]
+						if shouldPruneTelemetryHistory(nodeNum: nodeNum, metricsType: metricsType) {
+							let countDescriptor = FetchDescriptor<TelemetryEntity>(
+								predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
 							)
-							pruneDescriptor.fetchLimit = excess
-							let toDelete = (try? modelContext.fetch(pruneDescriptor)) ?? []
-							for old in toDelete {
-								modelContext.delete(old)
+							let currentCount = (try? modelContext.fetchCount(countDescriptor)) ?? 0
+							if currentCount > MeshPackets.maxTelemetryPerType {
+								let excess = currentCount - MeshPackets.maxTelemetryPerType
+								var pruneDescriptor = FetchDescriptor<TelemetryEntity>(
+									predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+									sortBy: [SortDescriptor(\TelemetryEntity.time, order: .forward)]
+								)
+								pruneDescriptor.fetchLimit = excess
+								let toDelete = (try? modelContext.fetch(pruneDescriptor)) ?? []
+								for old in toDelete {
+									modelContext.delete(old)
+								}
 							}
 						}
 
@@ -903,7 +955,7 @@ actor MeshPackets {
 						// Update our live activity if there is one running, not available on mac
 #if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
-						
+
 						let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
 						let date = Date.now...fifteenMinutesLater
 						let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32($0) },
@@ -918,10 +970,10 @@ actor MeshPackets {
 																						  nodesOnline: UInt32(telemetry.numOnlineNodes),
 																						  totalNodes: UInt32(telemetry.numTotalNodes),
 																						  timerRange: date)
-						
+
 						let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)
 						let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
-						
+
 						let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
 						if meshActivity != nil {
 							Task {
@@ -941,7 +993,7 @@ actor MeshPackets {
 			Logger.data.error("💥 Error Fetching NodeInfoEntity for Node \(packet.from.toHex(), privacy: .public)")
 		}
 	}
-	
+
 	func textMessageAppPacket(
 		packet: MeshPacket,
 		wantRangeTestPackets: Bool,
@@ -961,7 +1013,7 @@ actor MeshPackets {
 				}
 			}
 			let rangeTest = messageText?.contains(rangeTestRegex) ?? false && messageText?.starts(with: "seq ") ?? false
-			
+
 			if !wantRangeTestPackets && rangeTest {
 				return
 			}
@@ -974,7 +1026,7 @@ actor MeshPackets {
 					}
 				}
 			}
-			
+
 			if messageText?.count ?? 0 > 0 {
 				Logger.mesh.info("💬 \("Message received from the text message app.".localized, privacy: .public)")
 				let toNum = Int64(packet.to)
@@ -1032,7 +1084,7 @@ actor MeshPackets {
 							newMessage.pkiEncrypted = true
 							newMessage.publicKey = packet.publicKey
 						}
-						
+
 						/// Check for key mismatch
 						if let nodeKey = newMessage.fromUser?.publicKey {
 							if newMessage.toUser != nil && packet.pkiEncrypted && !packet.publicKey.isEmpty {
@@ -1092,21 +1144,23 @@ actor MeshPackets {
 						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 
-						// Prune old messages to prevent unbounded growth
-						let maxTotalMessages = 50000
-						let countDescriptor = FetchDescriptor<MessageEntity>()
-						let totalMessages = (try? modelContext.fetchCount(countDescriptor)) ?? 0
-						if totalMessages > maxTotalMessages {
-							var oldestDescriptor = FetchDescriptor<MessageEntity>(
-								sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
-							)
-							oldestDescriptor.fetchLimit = totalMessages - maxTotalMessages
-							if let oldMessages = try? modelContext.fetch(oldestDescriptor) {
-								for old in oldMessages {
-									modelContext.delete(old)
+						// Keep message storage bounded without scanning the whole table
+						// after every incoming text.
+						if shouldPruneMessageHistory() {
+							let countDescriptor = FetchDescriptor<MessageEntity>()
+							let totalMessages = (try? modelContext.fetchCount(countDescriptor)) ?? 0
+							if totalMessages > MeshPackets.maxTotalMessages {
+								var oldestDescriptor = FetchDescriptor<MessageEntity>(
+									sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
+								)
+								oldestDescriptor.fetchLimit = totalMessages - MeshPackets.maxTotalMessages
+								if let oldMessages = try? modelContext.fetch(oldestDescriptor) {
+									for old in oldMessages {
+										modelContext.delete(old)
+									}
+									try modelContext.save()
+									Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(MeshPackets.maxTotalMessages))")
 								}
-								try modelContext.save()
-								Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(maxTotalMessages))")
 							}
 						}
 					} catch {
@@ -1151,7 +1205,7 @@ actor MeshPackets {
 									#endif
 									manager.notifications = [dmNotification]
 									manager.schedule()
-									
+
 									Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
 								}
 							}
@@ -1199,11 +1253,11 @@ actor MeshPackets {
 			}
 		}
 	}
-	
+
 	func waypointPacket (packet: MeshPacket) {
 		let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))
 		Logger.mesh.info("📍 \(logString, privacy: .public)")
-		
+
 		do {
 			if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {
 				// Fetch waypoint by waypointMessage.id, not packet.id
@@ -1243,7 +1297,7 @@ actor MeshPackets {
 					waypoint.created = Date()
 					savePendingChanges()
 					Logger.data.info("💾 Added Node Waypoint App Packet For: \(waypoint.id, privacy: .public)")
-					
+
 					Task { @MainActor in
 							let manager = LocalNotificationManager()
 							let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")

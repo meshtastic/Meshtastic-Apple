@@ -8,6 +8,8 @@ import SwiftUI
 import OSLog
 
 struct PositionLog: View {
+	private let visiblePositionLimit = 1_000
+
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
@@ -21,13 +23,14 @@ struct PositionLog: View {
 	@Bindable var node: NodeInfoEntity
 	@State private var isPresentingClearLogConfirm = false
 	@State private var sortOrder = [KeyPathComparator(\PositionEntity.time)]
+	@State private var positions: [PositionEntity] = []
+	@State private var totalPositionCount = 0
 
 	var body: some View {
 		VStack {
-			if node.hasPositions {
+			if totalPositionCount > 0 {
 				if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
 					// Add a table for mac and ipad
-					let positions = node.positions.reversed()
 					Table(positions, sortOrder: $sortOrder) {
 						TableColumn("Latitude") { position in
 							Text(String(format: "%.5f", position.latitude ?? 0))
@@ -91,7 +94,7 @@ struct PositionLog: View {
 									.font(.caption2)
 									.fontWeight(.bold)
 							}
-							ForEach(node.positions.reversed(), id: \.self) { (mappin: PositionEntity) in
+							ForEach(positions, id: \.self) { (mappin: PositionEntity) in
 									let altitude = Measurement(value: Double(mappin.altitude), unit: UnitLength.meters)
 									GridRow {
 										Text(String(format: "%.5f", mappin.latitude ?? 0))
@@ -109,6 +112,12 @@ struct PositionLog: View {
 						}
 					}
 					.padding(.leading)
+				}
+				if totalPositionCount > positions.count {
+					Text(String.localizedStringWithFormat("Showing latest %lld of %lld positions. Export includes all positions.".localized, positions.count, totalPositionCount))
+						.font(.caption2)
+						.foregroundColor(.secondary)
+						.padding(.horizontal)
 				}
 				HStack {
 					Button(role: .destructive) {
@@ -130,6 +139,8 @@ struct PositionLog: View {
 							Task {
 								if await MeshPackets.shared.clearPositions(destNum: node.num) {
 									Logger.services.info("Successfully Cleared Position Log")
+									refreshPositions()
+									NotificationCenter.default.post(name: .nodeLogAvailabilityDidChange, object: node.num)
 								} else {
 									Logger.services.error("Clear Position Log Failed")
 								}
@@ -137,7 +148,7 @@ struct PositionLog: View {
 						}
 					}
 					Button {
-						exportString = positionToCsvFile(positions: node.positions)
+						exportString = positionToCsvFile(positions: node.positionsSortedByTime(context: context, ascending: true))
 						isExporting = true
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
@@ -168,12 +179,23 @@ struct PositionLog: View {
 				ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 			}
 		}
-		.navigationTitle("Position Log \(node.positions.count) Points")
+		.navigationTitle("Position Log \(totalPositionCount) Points")
+		.onAppear {
+			refreshPositions()
+		}
+		.onChange(of: node.lastHeard) {
+			refreshPositions()
+		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		}
+	}
+
+	private func refreshPositions() {
+		totalPositionCount = node.positionCount(context: context)
+		positions = node.positionsSortedByTime(context: context, ascending: false, limit: visiblePositionLimit)
 	}
 }
 

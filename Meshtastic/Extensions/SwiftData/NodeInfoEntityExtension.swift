@@ -24,6 +24,59 @@ extension NodeInfoEntity {
 		return try? ctx.fetch(descriptor).first
 	}
 
+	func positionCount(context: ModelContext? = nil) -> Int {
+		guard let ctx = context ?? modelContext else { return 0 }
+		let nodeNum = self.num
+		let descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == nodeNum }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0
+	}
+
+	func positionsSortedByTime(context: ModelContext? = nil, ascending: Bool = false, limit: Int? = nil) -> [PositionEntity] {
+		guard let ctx = context ?? modelContext else { return [] }
+		let nodeNum = self.num
+		var descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == nodeNum },
+			sortBy: [SortDescriptor(\PositionEntity.time, order: ascending ? .forward : .reverse)]
+		)
+		if let limit {
+			descriptor.fetchLimit = limit
+		}
+		return (try? ctx.fetch(descriptor)) ?? []
+	}
+
+	func telemetryCount(ofType metricsType: Int32, context: ModelContext? = nil) -> Int {
+		guard let ctx = context ?? modelContext else { return 0 }
+		let nodeNum = self.num
+		let descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0
+	}
+
+	func paxCount(context: ModelContext? = nil) -> Int {
+		guard let ctx = context ?? modelContext else { return 0 }
+		let nodeNum = self.num
+		let descriptor = FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate<PaxCounterEntity> { $0.paxNode?.num == nodeNum }
+		)
+		return (try? ctx.fetchCount(descriptor)) ?? 0
+	}
+
+	func paxCountersSortedByTime(context: ModelContext? = nil, ascending: Bool = false, limit: Int? = nil) -> [PaxCounterEntity] {
+		guard let ctx = context ?? modelContext else { return [] }
+		let nodeNum = self.num
+		var descriptor = FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate<PaxCounterEntity> { $0.paxNode?.num == nodeNum },
+			sortBy: [SortDescriptor(\PaxCounterEntity.time, order: ascending ? .forward : .reverse)]
+		)
+		if let limit {
+			descriptor.fetchLimit = limit
+		}
+		return (try? ctx.fetch(descriptor)) ?? []
+	}
+
 	var latestDeviceMetrics: TelemetryEntity? {
 		guard let ctx = modelContext else { return nil }
 		let nodeNum = self.num
@@ -63,30 +116,33 @@ extension NodeInfoEntity {
 	var hasPositions: Bool {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num
-		let descriptor = FetchDescriptor<PositionEntity>(
+		var descriptor = FetchDescriptor<PositionEntity>(
 			predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == nodeNum }
 		)
-		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
 	var hasDeviceMetrics: Bool {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num
 		let metricsType: Int32 = 0
-		let descriptor = FetchDescriptor<TelemetryEntity>(
+		var descriptor = FetchDescriptor<TelemetryEntity>(
 			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
 		)
-		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
 	var hasEnvironmentMetrics: Bool {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num
 		let metricsType: Int32 = 1
-		let descriptor = FetchDescriptor<TelemetryEntity>(
+		var descriptor = FetchDescriptor<TelemetryEntity>(
 			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
 		)
-		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
 	func hasDataForLatestEnvironmentMetrics(attributes: [String]) -> Bool {
@@ -111,16 +167,40 @@ extension NodeInfoEntity {
 	var hasDetectionSensorMetrics: Bool {
 		guard let ctx = modelContext, let userNum = user?.num else { return false }
 		let portNum: Int32 = 10
-		let descriptor = FetchDescriptor<MessageEntity>(
+		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { $0.fromUser?.num == userNum && $0.portNum == portNum }
 		)
-		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
 	var hasPowerMetrics: Bool {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num
 		let metricsType: Int32 = 2
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+		)
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
+	}
+
+	var latestLocalStats: TelemetryEntity? {
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		let metricsType: Int32 = 4
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
+	}
+
+	var hasLocalStats: Bool {
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		let metricsType: Int32 = 4
 		let descriptor = FetchDescriptor<TelemetryEntity>(
 			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
 		)
@@ -130,14 +210,21 @@ extension NodeInfoEntity {
 	var hasTraceRoutes: Bool {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num
-		let descriptor = FetchDescriptor<TraceRouteEntity>(
+		var descriptor = FetchDescriptor<TraceRouteEntity>(
 			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum }
 		)
-		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
 	var hasPax: Bool {
-		return pax.count > 0
+		guard let ctx = modelContext else { return false }
+		let nodeNum = self.num
+		var descriptor = FetchDescriptor<PaxCounterEntity>(
+			predicate: #Predicate<PaxCounterEntity> { $0.paxNode?.num == nodeNum }
+		)
+		descriptor.fetchLimit = 1
+		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
 	}
 
 	var isStoreForwardRouter: Bool {

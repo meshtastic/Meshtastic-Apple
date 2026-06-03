@@ -193,5 +193,88 @@ static let migrateV1toV2 = MigrationStage.custom(
 </tbody>
 </table>
 <p>These caps are enforced in <code>UpdateSwiftData.swift</code> during the upsert path, so they run on every incoming packet without requiring a separate maintenance task.</p>
+<h2>Performance Testing — Large Database Seed Harness</h2>
+<p><code>Meshtastic/Persistence/PerformanceSeedData.swift</code> provides a DEBUG-only harness for seeding thousands of synthetic nodes, telemetry rows, positions, and messages into the simulator store. It is entirely gated by launch-time flags; production builds and unlaunched DEBUG builds are unaffected.</p>
+<h3>Triggering the harness</h3>
+<p>The harness activates when <strong>either</strong> of the following is present at launch:</p>
+<ul>
+<li>The <code>--meshtastic-perf-seed</code> launch argument, <strong>or</strong></li>
+<li>The <code>MESHTASTIC_PERF_SEED_NODES</code> environment variable (any non-zero integer value)</li>
+</ul>
+<p>When neither is set, <code>PerformanceSeedData.configuration</code> returns <code>nil</code> and no seed code runs.</p>
+<h3>Environment variables</h3>
+<p>Pass variables to the simulator using the <code>SIMCTL_CHILD_</code> prefix (the prefix is stripped before the app sees them):</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MESHTASTIC_PERF_SEED_NODES</code></td>
+<td>—</td>
+<td><strong>Required to activate.</strong> Number of nodes to seed (e.g. <code>5000</code>).</td>
+</tr>
+<tr>
+<td><code>MESHTASTIC_PERF_TELEMETRY_HISTORY</code></td>
+<td><code>3</code></td>
+<td>Device + environment metric samples per node.</td>
+</tr>
+<tr>
+<td><code>MESHTASTIC_PERF_POSITION_HISTORY</code></td>
+<td><code>3</code></td>
+<td>Position history entries per node.</td>
+</tr>
+<tr>
+<td><code>MESHTASTIC_PERF_DIRECT_MESSAGES</code></td>
+<td><code>0</code></td>
+<td>Direct messages to seed between node 0 and node 1.</td>
+</tr>
+<tr>
+<td><code>MESHTASTIC_PERF_CHANNEL_MESSAGES</code></td>
+<td><code>0</code></td>
+<td>Channel messages to seed on channel 0.</td>
+</tr>
+<tr>
+<td><code>MESHTASTIC_PERF_RESET_STORE</code></td>
+<td><code>0</code></td>
+<td>Set to <code>1</code>/<code>true</code> to clear the store before seeding.</td>
+</tr>
+<tr>
+<td><code>MESHTASTIC_PERF_COMPACT_LIST</code></td>
+<td><code>0</code></td>
+<td>Set to <code>1</code>/<code>true</code> to switch the node list to compact density.</td>
+</tr>
+<tr>
+<td><code>MESHTASTIC_PERF_ENABLE_DISCOVERY</code></td>
+<td><code>0</code></td>
+<td>Set to <code>1</code>/<code>true</code> to leave BLE discovery enabled (disabled by default for perf runs).</td>
+</tr>
+</tbody>
+</table>
+<h3>Example: seed 5 000 nodes with a clean store</h3>
+<p>First, find your simulator UDID:</p>
+<pre><code class="language-bash">xcrun simctl list devices booted
+</code></pre>
+<p>Then launch with the seed variables:</p>
+<pre><code class="language-bash">SIMCTL_CHILD_MESHTASTIC_PERF_SEED_NODES=5000 \
+SIMCTL_CHILD_MESHTASTIC_PERF_RESET_STORE=true \
+SIMCTL_CHILD_MESHTASTIC_PERF_COMPACT_LIST=true \
+xcrun simctl launch &lt;UDID&gt; gvh.MeshtasticClient
+</code></pre>
+<p>On subsequent launches <strong>without</strong> <code>MESHTASTIC_PERF_RESET_STORE</code>, the harness detects the existing node count and skips re-seeding, so the app starts at full speed against the already-seeded store.</p>
+<h3>What to expect</h3>
+<p>5 000 nodes (3 telemetry samples/type, 3 positions/node) seed in approximately <strong>12 seconds</strong> on an Apple Silicon Mac. The app navigates automatically to the Nodes tab. Typical idle CPU after seeding is under 2%.</p>
+<blockquote>
+<p><strong>Tip — Checking seed progress</strong>
+Seed log lines are emitted at <code>Info</code> level under the <code>🗄️ Data</code> OSLog category. To stream them:</p>
+<pre><code class="language-bash">log stream --predicate 'process == &quot;Meshtastic&quot; AND eventMessage CONTAINS &quot;[PerfSeed]&quot;' --level info
+</code></pre>
+</blockquote>
+<h3>Skip-reseed logic</h3>
+<p>If the store already contains at least as many nodes as <code>MESHTASTIC_PERF_SEED_NODES</code> requests, seeding is skipped unless <code>MESHTASTIC_PERF_RESET_STORE=true</code> is set. This means you can kill and relaunch the app against the existing large dataset without waiting for a reseed.</p>
 </body>
 </html>

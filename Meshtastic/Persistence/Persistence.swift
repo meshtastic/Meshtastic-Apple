@@ -7,6 +7,7 @@
 
 import SwiftData
 import OSLog
+import Foundation
 
 @MainActor
 class PersistenceController {
@@ -33,6 +34,23 @@ class PersistenceController {
 		container.mainContext
 	}
 
+	private static func removeStoreFiles(at storeURL: URL) {
+		let fm = FileManager.default
+		let storeFiles = [
+			storeURL,
+			URL(fileURLWithPath: storeURL.path + "-shm"),
+			URL(fileURLWithPath: storeURL.path + "-wal")
+		]
+
+		for url in storeFiles where fm.fileExists(atPath: url.path) {
+			do {
+				try fm.removeItem(at: url)
+			} catch {
+				Logger.data.error("📈 [PerfSeed] Failed to remove existing store file \(url.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
 	init(inMemory: Bool = false, storeName: String = "Meshtastic") {
 		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
@@ -43,6 +61,12 @@ class PersistenceController {
 			isStoredInMemoryOnly: inMemory,
 			allowsSave: true
 		)
+
+#if DEBUG
+		if !inMemory && !isTestEnvironment && PerformanceSeedData.configuration?.resetStore == true {
+			Self.removeStoreFiles(at: config.url)
+		}
+#endif
 
 		// ── Step 0: guard Core Data store from being clobbered ───────────────
 		// Both the App Store (Core Data) build and this (SwiftData) build use
@@ -77,16 +101,22 @@ class PersistenceController {
 			// A fatalError here would leave users permanently unable to open
 			// the app, so we recover instead and accept the data loss.
 			Logger.data.critical("💾 SwiftData store failed to open, attempting recovery: \(error.localizedDescription, privacy: .public)")
+			// Move the actual store files aside so the retry starts from a clean
+			// slate. SwiftData names the store from `config.url` — for a named
+			// configuration that is `<name>.store` with `-shm`/`-wal` siblings
+			// (NOT `.sqlite`). Derive the paths from `config.url.lastPathComponent`
+			// directly so we move the real files instead of a non-existent
+			// `<name>.sqlite`, which previously left the broken store in place and
+			// guaranteed the retry below failed.
 			let fm = FileManager.default
-			let base = config.url.deletingPathExtension()
-			let broken = base
-				.deletingLastPathComponent()
-				.appendingPathComponent(base.lastPathComponent + "-broken-\(Int(Date().timeIntervalSince1970))")
-			for ext in ["sqlite", "sqlite-shm", "sqlite-wal"] {
-				try? fm.moveItem(
-					at: base.appendingPathExtension(ext),
-					to: broken.appendingPathExtension(ext)
-				)
+			let storeURL = config.url
+			let directory = storeURL.deletingLastPathComponent()
+			let storeFileName = storeURL.lastPathComponent
+			let suffix = "-broken-\(Int(Date().timeIntervalSince1970))"
+			for sidecar in ["", "-shm", "-wal"] {
+				let from = directory.appendingPathComponent(storeFileName + sidecar)
+				let to = directory.appendingPathComponent(storeFileName + suffix + sidecar)
+				try? fm.moveItem(at: from, to: to)
 			}
 			do {
 				container = try ModelContainer(
@@ -97,7 +127,24 @@ class PersistenceController {
 				container.mainContext.autosaveEnabled = false
 				Logger.data.warning("💾 SwiftData store recreated after recovery — local data has been reset on this device")
 			} catch let recoveryError {
-				fatalError("💾 SwiftData store unrecoverable even after reset: \(recoveryError.localizedDescription)")
+				// Last resort: never crash at launch. Fall back to an in-memory
+				// container so the app remains usable (data not persisted this
+				// session) instead of crash-looping on every launch.
+				Logger.data.critical("💾 SwiftData store unrecoverable even after reset, falling back to in-memory: \(recoveryError.localizedDescription, privacy: .public)")
+				let memoryConfig = ModelConfiguration(
+					storeName,
+					schema: schema,
+					isStoredInMemoryOnly: true,
+					allowsSave: true
+				)
+				do {
+					container = try ModelContainer(for: schema, configurations: memoryConfig)
+					container.mainContext.autosaveEnabled = false
+				} catch let memoryError {
+					// An in-memory store cannot fail for file reasons; if it does,
+					// the schema itself is invalid and there is no safe recovery.
+					fatalError("💾 SwiftData in-memory fallback failed: \(memoryError.localizedDescription)")
+				}
 			}
 		}
 
@@ -118,6 +165,14 @@ class PersistenceController {
 	@MainActor
 	public func clearDatabase(includeRoutes: Bool = true) {
 		do {
+			let hardwareDevices = try container.mainContext.fetch(FetchDescriptor<DeviceHardwareEntity>())
+			for device in hardwareDevices {
+				device.tags.removeAll()
+			}
+			if container.mainContext.hasChanges {
+				try container.mainContext.save()
+			}
+
 			// Delete entities that are on the inverse side of many-to-many
 			// relationships first to avoid constraint trigger violations.
 			try container.mainContext.delete(model: DeviceHardwareTagEntity.self)

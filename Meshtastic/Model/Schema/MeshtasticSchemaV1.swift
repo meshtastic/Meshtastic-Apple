@@ -56,6 +56,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			SerialConfigEntity.self,
 			StoreForwardConfigEntity.self,
 			TAKConfigEntity.self,
+			TrafficManagementConfigEntity.self,
 			TelemetryConfigEntity.self,
 			// Discovery entities
 			DiscoverySessionEntity.self,

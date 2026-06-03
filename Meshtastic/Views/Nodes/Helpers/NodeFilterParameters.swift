@@ -5,7 +5,62 @@
 //  Created by jake on 9/4/25.
 //
 
+import CoreLocation
 import SwiftUI
+
+struct NodeDistanceFilterBounds {
+	private static let coordinateScale = 10_000_000.0
+	private static let earthRadiusMeters = 6_371_009.0
+
+	let minLatitudeI: Int32
+	let maxLatitudeI: Int32
+	let minLongitudeI: Int32
+	let maxLongitudeI: Int32
+	let crossesAntimeridian: Bool
+
+	init?(center: CLLocationCoordinate2D?, maxDistance: Double) {
+		guard let center, CLLocationCoordinate2DIsValid(center), maxDistance > 0 else { return nil }
+
+		let distance = maxDistance * 1.1
+		let meanLatitude = center.latitude * .pi / 180
+		let latitudeCosine = cos(meanLatitude)
+		guard abs(latitudeCosine) > 0.000001 else { return nil }
+
+		let deltaLatitude = distance / Self.earthRadiusMeters * 180 / .pi
+		let deltaLongitude = distance / (Self.earthRadiusMeters * latitudeCosine) * 180 / .pi
+		let minLatitude = max(center.latitude - deltaLatitude, -90)
+		let maxLatitude = min(center.latitude + deltaLatitude, 90)
+		let rawMinLongitude = center.longitude - deltaLongitude
+		let rawMaxLongitude = center.longitude + deltaLongitude
+		crossesAntimeridian = rawMinLongitude < -180 || rawMaxLongitude > 180
+
+		minLatitudeI = Self.scaledCoordinate(minLatitude, lowerBound: -90, upperBound: 90)
+		maxLatitudeI = Self.scaledCoordinate(maxLatitude, lowerBound: -90, upperBound: 90)
+		minLongitudeI = Self.scaledCoordinate(Self.normalizedLongitude(rawMinLongitude), lowerBound: -180, upperBound: 180)
+		maxLongitudeI = Self.scaledCoordinate(Self.normalizedLongitude(rawMaxLongitude), lowerBound: -180, upperBound: 180)
+	}
+
+	func contains(_ position: PositionEntity) -> Bool {
+		guard position.latest else { return false }
+		guard position.latitudeI >= minLatitudeI && position.latitudeI <= maxLatitudeI else { return false }
+		if crossesAntimeridian {
+			return position.longitudeI >= minLongitudeI || position.longitudeI <= maxLongitudeI
+		}
+		return position.longitudeI >= minLongitudeI && position.longitudeI <= maxLongitudeI
+	}
+
+	private static func scaledCoordinate(_ value: Double, lowerBound: Double, upperBound: Double) -> Int32 {
+		let boundedValue = min(max(value, lowerBound), upperBound)
+		return Int32((boundedValue * coordinateScale).rounded(.towardZero))
+	}
+
+	private static func normalizedLongitude(_ value: Double) -> Double {
+		var longitude = value
+		while longitude < -180 { longitude += 360 }
+		while longitude > 180 { longitude -= 360 }
+		return longitude
+	}
+}
 
 @MainActor
 final class NodeFilterParameters: ObservableObject {
@@ -56,13 +111,37 @@ final class NodeFilterParameters: ObservableObject {
 		(viaLora && !viaMqtt) || (!viaLora && viaMqtt)
 	}
 
+	var currentDistanceBounds: NodeDistanceFilterBounds? {
+		guard distanceFilter,
+			  let pointOfInterest = LocationsHandler.currentLocation,
+			  pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude,
+			  pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude else {
+			return nil
+		}
+		return NodeDistanceFilterBounds(center: pointOfInterest, maxDistance: maxDistance)
+	}
+
+	var currentPreciseDistanceBounds: NodeDistanceFilterBounds? {
+		guard distanceFilter,
+			  let pointOfInterest = LocationsHandler.currentPreciseLocation else {
+			return nil
+		}
+		return NodeDistanceFilterBounds(center: pointOfInterest, maxDistance: maxDistance)
+	}
+
 	// MARK: - In-Memory Matching
 
 	/// In-memory filter matching for use with @Query results on NodeInfoEntity.
-	func matches(_ node: NodeInfoEntity) -> Bool {
+	func matches(
+		_ node: NodeInfoEntity,
+		latestPosition: PositionEntity? = nil,
+		normalizedSearchText: String? = nil,
+		onlineThreshold: Date? = nil,
+		distanceBounds: NodeDistanceFilterBounds? = nil
+	) -> Bool {
 		// Search text
-		if !searchText.isEmpty {
-			let text = searchText.lowercased()
+		let text = normalizedSearchText ?? searchText.lowercased()
+		if !text.isEmpty {
 			let matchesSearch = [
 				node.user?.userId,
 				node.user?.numString,
@@ -96,10 +175,10 @@ final class NodeFilterParameters: ObservableObject {
 
 		// Online filter
 		if isOnline {
-			guard let lastHeard = node.lastHeard,
-				  let threshold = Calendar.current.date(byAdding: .minute, value: -120, to: Date()) else {
+			guard let lastHeard = node.lastHeard else {
 				return false
 			}
+			let threshold = onlineThreshold ?? Date().addingTimeInterval(-7_200)
 			if lastHeard < threshold { return false }
 		}
 
@@ -121,28 +200,9 @@ final class NodeFilterParameters: ObservableObject {
 		}
 
 		// Distance filter
-		if distanceFilter {
-			if let pointOfInterest = LocationsHandler.currentLocation {
-				if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude &&
-					pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-					let d: Double = maxDistance * 1.1
-					let r: Double = 6371009
-					let meanLatitude = pointOfInterest.latitude * .pi / 180
-					let deltaLatitude = d / r * 180 / .pi
-					let deltaLongitude = d / (r * cos(meanLatitude)) * 180 / .pi
-					let minLatitude = pointOfInterest.latitude - deltaLatitude
-					let maxLatitude = pointOfInterest.latitude + deltaLatitude
-					let minLongitude = pointOfInterest.longitude - deltaLongitude
-					let maxLongitude = pointOfInterest.longitude + deltaLongitude
-
-					let hasPositionInRange = node.positions.contains { position in
-						guard position.latest else { return false }
-						let lon = Double(position.longitudeI) / 1e7
-						let lat = Double(position.latitudeI) / 1e7
-						return lon >= minLongitude && lon <= maxLongitude && lat >= minLatitude && lat <= maxLatitude
-					}
-					if !hasPositionInRange { return false }
-				}
+		if distanceFilter, let bounds = distanceBounds ?? currentDistanceBounds {
+			guard let position = latestPosition ?? node.latestPosition, bounds.contains(position) else {
+				return false
 			}
 		}
 

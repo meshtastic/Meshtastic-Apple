@@ -180,6 +180,7 @@ extension NodeBackupManager {
 			dst.numTotalNodes = src.numTotalNodes
 			dst.numTxRelay = src.numTxRelay
 			dst.numTxRelayCanceled = src.numTxRelayCanceled
+			dst.noiseFloor = src.noiseFloor
 			dst.powerCh1Current = src.powerCh1Current
 			dst.powerCh1Voltage = src.powerCh1Voltage
 			dst.powerCh2Current = src.powerCh2Current

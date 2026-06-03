@@ -301,6 +301,7 @@
         DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */; };
         DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */; };
         DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */; };
+        BCCA0BAB2F1C5C25007648E5 /* LocalStatsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */; };
         DEA1C1302F10002000A1B2C3 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */; };
         DEA1C1322F10002000A1B2C3 /* NeighborInfoConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */; };
         DEA1C1342F10002000A1B2C3 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */; };
@@ -428,6 +429,7 @@
         DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
         DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */; };
         DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
+        DD000001275499A500A42001 /* PerformanceSeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000000275499A500A42001 /* PerformanceSeedData.swift */; };
         DEA1C1202F10001000A1B2C3 /* BackupModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1212F10001000A1B2C3 /* BackupModels.swift */; };
         DEA1C1222F10001000A1B2C3 /* NodeBackupManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */; };
         DEA1C1242F10001000A1B2C3 /* NodeBackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */; };
@@ -474,6 +476,7 @@
         DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
         DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
         DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */; };
+        BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */; };
         DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */; };
         DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */; };
         DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */; };
@@ -853,6 +856,7 @@
         DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
         DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterConfig.swift; sourceTree = "<group>"; };
         DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterLog.swift; sourceTree = "<group>"; };
+        BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStatsLog.swift; sourceTree = "<group>"; };
         DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfig.swift; sourceTree = "<group>"; };
         DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeighborInfoConfig.swift; sourceTree = "<group>"; };
         DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
@@ -1019,6 +1023,7 @@
         DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorConfig.swift; sourceTree = "<group>"; };
         DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV16.xcdatamodel; sourceTree = "<group>"; };
         DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+        DD000000275499A500A42001 /* PerformanceSeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceSeedData.swift; sourceTree = "<group>"; };
         DEA1C1212F10001000A1B2C3 /* BackupModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupModels.swift; sourceTree = "<group>"; };
         DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManaging.swift; sourceTree = "<group>"; };
         DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManager.swift; sourceTree = "<group>"; };
@@ -1075,6 +1080,7 @@
         DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV11.xcdatamodel; sourceTree = "<group>"; };
         DDDF34392E2CB8E600356DC3 /* MeshtasticDataModelV 54.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 54.xcdatamodel"; sourceTree = "<group>"; };
         DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IgnoreNodeButton.swift; sourceTree = "<group>"; };
+        BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocalStatsButton.swift; sourceTree = "<group>"; };
         DDDFE7402D0D4A070044463C /* MeshtasticDataModelV 47.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 47.xcdatamodel"; sourceTree = "<group>"; };
         DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsEnums.swift; sourceTree = "<group>"; };
         DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteLog.swift; sourceTree = "<group>"; };
@@ -1488,6 +1494,7 @@
             children = (
                 DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */,
                 DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
+                BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */,
                 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
                 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
                 DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */,
@@ -1762,6 +1769,7 @@
                 DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
                 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
                 DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */,
+                BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */,
                 DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */,
                 8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */,
             );
@@ -2196,6 +2204,7 @@
                 DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */,
                 DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */,
                 DDC4D567275499A500A4208E /* Persistence.swift */,
+                DD000000275499A500A42001 /* PerformanceSeedData.swift */,
                 DD964FC52975DBFD007C176F /* QuerySwiftData.swift */,
                 DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
             );
@@ -2741,6 +2750,7 @@
                 DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
                 AA000001303050030000B001 /* Color+Brand.swift in Sources */,
                 DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */,
+                BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */,
                 3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */,
                 DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
                 DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
@@ -2774,6 +2784,7 @@
                 DEA1C1222F10001000A1B2C3 /* NodeBackupManaging.swift in Sources */,
                 DEA1C1322F10002000A1B2C3 /* NeighborInfoConfig.swift in Sources */,
                 DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
+                DD000001275499A500A42001 /* PerformanceSeedData.swift in Sources */,
                 DEA1C0DE2F10000100A1B2C3 /* CoreDataMigrationService.swift in Sources */,
                 DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */,
                 DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */,
@@ -2973,6 +2984,7 @@
                 BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */,
                 DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
                 DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,
+                BCCA0BAB2F1C5C25007648E5 /* LocalStatsLog.swift in Sources */,
                 BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */,
                 23E23F922E392C2B00919073 /* LogRecord+StringRepresentation.swift in Sources */,
                 25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */,
@@ -3574,71 +3586,71 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
-            requirement = {
-                kind = upToNextMinorVersion;
-                minimumVersion = 0.2.2;
-            };
-        };
-        102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
-            requirement = {
-                kind = versionRange;
-                maximumVersion = 4.0.0;
-                minimumVersion = 3.3.0;
-            };
-        };
-        2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/swhitty/SwiftDraw";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 0.25.3;
-            };
-        };
-        2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 4.16.0;
-            };
-        };
-        259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/apple/swift-protobuf.git";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 1.26.0;
-            };
-        };
-        DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 1.17.0;
-            };
-        };
-        DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/emqx/CocoaMQTT";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 2.0.0;
-            };
-        };
-        AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/swiftlang/swift-markdown";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 0.5.0;
-            };
-        };
+		10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.5.1;
+			};
+		};
+		102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
+			requirement = {
+				kind = versionRange;
+				maximumVersion = 4.0.0;
+				minimumVersion = 3.3.0;
+			};
+		};
+		2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swhitty/SwiftDraw";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.25.3;
+			};
+		};
+		2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.16.0;
+			};
+		};
+		259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.26.0;
+			};
+		};
+		AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-markdown";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.0;
+			};
+		};
+		DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.0;
+			};
+		};
+		DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/emqx/CocoaMQTT";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */

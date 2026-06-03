@@ -22,47 +22,28 @@ struct ReducedPrecisionMapCircleKey: Hashable {
 	let precisionBits: Int32
 }
 
+struct MeshMapSelectedNode: Identifiable, Equatable {
+	let id: Int64
+}
+
+/// Lightweight snapshot of a position's node data, extracted outside MapContent
+/// so MapKit reevaluations do not repeatedly fault SwiftData relationships.
+struct MeshMapPositionSnapshot: Identifiable {
+	let id: Int64
+	let coordinate: CLLocationCoordinate2D
+	let latitudeI: Int32
+	let longitudeI: Int32
+	let precisionBits: Int32
+	let nodeNum: Int64
+	let longName: String
+	let shortName: String?
+	let isOnline: Bool
+	let viaMqtt: Bool
+	let calculatedDelay: Double
+}
+
 struct MeshMapContent: MapContent {
-
-	/// Lightweight snapshot of a position's node data, extracted once to avoid
-	/// repeated SwiftData relationship faults inside the MapContent builder.
-	struct PositionSnapshot: Identifiable {
-		let id: PersistentIdentifier
-		let coordinate: CLLocationCoordinate2D
-		let precisionBits: Int32
-		let nodeNum: Int64
-		let longName: String
-		let shortName: String?
-		let isOnline: Bool
-		let viaMqtt: Bool
-		let calculatedDelay: Double
-	}
-
-	/// Pre-extract all position data into value-type snapshots so the map builder
-	/// never faults SwiftData relationships during layout.
-	private var positionSnapshots: [PositionSnapshot] {
-		filteredPositions.compactMap { (position) -> PositionSnapshot? in
-			let coord: CLLocationCoordinate2D = if position.isPreciseLocation {
-				position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-			} else {
-				position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
-			}
-			let bits = position.precisionBits
-			guard 12...15 ~= bits || bits == 32 else { return nil }
-			let node = position.nodePosition
-			return PositionSnapshot(
-				id: position.persistentModelID,
-				coordinate: coord,
-				precisionBits: bits,
-				nodeNum: node?.num ?? 0,
-				longName: node?.user?.longName ?? "?",
-				shortName: node?.user?.shortName,
-				isOnline: node?.isOnline ?? false,
-				viaMqtt: node?.viaMqtt ?? true,
-				calculatedDelay: Double(abs(position.persistentModelID.hashValue) % 100) / 100.0 * 0.5
-			)
-		}
-	}
+	private let pulsingAnnotationLimit = 500
 
 	/// Parameters
 	@Binding var showUserLocation: Bool
@@ -73,16 +54,15 @@ struct MeshMapContent: MapContent {
 	@Binding var showPointsOfInterest: Bool
 	@Binding var selectedMapLayer: MapLayer
 	// Map Configuration
-	@Binding var selectedPosition: PositionEntity?
+	@Binding var selectedNode: MeshMapSelectedNode?
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
 	@Binding var selectedWaypoint: WaypointEntity?
 	// Map overlays
 	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
 	@Binding var enabledOverlayConfigs: Set<UUID>
 	
-	/// Pre-filtered positions passed in from the parent view to avoid
-	/// relationship faulting inside MapContent (which is re-evaluated frequently).
-	var filteredPositions: [PositionEntity]
+	/// Pre-filtered, pre-extracted positions passed in from the parent view.
+	var positionSnapshots: [MeshMapPositionSnapshot]
 
 	@Query(sort: \WaypointEntity.name, order: .reverse)
 	var waypoints: [WaypointEntity]
@@ -92,33 +72,49 @@ struct MeshMapContent: MapContent {
 	private var routes: [RouteEntity]
 
 	@MapContentBuilder
-	var positionAnnotations: some MapContent {
-		let snapshots = positionSnapshots
+	func positionAnnotations(snapshots: [MeshMapPositionSnapshot], showsPulse: Bool) -> some MapContent {
 		ForEach(snapshots) { snap in
 			Annotation(snap.longName, coordinate: snap.coordinate) {
-				LazyVStack {
-					AnimatedNodePin(
-						nodeColor: UIColor(hex: UInt32(snap.nodeNum)),
-						shortName: snap.shortName,
-						hasDetectionSensorMetrics: false,
-						isOnline: snap.isOnline,
-						calculatedDelay: snap.calculatedDelay
-					)
-				}
-				.highPriorityGesture(TapGesture().onEnded { _ in
-					if let pos = filteredPositions.first(where: { $0.persistentModelID == snap.id }) {
-						selectedPosition = (selectedPosition == pos ? nil : pos)
-					}
-				})
+				AnimatedNodePin(
+					nodeColor: UIColor(hex: UInt32(snap.nodeNum)),
+					shortName: snap.shortName,
+					hasDetectionSensorMetrics: false,
+					isOnline: snap.isOnline,
+					calculatedDelay: snap.calculatedDelay,
+					showsPulse: showsPulse
+				)
+					.equatable()
+					.highPriorityGesture(TapGesture().onEnded { _ in
+						selectedNode = (selectedNode?.id == snap.nodeNum ? nil : MeshMapSelectedNode(id: snap.nodeNum))
+					})
 			}
+		}
+	}
+
+	@MapContentBuilder
+	func densePositionAnnotations(snapshots: [MeshMapPositionSnapshot]) -> some MapContent {
+		ForEach(snapshots) { snap in
+			let nodeColor = Color(UIColor(hex: UInt32(snap.nodeNum)))
+			Annotation(snap.longName, coordinate: snap.coordinate) {
+				Circle()
+					.fill(nodeColor.opacity(snap.isOnline ? 0.9 : 0.6))
+					.stroke(.white.opacity(0.85), lineWidth: 1)
+					.frame(width: snap.isOnline ? 10 : 8, height: snap.isOnline ? 10 : 8)
+					.contentShape(Circle())
+					.highPriorityGesture(TapGesture().onEnded { _ in
+						selectedNode = (selectedNode?.id == snap.nodeNum ? nil : MeshMapSelectedNode(id: snap.nodeNum))
+					})
+			}
+			.annotationTitles(.hidden)
+			.annotationSubtitles(.hidden)
 		}
 	}
 
 	private var reducedPrecisionCircleItems: [(nodeNum: Int64, circleKey: ReducedPrecisionMapCircleKey)] {
 		var lowestNumForKey: [ReducedPrecisionMapCircleKey: Int64] = [:]
-		for position in filteredPositions where 12...15 ~= position.precisionBits {
-			let nodeNum = position.nodePosition?.num ?? 0
-			let key = ReducedPrecisionMapCircleKey(latitudeI: position.latitudeI, longitudeI: position.longitudeI, precisionBits: position.precisionBits)
+		for snapshot in positionSnapshots where 12...15 ~= snapshot.precisionBits {
+			let nodeNum = snapshot.nodeNum
+			let key = ReducedPrecisionMapCircleKey(latitudeI: snapshot.latitudeI, longitudeI: snapshot.longitudeI, precisionBits: snapshot.precisionBits)
 			if let existing = lowestNumForKey[key] {
 				if nodeNum < existing { lowestNumForKey[key] = nodeNum }
 			} else {
@@ -201,10 +197,11 @@ struct MeshMapContent: MapContent {
 	
 	@MapContentBuilder
 	var meshMap: some MapContent {
-		// When filteredPositions is empty (tab off-screen), skip all expensive content
+		// When snapshots are empty (tab off-screen), skip all expensive content
 		// to reduce memory from MapKit annotation/overlay view trees.
-		if !filteredPositions.isEmpty {
+		if !positionSnapshots.isEmpty {
 			let snapshots = positionSnapshots
+			let isDense = snapshots.count > pulsingAnnotationLimit
 			// Only compute LoRa node coordinates when the convex hull is actually displayed.
 			let loraCoords: [CLLocationCoordinate2D] = showConvexHull
 				? snapshots
@@ -226,8 +223,12 @@ struct MeshMapContent: MapContent {
 				overlayContent
 			}
 
-			positionAnnotations
-			reducedPrecisionMapCircles
+			if isDense {
+				densePositionAnnotations(snapshots: snapshots)
+			} else {
+				positionAnnotations(snapshots: snapshots, showsPulse: true)
+				reducedPrecisionMapCircles
+			}
 			routeAnnotations
 			waypointAnnotations
 		}
