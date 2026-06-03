@@ -27,16 +27,24 @@ struct ChannelMessageList: View {
 	@State private var tapbackTargetMessage: MessageEntity?
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
-	@Query private var allPrivateMessages: [MessageEntity]
-	
+	/// All messages for this channel index, non-emoji. Does NOT include the toUser == nil
+	/// guard because comparing an optional relationship to nil in a #Predicate crashes
+	/// SwiftData on iOS 26. The channel-only filter is applied in the computed property below.
+	@Query private var allChannelMessages: [MessageEntity]
+
+	/// Channel (non-DM) messages only — filters out direct messages in Swift after the fetch.
+	private var allPrivateMessages: [MessageEntity] {
+		allChannelMessages.filter { $0.toUser == nil }
+	}
+
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
 		self.myInfo = myInfo
 		self.channel = channel
 		
 		let channelIndex = channel.index
-		_allPrivateMessages = Query(
+		_allChannelMessages = Query(
 			filter: #Predicate<MessageEntity> {
-				$0.channel == channelIndex && $0.toUser == nil && $0.isEmoji == false
+				$0.channel == channelIndex && $0.isEmoji == false
 			},
 			sort: \MessageEntity.messageTimestamp
 		)

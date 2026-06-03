@@ -39,15 +39,20 @@ extension MeshPackets {
 					return lastHeard < expireDate
 				}
 			}
+			guard !staleNodes.isEmpty else {
+				Logger.data.info("💾 [NodeInfoEntity] No stale nodes to clear")
+				return false
+			}
 			let deletedNodes = staleNodes.count
 			for node in staleNodes {
 				modelContext.delete(node)
 			}
 			try modelContext.save()
 			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
-			return deletedNodes > 0
+			return true
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes")
+			Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -65,7 +70,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing pax: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -83,7 +89,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing positions: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -104,7 +111,8 @@ extension MeshPackets {
 				return true
 			}
 		} catch {
-			Logger.data.error("💥 [NodeInfoEntity] fetch data error")
+			Logger.data.error("💥 [NodeInfoEntity] Error clearing telemetry: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 		return false
 	}
@@ -113,17 +121,18 @@ extension MeshPackets {
 		let channelIndex = channel.index
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.toUser == nil && msg.isEmoji == false
+				msg.channel == channelIndex && msg.isEmoji == false
 			}
 		)
 		do {
 			let objects = try modelContext.fetch(descriptor)
-			for object in objects {
+			for object in objects where object.toUser == nil {
 				modelContext.delete(object)
 			}
 			try modelContext.save()
 		} catch {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 [MessageEntity] Error deleting channel messages: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
@@ -138,7 +147,8 @@ extension MeshPackets {
 		do {
 			try modelContext.save()
 		} catch {
-			Logger.data.error("\(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 [MessageEntity] Error deleting user messages: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
@@ -212,7 +222,8 @@ extension MeshPackets {
 		do {
 			try modelContext.save()
 		} catch {
-			Logger.data.error("Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
+			Logger.data.error("💥 Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
+			modelContext.rollback()
 		}
 	}
 	
@@ -526,7 +537,14 @@ extension MeshPackets {
 				
 				/// Don't save empty position packets from null island or apple park
 				if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
-					let fetchedNode = try modelContext.fetch(fetchNodePositionRequest)
+					var fetchedNode = try modelContext.fetch(fetchNodePositionRequest)
+					// Create a stub node if one doesn't exist yet — it will be updated when the NodeInfo packet arrives
+					if fetchedNode.isEmpty {
+						let newNode = createNodeInfo(num: Int64(packet.from), context: modelContext)
+						newNode.lastHeard = Date()
+						fetchedNode = [newNode]
+						Logger.data.info("📍 [Position] created stub node for: \(packet.from.toHex(), privacy: .public)")
+					}
 					if fetchedNode.count == 1 {
 						
 						// Unset the current latest position for this node
@@ -1000,7 +1018,7 @@ extension MeshPackets {
 	
 	func upsertSecurityConfigPacket(config: Config.SecurityConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
-		let logString = String.localizedStringWithFormat("mesh.log.security.config %@".localized, String(nodeNum))
+		let logString = String.localizedStringWithFormat("Security config received: @".localized, String(nodeNum))
 		Logger.data.info("🛡️ \(logString, privacy: .public)")
 		
 		let fetchNum = Int64(nodeNum)

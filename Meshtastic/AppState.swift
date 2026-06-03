@@ -33,18 +33,17 @@ class AppState: ObservableObject {
 	/// after any bulk read/delete operation to keep the badge in sync.
 	@MainActor
 	func refreshBadgeCount(context: ModelContext) {
-		let channelDescriptor = FetchDescriptor<MessageEntity>(
+		// NOTE: Comparing an optional relationship to nil in a #Predicate crashes SwiftData on
+		// iOS 26 (SIGTRAP / heap corruption from the @Query machinery). Fetch all unread messages
+		// and split channel vs DM in Swift — unread counts are small so this is inexpensive.
+		let unreadDescriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.toUser == nil && msg.isEmoji == false && msg.read == false
+				msg.isEmoji == false && msg.read == false
 			}
 		)
-		let dmDescriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { msg in
-				msg.toUser != nil && msg.isEmoji == false && msg.read == false && msg.admin == false
-			}
-		)
-		let channelCount = (try? context.fetchCount(channelDescriptor)) ?? 0
-		let dmCount = (try? context.fetchCount(dmDescriptor)) ?? 0
+		let unread = (try? context.fetch(unreadDescriptor)) ?? []
+		let channelCount = unread.filter { $0.toUser == nil }.count
+		let dmCount = unread.filter { $0.toUser != nil && !$0.admin }.count
 		if unreadChannelMessages != channelCount {
 			unreadChannelMessages = channelCount
 		}

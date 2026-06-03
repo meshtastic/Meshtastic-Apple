@@ -122,4 +122,30 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 
 ![Node Detail](../assets/screenshots/nodeDetail.png)
 
+### Hardware Info
+
+The hardware section shows information about the physical device running the node. The section title reflects the device's support status:
+
+| Status | Meaning |
+|--------|---------|
+| **Supported Hardware** | Device is actively supported with firmware updates. |
+| **Discontinued Hardware** | Device is no longer supported and does not receive firmware updates. |
+
+For supported devices, the support tier is shown below the hardware name:
+
+| Tier | Description |
+|------|-------------|
+| Flagship | Recommended device with full feature support and active development. |
+| Niche | Supported device with active firmware updates and a specialised form factor. |
+| Legacy | Older device that still receives firmware updates but may lack some features. |
+
+### Where to Buy
+
+For devices with known purchase links, an **I want one** section appears below the hardware info. It shows the official vendor link and regional marketplace options (Amazon, Rokland, AliExpress, and others) sourced from [msh.to](https://msh.to).
+
+Marketplace links are filtered to your device region, so only stores that ship to your area are shown. Vendor links (directly from the device manufacturer) are always shown regardless of region.
+
+> **Tip — No purchase links shown**
+> Purchase links require an internet connection on first launch and after clearing app data. Connect the app to update the device catalog.
+
 [Device Configuration Docs →](https://meshtastic.org/docs/configuration/radio/device/)

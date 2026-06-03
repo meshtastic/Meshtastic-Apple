@@ -14,7 +14,7 @@ General app preferences including map style, notification behaviour, and theme. 
 
 ### Data Management
 
-- **Erase All App Data** — clears the local database, translation cache, and all stored settings. Use this as a last resort.
+- **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.
 - **NodeDB Reset** — resets the node database on your connected radio. When prompted, you can choose to **Preserve Favorites** so your starred nodes are retained after the reset.
 - **Reset App Settings** — restores default app preferences without affecting your node database.
 
