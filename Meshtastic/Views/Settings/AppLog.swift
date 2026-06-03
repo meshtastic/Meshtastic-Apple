@@ -311,18 +311,30 @@ struct AppLog: View {
 				}
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
-				if !streamModel.isPinnedToLiveEdge {
+				HStack {
+					if !streamModel.isPinnedToLiveEdge {
+						Button {
+							streamModel.setPinned(true)
+							withAnimation { proxy.scrollTo("streamBottom", anchor: .bottom) }
+						} label: {
+							Label("Live", systemImage: "arrow.down.to.line")
+								.padding(.vertical, 5)
+						}
+						.buttonStyle(.borderedProminent)
+					}
+					// Filter button — also the way back to turn Packet Stream off.
 					Button {
-						streamModel.setPinned(true)
-						withAnimation { proxy.scrollTo("streamBottom", anchor: .bottom) }
+						withAnimation { isEditingFilters.toggle() }
 					} label: {
-						Label("Live", systemImage: "arrow.down.to.line")
+						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
 							.padding(.vertical, 5)
 					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
-					.controlSize(.regular)
-					.padding(5)
 				}
+				.controlSize(.regular)
+				.padding(5)
 			}
 			.gesture(
 				DragGesture().onChanged { value in
