@@ -77,16 +77,22 @@ class PersistenceController {
 			// A fatalError here would leave users permanently unable to open
 			// the app, so we recover instead and accept the data loss.
 			Logger.data.critical("💾 SwiftData store failed to open, attempting recovery: \(error.localizedDescription, privacy: .public)")
+			// Move the actual store files aside so the retry starts from a clean
+			// slate. SwiftData names the store from `config.url` — for a named
+			// configuration that is `<name>.store` with `-shm`/`-wal` siblings
+			// (NOT `.sqlite`). Derive the paths from `config.url.lastPathComponent`
+			// directly so we move the real files instead of a non-existent
+			// `<name>.sqlite`, which previously left the broken store in place and
+			// guaranteed the retry below failed.
 			let fm = FileManager.default
-			let base = config.url.deletingPathExtension()
-			let broken = base
-				.deletingLastPathComponent()
-				.appendingPathComponent(base.lastPathComponent + "-broken-\(Int(Date().timeIntervalSince1970))")
-			for ext in ["sqlite", "sqlite-shm", "sqlite-wal"] {
-				try? fm.moveItem(
-					at: base.appendingPathExtension(ext),
-					to: broken.appendingPathExtension(ext)
-				)
+			let storeURL = config.url
+			let directory = storeURL.deletingLastPathComponent()
+			let storeFileName = storeURL.lastPathComponent
+			let suffix = "-broken-\(Int(Date().timeIntervalSince1970))"
+			for sidecar in ["", "-shm", "-wal"] {
+				let from = directory.appendingPathComponent(storeFileName + sidecar)
+				let to = directory.appendingPathComponent(storeFileName + suffix + sidecar)
+				try? fm.moveItem(at: from, to: to)
 			}
 			do {
 				container = try ModelContainer(
@@ -97,7 +103,24 @@ class PersistenceController {
 				container.mainContext.autosaveEnabled = false
 				Logger.data.warning("💾 SwiftData store recreated after recovery — local data has been reset on this device")
 			} catch let recoveryError {
-				fatalError("💾 SwiftData store unrecoverable even after reset: \(recoveryError.localizedDescription)")
+				// Last resort: never crash at launch. Fall back to an in-memory
+				// container so the app remains usable (data not persisted this
+				// session) instead of crash-looping on every launch.
+				Logger.data.critical("💾 SwiftData store unrecoverable even after reset, falling back to in-memory: \(recoveryError.localizedDescription, privacy: .public)")
+				let memoryConfig = ModelConfiguration(
+					storeName,
+					schema: schema,
+					isStoredInMemoryOnly: true,
+					allowsSave: true
+				)
+				do {
+					container = try ModelContainer(for: schema, configurations: memoryConfig)
+					container.mainContext.autosaveEnabled = false
+				} catch let memoryError {
+					// An in-memory store cannot fail for file reasons; if it does,
+					// the schema itself is invalid and there is no safe recovery.
+					fatalError("💾 SwiftData in-memory fallback failed: \(memoryError.localizedDescription)")
+				}
 			}
 		}
 
