@@ -23,6 +23,9 @@ struct Connect: View {
 	@Environment(\.colorScheme) private var colorScheme
 	@State var router: Router
 	@State var node: NodeInfoEntity?
+	/// Cached battery level for the connected node. Refreshed on an interval (see `.task`)
+	/// rather than fetched in `body`, which re-ran a TelemetryEntity query on every render.
+	@State private var connectedBatteryLevel: Int32?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var showSecurityVersionNag = false
@@ -65,7 +68,7 @@ struct Connect: View {
 									VStack(alignment: .center) {
 										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
 											.padding(.trailing, 5)
-										if let batteryLevel = latestBatteryLevel(for: node) {
+										if let batteryLevel = connectedBatteryLevel {
 											BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 												.padding(.trailing, 5)
 										}
@@ -458,6 +461,15 @@ struct Connect: View {
 		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
+		.task(id: node?.num) {
+			// Refresh the connected node's battery on an interval instead of fetching in
+			// `body` (which re-ran the TelemetryEntity query on every render — costly while
+			// ingestion churns the node @Query). Battery changes slowly, so 15s is plenty.
+			while !Task.isCancelled {
+				connectedBatteryLevel = latestBatteryLevel(for: node)
+				try? await Task.sleep(for: .seconds(15))
+			}
+		}
 	}
 
 	/// Fetch only the latest device metrics battery level without faulting all telemetries.
