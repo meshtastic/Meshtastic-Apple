@@ -127,37 +127,68 @@ struct AppLogFilter: View {
 	var filterTitle = "App Log Filters"
 	@Binding var categories: Set<Int>
 	@Binding var levels: Set<Int>
+	@Binding var isPacketStreamOn: Bool
+	@Binding var categoriesExpanded: Bool
+	@Binding var levelsExpanded: Bool
 
 	var body: some View {
 		NavigationStack {
 			Form {
-				Section(header: sectionHeader(title: "Categories") {
-					categories.formUnion(LogCategories.allCases.map(\.id))
-				}) {
-					ForEach(LogCategories.allCases) { category in
-						selectionRow(
-							title: category.description,
-							color: category.color,
-							isSelected: categories.contains(category.id)
-						) {
-							toggleCategory(category.id)
+				Section {
+					Toggle(isOn: $isPacketStreamOn) {
+						HStack {
+							Label("Packet Stream", systemImage: "dot.radiowaves.left.and.right")
+								.foregroundStyle(LogCategories.mesh.color)
+							if isPacketStreamOn {
+								Text("LIVE")
+									.font(.caption2.bold())
+									.padding(.horizontal, 6)
+									.padding(.vertical, 2)
+									.background(LogCategories.mesh.color.opacity(0.2), in: Capsule())
+									.foregroundStyle(LogCategories.mesh.color)
+								Spacer()
+							}
 						}
 					}
+				} footer: {
+					Text("Live view of mesh packets crossing the network. Overrides the category and level filters below.")
 				}
 
-				Section(header: sectionHeader(title: "Log Levels") {
-					levels.formUnion(LogLevels.allCases.map(\.id))
-				}) {
-					ForEach(LogLevels.allCases) { level in
-						selectionRow(
-							title: level.description,
-							color: level.color,
-							isSelected: levels.contains(level.id)
-						) {
-							toggleLevel(level.id)
+				Section {
+					collapsibleSectionHeader(title: "Categories", isExpanded: $categoriesExpanded) {
+						categories.formUnion(LogCategories.allCases.map(\.id))
+					}
+					if categoriesExpanded {
+						ForEach(LogCategories.allCases) { category in
+							selectionRow(
+								title: category.description,
+								color: category.color,
+								isSelected: categories.contains(category.id)
+							) {
+								toggleCategory(category.id)
+							}
 						}
 					}
 				}
+				.disabled(isPacketStreamOn)
+
+				Section {
+					collapsibleSectionHeader(title: "Log Levels", isExpanded: $levelsExpanded) {
+						levels.formUnion(LogLevels.allCases.map(\.id))
+					}
+					if levelsExpanded {
+						ForEach(LogLevels.allCases) { level in
+							selectionRow(
+								title: level.description,
+								color: level.color,
+								isSelected: levels.contains(level.id)
+							) {
+								toggleLevel(level.id)
+							}
+						}
+					}
+				}
+				.disabled(isPacketStreamOn)
 			}
 			.navigationTitle(filterTitle)
 			.navigationBarTitleDisplayMode(.inline)
@@ -186,11 +217,28 @@ struct AppLogFilter: View {
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 	}
 
-	private func sectionHeader(title: String, action: @escaping () -> Void) -> some View {
+	private func collapsibleSectionHeader(
+		title: String,
+		isExpanded: Binding<Bool>,
+		allAction: @escaping () -> Void
+	) -> some View {
 		HStack {
-			Text(title)
+			Button {
+				withAnimation { isExpanded.wrappedValue.toggle() }
+			} label: {
+				HStack(spacing: 6) {
+					Image(systemName: isExpanded.wrappedValue ? "chevron.down" : "chevron.right")
+						.font(.caption.weight(.semibold))
+						.foregroundStyle(.secondary)
+					Text(title)
+						.font(.headline)
+				}
+				.contentShape(Rectangle())
+			}
+			.buttonStyle(.plain)
 			Spacer()
-			Button("All", action: action)
+			Button("All", action: allAction)
+				.buttonStyle(.borderless)
 		}
 	}
 
@@ -231,5 +279,11 @@ struct AppLogFilter: View {
 }
 
 #Preview {
-	AppLogFilter(categories: .constant(Set<Int>()), levels: .constant(Set<Int>()))
+	AppLogFilter(
+		categories: .constant(Set<Int>()),
+		levels: .constant(Set<Int>()),
+		isPacketStreamOn: .constant(false),
+		categoriesExpanded: .constant(true),
+		levelsExpanded: .constant(true)
+	)
 }

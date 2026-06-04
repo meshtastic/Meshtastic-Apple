@@ -117,7 +117,7 @@ extension AccessoryManager {
 
 		try await send(toRadio)
 		if let adminDescription {
-			Logger.mesh.debug("\(adminDescription, privacy: .public)")
+			Logger.admin.debug("\(adminDescription, privacy: .public)")
 		}
 	}
 
@@ -168,7 +168,7 @@ extension AccessoryManager {
 					// Update local database with the new node info
 					// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
 					let shouldFavorite = connectedDeviceRole != .clientBase
-					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite)
+					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false)
 				}
 			} catch {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
@@ -373,6 +373,7 @@ extension AccessoryManager {
 					Task {
 						let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 						try await send(toRadio, debugDescription: logString)
+						Logger.mesh.info("💬 \(logString, privacy: .public)")
 					}
 					do {
 						try context.save()

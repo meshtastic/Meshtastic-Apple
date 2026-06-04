@@ -253,8 +253,8 @@ actor MeshPackets {
 
 	func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String) -> PersistentIdentifier? {
 		let logString = String.localizedStringWithFormat("MyInfo received: %@".localized, String(myInfo.myNodeNum))
-		Logger.mesh.info("ℹ️ \(logString, privacy: .public)")
-
+		Logger.admin.info("ℹ️ \(logString, privacy: .public)")
+		
 		let myNodeNum = Int64(myInfo.myNodeNum)
 		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myNodeNum })
 
@@ -297,8 +297,8 @@ actor MeshPackets {
 	func channelPacket (channel: Channel, fromNum: Int64) {
 		if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 			let logString = String.localizedStringWithFormat("Channel received: %d %@".localized, channel.index, String(fromNum))
-			Logger.mesh.info("🎛️ \(logString, privacy: .public)")
-
+			Logger.admin.info("🎛️ \(logString, privacy: .public)")
+			
 			let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == fromNum })
 
 			do {
@@ -339,8 +339,8 @@ actor MeshPackets {
 	func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, sessionPasskey: Data? = Data()) {
 		if metadata.isInitialized {
 			let logString = String.localizedStringWithFormat("Device Metadata received from: %@".localized, fromNum.toHex())
-			Logger.mesh.info("🏷️ \(logString, privacy: .public)")
-
+			Logger.admin.info("🏷️ \(logString, privacy: .public)")
+			
 			let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == fromNum })
 
 			do {
@@ -383,8 +383,11 @@ actor MeshPackets {
 	}
 
 	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false) -> PersistentIdentifier? {
+		// This path handles the connected device's local node-DB dump during wantConfig
+		// (FromRadio.nodeInfo), not packets that crossed the mesh — log it as admin/setup.
+		// Over-the-air NodeInfo arrives via upsertNodeInfoPacket and stays on .mesh.
 		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
-		Logger.mesh.info("📟 \(logString, privacy: .public)")
+		Logger.admin.info("📟 \(logString, privacy: .public)")
 
 		guard nodeInfo.num > 0 else { return nil }
 
@@ -628,8 +631,8 @@ actor MeshPackets {
 
 				if let cmmc = try? CannedMessageModuleConfig(serializedBytes: packet.decoded.payload) {
 					let logString = String.localizedStringWithFormat("Canned Messages Messages Received For: %@".localized, packet.from.toHex())
-					Logger.mesh.info("🥫 \(logString, privacy: .public)")
-
+					Logger.admin.info("🥫 \(logString, privacy: .public)")
+					
 					let packetFrom = Int64(packet.from)
 					let fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
 
@@ -704,7 +707,7 @@ actor MeshPackets {
 					self.upsertRtttlConfigPacket(ringtone: rt.ringtone, nodeNum: Int64(packet.from))
 				}
 			} else {
-				Logger.mesh.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+				Logger.admin.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 			self.adminResponseAck(packet: packet)

@@ -64,14 +64,15 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
     font-size: 1rem;
     line-height: 1.65;
+    /* Grow with the window up to a comfortable max, then center (margin auto)
+       on larger screens instead of shrinking the column. */
     margin: 0 auto;
     padding: 16px 20px 40px;
-    max-width: 100%;
+    max-width: 1536px;
 }
 
 @media (min-width: 1536px) {
     body {
-        max-width: 900px;
         padding: 24px 32px 48px;
     }
 }

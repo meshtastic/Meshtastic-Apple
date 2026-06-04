@@ -1938,3 +1938,56 @@ struct TAKIdentitySectionSnapshotTests {
 		)
 	}
 }
+
+// MARK: - AppLogFilter accordion (spec 012)
+
+@Suite("AppLogFilter Accordion")
+@MainActor
+struct AppLogFilterAccordionTests {
+
+	private func filter(expanded: Bool) -> AppLogFilter {
+		AppLogFilter(
+			categories: .constant(Set(LogCategories.allCases.map(\.id))),
+			levels: .constant(Set(LogLevels.allCases.map(\.id))),
+			isPacketStreamOn: .constant(false),
+			categoriesExpanded: .constant(expanded),
+			levelsExpanded: .constant(expanded)
+		)
+	}
+
+	// Note: the precise ≥50% on-screen footprint reduction (SC-003) is verified on-device
+	// in the quickstart pass — a scrollable Form does not expose a meaningful intrinsic
+	// height via sizeThatFits, so it can't be asserted reliably here. This test instead
+	// proves the accordion actually changes the rendered layout (rows shown vs hidden).
+	@Test("Collapsing changes the rendered layout (rows hidden)")
+	func collapsingHidesRows() {
+		let collapsed = renderImage(filter(expanded: false), width: 390, height: 700).pngData()
+		let expanded = renderImage(filter(expanded: true), width: 390, height: 700).pngData()
+		#expect(collapsed != nil && expanded != nil)
+		#expect(collapsed != expanded)
+	}
+
+	@Test("Both filter states render without crashing")
+	func rendersBothStates() {
+		#expect(renderImage(filter(expanded: false), width: 390).cgImage != nil)
+		#expect(renderImage(filter(expanded: true), width: 390).cgImage != nil)
+	}
+
+	@Test("Packet Stream on renders and differs from off (US4 placement/indication)")
+	func packetStreamOnState() {
+		let off = renderImage(filter(expanded: false), width: 390, height: 700).pngData()
+		let on = renderImage(
+			AppLogFilter(
+				categories: .constant(Set(LogCategories.allCases.map(\.id))),
+				levels: .constant(Set(LogLevels.allCases.map(\.id))),
+				isPacketStreamOn: .constant(true),
+				categoriesExpanded: .constant(false),
+				levelsExpanded: .constant(false)
+			),
+			width: 390,
+			height: 700
+		).pngData()
+		#expect(off != nil && on != nil)
+		#expect(off != on)
+	}
+}

@@ -756,17 +756,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		case .deviceuiConfig:
 #if DEBUG
-			Logger.mesh.info("🕸️ MESH PACKET received for deviceUIConfig UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			Logger.admin.info("🕸️ MESH PACKET received for deviceUIConfig UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 #endif
 		case .fileInfo:
 #if DEBUG
-			Logger.mesh.info("🕸️ MESH PACKET received for fileInfo UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			Logger.admin.info("🕸️ MESH PACKET received for fileInfo UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 #endif
 		case .queueStatus:
 #if DEBUG
-			Logger.mesh.info("🕸️ MESH PACKET received for queueStatus \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+			Logger.transport.info("🕸️ MESH PACKET received for queueStatus \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 #else
-			Logger.mesh.info("🕸️ MESH PACKET received for heartbeat response")
+			Logger.transport.info("🕸️ MESH PACKET received for heartbeat response")
 #endif
 		case .logRecord(let record):
 			didReceiveLog(message: record.stringRepresentation)
@@ -828,7 +828,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 			
 		default:
-			Logger.mesh.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
+			Logger.transport.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
 		}
 
 	}

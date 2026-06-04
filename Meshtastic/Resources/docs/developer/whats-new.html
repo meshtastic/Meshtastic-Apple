@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What's New</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="whats-new">
+<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>What's New</h1>
+<p>Recent architectural and procedural changes from roughly the last 12 months. Newest at the top.</p>
+<!-- DEV_WHATS_NEW_START -->
+<!-- Add new entries at the top. Format:
+**Month YYYY** — [Page or area](relative/path.md) — One sentence on what changed architecturally or procedurally.
+Show roughly the last 12 months of changes; archive entries older than a year by removing them.
+-->
+<p><strong>May 2026</strong> — <a href="deep-links.html">Deep Links</a> — Added <code>audio</code> and <code>neighborInfo</code> deep links for new module config screens.</p>
+<p><strong>May 2026</strong> — <a href="architecture.html">Architecture</a> — Audio, Neighbor Info module config screens; Pax Counter threshold fields; Compass Orientation picker; <code>IntervalConfiguration.neighborInfo</code> enum case for update interval picker.</p>
+<p><strong>May 2026</strong> — <a href="architecture.html">Architecture</a> — Docs Translation Pipeline (<code>009</code>): markdown-level translation with community CDN feed, manifest-based caching, and automatic contribution back to <code>meshtastic/translations</code> repo.</p>
+<p><strong>May 2026</strong> — <a href="architecture.html">Architecture</a> — Automatic Docs Translation (<code>008</code>): on-device Apple Translation framework integration for in-app docs, with file-based cache in Application Support.</p>
+<p><strong>May 2026</strong> — <a href="architecture.html">Architecture</a> — Message Formatting Toolbar (<code>004</code>): pure SwiftUI markdown toolbar using <code>TextSelection</code> (iOS 18+), raw markdown storage in existing <code>messagePayload</code> field — no schema changes.</p>
+<p><strong>May 2026</strong> — <a href="swiftdata.html">SwiftData</a> — Documented save strategy (autosave disabled, debounced saves), <code>@Attribute(.unique)</code> indexes, and data caps for positions/telemetry/messages. Fixed stale <code>QueryCoreData</code>/<code>UpdateCoreData</code> references.</p>
+<p><strong>May 2026</strong> — <a href="carplay.html">CarPlay</a> — Documented fetch limits and predicates on CarPlay data queries.</p>
+<p><strong>May 2026</strong> — <a href="deep-links.html">Deep Links</a> — Added <code>coreDataBrowser</code> deep link for the SwiftData database browser.</p>
+<p><strong>May 2026</strong> — <a href="testing.html">Testing</a> — Snapshot test conventions established: consolidated multi-state views into single combined images (light + dark pairs), use <code>assertViewSnapshot</code> helper with explicit <code>width</code>/<code>height</code> and <code>transparent: true</code> for icon snapshots.</p>
+<p><strong>May 2026</strong> — <a href="architecture.html">Architecture</a> — In-app documentation system added (<code>003-app-docs-markdown</code>): markdown source under <code>docs/user/</code> and <code>docs/developer/</code> is converted to HTML by <code>scripts/build-docs.sh</code> and bundled at <code>Meshtastic/Resources/docs/</code>.</p>
+<p><strong>Apr 2026</strong> — <a href="transport.html">Transport</a> — Documented AccessoryManager transport extensions and connection lifecycle.</p>
+<p><strong>Mar 2026</strong> — <a href="swiftdata.html">SwiftData</a> — Initial SwiftData developer guide: ModelContainer setup, <code>@Query</code> usage, <code>MeshPackets</code> actor, schema migrations.</p>
+<!-- DEV_WHATS_NEW_END -->
+</body>
+</html>

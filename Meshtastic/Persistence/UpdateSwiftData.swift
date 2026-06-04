@@ -279,11 +279,18 @@ extension MeshPackets {
 		}
 	}
 	
-	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false) {
-		
+	/// - Parameter overTheMesh: true when this NodeInfo arrived as an over-the-air packet from a
+	///   remote node — logged on .mesh so it appears in the Packet Stream. false for local updates
+	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
+	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true) {
+
 		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, packet.from.toHex())
-		Logger.mesh.info("📟 \(logString, privacy: .public)")
-		
+		if overTheMesh {
+			Logger.mesh.info("📟 \(logString, privacy: .public)")
+		} else {
+			Logger.data.info("📟 \(logString, privacy: .public)")
+		}
+
 		guard packet.from > 0 else { return }
 		
 		let fetchNum = Int64(packet.from)
@@ -648,7 +655,7 @@ extension MeshPackets {
 	func upsertBluetoothConfigPacket(config: Config.BluetoothConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Bluetooth config received: %@".localized, String(nodeNum))
-		Logger.mesh.info("📶 \(logString, privacy: .public)")
+		Logger.admin.info("📶 \(logString, privacy: .public)")
 		
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
@@ -687,7 +694,7 @@ extension MeshPackets {
 	func upsertDeviceConfigPacket(config: Config.DeviceConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Device config received: %@".localized, String(nodeNum))
-		Logger.mesh.info("📟 \(logString, privacy: .public)")
+		Logger.admin.info("📟 \(logString, privacy: .public)")
 		let fetchNum = Int64(nodeNum)
 			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
 			fetchNodeInfoRequest.fetchLimit = 1

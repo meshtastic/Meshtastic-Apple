@@ -22,18 +22,151 @@ struct AppLog: View {
 	@State var isExporting = false
 	@State var exportString = ""
 	@State var isEditingFilters = false
+	@State private var isPacketStreamOn = false
+	@State private var categoriesExpanded = false
+	@State private var levelsExpanded = false
+	@StateObject private var streamModel = PacketStreamModel()
+	@Environment(\.scenePhase) private var scenePhase
 
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	private let dateFormatStyle = Date.FormatStyle()
-		.hour(.twoDigits(amPM: .omitted))
-		.minute()
-		.second()
-		.secondFraction(.fractional(3))
+	/// Fixed ISO 8601-style timestamp in local time, e.g. "2026-05-29 09:37:16.305".
+	/// `en_US_POSIX` keeps the format literal and locale-independent so log lines stay
+	/// sortable and unambiguous regardless of device region.
+	private static let logDateFormatter: DateFormatter = {
+		let formatter = DateFormatter()
+		formatter.locale = Locale(identifier: "en_US_POSIX")
+		formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+		formatter.timeZone = .current
+		return formatter
+	}()
 
 	var body: some View {
+		Group {
+		if isPacketStreamOn {
+			packetStreamView
+		} else {
+			mainLogView
+		}
+		}
+		.onChange(of: sortOrder) { _, sortOrder in
+			withAnimation {
+				logs.sort(using: sortOrder)
+			}
+		}
+		.onChange(of: searchText) {
+			Task {
+				await logs = searchAppLogs()
+				logs.sort(using: sortOrder)
+			}
+		}
+		.onChange(of: [categories]) {
+			Task {
+				await logs = searchAppLogs()
+				logs.sort(using: sortOrder)
+			}
+		}
+		.onChange(of: [levels]) {
+			Task {
+				await logs = searchAppLogs()
+				logs.sort(using: sortOrder)
+			}
+		}
+		.onChange(of: selection) { _, newSelection in
+			presentingErrorDetails = true
+			let log = logs.first {
+			   $0.id == newSelection
+			 }
+			selectedLog = log
+		}
+		.sheet(isPresented: $isEditingFilters) {
+			AppLogFilter(
+				categories: $categories,
+				levels: $levels,
+				isPacketStreamOn: $isPacketStreamOn,
+				categoriesExpanded: $categoriesExpanded,
+				levelsExpanded: $levelsExpanded
+			)
+		}
+		.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
+			LogDetail(log: log)
+				.padding()
+		}
+		.task {
+			logs = await searchAppLogs()
+			logs.sort(using: sortOrder)
+		}
+		.onAppear { updateStreamingState() }
+		.onDisappear { streamModel.stop() }
+		.onChange(of: isPacketStreamOn) { _, _ in
+			// Keep accumulated stream entries when toggling in/out of stream mode;
+			// the model resumes from its last-seen cursor rather than clearing.
+			updateStreamingState()
+		}
+		.onChange(of: scenePhase) { _, _ in updateStreamingState() }
+		.fileExporter(
+			isPresented: $isExporting,
+			document: CsvDocument(emptyCsv: exportString),
+			contentType: .commaSeparatedText,
+			defaultFilename: String("Meshtastic Application Logs \(Date.now.exportTimestamp)"),
+			onCompletion: { result in
+				switch result {
+				case .success:
+					self.isExporting = false
+					Logger.services.info("Application log download succeeded.")
+				case .failure(let error):
+					Logger.services.error("Application log download failed: \(error.localizedDescription, privacy: .public)")
+				}
+			}
+		)
+		.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
+		.navigationBarTitle(navTitle, displayMode: .inline)
+		.toolbar {
+#if targetEnvironment(macCatalyst)
+			if !isPacketStreamOn {
+				ToolbarItem(placement: .topBarLeading) {
+					Button(action: {
+						Task {
+							await logs = searchAppLogs()
+							logs.sort(using: sortOrder)
+						}
+					}) {
+						Image(systemName: "arrow.clockwise.circle")
+					}
+				}
+			}
+#endif
+			if !logs.isEmpty || (isPacketStreamOn && !streamModel.visibleEntries.isEmpty) {
+				ToolbarItem(placement: .navigationBarTrailing) {
+					Button(action: {
+						if isPacketStreamOn {
+							Task {
+								let meshLogs = await streamModel.fetchAllForExport()
+								exportString = logToCsvFile(log: meshLogs)
+								isExporting = true
+							}
+						} else {
+							exportString = logToCsvFile(log: logs)
+							isExporting = true
+						}
+					}) {
+						Image(systemName: "square.and.arrow.down")
+					}
+				}
+			}
+		}
+	}
+	private var mainLogView: some View {
 		HStack {
 
 			if idiom == .phone {
+				phoneLogTable
+			} else {
+				desktopLogTable
+			}
+		}
+	}
+
+	private var phoneLogTable: some View {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
 					TableColumn("Message", value: \.composedMessage) { value in
 						Text(value.composedMessage)
@@ -62,7 +195,6 @@ struct AppLog: View {
 				}
 				.padding(.bottom, 5)
 				.padding(.trailing, 5)
-				.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
 				.disabled(selection != nil)
 				.overlay {
 					if logs.isEmpty {
@@ -73,12 +205,14 @@ struct AppLog: View {
 					await logs = searchAppLogs()
 					logs.sort(using: sortOrder)
 				}
-			} else {
+	}
+
+	private var desktopLogTable: some View {
 				Table(logs, selection: $selection, sortOrder: $sortOrder) {
 					TableColumn("Time") { value in
-						Text(value.date.formatted(dateFormatStyle))
+						Text(Self.logDateFormatter.string(from: value.date))
 					}
-					.width(min: 125, max: 150)
+					.width(min: 215, max: 240)
 					TableColumn("Level") { value in
 						Text(value.level.description)
 							.foregroundStyle(value.level.color)
@@ -113,7 +247,6 @@ struct AppLog: View {
 				}
 				.padding(.bottom, 5)
 				.padding(.trailing, 5)
-				.searchable(text: $searchText, placement: .navigationBarDrawer, prompt: "Search")
 				.disabled(selection != nil)
 				.overlay {
 					if logs.isEmpty {
@@ -124,93 +257,124 @@ struct AppLog: View {
 					await logs = searchAppLogs()
 					logs.sort(using: sortOrder)
 				}
-			}
-		}
-		.onChange(of: sortOrder) { _, sortOrder in
-			withAnimation {
-				logs.sort(using: sortOrder)
-			}
-		}
-		.onChange(of: searchText) {
-			Task {
-				await logs = searchAppLogs()
-				logs.sort(using: sortOrder)
-			}
-		}
-		.onChange(of: [categories]) {
-			Task {
-				await logs = searchAppLogs()
-				logs.sort(using: sortOrder)
-			}
-		}
-		.onChange(of: [levels]) {
-			Task {
-				await logs = searchAppLogs()
-				logs.sort(using: sortOrder)
-			}
-		}
-		.onChange(of: selection) { _, newSelection in
-			presentingErrorDetails = true
-			let log = logs.first {
-			   $0.id == newSelection
-			 }
-			selectedLog = log
-		}
-		.sheet(isPresented: $isEditingFilters) {
-			AppLogFilter(categories: $categories, levels: $levels)
-		}
-		.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
-			LogDetail(log: log)
-				.padding()
-		}
-		.task {
-			logs = await searchAppLogs()
-			logs.sort(using: sortOrder)
-		}
-		.fileExporter(
-			isPresented: $isExporting,
-			document: CsvDocument(emptyCsv: exportString),
-			contentType: .commaSeparatedText,
-			defaultFilename: String("Meshtastic Application Logs \(Date.now.exportTimestamp)"),
-			onCompletion: { result in
-				switch result {
-				case .success:
-					self.isExporting = false
-					Logger.services.info("Application log download succeeded.")
-				case .failure(let error):
-					Logger.services.error("Application log download failed: \(error.localizedDescription, privacy: .public)")
-				}
-			}
-		)
-		.navigationBarTitle("Debug Logs\(logs.isEmpty ? "" : " (\(logs.count))")", displayMode: .inline)
-		.toolbar {
-#if targetEnvironment(macCatalyst)
-			ToolbarItem(placement: .topBarLeading) {
-				Button(action: {
-					Task {
-						await logs = searchAppLogs()
-						logs.sort(using: sortOrder)
-					}
-				}) {
-					Image(systemName: "arrow.clockwise.circle")
-				}
-			}
-#endif
-			if !logs.isEmpty {
-				ToolbarItem(placement: .navigationBarTrailing) {
-					Button(action: {
-						exportString = logToCsvFile(log: logs)
-						isExporting = true
-					}) {
-						Image(systemName: "square.and.arrow.down")
-					}
-				}
-			}
-		}
 	}
+
 	func didDismiss() {
 		selection = nil
 		selectedLog = nil
+	}
+
+	private var navTitle: String {
+		if isPacketStreamOn {
+			let count = streamModel.visibleEntries.count
+			return count == 0 ? "Packet Stream" : "Packet Stream (\(count))"
+		} else {
+			return logs.isEmpty ? "Debug Logs" : "Debug Logs (\(logs.count))"
+		}
+	}
+
+	private func updateStreamingState() {
+		if isPacketStreamOn && scenePhase == .active {
+			streamModel.start()
+		} else {
+			streamModel.stop()
+		}
+	}
+
+	/// One streamed log row. Phone uses the compact composed-message row (matching the
+	/// phone Table); iPad/macCatalyst mirror the Mac log Table's Time/Level/Category/Message
+	/// columns so the streaming view matches the existing desktop log layout.
+	@ViewBuilder
+	private func streamRow(_ value: OSLogEntryLog) -> some View {
+		if idiom == .phone {
+			Text(value.composedMessage)
+				.foregroundStyle(value.level.color)
+				.font(.caption)
+				.frame(maxWidth: .infinity, alignment: .leading)
+		} else {
+			HStack(alignment: .top, spacing: 12) {
+				Text(Self.logDateFormatter.string(from: value.date))
+					.lineLimit(1)
+					.fixedSize(horizontal: true, vertical: false)
+					.frame(width: 240, alignment: .leading)
+				Text(value.level.description)
+					.foregroundStyle(value.level.color)
+					.frame(width: 100, alignment: .leading)
+				Text(value.category)
+					.frame(width: 110, alignment: .leading)
+				Text(value.composedMessage)
+					.foregroundStyle(value.level.color)
+					.frame(maxWidth: .infinity, alignment: .leading)
+			}
+			.font(.body)
+		}
+	}
+
+	/// Live packet stream view, used for both phone and iPad/macCatalyst. The surrounding
+	/// scroll/auto-scroll/pause/empty infrastructure is shared; only the row layout differs
+	/// per idiom (see `streamRow`).
+	private var packetStreamView: some View {
+		let entries = searchText.isEmpty
+			? streamModel.visibleEntries
+			: streamModel.visibleEntries.filter { $0.composedMessage.localizedCaseInsensitiveContains(searchText) }
+		return ScrollViewReader { proxy in
+			ScrollView {
+				LazyVStack(alignment: .leading, spacing: 2) {
+					ForEach(entries, id: \.id) { value in
+						streamRow(value)
+							.contentShape(Rectangle())
+							.onTapGesture { selectedLog = value }
+					}
+					Color.clear
+						.frame(height: 1)
+						.id("streamBottom")
+				}
+				.padding(.horizontal, 8)
+			}
+			.monospaced()
+			.scrollDismissesKeyboard(.immediately)
+			.overlay {
+				if entries.isEmpty {
+					ContentUnavailableView("Waiting for packets…", systemImage: "dot.radiowaves.left.and.right")
+				}
+			}
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+				HStack {
+					if !streamModel.isPinnedToLiveEdge {
+						Button {
+							streamModel.setPinned(true)
+							withAnimation { proxy.scrollTo("streamBottom", anchor: .bottom) }
+						} label: {
+							Label("Live", systemImage: "arrow.down.to.line")
+								.padding(.vertical, 5)
+						}
+						.buttonStyle(.borderedProminent)
+					}
+					// Filter button — also the way back to turn Packet Stream off.
+					Button {
+						withAnimation { isEditingFilters.toggle() }
+					} label: {
+						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+				}
+				.controlSize(.regular)
+				.padding(5)
+			}
+			.gesture(
+				DragGesture().onChanged { value in
+					if value.translation.height > 12 { streamModel.setPinned(false) }
+				}
+			)
+			.onChange(of: streamModel.visibleEntries.count) {
+				if streamModel.isPinnedToLiveEdge {
+					proxy.scrollTo("streamBottom", anchor: .bottom)
+				}
+			}
+		}
 	}
 }
 
