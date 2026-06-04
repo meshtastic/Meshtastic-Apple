@@ -255,10 +255,10 @@ extension MeshPackets {
 				if !isImplicitAck {
 					if packet.rxTime > 0 {
 						node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-						Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard from rxTime=\(packet.rxTime)")
+						Logger.data.debug("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard from rxTime=\(packet.rxTime)")
 					} else {
 						node.lastHeard = Date()
-						Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
+						Logger.data.debug("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
 					}
 				}
 				
@@ -268,11 +268,11 @@ extension MeshPackets {
 				
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					node.hopsAway = Int32(packet.hopStart - packet.hopLimit)
-					Logger.data.info("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) hopsAway=\(node.hopsAway)")
+					Logger.data.debug("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) hopsAway=\(node.hopsAway)")
 				}
 				
 				// Changes are saved by the subsequent packet handler's save call
-				Logger.data.info("💾 [updateAnyPacketFrom] Updated node \(node.num.toHex(), privacy: .public) snr=\(node.snr), rssi=\(node.rssi) from packet \(packet.id.toHex(), privacy: .public)")
+				Logger.data.debug("💾 [updateAnyPacketFrom] Updated node \(node.num.toHex(), privacy: .public) snr=\(node.snr), rssi=\(node.rssi) from packet \(packet.id.toHex(), privacy: .public)")
 			}
 		} catch {
 			Logger.data.error("💥 [updateAnyPacketFrom] fetch data error")
@@ -522,7 +522,7 @@ extension MeshPackets {
 					}
 				}
 				savePendingChanges()
-				Logger.data.info("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+				Logger.data.debug("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 			}
 		} catch {
 			Logger.data.error("💥 [NodeInfoEntity] fetch data error for NODEINFO_APP")

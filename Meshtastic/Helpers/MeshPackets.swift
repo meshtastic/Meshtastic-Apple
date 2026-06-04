@@ -105,7 +105,7 @@ actor MeshPackets {
 		guard modelContext.hasChanges else { return }
 		do {
 			try modelContext.save()
-			Logger.data.info("💾 [\(caller, privacy: .public)] Saved pending changes")
+			Logger.data.debug("💾 [\(caller, privacy: .public)] Saved pending changes")
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
 			modelContext.rollback()
@@ -504,7 +504,7 @@ actor MeshPackets {
 						}
 						if !deferSave {
 							savePendingChanges()
-							Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
+							Logger.data.debug("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
 						}
 						return newNode.persistentModelID
 					} catch {
@@ -618,7 +618,7 @@ actor MeshPackets {
 						}
 						if !deferSave {
 							savePendingChanges()
-							Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+							Logger.data.debug("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
 						}
 						return fetchedNode[0].persistentModelID
 					} catch {
@@ -811,7 +811,7 @@ actor MeshPackets {
 					return
 				}
 				savePendingChanges()
-				Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
+				Logger.data.debug("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
 			} catch {
 				let nsError = error as NSError
 				Logger.data.error("Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
@@ -1158,7 +1158,7 @@ actor MeshPackets {
 						if modelContext.hasChanges {
 							try modelContext.save()
 						}
-						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
+						Logger.data.debug("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 
 						// Keep message storage bounded without scanning the whole table
