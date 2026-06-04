@@ -825,6 +825,14 @@ actor MeshPackets {
 				/// Other unhandled telemetry packets
 				return
 			}
+			// Mesh-category audit (spec 012): telemetry received over the air from a
+			// remote node is genuine mesh traffic and belongs in the Packet Stream,
+			// consistent with text/position/nodeinfo. The connected node's own
+			// localStats (from == connectedNode) is local, not OTA, so it stays on
+			// .data/.statistics below and out of the Mesh category.
+			if connectedNode != Int64(packet.from) {
+				Logger.mesh.info("📈 [Telemetry] received over the mesh from \(packet.from.toHex(), privacy: .public)")
+			}
 			let telemetry = TelemetryEntity()
 			modelContext.insert(telemetry)
 			let packetFrom = Int64(packet.from)

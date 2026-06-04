@@ -152,10 +152,19 @@ final class PacketStreamModel: ObservableObject {
 		}
 	}
 
-	/// Reveal at most one pending entry per tick (~6/sec). Below the threshold the queue
-	/// drains immediately; pacing throttles only the reveal, never ingestion (FR-022).
+	/// Adaptive reveal: a gentle ~6/sec when traffic is calm and readable, scaling up
+	/// per tick as the pending backlog grows so a burst (or a fast replay) scrolls quickly
+	/// and catches up instead of crawling. Pacing throttles only the reveal, never
+	/// ingestion (FR-021/FR-022).
 	func revealTick() {
-		if buffer.reveal(1) > 0 { syncFromBuffer() }
+		let perTick: Int
+		switch buffer.pending.count {
+		case 0:       perTick = 0
+		case 1...10:  perTick = 1    // ~6/sec  — calm, fully readable
+		case 11...40: perTick = 4    // ~24/sec — busy mesh
+		default:      perTick = 12   // ~72/sec — drain a firehose / fast replay quickly
+		}
+		if perTick > 0, buffer.reveal(perTick) > 0 { syncFromBuffer() }
 	}
 
 	private func syncFromBuffer() {
