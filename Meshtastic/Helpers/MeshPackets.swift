@@ -392,7 +392,7 @@ actor MeshPackets {
 		// This path handles the connected device's local node-DB dump during wantConfig
 		// (FromRadio.nodeInfo), not packets that crossed the mesh — log it as admin/setup.
 		// Over-the-air NodeInfo arrives via upsertNodeInfoPacket and stays on .mesh.
-		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, String(nodeInfo.num))
+		let logString = String.localizedStringWithFormat("📟 [NodeInfo] received for: %@".localized, String(nodeInfo.num))
 		Logger.admin.info("📟 \(logString, privacy: .public)")
 
 		guard nodeInfo.num > 0 else { return nil }
@@ -819,6 +819,37 @@ actor MeshPackets {
 		}
 	}
 
+	/// Compact, human-readable summary of a Telemetry packet for the mesh log line, e.g.
+	/// " — device 87% 4.05V ch 12.3% air 3.1%" or " — env 23.5°C 45% 1013hPa". Reads the salient
+	/// metrics per variant (not raw JSON); returns "" for unhandled variants.
+	private func telemetryLogDetails(_ telemetry: Telemetry) -> String {
+		var parts: [String] = []
+		switch telemetry.variant {
+		case .deviceMetrics(let m)?:
+			parts.append("device")
+			if m.hasBatteryLevel { parts.append("\(m.batteryLevel)%") }
+			if m.hasVoltage { parts.append(String(format: "%.2fV", m.voltage)) }
+			if m.hasChannelUtilization { parts.append(String(format: "ch %.1f%%", m.channelUtilization)) }
+			if m.hasAirUtilTx { parts.append(String(format: "air %.1f%%", m.airUtilTx)) }
+		case .environmentMetrics(let m)?:
+			parts.append("env")
+			if m.hasTemperature { parts.append(String(format: "%.1f°C", m.temperature)) }
+			if m.hasRelativeHumidity { parts.append(String(format: "%.0f%%", m.relativeHumidity)) }
+			if m.hasBarometricPressure { parts.append(String(format: "%.0fhPa", m.barometricPressure)) }
+		case .powerMetrics(let m)?:
+			parts.append("power")
+			if m.hasCh1Voltage { parts.append(String(format: "ch1 %.2fV", m.ch1Voltage)) }
+			if m.hasCh2Voltage { parts.append(String(format: "ch2 %.2fV", m.ch2Voltage)) }
+			if m.hasCh3Voltage { parts.append(String(format: "ch3 %.2fV", m.ch3Voltage)) }
+		case .localStats(let m)?:
+			parts.append("stats")
+			parts.append("\(m.numOnlineNodes)/\(m.numTotalNodes) nodes")
+		default:
+			return ""
+		}
+		return " — " + parts.joined(separator: " ")
+	}
+
 	func telemetryPacket(packet: MeshPacket, connectedNode: Int64) {
 		if let telemetryMessage = try? Telemetry(serializedBytes: packet.decoded.payload) {
 			if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
@@ -831,7 +862,7 @@ actor MeshPackets {
 			// localStats (from == connectedNode) is local, not OTA, so it stays on
 			// .data/.statistics below and out of the Mesh category.
 			if connectedNode != Int64(packet.from) {
-				Logger.mesh.info("[Telemetry] packet received from \(packet.from.toHex(), privacy: .public)")
+				Logger.mesh.info("📈 [Telemetry] packet received from \(packet.from.toHex(), privacy: .public)\(self.telemetryLogDetails(telemetryMessage), privacy: .public)")
 			}
 			let telemetry = TelemetryEntity()
 			modelContext.insert(telemetry)
