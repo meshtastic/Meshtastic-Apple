@@ -14,6 +14,12 @@ extension NodeInfoEntity {
 	// These use FetchDescriptor with fetchLimit to avoid loading entire relationship arrays.
 
 	var latestPosition: PositionEntity? {
+		// Fast path: the ingest layer keeps this populated, so reads are O(1).
+		if let cached = latestPositionCache {
+			return cached
+		}
+		// Fallback for data created without the cache (migrated / restored / seeded): a sorted
+		// limit-1 query. Runs at most once per node until the cache warms on the next position.
 		guard let ctx = modelContext else { return nil }
 		let nodeNum = self.num
 		var descriptor = FetchDescriptor<PositionEntity>(

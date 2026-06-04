@@ -151,6 +151,7 @@ extension NodeBackupManager {
 			dst.time = src.time
 			if let srcNode = src.nodePosition, let liveNode = nodesByNum[srcNode.num] {
 				dst.nodePosition = liveNode
+				if dst.latest { liveNode.latestPositionCache = dst }
 			}
 			liveContext.insert(dst)
 		}

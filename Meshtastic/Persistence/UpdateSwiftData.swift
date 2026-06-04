@@ -552,15 +552,11 @@ extension MeshPackets {
 					}
 					if fetchedNode.count == 1 {
 						
-						// Unset the current latest position for this node
 						let posNum = Int64(packet.from)
-						let fetchCurrentLatestPositionsRequest = FetchDescriptor<PositionEntity>(predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == true })
-						let fetchedPositions = try modelContext.fetch(fetchCurrentLatestPositionsRequest)
-						if fetchedPositions.count > 0 {
-							for position in fetchedPositions {
-								position.latest = false
-							}
-						}
+						// Previous latest is tracked directly on the node — no PositionEntity table scan.
+						let previousLatest = fetchedNode[0].latestPosition
+						previousLatest?.latest = false
+
 						let position = PositionEntity()
 						modelContext.insert(position)
 						position.latest = true
@@ -584,36 +580,25 @@ extension MeshPackets {
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 						}
 
-						// Deduplication: fetch only the most recent position for this node
-						// instead of loading the entire positions array (which could be thousands)
-						var mostRecentDescriptor = FetchDescriptor<PositionEntity>(
-							predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum },
-							sortBy: [SortDescriptor(\PositionEntity.time, order: .reverse)]
-						)
-						mostRecentDescriptor.fetchLimit = 1
-						let mostRecentPositions = try modelContext.fetch(mostRecentDescriptor)
+						// Assign to the node and record as the new latest — O(1), no table scan.
+						position.nodePosition = fetchedNode[0]
+						fetchedNode[0].latestPositionCache = position
 
 						if position.precisionBits == 32 || position.precisionBits == 0 {
-							// Don't save nearly the same position. If within 9m of most recent, replace it.
-							if let mostRecent = mostRecentPositions.first,
-							   let mostRecentCoord = mostRecent.nodeCoordinate,
-							   let positionCoord = position.nodeCoordinate,
-							   mostRecentCoord.distance(from: positionCoord) < 9.0 {
-								modelContext.delete(mostRecent)
+							// Full precision: drop a near-duplicate of the previous latest (within 9m).
+							if let previousLatest,
+								let prevCoord = previousLatest.nodeCoordinate,
+								let positionCoord = position.nodeCoordinate,
+								prevCoord.distance(from: positionCoord) < 9.0 {
+								modelContext.delete(previousLatest)
 							}
 						} else {
-							// Don't store any history for reduced accuracy positions — delete all non-latest
-							let deleteDescriptor = FetchDescriptor<PositionEntity>(
-								predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == posNum && $0.latest == false }
-							)
-							let oldPositions = try modelContext.fetch(deleteDescriptor)
-							for old in oldPositions {
+							// Reduced accuracy: keep no history. Delete this node's older positions via its own
+							// relationship (small for reduced-accuracy nodes) instead of a global table scan.
+							for old in fetchedNode[0].positions where !old.latest {
 								modelContext.delete(old)
 							}
 						}
-
-						// Assign position to node via relationship
-						position.nodePosition = fetchedNode[0]
 
 						// Keep the history cap as a soft cap during packet bursts; the
 						// count/sort/delete prune pass is expensive with large node stores.
