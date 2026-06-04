@@ -6,7 +6,6 @@ import OSLog
 struct DocBrowserView: View {
 
 	@State private var searchText = ""
-	@State private var isAIPresented = false
 	@State private var translatedLabels: [String: String] = [:]
 	@State private var labelTranslationTask: Task<Void, Never>?
 	@State private var translationProgress: String?
@@ -116,24 +115,8 @@ struct DocBrowserView: View {
 		}
 		.navigationTitle(translatedNavigationTitle)
 		.navigationBarTitleDisplayMode(.large)
-		.toolbar {
-			ToolbarItem(placement: .primaryAction) {
-				if #available(iOS 26, *) {
-					Button {
-						isAIPresented = true
-					} label: {
-						Label("Ask Chirpy", systemImage: "sparkles")
-					}
-					.accessibilityLabel("Ask Chirpy AI assistant")
-				}
-			}
-		}
-		.searchable(text: $searchText, prompt: translatedSearchPrompt)
-		.sheet(isPresented: $isAIPresented) {
-			if #available(iOS 26, *) {
-				AIDocAssistantView()
-			}
-		}
+		.askChirpyToolbar()
+		.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: translatedSearchPrompt)
 		.onAppear {
 			bundle.load()
 			if isUsingTranslatedFolder {

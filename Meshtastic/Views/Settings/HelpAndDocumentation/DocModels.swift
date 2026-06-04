@@ -95,8 +95,9 @@ struct DocPage: Identifiable, Hashable {
 	/// SF Symbol name for this page in the table of contents.
 	var systemImage: String {
 		switch id {
+		// What's New (first item in each guide)
+		case "whats-new":		return "newspaper.fill"
 		// User Guide
-		case "help-and-docs":	return "book.pages"
 		case "getting-started":	return "star.fill"
 		case "bluetooth":		return "custom.bluetooth"
 		case "messages":		return "message.fill"

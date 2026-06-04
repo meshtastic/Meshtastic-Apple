@@ -138,6 +138,7 @@ struct DocPageView: View {
 		.ignoresSafeArea(edges: .bottom)
 		.navigationTitle(translatedTitle ?? page.title)
 		.navigationBarTitleDisplayMode(.inline)
+		.askChirpyToolbar()
 		.accessibilityLabel("\(page.title) documentation page")
 		.accessibilityHint("Web view showing the \(page.title) documentation")
 		.onAppear {
@@ -230,5 +231,43 @@ struct DocPageView: View {
 				}
 			}
 		}
+	}
+}
+
+
+// MARK: - Ask Chirpy Toolbar
+
+/// Adds the "Ask Chirpy" AI assistant toolbar button (iOS 26+) and its sheet.
+/// Shared by the docs browser and every doc subpage so Chirpy is reachable
+/// from anywhere in the documentation, not just the index.
+struct AskChirpyToolbar: ViewModifier {
+	@State private var isAIPresented = false
+
+	func body(content: Content) -> some View {
+		content
+			.toolbar {
+				ToolbarItem(placement: .primaryAction) {
+					if #available(iOS 26, *) {
+						Button {
+							isAIPresented = true
+						} label: {
+							Label("Ask Chirpy", systemImage: "sparkles")
+						}
+						.accessibilityLabel("Ask Chirpy AI assistant")
+					}
+				}
+			}
+			.sheet(isPresented: $isAIPresented) {
+				if #available(iOS 26, *) {
+					AIDocAssistantView()
+				}
+			}
+	}
+}
+
+extension View {
+	/// Attaches the "Ask Chirpy" AI assistant button to the navigation toolbar.
+	func askChirpyToolbar() -> some View {
+		modifier(AskChirpyToolbar())
 	}
 }
