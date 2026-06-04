@@ -425,7 +425,7 @@ extension MeshPackets {
 				}
 				
 				savePendingChanges()
-				Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
+				Logger.data.debug("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
 				
 			} else {
 				// Update an existing node
@@ -548,7 +548,7 @@ extension MeshPackets {
 						let newNode = createNodeInfo(num: Int64(packet.from), context: modelContext)
 						newNode.lastHeard = Date()
 						fetchedNode = [newNode]
-						Logger.data.info("📍 [Position] created stub node for: \(packet.from.toHex(), privacy: .public)")
+						Logger.data.debug("📍 [Position] created stub node for: \(packet.from.toHex(), privacy: .public)")
 					}
 					if fetchedNode.count == 1 {
 						
@@ -624,7 +624,7 @@ extension MeshPackets {
 						fetchedNode[0].channel = Int32(packet.channel)
 						
 						scheduleDebouncedSave()
-						Logger.data.info("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")
+						Logger.data.debug("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")
 					}
 				} else {
 					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
