@@ -281,7 +281,7 @@ extension MeshPackets {
 	
 	/// Compact, human-readable summary of a NodeInfo packet's `User` payload, appended to the mesh
 	/// log line so the Packet Stream shows the decoded protobuf at a glance (not raw JSON), e.g.
-	/// " — Long Name (SHRT) client TBEAM 🔐". Returns "" when there's no usable identity.
+	/// " — 🔐 Long Name (SHRT) client TBEAM". Returns "" when there's no usable identity.
 	private func nodeInfoLogDetails(from packet: MeshPacket) -> String {
 		guard let user = try? User(serializedBytes: packet.decoded.payload), !user.id.isEmpty else {
 			return ""
@@ -299,8 +299,9 @@ extension MeshPackets {
 		let hw = String(describing: user.hwModel).uppercased()
 		if hw != "UNSET" { parts.append(hw) }
 		if user.isLicensed { parts.append("licensed") }
-		if !user.publicKey.isEmpty { parts.append("🔐") }
 		if user.hasIsUnmessagable && user.isUnmessagable { parts.append("unmessagable") }
+		// Lock leads the line so PKI-encrypted nodes are obvious at a glance.
+		if !user.publicKey.isEmpty { parts.insert("🔐", at: 0) }
 		return parts.isEmpty ? "" : " — " + parts.joined(separator: " ")
 	}
 
