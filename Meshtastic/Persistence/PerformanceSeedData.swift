@@ -225,6 +225,7 @@ enum PerformanceSeedData {
 			position.speed = Int32(index % 45)
 			position.time = now.addingTimeInterval(TimeInterval(-(sample * 180 + index % 180)))
 			position.nodePosition = node
+			if position.latest { node.latestPositionCache = position }
 			context.insert(position)
 		}
 	}

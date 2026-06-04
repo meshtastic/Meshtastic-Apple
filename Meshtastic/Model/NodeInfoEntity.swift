@@ -81,6 +81,14 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .nullify, inverse: \PositionEntity.nodePosition)
 	var positions: [PositionEntity] = []
 
+	/// O(1) cache of this node's current "latest" position, maintained on insert so the hot
+	/// position-ingest path never has to scan the (large, unindexed) PositionEntity table to
+	/// find/clear the previous latest. Read via the `latestPosition` accessor, which falls back
+	/// to a sorted query when this is nil (migrated/restored data). Unidirectional to-one;
+	/// nullified if the referenced position is deleted.
+	@Relationship(deleteRule: .nullify)
+	var latestPositionCache: PositionEntity?
+
 	@Relationship(deleteRule: .nullify, inverse: \PowerConfigEntity.powerConfigNode)
 	var powerConfig: PowerConfigEntity?
 

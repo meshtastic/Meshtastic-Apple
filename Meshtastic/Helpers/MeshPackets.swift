@@ -490,6 +490,7 @@ actor MeshPackets {
 						position.heading = Int32(nodeInfo.position.groundTrack)
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 						position.nodePosition = newNode
+						newNode.latestPositionCache = position
 					}
 
 					// Look for a MyInfo
