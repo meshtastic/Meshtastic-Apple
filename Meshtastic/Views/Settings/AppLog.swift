@@ -295,16 +295,13 @@ struct AppLog: View {
 				.font(.caption)
 				.frame(maxWidth: .infinity, alignment: .leading)
 		} else {
+			// Packet Stream is always level=Info, category=Mesh, so those columns add no
+			// information — show just the timestamp and the message.
 			HStack(alignment: .top, spacing: 12) {
 				Text(Self.logDateFormatter.string(from: value.date))
 					.lineLimit(1)
 					.fixedSize(horizontal: true, vertical: false)
 					.frame(width: 240, alignment: .leading)
-				Text(value.level.description)
-					.foregroundStyle(value.level.color)
-					.frame(width: 100, alignment: .leading)
-				Text(value.category)
-					.frame(width: 110, alignment: .leading)
 				Text(value.composedMessage)
 					.foregroundStyle(value.level.color)
 					.frame(maxWidth: .infinity, alignment: .leading)
