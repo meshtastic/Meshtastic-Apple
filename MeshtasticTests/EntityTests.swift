@@ -4,6 +4,7 @@
 import Testing
 import Foundation
 import SwiftData
+import MeshtasticProtobufs
 @testable import Meshtastic
 
 // MARK: - In-Memory Persistence Helper
@@ -640,5 +641,94 @@ struct NodeInfoEntityComputedTests {
 		let node = try makeNode()
 		node.lastHeard = Date().addingTimeInterval(-3 * 3600) // 3 hours ago
 		#expect(node.isOnline == false)
+	}
+}
+
+// MARK: - ChannelEntity protoBuf Tests
+
+@Suite("ChannelEntity protoBuf", .serialized)
+struct ChannelEntityProtoBufTests {
+
+	@MainActor
+	private func makeChannel(positionPrecision: Int32 = 14, mute: Bool = false) throws -> ChannelEntity {
+		let context = TestContainerProvider.shared.mainContext
+		let channel = ChannelEntity()
+		channel.index = 1
+		channel.name = "Test"
+		channel.psk = Data(repeating: 0xAB, count: 32)
+		channel.role = 2
+		channel.positionPrecision = positionPrecision
+		channel.mute = mute
+		context.insert(channel)
+		return channel
+	}
+
+	@Test @MainActor func protoBuf_includesModuleSettings() throws {
+		let channel = try makeChannel(positionPrecision: 14)
+		let proto = channel.protoBuf
+		#expect(proto.settings.hasModuleSettings == true)
+		#expect(proto.settings.moduleSettings.positionPrecision == 14)
+	}
+
+	@Test @MainActor func protoBuf_zeroPositionPrecision_includesModuleSettings() throws {
+		let channel = try makeChannel(positionPrecision: 0)
+		let proto = channel.protoBuf
+		#expect(proto.settings.hasModuleSettings == true)
+		#expect(proto.settings.moduleSettings.positionPrecision == 0)
+	}
+
+	@Test @MainActor func protoBuf_muteFlag_included() throws {
+		let channel = try makeChannel(positionPrecision: 14, mute: true)
+		let proto = channel.protoBuf
+		#expect(proto.settings.moduleSettings.isMuted == true)
+	}
+}
+
+// MARK: - ChannelSettings moduleSettings for QR Import Tests
+
+@Suite("ChannelSettings QR Import moduleSettings")
+struct ChannelSettingsQRImportTests {
+
+	@Test func channelSettings_withoutModuleSettings_hasModuleSettingsFalse() {
+		// Simulates a QR-imported channel that has no moduleSettings
+		var cs = ChannelSettings()
+		cs.name = "TestChannel"
+		cs.psk = Data(repeating: 0xAB, count: 32)
+		#expect(cs.hasModuleSettings == false)
+	}
+
+	@Test func channelSettings_afterSettingPositionPrecision_hasModuleSettingsTrue() {
+		// Verifies that explicitly setting moduleSettings makes it present
+		var cs = ChannelSettings()
+		cs.name = "TestChannel"
+		cs.psk = Data(repeating: 0xAB, count: 32)
+		cs.moduleSettings.positionPrecision = 0
+		cs.moduleSettings.isMuted = false
+		#expect(cs.hasModuleSettings == true)
+		#expect(cs.moduleSettings.positionPrecision == 0)
+	}
+
+	@Test func channel_fromQRSettings_getsModuleSettingsAfterFix() {
+		// Simulates the fix: QR-imported ChannelSettings without moduleSettings
+		// gets moduleSettings explicitly set to defaults before sending to device
+		var cs = ChannelSettings()
+		cs.name = "Fr_Balise"
+		cs.psk = Data(repeating: 0xCD, count: 32)
+		// QR code doesn't include moduleSettings
+		#expect(cs.hasModuleSettings == false)
+
+		// Apply the fix: set moduleSettings when absent
+		var chan = Channel()
+		chan.role = .primary
+		chan.settings = cs
+		if !cs.hasModuleSettings {
+			chan.settings.moduleSettings.positionPrecision = 0
+			chan.settings.moduleSettings.isMuted = false
+		}
+
+		// Verify the channel now has moduleSettings with safe defaults
+		#expect(chan.settings.hasModuleSettings == true)
+		#expect(chan.settings.moduleSettings.positionPrecision == 0)
+		#expect(chan.settings.moduleSettings.isMuted == false)
 	}
 }

@@ -490,6 +490,14 @@ extension AccessoryManager {
 				chan.role = (i == 0) ? .primary : .secondary
 				chan.settings = cs
 				chan.index = i
+				// Ensure moduleSettings is always explicitly set so the device
+				// stores a defined position_precision value. QR codes typically
+				// omit moduleSettings which causes the firmware to default to 32
+				// (full precision), leaking exact GPS coordinates.
+				if !cs.hasModuleSettings {
+					chan.settings.moduleSettings.positionPrecision = 0
+					chan.settings.moduleSettings.isMuted = false
+				}
 				i += 1
 
 				var adminPacket = AdminMessage()
