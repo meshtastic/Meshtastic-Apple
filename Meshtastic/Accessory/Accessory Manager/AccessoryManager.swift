@@ -598,7 +598,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						}
 					}
 				case .remoteHardwareApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Remote Hardware] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .positionApp:
 					await MeshPackets.shared.upsertPositionPacket(packet: packet)
 					WatchSessionManager.shared.sendNodesToWatch()
@@ -642,16 +642,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .adminApp:
 					await MeshPackets.shared.adminAppPacket(packet: packet)
 				case .replyApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Reply App handling as a text message")
+					Logger.mesh.info("[Reply] packet received from \(packet.from.toHex(), privacy: .public)")
 					guard let deviceNum = activeConnection?.device.num else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for replyApp.")
 						return
 					}
 					await MeshPackets.shared.textMessageAppPacket(packet: packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: deviceNum, appState: appState)
 				case .ipTunnelApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[IP Tunnel] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .serialApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[Serial] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .storeForwardApp:
 					guard let deviceNum = activeConnection?.device.num else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for storeAndForward.")
@@ -671,7 +671,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 							appState: appState
 						)
 					} else {
-						Logger.mesh.info("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
+						Logger.mesh.info("[Range Test] packet received from \(packet.from.toHex(), privacy: .public)")
 					}
 				case .telemetryApp:
 					guard let deviceNum = activeConnection?.device.num else {
@@ -680,21 +680,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					}
 					await MeshPackets.shared.telemetryPacket(packet: packet, connectedNode: deviceNum)
 				case .textMessageCompressedApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
+					Logger.mesh.info("[Text Message Compressed] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .zpsApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED")
+					Logger.mesh.info("[Zero Positioning System] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .privateApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[Private] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .atakForwarder:
 					handleATAKForwarderPacket(packet)
 				case .simulatorApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[Simulator] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .storeForwardPlusplusApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for SFPP App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[SFPP] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .audioApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
+					Logger.mesh.info("[Audio] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .nodeStatusApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Node Status App UNHANDLED")
+					Logger.mesh.info("[Node Status] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .tracerouteApp:
 					handleTraceRouteApp(packet)
 				case .neighborinfoApp:
@@ -702,15 +702,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						if let engine = discoveryScanEngine, engine.isScanning {
 							engine.handleNeighborInfo(neighborInfo, packet: decodedInfo.packet)
 						} else {
-							Logger.mesh.info("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? neighborInfo.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+							Logger.mesh.info("[Neighbor Info] packet received from \(packet.from.toHex(), privacy: .public)")
 						}
 					}
 				case .paxcounterApp:
 					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet)
 				case .mapReportApp:
-					Logger.mesh.info("🕸️ MESH PACKET received Map Report App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Map Report] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .UNRECOGNIZED:
-					Logger.mesh.info("🕸️ MESH PACKET received UNRECOGNIZED App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Unrecognized] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .max:
 					Logger.services.info("MAX PORT NUM OF 511")
 				case .atakPlugin:
@@ -718,21 +718,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .atakPluginV2:
 					handleATAKPluginV2Packet(packet)
 				case .powerstressApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Power Stress App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Power Stress] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .reticulumTunnelApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Reticulum Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Reticulum Tunnel] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .keyVerificationApp:
-					Logger.mesh.warning("🕸️ MESH PACKET received for Key Verification App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Key Verification] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .cayenneApp:
-					Logger.mesh.info("🕸️ MESH PACKET received Cayenne App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Cayenne] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .groupalarmApp:
-					Logger.mesh.info("🕸️ MESH PACKET received Group Alarm App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Group Alarm] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .lorawanBridge:
-					Logger.mesh.info("🕸️ MESH PACKET received for LoRaWAN Bridge UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[LoRaWAN Bridge] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .remoteShellApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Remote Shell UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Remote Shell] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .unknownApp:
-					Logger.mesh.warning("🕸️ MESH PACKET received for unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					Logger.mesh.info("[Unknown] packet received from \(packet.from.toHex(), privacy: .public)")
 				}
 			}
 			// Save any pending updateAnyPacketFrom changes for packets that
