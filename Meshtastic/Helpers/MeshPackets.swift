@@ -741,8 +741,7 @@ actor MeshPackets {
 	}
 
 	func paxCounterPacket (packet: MeshPacket) {
-		let logString = String.localizedStringWithFormat("PAX Counter message received from: %@".localized, String(packet.from))
-		Logger.mesh.info("🧑‍🤝‍🧑 \(logString, privacy: .public)")
+		Logger.mesh.info("[PAX Counter] packet received from \(packet.from.toHex(), privacy: .public)")
 
 		let packetFrom = Int64(packet.from)
 		var fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
@@ -824,6 +823,14 @@ actor MeshPackets {
 			if telemetryMessage.variant != Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) && telemetryMessage.variant != Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) && telemetryMessage.variant != Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
 				/// Other unhandled telemetry packets
 				return
+			}
+			// Mesh-category audit (spec 012): telemetry received over the air from a
+			// remote node is genuine mesh traffic and belongs in the Packet Stream,
+			// consistent with text/position/nodeinfo. The connected node's own
+			// localStats (from == connectedNode) is local, not OTA, so it stays on
+			// .data/.statistics below and out of the Mesh category.
+			if connectedNode != Int64(packet.from) {
+				Logger.mesh.info("[Telemetry] packet received from \(packet.from.toHex(), privacy: .public)")
 			}
 			let telemetry = TelemetryEntity()
 			modelContext.insert(telemetry)
@@ -1037,7 +1044,7 @@ actor MeshPackets {
 			}
 
 			if messageText?.count ?? 0 > 0 {
-				Logger.mesh.info("💬 \("Message received from the text message app.".localized, privacy: .public)")
+				Logger.mesh.info("[Text Message] packet received from \(packet.from.toHex(), privacy: .public)")
 				let toNum = Int64(packet.to)
 				let fromNum = Int64(packet.from)
 				let fetchDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == toNum || $0.num == fromNum })
@@ -1264,8 +1271,7 @@ actor MeshPackets {
 	}
 
 	func waypointPacket (packet: MeshPacket) {
-		let logString = String.localizedStringWithFormat("Waypoint Packet received from node: %@".localized, String(packet.from))
-		Logger.mesh.info("📍 \(logString, privacy: .public)")
+		Logger.mesh.info("[Waypoint] packet received from \(packet.from.toHex(), privacy: .public)")
 
 		do {
 			if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {

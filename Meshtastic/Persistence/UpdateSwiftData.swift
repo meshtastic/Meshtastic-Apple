@@ -284,11 +284,10 @@ extension MeshPackets {
 	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
 	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true) {
 
-		let logString = String.localizedStringWithFormat("[NodeInfo] received for: %@".localized, packet.from.toHex())
 		if overTheMesh {
-			Logger.mesh.info("📟 \(logString, privacy: .public)")
+			Logger.mesh.info("[NodeInfo] packet received from \(packet.from.toHex(), privacy: .public)")
 		} else {
-			Logger.data.info("📟 \(logString, privacy: .public)")
+			Logger.data.info("[NodeInfo] packet received from \(packet.from.toHex(), privacy: .public)")
 		}
 
 		guard packet.from > 0 else { return }
@@ -532,8 +531,7 @@ extension MeshPackets {
 	
 	func upsertPositionPacket (packet: MeshPacket) {
 		
-		let logString = String.localizedStringWithFormat("[Position] received from node: %@".localized, String(packet.from))
-		Logger.mesh.info("📍 \(logString, privacy: .public)")
+		Logger.mesh.info("[Position] packet received from \(packet.from.toHex(), privacy: .public)")
 		
 		let fetchNum = Int64(packet.from)
 			var fetchNodePositionRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })

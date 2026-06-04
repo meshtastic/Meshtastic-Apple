@@ -301,9 +301,9 @@ extension AccessoryManager {
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
-				Logger.mesh.info("\("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerError:
-				Logger.mesh.info("\("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerHeartbeat:
 				/// When we get a router heartbeat we know there is a store and forward node on the network
 				/// Check if it is the primary S&F Router and save the timestamp of the last heartbeat so that we can show the request message history menu item on node long press if the router has been seen recently
@@ -331,13 +331,13 @@ extension AccessoryManager {
 						Logger.data.error("Save Store and Forward Router Error")
 					}
 				}
-				Logger.mesh.info("\("💓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerPing:
-				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerPong:
-				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerBusy:
-				Logger.mesh.info("\("🐝 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerHistory:
 				/// Set the Router History Last Request Value
 				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
@@ -357,26 +357,26 @@ extension AccessoryManager {
 				} catch {
 					Logger.data.error("Save Store and Forward Router Error")
 				}
-				Logger.mesh.info("\("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerStats:
-				Logger.mesh.info("\("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientError:
-				Logger.mesh.info("\("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientHistory:
-				Logger.mesh.info("\("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientStats:
-				Logger.mesh.info("\("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientPing:
-				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientPong:
-				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientAbort:
-				Logger.mesh.info("\("🛑 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .UNRECOGNIZED:
-				Logger.mesh.info("\("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerTextDirect:
 				Task {
-					Logger.mesh.info("\("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+					Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 					await MeshPackets.shared.textMessageAppPacket(
 						packet: packet,
 						wantRangeTestPackets: false,
@@ -387,7 +387,7 @@ extension AccessoryManager {
 				}
 			case .routerTextBroadcast:
 				Task {
-					Logger.mesh.info("\("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+					Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 					await MeshPackets.shared.textMessageAppPacket(
 						packet: packet,
 						wantRangeTestPackets: false,
