@@ -702,7 +702,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						if let engine = discoveryScanEngine, engine.isScanning {
 							engine.handleNeighborInfo(neighborInfo, packet: decodedInfo.packet)
 						} else {
-							Logger.mesh.info("[Neighbor Info] packet received from \(packet.from.toHex(), privacy: .public)")
+							Logger.mesh.info("[Neighbor Info] packet received from \(packet.from.toHex(), privacy: .public) — \(neighborInfo.neighbors.count, privacy: .public) neighbors")
 						}
 					}
 				case .paxcounterApp:

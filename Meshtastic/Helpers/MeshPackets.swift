@@ -618,7 +618,7 @@ actor MeshPackets {
 						}
 						if !deferSave {
 							savePendingChanges()
-							Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+							Logger.data.info("💾 [Node Info] saved for \(nodeInfo.num.toHex(), privacy: .public)")
 						}
 						return fetchedNode[0].persistentModelID
 					} catch {
@@ -1076,7 +1076,16 @@ actor MeshPackets {
 			}
 
 			if messageText?.count ?? 0 > 0 {
-				Logger.mesh.info("[Text Message] packet received from \(packet.from.toHex(), privacy: .public)")
+				// Show channel/broadcast text in the stream; redact direct-message content (only
+				// mark it "(DM)") so private 1:1 text isn't persisted to the unified log.
+				let messageDetail: String
+				if packet.to == Constants.maximumNodeNum {
+					let preview = (messageText ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+					messageDetail = preview.count > 100 ? String(preview.prefix(100)) + "…" : preview
+				} else {
+					messageDetail = "(DM)"
+				}
+				Logger.mesh.info("💬 [Text Message] packet received from \(packet.from.toHex(), privacy: .public) — \(messageDetail, privacy: .public)")
 				let toNum = Int64(packet.to)
 				let fromNum = Int64(packet.from)
 				let fetchDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == toNum || $0.num == fromNum })
