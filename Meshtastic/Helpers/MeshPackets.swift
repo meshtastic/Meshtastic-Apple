@@ -105,7 +105,7 @@ actor MeshPackets {
 		guard modelContext.hasChanges else { return }
 		do {
 			try modelContext.save()
-			Logger.data.info("💾 [\(caller, privacy: .public)] Saved pending changes")
+			Logger.data.debug("💾 [\(caller, privacy: .public)] Saved pending changes")
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
 			modelContext.rollback()
@@ -504,7 +504,7 @@ actor MeshPackets {
 						}
 						if !deferSave {
 							savePendingChanges()
-							Logger.data.info("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
+							Logger.data.debug("💾 Saved a new Node Info For: \(String(nodeInfo.num), privacy: .public)")
 						}
 						return newNode.persistentModelID
 					} catch {
@@ -618,7 +618,7 @@ actor MeshPackets {
 						}
 						if !deferSave {
 							savePendingChanges()
-							Logger.data.info("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
+							Logger.data.debug("💾 [NodeInfo] saved for \(nodeInfo.num.toHex(), privacy: .public)")
 						}
 						return fetchedNode[0].persistentModelID
 					} catch {
@@ -811,7 +811,7 @@ actor MeshPackets {
 					return
 				}
 				savePendingChanges()
-				Logger.data.info("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
+				Logger.data.debug("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
 			} catch {
 				let nsError = error as NSError
 				Logger.data.error("Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
@@ -843,17 +843,17 @@ actor MeshPackets {
 						/// Currently only Device Metrics and Environment Telemetry are supported in the app
 						if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 							// Device Metrics
-							Logger.data.info("📈 [Telemetry] Device Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+							Logger.data.debug("📈 [Telemetry] Device Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
 							telemetry.airUtilTx = telemetryMessage.deviceMetrics.hasAirUtilTx.then(telemetryMessage.deviceMetrics.airUtilTx)
 							telemetry.channelUtilization = telemetryMessage.deviceMetrics.hasChannelUtilization.then(telemetryMessage.deviceMetrics.channelUtilization)
 							telemetry.batteryLevel = telemetryMessage.deviceMetrics.hasBatteryLevel.then(Int32(telemetryMessage.deviceMetrics.batteryLevel))
 							telemetry.voltage = telemetryMessage.deviceMetrics.hasVoltage.then(telemetryMessage.deviceMetrics.voltage)
 							telemetry.uptimeSeconds = telemetryMessage.deviceMetrics.hasUptimeSeconds.then(Int32(telemetryMessage.deviceMetrics.uptimeSeconds))
 							telemetry.metricsType = 0
-							Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
+							Logger.statistics.debug("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.deviceMetrics.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.deviceMetrics.airUtilTx, privacy: .public) for Node: \(packet.from.toHex(), privacy: .public)")
 						} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 							// Environment Metrics
-							Logger.data.info("📈 [Telemetry] Environment Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+							Logger.data.debug("📈 [Telemetry] Environment Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
 							telemetry.barometricPressure = telemetryMessage.environmentMetrics.hasBarometricPressure.then(telemetryMessage.environmentMetrics.barometricPressure)
 							telemetry.iaq = telemetryMessage.environmentMetrics.hasIaq.then(Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq))
 							telemetry.gasResistance = telemetryMessage.environmentMetrics.hasGasResistance.then(telemetryMessage.environmentMetrics.gasResistance)
@@ -897,9 +897,9 @@ actor MeshPackets {
 							// the field `optional` upstream and use `hasNoiseFloor`.
 							telemetry.noiseFloor = telemetryMessage.localStats.noiseFloor != 0 ? telemetryMessage.localStats.noiseFloor : nil
 							telemetry.metricsType = 4
-							Logger.statistics.info("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Noise Floor: \(telemetryMessage.localStats.noiseFloor, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
+							Logger.statistics.debug("📈 [Mesh Statistics] Channel Utilization: \(telemetryMessage.localStats.channelUtilization, privacy: .public) Airtime: \(telemetryMessage.localStats.airUtilTx, privacy: .public) Packets Sent: \(telemetryMessage.localStats.numPacketsTx, privacy: .public) Packets Received: \(telemetryMessage.localStats.numPacketsRx, privacy: .public) Bad Packets Received: \(telemetryMessage.localStats.numPacketsRxBad, privacy: .public) Noise Floor: \(telemetryMessage.localStats.noiseFloor, privacy: .public) Nodes Online: \(telemetryMessage.localStats.numOnlineNodes, privacy: .public) of \(telemetryMessage.localStats.numTotalNodes, privacy: .public) nodes for Node: \(packet.from.toHex(), privacy: .public)")
 						} else if telemetryMessage.variant == Telemetry.OneOf_Variant.powerMetrics(telemetryMessage.powerMetrics) {
-							Logger.data.info("📈 [Telemetry] Power Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+							Logger.data.debug("📈 [Telemetry] Power Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
 							telemetry.powerCh1Voltage = telemetryMessage.powerMetrics.hasCh1Voltage.then(telemetryMessage.powerMetrics.ch1Voltage)
 							telemetry.powerCh1Current = telemetryMessage.powerMetrics.hasCh1Current.then(telemetryMessage.powerMetrics.ch1Current)
 							telemetry.powerCh2Voltage = telemetryMessage.powerMetrics.hasCh2Voltage.then(telemetryMessage.powerMetrics.ch2Voltage)
@@ -944,7 +944,7 @@ actor MeshPackets {
 						}
 					}
 					scheduleDebouncedSave()
-					Logger.data.info("📈 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) buffered for Node: \(packet.from.toHex(), privacy: .public)")
+					Logger.data.debug("📈 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) buffered for Node: \(packet.from.toHex(), privacy: .public)")
 					if telemetry.metricsType == 0 {
 						// Connected Device Metrics
 						// ------------------------
@@ -1158,7 +1158,7 @@ actor MeshPackets {
 						if modelContext.hasChanges {
 							try modelContext.save()
 						}
-						Logger.data.info("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
+						Logger.data.debug("💾 Saved a new message for \(newMessage.messageId, privacy: .public)")
 						messageSaved = true
 
 						// Keep message storage bounded without scanning the whole table
