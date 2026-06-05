@@ -827,12 +827,14 @@ extension AccessoryManager {
 		try await send(toRadio, debugDescription: logString)
 
 			do {
-				context.delete(node.user!)
+				if let user = node.user {
+					context.delete(user)
+				}
 				context.delete(node)
 				try context.save()
 			} catch {
 				let nsError = error as NSError
-				Logger.data.error("🚫 Error deleting node from core data: \(nsError, privacy: .public)")
+				Logger.data.error("🚫 Error deleting node: \(nsError, privacy: .public)")
 			}
 
 	}
