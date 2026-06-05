@@ -31,7 +31,12 @@ struct Settings: View {
 		return nodes.first(where: { $0.num == nodeNum })
 	}
 
-	private var showsAnyModuleConfiguration: Bool {
+	// The module-support helpers take a pre-resolved node + excluded-modules bitmask so
+	// `moduleConfigurationSection` can compute them ONCE per render. They used to read the
+	// `moduleConfigurationNode` computed property (a linear scan over the full node @Query
+	// plus a `.metadata` relationship fault) on every call, and the section calls them ~28×
+	// per render — which, under live ingestion re-rendering, pegged the main thread.
+	private func showsAnyModuleConfiguration(node: NodeInfoEntity?, excludedModules: Int) -> Bool {
 		isAnySupported([
 			.ambientlightingConfig,
 			.audioConfig,
@@ -45,19 +50,21 @@ struct Settings: View {
 			.serialConfig,
 			.storeforwardConfig,
 			.telemetryConfig
-		]) || isTAKModuleSupported() || isTrafficManagementModuleSupported()
+		], excludedModules: excludedModules)
+			|| isTAKModuleSupported(node)
+			|| isTrafficManagementModuleSupported(node)
 	}
 
-	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
-		return Int(moduleConfigurationNode?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
+	private func isModuleSupported(_ module: ExcludedModules, excludedModules: Int) -> Bool {
+		return excludedModules & module.rawValue == 0
 	}
 
-	private func isAnySupported(_ modules: [ExcludedModules]) -> Bool {
-		return modules.map(isModuleSupported).contains(true)
+	private func isAnySupported(_ modules: [ExcludedModules], excludedModules: Int) -> Bool {
+		return modules.contains { isModuleSupported($0, excludedModules: excludedModules) }
 	}
 
-	private func isTAKModuleSupported() -> Bool {
-		guard let node = moduleConfigurationNode else { return false }
+	private func isTAKModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+		guard let node else { return false }
 		if node.takConfig != nil {
 			return true
 		}
@@ -70,8 +77,8 @@ struct Settings: View {
 		return deviceRole == .tak || deviceRole == .takTracker
 	}
 
-	private func isTrafficManagementModuleSupported() -> Bool {
-		guard moduleConfigurationNode != nil else { return false }
+	private func isTrafficManagementModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+		guard node != nil else { return false }
 		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
@@ -203,8 +210,13 @@ struct Settings: View {
 	}
 
 	var moduleConfigurationSection: some View {
-		Section {
-			if isModuleSupported(.ambientlightingConfig) {
+		// Resolve the target node and its excluded-modules bitmask ONCE per render, then feed
+		// them to the cheap per-module checks below (formerly each re-scanned the node @Query
+		// and re-faulted metadata — ~28× per render).
+		let node = moduleConfigurationNode
+		let excludedModules = Int(node?.metadata?.excludedModules ?? Int32.zero)
+		return Section {
+			if isModuleSupported(.ambientlightingConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.ambientLighting) {
 					Label {
 						Text("Ambient Lighting")
@@ -214,7 +226,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.audioConfig) {
+			if isModuleSupported(.audioConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.audio) {
 					Label {
 						Text("Audio")
@@ -224,7 +236,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.cannedmsgConfig) {
+			if isModuleSupported(.cannedmsgConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.cannedMessages) {
 					Label {
 						Text("Canned Messages")
@@ -234,7 +246,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.detectionsensorConfig) {
+			if isModuleSupported(.detectionsensorConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.detectionSensor) {
 					Label {
 						Text("Detection Sensor")
@@ -244,7 +256,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.extnotifConfig) {
+			if isModuleSupported(.extnotifConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.externalNotification) {
 					Label {
 						Text("External Notification")
@@ -254,7 +266,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.mqttConfig) {
+			if isModuleSupported(.mqttConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.mqtt) {
 					Label {
 						Text("MQTT")
@@ -264,7 +276,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.neighborinfoConfig) {
+			if isModuleSupported(.neighborinfoConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.neighborInfo) {
 					Label {
 						Text("Neighbor Info")
@@ -274,7 +286,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.rangetestConfig) {
+			if isModuleSupported(.rangetestConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.rangeTest) {
 					Label {
 						Text("Range Test")
@@ -284,7 +296,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.paxcounterConfig) {
+			if isModuleSupported(.paxcounterConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.paxCounter) {
 					Label {
 						Text("PAX Counter")
@@ -294,7 +306,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.extnotifConfig) {
+			if isModuleSupported(.extnotifConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.ringtone) {
 					Label {
 						Text("Ringtone")
@@ -304,7 +316,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.serialConfig) {
+			if isModuleSupported(.serialConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.serial) {
 					Label {
 						Text("Serial")
@@ -314,7 +326,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.storeforwardConfig) {
+			if isModuleSupported(.storeforwardConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.storeAndForward) {
 					Label {
 						Text("Store & Forward")
@@ -338,7 +350,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.telemetryConfig) {
+			if isModuleSupported(.telemetryConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.telemetry) {
 					Label {
 						Text("Telemetry")
@@ -348,7 +360,7 @@ struct Settings: View {
 				}
 			}
 
-			if isTrafficManagementModuleSupported() {
+			if isTrafficManagementModuleSupported(node) {
 				NavigationLink(value: SettingsNavigationState.trafficManagement) {
 					Label {
 						Text("Traffic Management")
@@ -358,7 +370,7 @@ struct Settings: View {
 				}
 			}
 
-			if !showsAnyModuleConfiguration {
+			if !showsAnyModuleConfiguration(node: node, excludedModules: excludedModules) {
 				Text("This node does not support any configurable modules.")
 					.foregroundColor(.secondary)
 			}

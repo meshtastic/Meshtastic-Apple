@@ -27,8 +27,10 @@ final class PacketStreamModel: ObservableObject {
 
 	// MARK: - Tuning
 
-	/// ~6 entries/sec readable cadence (FR-021).
-	private let revealIntervalNanos: UInt64 = 167_000_000
+	/// ~4 entries/sec readable cadence (FR-021). Each tick also drives a view re-render and
+	/// auto-scroll, so a slightly longer interval meaningfully cuts main-actor churn under load
+	/// while staying readable (the adaptive per-tick count keeps overall throughput up).
+	private let revealIntervalNanos: UInt64 = 250_000_000
 	/// Poll cadence for new entries (well under the 5s visibility target, SC-001).
 	private let pollIntervalNanos: UInt64 = 1_000_000_000
 

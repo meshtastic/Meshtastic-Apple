@@ -25,6 +25,9 @@ struct AppLog: View {
 	@State private var isPacketStreamOn = false
 	@State private var categoriesExpanded = false
 	@State private var levelsExpanded = false
+	/// Throttles the stream's auto-scroll-to-bottom — resolving the bottom anchor of a large
+	/// LazyVStack is expensive, so cap it to a few times/sec instead of every new entry.
+	@State private var lastStreamScroll = Date.distantPast
 	@StateObject private var streamModel = PacketStreamModel()
 	@Environment(\.scenePhase) private var scenePhase
 
@@ -292,16 +295,13 @@ struct AppLog: View {
 				.font(.caption)
 				.frame(maxWidth: .infinity, alignment: .leading)
 		} else {
+			// Packet Stream is always level=Info, category=Mesh, so those columns add no
+			// information — show just the timestamp and the message.
 			HStack(alignment: .top, spacing: 12) {
 				Text(Self.logDateFormatter.string(from: value.date))
 					.lineLimit(1)
 					.fixedSize(horizontal: true, vertical: false)
 					.frame(width: 240, alignment: .leading)
-				Text(value.level.description)
-					.foregroundStyle(value.level.color)
-					.frame(width: 100, alignment: .leading)
-				Text(value.category)
-					.frame(width: 110, alignment: .leading)
 				Text(value.composedMessage)
 					.foregroundStyle(value.level.color)
 					.frame(maxWidth: .infinity, alignment: .leading)
@@ -370,9 +370,14 @@ struct AppLog: View {
 				}
 			)
 			.onChange(of: streamModel.visibleEntries.count) {
-				if streamModel.isPinnedToLiveEdge {
-					proxy.scrollTo("streamBottom", anchor: .bottom)
-				}
+				guard streamModel.isPinnedToLiveEdge else { return }
+				// Throttle: scroll-to-bottom over a large lazy stack is a costly layout pass;
+				// at firehose rates doing it per-entry pegs the main actor (and starves the
+				// TCP reader). A few/sec keeps it visually pinned without the churn.
+				let now = Date()
+				guard now.timeIntervalSince(lastStreamScroll) >= 0.3 else { return }
+				lastStreamScroll = now
+				proxy.scrollTo("streamBottom", anchor: .bottom)
 			}
 		}
 	}

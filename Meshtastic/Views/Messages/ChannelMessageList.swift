@@ -363,6 +363,12 @@ struct ChannelMessageList: View {
 					scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 				}
 			}
+			// Incoming channel traffic bumps appState.unreadChannelMessages (set in
+			// textMessageAppPacket); refresh on that signal so messages land live instead
+			// of waiting up to 5s for the poll loop in .task above.
+			.onChange(of: appState.unreadChannelMessages) {
+				refreshIfNeeded()
+			}
 			.onChange(of: messageFieldFocused) {
 				if messageFieldFocused {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {

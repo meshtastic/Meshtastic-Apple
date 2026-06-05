@@ -279,15 +279,42 @@ extension MeshPackets {
 		}
 	}
 	
+	/// Compact, human-readable summary of a NodeInfo packet's `User` payload, appended to the mesh
+	/// log line so the Packet Stream shows the decoded protobuf at a glance (not raw JSON), e.g.
+	/// " — 🔐 Long Name (SHRT) client TBEAM". Returns "" when there's no usable identity.
+	private func nodeInfoLogDetails(from packet: MeshPacket) -> String {
+		guard let user = try? User(serializedBytes: packet.decoded.payload), !user.id.isEmpty else {
+			return ""
+		}
+		var parts: [String] = []
+		let long = user.longName.trimmingCharacters(in: .whitespacesAndNewlines)
+		let short = user.shortName.trimmingCharacters(in: .whitespacesAndNewlines)
+		switch (long.isEmpty, short.isEmpty) {
+		case (false, false): parts.append("\(long) (\(short))")
+		case (false, true):  parts.append(long)
+		case (true, false):  parts.append(short)
+		case (true, true):   break
+		}
+		parts.append(String(describing: user.role))
+		let hw = String(describing: user.hwModel).uppercased()
+		if hw != "UNSET" { parts.append(hw) }
+		if user.isLicensed { parts.append("licensed") }
+		if user.hasIsUnmessagable && user.isUnmessagable { parts.append("unmessagable") }
+		// Lock leads the line so PKI-encrypted nodes are obvious at a glance.
+		if !user.publicKey.isEmpty { parts.insert("🔐", at: 0) }
+		return parts.isEmpty ? "" : " — " + parts.joined(separator: " ")
+	}
+
 	/// - Parameter overTheMesh: true when this NodeInfo arrived as an over-the-air packet from a
 	///   remote node — logged on .mesh so it appears in the Packet Stream. false for local updates
 	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
 	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true) {
 
+		let details = nodeInfoLogDetails(from: packet)
 		if overTheMesh {
-			Logger.mesh.info("[NodeInfo] packet received from \(packet.from.toHex(), privacy: .public)")
+			Logger.mesh.info("📟 [Node Info] packet received from \(packet.from.toHex(), privacy: .public)\(details, privacy: .public)")
 		} else {
-			Logger.data.info("[NodeInfo] packet received from \(packet.from.toHex(), privacy: .public)")
+			Logger.data.info("📟 [Node Info] packet received from \(packet.from.toHex(), privacy: .public)\(details, privacy: .public)")
 		}
 
 		guard packet.from > 0 else { return }
@@ -425,7 +452,7 @@ extension MeshPackets {
 				}
 				
 				savePendingChanges()
-				Logger.data.debug("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
+				Logger.data.debug("💾 [Node Info] Saved a Node Info for node number: \(packet.from.toHex(), privacy: .public)")
 				
 			} else {
 				// Update an existing node
@@ -529,9 +556,24 @@ extension MeshPackets {
 		}
 	}
 	
+	/// Compact, human-readable summary of a Position packet's payload for the mesh log line, e.g.
+	/// " — 40.78661,-119.20650 1234m 8 sats 14-bit". Returns "" for empty/null-island positions.
+	private func positionLogDetails(from packet: MeshPacket) -> String {
+		guard let pos = try? Position(serializedBytes: packet.decoded.payload),
+			  pos.latitudeI != 0 || pos.longitudeI != 0 else {
+			return ""
+		}
+		var parts: [String] = []
+		parts.append(String(format: "%.5f,%.5f", Double(pos.latitudeI) / 1e7, Double(pos.longitudeI) / 1e7))
+		if pos.altitude != 0 { parts.append("\(pos.altitude)m") }
+		if pos.satsInView > 0 { parts.append("\(pos.satsInView) sats") }
+		if pos.precisionBits > 0 && pos.precisionBits < 32 { parts.append("\(pos.precisionBits)-bit") }
+		return parts.isEmpty ? "" : " — " + parts.joined(separator: " ")
+	}
+
 	func upsertPositionPacket (packet: MeshPacket) {
-		
-		Logger.mesh.info("[Position] packet received from \(packet.from.toHex(), privacy: .public)")
+
+		Logger.mesh.info("📍 [Position] packet received from \(packet.from.toHex(), privacy: .public)\(self.positionLogDetails(from: packet), privacy: .public)")
 		
 		let fetchNum = Int64(packet.from)
 			var fetchNodePositionRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })

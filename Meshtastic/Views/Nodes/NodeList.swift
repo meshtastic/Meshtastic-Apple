@@ -172,6 +172,10 @@ private struct FilteredNodeList: View {
 	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
 	private var allNodes: [NodeInfoEntity]
 	@Environment(\.modelContext) private var context
+	/// Throttled snapshot of the filtered/sorted nodes actually shown. Recomputed on a gentle
+	/// cadence (see `.task`) instead of in `body`, so the full-node-set scan in `displayNodes`
+	/// doesn't run on every SwiftData write — which pegged the CPU on reconnect with a large DB.
+	@State private var displayedNodes: [NodeInfoEntity] = []
 
 	var connectedNode: NodeInfoEntity?
 	@Binding var isPresentingDeleteNodeAlert: Bool
@@ -275,8 +279,7 @@ private struct FilteredNodeList: View {
 
 	// The body of the view
 	var body: some View {
-		let uniqueNodes = displayNodes(activeNodeNum: accessoryManager.activeDeviceNum)
-		List(uniqueNodes, id: \.num, selection: $selectedNodeNum) { node in
+		List(displayedNodes, id: \.num, selection: $selectedNodeNum) { node in
 			NavigationLink(value: node.num) {
 				switch nodeListDensity {
 				case .compact:
@@ -299,7 +302,17 @@ private struct FilteredNodeList: View {
 				)
 			}
 		}
-		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(uniqueNodes.count)))
+		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(displayedNodes.count)))
+		.task {
+			// Recompute the displayed list on a gentle cadence instead of inside `body`.
+			// During live ingestion the node @Query invalidates on every packet; running
+			// displayNodes (a scan over the whole node set) per write pegged the main thread
+			// on reconnect with a large DB. ~3/sec is imperceptible and keeps CPU sane.
+			while !Task.isCancelled {
+				displayedNodes = displayNodes(activeNodeNum: accessoryManager.activeDeviceNum)
+				try? await Task.sleep(for: .milliseconds(350))
+			}
+		}
 		.onAppear {
 			router.updateNodeIndex(from: allNodes)
 		}
@@ -355,6 +368,13 @@ private struct NodeListFilterLookup {
 		distanceBounds: NodeDistanceFilterBounds?,
 		context: ModelContext
 	) {
+		// Only materialize the node-num set (a scan over every node) when a filter actually
+		// needs it; the common no-filter case skips this work entirely.
+		guard needsEnvironment || distanceBounds != nil else {
+			self.environmentNodeNums = nil
+			self.distanceNodeNums = nil
+			return
+		}
 		let nodeNums = Array(Set(nodes.map(\.num)))
 		if needsEnvironment {
 			self.environmentNodeNums = Self.fetchEnvironmentNodeNums(nodeNums: nodeNums, context: context)

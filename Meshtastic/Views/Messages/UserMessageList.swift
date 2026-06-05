@@ -435,6 +435,11 @@ struct UserMessageList: View {
 						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
 					}
 				}
+				// Incoming DM traffic bumps appState.unreadDirectMessages; refresh on that
+				// signal so messages land live instead of waiting up to 5s for the poll.
+				.onChange(of: appState.unreadDirectMessages) {
+					refreshIfNeeded()
+				}
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
