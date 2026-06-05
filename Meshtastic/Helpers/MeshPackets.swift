@@ -742,7 +742,8 @@ actor MeshPackets {
 	}
 
 	func paxCounterPacket (packet: MeshPacket) {
-		Logger.mesh.info("[PAX Counter] packet received from \(packet.from.toHex(), privacy: .public)")
+		let paxDetail = (try? Paxcount(serializedBytes: packet.decoded.payload)).map { " — \($0.wifi) wifi \($0.ble) ble" } ?? ""
+		Logger.mesh.info("[PAX Counter] packet received from \(packet.from.toHex(), privacy: .public)\(paxDetail, privacy: .public)")
 
 		let packetFrom = Int64(packet.from)
 		var fetchDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == packetFrom })
@@ -1076,6 +1077,14 @@ actor MeshPackets {
 			}
 
 			if messageText?.count ?? 0 > 0 {
+				// Detection-sensor and alert events ride the text-message port; label them
+				// distinctly in the stream.
+				let messageLabel: String
+				switch packet.decoded.portnum {
+				case .detectionSensorApp: messageLabel = "🔔 [Detection Sensor]"
+				case .alertApp:           messageLabel = "🔔 [Alert]"
+				default:                  messageLabel = "💬 [Text Message]"
+				}
 				// Show channel/broadcast text in the stream; redact direct-message content (only
 				// mark it "(DM)") so private 1:1 text isn't persisted to the unified log.
 				let messageDetail: String
@@ -1085,7 +1094,7 @@ actor MeshPackets {
 				} else {
 					messageDetail = "(DM)"
 				}
-				Logger.mesh.info("💬 [Text Message] packet received from \(packet.from.toHex(), privacy: .public) — \(messageDetail, privacy: .public)")
+				Logger.mesh.info("\(messageLabel, privacy: .public) packet received from \(packet.from.toHex(), privacy: .public) — \(messageDetail, privacy: .public)")
 				let toNum = Int64(packet.to)
 				let fromNum = Int64(packet.from)
 				let fetchDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == toNum || $0.num == fromNum })
@@ -1312,7 +1321,16 @@ actor MeshPackets {
 	}
 
 	func waypointPacket (packet: MeshPacket) {
-		Logger.mesh.info("[Waypoint] packet received from \(packet.from.toHex(), privacy: .public)")
+		let waypointDetail = (try? Waypoint(serializedBytes: packet.decoded.payload)).map { w -> String in
+			var parts: [String] = []
+			let name = w.name.trimmingCharacters(in: .whitespacesAndNewlines)
+			if !name.isEmpty { parts.append(name) }
+			if w.latitudeI != 0 || w.longitudeI != 0 {
+				parts.append(String(format: "%.5f,%.5f", Double(w.latitudeI) / 1e7, Double(w.longitudeI) / 1e7))
+			}
+			return parts.isEmpty ? "" : " — " + parts.joined(separator: " ")
+		} ?? ""
+		Logger.mesh.info("[Waypoint] packet received from \(packet.from.toHex(), privacy: .public)\(waypointDetail, privacy: .public)")
 
 		do {
 			if let waypointMessage = try? Waypoint(serializedBytes: packet.decoded.payload) {
