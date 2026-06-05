@@ -108,7 +108,6 @@ actor MeshPackets {
 			Logger.data.debug("💾 [\(caller, privacy: .public)] Saved pending changes")
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
-			modelContext.rollback()
 		}
 	}
 

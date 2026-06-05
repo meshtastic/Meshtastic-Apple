@@ -52,7 +52,6 @@ extension MeshPackets {
 			return true
 		} catch {
 			Logger.data.error("💥 [NodeInfoEntity] Error deleting stale nodes: \(error.localizedDescription, privacy: .public)")
-			modelContext.rollback()
 		}
 		return false
 	}
@@ -71,7 +70,6 @@ extension MeshPackets {
 			}
 		} catch {
 			Logger.data.error("💥 [NodeInfoEntity] Error clearing pax: \(error.localizedDescription, privacy: .public)")
-			modelContext.rollback()
 		}
 		return false
 	}
@@ -90,7 +88,6 @@ extension MeshPackets {
 			}
 		} catch {
 			Logger.data.error("💥 [NodeInfoEntity] Error clearing positions: \(error.localizedDescription, privacy: .public)")
-			modelContext.rollback()
 		}
 		return false
 	}
@@ -112,7 +109,6 @@ extension MeshPackets {
 			}
 		} catch {
 			Logger.data.error("💥 [NodeInfoEntity] Error clearing telemetry: \(error.localizedDescription, privacy: .public)")
-			modelContext.rollback()
 		}
 		return false
 	}
@@ -132,7 +128,6 @@ extension MeshPackets {
 			try modelContext.save()
 		} catch {
 			Logger.data.error("💥 [MessageEntity] Error deleting channel messages: \(error.localizedDescription, privacy: .public)")
-			modelContext.rollback()
 		}
 	}
 	
@@ -148,7 +143,6 @@ extension MeshPackets {
 			try modelContext.save()
 		} catch {
 			Logger.data.error("💥 [MessageEntity] Error deleting user messages: \(error.localizedDescription, privacy: .public)")
-			modelContext.rollback()
 		}
 	}
 	
@@ -223,7 +217,6 @@ extension MeshPackets {
 			try modelContext.save()
 		} catch {
 			Logger.data.error("💥 Failed to save after clearing database: \(error.localizedDescription, privacy: .public)")
-			modelContext.rollback()
 		}
 	}
 	
