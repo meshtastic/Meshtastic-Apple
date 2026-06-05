@@ -30,6 +30,9 @@ struct TapbackResponses: View {
 					}
 					.padding(10)
 				}
+				// Hug the reactions so the border wraps the content instead of leaving
+				// empty space; the up-to-two-rows layout keeps realistic counts on-screen.
+				.fixedSize(horizontal: true, vertical: false)
 				.overlay(
 					RoundedRectangle(cornerRadius: 18)
 						.stroke(Color.gray, lineWidth: 1)
