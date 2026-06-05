@@ -312,9 +312,9 @@ extension MeshPackets {
 
 		let details = nodeInfoLogDetails(from: packet)
 		if overTheMesh {
-			Logger.mesh.info("📟 [NodeInfo] packet received from \(packet.from.toHex(), privacy: .public)\(details, privacy: .public)")
+			Logger.mesh.info("📟 [Node Info] packet received from \(packet.from.toHex(), privacy: .public)\(details, privacy: .public)")
 		} else {
-			Logger.data.info("📟 [NodeInfo] packet received from \(packet.from.toHex(), privacy: .public)\(details, privacy: .public)")
+			Logger.data.info("📟 [Node Info] packet received from \(packet.from.toHex(), privacy: .public)\(details, privacy: .public)")
 		}
 
 		guard packet.from > 0 else { return }
@@ -452,7 +452,7 @@ extension MeshPackets {
 				}
 				
 				savePendingChanges()
-				Logger.data.info("💾 [NodeInfo] Saved a NodeInfo for node number: \(packet.from.toHex(), privacy: .public)")
+				Logger.data.info("💾 [Node Info] Saved a Node Info for node number: \(packet.from.toHex(), privacy: .public)")
 				
 			} else {
 				// Update an existing node
