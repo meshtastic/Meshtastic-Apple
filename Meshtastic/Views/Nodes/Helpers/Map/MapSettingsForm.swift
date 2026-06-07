@@ -15,6 +15,7 @@ struct MapSettingsForm: View {
 	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var enableMapRouteLines = false
 	@AppStorage("enableMapConvexHull") private var convexHull = false
+	@AppStorage("meshMapShowTopologyLines") private var showTopologyLines = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@ObservedObject private var mapDataManager = MapDataManager.shared
@@ -65,6 +66,15 @@ struct MapSettingsForm: View {
 							} icon: {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.multicolor)
+							}
+						}
+						.tint(.accentColor)
+						Toggle(isOn: $showTopologyLines) {
+							Label {
+								Text("Topology Lines")
+							} icon: {
+								Image(systemName: "point.topleft.down.to.point.bottomright.curvepath")
+									.symbolRenderingMode(.hierarchical)
 							}
 						}
 						.tint(.accentColor)

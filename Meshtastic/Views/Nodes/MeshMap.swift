@@ -449,6 +449,7 @@ struct MeshMap: View {
 				shortName: node?.user?.shortName,
 				isOnline: node?.isOnline ?? false,
 				viaMqtt: node?.viaMqtt ?? true,
+				hopsAway: node?.hopsAway ?? 0,
 				calculatedDelay: Double(nodeNum.magnitude % 100) / 100.0 * 0.5
 			)
 		}

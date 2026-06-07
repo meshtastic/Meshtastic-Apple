@@ -51,6 +51,7 @@ extension UserDefaults {
 		case meshMapRecentering
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
+		case meshMapShowTopologyLines
 		case enableMapConvexHull
 		case enableMapRecentering
 		case enableMapNodeHistoryPins
@@ -121,6 +122,9 @@ extension UserDefaults {
 
 	@UserDefault(.enableMapRouteLines, defaultValue: false)
 	static var enableMapRouteLines: Bool
+
+	@UserDefault(.meshMapShowTopologyLines, defaultValue: false)
+	static var meshMapShowTopologyLines: Bool
 
 	@UserDefault(.enableMapConvexHull, defaultValue: false)
 	static var enableMapConvexHull: Bool
