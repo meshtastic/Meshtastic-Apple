@@ -39,6 +39,7 @@ struct MeshMapPositionSnapshot: Identifiable {
 	let shortName: String?
 	let isOnline: Bool
 	let viaMqtt: Bool
+	let hopsAway: Int32
 	let calculatedDelay: Double
 }
 
@@ -49,6 +50,7 @@ struct MeshMapContent: MapContent {
 	@Binding var showUserLocation: Bool
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
+	@AppStorage("meshMapShowTopologyLines") private var showTopologyLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@Binding var showTraffic: Bool
 	@Binding var showPointsOfInterest: Bool
@@ -141,6 +143,22 @@ struct MeshMapContent: MapContent {
 	}
 
 	@MapContentBuilder
+	var topologyLines: some MapContent {
+		if let userCoord = LocationsHandler.currentPreciseLocation {
+			let directNeighbors = positionSnapshots.filter { !$0.viaMqtt && $0.hopsAway == 1 }
+			let meshNeighbors = positionSnapshots.filter { !$0.viaMqtt && $0.hopsAway > 1 }
+			ForEach(directNeighbors) { snap in
+				MapPolyline(coordinates: [userCoord, snap.coordinate])
+					.stroke(.green.opacity(0.7), lineWidth: 2)
+			}
+			ForEach(meshNeighbors) { snap in
+				MapPolyline(coordinates: [userCoord, snap.coordinate])
+					.stroke(.orange.opacity(0.5), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round, dash: [6, 8]))
+			}
+		}
+	}
+
+	@MapContentBuilder
 	var routeAnnotations: some MapContent {
 		ForEach(routes) { route in
 			if !route.locations.isEmpty {
@@ -221,6 +239,11 @@ struct MeshMapContent: MapContent {
 			/// GeoJSON Overlays with embedded styling
 			if showMapOverlays {
 				overlayContent
+			}
+
+			/// Topology Lines
+			if showTopologyLines {
+				topologyLines
 			}
 
 			if isDense {
