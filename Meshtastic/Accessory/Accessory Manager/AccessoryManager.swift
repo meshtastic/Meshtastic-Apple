@@ -735,9 +735,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("[Unknown] packet received from \(packet.from.toHex(), privacy: .public)")
 				}
 			}
-			// Save any pending updateAnyPacketFrom changes for packets that
-			// don't have a dedicated handler (UNHANDLED cases above).
-			await MeshPackets.shared.savePendingChanges()
+			// Flush via the debouncer rather than saving immediately. This runs for
+			// EVERY packet, so an immediate save here force-flushed the whole context
+			// on every packet — defeating the position/telemetry debounce and firing a
+			// main-context merge (and a full @Query re-sort) ~10×/sec under load. A
+			// debounced flush coalesces these to ≤1 save / 2s (5s hard ceiling) and also
+			// covers the updateAnyPacketFrom mutations for portnums with no dedicated handler.
+			await MeshPackets.shared.scheduleDebouncedSave()
 
 		case .nodeInfo(let nodeInfo):
 			await handleNodeInfo(nodeInfo)
@@ -928,6 +932,9 @@ enum PossiblyAlreadyDoneContinuation {
 extension AccessoryManager {
 	func appDidEnterBackground() {
 		if self.state == .uninitialized { return }
+		// Persist any debounced position/telemetry/nodeinfo changes before suspension,
+		// since the debounce timer may not fire while backgrounded.
+		Task { await MeshPackets.shared.flushDebouncedSaves() }
 		if let connection = self.activeConnection?.connection {
 			Logger.transport.info("[AccessoryManager] informing active connection that we are entering the background")
 			Task { await connection.appDidEnterBackground() }
