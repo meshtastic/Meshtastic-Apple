@@ -65,6 +65,9 @@ struct MeshMapContent: MapContent {
 	
 	/// Pre-filtered, pre-extracted positions passed in from the parent view.
 	var positionSnapshots: [MeshMapPositionSnapshot]
+	/// The connected device's coordinate, used as the topology-line origin when the
+	/// phone has no precise GPS fix (e.g. iPad, indoors, or reduced-accuracy permission).
+	var deviceFallbackCoordinate: CLLocationCoordinate2D?
 
 	@Query(sort: \WaypointEntity.name, order: .reverse)
 	var waypoints: [WaypointEntity]
@@ -144,9 +147,16 @@ struct MeshMapContent: MapContent {
 
 	@MapContentBuilder
 	var topologyLines: some MapContent {
-		if let userCoord = LocationsHandler.currentPreciseLocation {
-			let directNeighbors = positionSnapshots.filter { !$0.viaMqtt && $0.hopsAway == 1 }
-			let meshNeighbors = positionSnapshots.filter { !$0.viaMqtt && $0.hopsAway > 1 }
+		// Prefer the phone's precise GPS, but fall back to the connected device's
+		// position so lines still draw when location services are unavailable.
+		if let userCoord = LocationsHandler.currentPreciseLocation ?? deviceFallbackCoordinate {
+			// A node heard directly over LoRa reports hopsAway == 0 (matching how the rest
+			// of the app classifies "direct"); anything > 0 was relayed through the mesh.
+			// Exclude our own connected node, which is also hopsAway == 0, so we don't draw a
+			// zero-length line from our position to itself.
+			let connectedNum = Int64(UserDefaults.preferredPeripheralNum)
+			let directNeighbors = positionSnapshots.filter { !$0.viaMqtt && $0.hopsAway == 0 && $0.nodeNum != connectedNum }
+			let meshNeighbors = positionSnapshots.filter { !$0.viaMqtt && $0.hopsAway > 0 }
 			ForEach(directNeighbors) { snap in
 				MapPolyline(coordinates: [userCoord, snap.coordinate])
 					.stroke(.green.opacity(0.7), lineWidth: 2)

@@ -155,7 +155,8 @@ struct MeshMap: View {
 								selectedNode: $selectedNode,
 								selectedWaypoint: $selectedWaypoint,
 								enabledOverlayConfigs: $enabledOverlayConfigs,
-								positionSnapshots: visiblePositionSnapshots
+								positionSnapshots: visiblePositionSnapshots,
+								deviceFallbackCoordinate: activeDeviceCoordinate
 						)
 					}
 					.id(meshMapDistance)
