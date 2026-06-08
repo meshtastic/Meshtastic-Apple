@@ -8,6 +8,10 @@ class AppState: ObservableObject {
 	@Published var router: Router
 	@Published var unreadChannelMessages: Int
 	@Published var unreadDirectMessages: Int
+	/// Bumped after a node-switch restore to force @Query-backed views to rebuild and
+	/// refetch, so they drop objects cached from the previous node's database. Applied
+	/// as `.id(appState.databaseResetID)` on the root content view.
+	@Published var databaseResetID = UUID()
 
 	var totalUnreadMessages: Int {
 		unreadChannelMessages + unreadDirectMessages

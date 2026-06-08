@@ -170,6 +170,9 @@ struct MeshtasticAppleApp: App {
 					appState: appState,
 					router: appState.router
 				)
+				// Rebuild the whole view tree (and re-run every @Query) after a node-switch
+				// restore so views drop the previous node's cached objects. See AppState.databaseResetID.
+				.id(appState.databaseResetID)
 				.sheet(item: $saveChannelLink
 				) { link in
 					SaveChannelQRCode(
@@ -265,6 +268,7 @@ struct MeshtasticAppleApp: App {
 		WindowGroup("Mesh Map", id: "meshmap-window") {
 			if !Self.isRunningTests {
 				MapWindow()
+					.id(appState.databaseResetID)
 					.modelContainer(persistenceController!.container)
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)
