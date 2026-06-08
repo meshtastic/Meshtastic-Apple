@@ -773,7 +773,7 @@ actor MeshPackets {
 
 				if fetchedNode.count > 0 {
 					newPax.paxNode = fetchedNode[0]
-					savePendingChanges()
+					scheduleDebouncedSave()
 				} else {
 					Logger.data.info("Node Info Not Found")
 				}
@@ -821,8 +821,8 @@ actor MeshPackets {
 				} else {
 					return
 				}
-				savePendingChanges()
-				Logger.data.debug("💾 ACK Saved for Message: \(packet.decoded.requestID, privacy: .public)")
+				scheduleDebouncedSave()
+				Logger.data.debug("💾 ACK buffered for Message: \(packet.decoded.requestID, privacy: .public)")
 			} catch {
 				let nsError = error as NSError
 				Logger.data.error("Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
@@ -979,10 +979,10 @@ actor MeshPackets {
 							}
 						}
 
-						if packet.rxTime > 0 {
-							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
-						} else {
-							fetchedNode[0].lastHeard = Date()
+						// lastHeard for remote nodes is set once, centrally, in updateAnyPacketFrom.
+						// It guards out our own connected node, so refresh that one here only.
+						if connectedNode == Int64(packet.from) {
+							fetchedNode[0].lastHeard = packet.rxTime > 0 ? Date(timeIntervalSince1970: TimeInterval(packet.rxTime)) : Date()
 						}
 					}
 					scheduleDebouncedSave()
@@ -1202,6 +1202,8 @@ actor MeshPackets {
 							Logger.data.error("Error Creating a new UserEntity from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 						}
 					}
+					// Keep this write: a first-time sender's node is created here, a path
+					// updateAnyPacketFrom (existing remote nodes only) doesn't cover.
 					if packet.rxTime > 0 {
 						newMessage.fromUser?.userNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 					} else {

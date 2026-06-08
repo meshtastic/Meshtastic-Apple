@@ -245,13 +245,14 @@ extension MeshPackets {
 				node.id = Int64(packet.from)
 				node.num = Int64(packet.from)
 				
+				// Single source of truth for lastHeard on received packets: this runs for
+				// every packet (mirroring firmware NodeDB::updateFrom), so the per-packet
+				// handlers no longer touch lastHeard for remote nodes.
 				if !isImplicitAck {
 					if packet.rxTime > 0 {
 						node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-						Logger.data.debug("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard from rxTime=\(packet.rxTime)")
 					} else {
 						node.lastHeard = Date()
-						Logger.data.debug("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) lastHeard to now (rxTime==0)")
 					}
 				}
 				
@@ -271,7 +272,7 @@ extension MeshPackets {
 			Logger.data.error("💥 [updateAnyPacketFrom] fetch data error")
 		}
 	}
-	
+
 	/// Compact, human-readable summary of a NodeInfo packet's `User` payload, appended to the mesh
 	/// log line so the Packet Stream shows the decoded protobuf at a glance (not raw JSON), e.g.
 	/// " — 🔐 Long Name (SHRT) client TBEAM". Returns "" when there's no usable identity.
@@ -444,8 +445,10 @@ extension MeshPackets {
 					}
 				}
 				
-				savePendingChanges()
-				Logger.data.debug("💾 [Node Info] Saved a Node Info for node number: \(packet.from.toHex(), privacy: .public)")
+				// Over-the-mesh ingestion is high-frequency, so debounce; local actions
+				// (e.g. adding a contact / favoriting) persist immediately for snappy UI.
+				if overTheMesh { scheduleDebouncedSave() } else { savePendingChanges() }
+				Logger.data.debug("💾 [Node Info] Buffered a Node Info for node number: \(packet.from.toHex(), privacy: .public)")
 				
 			} else {
 				// Update an existing node
@@ -541,8 +544,8 @@ extension MeshPackets {
 						Logger.data.error("Error Creating a new UserEntity on an existing node from node number: \(packet.from, privacy: .public) Error:  \(error.localizedDescription, privacy: .public)")
 					}
 				}
-				savePendingChanges()
-				Logger.data.debug("💾 [NodeInfoEntity] Updated from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
+				if overTheMesh { scheduleDebouncedSave() } else { savePendingChanges() }
+				Logger.data.debug("💾 [NodeInfoEntity] Buffered update from Node Info App Packet For: \(fetchedNode[0].num.toHex(), privacy: .public)")
 			}
 		} catch {
 			Logger.data.error("💥 [NodeInfoEntity] fetch data error for NODEINFO_APP")
