@@ -27,10 +27,10 @@ final class PacketStreamModel: ObservableObject {
 
 	// MARK: - Tuning
 
-	/// ~4 entries/sec readable cadence (FR-021). Each tick also drives a view re-render and
-	/// auto-scroll, so a slightly longer interval meaningfully cuts main-actor churn under load
-	/// while staying readable (the adaptive per-tick count keeps overall throughput up).
-	private let revealIntervalNanos: UInt64 = 250_000_000
+	/// ≈2 entries/sec at calm and ≈6 entries/sec under load (SC-008). The 500ms tick
+	/// keeps main-actor churn low; the adaptive per-tick count catches up a backlog without
+	/// the stream becoming unreadable.
+	private let revealIntervalNanos: UInt64 = 500_000_000
 	/// Poll cadence for new entries (well under the 5s visibility target, SC-001).
 	private let pollIntervalNanos: UInt64 = 1_000_000_000
 
@@ -162,9 +162,9 @@ final class PacketStreamModel: ObservableObject {
 		let perTick: Int
 		switch buffer.pending.count {
 		case 0:       perTick = 0
-		case 1...10:  perTick = 1    // ~6/sec  — calm, fully readable
-		case 11...40: perTick = 4    // ~24/sec — busy mesh
-		default:      perTick = 12   // ~72/sec — drain a firehose / fast replay quickly
+		case 1...10:  perTick = 1    // ~2/sec  — calm, easy to read
+		case 11...40: perTick = 3    // ~6/sec  — spec target SC-008
+		default:      perTick = 6    // ~12/sec — drain backlog quickly
 		}
 		if perTick > 0, buffer.reveal(perTick) > 0 { syncFromBuffer() }
 	}

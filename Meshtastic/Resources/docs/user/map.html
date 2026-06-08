@@ -10,8 +10,29 @@
 <div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Map &amp; Waypoints</h1>
 <p>The Map tab shows all nodes that have shared a position, overlaid on an Apple Maps base layer.</p>
 <h2>Node Pins</h2>
-<p>Each node that has reported a GPS position appears as a coloured circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
+<p>Each node that has reported a GPS position appears as a coloured circle pin on the map. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
 <p>Pins update automatically when a new position packet is received from the mesh.</p>
+<h2>Topology Lines</h2>
+<p>When <strong>Topology Lines</strong> is enabled in Map Options, the map draws lines from your current position to nearby mesh nodes:</p>
+<table>
+<thead>
+<tr>
+<th>Line style</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Solid green line</td>
+<td>Directly connected node (one hop away over LoRa)</td>
+</tr>
+<tr>
+<td>Dashed orange line</td>
+<td>Mesh node reachable via multiple hops</td>
+</tr>
+</tbody>
+</table>
+<p>Lines are only drawn for LoRa nodes — MQTT-bridged nodes are excluded since they do not represent an RF link. Topology Lines requires a GPS fix from your phone or your connected device's position.</p>
 <h2>Filtering Nodes on the Map</h2>
 <p>Tap the <strong>filter button</strong> (funnel icon, <code>line.3.horizontal.decrease.circle</code>) in the bottom-right toolbar to open the Map Filters sheet. When any filter is active, the icon appears <strong>filled</strong> to indicate filtering is in effect.</p>
 <table>
@@ -44,7 +65,7 @@
 </tr>
 <tr>
 <td>Distance</td>
-<td>Limit to nodes within a chosen radius of your current location</td>
+<td>Limit to nodes within a chosen radius of your current location. Falls back to your connected device's GPS position when phone location services are off</td>
 </tr>
 <tr>
 <td>Hops Away</td>
@@ -79,6 +100,42 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 <tr>
 <td>GeoJSON Overlays</td>
 <td>Custom map layers loaded from <code>.geojson</code> files in the app's file storage</td>
+</tr>
+</tbody>
+</table>
+<h2>Map Options</h2>
+<p>Tap the <strong>info button</strong> (ℹ️) in the map toolbar to open Map Options.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Distance</td>
+<td>Sets the map viewport radius</td>
+</tr>
+<tr>
+<td>Waypoints</td>
+<td>Show or hide waypoint pins</td>
+</tr>
+<tr>
+<td>Topology Lines</td>
+<td>Draw lines from your position to mesh neighbours (see above)</td>
+</tr>
+<tr>
+<td>Convex Hull</td>
+<td>Draw an outline enclosing all node positions</td>
+</tr>
+<tr>
+<td>Traffic</td>
+<td>Overlay live traffic data</td>
+</tr>
+<tr>
+<td>Points of Interest</td>
+<td>Show Apple Maps POIs</td>
 </tr>
 </tbody>
 </table>

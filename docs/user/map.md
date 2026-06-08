@@ -10,9 +10,20 @@ The Map tab shows all nodes that have shared a position, overlaid on an Apple Ma
 
 ## Node Pins
 
-Each node that has reported a GPS position appears as a coloured circle pin on the map. The **green solid line** shows a directly connected node; **orange dashed lines** show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
+Each node that has reported a GPS position appears as a coloured circle pin on the map. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
 
 Pins update automatically when a new position packet is received from the mesh.
+
+## Topology Lines
+
+When **Topology Lines** is enabled in Map Options, the map draws lines from your current position to nearby mesh nodes:
+
+| Line style | Meaning |
+|---|---|
+| Solid green line | Directly connected node (one hop away over LoRa) |
+| Dashed orange line | Mesh node reachable via multiple hops |
+
+Lines are only drawn for LoRa nodes — MQTT-bridged nodes are excluded since they do not represent an RF link. Topology Lines requires a GPS fix from your phone or your connected device's position.
 
 ## Filtering Nodes on the Map
 
@@ -25,7 +36,7 @@ Tap the **filter button** (funnel icon, `line.3.horizontal.decrease.circle`) in 
 | Online | Show only nodes heard within the last 2 hours |
 | Encrypted | Show only nodes using PKI encryption |
 | Favorites | Show only nodes you have starred as favourites |
-| Distance | Limit to nodes within a chosen radius of your current location |
+| Distance | Limit to nodes within a chosen radius of your current location. Falls back to your connected device's GPS position when phone location services are off |
 | Hops Away | Slider from **All** to **7** — restricts by hop count (0 = direct only) |
 | Roles | Filter by one or more device roles (e.g. Router, Client, Repeater) |
 
@@ -41,6 +52,19 @@ Tap the layer icon (top-right) to switch between:
 | Standard | Default Apple Maps street/satellite hybrid |
 | Satellite | Aerial imagery |
 | GeoJSON Overlays | Custom map layers loaded from `.geojson` files in the app's file storage |
+
+## Map Options
+
+Tap the **info button** (ℹ️) in the map toolbar to open Map Options.
+
+| Option | Description |
+|---|---|
+| Distance | Sets the map viewport radius |
+| Waypoints | Show or hide waypoint pins |
+| Topology Lines | Draw lines from your position to mesh neighbours (see above) |
+| Convex Hull | Draw an outline enclosing all node positions |
+| Traffic | Overlay live traffic data |
+| Points of Interest | Show Apple Maps POIs |
 
 ## Waypoints
 

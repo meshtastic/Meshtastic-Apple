@@ -48,6 +48,7 @@ struct MapLegend: View {
 				nodeSection
 				if isMeshMap {
 					waypointSection
+					topologyLinesSection
 				}
 				precisionSection
 				if !isMeshMap {
@@ -166,6 +167,25 @@ struct MapLegend: View {
 		}
 	}
 
+	private var topologyLinesSection: some View {
+		Section {
+			MapLegendItem(
+				symbol: AnyView(directNeighborLineSymbol),
+				title: String(localized: "Direct Neighbor"),
+				subtitle: String(localized: "Node one hop away, reached directly over LoRa.")
+			)
+			MapLegendItem(
+				symbol: AnyView(meshNeighborLineSymbol),
+				title: String(localized: "Mesh Neighbor"),
+				subtitle: String(localized: "Node reachable via the mesh but not directly.")
+			)
+		} header: {
+			Text("Topology Lines")
+		} footer: {
+			Text("Enable Topology Lines in Map Options. Lines are drawn from your position and are hidden for MQTT-bridged nodes.")
+		}
+	}
+
 	private var convexHullSection: some View {
 		Section {
 			MapLegendItem(
@@ -261,6 +281,28 @@ struct MapLegend: View {
 			}
 			.stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [6, 6]))
 			.foregroundStyle(Color.blue)
+		}
+	}
+
+	private var directNeighborLineSymbol: some View {
+		ZStack {
+			Path { path in
+				path.move(to: CGPoint(x: 4, y: 20))
+				path.addLine(to: CGPoint(x: 36, y: 20))
+			}
+			.stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
+			.foregroundStyle(Color.green.opacity(0.7))
+		}
+	}
+
+	private var meshNeighborLineSymbol: some View {
+		ZStack {
+			Path { path in
+				path.move(to: CGPoint(x: 4, y: 20))
+				path.addLine(to: CGPoint(x: 36, y: 20))
+			}
+			.stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [6, 8]))
+			.foregroundStyle(Color.orange.opacity(0.5))
 		}
 	}
 
