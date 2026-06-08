@@ -24,7 +24,6 @@ struct NodeList: View {
 	@StateObject var filters = NodeFilterParameters()
 	@State var isEditingFilters = false
 	@State private var showingHelp = false
-	@State private var hasAutoEnabledDistanceFilter = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	var connectedNode: NodeInfoEntity? {
@@ -52,19 +51,10 @@ struct NodeList: View {
 		.navigationSplitViewStyle(.balanced)
 		.onAppear {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
-			autoEnableDistanceFilter()
 		}
 		.onChange(of: accessoryManager.activeDeviceNum) {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
-			autoEnableDistanceFilter()
 		}
-	}
-
-	private func autoEnableDistanceFilter() {
-		guard !hasAutoEnabledDistanceFilter else { return }
-		guard LocationsHandler.currentLocation != nil || filters.fallbackLocation != nil else { return }
-		filters.distanceFilter = true
-		hasAutoEnabledDistanceFilter = true
 	}
 
 	// MARK: - Sidebar

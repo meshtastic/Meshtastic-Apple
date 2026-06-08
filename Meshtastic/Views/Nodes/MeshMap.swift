@@ -56,8 +56,6 @@ struct MeshMap: View {
 	@State private var showLegend = false
 	/// Filter
 	@StateObject var filters = NodeFilterParameters()
-	/// Prevents re-enabling the distance filter after the user has explicitly turned it off.
-	@State private var hasAutoEnabledDistanceFilter = false
 	/// Track whether a detached Mesh Map window is currently open.
 	@State private var isMapWindowOpen = false
 
@@ -354,20 +352,16 @@ struct MeshMap: View {
 			.onChange(of: positionState.key) {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
 				filters.fallbackLocation = activeDeviceCoordinate
-				autoEnableDistanceFilter()
 			}
 			.onChange(of: allLatestPositions) {
 				filters.fallbackLocation = activeDeviceCoordinate
-				autoEnableDistanceFilter()
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) {
 				filters.fallbackLocation = activeDeviceCoordinate
-				autoEnableDistanceFilter()
 			}
 			.onAppear {
 				UIApplication.shared.isIdleTimerDisabled = true
 				filters.fallbackLocation = activeDeviceCoordinate
-				autoEnableDistanceFilter()
 				refreshMapWindowOpenState()
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
@@ -413,13 +407,6 @@ struct MeshMap: View {
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
 			refreshMapWindowOpenState()
 		}
-	}
-
-	private func autoEnableDistanceFilter() {
-		guard !hasAutoEnabledDistanceFilter else { return }
-		guard LocationsHandler.currentLocation != nil || filters.fallbackLocation != nil else { return }
-		filters.distanceFilter = true
-		hasAutoEnabledDistanceFilter = true
 	}
 
 	private func refreshMapWindowOpenState() {
