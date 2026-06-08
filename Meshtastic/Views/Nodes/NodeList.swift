@@ -49,6 +49,12 @@ struct NodeList: View {
 			}
 		}
 		.navigationSplitViewStyle(.balanced)
+		.onAppear {
+			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
+		}
+		.onChange(of: accessoryManager.activeDeviceNum) {
+			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
+		}
 	}
 
 	// MARK: - Sidebar
