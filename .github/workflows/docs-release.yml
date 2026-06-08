@@ -35,8 +35,10 @@ jobs:
         id: version
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
+      # Project Pages serve under /Meshtastic-Apple (no custom domain), so the
+      # released site needs that baseurl for links and assets to resolve.
       - name: Build with Jekyll
-        run: bundle exec jekyll build --source docs --destination _site --baseurl ""
+        run: bundle exec jekyll build --source docs --destination _site --baseurl "/Meshtastic-Apple"
         env:
           JEKYLL_ENV: production
           DOCS_VERSION: ${{ steps.version.outputs.version }}
