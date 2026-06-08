@@ -24,6 +24,10 @@ extension MyInfoEntity {
 
 	@MainActor
 	func unreadMessages(context: ModelContext) -> Int {
+		// NOTE: do NOT push `toUser == nil` into the #Predicate — comparing an optional
+		// relationship to nil crashes SwiftData on iOS 26 (see AppState.refreshBadgeCount),
+		// and on other OSes returns a wrong count (broke the channel badge). Fetch the
+		// unread set and split in Swift. Callers must throttle this — it's O(unread).
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
 				msg.isEmoji == false && msg.read == false
