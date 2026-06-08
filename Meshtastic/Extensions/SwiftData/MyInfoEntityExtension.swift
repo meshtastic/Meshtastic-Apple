@@ -24,16 +24,17 @@ extension MyInfoEntity {
 
 	@MainActor
 	func unreadMessages(context: ModelContext) -> Int {
-		// Count via SQL rather than materializing every unread message and filtering in
-		// Swift — this is called per incoming channel message, so the old fetch-all-then-
-		// filter was O(unread) per message (quadratic over a burst) and stalled slower
-		// devices under heavy traffic. toUser == nil selects channel (non-DM) messages.
+		// NOTE: do NOT push `toUser == nil` into the #Predicate — comparing an optional
+		// relationship to nil crashes SwiftData on iOS 26 (see AppState.refreshBadgeCount),
+		// and on other OSes returns a wrong count (broke the channel badge). Fetch the
+		// unread set and split in Swift. Callers must throttle this — it's O(unread).
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.isEmoji == false && msg.read == false && msg.toUser == nil
+				msg.isEmoji == false && msg.read == false
 			}
 		)
-		return (try? context.fetchCount(descriptor)) ?? 0
+		let messages = (try? context.fetch(descriptor)) ?? []
+		return messages.filter { $0.toUser == nil }.count
 	}
 
 	@MainActor

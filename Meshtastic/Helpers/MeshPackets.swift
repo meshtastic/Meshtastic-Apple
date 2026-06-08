@@ -158,6 +158,17 @@ actor MeshPackets {
 		lastDebouncedSaveTime = .now
 	}
 
+	/// Last time the channel-unread badge count was recomputed (an O(unread) scan).
+	private var lastChannelUnreadRecompute: ContinuousClock.Instant?
+	/// Rate-limits the per-message channel-unread recompute to at most ~1/sec so a burst
+	/// of incoming channel messages doesn't turn the badge update into quadratic work.
+	func shouldRecomputeChannelUnread() -> Bool {
+		let now = ContinuousClock.now
+		if let last = lastChannelUnreadRecompute, now - last < .seconds(1) { return false }
+		lastChannelUnreadRecompute = now
+		return true
+	}
+
 	func shouldPrunePositionHistory(for nodeNum: Int64) -> Bool {
 		let nextCount = (positionInsertsSincePrune[nodeNum] ?? 0) + 1
 		if nextCount >= Self.positionPruneInterval {
@@ -1280,8 +1291,16 @@ actor MeshPackets {
 								let fetchedMyInfo = try modelContext.fetch(myInfoFetchDescriptor)
 								if !fetchedMyInfo.isEmpty {
 									let ctx = modelContext
+									// unreadMessages is O(unread); recomputing it for the badge on every
+									// incoming channel message is quadratic over a burst and stalls slower
+									// devices. Throttle to ~1/sec — the badge tolerates brief lag and also
+									// resyncs on app-active and on read (refreshBadgeCount). Notifications
+									// below still fire per message.
+									let recountUnread = shouldRecomputeChannelUnread()
 									Task {@MainActor in
-										appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages(context: ctx)
+										if recountUnread {
+											appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages(context: ctx)
+										}
 										for channel in fetchedMyInfo[0].channels {
 											if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false {
 												// Create an iOS Notification for the received channel message
