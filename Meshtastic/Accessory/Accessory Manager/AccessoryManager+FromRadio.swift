@@ -92,8 +92,15 @@ extension AccessoryManager {
 
 		updateDevice(key: \.num, value: Int64(myNodeInfo.myNodeNum))
 
+		// Resolve on a throwaway context, NOT the long-lived main context. After a database clear
+		// (manual reset, or the clear inside a device switch) the main context can still hold an
+		// invalidated instance registered under a rowid that SwiftData then reuses for the
+		// freshly-inserted row — model(for:) would hand that dead instance back and accessing it
+		// traps with "destroyed by ModelContext.reset". A fresh context has no such registrations,
+		// so it faults the current row from the store.
+		let myInfoResolveContext = ModelContext(context.container)
 		if let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId),
-		   let myInfo = try? context.model(for: myInfoId) as? MyInfoEntity {
+		   let myInfo = try? myInfoResolveContext.model(for: myInfoId) as? MyInfoEntity {
 			if let bleName = myInfo.bleName {
 				updateDevice(key: \.name, value: bleName)
 				updateDevice(key: \.longName, value: bleName)
@@ -155,8 +162,12 @@ extension AccessoryManager {
 		
 		// TODO: nodeInfoPacket's channel: parameter is not used
 		// deferSave hard coded: No need to defer save when nodeInfoPacket is now happening off the main thread
+		// Resolve on a throwaway context (see handleMyInfo): the long-lived main context can return
+		// a stale instance registered under a rowid reused after a database clear, which traps with
+		// "destroyed by ModelContext.reset". A fresh context faults the current row from the store.
+		let nodeInfoResolveContext = ModelContext(context.container)
 		if let nodeInfoId = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: false),
-		   let nodeInfo = try? context.model(for: nodeInfoId) as? NodeInfoEntity {
+		   let nodeInfo = try? nodeInfoResolveContext.model(for: nodeInfoId) as? NodeInfoEntity {
 			if let activeDevice = activeConnection?.device, activeDevice.num == nodeInfo.num {
 				if let user = nodeInfo.user {
 					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
