@@ -794,6 +794,15 @@ func backupCurrentAndRestoreDatabase(
 		forNode: targetNodeNum,
 		into: PersistenceController.shared.container
 	)
+
+	// The clear ran on the MeshPackets context and the restore imported through a separate
+	// liveContext, neither of which the UI's main context observes — and a batch delete sends
+	// no change notification, so the existing @Query views keep their previously-fetched
+	// results (the previous node's nodes/pins linger; e.g. switching back to a local node
+	// still shows the other node's map pins). Bumping databaseResetID re-identifies the root
+	// view, forcing every @Query to re-execute its fetch and return only the restored data.
+	appState.databaseResetID = UUID()
+
 	return restoreResult
 }
 
