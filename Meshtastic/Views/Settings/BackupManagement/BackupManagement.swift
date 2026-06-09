@@ -199,6 +199,11 @@ struct BackupManagement: View {
 			disconnectCurrentDevice: true
 		)
 
+		// Refresh the UI so @Query views drop the previous database's objects. Safe to do here:
+		// this path disconnects and does not reconnect, so there is no active connect window to
+		// race with (unlike switchToDevice, which must defer this until after its reconnect).
+		accessoryManager.appState.databaseResetID = UUID()
+
 		switch restoreResult {
 		case .success:
 			refreshBackups()

@@ -795,14 +795,12 @@ func backupCurrentAndRestoreDatabase(
 		into: PersistenceController.shared.container
 	)
 
-	// The clear ran on the MeshPackets context and the restore imported through a separate
-	// liveContext, neither of which the UI's main context observes — and a batch delete sends
-	// no change notification, so the existing @Query views keep their previously-fetched
-	// results (the previous node's nodes/pins linger; e.g. switching back to a local node
-	// still shows the other node's map pins). Bumping databaseResetID re-identifies the root
-	// view, forcing every @Query to re-execute its fetch and return only the restored data.
-	appState.databaseResetID = UUID()
-
+	// NOTE: the UI refresh (bumping appState.databaseResetID) is intentionally NOT done here.
+	// Callers must trigger it only once the database is settled — for switchToDevice that means
+	// AFTER the reconnect completes. Refreshing here, mid-switch, forces every @Query to
+	// re-fetch and re-run its .task during the volatile connect window (DB retrieval + the
+	// connect-flow MeshPackets.recreateShared() teardown), which crashes accessing a model
+	// instance whose context was torn down ("destroyed by ModelContext.reset").
 	return restoreResult
 }
 
@@ -870,6 +868,12 @@ func switchToDevice(
 	} catch {
 		Logger.backup.error("💾 Failed to connect to target: \(error.localizedDescription, privacy: .public)")
 	}
+
+	// Now that the clear/restore AND the reconnect (with its DB retrieval and the connect-flow
+	// MeshPackets.recreateShared() teardown) have settled, refresh the UI. This re-identifies the
+	// root view so every @Query re-executes and drops objects cached from the previous node —
+	// done here, after the volatile connect window, to avoid the use-after-teardown crash.
+	appState.databaseResetID = UUID()
 }
 
 // MARK: - Nymea (mPWRD-OS) discovery row
