@@ -49,6 +49,12 @@ struct NodeList: View {
 			}
 		}
 		.navigationSplitViewStyle(.balanced)
+		.onAppear {
+			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
+		}
+		.onChange(of: accessoryManager.activeDeviceNum) {
+			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
+		}
 	}
 
 	// MARK: - Sidebar
@@ -361,6 +367,10 @@ private struct FilteredNodeList: View {
 private struct NodeListFilterLookup {
 	private let environmentNodeNums: Set<Int64>?
 	private let distanceNodeNums: Set<Int64>?
+	/// Node nums that have at least one `latest` PositionEntity. Used by `isWithinDistance`
+	/// so that nodes with no position data pass through the distance filter rather than
+	/// being silently excluded.
+	private let positionedNodeNums: Set<Int64>?
 
 	init(
 		nodes: [NodeInfoEntity],
@@ -373,6 +383,7 @@ private struct NodeListFilterLookup {
 		guard needsEnvironment || distanceBounds != nil else {
 			self.environmentNodeNums = nil
 			self.distanceNodeNums = nil
+			self.positionedNodeNums = nil
 			return
 		}
 		let nodeNums = Array(Set(nodes.map(\.num)))
@@ -382,9 +393,12 @@ private struct NodeListFilterLookup {
 			self.environmentNodeNums = nil
 		}
 		if let distanceBounds {
-			self.distanceNodeNums = Self.fetchDistanceNodeNums(nodeNums: nodeNums, bounds: distanceBounds, context: context)
+			let (within, positioned) = Self.fetchDistanceNodeNums(nodeNums: nodeNums, bounds: distanceBounds, context: context)
+			self.distanceNodeNums = within
+			self.positionedNodeNums = positioned
 		} else {
 			self.distanceNodeNums = nil
+			self.positionedNodeNums = nil
 		}
 	}
 
@@ -393,7 +407,10 @@ private struct NodeListFilterLookup {
 	}
 
 	func isWithinDistance(_ node: NodeInfoEntity) -> Bool {
-		distanceNodeNums?.contains(node.num) ?? false
+		guard let distanceNodeNums else { return true }
+		// Nodes with no known position are not excluded by the distance filter.
+		guard positionedNodeNums?.contains(node.num) == true else { return true }
+		return distanceNodeNums.contains(node.num)
 	}
 
 	private static func fetchEnvironmentNodeNums(nodeNums: [Int64], context: ModelContext) -> Set<Int64> {
@@ -414,8 +431,8 @@ private struct NodeListFilterLookup {
 		nodeNums: [Int64],
 		bounds: NodeDistanceFilterBounds,
 		context: ModelContext
-	) -> Set<Int64> {
-		guard !nodeNums.isEmpty else { return [] }
+	) -> (withinBounds: Set<Int64>, withAnyPosition: Set<Int64>) {
+		guard !nodeNums.isEmpty else { return ([], []) }
 		let descriptor = FetchDescriptor<PositionEntity>(
 			predicate: #Predicate<PositionEntity> {
 				$0.latest == true
@@ -424,10 +441,16 @@ private struct NodeListFilterLookup {
 			}
 		)
 		let positions = (try? context.fetch(descriptor)) ?? []
-		return Set(positions.compactMap { position in
-			guard bounds.contains(position) else { return nil }
-			return position.nodePosition?.num
-		})
+		var withinBounds = Set<Int64>()
+		var withAnyPosition = Set<Int64>()
+		for position in positions {
+			guard let num = position.nodePosition?.num else { continue }
+			withAnyPosition.insert(num)
+			if bounds.contains(position) {
+				withinBounds.insert(num)
+			}
+		}
+		return (withinBounds, withAnyPosition)
 	}
 }
 

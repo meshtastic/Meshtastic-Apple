@@ -66,15 +66,20 @@ struct NodeListFilter: View {
 						Label("Distance", systemImage: "map")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.disabled(LocationsHandler.currentPreciseLocation == nil)
+					.disabled(LocationsHandler.currentLocation == nil && filters.fallbackLocation == nil)
 					.listRowSeparator(filters.distanceFilter ? .hidden : .visible)
 
 					if filters.distanceFilter {
-						if LocationsHandler.currentPreciseLocation == nil {
+						if LocationsHandler.currentLocation == nil && filters.fallbackLocation == nil {
 							Text("Requires a precise GPS fix from your phone")
 								.font(.caption)
 								.foregroundStyle(.secondary)
 						} else {
+							if LocationsHandler.currentLocation == nil {
+								Text("Using your connected device's position")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+							}
 							HStack {
 								Label("Show nodes", systemImage: "lines.measurement.horizontal")
 								Picker("", selection: $filters.maxDistance) {
