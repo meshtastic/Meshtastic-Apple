@@ -127,6 +127,26 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	lazy var context = PersistenceController.shared.context
 	let mqttManager = MqttClientProxyManager.shared
 
+	// MARK: - Database reset
+
+	/// Call after a full data clear (clear app data / device reset / node switch). Reopens the
+	/// SwiftData container fresh and repoints the MeshPackets actor and this manager's cached
+	/// `context` at it, so no long-lived context keeps stale objects that would trap
+	/// ("destroyed by ModelContext.reset") when a reconnect reuses freed SQLite rowids.
+	func repointToFreshContainer() {
+		PersistenceController.shared.recreateContainer()
+		MeshPackets.recreateShared()
+		context = PersistenceController.shared.context
+	}
+
+	/// `repointToFreshContainer()` plus a UI refresh: bumps `databaseResetID` so @Query-backed
+	/// views rebind to the recreated container. Use at clear sites with no follow-up reconnect;
+	/// the node-switch flow repoints first and refreshes the UI itself after its restore.
+	func resetDatabaseAfterClear() {
+		repointToFreshContainer()
+		appState?.databaseResetID = UUID()
+	}
+
 	// Published Stuff
 	@Published var mqttProxyConnected: Bool = false
 	@Published var devices: [Device] = []

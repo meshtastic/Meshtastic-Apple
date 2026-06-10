@@ -787,8 +787,10 @@ func backupCurrentAndRestoreDatabase(
 
 	await MeshPackets.shared.flushDebouncedSaves()
 	await MeshPackets.shared.clearDatabase(includeRoutes: false)
-	MeshPackets.recreateShared()
-	Logger.backup.info("💾 Database cleared and MeshPackets recreated")
+	// Repoint at a fresh container so the restore below (and the post-restore UI refresh) operate
+	// on a context with no stale registrations. The databaseResetID bump stays after the restore.
+	accessoryManager.repointToFreshContainer()
+	Logger.backup.info("💾 Database cleared and container recreated")
 
 	let restoreResult = await NodeBackupManager.shared.restoreFromBackup(
 		forNode: targetNodeNum,
