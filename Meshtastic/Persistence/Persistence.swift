@@ -54,7 +54,14 @@ class PersistenceController {
 			allowsSave: true
 		)
 		do {
-			let fresh = try ModelContainer(for: schema, configurations: config)
+			// Mirror init()'s open logic: on-disk stores go through the migration plan so a
+			// reopen behaves identically to launch if a schema migration ever applies here.
+			let fresh: ModelContainer
+			if inMemory {
+				fresh = try ModelContainer(for: schema, configurations: config)
+			} else {
+				fresh = try ModelContainer(for: schema, migrationPlan: MeshtasticMigrationPlan.self, configurations: config)
+			}
 			fresh.mainContext.autosaveEnabled = false
 			container = fresh
 			Logger.data.info("💾 SwiftData container recreated after data clear")
