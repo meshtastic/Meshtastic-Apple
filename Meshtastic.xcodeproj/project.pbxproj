@@ -495,7 +495,6 @@
 		FCEFC176A62447319948ACEF /* DeviceLinkDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24506086F81240A9BFE18FA6 /* DeviceLinkDirectory.swift */; };
 		B734732C0C394582BD6CD0CA /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = AF44FDF549704E29A8E5FE2F /* urls.json */; };
 		1A8723A6288B46538396E9F1 /* DeviceLinkEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF32D1D722C64814981AB215 /* DeviceLinkEntity.swift */; };
-		A60004E057A94EB8B4E74D9D /* marketplaces.json in Resources */ = {isa = PBXBuildFile; fileRef = 55BAB49EB2DC43BFAC172008 /* marketplaces.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1105,7 +1104,6 @@
 		24506086F81240A9BFE18FA6 /* DeviceLinkDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkDirectory.swift; sourceTree = "<group>"; };
 		AF44FDF549704E29A8E5FE2F /* urls.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = urls.json; sourceTree = "<group>"; };
 		BF32D1D722C64814981AB215 /* DeviceLinkEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkEntity.swift; sourceTree = "<group>"; };
-		55BAB49EB2DC43BFAC172008 /* marketplaces.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = marketplaces.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -2119,7 +2117,6 @@
                 DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
                 DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
 				AF44FDF549704E29A8E5FE2F /* urls.json */,
-				55BAB49EB2DC43BFAC172008 /* marketplaces.json */,
                 518D504DED9874EBF9D76578 /* Certificates */,
                 AA003DOC0000005000000001 /* docs */,
             );
@@ -2523,7 +2520,6 @@
                 DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
                 DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
 				B734732C0C394582BD6CD0CA /* urls.json in Resources */,
-				A60004E057A94EB8B4E74D9D /* marketplaces.json in Resources */,
                 DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
                 8E587743574CE17703E892C6 /* Certificates in Resources */,
                 AA003DOC0000004000000001 /* docs in Resources */,
