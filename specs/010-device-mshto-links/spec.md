@@ -19,6 +19,28 @@
 - Q: How should marketplace regional availability work? → A: Each marketplace in `marketplaces.json` defines a `regions` array (ISO 3166-1 alpha-2 codes) and a `match` type (`"prefix"` or `"suffix"`). Marketplace links only show for users whose `Locale.current.region` is in the marketplace's shipping regions. Empty regions = worldwide (e.g., AliExpress).
 - Q: How should devices without any matching short code be handled? → A: No "I want one" section is shown (graceful absence).
 
+### Session 2026-06-09 — Migration to the msh.to API
+
+The msh.to backend now exposes a structured JSON API at `https://msh.to/api/urls`, and the
+catalog format changed. This supersedes several v1 decisions:
+
+- Q: Where does the catalog come from now? → A: The app fetches `https://msh.to/api/urls` at the
+  same refresh points as before, falling back to the bundled `urls.json` (kept in the new format)
+  when the network is unavailable. (Supersedes the bundled-only decision.)
+- Q: How are links classified as vendor vs marketplace? → A: Directly from the new `Type` field
+  (`"Internal"`, `"Vendor"`, `"Marketplace"`). The old heuristic (short code equals a known
+  `platformioTarget`) is removed. (Supersedes the `isVendor` heuristic.)
+- Q: How are links associated with a device? → A: Directly from the new `Targets` array on each
+  route (a list of `platformioTarget` values). The old multi-tier matching (exact/prefix/marketplace
+  prefix-suffix and `rak`-prefix stripping) is removed — a link matches a device iff its `Targets`
+  contain the device's `platformioTarget`. (Supersedes prefix/variant/`rak`-strip matching.)
+- Q: Where do marketplace shipping regions come from? → A: From a `Marketplaces` object embedded in
+  the same API response (`{ "<key>": { "Regions": [...] } }`). The standalone `marketplaces.json`
+  and its `match` field are no longer used; the marketplace key is matched as a prefix or suffix of
+  the short code to attach regions during import.
+- Q: Is the destination URL still in the payload? → A: No. Routes no longer carry `OriginalUrl`;
+  links are always opened as `https://msh.to/{shortCode}` and the redirect service resolves them.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - View msh.to Links for Connected Device (Priority: P1)
@@ -83,25 +105,25 @@ A user browsing for new hardware wants to explore all available msh.to links. A 
 
 ### Functional Requirements
 
-- **FR-001**: System MUST import all routes from bundled `urls.json` into `DeviceLinkEntity` SwiftData records during the device hardware refresh cycle, upserting by `shortCode`.
-- **FR-002**: System MUST match links to devices using multi-tier matching: exact `platformioTarget` match (vendor), prefix match for variants, and marketplace prefix/suffix match using known marketplace keys from `marketplaces.json`.
-- **FR-003**: System MUST construct link URLs as `https://msh.to/{shortCode}` — the msh.to redirect service handles routing.
-- **FR-004**: System MUST use bundled data only (no runtime network fetch in v1). `urls.json` is imported from the msh.to repo; `marketplaces.json` is maintained in the app repo.
+- **FR-001**: System MUST import all routes from the `https://msh.to/api/urls` response (or the bundled `urls.json` fallback) into `DeviceLinkEntity` SwiftData records during the device hardware refresh cycle, upserting by `shortCode`.
+- **FR-002**: System MUST associate links with devices using the route's `Targets` array — a link applies to a device iff `Targets` contains the device's `platformioTarget`. (No prefix/variant/`rak`-strip heuristics.)
+- **FR-003**: System MUST construct link URLs as `https://msh.to/{shortCode}` — the msh.to redirect service handles routing. (Routes no longer carry a destination URL.)
+- **FR-004**: System MUST fetch the catalog from `https://msh.to/api/urls`, falling back to the bundled `urls.json` (same `{ Routes, Marketplaces }` format) when the network is unavailable. Decode failures leave existing records unchanged.
 - **FR-005**: System MUST show an "I want one" collapsible section (collapsed by default) in the node info view when matching links exist, with an accent-colored chevron indicator.
-- **FR-006**: System MUST categorize links as vendor/variant (prominent `.body`/`.semibold`) or marketplace (smaller `.caption`), sorted with vendor/variant first.
-- **FR-007**: System MUST filter marketplace links by the user's `Locale.current.region` against the marketplace's `regions` array in `marketplaces.json`. Empty regions = worldwide.
-- **FR-008**: System MUST exclude vendor links for other devices (link `isVendor = true` and `shortCode != platformioTarget`).
-- **FR-009**: System MUST handle `rak` prefix inconsistencies by stripping `rak`/`rak-` from `platformioTarget` as fallback matching variants.
+- **FR-006**: System MUST categorize links by the route `Type` — vendor (prominent `.body`/`.semibold`) or marketplace (smaller `.subheadline`/`.regular`), sorted with vendor first.
+- **FR-007**: System MUST filter marketplace links by the user's `Locale.current.region` against the marketplace's `Regions` array (from the `Marketplaces` object in the response). Empty regions = worldwide; non-marketplace links are not region-filtered.
+- **FR-008**: System MUST classify each link from the route `Type` field (`Internal`/`Vendor`/`Marketplace`); unknown or missing types are treated as `Internal` (and therefore match no device).
+- **FR-009**: System MUST attach marketplace shipping regions by matching a `Marketplaces` key as a prefix or suffix of the short code (e.g. `rokland-…`, `…-aliexpress`).
 - **FR-010**: System MUST open msh.to link URLs in the system browser when activated.
 - **FR-011**: System MUST provide a browsable directory in Settings listing all imported links.
 - **FR-012**: System MUST delete orphaned `DeviceLinkEntity` records when short codes are removed from `urls.json`.
 
 ### Key Entities
 
-- **DeviceLinkEntity** (new SwiftData model): Stores `shortCode` (unique), `originalUrl`, `linkDescription`, `isVendor` (Bool), and `regions` ([String]?, marketplace shipping regions).
-- **DeviceHardwareEntity** (existing): `platformioTarget` used for matching.
-- **urls.json** (bundled, from msh.to repo): Source of short codes, URLs, and descriptions. Imported without modification.
-- **marketplaces.json** (bundled, app-maintained): Defines marketplace identifiers, match patterns (`"prefix"` or `"suffix"`), and shipping region arrays.
+- **DeviceLinkEntity** (SwiftData model): Stores `shortCode` (unique), `originalUrl` (the `https://msh.to/{shortCode}` redirect), `linkDescription`, `isVendor` (Bool), `isMarketplace` (Bool), `targets` ([String], device association), and `regions` ([String]?, marketplace shipping regions).
+- **DeviceHardwareEntity** (existing): `platformioTarget` matched against a route's `Targets`.
+- **msh.to API** (`https://msh.to/api/urls`): Source of routes (`ShortCode`, `Description`, `Type`, `Targets`) and the `Marketplaces` region map. The bundled `urls.json` mirrors this shape as an offline fallback.
+- **marketplaces.json** (deprecated): Superseded by the `Marketplaces` object embedded in the API response. The bundled file remains in the app target but is no longer read.
 
 ## Success Criteria *(mandatory)*
 
@@ -137,16 +159,18 @@ During iOS implementation, decoding `architecture` as an enum caused `decoder.de
 
 **Fix**: Decode `architecture` as a plain `String`. Convert to a typed enum only when needed for firmware flashing, using optional/nil-safe binding so unknown values are handled gracefully. This is forward-compatible with any future architectures added to the API.
 
-### isVendor Determination
+### isVendor / isMarketplace Determination (updated 2026-06-09)
 
-`isVendor` is NOT determined from the URL's domain name. It is determined by checking whether the short code is itself a known `platformioTarget`:
+Classification now comes directly from the route `Type` field returned by the API:
 
 ```
-platformioTargets = Set of all DeviceHardwareEntity.platformioTarget values
-isVendor = platformioTargets.contains(shortCode)
+isVendor      = (route.Type == "Vendor")
+isMarketplace = (route.Type == "Marketplace")
+// "Internal" → neither; has no Targets and never matches a device
 ```
 
-This is the only reliable signal — vendor links in `urls.json` use the exact `platformioTarget` as their short code (e.g., `rak_wismeshtag`, `heltec-v4`). Marketplace links use a marketplace prefix/suffix (e.g., `rokland-heltec-v4`, `heltec-v4_aliexpress`).
+The previous heuristic (short code equals a known `platformioTarget`) is removed. Unknown/missing
+`Type` values decode as `Internal` so a future link type never matches a device by mistake.
 
 ### Refresh Lifecycle — Catalog Must Be Populated After Any Database Clear
 

@@ -285,28 +285,11 @@ deviceEntity.architecture = device.architecture
 
 	// MARK: - Device Links Import
 
-	/// Import msh.to urls.json short codes into DeviceLinkEntity
+	/// Import the msh.to URL catalog into `DeviceLinkEntity` records.
 	private func importDeviceLinks() async {
-		guard let bundledURL = Bundle.main.url(forResource: "urls", withExtension: "json"),
-			  let data = try? Data(contentsOf: bundledURL) else {
-			Logger.services.warning("Unable to load bundled urls.json for device links import")
+		guard let decoded = await loadMshToUrls() else {
+			Logger.services.warning("Unable to load msh.to urls (API and bundled fallback both failed)")
 			return
-		}
-
-		let decoded: MshToUrlsFile
-		do {
-			decoded = try JSONDecoder().decode(MshToUrlsFile.self, from: data)
-		} catch {
-			Logger.services.error("Failed to decode urls.json: \(error.localizedDescription, privacy: .public)")
-			return
-		}
-
-		// Load marketplaces from separate file
-		var marketplaces: [String: MshToMarketplace] = [:]
-		if let mpURL = Bundle.main.url(forResource: "marketplaces", withExtension: "json"),
-		   let mpData = try? Data(contentsOf: mpURL),
-		   let mpDecoded = try? JSONDecoder().decode([String: MshToMarketplace].self, from: mpData) {
-			marketplaces = mpDecoded
 		}
 
 		await MainActor.run {
@@ -314,30 +297,24 @@ deviceEntity.architecture = device.architecture
 			var importedCount = 0
 			let importedShortCodes = Set(decoded.routes.map { $0.shortCode })
 
-			// Get all platformioTargets to determine vendor vs marketplace
-			let devicesDescriptor = FetchDescriptor<DeviceHardwareEntity>()
-			let platformioTargets = Set((try? context.fetch(devicesDescriptor))?.compactMap { $0.platformioTarget } ?? [])
-
 			for route in decoded.routes {
 				let code = route.shortCode
-				let isVendor = platformioTargets.contains(code)
+				let isVendor = route.type == .vendor
+				let isMarketplace = route.type == .marketplace
 
-				// Determine marketplace regions for non-vendor links
+				// Marketplace shipping regions: the marketplace key appears as a prefix or
+				// suffix of the short code (e.g. "rokland-…" or "…-aliexpress").
 				var regions: [String]?
-				if !isVendor {
-					for (marketplace, config) in marketplaces {
-						let matches: Bool
-						if config.match == "prefix" {
-							matches = code.hasPrefix(marketplace)
-						} else {
-							matches = code.hasSuffix("_\(marketplace)") || code.hasSuffix("-\(marketplace)")
-						}
-						if matches {
-							regions = config.regions
-							break
-						}
-					}
+				if isMarketplace {
+					regions = decoded.marketplaces.first(where: { entry in
+						let key = entry.key
+						return code == key
+							|| code.hasPrefix("\(key)-") || code.hasPrefix("\(key)_")
+							|| code.hasSuffix("-\(key)") || code.hasSuffix("_\(key)")
+					})?.value.regions
 				}
+
+				let redirectUrl = "https://msh.to/\(code)"
 
 				var descriptor = FetchDescriptor<DeviceLinkEntity>(
 					predicate: #Predicate { $0.shortCode == code }
@@ -345,18 +322,27 @@ deviceEntity.architecture = device.architecture
 				descriptor.fetchLimit = 1
 
 				if let existing = try? context.fetch(descriptor).first {
-					existing.originalUrl = route.originalUrl
+					existing.originalUrl = redirectUrl
 					existing.linkDescription = route.description
 					existing.isVendor = isVendor
+					existing.isMarketplace = isMarketplace
+					existing.targets = route.targets
 					existing.regions = regions
 				} else {
-					let entity = DeviceLinkEntity(shortCode: route.shortCode, originalUrl: route.originalUrl, linkDescription: route.description, isVendor: isVendor, regions: regions)
-					context.insert(entity)
+					context.insert(DeviceLinkEntity(
+						shortCode: code,
+						originalUrl: redirectUrl,
+						linkDescription: route.description,
+						isVendor: isVendor,
+						isMarketplace: isMarketplace,
+						targets: route.targets,
+						regions: regions
+					))
 				}
 				importedCount += 1
 			}
 
-			// Delete orphaned links no longer in bundled file
+			// Delete orphaned links no longer present in the catalog
 			let allLinksDescriptor = FetchDescriptor<DeviceLinkEntity>()
 			if let allLinks = try? context.fetch(allLinksDescriptor) {
 				for link in allLinks where !importedShortCodes.contains(link.shortCode) {
@@ -367,6 +353,32 @@ deviceEntity.architecture = device.architecture
 			Logger.services.info("Device links import: \(importedCount, privacy: .public) short codes imported")
 			try? context.save()
 		}
+	}
+
+	/// Load the msh.to URL catalog from the API, falling back to the bundled `urls.json`
+	/// when the network is unavailable (e.g. first launch offline, or a connect with no
+	/// internet). Both share the new `{ Routes, Marketplaces }` shape.
+	private func loadMshToUrls() async -> MshToUrlsFile? {
+		if let url = URL(string: "https://msh.to/api/urls") {
+			var request = URLRequest(url: url)
+			request.timeoutInterval = 15
+			request.cachePolicy = .reloadRevalidatingCacheData
+			if let (data, response) = try? await URLSession.shared.data(for: request),
+			   let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+			   let decoded = try? JSONDecoder().decode(MshToUrlsFile.self, from: data) {
+				Logger.services.info("Loaded msh.to urls from API (\(decoded.routes.count, privacy: .public) routes)")
+				return decoded
+			}
+			Logger.services.warning("msh.to API fetch failed; falling back to bundled urls.json")
+		}
+
+		guard let bundledURL = Bundle.main.url(forResource: "urls", withExtension: "json"),
+			  let data = try? Data(contentsOf: bundledURL),
+			  let decoded = try? JSONDecoder().decode(MshToUrlsFile.self, from: data) else {
+			return nil
+		}
+		Logger.services.info("Loaded msh.to urls from bundled urls.json (\(decoded.routes.count, privacy: .public) routes)")
+		return decoded
 	}
 	
 	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType, context: ModelContext) {
