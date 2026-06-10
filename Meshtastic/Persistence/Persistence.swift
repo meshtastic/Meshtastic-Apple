@@ -30,8 +30,44 @@ class PersistenceController {
 
 	private(set) var container: ModelContainer
 
+	/// Remembered so the store can be reopened in a fresh container — see `recreateContainer()`.
+	private let storeName: String
+	private let inMemory: Bool
+
 	var context: ModelContext {
 		container.mainContext
+	}
+
+	/// Reopen the (already-migrated) store in a brand-new `ModelContainer`, replacing `container`.
+	///
+	/// Used after a full data clear so every context — the main context and any actor contexts
+	/// built from the container — starts with no stale object registrations. Without this, a
+	/// long-lived context keeps the pre-clear objects registered; on reconnect SQLite reuses the
+	/// freed rowids, so a fetch/relationship access returns a dead instance and SwiftData traps
+	/// with "This model instance was destroyed by calling ModelContext.reset".
+	func recreateContainer() {
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let config = ModelConfiguration(
+			storeName,
+			schema: schema,
+			isStoredInMemoryOnly: inMemory,
+			allowsSave: true
+		)
+		do {
+			// Mirror init()'s open logic: on-disk stores go through the migration plan so a
+			// reopen behaves identically to launch if a schema migration ever applies here.
+			let fresh: ModelContainer
+			if inMemory {
+				fresh = try ModelContainer(for: schema, configurations: config)
+			} else {
+				fresh = try ModelContainer(for: schema, migrationPlan: MeshtasticMigrationPlan.self, configurations: config)
+			}
+			fresh.mainContext.autosaveEnabled = false
+			container = fresh
+			Logger.data.info("💾 SwiftData container recreated after data clear")
+		} catch {
+			Logger.data.error("💾 Failed to recreate SwiftData container: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	private static func removeStoreFiles(at storeURL: URL) {
@@ -52,6 +88,8 @@ class PersistenceController {
 	}
 
 	init(inMemory: Bool = false, storeName: String = "Meshtastic") {
+		self.storeName = storeName
+		self.inMemory = inMemory
 		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 

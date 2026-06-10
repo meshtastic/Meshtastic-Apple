@@ -73,9 +73,13 @@ actor MeshPackets {
 		let metricsType: Int32
 	}
 
-	private static let _container: ModelContainer = {
+	/// Always the current shared container. Computed (not cached) so that after a data clear
+	/// recreates the container, the next `recreateShared()` rebuilds the actor on the new one
+	/// rather than a stale, torn-down container. Only read on the main actor (recreateShared and
+	/// the initial `_shared` are both reached from @MainActor code).
+	private static var _container: ModelContainer {
 		MainActor.assumeIsolated { PersistenceController.shared.container }
-	}()
+	}
 
 	/// The current shared instance. Access via `MeshPackets.shared`.
 	/// Periodically recreated to release accumulated ModelContext memory.
