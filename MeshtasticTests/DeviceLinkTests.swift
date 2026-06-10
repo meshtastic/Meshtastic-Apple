@@ -7,132 +7,93 @@ import Testing
 import Foundation
 @testable import Meshtastic
 
-@Suite("DeviceLinkEntity Tests")
+@Suite("DeviceLink Tests")
 struct DeviceLinkTests {
 
-	// MARK: - T006: JSON Decoding
+	// MARK: - JSON decoding (new msh.to API / bundled format)
 
-	@Test("Decodes urls.json from bundle successfully")
+	@Test("Decodes bundled urls.json with Routes and Marketplaces")
 	func testBundledJsonDecodes() throws {
 		let url = try #require(Bundle.main.url(forResource: "urls", withExtension: "json"))
 		let data = try Data(contentsOf: url)
-		let decoded = try JSONDecoder().decode(TestMshToUrlsFile.self, from: data)
+		let decoded = try JSONDecoder().decode(MshToUrlsFile.self, from: data)
 		#expect(decoded.routes.count > 0)
+		#expect(!decoded.marketplaces.isEmpty)
 	}
 
-	@Test("Decodes sample JSON structure correctly")
+	@Test("Decodes Type and Targets from sample JSON")
 	func testSampleJsonDecoding() throws {
 		let json = """
 		{
-			"Routes": [
-				{"ShortCode": "test-device", "OriginalUrl": "https://example.com/device", "Description": "Test Device"},
-				{"ShortCode": "no-desc", "OriginalUrl": "https://example.com/other"}
-			]
+		  "Routes": [
+		    {"ShortCode": "rak4631", "Description": "RAK 4631", "Type": "Vendor", "Targets": ["rak4631"]},
+		    {"ShortCode": "rokland-rak4631", "Description": "Rokland RAK 4631", "Type": "Marketplace", "Targets": ["rak4631"]},
+		    {"ShortCode": "github", "Description": "GitHub", "Type": "Internal"}
+		  ],
+		  "Marketplaces": { "rokland": { "Regions": ["US", "CA"] }, "aliexpress": { "Regions": [] } }
 		}
 		""".data(using: .utf8)!
 
-		let decoded = try JSONDecoder().decode(TestMshToUrlsFile.self, from: json)
-		#expect(decoded.routes.count == 2)
-		#expect(decoded.routes[0].shortCode == "test-device")
-		#expect(decoded.routes[0].originalUrl == "https://example.com/device")
-		#expect(decoded.routes[0].description == "Test Device")
-		#expect(decoded.routes[1].description == nil)
+		let decoded = try JSONDecoder().decode(MshToUrlsFile.self, from: json)
+		#expect(decoded.routes.count == 3)
+		#expect(decoded.routes[0].type == .vendor)
+		#expect(decoded.routes[0].targets == ["rak4631"])
+		#expect(decoded.routes[1].type == .marketplace)
+		#expect(decoded.routes[2].type == .internalLink)
+		#expect(decoded.routes[2].targets.isEmpty)
+		#expect(decoded.marketplaces["rokland"]?.regions == ["US", "CA"])
+		#expect(decoded.marketplaces["aliexpress"]?.regions.isEmpty == true)
 	}
 
-	@Test("Skips entries with invalid URLs")
-	func testInvalidUrlSkipped() {
-		let invalidUrl = "not a url %%"
-		let result = URL(string: invalidUrl)
-		#expect(result == nil)
-	}
-
-	// MARK: - T007: Substring Matching
-
-	@Test("ShortCode containing hwModelSlug matches")
-	func testSubstringMatching() {
-		let slug = "rak4631"
-		let shortCodes = ["rokland-rak4631", "hexaspot-4631", "aliexpress-rak4631", "github", "youtube"]
-		let matches = shortCodes.filter { $0.lowercased().contains(slug.lowercased()) }
-		#expect(matches.count == 2)
-		#expect(matches.contains("rokland-rak4631"))
-		#expect(matches.contains("aliexpress-rak4631"))
-	}
-
-	@Test("Case-insensitive matching works")
-	func testCaseInsensitiveMatching() {
-		let slug = "RAK4631"
-		let shortCode = "rokland-rak4631"
-		#expect(shortCode.lowercased().contains(slug.lowercased()))
-	}
-
-	@Test("Empty slug does not match anything")
-	func testEmptySlugNoMatch() {
-		let slug = ""
-		let shortCodes = ["rokland-rak4631", "github"]
-		// Empty slug should be excluded before matching
-		#expect(slug.isEmpty)
-	}
-
-	// MARK: - T008: Vendor Priority Sorting
-
-	@Test("Manufacturer domains get priority 0")
-	func testManufacturerPriority() {
-		#expect(DeviceLinkEntity.computePriority(for: "rakwireless.com") == 0)
-		#expect(DeviceLinkEntity.computePriority(for: "store.heltec.org") == 0)
-		#expect(DeviceLinkEntity.computePriority(for: "www.lilygo.cc") == 0)
-		#expect(DeviceLinkEntity.computePriority(for: "www.seeedstudio.com") == 0)
-	}
-
-	@Test("Marketplace domains get priority 2")
-	func testMarketplacePriority() {
-		#expect(DeviceLinkEntity.computePriority(for: "aliexpress.com") == 2)
-		#expect(DeviceLinkEntity.computePriority(for: "www.amazon.com") == 2)
-	}
-
-	@Test("Regional retailers get priority based on locale")
-	func testRegionalPriority() {
-		// rokland.com is US regional
-		let priority = DeviceLinkEntity.computePriority(for: "rokland.com")
-		let region = Locale.current.region?.identifier ?? ""
-		if region == "US" {
-			#expect(priority == 1)
-		} else {
-			#expect(priority == 2)
+	@Test("Unknown or missing Type falls back to Internal")
+	func testUnknownTypeFallsBackToInternal() throws {
+		let json = """
+		{
+		  "Routes": [
+		    {"ShortCode": "future", "Type": "Wholesaler", "Targets": ["x"]},
+		    {"ShortCode": "legacy", "Description": "No type field"}
+		  ],
+		  "Marketplaces": {}
 		}
+		""".data(using: .utf8)!
+
+		let decoded = try JSONDecoder().decode(MshToUrlsFile.self, from: json)
+		#expect(decoded.routes[0].type == .internalLink)
+		#expect(decoded.routes[1].type == .internalLink)
+		#expect(decoded.routes[1].targets.isEmpty)
 	}
 
-	@Test("Unknown domains get priority 99")
-	func testUnknownDomainPriority() {
-		#expect(DeviceLinkEntity.computePriority(for: "example.com") == 99)
-		#expect(DeviceLinkEntity.computePriority(for: nil) == 99)
+	// MARK: - Device association via Targets
+
+	@Test("A link matches a device only when its Targets contain the platformioTarget")
+	func testTargetMatching() {
+		let vendor = DeviceLinkEntity(shortCode: "rak4631", isVendor: true, targets: ["rak4631"])
+		let otherVendor = DeviceLinkEntity(shortCode: "heltec-v3", isVendor: true, targets: ["heltec_v3"])
+		#expect(vendor.targets.contains("rak4631"))
+		#expect(!otherVendor.targets.contains("rak4631"))
 	}
 
-	@Test("Links sort by vendor priority")
-	func testPrioritySorting() {
-		let priorities = [2, 0, 99, 1, 0]
-		let sorted = priorities.sorted()
-		#expect(sorted == [0, 0, 1, 2, 99])
+	@Test("Internal links have no targets and match no device")
+	func testInternalLinkMatchesNothing() {
+		let internalLink = DeviceLinkEntity(shortCode: "github", targets: [])
+		#expect(internalLink.targets.isEmpty)
+		#expect(!internalLink.targets.contains("rak4631"))
 	}
-}
 
-// MARK: - Test Helpers (mirror private structs for testing)
+	// MARK: - Marketplace region filtering
 
-private struct TestMshToUrlsFile: Codable {
-	let routes: [TestMshToRoute]
-
-	enum CodingKeys: String, CodingKey {
-		case routes = "Routes"
+	@Test("Marketplace with regions only ships to listed countries")
+	func testRegionFiltering() {
+		let mp = DeviceLinkEntity(shortCode: "rokland-rak4631", isMarketplace: true, targets: ["rak4631"], regions: ["US", "CA"])
+		#expect(mp.regions?.contains("US") == true)
+		#expect(mp.regions?.contains("DE") == false)
 	}
-}
 
-private struct TestMshToRoute: Codable {
-	let shortCode: String
-	let originalUrl: String
-	let description: String?
-
-	enum CodingKeys: String, CodingKey {
-		case shortCode = "ShortCode"
-		case originalUrl = "OriginalUrl"
-		case description = "Description"
+	@Test("Worldwide marketplace has empty regions; vendor has nil regions")
+	func testRegionSemantics() {
+		let worldwide = DeviceLinkEntity(shortCode: "aliexpress-rak4631", isMarketplace: true, targets: ["rak4631"], regions: [])
+		let vendor = DeviceLinkEntity(shortCode: "rak4631", isVendor: true, targets: ["rak4631"], regions: nil)
+		#expect(worldwide.regions?.isEmpty == true)
+		#expect(vendor.regions == nil)
 	}
 }
