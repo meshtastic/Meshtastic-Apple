@@ -111,14 +111,19 @@ final class NodeFilterParameters: ObservableObject {
 		(viaLora && !viaMqtt) || (!viaLora && viaMqtt)
 	}
 
+	/// Fallback origin for distance filtering when the phone's location services are
+	/// unavailable. Set by the owning view to the connected device's last known position.
+	@Published var fallbackLocation: CLLocationCoordinate2D?
+
 	var currentDistanceBounds: NodeDistanceFilterBounds? {
-		guard distanceFilter,
-			  let pointOfInterest = LocationsHandler.currentLocation,
-			  pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude,
-			  pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude else {
+		guard distanceFilter else { return nil }
+		let center = LocationsHandler.currentLocation ?? fallbackLocation
+		guard let center,
+			  center.latitude != LocationsHandler.DefaultLocation.latitude,
+			  center.longitude != LocationsHandler.DefaultLocation.longitude else {
 			return nil
 		}
-		return NodeDistanceFilterBounds(center: pointOfInterest, maxDistance: maxDistance)
+		return NodeDistanceFilterBounds(center: center, maxDistance: maxDistance)
 	}
 
 	var currentPreciseDistanceBounds: NodeDistanceFilterBounds? {

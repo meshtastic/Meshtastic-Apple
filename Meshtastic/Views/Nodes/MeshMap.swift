@@ -59,6 +59,13 @@ struct MeshMap: View {
 	/// Track whether a detached Mesh Map window is currently open.
 	@State private var isMapWindowOpen = false
 
+	/// The connected device's latest coordinate, used as a fallback origin
+	/// for distance filtering when the phone's location services are unavailable.
+	private var activeDeviceCoordinate: CLLocationCoordinate2D? {
+		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		return getNodeInfo(id: num, context: context)?.latestPosition?.nodeCoordinate
+	}
+
 	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true })
 	private var allLatestPositions: [PositionEntity]
 
@@ -344,9 +351,17 @@ struct MeshMap: View {
 		}
 			.onChange(of: positionState.key) {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
+				filters.fallbackLocation = activeDeviceCoordinate
+			}
+			.onChange(of: allLatestPositions) {
+				filters.fallbackLocation = activeDeviceCoordinate
+			}
+			.onChange(of: accessoryManager.activeDeviceNum) {
+				filters.fallbackLocation = activeDeviceCoordinate
 			}
 			.onAppear {
 				UIApplication.shared.isIdleTimerDisabled = true
+				filters.fallbackLocation = activeDeviceCoordinate
 				refreshMapWindowOpenState()
 			// Initialize enabled overlay configs with all active files
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
@@ -371,6 +386,7 @@ struct MeshMap: View {
 		})
 		.onChange(of: router.selectedTab) { _, newTab in
 			if newTab == .map {
+				filters.fallbackLocation = activeDeviceCoordinate
 				refreshMapWindowOpenState()
 				UIApplication.shared.isIdleTimerDisabled = true
 				refreshVisiblePositionSnapshots()
