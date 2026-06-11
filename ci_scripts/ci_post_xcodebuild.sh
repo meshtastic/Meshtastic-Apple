@@ -15,8 +15,10 @@ fi
 DSYM_DIR="$CI_ARCHIVE_PATH/dSYMs"
 
 if [ ! -d "$DSYM_DIR" ]; then
-	echo "No dSYMs directory found at $DSYM_DIR — skipping upload."
-	exit 0
+	echo "❌ ERROR: this is an archive ($CI_ARCHIVE_PATH) but there is no dSYMs directory at $DSYM_DIR."
+	echo "   Crashes from this build would be unsymbolicated. Failing the build so it is caught now."
+	echo "   Check the Release config uses DEBUG_INFORMATION_FORMAT = dwarf-with-dsym."
+	exit 1
 fi
 
 DSYM_COUNT=$(find "$DSYM_DIR" -name "*.dSYM" -type d | wc -l | tr -d ' ')
@@ -26,14 +28,17 @@ find "$DSYM_DIR" -name "*.dSYM" -type d | while read -r dsym; do
 done
 
 if [ "$DSYM_COUNT" -eq 0 ]; then
-	echo "No dSYM files to upload."
-	exit 0
+	echo "❌ ERROR: this is an archive but found 0 dSYM bundles in $DSYM_DIR."
+	echo "   Crashes from this build would be unsymbolicated. Failing the build so it is caught now."
+	exit 1
 fi
 
 if [ -z "$DATADOG_API_KEY" ]; then
-	echo "WARNING: DATADOG_API_KEY is not set — skipping dSYM upload."
-	echo "Configure it as a secret in Xcode Cloud workflow environment variables."
-	exit 0
+	echo "❌ ERROR: DATADOG_API_KEY is not set, but this is an archive build with $DSYM_COUNT dSYM bundle(s)."
+	echo "   dSYMs will NOT upload and crashes will be unsymbolicated. Failing the build so it is caught now."
+	echo "   Fix: add a secret named exactly DATADOG_API_KEY to the Xcode Cloud workflow"
+	echo "   (App Store Connect → Xcode Cloud → Workflow → Environment), and ensure it is available to the Archive action."
+	exit 1
 fi
 
 # Install datadog-ci if not already present.
