@@ -82,10 +82,10 @@ struct Channels: View {
 		guard let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) else {
 			return "LongFast"
 		}
-		return preset.name
+		return preset.androidChannelName
 	}
 
-	private var channelFrequencySummary: ChannelFrequencySummary {
+	private var channelFrequencySummary: ChannelFrequencySummary? {
 		ChannelFrequencySummary(loRaConfig: node.loRaConfig, primaryChannelName: primaryChannelName)
 	}
 
@@ -114,8 +114,9 @@ struct Channels: View {
 					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 					.listRowSeparator(.hidden)
 				if node.myInfo != nil {
-					ChannelConfigSummaryRow(summary: channelFrequencySummary)
-					ChannelFeatureLegendRow()
+					if let channelFrequencySummary {
+						ChannelConfigSummaryRow(summary: channelFrequencySummary)
+					}
 					ForEach(displayChannels, id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
 							channelIndex = channel.index
@@ -468,56 +469,13 @@ private struct ChannelConfigSummaryRow: View {
 	let summary: ChannelFrequencySummary
 
 	var body: some View {
-		VStack(alignment: .leading, spacing: 8) {
-			HStack {
-				Label("Current radio", systemImage: "antenna.radiowaves.left.and.right")
-					.font(.headline)
-				Spacer()
-				Text(summary.regionName)
-					.font(.caption)
-					.foregroundStyle(.secondary)
-			}
-			HStack(spacing: 12) {
-				ChannelSummaryChip(title: "Freq", value: summary.frequencyText, systemImage: "waveform.path")
-				ChannelSummaryChip(title: "Slot", value: summary.slotText, systemImage: "number")
-			}
-		}
-		.padding(.vertical, 4)
-		.accessibilityElement(children: .combine)
-	}
-}
-
-private struct ChannelSummaryChip: View {
-	let title: String
-	let value: String
-	let systemImage: String
-
-	var body: some View {
-		Label {
-			VStack(alignment: .leading, spacing: 2) {
-				Text(title)
-					.font(.caption2)
-					.foregroundStyle(.secondary)
-				Text(value)
-					.font(.subheadline.monospacedDigit())
-					.foregroundStyle(.primary)
-			}
-		} icon: {
-			Image(systemName: systemImage)
-				.foregroundStyle(.accent)
-		}
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.padding(10)
-		.background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-	}
-}
-
-private struct ChannelFeatureLegendRow: View {
-	var body: some View {
-		HStack(spacing: 12) {
-			ChannelStatusBadge(systemImage: "location.fill", title: "Position", tint: .green)
-			ChannelStatusBadge(systemImage: "icloud.and.arrow.up", title: "Uplink", tint: .blue)
-			ChannelStatusBadge(systemImage: "icloud.and.arrow.down", title: "Downlink", tint: .blue)
+		HStack(spacing: 8) {
+			Image(systemName: "antenna.radiowaves.left.and.right")
+				.foregroundStyle(.secondary)
+			Text(summary.regionName)
+			Spacer(minLength: 8)
+			Text("\(summary.frequencyText) · Slot \(summary.slotText)")
+				.monospacedDigit()
 		}
 		.font(.caption)
 		.foregroundStyle(.secondary)
@@ -548,10 +506,11 @@ private struct ChannelRow: View {
 	}
 
 	var body: some View {
-		HStack(alignment: .center, spacing: 12) {
+		HStack(alignment: .center, spacing: 10) {
 			CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
+				.padding(.trailing, 5)
 				.brightness(0.1)
-			VStack(alignment: .leading, spacing: 6) {
+			VStack(alignment: .leading, spacing: 3) {
 				HStack(spacing: 6) {
 					ChannelLock(channel: channel)
 					Text(title)
@@ -561,41 +520,35 @@ private struct ChannelRow: View {
 				Text(subtitle)
 					.font(.caption)
 					.foregroundStyle(.secondary)
-				HStack(spacing: 8) {
-					if sharesLocation {
-						ChannelStatusBadge(systemImage: "location.fill", title: "Position", tint: .green)
-					}
-					if channel.uplinkEnabled {
-						ChannelStatusBadge(systemImage: "icloud.and.arrow.up", title: "Uplink", tint: .blue)
-					}
-					if channel.downlinkEnabled {
-						ChannelStatusBadge(systemImage: "icloud.and.arrow.down", title: "Downlink", tint: .blue)
-					}
-				}
-				.font(.caption)
 			}
 			Spacer(minLength: 0)
-			Image(systemName: "chevron.right")
-				.font(.caption.weight(.semibold))
-				.foregroundStyle(.tertiary)
+			HStack(spacing: 8) {
+				if sharesLocation {
+					ChannelStatusIcon(systemImage: "location.fill", color: .green, accessibilityLabel: "Position sharing")
+				}
+				if channel.uplinkEnabled {
+					ChannelStatusIcon(systemImage: "icloud.and.arrow.up", color: .blue, accessibilityLabel: "MQTT uplink enabled")
+				}
+				if channel.downlinkEnabled {
+					ChannelStatusIcon(systemImage: "icloud.and.arrow.down", color: .blue, accessibilityLabel: "MQTT downlink enabled")
+				}
+			}
 		}
 		.padding(.vertical, 4)
 		.accessibilityElement(children: .combine)
 	}
 }
 
-private struct ChannelStatusBadge: View {
+private struct ChannelStatusIcon: View {
 	let systemImage: String
-	let title: String
-	let tint: Color
+	let color: Color
+	let accessibilityLabel: String
 
 	var body: some View {
-		Label(title, systemImage: systemImage)
-			.labelStyle(.titleAndIcon)
-			.foregroundStyle(tint)
-			.padding(.horizontal, 8)
-			.padding(.vertical, 4)
-			.background(tint.opacity(0.12), in: Capsule())
+		Image(systemName: systemImage)
+			.font(.caption)
+			.foregroundStyle(color)
+			.accessibilityLabel(accessibilityLabel)
 	}
 }
 
@@ -604,12 +557,9 @@ private struct ChannelFrequencySummary {
 	let slotText: String
 	let regionName: String
 
-	init(loRaConfig: LoRaConfigEntity?, primaryChannelName: String) {
+	init?(loRaConfig: LoRaConfigEntity?, primaryChannelName: String) {
 		guard let loRaConfig else {
-			frequencyText = "Unknown"
-			slotText = "Unknown"
-			regionName = "LoRa config unavailable"
-			return
+			return nil
 		}
 		let calculator = LoRaChannelCalculator(config: loRaConfig)
 		let slot = calculator.effectiveChannelSlot(primaryName: primaryChannelName)
@@ -650,12 +600,12 @@ private struct LoRaChannelCalculator {
 	func radioFrequencyMHz(slot: Int) -> Double {
 		guard let config else { return 0 }
 		if config.overrideFrequency != 0 {
-			return Double(config.overrideFrequency + config.frequencyOffset)
+			return Double(config.overrideFrequency)
 		}
 		guard let region else { return 0 }
 		let bandwidth = bandwidthMHz(region: region)
 		guard bandwidth > 0, slot > 0 else { return 0 }
-		return region.freqStart + bandwidth / 2 + Double(slot - 1) * bandwidth + Double(config.frequencyOffset)
+		return region.freqStart + bandwidth / 2 + Double(slot - 1) * bandwidth
 	}
 
 	private func numChannels() -> Int {
@@ -779,6 +729,15 @@ private struct RegionInfo {
 }
 
 private extension ModemPresets {
+	var androidChannelName: String {
+		switch self {
+		case .longModerate:
+			return "LongMod"
+		default:
+			return name
+		}
+	}
+
 	var bandwidthMHz: Double {
 		switch self {
 		case .longTurbo, .shortTurbo:
