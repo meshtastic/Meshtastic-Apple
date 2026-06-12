@@ -585,6 +585,26 @@ public struct AdminMessage: @unchecked Sendable {
   }
 
   ///
+  /// Start or stop the audible find-node pattern.
+  public var findNodeRequest: AdminMessage.FindNodeRequest {
+    get {
+      if case .findNodeRequest(let v)? = _storage._payloadVariant {return v}
+      return AdminMessage.FindNodeRequest()
+    }
+    set {_uniqueStorage()._payloadVariant = .findNodeRequest(newValue)}
+  }
+
+  ///
+  /// Result of a find-node request.
+  public var findNodeResponse: AdminMessage.FindNodeResponse {
+    get {
+      if case .findNodeResponse(let v)? = _storage._payloadVariant {return v}
+      return AdminMessage.FindNodeResponse()
+    }
+    set {_uniqueStorage()._payloadVariant = .findNodeResponse(newValue)}
+  }
+
+  ///
   /// Tell the node to factory reset config everything; all device state and configuration will be returned to factory defaults and BLE bonds will be cleared.
   public var factoryResetDevice: Int32 {
     get {
@@ -855,6 +875,12 @@ public struct AdminMessage: @unchecked Sendable {
     ///
     /// Initiate or respond to a key verification request
     case keyVerification(KeyVerificationAdmin)
+    ///
+    /// Start or stop the audible find-node pattern.
+    case findNodeRequest(AdminMessage.FindNodeRequest)
+    ///
+    /// Result of a find-node request.
+    case findNodeResponse(AdminMessage.FindNodeResponse)
     ///
     /// Tell the node to factory reset config everything; all device state and configuration will be returned to factory defaults and BLE bonds will be cleared.
     case factoryResetDevice(Int32)
@@ -1229,6 +1255,88 @@ public struct AdminMessage: @unchecked Sendable {
     public init() {}
   }
 
+  ///
+  /// Request that the node emit an audible find-node pattern.
+  public struct FindNodeRequest: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Duration to repeat the find-node pattern. Zero uses the firmware default.
+    public var durationSeconds: UInt32 = 0
+
+    ///
+    /// Stop any active find-node pattern instead of starting a new one.
+    public var stop: Bool = false
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  ///
+  /// Response to a find-node request.
+  public struct FindNodeResponse: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Result of the request.
+    public var result: AdminMessage.FindNodeResponse.Result = .started
+
+    ///
+    /// Accepted duration in seconds. Zero for stop or failed requests.
+    public var durationSeconds: UInt32 = 0
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public enum Result: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+      case started // = 0
+      case stopped // = 1
+      case noBuzzer // = 2
+      case buzzerDisabled // = 3
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .started
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .started
+        case 1: self = .stopped
+        case 2: self = .noBuzzer
+        case 3: self = .buzzerDisabled
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .started: return 0
+        case .stopped: return 1
+        case .noBuzzer: return 2
+        case .buzzerDisabled: return 3
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [AdminMessage.FindNodeResponse.Result] = [
+        .started,
+        .stopped,
+        .noBuzzer,
+        .buzzerDisabled,
+      ]
+
+    }
+
+    public init() {}
+  }
+
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
@@ -1278,6 +1386,67 @@ public struct LockdownAuth: Sendable {
   /// connection-level admin authorization, and reboot the device into
   /// the locked state. Always honoured regardless of current lock state.
   public var lockNow: Bool = false
+
+  ///
+  /// Optional per-boot uptime cap on the unlocked session, in seconds.
+  /// 0 = unlimited (token-only enforcement, suitable for unattended
+  /// tower / infrastructure nodes).
+  ///
+  /// When non-zero, the firmware arms an uptime timer at unlock. On
+  /// each expiry, while there is still boot-count budget, the firmware
+  /// decrements the on-flash boot count in place, revokes per-
+  /// connection admin auth (clients must re-authenticate to see
+  /// content), re-engages the screen lock, and re-arms the timer
+  /// without rebooting. Mesh routing keeps running across session
+  /// boundaries; only when the boot-count budget reaches zero does
+  /// the device hard-lock and reboot.
+  ///
+  /// Total exposure ceiling = ((resolved boot count) + 1) * max_session_seconds.
+  /// The +1 accounts for the initial passphrase-unlocked session
+  /// itself, since boots_remaining is the number of subsequent
+  /// session rolls (each consuming one boot from the rollback ledger).
+  /// The resolved boot count is the value the firmware writes into the
+  /// token at unlock time: the client-supplied boots_remaining when
+  /// non-zero, otherwise the firmware default (TOKEN_DEFAULT_BOOTS).
+  /// Note that boots_remaining == 0 in this message means "use firmware
+  /// default", NOT "zero boots" — a client computing the ceiling for
+  /// display should mirror that resolution rather than multiplying the
+  /// raw request value.
+  ///
+  /// The cap is persisted in the token, so it survives token-based
+  /// auto-unlock across reboots. Explicit operator Lock Now still
+  /// deletes the token and forces passphrase re-entry.
+  ///
+  /// Uses millis() (CPU uptime), not wall-clock time, so the cap is
+  /// immune to GPS spoofing, RTC backup-battery removal, and Faraday
+  /// cage isolation — none of those move the uptime counter. The only
+  /// way to reset the session clock is a reboot, which costs a boot
+  /// from the on-flash, HMAC-bound counter.
+  public var maxSessionSeconds: UInt32 = 0
+
+  ///
+  /// Disable lockdown mode. Requires a valid passphrase in the same
+  /// message (the device must prove the operator owns it before
+  /// reverting at-rest encryption). On success the firmware decrypts
+  /// every stored config / channel / nodedb file back to plaintext,
+  /// removes the wrapped DEK, unlock token, monotonic-counter, and
+  /// backoff files, and reboots out of lockdown.
+  ///
+  /// This is the inverse of the provision/unlock path: it is how the
+  /// client app's "lockdown mode" toggle returns a device to normal
+  /// operation.
+  ///
+  /// NOT reversed by this operation: APPROTECT. Once the debug port
+  /// lockout has been burned (on silicon where it is effective) it is
+  /// permanent — disabling lockdown decrypts your data and removes the
+  /// access gates, but the SWD/JTAG port stays locked for the life of
+  /// the device (recoverable only via a full chip erase over a debug
+  /// probe, which destroys all data). Clients should make this
+  /// irreversibility clear at the moment lockdown is first enabled.
+  ///
+  /// When true the passphrase field is still required; boots_remaining,
+  /// valid_until_epoch, max_session_seconds, and lock_now are ignored.
+  public var disable: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1762,7 +1931,7 @@ extension OTAMode: SwiftProtobuf._ProtoNameProviding {
 
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{4}\u{f}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0\u{3}lockdown_auth\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{4}\u{f}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{3}find_node_request\0\u{3}find_node_response\0\u{4}\u{19}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0\u{3}lockdown_auth\0")
 
   fileprivate class _StorageClass {
     var _sessionPasskey: Data = Data()
@@ -2271,6 +2440,32 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
             _storage._payloadVariant = .keyVerification(v)
           }
         }()
+        case 68: try {
+          var v: AdminMessage.FindNodeRequest?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .findNodeRequest(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .findNodeRequest(v)
+          }
+        }()
+        case 69: try {
+          var v: AdminMessage.FindNodeResponse?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .findNodeResponse(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .findNodeResponse(v)
+          }
+        }()
         case 94: try {
           var v: Int32?
           try decoder.decodeSingularInt32Field(value: &v)
@@ -2572,6 +2767,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         guard case .keyVerification(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 67)
       }()
+      case .findNodeRequest?: try {
+        guard case .findNodeRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 68)
+      }()
+      case .findNodeResponse?: try {
+        guard case .findNodeResponse(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 69)
+      }()
       case .factoryResetDevice?: try {
         guard case .factoryResetDevice(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularInt32Field(value: v, fieldNumber: 94)
@@ -2732,9 +2935,83 @@ extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
+extension AdminMessage.FindNodeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = AdminMessage.protoMessageName + ".FindNodeRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}duration_seconds\0\u{1}stop\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.durationSeconds) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.stop) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.durationSeconds != 0 {
+      try visitor.visitSingularUInt32Field(value: self.durationSeconds, fieldNumber: 1)
+    }
+    if self.stop != false {
+      try visitor.visitSingularBoolField(value: self.stop, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: AdminMessage.FindNodeRequest, rhs: AdminMessage.FindNodeRequest) -> Bool {
+    if lhs.durationSeconds != rhs.durationSeconds {return false}
+    if lhs.stop != rhs.stop {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension AdminMessage.FindNodeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = AdminMessage.protoMessageName + ".FindNodeResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}result\0\u{3}duration_seconds\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.result) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.durationSeconds) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.result != .started {
+      try visitor.visitSingularEnumField(value: self.result, fieldNumber: 1)
+    }
+    if self.durationSeconds != 0 {
+      try visitor.visitSingularUInt32Field(value: self.durationSeconds, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: AdminMessage.FindNodeResponse, rhs: AdminMessage.FindNodeResponse) -> Bool {
+    if lhs.result != rhs.result {return false}
+    if lhs.durationSeconds != rhs.durationSeconds {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension AdminMessage.FindNodeResponse.Result: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0STARTED\0\u{1}STOPPED\0\u{1}NO_BUZZER\0\u{1}BUZZER_DISABLED\0")
+}
+
 extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LockdownAuth"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}passphrase\0\u{3}boots_remaining\0\u{3}valid_until_epoch\0\u{3}lock_now\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}passphrase\0\u{3}boots_remaining\0\u{3}valid_until_epoch\0\u{3}lock_now\0\u{3}max_session_seconds\0\u{1}disable\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2746,6 +3023,8 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.bootsRemaining) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.validUntilEpoch) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.lockNow) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.maxSessionSeconds) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.disable) }()
       default: break
       }
     }
@@ -2764,6 +3043,12 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if self.lockNow != false {
       try visitor.visitSingularBoolField(value: self.lockNow, fieldNumber: 4)
     }
+    if self.maxSessionSeconds != 0 {
+      try visitor.visitSingularUInt32Field(value: self.maxSessionSeconds, fieldNumber: 5)
+    }
+    if self.disable != false {
+      try visitor.visitSingularBoolField(value: self.disable, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2772,6 +3057,8 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if lhs.bootsRemaining != rhs.bootsRemaining {return false}
     if lhs.validUntilEpoch != rhs.validUntilEpoch {return false}
     if lhs.lockNow != rhs.lockNow {return false}
+    if lhs.maxSessionSeconds != rhs.maxSessionSeconds {return false}
+    if lhs.disable != rhs.disable {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

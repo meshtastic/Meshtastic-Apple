@@ -120,6 +120,7 @@ extension NodeBackupManager {
 			dst.excludedModules = src.excludedModules
 			dst.firmwareVersion = src.firmwareVersion
 			dst.hasBluetooth = src.hasBluetooth
+			dst.hasBuzzer = src.hasBuzzer
 			dst.hasEthernet = src.hasEthernet
 			dst.hasWifi = src.hasWifi
 			dst.hwModel = src.hwModel

@@ -270,6 +270,39 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
+	public func sendFindNodeRequest(fromUser: UserEntity, toUser: UserEntity, durationSeconds: UInt32 = 0, stop: Bool = false) async throws -> Int64 {
+		var request = AdminMessage.FindNodeRequest()
+		request.durationSeconds = min(durationSeconds, 300)
+		request.stop = stop
+
+		var adminPacket = AdminMessage()
+		adminPacket.findNodeRequest = request
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let serializedData = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("sendFindNodeRequest: Unable to serialize Admin packet")
+		}
+		dataMessage.payload = serializedData
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		meshPacket.decoded = dataMessage
+
+		let action = stop ? "Stop Find Node" : "Find Node"
+		let messageDescription = "🔊 Sent \(action) Admin Message to: \(toUser.longName ?? "Unknown".localized) from: \(fromUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		return Int64(meshPacket.id)
+	}
+
 	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) async throws {
 		guard let fromUserNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")

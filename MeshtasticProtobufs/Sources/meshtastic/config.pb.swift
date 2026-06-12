@@ -1636,6 +1636,27 @@ public struct Config: Sendable {
       ///
       /// ITU Region 3 Amateur Radio 2m band (144-148 MHz)
       case itu32M // = 33
+
+      ///
+      /// ITU Region 1 Amateur Radio 70cm band (430-440 MHz)
+      case itu170Cm // = 34
+
+      ///
+      /// ITU Region 2 Amateur Radio 70cm band (420-450 MHz)
+      /// Note: Some countries do not allocate 420-430 MHz or 440-450 MHz.
+      /// Check local law!
+      case itu270Cm // = 35
+
+      ///
+      /// ITU Region 3 Amateur Radio 70cm band (430-450 MHz)
+      /// Note: Some countries do not allocate 440-450 MHz. Check local law!
+      case itu370Cm // = 36
+
+      ///
+      /// ITU Region 2 Amateur Radio 1.25m '125cm' band (220-225 MHz)
+      /// Note: Some countries do not allocate 220-222 MHz (Ex: USA/Canada).
+      /// Check local law!
+      case itu2125Cm // = 37
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1678,6 +1699,10 @@ public struct Config: Sendable {
         case 31: self = .eu917
         case 32: self = .euN868
         case 33: self = .itu32M
+        case 34: self = .itu170Cm
+        case 35: self = .itu270Cm
+        case 36: self = .itu370Cm
+        case 37: self = .itu2125Cm
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1718,6 +1743,10 @@ public struct Config: Sendable {
         case .eu917: return 31
         case .euN868: return 32
         case .itu32M: return 33
+        case .itu170Cm: return 34
+        case .itu270Cm: return 35
+        case .itu370Cm: return 36
+        case .itu2125Cm: return 37
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1758,6 +1787,10 @@ public struct Config: Sendable {
         .eu917,
         .euN868,
         .itu32M,
+        .itu170Cm,
+        .itu270Cm,
+        .itu370Cm,
+        .itu2125Cm,
       ]
 
     }
@@ -1841,6 +1874,24 @@ public struct Config: Sendable {
       /// Moderate range preset optimized for EU 868MHz band with 62.5kHz bandwidth.
       /// Comparable link budget and data rate to LONG_FAST.
       case narrowSlow // = 13
+
+      ///
+      /// Tiny Fast
+      /// Preset optimized for compliance with Amateur Radio restrictions with 20kHz bandwidth.
+      /// Many regions limit data transmission bandwidth in lower amateur bands (2 Meter).
+      /// Note: TCXO with tight tolerances (±5 ppm or better) is *absolutely required* at these narrow bandwidths.
+      /// Only compatible with SX127x and SX126x chipsets.
+      /// Comparable link budget and data rate to LONG_FAST.
+      case tinyFast // = 14
+
+      ///
+      /// Tiny Slow
+      /// Preset optimized for compliance with Amateur Radio restrictions with 20kHz bandwidth.
+      /// Many regions limit data transmission bandwidth in lower amateur bands (2 Meter).
+      /// Note: TCXO with tight tolerances (±5 ppm or better) is *absolutely required* at these narrow bandwidths.
+      /// Only compatible with SX127x and SX126x chipsets.
+      /// Comparable link budget and data rate to LONG_MODERATE.
+      case tinySlow // = 15
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -1863,6 +1914,8 @@ public struct Config: Sendable {
         case 11: self = .liteSlow
         case 12: self = .narrowFast
         case 13: self = .narrowSlow
+        case 14: self = .tinyFast
+        case 15: self = .tinySlow
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1883,6 +1936,8 @@ public struct Config: Sendable {
         case .liteSlow: return 11
         case .narrowFast: return 12
         case .narrowSlow: return 13
+        case .tinyFast: return 14
+        case .tinySlow: return 15
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1903,6 +1958,8 @@ public struct Config: Sendable {
         .liteSlow,
         .narrowFast,
         .narrowSlow,
+        .tinyFast,
+        .tinySlow,
       ]
 
     }
@@ -3004,11 +3061,11 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 }
 
 extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}US\0\u{1}EU_433\0\u{1}EU_868\0\u{1}CN\0\u{1}JP\0\u{1}ANZ\0\u{1}KR\0\u{1}TW\0\u{1}RU\0\u{1}IN\0\u{1}NZ_865\0\u{1}TH\0\u{1}LORA_24\0\u{1}UA_433\0\u{1}UA_868\0\u{1}MY_433\0\u{1}MY_919\0\u{1}SG_923\0\u{1}PH_433\0\u{1}PH_868\0\u{1}PH_915\0\u{1}ANZ_433\0\u{1}KZ_433\0\u{1}KZ_863\0\u{1}NP_865\0\u{1}BR_902\0\u{1}ITU1_2M\0\u{1}ITU2_2M\0\u{1}EU_866\0\u{1}EU_874\0\u{1}EU_917\0\u{1}EU_N_868\0\u{1}ITU3_2M\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}US\0\u{1}EU_433\0\u{1}EU_868\0\u{1}CN\0\u{1}JP\0\u{1}ANZ\0\u{1}KR\0\u{1}TW\0\u{1}RU\0\u{1}IN\0\u{1}NZ_865\0\u{1}TH\0\u{1}LORA_24\0\u{1}UA_433\0\u{1}UA_868\0\u{1}MY_433\0\u{1}MY_919\0\u{1}SG_923\0\u{1}PH_433\0\u{1}PH_868\0\u{1}PH_915\0\u{1}ANZ_433\0\u{1}KZ_433\0\u{1}KZ_863\0\u{1}NP_865\0\u{1}BR_902\0\u{1}ITU1_2M\0\u{1}ITU2_2M\0\u{1}EU_866\0\u{1}EU_874\0\u{1}EU_917\0\u{1}EU_N_868\0\u{1}ITU3_2M\0\u{1}ITU1_70CM\0\u{1}ITU2_70CM\0\u{1}ITU3_70CM\0\u{1}ITU2_125CM\0")
 }
 
 extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LONG_FAST\0\u{1}LONG_SLOW\0\u{1}VERY_LONG_SLOW\0\u{1}MEDIUM_SLOW\0\u{1}MEDIUM_FAST\0\u{1}SHORT_SLOW\0\u{1}SHORT_FAST\0\u{1}LONG_MODERATE\0\u{1}SHORT_TURBO\0\u{1}LONG_TURBO\0\u{1}LITE_FAST\0\u{1}LITE_SLOW\0\u{1}NARROW_FAST\0\u{1}NARROW_SLOW\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LONG_FAST\0\u{1}LONG_SLOW\0\u{1}VERY_LONG_SLOW\0\u{1}MEDIUM_SLOW\0\u{1}MEDIUM_FAST\0\u{1}SHORT_SLOW\0\u{1}SHORT_FAST\0\u{1}LONG_MODERATE\0\u{1}SHORT_TURBO\0\u{1}LONG_TURBO\0\u{1}LITE_FAST\0\u{1}LITE_SLOW\0\u{1}NARROW_FAST\0\u{1}NARROW_SLOW\0\u{1}TINY_FAST\0\u{1}TINY_SLOW\0")
 }
 
 extension Config.LoRaConfig.FEM_LNA_Mode: SwiftProtobuf._ProtoNameProviding {

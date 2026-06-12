@@ -15,6 +15,7 @@ final class DeviceMetadataEntity {
 	var excludedModules: Int32 = 0
 	var firmwareVersion: String?
 	var hasBluetooth: Bool = false
+	var hasBuzzer: Bool = false
 	var hasEthernet: Bool = false
 	var hasWifi: Bool = false
 	var hwModel: String?

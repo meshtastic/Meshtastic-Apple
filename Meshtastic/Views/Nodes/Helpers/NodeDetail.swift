@@ -655,6 +655,13 @@ struct NodeDetail: View {
 					}
 					.disabled(administrationUserPair == nil)
 				}
+				if metadata.hasBuzzer {
+					FindNodeButton(
+						fromUser: administrationUserPair?.fromUser,
+						toUser: administrationUserPair?.toUser,
+						nodeName: node.user?.longName ?? "this node"
+					)
+				}
 				if metadata.canShutdown {
 					Button {
 						showingShutdownConfirm = true

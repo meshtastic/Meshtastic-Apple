@@ -1813,6 +1813,9 @@ public struct User: Sendable {
 
   ///
   /// A full name for this user, i.e. "Kevin Hester"
+  /// Limited to 24 bytes of UTF-8: longer names are accepted from senders
+  /// built against the older 39-byte limit, but devices truncate them before
+  /// storing or rebroadcasting. Clients should enforce 24 bytes in their UI.
   public var longName: String = String()
 
   ///
@@ -2175,6 +2178,10 @@ public struct DataMessage: Sendable {
   public var hasBitfield: Bool {return self._bitfield != nil}
   /// Clears the value of `bitfield`. Subsequent reads from it will return its default value.
   public mutating func clearBitfield() {self._bitfield = nil}
+
+  ///
+  /// XEdDSA signature for the payload
+  public var xeddsaSignature: Data = Data()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2807,6 +2814,13 @@ public struct MeshPacket: @unchecked Sendable {
     set {_uniqueStorage()._transportMechanism = newValue}
   }
 
+  ///
+  /// Indicates whether the packet has a valid signature
+  public var xeddsaSigned: Bool {
+    get {return _storage._xeddsaSigned}
+    set {_uniqueStorage()._xeddsaSigned = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_PayloadVariant: Equatable, Sendable {
@@ -3023,6 +3037,10 @@ public struct MeshPacket: @unchecked Sendable {
     ///
     /// Arrived via API connection
     case transportApi // = 7
+
+    ///
+    /// Arrived via Unicast UDP
+    case transportUnicastUdp // = 8
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -3039,6 +3057,7 @@ public struct MeshPacket: @unchecked Sendable {
       case 5: self = .transportMqtt
       case 6: self = .transportMulticastUdp
       case 7: self = .transportApi
+      case 8: self = .transportUnicastUdp
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -3053,6 +3072,7 @@ public struct MeshPacket: @unchecked Sendable {
       case .transportMqtt: return 5
       case .transportMulticastUdp: return 6
       case .transportApi: return 7
+      case .transportUnicastUdp: return 8
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -3067,6 +3087,7 @@ public struct MeshPacket: @unchecked Sendable {
       .transportMqtt,
       .transportMulticastUdp,
       .transportApi,
+      .transportUnicastUdp,
     ]
 
   }
@@ -3210,6 +3231,15 @@ public struct NodeInfo: @unchecked Sendable {
   public var isMuted: Bool {
     get {return _storage._isMuted}
     set {_uniqueStorage()._isMuted = newValue}
+  }
+
+  ///
+  /// True if node is signing its packets via XEdDSA
+  /// Persists between NodeDB internal clean ups
+  /// LSB 1 of the bitfield
+  public var hasXeddsaSigned_p: Bool {
+    get {return _storage._hasXeddsaSigned_p}
+    set {_uniqueStorage()._hasXeddsaSigned_p = newValue}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -3744,6 +3774,15 @@ public struct LockdownStatus: Sendable {
     ///
     /// Passphrase rejected. backoff_seconds is non-zero when rate-limited.
     case unlockFailed // = 4
+
+    ///
+    /// Lockdown is supported by this firmware but not currently active
+    /// (no passphrase has been provisioned, or it was disabled via
+    /// AdminMessage.lockdown_auth.disable). The device is operating in
+    /// normal, non-encrypted mode. Clients render the lockdown-mode
+    /// toggle as OFF on receiving this. Distinct from NEEDS_PROVISION,
+    /// which is only used during an in-progress enable flow.
+    case disabled // = 5
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -3757,6 +3796,7 @@ public struct LockdownStatus: Sendable {
       case 2: self = .locked
       case 3: self = .unlocked
       case 4: self = .unlockFailed
+      case 5: self = .disabled
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -3768,6 +3808,7 @@ public struct LockdownStatus: Sendable {
       case .locked: return 2
       case .unlocked: return 3
       case .unlockFailed: return 4
+      case .disabled: return 5
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -3779,6 +3820,7 @@ public struct LockdownStatus: Sendable {
       .locked,
       .unlocked,
       .unlockFailed,
+      .disabled,
     ]
 
   }
@@ -4213,6 +4255,10 @@ public struct DeviceMetadata: Sendable {
   /// Bit field of boolean for excluded modules
   /// (bitwise OR of ExcludedModules)
   public var excludedModules: UInt32 = 0
+
+  ///
+  /// Indicates that the device has a buzzer or audio output usable by the find-node command
+  public var hasBuzzer_p: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -4826,7 +4872,7 @@ extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
 
 extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Data"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}portnum\0\u{1}payload\0\u{3}want_response\0\u{1}dest\0\u{1}source\0\u{3}request_id\0\u{3}reply_id\0\u{1}emoji\0\u{1}bitfield\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}portnum\0\u{1}payload\0\u{3}want_response\0\u{1}dest\0\u{1}source\0\u{3}request_id\0\u{3}reply_id\0\u{1}emoji\0\u{1}bitfield\0\u{3}xeddsa_signature\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4843,6 +4889,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 7: try { try decoder.decodeSingularFixed32Field(value: &self.replyID) }()
       case 8: try { try decoder.decodeSingularFixed32Field(value: &self.emoji) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self._bitfield) }()
+      case 10: try { try decoder.decodeSingularBytesField(value: &self.xeddsaSignature) }()
       default: break
       }
     }
@@ -4880,6 +4927,9 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     try { if let v = self._bitfield {
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 9)
     } }()
+    if !self.xeddsaSignature.isEmpty {
+      try visitor.visitSingularBytesField(value: self.xeddsaSignature, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -4893,6 +4943,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.replyID != rhs.replyID {return false}
     if lhs.emoji != rhs.emoji {return false}
     if lhs._bitfield != rhs._bitfield {return false}
+    if lhs.xeddsaSignature != rhs.xeddsaSignature {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -5264,7 +5315,7 @@ extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 
 extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MeshPacket"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}from\0\u{1}to\0\u{1}channel\0\u{1}decoded\0\u{1}encrypted\0\u{1}id\0\u{3}rx_time\0\u{3}rx_snr\0\u{3}hop_limit\0\u{3}want_ack\0\u{1}priority\0\u{3}rx_rssi\0\u{1}delayed\0\u{3}via_mqtt\0\u{3}hop_start\0\u{3}public_key\0\u{3}pki_encrypted\0\u{3}next_hop\0\u{3}relay_node\0\u{3}tx_after\0\u{3}transport_mechanism\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}from\0\u{1}to\0\u{1}channel\0\u{1}decoded\0\u{1}encrypted\0\u{1}id\0\u{3}rx_time\0\u{3}rx_snr\0\u{3}hop_limit\0\u{3}want_ack\0\u{1}priority\0\u{3}rx_rssi\0\u{1}delayed\0\u{3}via_mqtt\0\u{3}hop_start\0\u{3}public_key\0\u{3}pki_encrypted\0\u{3}next_hop\0\u{3}relay_node\0\u{3}tx_after\0\u{3}transport_mechanism\0\u{3}xeddsa_signed\0")
 
   fileprivate class _StorageClass {
     var _from: UInt32 = 0
@@ -5287,6 +5338,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _relayNode: UInt32 = 0
     var _txAfter: UInt32 = 0
     var _transportMechanism: MeshPacket.TransportMechanism = .transportInternal
+    var _xeddsaSigned: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -5317,6 +5369,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _relayNode = source._relayNode
       _txAfter = source._txAfter
       _transportMechanism = source._transportMechanism
+      _xeddsaSigned = source._xeddsaSigned
     }
   }
 
@@ -5375,6 +5428,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._relayNode) }()
         case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._txAfter) }()
         case 21: try { try decoder.decodeSingularEnumField(value: &_storage._transportMechanism) }()
+        case 22: try { try decoder.decodeSingularBoolField(value: &_storage._xeddsaSigned) }()
         default: break
         }
       }
@@ -5455,6 +5509,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._transportMechanism != .transportInternal {
         try visitor.visitSingularEnumField(value: _storage._transportMechanism, fieldNumber: 21)
       }
+      if _storage._xeddsaSigned != false {
+        try visitor.visitSingularBoolField(value: _storage._xeddsaSigned, fieldNumber: 22)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -5484,6 +5541,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._relayNode != rhs_storage._relayNode {return false}
         if _storage._txAfter != rhs_storage._txAfter {return false}
         if _storage._transportMechanism != rhs_storage._transportMechanism {return false}
+        if _storage._xeddsaSigned != rhs_storage._xeddsaSigned {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -5502,12 +5560,12 @@ extension MeshPacket.Delayed: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension MeshPacket.TransportMechanism: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0TRANSPORT_INTERNAL\0\u{1}TRANSPORT_LORA\0\u{1}TRANSPORT_LORA_ALT1\0\u{1}TRANSPORT_LORA_ALT2\0\u{1}TRANSPORT_LORA_ALT3\0\u{1}TRANSPORT_MQTT\0\u{1}TRANSPORT_MULTICAST_UDP\0\u{1}TRANSPORT_API\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0TRANSPORT_INTERNAL\0\u{1}TRANSPORT_LORA\0\u{1}TRANSPORT_LORA_ALT1\0\u{1}TRANSPORT_LORA_ALT2\0\u{1}TRANSPORT_LORA_ALT3\0\u{1}TRANSPORT_MQTT\0\u{1}TRANSPORT_MULTICAST_UDP\0\u{1}TRANSPORT_API\0\u{1}TRANSPORT_UNICAST_UDP\0")
 }
 
 extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfo"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0\u{3}is_muted\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0\u{3}is_muted\0\u{3}has_xeddsa_signed\0")
 
   fileprivate class _StorageClass {
     var _num: UInt32 = 0
@@ -5523,6 +5581,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _isIgnored: Bool = false
     var _isKeyManuallyVerified: Bool = false
     var _isMuted: Bool = false
+    var _hasXeddsaSigned_p: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -5546,6 +5605,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _isIgnored = source._isIgnored
       _isKeyManuallyVerified = source._isKeyManuallyVerified
       _isMuted = source._isMuted
+      _hasXeddsaSigned_p = source._hasXeddsaSigned_p
     }
   }
 
@@ -5577,6 +5637,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._isIgnored) }()
         case 12: try { try decoder.decodeSingularBoolField(value: &_storage._isKeyManuallyVerified) }()
         case 13: try { try decoder.decodeSingularBoolField(value: &_storage._isMuted) }()
+        case 14: try { try decoder.decodeSingularBoolField(value: &_storage._hasXeddsaSigned_p) }()
         default: break
         }
       }
@@ -5628,6 +5689,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._isMuted != false {
         try visitor.visitSingularBoolField(value: _storage._isMuted, fieldNumber: 13)
       }
+      if _storage._hasXeddsaSigned_p != false {
+        try visitor.visitSingularBoolField(value: _storage._hasXeddsaSigned_p, fieldNumber: 14)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -5650,6 +5714,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._isIgnored != rhs_storage._isIgnored {return false}
         if _storage._isKeyManuallyVerified != rhs_storage._isKeyManuallyVerified {return false}
         if _storage._isMuted != rhs_storage._isMuted {return false}
+        if _storage._hasXeddsaSigned_p != rhs_storage._hasXeddsaSigned_p {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -6181,7 +6246,7 @@ extension LockdownStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 }
 
 extension LockdownStatus.State: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0STATE_UNSPECIFIED\0\u{1}NEEDS_PROVISION\0\u{1}LOCKED\0\u{1}UNLOCKED\0\u{1}UNLOCK_FAILED\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0STATE_UNSPECIFIED\0\u{1}NEEDS_PROVISION\0\u{1}LOCKED\0\u{1}UNLOCKED\0\u{1}UNLOCK_FAILED\0\u{1}DISABLED\0")
 }
 
 extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -6767,7 +6832,7 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0\u{1}hasBuzzer\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -6787,6 +6852,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 10: try { try decoder.decodeSingularBoolField(value: &self.hasRemoteHardware_p) }()
       case 11: try { try decoder.decodeSingularBoolField(value: &self.hasPkc_p) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.excludedModules) }()
+      case 13: try { try decoder.decodeSingularBoolField(value: &self.hasBuzzer_p) }()
       default: break
       }
     }
@@ -6829,6 +6895,9 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.excludedModules != 0 {
       try visitor.visitSingularUInt32Field(value: self.excludedModules, fieldNumber: 12)
     }
+    if self.hasBuzzer_p != false {
+      try visitor.visitSingularBoolField(value: self.hasBuzzer_p, fieldNumber: 13)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -6845,6 +6914,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
     if lhs.hasPkc_p != rhs.hasPkc_p {return false}
     if lhs.excludedModules != rhs.excludedModules {return false}
+    if lhs.hasBuzzer_p != rhs.hasBuzzer_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

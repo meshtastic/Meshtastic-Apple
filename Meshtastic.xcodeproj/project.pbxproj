@@ -225,6 +225,7 @@
         AA003DOC0000002000000003 /* DocPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000003 /* DocPageView.swift */; };
         AA003DOC0000002000000004 /* AIDocAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000004 /* AIDocAssistantView.swift */; };
         AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000005 /* DocBundleTests.swift */; };
+        DDF1A0022F12345600BEEF01 /* FindNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF1A0012F12345600BEEF01 /* FindNodeButton.swift */; };
         C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
         C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
         D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
@@ -1051,6 +1052,7 @@
         DDDB26412AABF655003AFCB7 /* NodeListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItem.swift; sourceTree = "<group>"; };
         DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
         DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoItem.swift; sourceTree = "<group>"; };
+        DDF1A0012F12345600BEEF01 /* FindNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindNodeButton.swift; sourceTree = "<group>"; };
         DDDB26492AAD743E003AFCB7 /* MeshtasticDataModelV18.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV18.xcdatamodel; sourceTree = "<group>"; };
         DDDB443F29F79AB000EE2349 /* UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
         DDDB444129F8A88700EE2349 /* Double.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Double.swift; sourceTree = "<group>"; };
@@ -1492,6 +1494,7 @@
             children = (
                 DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */,
                 DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
+                DDF1A0012F12345600BEEF01 /* FindNodeButton.swift */,
                 BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */,
                 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
                 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
@@ -2746,6 +2749,7 @@
                 DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
                 AA000001303050030000B001 /* Color+Brand.swift in Sources */,
                 DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */,
+                DDF1A0022F12345600BEEF01 /* FindNodeButton.swift in Sources */,
                 BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */,
                 3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */,
                 DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,

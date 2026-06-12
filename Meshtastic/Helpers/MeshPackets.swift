@@ -15,6 +15,35 @@ import OSLog
 import ActivityKit
 #endif
 
+struct FindNodeResponseEvent: Sendable {
+	enum Result: Sendable {
+		case started
+		case stopped
+		case noBuzzer
+		case buzzerDisabled
+		case unrecognized(Int)
+
+		init(_ protoResult: AdminMessage.FindNodeResponse.Result) {
+			switch protoResult {
+			case .started:
+				self = .started
+			case .stopped:
+				self = .stopped
+			case .noBuzzer:
+				self = .noBuzzer
+			case .buzzerDisabled:
+				self = .buzzerDisabled
+			case .UNRECOGNIZED(let value):
+				self = .unrecognized(value)
+			}
+		}
+	}
+
+	let nodeNum: Int64
+	let result: Result
+	let durationSeconds: UInt32
+}
+
 // Simple extension to concisely pass values through a has_XXX boolean check
 fileprivate extension Bool {
 	func then<T>(_ value: T) -> T? {
@@ -372,6 +401,7 @@ actor MeshPackets {
 				newMetadata.canShutdown = metadata.canShutdown
 				newMetadata.hasWifi = metadata.hasWifi_p
 				newMetadata.hasBluetooth = metadata.hasBluetooth_p
+				newMetadata.hasBuzzer = metadata.hasBuzzer_p
 				newMetadata.hasEthernet	= metadata.hasEthernet_p
 				newMetadata.role = Int32(metadata.role.rawValue)
 				newMetadata.positionFlags = Int32(metadata.positionFlags)
@@ -727,6 +757,15 @@ actor MeshPackets {
 				if let rt = try? RTTTLConfig(serializedBytes: packet.decoded.payload) {
 					self.upsertRtttlConfigPacket(ringtone: rt.ringtone, nodeNum: Int64(packet.from))
 				}
+			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.findNodeResponse(adminMessage.findNodeResponse) {
+				let response = adminMessage.findNodeResponse
+				let event = FindNodeResponseEvent(
+					nodeNum: Int64(packet.from),
+					result: FindNodeResponseEvent.Result(response.result),
+					durationSeconds: response.durationSeconds
+				)
+				NotificationCenter.default.post(name: .findNodeResponseDidChange, object: event)
+				Logger.admin.info("🔊 Find Node response from \(packet.from.toHex(), privacy: .public): \(String(describing: response.result), privacy: .public)")
 			} else {
 				Logger.admin.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}

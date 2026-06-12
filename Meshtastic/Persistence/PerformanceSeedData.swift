@@ -144,6 +144,7 @@ enum PerformanceSeedData {
 		metadata.hwModel = user.hwModel
 		metadata.firmwareVersion = "2.7.\(index % 10)"
 		metadata.hasBluetooth = true
+		metadata.hasBuzzer = index.isMultiple(of: 11)
 		metadata.hasWifi = index.isMultiple(of: 5)
 		metadata.role = user.role
 		metadata.time = node.lastHeard

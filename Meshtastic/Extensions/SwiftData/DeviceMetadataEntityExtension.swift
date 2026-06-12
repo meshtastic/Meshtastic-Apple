@@ -10,6 +10,7 @@ extension DeviceMetadataEntity {
 		self.canShutdown = metadata.canShutdown
 		self.hasWifi = metadata.hasWifi_p
 		self.hasBluetooth = metadata.hasBluetooth_p
+		self.hasBuzzer = metadata.hasBuzzer_p
 		self.hasEthernet	= metadata.hasEthernet_p
 		self.role = Int32(metadata.role.rawValue)
 		self.positionFlags = Int32(metadata.positionFlags)
