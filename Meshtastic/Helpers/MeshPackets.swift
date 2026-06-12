@@ -1267,69 +1267,86 @@ actor MeshPackets {
 								}
 							}
 							if !(newMessage.fromUser?.mute ?? false) && newMessage.isEmoji == false {
-								// Create an iOS Notification for the received DM message
+								// Build the notification from the model objects now, while this context is valid,
+								// and capture only the resulting value — a deferred Task must not hold `newMessage`
+								// (a context-bound model), since a device switch can reset this context first
+								// ("destroyed by ModelContext.reset").
+								let senderName = newMessage.fromUser?.longName ?? "Unknown".localized
+								var dmNotification = Notification(
+									id: ("notification.id.\(newMessage.messageId)"),
+									title: "\(senderName)",
+									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+									content: messageText!,
+									target: "messages",
+									path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
+									messageId: newMessage.messageId,
+									channel: newMessage.channel,
+									userNum: Int64(packet.from),
+									critical: critical
+								)
+								#if os(iOS)
+								dmNotification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: newMessage)
+								#endif
+								let notification = dmNotification
 								Task {@MainActor in
 									let manager = LocalNotificationManager()
-									var dmNotification = Notification(
-										id: ("notification.id.\(newMessage.messageId)"),
-										title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-										subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-										content: messageText!,
-										target: "messages",
-										path: "meshtastic:///messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
-										messageId: newMessage.messageId,
-										channel: newMessage.channel,
-										userNum: Int64(packet.from),
-										critical: critical
-									)
-									#if os(iOS)
-									dmNotification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: newMessage)
-									#endif
-									manager.notifications = [dmNotification]
+									manager.notifications = [notification]
 									manager.schedule()
-
-									Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
+									Logger.services.debug("iOS Notification Scheduled for text message from \(senderName, privacy: .public)")
 								}
 							}
 						} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 							let myInfoFetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == connectedNode })
 							do {
 								let fetchedMyInfo = try modelContext.fetch(myInfoFetchDescriptor)
-								if !fetchedMyInfo.isEmpty {
-									let ctx = modelContext
-									// unreadMessages is O(unread); recomputing it for the badge on every
-									// incoming channel message is quadratic over a burst and stalls slower
-									// devices. Throttle to ~1/sec — the badge tolerates brief lag and also
-									// resyncs on app-active and on read (refreshBadgeCount). Notifications
-									// below still fire per message.
+								if let myInfo = fetchedMyInfo.first {
+									// Snapshot everything off this context NOW, synchronously, and capture only
+									// plain values into the deferred Task. The entity (and `newMessage`) must not
+									// cross the hop: a device switch can reset this context before the Task runs,
+									// which traps with "destroyed by ModelContext.reset" on access.
+									//
+									// unreadMessages is O(unread); recomputing it for the badge on every incoming
+									// channel message is quadratic over a burst and stalls slower devices. Throttle
+									// to ~1/sec — the badge tolerates brief lag and resyncs on app-active and on read.
 									let recountUnread = shouldRecomputeChannelUnread()
+									let connectedNodeNum = connectedNode
+									let shouldNotify = UserDefaults.channelMessageNotifications && newMessage.isEmoji == false && myInfo.channels.contains(where: { $0.index == newMessage.channel && !$0.mute })
+									var channelNotification: Notification?
+									if shouldNotify {
+										var chNotification = Notification(
+											id: ("notification.id.\(newMessage.messageId)"),
+											title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
+											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+											content: messageText!,
+											target: "messages",
+											path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
+											messageId: newMessage.messageId,
+											channel: newMessage.channel,
+											userNum: Int64(newMessage.fromUser?.userId ?? "0"),
+											critical: critical
+										)
+										#if os(iOS)
+										chNotification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: newMessage)
+										#endif
+										channelNotification = chNotification
+									}
+									let notification = channelNotification
 									Task {@MainActor in
 										if recountUnread {
-											appState?.unreadChannelMessages = fetchedMyInfo[0].unreadMessages(context: ctx)
-										}
-										for channel in fetchedMyInfo[0].channels {
-											if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications && newMessage.isEmoji == false {
-												// Create an iOS Notification for the received channel message
-												let manager = LocalNotificationManager()
-												var chNotification = Notification(
-													id: ("notification.id.\(newMessage.messageId)"),
-													title: "\(newMessage.fromUser?.longName ?? "Unknown".localized)",
-													subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-													content: messageText!,
-													target: "messages",
-													path: "meshtastic:///messages?channelId=\(newMessage.channel)&messageId=\(newMessage.isEmoji ? newMessage.replyID : newMessage.messageId)",
-													messageId: newMessage.messageId,
-													channel: newMessage.channel,
-													userNum: Int64(newMessage.fromUser?.userId ?? "0"),
-													critical: critical
-												)
-												#if os(iOS)
-												chNotification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: newMessage)
-												#endif
-												manager.notifications = [chNotification]
-												manager.schedule()
-												Logger.services.debug("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown".localized, privacy: .public)")
+											// Recompute the badge against a freshly re-fetched, live main-context
+											// entity (unreadMessages is @MainActor); never touch the captured
+											// MeshPackets entity, which a device switch may have invalidated.
+											let mainContext = PersistenceController.shared.context
+											let liveDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == connectedNodeNum })
+											if let liveMyInfo = try? mainContext.fetch(liveDescriptor).first {
+												appState?.unreadChannelMessages = liveMyInfo.unreadMessages(context: mainContext)
 											}
+										}
+										if let notification {
+											let manager = LocalNotificationManager()
+											manager.notifications = [notification]
+											manager.schedule()
+											Logger.services.debug("iOS Notification Scheduled for channel text message")
 										}
 									}
 								}
