@@ -587,7 +587,7 @@ enum CodingRates {
 			return Array(validRange)
 		}
 		let defaultCodingRate = modemPreset?.defaultCodingRate ?? ModemPresets.longFast.defaultCodingRate
-		return [0] + validRange.filter { $0 >= defaultCodingRate }
+		return [0] + validRange.filter { $0 > defaultCodingRate }
 	}
 
 	static func normalized(_ codingRate: Int, usePreset: Bool, modemPreset: ModemPresets?) -> Int {

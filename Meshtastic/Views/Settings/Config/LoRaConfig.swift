@@ -35,12 +35,54 @@ struct LoRaConfig: View {
 		ModemPresets(rawValue: modemPreset) ?? .longFast
 	}
 
-	private var codingRateOptions: [Int] {
-		CodingRates.options(usePreset: usePreset, modemPreset: selectedModemPreset)
-	}
-
 	private var normalizedCodingRate: Int {
 		CodingRates.normalized(codingRate, usePreset: usePreset, modemPreset: selectedModemPreset)
+	}
+
+	private var defaultCodingRate: Int {
+		selectedModemPreset.defaultCodingRate
+	}
+
+	private var canOverridePresetCodingRate: Bool {
+		defaultCodingRate < CodingRates.validRange.upperBound
+	}
+
+	private var usePresetCodingRate: Binding<Bool> {
+		Binding(
+			get: { normalizedCodingRate == 0 },
+			set: { useDefault in
+				if useDefault || !canOverridePresetCodingRate {
+					codingRate = 0
+				} else {
+					codingRate = defaultCodingRate + 1
+				}
+			}
+		)
+	}
+
+	private var presetCodingRateSliderValue: Binding<Double> {
+		Binding(
+			get: {
+				let firstOverride = defaultCodingRate + 1
+				return Double(max(normalizedCodingRate, firstOverride))
+			},
+			set: { newValue in
+				codingRate = Int(newValue.rounded())
+			}
+		)
+	}
+
+	private var customCodingRateSliderValue: Binding<Double> {
+		Binding(
+			get: { Double(normalizedCodingRate) },
+			set: { newValue in
+				codingRate = CodingRates.normalized(
+					Int(newValue.rounded()),
+					usePreset: false,
+					modemPreset: selectedModemPreset
+				)
+			}
+		)
 	}
 
 	@State var hasChanges = false
@@ -140,20 +182,56 @@ struct LoRaConfig: View {
 					 }
 				}
 
-				VStack(alignment: .leading) {
-					Picker("Coding Rate", selection: $codingRate) {
-						ForEach(codingRateOptions, id: \.self) { rate in
-							Text(CodingRates.description(for: rate, modemPreset: selectedModemPreset))
-								.tag(rate)
-						}
+				VStack(alignment: .leading, spacing: 8) {
+					HStack {
+						Text("Coding Rate")
+						Spacer()
+						Text(CodingRates.description(for: normalizedCodingRate, modemPreset: selectedModemPreset))
+							.foregroundColor(.secondary)
 					}
-					Text(
-						usePreset
-						? "Power user option. Leave this on Preset Default unless you understand the airtime tradeoff. Higher values add redundancy for noisy links but slow every transmission. Preset mode only allows the preset default or a higher, more robust coding rate."
-						: "Power user option. Coding rate controls error-correction redundancy. Higher values can help noisy links but reduce throughput and increase airtime, so beginners should keep the default 4/5."
-					)
-					.foregroundColor(.gray)
-					.font(.callout)
+					if usePreset {
+						Toggle("Follow Preset Coding Rate", isOn: usePresetCodingRate)
+							.tint(.accentColor)
+						if !canOverridePresetCodingRate {
+							Text("This preset already uses 4/\(defaultCodingRate), the highest redundancy available.")
+								.foregroundColor(.gray)
+								.font(.callout)
+						} else if normalizedCodingRate == 0 {
+							Text("Uses \(selectedModemPreset.description)'s 4/\(defaultCodingRate) coding rate. Turn this off only when nearby nodes use the same preset and you want extra error correction on noisy links.")
+								.foregroundColor(.gray)
+								.font(.callout)
+						} else {
+							Slider(
+								value: presetCodingRateSliderValue,
+								in: Double(defaultCodingRate + 1)...Double(CodingRates.validRange.upperBound),
+								step: 1
+							) {
+								Text("Coding Rate")
+							} minimumValueLabel: {
+								Text("4/\(defaultCodingRate + 1)")
+							} maximumValueLabel: {
+								Text("4/\(CodingRates.validRange.upperBound)")
+							}
+							Text("Uses 4/\(normalizedCodingRate) while keeping the \(selectedModemPreset.description) bandwidth and spread factor. Higher values add error correction, but each packet uses more airtime and has less throughput.")
+								.foregroundColor(.gray)
+								.font(.callout)
+						}
+					} else {
+						Slider(
+							value: customCodingRateSliderValue,
+							in: Double(CodingRates.validRange.lowerBound)...Double(CodingRates.validRange.upperBound),
+							step: 1
+						) {
+							Text("Coding Rate")
+						} minimumValueLabel: {
+							Text("4/\(CodingRates.validRange.lowerBound)")
+						} maximumValueLabel: {
+							Text("4/\(CodingRates.validRange.upperBound)")
+						}
+						Text("Coding rate controls error-correction redundancy. Higher values can help noisy links, but reduce throughput and increase airtime. Keep 4/5 unless your channel plan calls for a different value.")
+							.foregroundColor(.gray)
+							.font(.callout)
+					}
 				}
 
 				VStack(alignment: .leading) {

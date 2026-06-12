@@ -129,14 +129,16 @@ struct CodingRatesTests {
 	}
 
 	@Test func presetMode_allowsAutoAndHigherRedundancyOnly() {
-		#expect(CodingRates.options(usePreset: true, modemPreset: .longFast) == [0, 5, 6, 7, 8])
-		#expect(CodingRates.options(usePreset: true, modemPreset: .narrowFast) == [0, 6, 7, 8])
-		#expect(CodingRates.options(usePreset: true, modemPreset: .longSlow) == [0, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .longFast) == [0, 6, 7, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .narrowFast) == [0, 7, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .longSlow) == [0])
 	}
 
 	@Test func presetMode_normalizesInvalidValuesToAuto() {
 		#expect(CodingRates.normalized(0, usePreset: true, modemPreset: .longFast) == 0)
+		#expect(CodingRates.normalized(5, usePreset: true, modemPreset: .longFast) == 0)
 		#expect(CodingRates.normalized(5, usePreset: true, modemPreset: .longSlow) == 0)
+		#expect(CodingRates.normalized(8, usePreset: true, modemPreset: .longSlow) == 0)
 		#expect(CodingRates.normalized(9, usePreset: true, modemPreset: .longFast) == 0)
 	}
 
