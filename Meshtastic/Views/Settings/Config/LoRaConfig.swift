@@ -31,6 +31,18 @@ struct LoRaConfig: View {
 
 	let node: NodeInfoEntity?
 
+	private var selectedModemPreset: ModemPresets {
+		ModemPresets(rawValue: modemPreset) ?? .longFast
+	}
+
+	private var codingRateOptions: [Int] {
+		CodingRates.options(usePreset: usePreset, modemPreset: selectedModemPreset)
+	}
+
+	private var normalizedCodingRate: Int {
+		CodingRates.normalized(codingRate, usePreset: usePreset, modemPreset: selectedModemPreset)
+	}
+
 	@State var hasChanges = false
 	@State var region: Int = 0
 	@State var modemPreset = 0
@@ -126,15 +138,24 @@ struct LoRaConfig: View {
 							 }
 						 }
 					 }
-					 HStack {
-						 Picker("Coding Rate", selection: $codingRate) {
-							 ForEach(5..<9) {
-								 Text("\($0)")
-									 .tag($0)
-							 }
-						 }
-					 }
 				}
+
+				VStack(alignment: .leading) {
+					Picker("Coding Rate", selection: $codingRate) {
+						ForEach(codingRateOptions, id: \.self) { rate in
+							Text(CodingRates.description(for: rate, modemPreset: selectedModemPreset))
+								.tag(rate)
+						}
+					}
+					Text(
+						usePreset
+						? "Power user option. Leave this on Preset Default unless you understand the airtime tradeoff. Higher values add redundancy for noisy links but slow every transmission. Preset mode only allows the preset default or a higher, more robust coding rate."
+						: "Power user option. Coding rate controls error-correction redundancy. Higher values can help noisy links but reduce throughput and increase airtime, so beginners should keep the default 4/5."
+					)
+					.foregroundColor(.gray)
+					.font(.callout)
+				}
+
 				VStack(alignment: .leading) {
 					Picker("Number of hops", selection: $hopLimit) {
 						ForEach(0..<8) {
@@ -203,7 +224,7 @@ struct LoRaConfig: View {
 					lc.txPower = Int32(txPower)
 					lc.channelNum = UInt32(channelNum)
 					lc.bandwidth = UInt32(bandwidth)
-					lc.codingRate = UInt32(codingRate)
+					lc.codingRate = UInt32(normalizedCodingRate)
 					lc.spreadFactor = UInt32(spreadFactor)
 					lc.sx126XRxBoostedGain = rxBoostedGain
 					lc.overrideFrequency = overrideFrequency
@@ -238,9 +259,11 @@ struct LoRaConfig: View {
 			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
 		}
 		.onChange(of: usePreset) { _, newPreset in
+			codingRate = CodingRates.normalized(codingRate, usePreset: newPreset, modemPreset: selectedModemPreset)
 			if newPreset != node?.loRaConfig?.usePreset { hasChanges = true }
 		}
 		.onChange(of: modemPreset) { _, newModemPreset in
+			codingRate = CodingRates.normalized(codingRate, usePreset: usePreset, modemPreset: ModemPresets(rawValue: newModemPreset) ?? .longFast)
 			if newModemPreset != node?.loRaConfig?.modemPreset ?? -1 { hasChanges = true }
 		}
 		.onChange(of: hopLimit) { _, newHopLimit in
@@ -253,7 +276,11 @@ struct LoRaConfig: View {
 			if newBandwidth != node?.loRaConfig?.bandwidth ?? -1 { hasChanges = true }
 		}
 		.onChange(of: codingRate) { _, newCodingRate in
-			if newCodingRate != node?.loRaConfig?.codingRate ?? -1 { hasChanges = true }
+			let normalizedNewCodingRate = CodingRates.normalized(newCodingRate, usePreset: usePreset, modemPreset: selectedModemPreset)
+			if normalizedNewCodingRate != newCodingRate {
+				codingRate = normalizedNewCodingRate
+			}
+			if normalizedNewCodingRate != node?.loRaConfig?.codingRate ?? -1 { hasChanges = true }
 		}
 		.onChange(of: spreadFactor) { _, newSpreadFactor in
 			if newSpreadFactor != node?.loRaConfig?.spreadFactor ?? -1 { hasChanges = true }
@@ -290,7 +317,11 @@ struct LoRaConfig: View {
 		self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
 		self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
 		let loadedCodingRate = Int(node?.loRaConfig?.codingRate ?? 0)
-		self.codingRate = loadedCodingRate == 0 ? 5 : loadedCodingRate
+		self.codingRate = CodingRates.normalized(
+			loadedCodingRate,
+			usePreset: self.usePreset,
+			modemPreset: ModemPresets(rawValue: self.modemPreset) ?? .longFast
+		)
 		self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0

@@ -105,8 +105,44 @@ struct ModemPresetsTests {
 		#expect(ModemPresets.shortTurbo.snrLimit() == -7.5)
 	}
 
+	@Test func defaultCodingRate_matchesPresetParams() {
+		#expect(ModemPresets.longFast.defaultCodingRate == 5)
+		#expect(ModemPresets.longSlow.defaultCodingRate == 8)
+		#expect(ModemPresets.longModerate.defaultCodingRate == 8)
+		#expect(ModemPresets.longTurbo.defaultCodingRate == 8)
+		#expect(ModemPresets.narrowFast.defaultCodingRate == 6)
+		#expect(ModemPresets.narrowSlow.defaultCodingRate == 6)
+	}
+
 	@Test func totalCaseCount() {
 		#expect(ModemPresets.allCases.count == 13)
+	}
+}
+
+// MARK: - CodingRates
+
+@Suite("CodingRates")
+struct CodingRatesTests {
+
+	@Test func customMode_allowsExplicitCodingRatesOnly() {
+		#expect(CodingRates.options(usePreset: false, modemPreset: .longFast) == [5, 6, 7, 8])
+	}
+
+	@Test func presetMode_allowsAutoAndHigherRedundancyOnly() {
+		#expect(CodingRates.options(usePreset: true, modemPreset: .longFast) == [0, 5, 6, 7, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .narrowFast) == [0, 6, 7, 8])
+		#expect(CodingRates.options(usePreset: true, modemPreset: .longSlow) == [0, 8])
+	}
+
+	@Test func presetMode_normalizesInvalidValuesToAuto() {
+		#expect(CodingRates.normalized(0, usePreset: true, modemPreset: .longFast) == 0)
+		#expect(CodingRates.normalized(5, usePreset: true, modemPreset: .longSlow) == 0)
+		#expect(CodingRates.normalized(9, usePreset: true, modemPreset: .longFast) == 0)
+	}
+
+	@Test func customMode_normalizesInvalidValuesToLowestCodingRate() {
+		#expect(CodingRates.normalized(0, usePreset: false, modemPreset: .longFast) == 5)
+		#expect(CodingRates.normalized(9, usePreset: false, modemPreset: .longFast) == 5)
 	}
 }
 
