@@ -94,10 +94,10 @@ struct LocalStatsLog: View {
 					chartView
 				}
 				tableView
-				buttonView
 			} else {
 				ContentUnavailableView("No Local Stats", systemImage: "waveform")
 			}
+			buttonView
 		}
 		.navigationTitle("Local Stats Log")
 		.navigationBarTitleDisplayMode(.inline)
@@ -220,18 +220,6 @@ struct LocalStatsLog: View {
 				.chartScrollPosition(x: $chartScrollPosition)
 				.chartLegend(.hidden)
 				.frame(height: idiom == .phone ? 210 : 300)
-				HStack {
-					Spacer()
-					RequestLocalStatsButton(
-						node: node,
-						title: "Request Reading",
-						cooldownTitle: "Reading",
-						systemImage: "arrow.clockwise"
-					)
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(idiom == .phone ? .regular : .large)
-				}
 			}
 		} label: {
 			Label("\(localStats.count) Local Stats Readings", systemImage: "chart.xyaxis.line")
@@ -384,44 +372,57 @@ struct LocalStatsLog: View {
 
 	private var buttonView: some View {
 		HStack {
-			Button(role: .destructive) {
-				isPresentingClearLogConfirm = true
-			} label: {
-				Label("Clear Log", systemImage: "trash.fill")
-			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(idiom == .phone ? .regular : .large)
-			.padding(.bottom)
-			.padding(.leading)
-			.confirmationDialog(
-				"Are you sure?",
-				isPresented: $isPresentingClearLogConfirm,
-				titleVisibility: .visible
-			) {
-				Button("Delete all local stats?", role: .destructive) {
-					Task {
-						if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 4) {
-							Logger.data.notice("Cleared Local Stats for \(node.num, privacy: .public)")
-						} else {
-							Logger.data.error("Clear Local Stats Log Failed")
+			if node.hasLocalStats {
+				Button(role: .destructive) {
+					isPresentingClearLogConfirm = true
+				} label: {
+					Label("Clear Log", systemImage: "trash.fill")
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(idiom == .phone ? .regular : .large)
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresentingClearLogConfirm,
+					titleVisibility: .visible
+				) {
+					Button("Delete all local stats?", role: .destructive) {
+						Task {
+							if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 4) {
+								Logger.data.notice("Cleared Local Stats for \(node.num, privacy: .public)")
+							} else {
+								Logger.data.error("Clear Local Stats Log Failed")
+							}
 						}
 					}
 				}
 			}
 
-			Button {
-				exportString = telemetryToCsvFile(telemetry: localStats, metricsType: 4)
-				isExporting = true
-			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
-			}
+			RequestLocalStatsButton(
+				node: node,
+				title: "Request Reading",
+				cooldownTitle: "Reading",
+				systemImage: "arrow.clockwise"
+			)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(idiom == .phone ? .regular : .large)
-			.padding(.bottom)
-			.padding(.trailing)
+
+			if node.hasLocalStats {
+				Button {
+					exportString = telemetryToCsvFile(telemetry: localStats, metricsType: 4)
+					isExporting = true
+				} label: {
+					Label("Save", systemImage: "square.and.arrow.down")
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(idiom == .phone ? .regular : .large)
+			}
 		}
+		.frame(maxWidth: .infinity)
+		.padding(.horizontal)
+		.padding(.bottom)
 		.onChange(of: selection) { _, newSelection in
 			guard let metrics = localStats.first(where: { $0.id == newSelection }) else {
 				return
