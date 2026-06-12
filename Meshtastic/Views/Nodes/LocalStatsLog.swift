@@ -8,17 +8,16 @@
 import SwiftUI
 import Charts
 import OSLog
-import TipKit
 
 struct LocalStatsLog: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	private let noiseFloorTip = NoiseFloorTip()
 
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
+	@State private var isPresentingNoiseFloorInfo = false
 
 	@Bindable var node: NodeInfoEntity
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
@@ -36,6 +35,40 @@ struct LocalStatsLog: View {
 			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 	}
 
+	private var noiseFloorReadings: [LocalStatsChartPoint] {
+		chartData.compactMap { point in
+			guard let time = point.time, let noiseFloor = point.noiseFloor else { return nil }
+			return LocalStatsChartPoint(time: time, noiseFloor: noiseFloor)
+		}
+	}
+
+	private var selectedChartPoint: LocalStatsChartPoint? {
+		guard let chartSelection else { return nil }
+		return noiseFloorReadings.min { lhs, rhs in
+			abs(lhs.time.timeIntervalSince(chartSelection)) < abs(rhs.time.timeIntervalSince(chartSelection))
+		}
+	}
+
+	private var latestNoiseFloorReading: LocalStatsChartPoint? {
+		noiseFloorReadings.last
+	}
+
+	private var chartYDomain: ClosedRange<Int> {
+		let values = noiseFloorReadings.map { Int($0.noiseFloor) }
+		guard let minValue = values.min(), let maxValue = values.max() else {
+			return -130 ... -60
+		}
+		let lower = min(minValue - 5, -115)
+		let upper = max(maxValue + 5, -75)
+		return lower ... upper
+	}
+
+	private var averageNoiseFloor: Int? {
+		let values = noiseFloorReadings.map { Int($0.noiseFloor) }
+		guard !values.isEmpty else { return nil }
+		return values.reduce(0, +) / values.count
+	}
+
 	private var dateFormatString: String {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
 		return (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
@@ -44,11 +77,7 @@ struct LocalStatsLog: View {
 	var body: some View {
 		VStack {
 			if node.hasLocalStats {
-				TipView(noiseFloorTip, arrowEdge: .top)
-					.tipViewStyle(PersistentTipStyle())
-					.padding(.horizontal)
-
-				if !chartData.isEmpty {
+				if !noiseFloorReadings.isEmpty {
 					chartView
 				}
 				tableView
@@ -63,6 +92,28 @@ struct LocalStatsLog: View {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
+			ToolbarItem(placement: .topBarLeading) {
+				Button {
+					isPresentingNoiseFloorInfo = true
+				} label: {
+					Label("Noise Floor Info", systemImage: "info.circle")
+				}
+			}
+		}
+		.sheet(isPresented: $isPresentingNoiseFloorInfo) {
+			NavigationStack {
+				NoiseFloorInfoView()
+					.navigationTitle("Noise Floor")
+					.navigationBarTitleDisplayMode(.inline)
+					.toolbar {
+						ToolbarItem(placement: .confirmationAction) {
+							Button("Done") {
+								isPresentingNoiseFloorInfo = false
+							}
+						}
+					}
+			}
+			.presentationDetents([.medium])
 		}
 		.fileExporter(
 			isPresented: $isExporting,
@@ -82,31 +133,98 @@ struct LocalStatsLog: View {
 	}
 
 	private var chartView: some View {
-		GroupBox(label: Label("\(localStats.count) Readings Total", systemImage: "waveform")) {
-			Chart(chartData) { point in
-				if let pointTime = point.time, let noiseFloor = point.noiseFloor {
-					LineMark(
-						x: .value("Time", pointTime),
-						y: .value("Noise Floor", Int(noiseFloor))
-					)
-					.foregroundStyle(Color.accentColor)
-					.interpolationMethod(.linear)
+		GroupBox {
+			VStack(alignment: .leading, spacing: 12) {
+				chartSummaryView
+				Chart {
+					ForEach(noiseFloorReadings) { point in
+						AreaMark(
+							x: .value("Time", point.time),
+							yStart: .value("Floor", chartYDomain.lowerBound),
+							yEnd: .value("Noise Floor", Int(point.noiseFloor))
+						)
+						.foregroundStyle(
+							LinearGradient(
+								colors: [.accentColor.opacity(0.24), .accentColor.opacity(0.02)],
+								startPoint: .top,
+								endPoint: .bottom
+							)
+						)
+
+						LineMark(
+							x: .value("Time", point.time),
+							y: .value("Noise Floor", Int(point.noiseFloor))
+						)
+						.foregroundStyle(Color.accentColor)
+						.lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+						.interpolationMethod(.catmullRom)
+					}
+					RuleMark(y: .value("Busy Floor (-85 dBm)", -85))
+						.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
+						.foregroundStyle(.red)
+						.annotation(position: .topTrailing, alignment: .trailing) {
+							Text("busy")
+								.font(.caption2)
+								.foregroundStyle(.secondary)
+						}
+					if let selectedChartPoint {
+						RuleMark(x: .value("Selected", selectedChartPoint.time))
+							.foregroundStyle(.secondary.opacity(0.45))
+						PointMark(
+							x: .value("Time", selectedChartPoint.time),
+							y: .value("Noise Floor", Int(selectedChartPoint.noiseFloor))
+						)
+						.foregroundStyle(noiseFloorColor(selectedChartPoint.noiseFloor))
+						.symbolSize(56)
+						.annotation(position: .top, alignment: .center) {
+							VStack(alignment: .leading, spacing: 2) {
+								Text("\(selectedChartPoint.noiseFloor) dBm")
+									.font(.caption.bold())
+								Text(selectedChartPoint.time.formatted(date: .omitted, time: .shortened))
+									.font(.caption2)
+									.foregroundStyle(.secondary)
+							}
+							.padding(.horizontal, 8)
+							.padding(.vertical, 6)
+							.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+						}
+					}
 				}
-				RuleMark(y: .value("Threshold (-85 dBm)", -85))
-					.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
-					.foregroundStyle(.red)
+				.chartXAxis {
+					AxisMarks(position: .bottom, values: .automatic(desiredCount: idiom == .phone ? 3 : 6))
+				}
+				.chartYAxis {
+					AxisMarks(position: .leading)
+				}
+				.chartXSelection(value: $chartSelection)
+				.chartYScale(domain: chartYDomain)
+				.chartLegend(.hidden)
+				.frame(minHeight: 210)
 			}
-			.chartXAxis(content: {
-				AxisMarks(position: .top)
-			})
-			.chartXSelection(value: $chartSelection)
-			.chartYScale(domain: -130 ... -60)
-			.chartForegroundStyleScale([
-				"Noise Floor": Color.accentColor
-			])
-			.chartLegend(position: .automatic, alignment: .bottom)
+		} label: {
+			Label("\(localStats.count) Local Stats Readings", systemImage: "chart.xyaxis.line")
 		}
-		.frame(minHeight: 240)
+		.padding(.horizontal)
+	}
+
+	private var chartSummaryView: some View {
+		HStack(spacing: 10) {
+			LocalStatsMetricPill(
+				title: "Latest",
+				value: latestNoiseFloorReading.map { "\($0.noiseFloor) dBm" } ?? Constants.nilValueIndicator,
+				color: latestNoiseFloorReading.map { noiseFloorColor($0.noiseFloor) } ?? .secondary
+			)
+			LocalStatsMetricPill(
+				title: "Average",
+				value: averageNoiseFloor.map { "\($0) dBm" } ?? Constants.nilValueIndicator,
+				color: .secondary
+			)
+			LocalStatsMetricPill(
+				title: "Samples",
+				value: "\(noiseFloorReadings.count)",
+				color: .secondary
+			)
+		}
 	}
 
 	@ViewBuilder
@@ -265,25 +383,45 @@ struct LocalStatsLog: View {
 	}
 }
 
-private struct NoiseFloorTip: Tip {
-	var id: String {
-		"tip.localStats.noiseFloor"
-	}
+private struct LocalStatsChartPoint: Identifiable {
+	let time: Date
+	let noiseFloor: Int32
 
-	var title: Text {
-		Text("Noise Floor")
-	}
+	var id: Date { time }
+}
 
-	var message: Text? {
-		Text("Noise floor is a directional diagnostic. Readings can vary quickly, and external filters can lower or skew the displayed value due to insertion loss or in-band interference.")
-	}
+private struct LocalStatsMetricPill: View {
+	let title: LocalizedStringKey
+	let value: String
+	let color: Color
 
-	var image: Image? {
-		Image(systemName: "waveform.path.ecg")
+	var body: some View {
+		VStack(alignment: .leading, spacing: 3) {
+			Text(title)
+				.font(.caption2)
+				.foregroundStyle(.secondary)
+			Text(value)
+				.font(.callout.weight(.semibold))
+				.foregroundStyle(color)
+				.monospacedDigit()
+		}
+		.frame(maxWidth: .infinity, alignment: .leading)
+		.padding(.horizontal, 10)
+		.padding(.vertical, 8)
+		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 	}
+}
 
-	var options: [TipOption] {
-		Tips.IgnoresDisplayFrequency(true)
-		Tips.MaxDisplayCount(3)
+private struct NoiseFloorInfoView: View {
+	var body: some View {
+		List {
+			Section {
+				Label("Lower values usually mean a quieter receiver environment.", systemImage: "speaker.wave.1")
+				Label("Readings can vary quickly with nearby transmitters, antenna setup, filters, and local interference.", systemImage: "antenna.radiowaves.left.and.right")
+				Label("The red reference line marks a busy -85 dBm floor, not a hard failure threshold.", systemImage: "exclamationmark.triangle")
+			} header: {
+				Text("How to read it")
+			}
+		}
 	}
 }

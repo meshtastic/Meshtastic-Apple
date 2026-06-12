@@ -42,7 +42,11 @@ struct NodeList: View {
 			NavigationStack {
 				if let selectedNum = router.selectedNodeNum,
 				   let node = router.cachedNodeInfo(id: selectedNum, context: context) {
-					NodeDetail(node: node)
+					if opensSeededLocalStatsLog {
+						LocalStatsLog(node: node)
+					} else {
+						NodeDetail(node: node)
+					}
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")
 				}
@@ -55,6 +59,14 @@ struct NodeList: View {
 		.onChange(of: accessoryManager.activeDeviceNum) {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
 		}
+	}
+
+	private var opensSeededLocalStatsLog: Bool {
+		#if DEBUG
+		ProcessInfo.processInfo.arguments.contains("--meshtastic-perf-start-local-stats")
+		#else
+		false
+		#endif
 	}
 
 	// MARK: - Sidebar

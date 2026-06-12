@@ -14,6 +14,7 @@ import Foundation
 struct PerformanceSeedConfiguration {
 	let nodeCount: Int
 	let telemetryHistoryPerNode: Int
+	let localStatsHistoryPerNode: Int
 	let positionHistoryPerNode: Int
 	let directMessageCount: Int
 	let channelMessageCount: Int
@@ -21,6 +22,7 @@ struct PerformanceSeedConfiguration {
 	let compactNodeList: Bool
 	let disableDiscovery: Bool
 	let initialTab: NavigationState.Tab
+	let opensLocalStatsLog: Bool
 }
 
 @MainActor
@@ -34,13 +36,15 @@ enum PerformanceSeedData {
 		return PerformanceSeedConfiguration(
 			nodeCount: integerValue("MESHTASTIC_PERF_SEED_NODES", environment: environment, defaultValue: 5_000),
 			telemetryHistoryPerNode: integerValue("MESHTASTIC_PERF_TELEMETRY_HISTORY", environment: environment, defaultValue: 3),
+			localStatsHistoryPerNode: integerValue("MESHTASTIC_PERF_LOCAL_STATS_HISTORY", environment: environment, defaultValue: integerValue("MESHTASTIC_PERF_TELEMETRY_HISTORY", environment: environment, defaultValue: 3)),
 			positionHistoryPerNode: integerValue("MESHTASTIC_PERF_POSITION_HISTORY", environment: environment, defaultValue: 3),
 			directMessageCount: integerValue("MESHTASTIC_PERF_DIRECT_MESSAGES", environment: environment, defaultValue: 0),
 			channelMessageCount: integerValue("MESHTASTIC_PERF_CHANNEL_MESSAGES", environment: environment, defaultValue: 0),
 			resetStore: boolValue("MESHTASTIC_PERF_RESET_STORE", environment: environment) || arguments.contains("--meshtastic-perf-reset"),
 			compactNodeList: boolValue("MESHTASTIC_PERF_COMPACT_LIST", environment: environment) || arguments.contains("--meshtastic-perf-compact-list"),
 			disableDiscovery: !boolValue("MESHTASTIC_PERF_ENABLE_DISCOVERY", environment: environment),
-			initialTab: arguments.contains("--meshtastic-perf-start-map") ? .map : .nodes
+			initialTab: arguments.contains("--meshtastic-perf-start-map") ? .map : .nodes,
+			opensLocalStatsLog: arguments.contains("--meshtastic-perf-start-local-stats")
 		)
 	}
 
@@ -69,11 +73,14 @@ enum PerformanceSeedData {
 				try? context.save()
 			}
 			router.selectedTab = configuration.initialTab
+			if configuration.opensLocalStatsLog {
+				router.selectedNodeNum = 0x0A00_0000
+			}
 			Logger.data.info("📈 [PerfSeed] Existing large mesh seed found; skipping reseed")
 			return
 		}
 
-		Logger.data.info("📈 [PerfSeed] Seeding \(configuration.nodeCount, privacy: .public) nodes, \(configuration.telemetryHistoryPerNode, privacy: .public) telemetry samples/type, \(configuration.positionHistoryPerNode, privacy: .public) positions/node")
+		Logger.data.info("📈 [PerfSeed] Seeding \(configuration.nodeCount, privacy: .public) nodes, \(configuration.telemetryHistoryPerNode, privacy: .public) telemetry samples/type, \(configuration.localStatsHistoryPerNode, privacy: .public) local stats samples/node, \(configuration.positionHistoryPerNode, privacy: .public) positions/node")
 
 		let now = Date()
 		let baseNodeNum: Int64 = 0x0A00_0000
@@ -90,6 +97,9 @@ enum PerformanceSeedData {
 		do {
 			try context.save()
 			router.selectedTab = configuration.initialTab
+			if configuration.opensLocalStatsLog {
+				router.selectedNodeNum = baseNodeNum
+			}
 			let duration = Date().timeIntervalSince(start)
 			Logger.data.info("📈 [PerfSeed] Finished seeding \(configuration.nodeCount, privacy: .public) nodes in \(duration, privacy: .public) seconds")
 		} catch {
@@ -199,6 +209,36 @@ enum PerformanceSeedData {
 			environmentMetrics.nodeTelemetry = node
 			context.insert(environmentMetrics)
 		}
+
+		for sample in 0..<configuration.localStatsHistoryPerNode {
+			let timestamp = now.addingTimeInterval(TimeInterval(-(sample * 900 + index % 600)))
+			let localStats = TelemetryEntity()
+			localStats.metricsType = 4
+			localStats.time = timestamp
+			localStats.noiseFloor = syntheticNoiseFloor(nodeIndex: index, sample: sample)
+			localStats.channelUtilization = Float((index * 3 + sample * 5) % 100) / 2
+			localStats.airUtilTx = Float((index + sample * 2) % 80) / 10
+			localStats.numPacketsTx = Int32(120 + index % 70 + sample * 3)
+			localStats.numPacketsRx = Int32(300 + index % 140 + sample * 5)
+			localStats.numPacketsRxBad = Int32((index + sample) % 11)
+			localStats.numRxDupe = Int32((index + sample * 2) % 9)
+			localStats.numTxRelay = Int32((index + sample * 3) % 24)
+			localStats.numTxRelayCanceled = Int32((index + sample) % 4)
+			localStats.numOnlineNodes = Int32(max(1, min(250, configuration.nodeCount - (sample % 12))))
+			localStats.numTotalNodes = Int32(configuration.nodeCount)
+			localStats.uptimeSeconds = Int32(86_400 + index * 60 + sample * 900)
+			localStats.nodeTelemetry = node
+			context.insert(localStats)
+		}
+	}
+
+	private static func syntheticNoiseFloor(nodeIndex: Int, sample: Int) -> Int32 {
+		let dailyWave = sin(Double(sample) / 8.0) * 5.0
+		let nodeBias = Double((nodeIndex % 13) - 6)
+		let interferenceSpike = sample.isMultiple(of: 37) ? 14.0 : 0.0
+		let deterministicJitter = (deterministicUnitValue(nodeIndex * 4_096 + sample, salt: 0x8EBC_6AF0_9C88_C6E3) - 0.5) * 6.0
+		let value = -102.0 + dailyWave + nodeBias + interferenceSpike + deterministicJitter
+		return Int32(value.rounded())
 	}
 
 	private static func insertPositions(
