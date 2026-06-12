@@ -23,6 +23,7 @@ struct PerformanceSeedConfiguration {
 	let disableDiscovery: Bool
 	let initialTab: NavigationState.Tab
 	let opensLocalStatsLog: Bool
+	let localStatsSameHourSeed: Bool
 }
 
 @MainActor
@@ -44,7 +45,8 @@ enum PerformanceSeedData {
 			compactNodeList: boolValue("MESHTASTIC_PERF_COMPACT_LIST", environment: environment) || arguments.contains("--meshtastic-perf-compact-list"),
 			disableDiscovery: !boolValue("MESHTASTIC_PERF_ENABLE_DISCOVERY", environment: environment),
 			initialTab: arguments.contains("--meshtastic-perf-start-map") ? .map : .nodes,
-			opensLocalStatsLog: arguments.contains("--meshtastic-perf-start-local-stats")
+			opensLocalStatsLog: arguments.contains("--meshtastic-perf-start-local-stats"),
+			localStatsSameHourSeed: arguments.contains("--meshtastic-perf-local-stats-same-hour")
 		)
 	}
 
@@ -211,7 +213,11 @@ enum PerformanceSeedData {
 		}
 
 		for sample in 0..<configuration.localStatsHistoryPerNode {
-			let timestamp = now.addingTimeInterval(TimeInterval(-(sample * 900 + index % 600)))
+			let timestamp = if configuration.localStatsSameHourSeed {
+				localStatsSameHourTimestamp(now: now, sample: sample)
+			} else {
+				now.addingTimeInterval(TimeInterval(-(sample * 900 + index % 600)))
+			}
 			let localStats = TelemetryEntity()
 			localStats.metricsType = 4
 			localStats.time = timestamp
@@ -230,6 +236,14 @@ enum PerformanceSeedData {
 			localStats.nodeTelemetry = node
 			context.insert(localStats)
 		}
+	}
+
+	private static func localStatsSameHourTimestamp(now: Date, sample: Int) -> Date {
+		let calendar = Calendar.current
+		let currentHourStart = calendar.dateInterval(of: .hour, for: now)?.start ?? now
+		let minute = calendar.component(.minute, from: now)
+		let hourStart = minute < 25 ? currentHourStart.addingTimeInterval(-3_600) : currentHourStart
+		return hourStart.addingTimeInterval(TimeInterval(sample * 300))
 	}
 
 	private static func syntheticNoiseFloor(nodeIndex: Int, sample: Int) -> Int32 {

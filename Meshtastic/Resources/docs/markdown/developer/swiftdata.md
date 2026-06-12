@@ -232,6 +232,8 @@ xcrun simctl launch <UDID> gvh.MeshtasticClient \
 
 `--meshtastic-perf-start-local-stats` selects seeded node `0x0A000000` and opens its Local Stats Log directly in DEBUG simulator builds.
 
+Add `--meshtastic-perf-local-stats-same-hour` when checking short-range noise-floor chart layout. It keeps local stats samples in the same hour at 5-minute intervals, which makes `1h` axis label clipping easy to reproduce.
+
 On subsequent launches **without** `MESHTASTIC_PERF_RESET_STORE`, the harness detects the existing node count and skips re-seeding, so the app starts at full speed against the already-seeded store.
 
 ### What to expect

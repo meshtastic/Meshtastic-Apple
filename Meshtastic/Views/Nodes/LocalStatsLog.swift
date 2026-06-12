@@ -54,6 +54,22 @@ struct LocalStatsLog: View {
 		chartVisibleDuration(for: selectedChartRange)
 	}
 
+	private var chartXAxisLabelCount: Int {
+		idiom == .phone ? 2 : 6
+	}
+
+	private var chartXAxisFormat: Date.FormatStyle {
+		let dayDuration = LocalStatsChartRange.day.duration ?? 24 * 60 * 60
+		if chartVisibleDuration <= dayDuration {
+			return Date.FormatStyle()
+				.hour(.twoDigits(amPM: .omitted))
+				.minute()
+		}
+		return Date.FormatStyle()
+			.month(.defaultDigits)
+			.day(.defaultDigits)
+	}
+
 	private var chartYDomain: ClosedRange<Int> {
 		let values = noiseFloorReadings.map { Int($0.noiseFloor) }
 		guard let minValue = values.min(), let maxValue = values.max() else {
@@ -155,7 +171,11 @@ struct LocalStatsLog: View {
 						.foregroundStyle(.red)
 				}
 				.chartXAxis {
-					AxisMarks(position: .bottom, values: .automatic(desiredCount: idiom == .phone ? 3 : 6))
+					AxisMarks(position: .bottom, values: .automatic(desiredCount: chartXAxisLabelCount)) { _ in
+						AxisGridLine()
+						AxisTick()
+						AxisValueLabel(format: chartXAxisFormat)
+					}
 				}
 				.chartYAxis {
 					AxisMarks(position: .leading)
