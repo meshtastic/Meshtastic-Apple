@@ -88,8 +88,14 @@ struct MeshMap: View {
 
 	/// Keep the detached map window fully populated while still starving the
 	/// main tabbed Mesh Map when it is off-screen.
+	///
+	/// Also drop all map content while the app is backgrounded (both the tab and the detached
+	/// window). Otherwise the per-node `MapCircle` overlays stay live and MapKit/VectorKit
+	/// re-invalidates the whole overlay layer on `willEnterForeground`, which can spin at ~100%
+	/// CPU. The map repopulates on the next foreground.
 	private var isMapVisible: Bool {
-		showOpenWindowButton ? router.selectedTab == .map : true
+		guard !accessoryManager.isInBackground else { return false }
+		return showOpenWindowButton ? router.selectedTab == .map : true
 	}
 
 	/// Positions actually passed to the map — empty when the tab is off-screen
@@ -358,6 +364,11 @@ struct MeshMap: View {
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) {
 				filters.fallbackLocation = activeDeviceCoordinate
+			}
+			.onChange(of: accessoryManager.isInBackground) {
+				// Foreground/background flips isMapVisible; refresh so the overlay-bearing
+				// snapshots are dropped when backgrounded and rebuilt when foregrounded.
+				refreshVisiblePositionSnapshots(from: positionState.positions)
 			}
 			.onAppear {
 				UIApplication.shared.isIdleTimerDisabled = true
