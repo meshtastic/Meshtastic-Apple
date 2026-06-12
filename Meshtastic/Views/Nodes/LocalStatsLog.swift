@@ -22,7 +22,6 @@ struct LocalStatsLog: View {
 	@Bindable var node: NodeInfoEntity
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
-	@State private var chartSelection: Date?
 	@State private var selectedChartRange: LocalStatsChartRange = .day
 	@State private var chartScrollPosition = Date()
 
@@ -41,17 +40,6 @@ struct LocalStatsLog: View {
 			guard let time = point.time, let noiseFloor = point.noiseFloor else { return nil }
 			return LocalStatsChartPoint(time: time, noiseFloor: noiseFloor)
 		}
-	}
-
-	private var selectedChartPoint: LocalStatsChartPoint? {
-		guard let chartSelection else { return nil }
-		return noiseFloorReadings.min { lhs, rhs in
-			abs(lhs.time.timeIntervalSince(chartSelection)) < abs(rhs.time.timeIntervalSince(chartSelection))
-		}
-	}
-
-	private var latestNoiseFloorReading: LocalStatsChartPoint? {
-		noiseFloorReadings.last
 	}
 
 	private var chartDataDuration: TimeInterval {
@@ -74,12 +62,6 @@ struct LocalStatsLog: View {
 		let lower = min(minValue - 5, -115)
 		let upper = max(maxValue + 5, -75)
 		return lower ... upper
-	}
-
-	private var averageNoiseFloor: Int? {
-		let values = noiseFloorReadings.map { Int($0.noiseFloor) }
-		guard !values.isEmpty else { return nil }
-		return values.reduce(0, +) / values.count
 	}
 
 	private var dateFormatString: String {
@@ -151,61 +133,26 @@ struct LocalStatsLog: View {
 	private var chartView: some View {
 		GroupBox {
 			VStack(alignment: .leading, spacing: 10) {
-				chartSummaryView
 				chartControlsView
 				Chart {
 					ForEach(noiseFloorReadings) { point in
-						AreaMark(
-							x: .value("Time", point.time),
-							yStart: .value("Floor", chartYDomain.lowerBound),
-							yEnd: .value("Noise Floor", Int(point.noiseFloor))
-						)
-						.foregroundStyle(
-							LinearGradient(
-								colors: [.accentColor.opacity(0.24), .accentColor.opacity(0.02)],
-								startPoint: .top,
-								endPoint: .bottom
-							)
-						)
-
 						LineMark(
 							x: .value("Time", point.time),
 							y: .value("Noise Floor", Int(point.noiseFloor))
 						)
 						.foregroundStyle(Color.accentColor)
-						.lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
-						.interpolationMethod(.catmullRom)
+						.interpolationMethod(.linear)
+					}
+					if noiseFloorReadings.count == 1, let point = noiseFloorReadings.first {
+						PointMark(
+							x: .value("Time", point.time),
+							y: .value("Noise Floor", Int(point.noiseFloor))
+						)
+						.foregroundStyle(Color.accentColor)
 					}
 					RuleMark(y: .value("Busy Floor (-85 dBm)", -85))
 						.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
 						.foregroundStyle(.red)
-						.annotation(position: .topTrailing, alignment: .trailing) {
-							Text("busy")
-								.font(.caption2)
-								.foregroundStyle(.secondary)
-						}
-					if let selectedChartPoint {
-						RuleMark(x: .value("Selected", selectedChartPoint.time))
-							.foregroundStyle(.secondary.opacity(0.45))
-						PointMark(
-							x: .value("Time", selectedChartPoint.time),
-							y: .value("Noise Floor", Int(selectedChartPoint.noiseFloor))
-						)
-						.foregroundStyle(noiseFloorColor(selectedChartPoint.noiseFloor))
-						.symbolSize(56)
-						.annotation(position: .top, alignment: .center) {
-							VStack(alignment: .leading, spacing: 2) {
-								Text("\(selectedChartPoint.noiseFloor) dBm")
-									.font(.caption.bold())
-								Text(selectedChartPoint.time.formatted(date: .omitted, time: .shortened))
-									.font(.caption2)
-									.foregroundStyle(.secondary)
-							}
-							.padding(.horizontal, 8)
-							.padding(.vertical, 6)
-							.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-						}
-					}
 				}
 				.chartXAxis {
 					AxisMarks(position: .bottom, values: .automatic(desiredCount: idiom == .phone ? 3 : 6))
@@ -213,7 +160,6 @@ struct LocalStatsLog: View {
 				.chartYAxis {
 					AxisMarks(position: .leading)
 				}
-				.chartXSelection(value: $chartSelection)
 				.chartYScale(domain: chartYDomain)
 				.chartScrollableAxes(.horizontal)
 				.chartXVisibleDomain(length: chartVisibleDuration)
@@ -227,27 +173,6 @@ struct LocalStatsLog: View {
 		.padding(.horizontal)
 		.onChange(of: selectedChartRange) { _, newRange in
 			resetChartViewToLatest(for: newRange)
-		}
-	}
-
-	@ViewBuilder
-	private var chartSummaryView: some View {
-		HStack(spacing: 8) {
-			LocalStatsMetricPill(
-				title: "Latest",
-				value: latestNoiseFloorReading.map { "\($0.noiseFloor) dBm" } ?? Constants.nilValueIndicator,
-				color: latestNoiseFloorReading.map { noiseFloorColor($0.noiseFloor) } ?? .secondary
-			)
-			LocalStatsMetricPill(
-				title: "Average",
-				value: averageNoiseFloor.map { "\($0) dBm" } ?? Constants.nilValueIndicator,
-				color: .secondary
-			)
-			LocalStatsMetricPill(
-				title: "Samples",
-				value: "\(noiseFloorReadings.count)",
-				color: .secondary
-			)
 		}
 	}
 
@@ -437,7 +362,6 @@ struct LocalStatsLog: View {
 			guard let metrics = localStats.first(where: { $0.id == newSelection }) else {
 				return
 			}
-			chartSelection = metrics.time
 			if let time = metrics.time {
 				chartScrollPosition = scrollStart(containing: time)
 			}
@@ -529,28 +453,6 @@ private enum LocalStatsChartRange: String, CaseIterable, Identifiable {
 		case .all:
 			return nil
 		}
-	}
-}
-
-private struct LocalStatsMetricPill: View {
-	let title: LocalizedStringKey
-	let value: String
-	let color: Color
-
-	var body: some View {
-		VStack(alignment: .leading, spacing: 3) {
-			Text(title)
-				.font(.caption2)
-				.foregroundStyle(.secondary)
-			Text(value)
-				.font(.callout.weight(.semibold))
-				.foregroundStyle(color)
-				.monospacedDigit()
-		}
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.padding(.horizontal, 10)
-		.padding(.vertical, 8)
-		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 	}
 }
 
