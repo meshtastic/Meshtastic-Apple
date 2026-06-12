@@ -79,12 +79,16 @@ final class NodeFilterParameters: ObservableObject {
 	@Published var deviceRoles: Set<Int> = [] {
 		didSet {
 			let array = Array(deviceRoles)
-			UserDefaults.standard.set(array, forKey: "nodeFilter.deviceRoles")
+			store.set(array, forKey: "nodeFilter.deviceRoles")
 		}
 	}
-	
+
 	@AppStorage("nodeFilter.viaLora") private var _viaLora = true
 	@AppStorage("nodeFilter.viaMqtt") private var _viaMqtt = true
+
+	/// Backing store for all persisted filter values. Defaults to `.standard`; tests inject an
+	/// isolated suite so they don't read or clobber the shared `UserDefaults.standard` domain.
+	private let store: UserDefaults
 	
 	// Public computed wrappers with enforcement
 	var viaLora: Bool {
@@ -108,6 +112,33 @@ final class NodeFilterParameters: ObservableObject {
 			}
 		}
 	}
+
+	/// - Parameter store: The `UserDefaults` instance backing all persisted filter values.
+	///   Defaults to `.standard`; pass an isolated suite in tests.
+	init(store: UserDefaults = .standard) {
+		self.store = store
+
+		// Bind each @AppStorage wrapper to the injected store. Without this they would read and
+		// write `.standard` regardless of the store passed in.
+		_searchText = AppStorage(wrappedValue: "", "nodeFilter.searchText", store: store)
+		_isOnline = AppStorage(wrappedValue: false, "nodeFilter.isOnline", store: store)
+		_isPkiEncrypted = AppStorage(wrappedValue: false, "nodeFilter.isPkiEncrypted", store: store)
+		_isFavorite = AppStorage(wrappedValue: false, "nodeFilter.isFavorite", store: store)
+		_isIgnored = AppStorage(wrappedValue: false, "nodeFilter.isIgnored", store: store)
+		_isEnvironment = AppStorage(wrappedValue: false, "nodeFilter.isEnvironment", store: store)
+		_distanceFilter = AppStorage(wrappedValue: false, "nodeFilter.distanceFilter", store: store)
+		_maxDistance = AppStorage(wrappedValue: 800_000, "nodeFilter.maxDistance", store: store)
+		_hopsAway = AppStorage(wrappedValue: -1.0, "nodeFilter.hopsAway", store: store)
+		_roleFilter = AppStorage(wrappedValue: false, "nodeFilter.roleFilter", store: store)
+		__viaLora = AppStorage(wrappedValue: true, "nodeFilter.viaLora", store: store)
+		__viaMqtt = AppStorage(wrappedValue: true, "nodeFilter.viaMqtt", store: store)
+
+		// Load persisted deviceRoles (didSet does not fire for assignments inside init).
+		if let storedRoles = store.array(forKey: "nodeFilter.deviceRoles") as? [Int] {
+			self.deviceRoles = Set(storedRoles)
+		}
+	}
+
 
 	/// Whether any filter is actively narrowing results (ignoring search text).
 	var isFiltering: Bool {
