@@ -30,7 +30,7 @@ struct RequestLocalStatsButton: View {
 		} label: { completion in
 			if let completion, completion.percentComplete > 0.0 {
 				Label {
-					Text("\(cooldownTitle) (in \(Int(completion.secondsRemaining))s)")
+					Text("\(cooldownTitle) \(Int(completion.secondsRemaining))s")
 						.foregroundStyle(.secondary)
 						.lineLimit(1)
 				} icon: {

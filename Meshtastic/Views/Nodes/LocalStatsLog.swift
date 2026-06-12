@@ -165,7 +165,8 @@ struct LocalStatsLog: View {
 				.chartXVisibleDomain(length: chartVisibleDuration)
 				.chartScrollPosition(x: $chartScrollPosition)
 				.chartLegend(.hidden)
-				.frame(height: idiom == .phone ? 210 : 300)
+				.frame(height: idiom == .phone ? 240 : 320)
+				.padding(.bottom, 8)
 			}
 		} label: {
 			Label("\(localStats.count) Local Stats Readings", systemImage: "chart.xyaxis.line")
