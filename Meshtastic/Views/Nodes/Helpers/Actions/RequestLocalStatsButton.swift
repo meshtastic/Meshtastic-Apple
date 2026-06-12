@@ -32,6 +32,7 @@ struct RequestLocalStatsButton: View {
 				Label {
 					Text("\(cooldownTitle) (in \(Int(completion.secondsRemaining))s)")
 						.foregroundStyle(.secondary)
+						.lineLimit(1)
 				} icon: {
 					Image("progress.ring.dashed", variableValue: completion.percentComplete)
 						.foregroundStyle(.secondary)
@@ -39,6 +40,7 @@ struct RequestLocalStatsButton: View {
 			} else {
 				Label {
 					Text(title)
+						.lineLimit(1)
 				} icon: {
 					Image(systemName: systemImage)
 						.symbolRenderingMode(.hierarchical)

@@ -371,12 +371,17 @@ struct LocalStatsLog: View {
 	}
 
 	private var buttonView: some View {
-		HStack {
+		HStack(spacing: 8) {
 			if node.hasLocalStats {
 				Button(role: .destructive) {
 					isPresentingClearLogConfirm = true
 				} label: {
-					Label("Clear Log", systemImage: "trash.fill")
+					Label {
+						Text("Clear")
+							.lineLimit(1)
+					} icon: {
+						Image(systemName: "trash.fill")
+					}
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
@@ -400,8 +405,8 @@ struct LocalStatsLog: View {
 
 			RequestLocalStatsButton(
 				node: node,
-				title: "Request Reading",
-				cooldownTitle: "Reading",
+				title: "Request",
+				cooldownTitle: "Wait",
 				systemImage: "arrow.clockwise"
 			)
 			.buttonStyle(.bordered)
@@ -413,7 +418,12 @@ struct LocalStatsLog: View {
 					exportString = telemetryToCsvFile(telemetry: localStats, metricsType: 4)
 					isExporting = true
 				} label: {
-					Label("Save", systemImage: "square.and.arrow.down")
+					Label {
+						Text("Save")
+							.lineLimit(1)
+					} icon: {
+						Image(systemName: "square.and.arrow.down")
+					}
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
