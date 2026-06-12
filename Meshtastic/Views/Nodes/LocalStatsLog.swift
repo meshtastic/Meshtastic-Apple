@@ -23,15 +23,16 @@ struct LocalStatsLog: View {
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
 	@State private var chartSelection: Date?
+	@State private var selectedChartRange: LocalStatsChartRange = .day
+	@State private var chartScrollPosition = Date()
 
 	private var localStats: [TelemetryEntity] {
 		node.safeTelemetries(ofType: 4)
 	}
 
 	private var chartData: [TelemetryEntity] {
-		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 		return localStats
-			.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+			.filter { $0.time != nil }
 			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 	}
 
@@ -51,6 +52,18 @@ struct LocalStatsLog: View {
 
 	private var latestNoiseFloorReading: LocalStatsChartPoint? {
 		noiseFloorReadings.last
+	}
+
+	private var chartDataDuration: TimeInterval {
+		guard let firstTime = noiseFloorReadings.first?.time,
+			  let lastTime = noiseFloorReadings.last?.time else {
+			return LocalStatsChartRange.minimumVisibleDuration
+		}
+		return max(lastTime.timeIntervalSince(firstTime), LocalStatsChartRange.minimumVisibleDuration)
+	}
+
+	private var chartVisibleDuration: TimeInterval {
+		chartVisibleDuration(for: selectedChartRange)
 	}
 
 	private var chartYDomain: ClosedRange<Int> {
@@ -130,12 +143,16 @@ struct LocalStatsLog: View {
 				}
 			}
 		)
+		.onAppear {
+			resetChartViewToLatest()
+		}
 	}
 
 	private var chartView: some View {
 		GroupBox {
-			VStack(alignment: .leading, spacing: 12) {
+			VStack(alignment: .leading, spacing: 10) {
 				chartSummaryView
+				chartControlsView
 				Chart {
 					ForEach(noiseFloorReadings) { point in
 						AreaMark(
@@ -198,17 +215,24 @@ struct LocalStatsLog: View {
 				}
 				.chartXSelection(value: $chartSelection)
 				.chartYScale(domain: chartYDomain)
+				.chartScrollableAxes(.horizontal)
+				.chartXVisibleDomain(length: chartVisibleDuration)
+				.chartScrollPosition(x: $chartScrollPosition)
 				.chartLegend(.hidden)
-				.frame(minHeight: 210)
+				.frame(height: idiom == .phone ? 210 : 300)
 			}
 		} label: {
 			Label("\(localStats.count) Local Stats Readings", systemImage: "chart.xyaxis.line")
 		}
 		.padding(.horizontal)
+		.onChange(of: selectedChartRange) { _, newRange in
+			resetChartViewToLatest(for: newRange)
+		}
 	}
 
+	@ViewBuilder
 	private var chartSummaryView: some View {
-		HStack(spacing: 10) {
+		HStack(spacing: 8) {
 			LocalStatsMetricPill(
 				title: "Latest",
 				value: latestNoiseFloorReading.map { "\($0.noiseFloor) dBm" } ?? Constants.nilValueIndicator,
@@ -224,6 +248,28 @@ struct LocalStatsLog: View {
 				value: "\(noiseFloorReadings.count)",
 				color: .secondary
 			)
+		}
+	}
+
+	private var chartControlsView: some View {
+		HStack(spacing: 8) {
+			Picker("Visible Range", selection: $selectedChartRange) {
+				ForEach(LocalStatsChartRange.allCases) { range in
+					Text(range.title).tag(range)
+				}
+			}
+			.pickerStyle(.segmented)
+
+			Button {
+				resetChartViewToLatest()
+			} label: {
+				Label("Latest", systemImage: "forward.end")
+					.labelStyle(.iconOnly)
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.small)
+			.accessibilityHint("Scrolls the chart to the newest reading")
 		}
 	}
 
@@ -369,7 +415,38 @@ struct LocalStatsLog: View {
 				return
 			}
 			chartSelection = metrics.time
+			if let time = metrics.time {
+				chartScrollPosition = scrollStart(containing: time)
+			}
 		}
+	}
+
+	private func chartVisibleDuration(for range: LocalStatsChartRange) -> TimeInterval {
+		guard let duration = range.duration else {
+			return chartDataDuration
+		}
+		return min(duration, chartDataDuration)
+	}
+
+	private func resetChartViewToLatest(for range: LocalStatsChartRange? = nil) {
+		guard let firstTime = noiseFloorReadings.first?.time,
+			  let latestTime = noiseFloorReadings.last?.time else {
+			return
+		}
+		let duration = chartVisibleDuration(for: range ?? selectedChartRange)
+		chartScrollPosition = max(firstTime, latestTime.addingTimeInterval(-duration))
+	}
+
+	private func scrollStart(containing date: Date) -> Date {
+		guard let firstTime = noiseFloorReadings.first?.time,
+			  let latestTime = noiseFloorReadings.last?.time else {
+			return date
+		}
+		let visibleDuration = chartVisibleDuration
+		let lowerBound = firstTime
+		let upperBound = max(firstTime, latestTime.addingTimeInterval(-visibleDuration))
+		let centeredStart = date.addingTimeInterval(-visibleDuration / 2)
+		return min(max(centeredStart, lowerBound), upperBound)
 	}
 
 	private func noiseFloorColor(_ value: Int32) -> Color {
@@ -388,6 +465,48 @@ private struct LocalStatsChartPoint: Identifiable {
 	let noiseFloor: Int32
 
 	var id: Date { time }
+}
+
+private enum LocalStatsChartRange: String, CaseIterable, Identifiable {
+	case hour
+	case sixHours
+	case day
+	case week
+	case all
+
+	static let minimumVisibleDuration: TimeInterval = 15 * 60
+
+	var id: String { rawValue }
+
+	var title: String {
+		switch self {
+		case .hour:
+			return "1h"
+		case .sixHours:
+			return "6h"
+		case .day:
+			return "24h"
+		case .week:
+			return "7d"
+		case .all:
+			return "All"
+		}
+	}
+
+	var duration: TimeInterval? {
+		switch self {
+		case .hour:
+			return 60 * 60
+		case .sixHours:
+			return 6 * 60 * 60
+		case .day:
+			return 24 * 60 * 60
+		case .week:
+			return 7 * 24 * 60 * 60
+		case .all:
+			return nil
+		}
+	}
 }
 
 private struct LocalStatsMetricPill: View {
