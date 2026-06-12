@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import Charts
 import OSLog
 
@@ -232,25 +233,26 @@ struct LocalStatsLog: View {
 		Table(localStats, selection: $selection, sortOrder: $sortOrder) {
 			TableColumn("Local Stats") { ls in
 				HStack {
-					Text(ls.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
-						.font(.caption)
-						.fontWeight(.semibold)
+					CopyableLocalStatsField(
+						timestampText(for: ls),
+						title: "Timestamp",
+						font: .caption,
+						fontWeight: .semibold
+					)
 					Spacer()
 				}
 				HStack {
-					if let noiseFloor = ls.noiseFloor {
-						Text("Noise Floor \(noiseFloor) dBm")
-							.foregroundColor(noiseFloorColor(noiseFloor))
-					} else {
-						Text("Noise Floor No Reading")
-							.foregroundColor(.gray)
-					}
+					CopyableLocalStatsField(
+						phoneNoiseFloorText(for: ls),
+						title: "Noise Floor",
+						color: noiseFloorTextColor(for: ls)
+					)
 					Spacer()
 				}
 				HStack {
-					Text("Relayed: \(ls.numTxRelay)")
-					Text("Canceled: \(ls.numTxRelayCanceled)")
-					Text("Dupes: \(ls.numRxDupe)")
+					CopyableLocalStatsField("Relayed: \(ls.numTxRelay)", title: "Relayed")
+					CopyableLocalStatsField("Canceled: \(ls.numTxRelayCanceled)", title: "Canceled")
+					CopyableLocalStatsField("Dupes: \(ls.numRxDupe)", title: "Dupes")
 					Spacer()
 				}
 				.font(.caption)
@@ -262,55 +264,46 @@ struct LocalStatsLog: View {
 	private var macTableView: some View {
 		Table(localStats, selection: $selection, sortOrder: $sortOrder) {
 			TableColumn("Noise Floor") { ls in
-				if let noiseFloor = ls.noiseFloor {
-					Text("\(noiseFloor) dBm")
-						.foregroundColor(noiseFloorColor(noiseFloor))
-				} else {
-					Text("No Reading")
-						.foregroundColor(.gray)
-				}
+				CopyableLocalStatsField(
+					noiseFloorValueText(for: ls),
+					title: "Noise Floor",
+					color: noiseFloorTextColor(for: ls)
+				)
 			}
 			TableColumn("Uptime") { ls in
-				if let uptimeSeconds = ls.uptimeSeconds {
-					let now = Date.now
-					let later = now + TimeInterval(uptimeSeconds)
-					let components = (now..<later).formatted(.components(style: .narrow))
-					Text(components)
-				} else {
-					Text(Constants.nilValueIndicator)
-				}
+				CopyableLocalStatsField(uptimeText(for: ls), title: "Uptime")
 			}
 			.width(min: 100)
 			TableColumn("Relayed") { ls in
-				Text("\(ls.numTxRelay)")
+				CopyableLocalStatsField("\(ls.numTxRelay)", title: "Relayed")
 			}
 			.width(min: 80)
 			TableColumn("Canceled") { ls in
-				Text("\(ls.numTxRelayCanceled)")
+				CopyableLocalStatsField("\(ls.numTxRelayCanceled)", title: "Canceled")
 			}
 			.width(min: 80)
 			TableColumn("Dupes") { ls in
-				Text("\(ls.numRxDupe)")
+				CopyableLocalStatsField("\(ls.numRxDupe)", title: "Dupes")
 			}
 			.width(min: 80)
 			TableColumn("Packets Tx") { ls in
-				Text("\(ls.numPacketsTx)")
+				CopyableLocalStatsField("\(ls.numPacketsTx)", title: "Packets Tx")
 			}
 			.width(min: 80)
 			TableColumn("Packets Rx") { ls in
-				Text("\(ls.numPacketsRx)")
+				CopyableLocalStatsField("\(ls.numPacketsRx)", title: "Packets Rx")
 			}
 			.width(min: 80)
 			TableColumn("Bad Rx") { ls in
-				Text("\(ls.numPacketsRxBad)")
+				CopyableLocalStatsField("\(ls.numPacketsRxBad)", title: "Bad Rx")
 			}
 			.width(min: 80)
 			TableColumn("Nodes Online") { ls in
-				Text("\(ls.numOnlineNodes)")
+				CopyableLocalStatsField("\(ls.numOnlineNodes)", title: "Nodes Online")
 			}
 			.width(min: 100)
 			TableColumn("Timestamp") { ls in
-				Text(ls.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+				CopyableLocalStatsField(timestampText(for: ls), title: "Timestamp")
 			}
 			.width(min: 180)
 		}
@@ -425,6 +418,77 @@ struct LocalStatsLog: View {
 		} else {
 			return .red
 		}
+	}
+
+	private func timestampText(for localStats: TelemetryEntity) -> String {
+		localStats.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
+	}
+
+	private func phoneNoiseFloorText(for localStats: TelemetryEntity) -> String {
+		guard let noiseFloor = localStats.noiseFloor else {
+			return "Noise Floor No Reading"
+		}
+		return "Noise Floor \(noiseFloor) dBm"
+	}
+
+	private func noiseFloorValueText(for localStats: TelemetryEntity) -> String {
+		guard let noiseFloor = localStats.noiseFloor else {
+			return "No Reading"
+		}
+		return "\(noiseFloor) dBm"
+	}
+
+	private func noiseFloorTextColor(for localStats: TelemetryEntity) -> Color {
+		guard let noiseFloor = localStats.noiseFloor else {
+			return .gray
+		}
+		return noiseFloorColor(noiseFloor)
+	}
+
+	private func uptimeText(for localStats: TelemetryEntity) -> String {
+		guard let uptimeSeconds = localStats.uptimeSeconds else {
+			return Constants.nilValueIndicator
+		}
+		let now = Date.now
+		let later = now + TimeInterval(uptimeSeconds)
+		return (now..<later).formatted(.components(style: .narrow))
+	}
+}
+
+private struct CopyableLocalStatsField: View {
+	let value: String
+	let title: String
+	let font: Font?
+	let fontWeight: Font.Weight?
+	let color: Color?
+
+	init(
+		_ value: String,
+		title: String,
+		font: Font? = nil,
+		fontWeight: Font.Weight? = nil,
+		color: Color? = nil
+	) {
+		self.value = value
+		self.title = title
+		self.font = font
+		self.fontWeight = fontWeight
+		self.color = color
+	}
+
+	var body: some View {
+		Text(value)
+			.font(font)
+			.fontWeight(fontWeight)
+			.foregroundColor(color)
+			.textSelection(.enabled)
+			.contextMenu {
+				Button {
+					UIPasteboard.general.string = value
+				} label: {
+					Label("Copy \(title)", systemImage: "doc.on.doc")
+				}
+			}
 	}
 }
 
