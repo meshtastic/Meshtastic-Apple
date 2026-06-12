@@ -5,6 +5,9 @@ struct RequestLocalStatsButton: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	var node: NodeInfoEntity
+	var title = "Request Local Stats"
+	var cooldownTitle = "Local Stats"
+	var systemImage = "chart.bar"
 
 	@State
 	private var isPresentingLocalStatsSentAlert: Bool = false
@@ -27,7 +30,7 @@ struct RequestLocalStatsButton: View {
 		} label: { completion in
 			if let completion, completion.percentComplete > 0.0 {
 				Label {
-					Text("Local Stats (in \(Int(completion.secondsRemaining))s)")
+					Text("\(cooldownTitle) (in \(Int(completion.secondsRemaining))s)")
 						.foregroundStyle(.secondary)
 				} icon: {
 					Image("progress.ring.dashed", variableValue: completion.percentComplete)
@@ -35,9 +38,9 @@ struct RequestLocalStatsButton: View {
 				}.disabled(true)
 			} else {
 				Label {
-					Text("Request Local Stats")
+					Text(title)
 				} icon: {
-					Image(systemName: "chart.bar")
+					Image(systemName: systemImage)
 						.symbolRenderingMode(.hierarchical)
 				}
 			}

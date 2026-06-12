@@ -220,6 +220,18 @@ struct LocalStatsLog: View {
 				.chartScrollPosition(x: $chartScrollPosition)
 				.chartLegend(.hidden)
 				.frame(height: idiom == .phone ? 210 : 300)
+				HStack {
+					Spacer()
+					RequestLocalStatsButton(
+						node: node,
+						title: "Request Reading",
+						cooldownTitle: "Reading",
+						systemImage: "arrow.clockwise"
+					)
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(idiom == .phone ? .regular : .large)
+				}
 			}
 		} label: {
 			Label("\(localStats.count) Local Stats Readings", systemImage: "chart.xyaxis.line")
