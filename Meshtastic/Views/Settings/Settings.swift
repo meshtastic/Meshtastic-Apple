@@ -31,31 +31,41 @@ struct Settings: View {
 		return nodes.first(where: { $0.num == nodeNum })
 	}
 
-	private var showsAnyModuleConfiguration: Bool {
+	// The module-support helpers take a pre-resolved node + excluded-modules bitmask so
+	// `moduleConfigurationSection` can compute them ONCE per render. They used to read the
+	// `moduleConfigurationNode` computed property (a linear scan over the full node @Query
+	// plus a `.metadata` relationship fault) on every call, and the section calls them ~28×
+	// per render — which, under live ingestion re-rendering, pegged the main thread.
+	private func showsAnyModuleConfiguration(node: NodeInfoEntity?, excludedModules: Int) -> Bool {
 		isAnySupported([
 			.ambientlightingConfig,
+			.audioConfig,
 			.cannedmsgConfig,
 			.detectionsensorConfig,
 			.extnotifConfig,
 			.mqttConfig,
+			.neighborinfoConfig,
 			.rangetestConfig,
 			.paxcounterConfig,
 			.serialConfig,
 			.storeforwardConfig,
 			.telemetryConfig
-		]) || isTAKModuleSupported() || accessoryManager.supportsStatusMessage
+		], excludedModules: excludedModules)
+			|| isTAKModuleSupported(node)
+			|| isTrafficManagementModuleSupported(node)
+			|| accessoryManager.supportsStatusMessage
 	}
 
-	private func isModuleSupported(_ module: ExcludedModules) -> Bool {
-		return Int(moduleConfigurationNode?.metadata?.excludedModules ?? Int32.zero) & module.rawValue == 0
+	private func isModuleSupported(_ module: ExcludedModules, excludedModules: Int) -> Bool {
+		return excludedModules & module.rawValue == 0
 	}
 
-	private func isAnySupported(_ modules: [ExcludedModules]) -> Bool {
-		return modules.map(isModuleSupported).contains(true)
+	private func isAnySupported(_ modules: [ExcludedModules], excludedModules: Int) -> Bool {
+		return modules.contains { isModuleSupported($0, excludedModules: excludedModules) }
 	}
 
-	private func isTAKModuleSupported() -> Bool {
-		guard let node = moduleConfigurationNode else { return false }
+	private func isTAKModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+		guard let node else { return false }
 		if node.takConfig != nil {
 			return true
 		}
@@ -66,6 +76,15 @@ struct Settings: View {
 		}
 
 		return deviceRole == .tak || deviceRole == .takTracker
+	}
+
+	private func isTrafficManagementModuleSupported(_ node: NodeInfoEntity?) -> Bool {
+		guard node != nil else { return false }
+		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
+	}
+
+	private var showsDevelopersSection: Bool {
+		Bundle.main.isDebug || Bundle.main.isTestFlight
 	}
 
 	// MARK: Views
@@ -192,8 +211,13 @@ struct Settings: View {
 	}
 
 	var moduleConfigurationSection: some View {
-		Section {
-			if isModuleSupported(.ambientlightingConfig) {
+		// Resolve the target node and its excluded-modules bitmask ONCE per render, then feed
+		// them to the cheap per-module checks below (formerly each re-scanned the node @Query
+		// and re-faulted metadata — ~28× per render).
+		let node = moduleConfigurationNode
+		let excludedModules = Int(node?.metadata?.excludedModules ?? Int32.zero)
+		return Section {
+			if isModuleSupported(.ambientlightingConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.ambientLighting) {
 					Label {
 						Text("Ambient Lighting")
@@ -203,7 +227,17 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.cannedmsgConfig) {
+			if isModuleSupported(.audioConfig, excludedModules: excludedModules) {
+				NavigationLink(value: SettingsNavigationState.audio) {
+					Label {
+						Text("Audio")
+					} icon: {
+						Image(systemName: "waveform")
+					}
+				}
+			}
+
+			if isModuleSupported(.cannedmsgConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.cannedMessages) {
 					Label {
 						Text("Canned Messages")
@@ -213,7 +247,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.detectionsensorConfig) {
+			if isModuleSupported(.detectionsensorConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.detectionSensor) {
 					Label {
 						Text("Detection Sensor")
@@ -223,7 +257,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.extnotifConfig) {
+			if isModuleSupported(.extnotifConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.externalNotification) {
 					Label {
 						Text("External Notification")
@@ -233,7 +267,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.mqttConfig) {
+			if isModuleSupported(.mqttConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.mqtt) {
 					Label {
 						Text("MQTT")
@@ -243,7 +277,17 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.rangetestConfig) {
+			if isModuleSupported(.neighborinfoConfig, excludedModules: excludedModules) {
+				NavigationLink(value: SettingsNavigationState.neighborInfo) {
+					Label {
+						Text("Neighbor Info")
+					} icon: {
+						Image(systemName: "network")
+					}
+				}
+			}
+
+			if isModuleSupported(.rangetestConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.rangeTest) {
 					Label {
 						Text("Range Test")
@@ -253,7 +297,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.paxcounterConfig) {
+			if isModuleSupported(.paxcounterConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.paxCounter) {
 					Label {
 						Text("PAX Counter")
@@ -263,7 +307,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.extnotifConfig) {
+			if isModuleSupported(.extnotifConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.ringtone) {
 					Label {
 						Text("Ringtone")
@@ -273,7 +317,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.serialConfig) {
+			if isModuleSupported(.serialConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.serial) {
 					Label {
 						Text("Serial")
@@ -293,7 +337,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.storeforwardConfig) {
+			if isModuleSupported(.storeforwardConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.storeAndForward) {
 					Label {
 						Text("Store & Forward")
@@ -317,7 +361,7 @@ struct Settings: View {
 				}
 			}
 
-			if isModuleSupported(.telemetryConfig) {
+			if isModuleSupported(.telemetryConfig, excludedModules: excludedModules) {
 				NavigationLink(value: SettingsNavigationState.telemetry) {
 					Label {
 						Text("Telemetry")
@@ -327,7 +371,17 @@ struct Settings: View {
 				}
 			}
 
-			if !showsAnyModuleConfiguration {
+			if isTrafficManagementModuleSupported(node) {
+				NavigationLink(value: SettingsNavigationState.trafficManagement) {
+					Label {
+						Text("Traffic Management")
+					} icon: {
+						Image(systemName: "arrow.triangle.branch")
+					}
+				}
+			}
+
+			if !showsAnyModuleConfiguration(node: node, excludedModules: excludedModules) {
 				Text("This node does not support any configurable modules.")
 					.foregroundColor(.secondary)
 			}
@@ -350,6 +404,27 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
+			NavigationLink(value: SettingsNavigationState.backupManagement) {
+				Label {
+					Text("Backup Management")
+				} icon: {
+					Image(systemName: "externaldrive")
+				}
+			}
+			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
+				Label {
+					Text("Data Browser")
+				} icon: {
+					Image(systemName: "tablecells")
+				}
+			}
+			NavigationLink(value: SettingsNavigationState.deviceLinks) {
+				Label {
+					Text("Device Links")
+				} icon: {
+					Image(systemName: "link")
+				}
+			}
 			NavigationLink(value: SettingsNavigationState.appFiles) {
 				Label {
 					Text("App Files")
@@ -364,13 +439,6 @@ struct Settings: View {
 					} icon: {
 						Image(systemName: "hammer")
 					}
-				}
-			}
-			NavigationLink(value: SettingsNavigationState.coreDataBrowser) {
-				Label {
-					Text("Data Browser")
-				} icon: {
-					Image(systemName: "tablecells")
 				}
 			}
 		}
@@ -506,21 +574,7 @@ struct Settings: View {
 								}
 								.pickerStyle(.navigationLink)
 								.onChange(of: selectedNode) { _, newValue in
-									if selectedNode > 0,
-									   let destinationNode = nodes.first(where: { $0.num == newValue }),
-									   let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
-									   let fromUser = connectedNode.user,
-									   connectedNode.myInfo != nil,  // not sure why, but this check was present in the initial code.
-									   let toUser = destinationNode.user {
-
-										preferredNodeNum = Int(connectedNode.num)
-										Task {
-											_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
-											Task { @MainActor in
-												Logger.mesh.info("Sent node metadata request from node details")
-											}
-										}
-									}
+									handleSelectedNodeChange(newValue)
 								}
 								TipView(AdminChannelTip(), arrowEdge: .top)
 											.tipViewStyle(PersistentTipStyle())
@@ -537,9 +591,9 @@ struct Settings: View {
 					deviceConfigurationSection
 					moduleConfigurationSection
 					loggingSection
-#if DEBUG
+					if showsDevelopersSection {
 					developersSection
-#endif
+					}
 				}
 			}
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
@@ -580,6 +634,8 @@ struct Settings: View {
 					PowerConfig(node: configNode)
 				case .ambientLighting:
 					AmbientLightingConfig(node: node)
+				case .audio:
+					AudioConfig(node: configNode)
 				case .cannedMessages:
 					CannedMessagesConfig(node: configNode)
 				case .detectionSensor:
@@ -588,6 +644,8 @@ struct Settings: View {
 					ExternalNotificationConfig(node: configNode)
 				case .mqtt:
 					MQTTConfig(node: configNode)
+				case .neighborInfo:
+					NeighborInfoConfig(node: configNode)
 				case .rangeTest:
 					RangeTestConfig(node: configNode)
 				case .paxCounter:
@@ -604,12 +662,16 @@ struct Settings: View {
 					StoreForwardConfig(node: configNode)
 				case .telemetry:
 					TelemetryConfig(node: configNode)
+				case .trafficManagement:
+					TrafficManagementConfig(node: configNode)
 				case .debugLogs:
 					AppLog()
 				case .appFiles:
 					AppData()
 				case .firmwareUpdates:
 					Firmware(node: node)
+				case .deviceLinks:
+					DeviceLinkDirectory()
 				case .tools:
 					if #available(iOS 18, *) {
 						Tools()
@@ -624,6 +686,8 @@ struct Settings: View {
 					DiscoveryScanView()
 				case .helpDocs:
 					DocBrowserView()
+				case .backupManagement:
+					BackupManagement()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
@@ -676,6 +740,23 @@ struct Settings: View {
 			}
 		} else {
 			self.selectedNode = Int(accessoryManager.isConnected ? nodeNum: 0)
+		}
+	}
+
+	private func handleSelectedNodeChange(_ newValue: Int) {
+		guard selectedNode > 0,
+			let destinationNode = nodes.first(where: { $0.num == newValue }),
+			let connectedNode = nodes.first(where: { $0.num == preferredNodeNum }),
+			let fromUser = connectedNode.user,
+			connectedNode.myInfo != nil,
+			let toUser = destinationNode.user else { return }
+
+		preferredNodeNum = Int(connectedNode.num)
+		Task {
+			_ = try await accessoryManager.requestDeviceMetadata(fromUser: fromUser, toUser: toUser)
+			Task { @MainActor in
+				Logger.mesh.info("Sent node metadata request from node details")
+			}
 		}
 	}
 }

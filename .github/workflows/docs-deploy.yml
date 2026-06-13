@@ -1,5 +1,9 @@
 name: Deploy Docs
 
+# Builds and validates the docs on every push to main, but does NOT publish to
+# GitHub Pages. Only tagged releases publish (see docs-release.yml, on v*.*.*),
+# so changes merged to main never overwrite the released docs site between
+# releases. The live site reflects the most recent vX.Y.Z tag.
 on:
   push:
     branches:
@@ -7,12 +11,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   build-snapshots:
@@ -92,26 +90,12 @@ jobs:
           bundler-cache: true
           working-directory: docs
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Build with Jekyll
+      # Validation only — confirms the Jekyll site builds. Publishing happens on
+      # tagged releases (docs-release.yml), not here, so main never overwrites the
+      # released Pages site.
+      - name: Build with Jekyll (validation only — not published)
         working-directory: docs
         run: bundle exec jekyll build --destination ../_site --baseurl "/Meshtastic-Apple"
         env:
           JEKYLL_ENV: production
           PAGES_REPO_NWO: meshtastic/Meshtastic-Apple
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

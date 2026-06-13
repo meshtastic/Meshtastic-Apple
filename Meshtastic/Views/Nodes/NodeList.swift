@@ -7,7 +7,7 @@
 import SwiftUI
 import CoreLocation
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 import Foundation
 
 struct NodeList: View {
@@ -26,7 +26,6 @@ struct NodeList: View {
 	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
-
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
 			return getNodeInfo(id: num, context: context)
@@ -42,14 +41,32 @@ struct NodeList: View {
 		} detail: {
 			NavigationStack {
 				if let selectedNum = router.selectedNodeNum,
-				   let node = getNodeInfo(id: selectedNum, context: context) {
-					NodeDetail(node: node)
+				   let node = router.cachedNodeInfo(id: selectedNum, context: context) {
+					if opensSeededLocalStatsLog {
+						LocalStatsLog(node: node)
+					} else {
+						NodeDetail(node: node)
+					}
 				} else {
 					ContentUnavailableView("Select a Node", systemImage: "flipphone")
 				}
 			}
 		}
 		.navigationSplitViewStyle(.balanced)
+		.onAppear {
+			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
+		}
+		.onChange(of: accessoryManager.activeDeviceNum) {
+			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
+		}
+	}
+
+	private var opensSeededLocalStatsLog: Bool {
+		#if DEBUG
+		ProcessInfo.processInfo.arguments.contains("--meshtastic-perf-start-local-stats")
+		#else
+		false
+		#endif
 	}
 
 	// MARK: - Sidebar
@@ -105,7 +122,6 @@ struct NodeList: View {
 		.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
 		.autocorrectionDisabled(true)
 		.scrollDismissesKeyboard(.immediately)
-		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(getNodeCount())))
 		.listStyle(.plain)
 		.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
@@ -144,16 +160,9 @@ struct NodeList: View {
 		}
 	}
 
-	// Helper to get the count of nodes for the navigation title
-	private func getNodeCount() -> Int {
-		var descriptor = FetchDescriptor<NodeInfoEntity>()
-		descriptor.predicate = filters.buildSwiftDataPredicate()
-		return (try? context.fetchCount(descriptor)) ?? 0
-	}
-
 	@ViewBuilder
 	private var deleteNodeButton: some View {
-		Button("Delete Node", role: .destructive) {
+		Button("Remove", role: .destructive) {
 			let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
 			if connectedNode != nil {
 				if let node = deleteNode {
@@ -177,9 +186,14 @@ struct NodeList: View {
 //
 private struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject var router: Router
 	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
 	private var allNodes: [NodeInfoEntity]
 	@Environment(\.modelContext) private var context
+	/// Throttled snapshot of the filtered/sorted nodes actually shown. Recomputed on a gentle
+	/// cadence (see `.task`) instead of in `body`, so the full-node-set scan in `displayNodes`
+	/// doesn't run on every SwiftData write — which pegged the CPU on reconnect with a large DB.
+	@State private var displayedNodes: [NodeInfoEntity] = []
 
 	var connectedNode: NodeInfoEntity?
 	@Binding var isPresentingDeleteNodeAlert: Bool
@@ -236,21 +250,54 @@ private struct FilteredNodeList: View {
 		)
 	}
 
-	private var filteredNodes: [NodeInfoEntity] {
-		allNodes
-			.filter { filters.matchesPostPredicate($0) }
-			.sorted {
-				if $0.ignored != $1.ignored { return !$0.ignored && $1.ignored }
-				if $0.favorite != $1.favorite { return $0.favorite && !$1.favorite }
-				return ($0.lastHeard ?? .distantPast) > ($1.lastHeard ?? .distantPast)
+	private func displayNodes(activeNodeNum: Int64?) -> [NodeInfoEntity] {
+		let searchText = filters.searchText.lowercased()
+		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
+		let distanceBounds = filters.currentDistanceBounds
+		let filterLookup = NodeListFilterLookup(
+			nodes: allNodes,
+			needsEnvironment: filters.isEnvironment,
+			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
+			context: context
+		)
+		var seenNodeNums = Set<Int64>()
+		seenNodeNums.reserveCapacity(allNodes.count)
+		var connectedNode: NodeInfoEntity?
+		var favoriteNodes: [NodeInfoEntity] = []
+		var regularNodes: [NodeInfoEntity] = []
+		favoriteNodes.reserveCapacity(allNodes.count / 20)
+		regularNodes.reserveCapacity(allNodes.count)
+
+		for node in allNodes where filters.matchesPostPredicate(
+			node,
+			normalizedSearchText: searchText,
+			onlineThreshold: onlineThreshold,
+			distanceBounds: distanceBounds,
+			lookup: filterLookup
+		) {
+			guard seenNodeNums.insert(node.num).inserted else { continue }
+			if let activeNodeNum, node.num == activeNodeNum {
+				connectedNode = node
+			} else if node.favorite {
+				favoriteNodes.append(node)
+			} else {
+				regularNodes.append(node)
 			}
+		}
+
+		var nodes: [NodeInfoEntity] = []
+		nodes.reserveCapacity((connectedNode == nil ? 0 : 1) + favoriteNodes.count + regularNodes.count)
+		if let connectedNode {
+			nodes.append(connectedNode)
+		}
+		nodes.append(contentsOf: favoriteNodes)
+		nodes.append(contentsOf: regularNodes)
+		return nodes
 	}
 
 	// The body of the view
 	var body: some View {
-		// If the connected node passes filters, always show it first
-		let nodesWithConnectedFirst = filteredNodes.filter { $0.num == accessoryManager.activeDeviceNum } + filteredNodes.filter { $0.num != accessoryManager.activeDeviceNum }
-		List(nodesWithConnectedFirst, id: \.self, selection: $selectedNodeNum) { node in
+		List(displayedNodes, id: \.num, selection: $selectedNodeNum) { node in
 			NavigationLink(value: node.num) {
 				switch nodeListDensity {
 				case .compact:
@@ -273,6 +320,23 @@ private struct FilteredNodeList: View {
 				)
 			}
 		}
+		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(displayedNodes.count)))
+		.task {
+			// Recompute the displayed list on a gentle cadence instead of inside `body`.
+			// During live ingestion the node @Query invalidates on every packet; running
+			// displayNodes (a scan over the whole node set) per write pegged the main thread
+			// on reconnect with a large DB. ~3/sec is imperceptible and keeps CPU sane.
+			while !Task.isCancelled {
+				displayedNodes = displayNodes(activeNodeNum: accessoryManager.activeDeviceNum)
+				try? await Task.sleep(for: .milliseconds(350))
+			}
+		}
+		.onAppear {
+			router.updateNodeIndex(from: allNodes)
+		}
+		.onChange(of: allNodes.count) { _, _ in
+			router.updateNodeIndex(from: allNodes)
+		}
 	}
 
 	@ViewBuilder
@@ -280,18 +344,11 @@ private struct FilteredNodeList: View {
 		node: NodeInfoEntity,
 		connectedNode: NodeInfoEntity?
 	) -> some View {
-		if let user = node.user {
-			NodeAlertsButton(context: context, node: node, user: user)
-			if !user.unmessagable && user.num == UserDefaults.preferredPeripheralNum {
-				Button(action: {
-					shareContactNode = node
-				}) {
-					Label("Share Contact QR", systemImage: "qrcode")
-				}
-			}
-		}
 		if let connectedNode {
 			FavoriteNodeButton(node: node)
+			if let user = node.user {
+				NodeAlertsButton(context: context, node: node, user: user)
+			}
 			if connectedNode.num != node.num {
 				if !(node.user?.unmessagable ?? true) {
 					Button(action: {
@@ -302,46 +359,9 @@ private struct FilteredNodeList: View {
 						Label("Message", systemImage: "message")
 					}
 				}
-				Button {
-					Task {
-						do {
-							try await accessoryManager.sendPosition(
-								channel: node.channel,
-								destNum: node.num,
-								wantResponse: true
-							)
-							Task { @MainActor in
-								// Update state to show alert
-							}
-						} catch {
-							Logger.mesh.warning("Failed to sendPosition")
-						}
-					}
-				} label: {
-					Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
-				}
-				Button {
-					Task {
-						if let fromUser = connectedNode.user, let toUser = node.user {
-							do {
-								_ = try await accessoryManager.exchangeUserInfo(fromUser: fromUser, toUser: toUser)
-							} catch {
-								Logger.mesh.warning("Failed to exchange user info")
-							}
-						}
-					}
-				} label: {
-					Label("Exchange User Info", systemImage: "person.2.badge.gearshape")
-				}
 				TraceRouteButton(
 					node: node
 				)
-				if node.isStoreForwardRouter {
-					ClientHistoryButton(
-						connectedNode: connectedNode,
-						node: node
-					)
-				}
 				IgnoreNodeButton(
 					node: node
 				)
@@ -349,10 +369,100 @@ private struct FilteredNodeList: View {
 					deleteNodeId = node.num
 					isPresentingDeleteNodeAlert = true
 				} label: {
-					Label("Delete Node", systemImage: "trash")
+					Label("Remove", systemImage: "trash")
 				}
 			}
 		}
+	}
+}
+
+private struct NodeListFilterLookup {
+	private let environmentNodeNums: Set<Int64>?
+	private let distanceNodeNums: Set<Int64>?
+	/// Node nums that have at least one `latest` PositionEntity. Used by `isWithinDistance`
+	/// so that nodes with no position data pass through the distance filter rather than
+	/// being silently excluded.
+	private let positionedNodeNums: Set<Int64>?
+
+	init(
+		nodes: [NodeInfoEntity],
+		needsEnvironment: Bool,
+		distanceBounds: NodeDistanceFilterBounds?,
+		context: ModelContext
+	) {
+		// Only materialize the node-num set (a scan over every node) when a filter actually
+		// needs it; the common no-filter case skips this work entirely.
+		guard needsEnvironment || distanceBounds != nil else {
+			self.environmentNodeNums = nil
+			self.distanceNodeNums = nil
+			self.positionedNodeNums = nil
+			return
+		}
+		let nodeNums = Array(Set(nodes.map(\.num)))
+		if needsEnvironment {
+			self.environmentNodeNums = Self.fetchEnvironmentNodeNums(nodeNums: nodeNums, context: context)
+		} else {
+			self.environmentNodeNums = nil
+		}
+		if let distanceBounds {
+			let (within, positioned) = Self.fetchDistanceNodeNums(nodeNums: nodeNums, bounds: distanceBounds, context: context)
+			self.distanceNodeNums = within
+			self.positionedNodeNums = positioned
+		} else {
+			self.distanceNodeNums = nil
+			self.positionedNodeNums = nil
+		}
+	}
+
+	func hasEnvironmentMetrics(_ node: NodeInfoEntity) -> Bool {
+		environmentNodeNums?.contains(node.num) ?? node.hasEnvironmentMetrics
+	}
+
+	func isWithinDistance(_ node: NodeInfoEntity) -> Bool {
+		guard let distanceNodeNums else { return true }
+		// Nodes with no known position are not excluded by the distance filter.
+		guard positionedNodeNums?.contains(node.num) == true else { return true }
+		return distanceNodeNums.contains(node.num)
+	}
+
+	private static func fetchEnvironmentNodeNums(nodeNums: [Int64], context: ModelContext) -> Set<Int64> {
+		guard !nodeNums.isEmpty else { return [] }
+		let metricsType: Int32 = 1
+		let descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> {
+				$0.metricsType == metricsType
+				&& $0.nodeTelemetry != nil
+				&& ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false)
+			}
+		)
+		let metrics = (try? context.fetch(descriptor)) ?? []
+		return Set(metrics.compactMap { $0.nodeTelemetry?.num })
+	}
+
+	private static func fetchDistanceNodeNums(
+		nodeNums: [Int64],
+		bounds: NodeDistanceFilterBounds,
+		context: ModelContext
+	) -> (withinBounds: Set<Int64>, withAnyPosition: Set<Int64>) {
+		guard !nodeNums.isEmpty else { return ([], []) }
+		let descriptor = FetchDescriptor<PositionEntity>(
+			predicate: #Predicate<PositionEntity> {
+				$0.latest == true
+				&& $0.nodePosition != nil
+				&& ($0.nodePosition.flatMap { nodeNums.contains($0.num) } ?? false)
+			}
+		)
+		let positions = (try? context.fetch(descriptor)) ?? []
+		var withinBounds = Set<Int64>()
+		var withAnyPosition = Set<Int64>()
+		for position in positions {
+			guard let num = position.nodePosition?.num else { continue }
+			withAnyPosition.insert(num)
+			if bounds.contains(position) {
+				withinBounds.insert(num)
+			}
+		}
+		return (withinBounds, withAnyPosition)
 	}
 }
 
@@ -363,10 +473,15 @@ private struct FilteredNodeList: View {
 
 fileprivate extension NodeFilterParameters {
 	/// Filters already pushed into the @Query predicate: ignored, favorite, viaLora/viaMqtt, hopsAway.
-	func matchesPostPredicate(_ node: NodeInfoEntity) -> Bool {
+	func matchesPostPredicate(
+		_ node: NodeInfoEntity,
+		normalizedSearchText: String,
+		onlineThreshold: Date?,
+		distanceBounds: NodeDistanceFilterBounds?,
+		lookup: NodeListFilterLookup
+	) -> Bool {
 		// Search text (requires relationship traversal)
-		if !searchText.isEmpty {
-			let text = searchText.lowercased()
+		if !normalizedSearchText.isEmpty {
 			let matchesSearch = [
 				node.user?.userId,
 				node.user?.numString,
@@ -374,7 +489,7 @@ fileprivate extension NodeFilterParameters {
 				node.user?.hwDisplayName,
 				node.user?.longName,
 				node.user?.shortName
-			].compactMap { $0 }.contains { $0.localizedCaseInsensitiveContains(text) }
+			].compactMap { $0 }.contains { $0.localizedCaseInsensitiveContains(normalizedSearchText) }
 			if !matchesSearch { return false }
 		}
 
@@ -387,7 +502,7 @@ fileprivate extension NodeFilterParameters {
 		// Online filter (requires date computation)
 		if isOnline {
 			guard let lastHeard = node.lastHeard,
-				  let threshold = Calendar.current.date(byAdding: .minute, value: -120, to: Date()) else {
+				  let threshold = onlineThreshold else {
 				return false
 			}
 			if lastHeard < threshold { return false }
@@ -400,45 +515,16 @@ fileprivate extension NodeFilterParameters {
 
 		// Environment filter (requires to-many relationship traversal)
 		if isEnvironment {
-			let hasEnvironmentTelemetry = node.telemetries.contains { $0.metricsType == 1 }
-			if !hasEnvironmentTelemetry { return false }
+			if !lookup.hasEnvironmentMetrics(node) { return false }
 		}
 
-		// Distance filter (requires to-many relationship + math)
-		if distanceFilter {
-			if let pointOfInterest = LocationsHandler.currentLocation {
-				if pointOfInterest.latitude != LocationsHandler.DefaultLocation.latitude &&
-					pointOfInterest.longitude != LocationsHandler.DefaultLocation.longitude {
-					let d: Double = maxDistance * 1.1
-					let r: Double = 6371009
-					let meanLatitude = pointOfInterest.latitude * .pi / 180
-					let deltaLatitude = d / r * 180 / .pi
-					let deltaLongitude = d / (r * cos(meanLatitude)) * 180 / .pi
-					let minLatitude = pointOfInterest.latitude - deltaLatitude
-					let maxLatitude = pointOfInterest.latitude + deltaLatitude
-					let minLongitude = pointOfInterest.longitude - deltaLongitude
-					let maxLongitude = pointOfInterest.longitude + deltaLongitude
-
-					let hasPositionInRange = node.positions.contains { position in
-						guard position.latest else { return false }
-						let lon = Double(position.longitudeI) / 1e7
-						let lat = Double(position.latitudeI) / 1e7
-						return lon >= minLongitude && lon <= maxLongitude && lat >= minLatitude && lat <= maxLatitude
-					}
-					if !hasPositionInRange { return false }
-				}
+		// Distance filter (requires latest position lookup)
+		if distanceFilter, distanceBounds != nil {
+			guard lookup.isWithinDistance(node) else {
+				return false
 			}
 		}
 
 		return true
-	}
-
-	/// SwiftData predicate for count queries — simplified version that handles the most common case (ignored filter)
-	func buildSwiftDataPredicate() -> Predicate<NodeInfoEntity>? {
-		if isIgnored {
-			return #Predicate<NodeInfoEntity> { $0.ignored == true }
-		} else {
-			return #Predicate<NodeInfoEntity> { $0.ignored == false }
-		}
 	}
 }

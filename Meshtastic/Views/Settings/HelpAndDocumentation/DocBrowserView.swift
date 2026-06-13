@@ -6,7 +6,8 @@ import OSLog
 struct DocBrowserView: View {
 
 	@State private var searchText = ""
-	@State private var isAIPresented = false
+	/// Collapsible section state — User Guide expanded by default, Developer Guide collapsed.
+	@State private var expandedSections: Set<DocSection> = [.user]
 	@State private var translatedLabels: [String: String] = [:]
 	@State private var labelTranslationTask: Task<Void, Never>?
 	@State private var translationProgress: String?
@@ -39,6 +40,22 @@ struct DocBrowserView: View {
 
 	private var translatedSearchPrompt: String {
 		translatedLabels["searchPrompt"] ?? "Search docs"
+	}
+
+	/// Expansion binding for a collapsible guide section. While a search is
+	/// active, sections are forced open so matches in an otherwise-collapsed
+	/// section are never hidden.
+	private func sectionExpansion(_ section: DocSection) -> Binding<Bool> {
+		Binding(
+			get: { !searchText.isEmpty || expandedSections.contains(section) },
+			set: { isExpanded in
+				if isExpanded {
+					expandedSections.insert(section)
+				} else {
+					expandedSections.remove(section)
+				}
+			}
+		)
 	}
 
 	private var filteredSections: [(section: DocSection, pages: [DocPage])] {
@@ -97,7 +114,7 @@ struct DocBrowserView: View {
 					}
 					List {
 						ForEach(filteredSections, id: \.section) { item in
-							Section(translatedSectionName(item.section)) {
+							Section(translatedSectionName(item.section), isExpanded: sectionExpansion(item.section)) {
 								ForEach(item.pages) { page in
 								NavigationLink {
 									DocPageView(page: page)
@@ -116,24 +133,8 @@ struct DocBrowserView: View {
 		}
 		.navigationTitle(translatedNavigationTitle)
 		.navigationBarTitleDisplayMode(.large)
-		.toolbar {
-			ToolbarItem(placement: .primaryAction) {
-				if #available(iOS 26, *) {
-					Button {
-						isAIPresented = true
-					} label: {
-						Label("Ask Chirpy", systemImage: "sparkles")
-					}
-					.accessibilityLabel("Ask Chirpy AI assistant")
-				}
-			}
-		}
-		.searchable(text: $searchText, prompt: translatedSearchPrompt)
-		.sheet(isPresented: $isAIPresented) {
-			if #available(iOS 26, *) {
-				AIDocAssistantView()
-			}
-		}
+		.askChirpyToolbar()
+		.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: translatedSearchPrompt)
 		.onAppear {
 			bundle.load()
 			if isUsingTranslatedFolder {

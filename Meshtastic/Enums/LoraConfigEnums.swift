@@ -37,12 +37,25 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case np865 = 25
 	case br902 = 26
 	case itu12M = 27
-	case itu232M = 28
+	case itu22M = 28
 	case eu866 = 29
 	case eu874 = 30
 	case eu917 = 31
 	case euN868 = 32
 	case lora24 = 13
+
+	/// Regions not available until firmware 2.8.
+	static var userSelectable: [RegionCodes] {
+		allCases.filter { region in
+			switch region {
+			case .itu12M, .itu22M, .eu866, .eu874, .eu917, .euN868:
+				return false
+			default:
+				return true
+			}
+		}
+	}
+
 	var topic: String {
 		switch self {
 		case .unset:
@@ -99,8 +112,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			"BR_902"
 		case .itu12M:
 			"ITU1_2M"
-		case .itu232M:
-			"ITU23_2M"
+		case .itu22M:
+			"ITU2_2M"
 		case .eu866:
 			"EU_866"
 		case .eu874:
@@ -169,8 +182,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Brazil 902MHz".localized
 		case .itu12M:
 			return "ITU Region 1 / Amateur 2m".localized
-		case .itu232M:
-			return "ITU Region 2 & 3 / Amateur 2m".localized
+		case .itu22M:
+			return "ITU Region 2 / Amateur 2m".localized
 		case .eu866:
 			return "European Union 866MHz".localized
 		case .eu874:
@@ -241,7 +254,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return 100
 		case .itu12M:
 			return 100
-		case .itu232M:
+		case .itu22M:
 			return 100
 		case .eu866:
 			return 10
@@ -311,7 +324,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return true
 		case .itu12M:
 			return false
-		case .itu232M:
+		case .itu22M:
 			return false
 		case .eu866:
 			return false
@@ -382,8 +395,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.br902
 		case .itu12M:
 			return Config.LoRaConfig.RegionCode.itu12M
-		case .itu232M:
-			return Config.LoRaConfig.RegionCode.itu232M
+		case .itu22M:
+			return Config.LoRaConfig.RegionCode.itu22M
 		case .eu866:
 			return Config.LoRaConfig.RegionCode.eu866
 		case .eu874:

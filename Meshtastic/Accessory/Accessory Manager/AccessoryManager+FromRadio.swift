@@ -9,14 +9,31 @@ import Foundation
 import MeshtasticProtobufs
 import CocoaMQTT
 import OSLog
-import SwiftData
+@preconcurrency import SwiftData
 
 extension AccessoryManager {
 
 	func handleMqttClientProxyMessage(_ mqttClientProxyMessage: MqttClientProxyMessage) {
-		Logger.services.info("handleMqttClientProxyMessage: \(mqttClientProxyMessage.debugDescription)")
+		Logger.services.info("handleMqttClientProxyMessage topic: \(mqttClientProxyMessage.topic, privacy: .public)")
+
+		// MqttClientProxyMessage carries its payload in a oneof — either binary
+		// `data` (service envelope / map report protobuf) or `text` (JSON / stat
+		// topics).  Previously this always read `.data`, which silently produced
+		// an empty payload whenever the firmware used the `.text` variant — the
+		// root cause of map-report packets never reaching the MQTT broker.
+		let payload: [UInt8]
+		switch mqttClientProxyMessage.payloadVariant {
+		case .data(let bytes):
+			payload = [UInt8](bytes)
+		case .text(let string):
+			payload = [UInt8](string.utf8)
+		case .none:
+			Logger.services.warning("📲 [MQTT Client Proxy] received proxy message with no payload on topic: \(mqttClientProxyMessage.topic, privacy: .public)")
+			return
+		}
+
 		let message = CocoaMQTTMessage(topic: mqttClientProxyMessage.topic,
-									   payload: [UInt8](mqttClientProxyMessage.data),
+									   payload: payload,
 									   retained: mqttClientProxyMessage.retained)
 		MqttClientProxyManager.shared.mqttClientProxy?.publish(message)
 	}
@@ -75,8 +92,15 @@ extension AccessoryManager {
 
 		updateDevice(key: \.num, value: Int64(myNodeInfo.myNodeNum))
 
+		// Resolve on a throwaway context, NOT the long-lived main context. After a database clear
+		// (manual reset, or the clear inside a device switch) the main context can still hold an
+		// invalidated instance registered under a rowid that SwiftData then reuses for the
+		// freshly-inserted row — model(for:) would hand that dead instance back and accessing it
+		// traps with "destroyed by ModelContext.reset". A fresh context has no such registrations,
+		// so it faults the current row from the store.
+		let myInfoResolveContext = ModelContext(context.container)
 		if let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId),
-		   let myInfo = try? context.model(for: myInfoId) as? MyInfoEntity {
+		   let myInfo = try? myInfoResolveContext.model(for: myInfoId) as? MyInfoEntity {
 			if let bleName = myInfo.bleName {
 				updateDevice(key: \.name, value: bleName)
 				updateDevice(key: \.longName, value: bleName)
@@ -123,8 +147,8 @@ extension AccessoryManager {
 
 	func handleNodeInfo(_ nodeInfo: NodeInfo) async {
 		if let continuation = self.firstDatabaseNodeInfoContinuation {
-			continuation.resume()
 			self.firstDatabaseNodeInfoContinuation = nil
+			continuation.resume()
 		}
 		
 		guard nodeInfo.num > 0 else {
@@ -138,8 +162,12 @@ extension AccessoryManager {
 		
 		// TODO: nodeInfoPacket's channel: parameter is not used
 		// deferSave hard coded: No need to defer save when nodeInfoPacket is now happening off the main thread
+		// Resolve on a throwaway context (see handleMyInfo): the long-lived main context can return
+		// a stale instance registered under a rowid reused after a database clear, which traps with
+		// "destroyed by ModelContext.reset". A fresh context faults the current row from the store.
+		let nodeInfoResolveContext = ModelContext(context.container)
 		if let nodeInfoId = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: false),
-		   let nodeInfo = try? context.model(for: nodeInfoId) as? NodeInfoEntity {
+		   let nodeInfo = try? nodeInfoResolveContext.model(for: nodeInfoId) as? NodeInfoEntity {
 			if let activeDevice = activeConnection?.device, activeDevice.num == nodeInfo.num {
 				if let user = nodeInfo.user {
 					updateDevice(deviceId: activeDevice.id, key: \.shortName, value: user.shortName ?? "?")
@@ -284,9 +312,9 @@ extension AccessoryManager {
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
-				Logger.mesh.info("\("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerError:
-				Logger.mesh.info("\("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerHeartbeat:
 				/// When we get a router heartbeat we know there is a store and forward node on the network
 				/// Check if it is the primary S&F Router and save the timestamp of the last heartbeat so that we can show the request message history menu item on node long press if the router has been seen recently
@@ -314,13 +342,13 @@ extension AccessoryManager {
 						Logger.data.error("Save Store and Forward Router Error")
 					}
 				}
-				Logger.mesh.info("\("💓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerPing:
-				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerPong:
-				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerBusy:
-				Logger.mesh.info("\("🐝 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerHistory:
 				/// Set the Router History Last Request Value
 				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
@@ -340,26 +368,26 @@ extension AccessoryManager {
 				} catch {
 					Logger.data.error("Save Store and Forward Router Error")
 				}
-				Logger.mesh.info("\("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerStats:
-				Logger.mesh.info("\("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientError:
-				Logger.mesh.info("\("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientHistory:
-				Logger.mesh.info("\("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientStats:
-				Logger.mesh.info("\("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientPing:
-				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientPong:
-				Logger.mesh.info("\("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .clientAbort:
-				Logger.mesh.info("\("🛑 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .UNRECOGNIZED:
-				Logger.mesh.info("\("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+				Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 			case .routerTextDirect:
 				Task {
-					Logger.mesh.info("\("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+					Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 					await MeshPackets.shared.textMessageAppPacket(
 						packet: packet,
 						wantRangeTestPackets: false,
@@ -370,7 +398,7 @@ extension AccessoryManager {
 				}
 			case .routerTextBroadcast:
 				Task {
-					Logger.mesh.info("\("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from.toHex())")")
+					Logger.mesh.info("[Store & Forward] packet received from \(packet.from.toHex(), privacy: .public) — \(String(describing: storeAndForwardMessage.rr), privacy: .public)")
 					await MeshPackets.shared.textMessageAppPacket(
 						packet: packet,
 						wantRangeTestPackets: false,

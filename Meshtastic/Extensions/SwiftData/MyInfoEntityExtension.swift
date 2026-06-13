@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftData
+@preconcurrency import SwiftData
 
 extension MyInfoEntity {
 	@MainActor
@@ -14,21 +14,27 @@ extension MyInfoEntity {
 		let context = PersistenceController.shared.context
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.toUser == nil && msg.isEmoji == false
+				msg.isEmoji == false
 			},
 			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
 		)
-		return (try? context.fetch(descriptor)) ?? []
+		let messages = (try? context.fetch(descriptor)) ?? []
+		return messages.filter { $0.toUser == nil }
 	}
 
 	@MainActor
 	func unreadMessages(context: ModelContext) -> Int {
+		// NOTE: do NOT push `toUser == nil` into the #Predicate — comparing an optional
+		// relationship to nil crashes SwiftData on iOS 26 (see AppState.refreshBadgeCount),
+		// and on other OSes returns a wrong count (broke the channel badge). Fetch the
+		// unread set and split in Swift. Callers must throttle this — it's O(unread).
 		let descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.toUser == nil && msg.isEmoji == false && msg.read == false
+				msg.isEmoji == false && msg.read == false
 			}
 		)
-		return (try? context.fetchCount(descriptor)) ?? 0
+		let messages = (try? context.fetch(descriptor)) ?? []
+		return messages.filter { $0.toUser == nil }.count
 	}
 
 	@MainActor

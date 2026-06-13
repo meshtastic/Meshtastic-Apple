@@ -66,8 +66,19 @@ actor TCPConnection: Connection {
 	}
 
 	private func startReader() {
-		// TODO: @MainActor here because packets come into AccessoryManager out of order otherwise.  Need to figure out the concurrency
-		readerTask = Task { @MainActor in
+		// The framing loop does many tiny socket reads — `waitForMagicBytes()` reads a
+		// single byte at a time — and the previous `@MainActor` isolation forced a
+		// main-thread hop for every one of those reads and continuation resumptions. At
+		// high packet rates that saturated the main runloop, starving Core Animation
+		// (QuartzCore "cannot add handler … dropping") and on iOS stalling the TCP
+		// receive drain enough for the OS to drop the connection (ECONNRESET).
+		//
+		// Reading on a detached task moves all of that work off the main actor. Packet
+		// ordering into AccessoryManager is still preserved: this is the single producer
+		// for `connectionStreamContinuation`, it yields frames serially in read order, and
+		// AsyncStream delivers them FIFO to the lone consumer — so no @MainActor pinning is
+		// needed to keep packets in order.
+		readerTask = Task.detached { [self] in
 			while await isConnected {
 				do {
 					if try await waitForMagicBytes() == false {

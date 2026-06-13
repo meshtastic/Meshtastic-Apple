@@ -331,7 +331,9 @@ public struct ModuleConfig: Sendable {
     public var encryptionEnabled: Bool = false
 
     ///
-    /// Whether to send / consume json packets on MQTT
+    /// Deprecated: JSON packet support on MQTT was removed, and this field is ignored.
+    ///
+    /// NOTE: This field was marked as deprecated in the .proto file.
     public var jsonEnabled: Bool = false
 
     ///

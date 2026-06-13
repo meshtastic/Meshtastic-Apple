@@ -30,6 +30,15 @@ struct MeshtasticAppleApp: App {
 	init() {
 
 		let persistenceController: PersistenceController? = Self.isRunningTests ? nil : PersistenceController.shared
+#if DEBUG
+		let performanceSeedConfiguration = PerformanceSeedData.configuration
+		if let performanceSeedConfiguration {
+			PerformanceSeedData.prepareDefaults(for: performanceSeedConfiguration)
+		}
+		let performanceSeedDisablesDiscovery = performanceSeedConfiguration?.disableDiscovery == true
+#else
+		let performanceSeedDisablesDiscovery = false
+#endif
 
 		let appState = AppState(
 			router: Router()
@@ -90,6 +99,16 @@ struct MeshtasticAppleApp: App {
 		self.appDelegate.router = appState.router
 #endif
 
+#if DEBUG
+		if let persistenceController, let performanceSeedConfiguration {
+			PerformanceSeedData.seedIfNeeded(
+				using: persistenceController,
+				configuration: performanceSeedConfiguration,
+				router: appState.router
+			)
+		}
+#endif
+
 		if !Self.isRunningTests {
 			// Initialize map data manager
 			MapDataManager.shared.initialize()
@@ -104,8 +123,10 @@ struct MeshtasticAppleApp: App {
 				// If this is first launch, we will show onboarding screens which
 				// Step through the authorization process. Do not start discovery
 				// unitl this workflow completes, otherwise the discovery process
-				// may trigger permission dialogs too soon.
-				accessoryManager.startDiscovery()
+			// may trigger permission dialogs too soon.
+				if !performanceSeedDisablesDiscovery {
+					accessoryManager.startDiscovery()
+				}
 			}
 		}
 	}
@@ -149,6 +170,9 @@ struct MeshtasticAppleApp: App {
 					appState: appState,
 					router: appState.router
 				)
+				// Rebuild the whole view tree (and re-run every @Query) after a node-switch
+				// restore so views drop the previous node's cached objects. See AppState.databaseResetID.
+				.id(appState.databaseResetID)
 				.sheet(item: $saveChannelLink
 				) { link in
 					SaveChannelQRCode(
@@ -156,7 +180,9 @@ struct MeshtasticAppleApp: App {
 						addChannels: link.add, // <-- Uses the now reliable 'add' boolean
 						accessoryManager: accessoryManager				)
 					.presentationDetents([.large])
+					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
+					#endif
 				}
 				.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 					Logger.mesh.debug("URL received \(userActivity, privacy: .public)")
@@ -205,7 +231,6 @@ struct MeshtasticAppleApp: App {
 				.environmentObject(accessoryManager)
 				.environmentObject(appState.router)
 				.environmentObject(MeshtasticAPI.shared)
-				.tint(.accentColor)
 			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
@@ -243,6 +268,7 @@ struct MeshtasticAppleApp: App {
 		WindowGroup("Mesh Map", id: "meshmap-window") {
 			if !Self.isRunningTests {
 				MapWindow()
+					.id(appState.databaseResetID)
 					.modelContainer(persistenceController!.container)
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)

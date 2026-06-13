@@ -770,6 +770,18 @@ public enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// t-s: Task / engage request. Structured payload carried via the new
   /// TaskRequest typed variant.
   case tS // = 124
+
+  ///
+  /// m-t-t: TAKTALK voice/text chat message. Payload carried via the
+  /// TakTalkMessage typed variant (text, chatroom_id, lang, from_voice).
+  case mTT // = 125
+
+  ///
+  /// y-: TAKTALK room/membership broadcast. Payload carried via the
+  /// TakTalkRoomData typed variant (sender_callsign, room_id, room_name,
+  /// participants). The CoT type literally has a trailing dash and no
+  /// second atom — not a typo.
+  case y // = 126
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -903,6 +915,8 @@ public enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 122: self = .bTFR
     case 123: self = .bAOC
     case 124: self = .tS
+    case 125: self = .mTT
+    case 126: self = .y
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -1034,6 +1048,8 @@ public enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .bTFR: return 122
     case .bAOC: return 123
     case .tS: return 124
+    case .mTT: return 125
+    case .y: return 126
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -1165,6 +1181,8 @@ public enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
     .bTFR,
     .bAOC,
     .tS,
+    .mTT,
+    .y,
   ]
 
 }
@@ -1374,6 +1392,45 @@ public struct GeoChat: Sendable {
   /// means this is a regular chat message, not a receipt.
   public var receiptType: GeoChat.ReceiptType = .none
 
+  ///
+  /// BCP-47-ish language tag or human-readable name (e.g. "en", "English")
+  /// that the originator's TAKTALK plugin recorded for the message.
+  public var lang: String {
+    get {return _lang ?? String()}
+    set {_lang = newValue}
+  }
+  /// Returns true if `lang` has been explicitly set.
+  public var hasLang: Bool {return self._lang != nil}
+  /// Clears the value of `lang`. Subsequent reads from it will return its default value.
+  public mutating func clearLang() {self._lang = nil}
+
+  ///
+  /// TAKTALK chatroom UUID (e.g. "30b2755c-c547-44ef-a0cc-cdbd8a15616f") that
+  /// the receiver's TAKTALK plugin uses to thread the message under the
+  /// right room. Resolved to a friendly name via TakTalkRoomData broadcasts.
+  public var roomID: String {
+    get {return _roomID ?? String()}
+    set {_roomID = newValue}
+  }
+  /// Returns true if `roomID` has been explicitly set.
+  public var hasRoomID: Bool {return self._roomID != nil}
+  /// Clears the value of `roomID`. Subsequent reads from it will return its default value.
+  public mutating func clearRoomID() {self._roomID = nil}
+
+  ///
+  /// TAKTALK voice profile pointer. Often empty in practice (the empty
+  /// marker `<voice_profile_id/>` still signals TAKTALK origination), so
+  /// receivers should treat empty-but-present as the equivalent of the
+  /// marker rather than a missing field.
+  public var voiceProfileID: String {
+    get {return _voiceProfileID ?? String()}
+    set {_voiceProfileID = newValue}
+  }
+  /// Returns true if `voiceProfileID` has been explicitly set.
+  public var hasVoiceProfileID: Bool {return self._voiceProfileID != nil}
+  /// Clears the value of `voiceProfileID`. Subsequent reads from it will return its default value.
+  public mutating func clearVoiceProfileID() {self._voiceProfileID = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -1431,6 +1488,9 @@ public struct GeoChat: Sendable {
 
   fileprivate var _to: String? = nil
   fileprivate var _toCallsign: String? = nil
+  fileprivate var _lang: String? = nil
+  fileprivate var _roomID: String? = nil
+  fileprivate var _voiceProfileID: String? = nil
 }
 
 ///
@@ -1717,17 +1777,18 @@ public struct DrawnShape: @unchecked Sendable {
     set {_uniqueStorage()._labelsOn = newValue}
   }
 
-  ///
-  /// Vertex list for polyline/polygon/rectangle shapes. Capped at 32 by
-  /// the nanopb pool; senders MUST truncate longer inputs and set
-  /// `truncated = true`.
-  public var vertices: [CotGeoPoint] {
-    get {return _storage._vertices}
-    set {_uniqueStorage()._vertices = newValue}
+  public var vertexLatDeltas: [Int32] {
+    get {return _storage._vertexLatDeltas}
+    set {_uniqueStorage()._vertexLatDeltas = newValue}
+  }
+
+  public var vertexLonDeltas: [Int32] {
+    get {return _storage._vertexLonDeltas}
+    set {_uniqueStorage()._vertexLonDeltas = newValue}
   }
 
   ///
-  /// True if the sender truncated `vertices` to fit the pool.
+  /// True if the sender truncated the vertex columns to fit the pool.
   public var truncated: Bool {
     get {return _storage._truncated}
     set {_uniqueStorage()._truncated = newValue}
@@ -3293,6 +3354,131 @@ public struct SensorFov: Sendable {
 }
 
 ///
+/// TAKTALK chat message payload (CoT type m-t-t).
+///
+/// TAKTALK is an ATAK plugin for voice + text team messaging. The voice
+/// audio stream goes over UDP/RTP and is NOT carried by the mesh — only
+/// the text envelope (this message) is. `from_voice` marks messages sent
+/// via push-to-talk speech-to-text so receivers can render a mic icon
+/// next to the text.
+///
+/// Wire shape inside <event type="m-t-t">/<detail>:
+///   <callsign>...</callsign>        - mapped to TAKPacketV2.callsign
+///   <lang>English</lang>            - lang
+///   <text>...</text>                - text
+///   <chatroom-id>1</chatroom-id>    - chatroom_id
+///   <voice/>                        - presence sets from_voice = true
+public struct TakTalkMessage: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The text body of the TAKTALK message (speech-to-text transcript when
+  /// from_voice = true, typed message otherwise).
+  public var text: String = String()
+
+  ///
+  /// TAKTALK chatroom identifier. May be a short id like "1" for the
+  /// default room or a UUID like "30b2755c-c547-44ef-a0cc-cdbd8a15616f"
+  /// for custom rooms (resolved by TakTalkRoomData broadcasts).
+  /// Empty = broadcast room.
+  public var chatroomID: String = String()
+
+  ///
+  /// BCP-47-ish language tag or human-readable name (e.g. "en", "English").
+  /// Empty = unspecified.
+  public var lang: String = String()
+
+  ///
+  /// True when the source CoT carried a <voice/> marker, i.e. the message
+  /// originated as push-to-talk speech-to-text. Lets receivers show a mic
+  /// icon. Proto3 only encodes when true so empty payload cost is 0 bytes.
+  public var fromVoice: Bool = false
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
+/// TAKTALK room/membership broadcast (CoT type y-).
+///
+/// Announces a TAKTALK chatroom's friendly name and roster so peers can
+/// resolve room UUIDs (used in TakTalkMessage.chatroom_id and
+/// GeoChat.room_id) to a display name and participant list. Not a chat
+/// message itself — these events are emitted by TAKTALK when rooms are
+/// created or memberships change.
+public struct TakTalkRoomData: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Callsign of the device broadcasting the room state (typically the
+  /// room owner / latest writer).
+  ///
+  /// DEPRECATED in v0.3.2: always equals TAKPacketV2.callsign, so the wire
+  /// byte was redundant. Builders stop emitting this field in v0.3.2;
+  /// parsers still read it for one release so v0.3.1-encoded packets decode
+  /// cleanly. To be removed entirely in v0.4.x.
+  ///
+  /// NOTE: This field was marked as deprecated in the .proto file.
+  public var senderCallsign: String = String()
+
+  ///
+  /// Room UUID, matches TakTalkMessage.chatroom_id / GeoChat.room_id on
+  /// messages routed into this room.
+  public var roomID: String = String()
+
+  ///
+  /// Friendly display name for the room (e.g. "test", "Alpha Team").
+  public var roomName: String = String()
+
+  ///
+  /// Member callsigns. Wire-encoded as repeated strings; the underlying
+  /// CoT carries them as a single <chatroom-participants>A,B,C</> element
+  /// which parsers split / builders join on ','.
+  public var participants: [String] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
+/// ATAK directed-routing recipient list (CoT <marti><dest callsign='X'/>…</marti>).
+///
+/// Present when an event is addressed to specific TAK users rather than the
+/// broadcast group. TAKTALK gates voice TTS on this element matching the
+/// receiver's callsign; directed b-t-f chats use it for the same purpose. A
+/// missing <marti> means "broadcast to all peers", which is the default for
+/// PLI, alerts, drawings, and most situational-awareness events.
+///
+/// Carried as repeated strings (not indexes into a per-packet table) because
+/// the typical event has 1-2 destinations and table overhead would erase the
+/// savings. Receivers that need the original XML element rebuild it from
+/// dest_callsign on emit.
+public struct Marti: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Recipient callsigns. Order is preserved end-to-end so receivers can show
+  /// primary-vs-cc distinction the same way ATAK does.
+  ///
+  /// If dest_callsign is [TAKPacketV2.callsign] (self-addressed, unusual but
+  /// legal — e.g. ATAK echoing back to its own room), the builder still emits
+  /// the element so loopback shapes round-trip cleanly.
+  public var destCallsign: [String] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
 /// ATAK v2 packet with expanded CoT field support and zstd dictionary compression.
 /// Sent on ATAK_PLUGIN_V2 port. The wire payload is:
 ///   [1 byte flags][zstd-compressed TAKPacketV2 protobuf]
@@ -3353,7 +3539,14 @@ public struct TAKPacketV2: @unchecked Sendable {
   }
 
   ///
-  /// Altitude in meters (HAE)
+  /// Altitude in meters (HAE). ATAK's "no altitude" sentinel is hae=9999999.0.
+  ///
+  /// NOTE: an earlier v0.4.0 attempt made this `optional` to omit the 9999999
+  /// sentinel from the wire, but measurement showed it was net-negative: the
+  /// zstd dictionary already compresses the literal 9999999 to ~nothing, while
+  /// proto3 `optional` forces a genuine 0 m HAE (common on routes/drawings that
+  /// carry hae="0.0" or omit hae → parsed as 0) to encode explicitly (+2 bytes),
+  /// which REGRESSED the worst-case route fixture. Kept as a plain field.
   public var altitude: Int32 {
     get {return _storage._altitude}
     set {_uniqueStorage()._altitude = newValue}
@@ -3500,20 +3693,28 @@ public struct TAKPacketV2: @unchecked Sendable {
   public mutating func clearSensorFov() {_uniqueStorage()._sensorFov = nil}
 
   ///
+  /// Directed-routing recipient list (CoT <marti><dest callsign='X'/>…</marti>).
+  /// Empty / unset = broadcast to all peers (the default for situational-awareness
+  /// events). Populated for TAKTALK m-t-t, directed b-t-f DMs, and any other CoT
+  /// shape that ATAK addresses to specific recipients. TAKTALK gates voice TTS
+  /// playback on this element matching the receiver's callsign, so dropping it
+  /// silently breaks voice messaging end-to-end.
+  ///
+  /// See Marti.
+  public var marti: Marti {
+    get {return _storage._marti ?? Marti()}
+    set {_uniqueStorage()._marti = newValue}
+  }
+  /// Returns true if `marti` has been explicitly set.
+  public var hasMarti: Bool {return _storage._marti != nil}
+  /// Clears the value of `marti`. Subsequent reads from it will return its default value.
+  public mutating func clearMarti() {_uniqueStorage()._marti = nil}
+
+  ///
   /// The payload of the packet
   public var payloadVariant: OneOf_PayloadVariant? {
     get {return _storage._payloadVariant}
     set {_uniqueStorage()._payloadVariant = newValue}
-  }
-
-  ///
-  /// Position report (true = PLI, no extra fields beyond the common ones above)
-  public var pli: Bool {
-    get {
-      if case .pli(let v)? = _storage._payloadVariant {return v}
-      return false
-    }
-    set {_uniqueStorage()._payloadVariant = .pli(newValue)}
   }
 
   ///
@@ -3620,14 +3821,35 @@ public struct TAKPacketV2: @unchecked Sendable {
     set {_uniqueStorage()._payloadVariant = .task(newValue)}
   }
 
+  ///
+  /// TAKTALK chat message (CoT type m-t-t). See TakTalkMessage.
+  /// Voice audio itself rides UDP/RTP outside the mesh; this carries the
+  /// text envelope plus a from_voice marker for receiver UX.
+  public var taktalk: TakTalkMessage {
+    get {
+      if case .taktalk(let v)? = _storage._payloadVariant {return v}
+      return TakTalkMessage()
+    }
+    set {_uniqueStorage()._payloadVariant = .taktalk(newValue)}
+  }
+
+  ///
+  /// TAKTALK room/membership broadcast (CoT type y-). See TakTalkRoomData.
+  /// Resolves room UUIDs (used in TakTalkMessage.chatroom_id and
+  /// GeoChat.room_id) to display name + roster on receivers.
+  public var taktalkRoom: TakTalkRoomData {
+    get {
+      if case .taktalkRoom(let v)? = _storage._payloadVariant {return v}
+      return TakTalkRoomData()
+    }
+    set {_uniqueStorage()._payloadVariant = .taktalkRoom(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// The payload of the packet
   public enum OneOf_PayloadVariant: Equatable, Sendable {
-    ///
-    /// Position report (true = PLI, no extra fields beyond the common ones above)
-    case pli(Bool)
     ///
     /// ATAK GeoChat message
     case chat(GeoChat)
@@ -3662,6 +3884,16 @@ public struct TAKPacketV2: @unchecked Sendable {
     ///
     /// Task / engage request. See TaskRequest.
     case task(TaskRequest)
+    ///
+    /// TAKTALK chat message (CoT type m-t-t). See TakTalkMessage.
+    /// Voice audio itself rides UDP/RTP outside the mesh; this carries the
+    /// text envelope plus a from_voice marker for receiver UX.
+    case taktalk(TakTalkMessage)
+    ///
+    /// TAKTALK room/membership broadcast (CoT type y-). See TakTalkRoomData.
+    /// Resolves room UUIDs (used in TakTalkMessage.chatroom_id and
+    /// GeoChat.room_id) to display name + roster on receivers.
+    case taktalkRoom(TakTalkRoomData)
 
   }
 
@@ -3687,7 +3919,7 @@ extension CotHow: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension CotType: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CotType_Other\0\u{1}CotType_a_f_G_U_C\0\u{1}CotType_a_f_G_U_C_I\0\u{1}CotType_a_n_A_C_F\0\u{1}CotType_a_n_A_C_H\0\u{1}CotType_a_n_A_C\0\u{1}CotType_a_f_A_M_H\0\u{1}CotType_a_f_A_M\0\u{1}CotType_a_f_A_M_F_F\0\u{1}CotType_a_f_A_M_H_A\0\u{1}CotType_a_f_A_M_H_U_M\0\u{1}CotType_a_h_A_M_F_F\0\u{1}CotType_a_h_A_M_H_A\0\u{1}CotType_a_u_A_C\0\u{1}CotType_t_x_d_d\0\u{1}CotType_a_f_G_E_S_E\0\u{1}CotType_a_f_G_E_V_C\0\u{1}CotType_a_f_S\0\u{1}CotType_a_f_A_M_F\0\u{1}CotType_a_f_A_M_F_C_H\0\u{1}CotType_a_f_A_M_F_U_L\0\u{1}CotType_a_f_A_M_F_L\0\u{1}CotType_a_f_A_M_F_P\0\u{1}CotType_a_f_A_C_H\0\u{1}CotType_a_n_A_M_F_Q\0\u{1}CotType_b_t_f\0\u{1}CotType_b_r_f_h_c\0\u{1}CotType_b_a_o_pan\0\u{1}CotType_b_a_o_opn\0\u{1}CotType_b_a_o_can\0\u{1}CotType_b_a_o_tbl\0\u{1}CotType_b_a_g\0\u{1}CotType_a_f_G\0\u{1}CotType_a_f_G_U\0\u{1}CotType_a_h_G\0\u{1}CotType_a_u_G\0\u{1}CotType_a_n_G\0\u{1}CotType_b_m_r\0\u{1}CotType_b_m_p_w\0\u{1}CotType_b_m_p_s_p_i\0\u{1}CotType_u_d_f\0\u{1}CotType_u_d_r\0\u{1}CotType_u_d_c_c\0\u{1}CotType_u_rb_a\0\u{1}CotType_a_h_A\0\u{1}CotType_a_u_A\0\u{1}CotType_a_f_A_M_H_Q\0\u{1}CotType_a_f_A_C_F\0\u{1}CotType_a_f_A_C\0\u{1}CotType_a_f_A_C_L\0\u{1}CotType_a_f_A\0\u{1}CotType_a_f_A_M_H_C\0\u{1}CotType_a_n_A_M_F_F\0\u{1}CotType_a_u_A_C_F\0\u{1}CotType_a_f_G_U_C_F_T_A\0\u{1}CotType_a_f_G_U_C_V_S\0\u{1}CotType_a_f_G_U_C_R_X\0\u{1}CotType_a_f_G_U_C_I_Z\0\u{1}CotType_a_f_G_U_C_E_C_W\0\u{1}CotType_a_f_G_U_C_I_L\0\u{1}CotType_a_f_G_U_C_R_O\0\u{1}CotType_a_f_G_U_C_R_V\0\u{1}CotType_a_f_G_U_H\0\u{1}CotType_a_f_G_U_U_M_S_E\0\u{1}CotType_a_f_G_U_S_M_C\0\u{1}CotType_a_f_G_E_S\0\u{1}CotType_a_f_G_E\0\u{1}CotType_a_f_G_E_V_C_U\0\u{1}CotType_a_f_G_E_V_C_ps\0\u{1}CotType_a_u_G_E_V\0\u{1}CotType_a_f_S_N_N_R\0\u{1}CotType_a_f_F_B\0\u{1}CotType_b_m_p_s_p_loc\0\u{1}CotType_b_i_v\0\u{1}CotType_b_f_t_r\0\u{1}CotType_b_f_t_a\0\u{1}CotType_u_d_f_m\0\u{1}CotType_u_d_p\0\u{1}CotType_b_m_p_s_m\0\u{1}CotType_b_m_p_c\0\u{1}CotType_u_r_b_c_c\0\u{1}CotType_u_r_b_bullseye\0\u{1}CotType_a_f_G_E_V_A\0\u{1}CotType_a_n_A\0\u{1}CotType_a_u_G_U_C_F\0\u{1}CotType_a_n_G_U_C_F\0\u{1}CotType_a_h_G_U_C_F\0\u{1}CotType_a_f_G_U_C_F\0\u{1}CotType_a_u_G_I\0\u{1}CotType_a_n_G_I\0\u{1}CotType_a_h_G_I\0\u{1}CotType_a_f_G_I\0\u{1}CotType_a_u_G_E_X_M\0\u{1}CotType_a_n_G_E_X_M\0\u{1}CotType_a_h_G_E_X_M\0\u{1}CotType_a_f_G_E_X_M\0\u{1}CotType_a_u_S\0\u{1}CotType_a_n_S\0\u{1}CotType_a_h_S\0\u{1}CotType_a_u_G_U_C_I_d\0\u{1}CotType_a_n_G_U_C_I_d\0\u{1}CotType_a_h_G_U_C_I_d\0\u{1}CotType_a_f_G_U_C_I_d\0\u{1}CotType_a_u_G_E_V_A_T\0\u{1}CotType_a_n_G_E_V_A_T\0\u{1}CotType_a_h_G_E_V_A_T\0\u{1}CotType_a_f_G_E_V_A_T\0\u{1}CotType_a_u_G_U_C_I\0\u{1}CotType_a_n_G_U_C_I\0\u{1}CotType_a_h_G_U_C_I\0\u{1}CotType_a_n_G_E_V\0\u{1}CotType_a_h_G_E_V\0\u{1}CotType_a_f_G_E_V\0\u{1}CotType_b_m_p_w_GOTO\0\u{1}CotType_b_m_p_c_ip\0\u{1}CotType_b_m_p_c_cp\0\u{1}CotType_b_m_p_s_p_op\0\u{1}CotType_u_d_v\0\u{1}CotType_u_d_v_m\0\u{1}CotType_u_d_c_e\0\u{1}CotType_b_i_x_i\0\u{1}CotType_b_t_f_d\0\u{1}CotType_b_t_f_r\0\u{1}CotType_b_a_o_c\0\u{1}CotType_t_s\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CotType_Other\0\u{1}CotType_a_f_G_U_C\0\u{1}CotType_a_f_G_U_C_I\0\u{1}CotType_a_n_A_C_F\0\u{1}CotType_a_n_A_C_H\0\u{1}CotType_a_n_A_C\0\u{1}CotType_a_f_A_M_H\0\u{1}CotType_a_f_A_M\0\u{1}CotType_a_f_A_M_F_F\0\u{1}CotType_a_f_A_M_H_A\0\u{1}CotType_a_f_A_M_H_U_M\0\u{1}CotType_a_h_A_M_F_F\0\u{1}CotType_a_h_A_M_H_A\0\u{1}CotType_a_u_A_C\0\u{1}CotType_t_x_d_d\0\u{1}CotType_a_f_G_E_S_E\0\u{1}CotType_a_f_G_E_V_C\0\u{1}CotType_a_f_S\0\u{1}CotType_a_f_A_M_F\0\u{1}CotType_a_f_A_M_F_C_H\0\u{1}CotType_a_f_A_M_F_U_L\0\u{1}CotType_a_f_A_M_F_L\0\u{1}CotType_a_f_A_M_F_P\0\u{1}CotType_a_f_A_C_H\0\u{1}CotType_a_n_A_M_F_Q\0\u{1}CotType_b_t_f\0\u{1}CotType_b_r_f_h_c\0\u{1}CotType_b_a_o_pan\0\u{1}CotType_b_a_o_opn\0\u{1}CotType_b_a_o_can\0\u{1}CotType_b_a_o_tbl\0\u{1}CotType_b_a_g\0\u{1}CotType_a_f_G\0\u{1}CotType_a_f_G_U\0\u{1}CotType_a_h_G\0\u{1}CotType_a_u_G\0\u{1}CotType_a_n_G\0\u{1}CotType_b_m_r\0\u{1}CotType_b_m_p_w\0\u{1}CotType_b_m_p_s_p_i\0\u{1}CotType_u_d_f\0\u{1}CotType_u_d_r\0\u{1}CotType_u_d_c_c\0\u{1}CotType_u_rb_a\0\u{1}CotType_a_h_A\0\u{1}CotType_a_u_A\0\u{1}CotType_a_f_A_M_H_Q\0\u{1}CotType_a_f_A_C_F\0\u{1}CotType_a_f_A_C\0\u{1}CotType_a_f_A_C_L\0\u{1}CotType_a_f_A\0\u{1}CotType_a_f_A_M_H_C\0\u{1}CotType_a_n_A_M_F_F\0\u{1}CotType_a_u_A_C_F\0\u{1}CotType_a_f_G_U_C_F_T_A\0\u{1}CotType_a_f_G_U_C_V_S\0\u{1}CotType_a_f_G_U_C_R_X\0\u{1}CotType_a_f_G_U_C_I_Z\0\u{1}CotType_a_f_G_U_C_E_C_W\0\u{1}CotType_a_f_G_U_C_I_L\0\u{1}CotType_a_f_G_U_C_R_O\0\u{1}CotType_a_f_G_U_C_R_V\0\u{1}CotType_a_f_G_U_H\0\u{1}CotType_a_f_G_U_U_M_S_E\0\u{1}CotType_a_f_G_U_S_M_C\0\u{1}CotType_a_f_G_E_S\0\u{1}CotType_a_f_G_E\0\u{1}CotType_a_f_G_E_V_C_U\0\u{1}CotType_a_f_G_E_V_C_ps\0\u{1}CotType_a_u_G_E_V\0\u{1}CotType_a_f_S_N_N_R\0\u{1}CotType_a_f_F_B\0\u{1}CotType_b_m_p_s_p_loc\0\u{1}CotType_b_i_v\0\u{1}CotType_b_f_t_r\0\u{1}CotType_b_f_t_a\0\u{1}CotType_u_d_f_m\0\u{1}CotType_u_d_p\0\u{1}CotType_b_m_p_s_m\0\u{1}CotType_b_m_p_c\0\u{1}CotType_u_r_b_c_c\0\u{1}CotType_u_r_b_bullseye\0\u{1}CotType_a_f_G_E_V_A\0\u{1}CotType_a_n_A\0\u{1}CotType_a_u_G_U_C_F\0\u{1}CotType_a_n_G_U_C_F\0\u{1}CotType_a_h_G_U_C_F\0\u{1}CotType_a_f_G_U_C_F\0\u{1}CotType_a_u_G_I\0\u{1}CotType_a_n_G_I\0\u{1}CotType_a_h_G_I\0\u{1}CotType_a_f_G_I\0\u{1}CotType_a_u_G_E_X_M\0\u{1}CotType_a_n_G_E_X_M\0\u{1}CotType_a_h_G_E_X_M\0\u{1}CotType_a_f_G_E_X_M\0\u{1}CotType_a_u_S\0\u{1}CotType_a_n_S\0\u{1}CotType_a_h_S\0\u{1}CotType_a_u_G_U_C_I_d\0\u{1}CotType_a_n_G_U_C_I_d\0\u{1}CotType_a_h_G_U_C_I_d\0\u{1}CotType_a_f_G_U_C_I_d\0\u{1}CotType_a_u_G_E_V_A_T\0\u{1}CotType_a_n_G_E_V_A_T\0\u{1}CotType_a_h_G_E_V_A_T\0\u{1}CotType_a_f_G_E_V_A_T\0\u{1}CotType_a_u_G_U_C_I\0\u{1}CotType_a_n_G_U_C_I\0\u{1}CotType_a_h_G_U_C_I\0\u{1}CotType_a_n_G_E_V\0\u{1}CotType_a_h_G_E_V\0\u{1}CotType_a_f_G_E_V\0\u{1}CotType_b_m_p_w_GOTO\0\u{1}CotType_b_m_p_c_ip\0\u{1}CotType_b_m_p_c_cp\0\u{1}CotType_b_m_p_s_p_op\0\u{1}CotType_u_d_v\0\u{1}CotType_u_d_v_m\0\u{1}CotType_u_d_c_e\0\u{1}CotType_b_i_x_i\0\u{1}CotType_b_t_f_d\0\u{1}CotType_b_t_f_r\0\u{1}CotType_b_a_o_c\0\u{1}CotType_t_s\0\u{1}CotType_m_t_t\0\u{1}CotType_y\0")
 }
 
 extension GeoPointSource: SwiftProtobuf._ProtoNameProviding {
@@ -3795,7 +4027,7 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
 
 extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GeoChat"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}to\0\u{3}to_callsign\0\u{3}receipt_for_uid\0\u{3}receipt_type\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}to\0\u{3}to_callsign\0\u{3}receipt_for_uid\0\u{3}receipt_type\0\u{1}lang\0\u{3}room_id\0\u{3}voice_profile_id\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3808,6 +4040,9 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       case 3: try { try decoder.decodeSingularStringField(value: &self._toCallsign) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.receiptForUid) }()
       case 5: try { try decoder.decodeSingularEnumField(value: &self.receiptType) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self._lang) }()
+      case 7: try { try decoder.decodeSingularStringField(value: &self._roomID) }()
+      case 8: try { try decoder.decodeSingularStringField(value: &self._voiceProfileID) }()
       default: break
       }
     }
@@ -3833,6 +4068,15 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     if self.receiptType != .none {
       try visitor.visitSingularEnumField(value: self.receiptType, fieldNumber: 5)
     }
+    try { if let v = self._lang {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 6)
+    } }()
+    try { if let v = self._roomID {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 7)
+    } }()
+    try { if let v = self._voiceProfileID {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 8)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3842,6 +4086,9 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     if lhs._toCallsign != rhs._toCallsign {return false}
     if lhs.receiptForUid != rhs.receiptForUid {return false}
     if lhs.receiptType != rhs.receiptType {return false}
+    if lhs._lang != rhs._lang {return false}
+    if lhs._roomID != rhs._roomID {return false}
+    if lhs._voiceProfileID != rhs._voiceProfileID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4108,7 +4355,7 @@ extension CotGeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DrawnShape"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}kind\0\u{1}style\0\u{3}major_cm\0\u{3}minor_cm\0\u{3}angle_deg\0\u{3}stroke_color\0\u{3}stroke_argb\0\u{3}stroke_weight_x10\0\u{3}fill_color\0\u{3}fill_argb\0\u{3}labels_on\0\u{1}vertices\0\u{1}truncated\0\u{3}bullseye_distance_dm\0\u{3}bullseye_bearing_ref\0\u{3}bullseye_flags\0\u{3}bullseye_uid_ref\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}kind\0\u{1}style\0\u{3}major_cm\0\u{3}minor_cm\0\u{3}angle_deg\0\u{3}stroke_color\0\u{3}stroke_argb\0\u{3}stroke_weight_x10\0\u{3}fill_color\0\u{3}fill_argb\0\u{3}labels_on\0\u{2}\u{2}truncated\0\u{3}bullseye_distance_dm\0\u{3}bullseye_bearing_ref\0\u{3}bullseye_flags\0\u{3}bullseye_uid_ref\0\u{3}vertex_lat_deltas\0\u{3}vertex_lon_deltas\0\u{c}\u{c}\u{1}")
 
   fileprivate class _StorageClass {
     var _kind: DrawnShape.Kind = .unspecified
@@ -4122,7 +4369,8 @@ extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _fillColor: Team = .unspecifedColor
     var _fillArgb: UInt32 = 0
     var _labelsOn: Bool = false
-    var _vertices: [CotGeoPoint] = []
+    var _vertexLatDeltas: [Int32] = []
+    var _vertexLonDeltas: [Int32] = []
     var _truncated: Bool = false
     var _bullseyeDistanceDm: UInt32 = 0
     var _bullseyeBearingRef: UInt32 = 0
@@ -4149,7 +4397,8 @@ extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _fillColor = source._fillColor
       _fillArgb = source._fillArgb
       _labelsOn = source._labelsOn
-      _vertices = source._vertices
+      _vertexLatDeltas = source._vertexLatDeltas
+      _vertexLonDeltas = source._vertexLonDeltas
       _truncated = source._truncated
       _bullseyeDistanceDm = source._bullseyeDistanceDm
       _bullseyeBearingRef = source._bullseyeBearingRef
@@ -4184,12 +4433,13 @@ extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 9: try { try decoder.decodeSingularEnumField(value: &_storage._fillColor) }()
         case 10: try { try decoder.decodeSingularFixed32Field(value: &_storage._fillArgb) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._labelsOn) }()
-        case 12: try { try decoder.decodeRepeatedMessageField(value: &_storage._vertices) }()
         case 13: try { try decoder.decodeSingularBoolField(value: &_storage._truncated) }()
         case 14: try { try decoder.decodeSingularUInt32Field(value: &_storage._bullseyeDistanceDm) }()
         case 15: try { try decoder.decodeSingularUInt32Field(value: &_storage._bullseyeBearingRef) }()
         case 16: try { try decoder.decodeSingularUInt32Field(value: &_storage._bullseyeFlags) }()
         case 17: try { try decoder.decodeSingularStringField(value: &_storage._bullseyeUidRef) }()
+        case 18: try { try decoder.decodeRepeatedSInt32Field(value: &_storage._vertexLatDeltas) }()
+        case 19: try { try decoder.decodeRepeatedSInt32Field(value: &_storage._vertexLonDeltas) }()
         default: break
         }
       }
@@ -4231,9 +4481,6 @@ extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._labelsOn != false {
         try visitor.visitSingularBoolField(value: _storage._labelsOn, fieldNumber: 11)
       }
-      if !_storage._vertices.isEmpty {
-        try visitor.visitRepeatedMessageField(value: _storage._vertices, fieldNumber: 12)
-      }
       if _storage._truncated != false {
         try visitor.visitSingularBoolField(value: _storage._truncated, fieldNumber: 13)
       }
@@ -4248,6 +4495,12 @@ extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       }
       if !_storage._bullseyeUidRef.isEmpty {
         try visitor.visitSingularStringField(value: _storage._bullseyeUidRef, fieldNumber: 17)
+      }
+      if !_storage._vertexLatDeltas.isEmpty {
+        try visitor.visitPackedSInt32Field(value: _storage._vertexLatDeltas, fieldNumber: 18)
+      }
+      if !_storage._vertexLonDeltas.isEmpty {
+        try visitor.visitPackedSInt32Field(value: _storage._vertexLonDeltas, fieldNumber: 19)
       }
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -4269,7 +4522,8 @@ extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._fillColor != rhs_storage._fillColor {return false}
         if _storage._fillArgb != rhs_storage._fillArgb {return false}
         if _storage._labelsOn != rhs_storage._labelsOn {return false}
-        if _storage._vertices != rhs_storage._vertices {return false}
+        if _storage._vertexLatDeltas != rhs_storage._vertexLatDeltas {return false}
+        if _storage._vertexLonDeltas != rhs_storage._vertexLonDeltas {return false}
         if _storage._truncated != rhs_storage._truncated {return false}
         if _storage._bullseyeDistanceDm != rhs_storage._bullseyeDistanceDm {return false}
         if _storage._bullseyeBearingRef != rhs_storage._bullseyeBearingRef {return false}
@@ -5114,9 +5368,129 @@ extension SensorFov.SensorType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SensorType_Unspecified\0\u{1}SensorType_Camera\0\u{1}SensorType_Thermal\0\u{1}SensorType_Laser\0\u{1}SensorType_Nvg\0\u{1}SensorType_Rf\0\u{1}SensorType_Other\0")
 }
 
+extension TakTalkMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TakTalkMessage"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{3}chatroom_id\0\u{1}lang\0\u{3}from_voice\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.chatroomID) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.lang) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.fromVoice) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.text.isEmpty {
+      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
+    }
+    if !self.chatroomID.isEmpty {
+      try visitor.visitSingularStringField(value: self.chatroomID, fieldNumber: 2)
+    }
+    if !self.lang.isEmpty {
+      try visitor.visitSingularStringField(value: self.lang, fieldNumber: 3)
+    }
+    if self.fromVoice != false {
+      try visitor.visitSingularBoolField(value: self.fromVoice, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: TakTalkMessage, rhs: TakTalkMessage) -> Bool {
+    if lhs.text != rhs.text {return false}
+    if lhs.chatroomID != rhs.chatroomID {return false}
+    if lhs.lang != rhs.lang {return false}
+    if lhs.fromVoice != rhs.fromVoice {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension TakTalkRoomData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TakTalkRoomData"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}sender_callsign\0\u{3}room_id\0\u{3}room_name\0\u{1}participants\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.senderCallsign) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.roomID) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.roomName) }()
+      case 4: try { try decoder.decodeRepeatedStringField(value: &self.participants) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.senderCallsign.isEmpty {
+      try visitor.visitSingularStringField(value: self.senderCallsign, fieldNumber: 1)
+    }
+    if !self.roomID.isEmpty {
+      try visitor.visitSingularStringField(value: self.roomID, fieldNumber: 2)
+    }
+    if !self.roomName.isEmpty {
+      try visitor.visitSingularStringField(value: self.roomName, fieldNumber: 3)
+    }
+    if !self.participants.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.participants, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: TakTalkRoomData, rhs: TakTalkRoomData) -> Bool {
+    if lhs.senderCallsign != rhs.senderCallsign {return false}
+    if lhs.roomID != rhs.roomID {return false}
+    if lhs.roomName != rhs.roomName {return false}
+    if lhs.participants != rhs.participants {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Marti: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Marti"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}dest_callsign\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedStringField(value: &self.destCallsign) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.destCallsign.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.destCallsign, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Marti, rhs: Marti) -> Bool {
+    if lhs.destCallsign != rhs.destCallsign {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TAKPacketV2"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{4}pli\0\u{1}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0\u{c}\u{1b}\u{1}\u{c}\u{1c}\u{1}\u{c}\u{1d}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{3}marti\0\u{2}\u{2}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0\u{1}taktalk\0\u{3}taktalk_room\0\u{c}\u{1b}\u{1}\u{c}\u{1c}\u{1}\u{c}\u{1e}\u{1}")
 
   fileprivate class _StorageClass {
     var _cotTypeID: CotType = .other
@@ -5145,6 +5519,7 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _remarks: String = String()
     var _environment: TAKEnvironment? = nil
     var _sensorFov: SensorFov? = nil
+    var _marti: Marti? = nil
     var _payloadVariant: TAKPacketV2.OneOf_PayloadVariant?
 
       // This property is used as the initial default value for new instances of the type.
@@ -5182,6 +5557,7 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _remarks = source._remarks
       _environment = source._environment
       _sensorFov = source._sensorFov
+      _marti = source._marti
       _payloadVariant = source._payloadVariant
     }
   }
@@ -5227,14 +5603,7 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 24: try { try decoder.decodeSingularStringField(value: &_storage._remarks) }()
         case 25: try { try decoder.decodeSingularMessageField(value: &_storage._environment) }()
         case 26: try { try decoder.decodeSingularMessageField(value: &_storage._sensorFov) }()
-        case 30: try {
-          var v: Bool?
-          try decoder.decodeSingularBoolField(value: &v)
-          if let v = v {
-            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .pli(v)
-          }
-        }()
+        case 29: try { try decoder.decodeSingularMessageField(value: &_storage._marti) }()
         case 31: try {
           var v: GeoChat?
           var hadOneofValue = false
@@ -5360,6 +5729,32 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
             _storage._payloadVariant = .task(v)
           }
         }()
+        case 41: try {
+          var v: TakTalkMessage?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .taktalk(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .taktalk(v)
+          }
+        }()
+        case 42: try {
+          var v: TakTalkRoomData?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .taktalkRoom(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .taktalkRoom(v)
+          }
+        }()
         default: break
         }
       }
@@ -5450,11 +5845,10 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       try { if let v = _storage._sensorFov {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 26)
       } }()
+      try { if let v = _storage._marti {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 29)
+      } }()
       switch _storage._payloadVariant {
-      case .pli?: try {
-        guard case .pli(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularBoolField(value: v, fieldNumber: 30)
-      }()
       case .chat?: try {
         guard case .chat(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 31)
@@ -5495,6 +5889,14 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         guard case .task(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 40)
       }()
+      case .taktalk?: try {
+        guard case .taktalk(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 41)
+      }()
+      case .taktalkRoom?: try {
+        guard case .taktalkRoom(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 42)
+      }()
       case nil: break
       }
     }
@@ -5532,6 +5934,7 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._remarks != rhs_storage._remarks {return false}
         if _storage._environment != rhs_storage._environment {return false}
         if _storage._sensorFov != rhs_storage._sensorFov {return false}
+        if _storage._marti != rhs_storage._marti {return false}
         if _storage._payloadVariant != rhs_storage._payloadVariant {return false}
         return true
       }

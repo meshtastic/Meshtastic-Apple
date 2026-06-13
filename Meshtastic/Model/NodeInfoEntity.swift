@@ -33,6 +33,9 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .cascade, inverse: \AmbientLightingConfigEntity.ambientLightingConfigNode)
 	var ambientLightingConfig: AmbientLightingConfigEntity?
 
+	@Relationship(deleteRule: .cascade, inverse: \AudioConfigEntity.audioConfigNode)
+	var audioConfig: AudioConfigEntity?
+
 	@Relationship(deleteRule: .cascade, inverse: \BluetoothConfigEntity.bluetoothConfigNode)
 	var bluetoothConfig: BluetoothConfigEntity?
 
@@ -60,6 +63,9 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .nullify, inverse: \MQTTConfigEntity.mqttConfigNode)
 	var mqttConfig: MQTTConfigEntity?
 
+	@Relationship(deleteRule: .nullify, inverse: \NeighborInfoConfigEntity.neighborInfoConfigNode)
+	var neighborInfoConfig: NeighborInfoConfigEntity?
+
 	@Relationship(deleteRule: .nullify, inverse: \MyInfoEntity.myInfoNode)
 	var myInfo: MyInfoEntity?
 
@@ -77,6 +83,14 @@ final class NodeInfoEntity {
 
 	@Relationship(deleteRule: .nullify, inverse: \PositionEntity.nodePosition)
 	var positions: [PositionEntity] = []
+
+	/// O(1) cache of this node's current "latest" position, maintained on insert so the hot
+	/// position-ingest path never has to scan the (large, unindexed) PositionEntity table to
+	/// find/clear the previous latest. Read via the `latestPosition` accessor, which falls back
+	/// to a sorted query when this is nil (migrated/restored data). Unidirectional to-one;
+	/// nullified if the referenced position is deleted.
+	@Relationship(deleteRule: .nullify)
+	var latestPositionCache: PositionEntity?
 
 	@Relationship(deleteRule: .nullify, inverse: \PowerConfigEntity.powerConfigNode)
 	var powerConfig: PowerConfigEntity?
@@ -101,6 +115,9 @@ final class NodeInfoEntity {
 
 	@Relationship(deleteRule: .nullify, inverse: \TAKConfigEntity.takConfigNode)
 	var takConfig: TAKConfigEntity?
+
+	@Relationship(deleteRule: .nullify, inverse: \TrafficManagementConfigEntity.trafficManagementConfigNode)
+	var trafficManagementConfig: TrafficManagementConfigEntity?
 
 	@Relationship(deleteRule: .nullify, inverse: \TelemetryEntity.nodeTelemetry)
 	var telemetries: [TelemetryEntity] = []

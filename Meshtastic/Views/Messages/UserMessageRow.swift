@@ -14,7 +14,8 @@ struct UserMessageRow: View {
 	@EnvironmentObject var appState: AppState
 	@Environment(\.modelContext) private var context
 	@Bindable var message: MessageEntity
-	let allMessages: [MessageEntity]
+	let replyMessage: MessageEntity?
+	let tapbacks: [MessageEntity]
 	let previousMessage: MessageEntity?
 	let preferredPeripheralNum: Int
 	let user: UserEntity // The direct message user
@@ -22,27 +23,29 @@ struct UserMessageRow: View {
 	@FocusState.Binding var messageFieldFocused: Bool
 	@Binding var messageToHighlight: Int64
 	let scrollView: ScrollViewProxy
-	let onInteractionComplete: () -> Void
 	let onTapback: (MessageEntity) -> Void
 	
 	private var isCurrentUser: Bool {
 		Int64(preferredPeripheralNum) == message.fromUser?.num
 	}
 	
-	init(message: MessageEntity,
-		 allMessages: [MessageEntity],
-		 previousMessage: MessageEntity?,
-		 preferredPeripheralNum: Int,
-		 user: UserEntity,
-		 replyMessageId: Binding<Int64>,
-		 messageFieldFocused: FocusState<Bool>.Binding,
-		 messageToHighlight: Binding<Int64>,
-		 scrollView: ScrollViewProxy,
-		 onInteractionComplete: @escaping () -> Void,
-		 onTapback: @escaping (MessageEntity) -> Void) {
+	init(
+		message: MessageEntity,
+		replyMessage: MessageEntity?,
+		tapbacks: [MessageEntity],
+		previousMessage: MessageEntity?,
+		preferredPeripheralNum: Int,
+		user: UserEntity,
+		replyMessageId: Binding<Int64>,
+		messageFieldFocused: FocusState<Bool>.Binding,
+		messageToHighlight: Binding<Int64>,
+		scrollView: ScrollViewProxy,
+		onTapback: @escaping (MessageEntity) -> Void
+	) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
-		self.allMessages = allMessages
+		self.replyMessage = replyMessage
+		self.tapbacks = tapbacks
 		self.previousMessage = previousMessage
 		self.preferredPeripheralNum = preferredPeripheralNum
 		self.user = user
@@ -50,7 +53,6 @@ struct UserMessageRow: View {
 		self._messageFieldFocused = messageFieldFocused
 		self._messageToHighlight = messageToHighlight
 		self.scrollView = scrollView
-		self.onInteractionComplete = onInteractionComplete
 		self.onTapback = onTapback
 	}
 	
@@ -68,13 +70,11 @@ struct UserMessageRow: View {
 			
 			// Reply Message Block
 			if message.replyID > 0 {
-				let messageReply = allMessages.first(where: { $0.messageId == message.replyID })
-				
 				HStack {
 					Spacer(minLength: isCurrentUser ? 50 : 0)
 					
 					Button {
-						if let messageNum = messageReply?.messageId {
+						if let messageNum = replyMessage?.messageId {
 							withAnimation(.easeInOut(duration: 0.5)) {
 								messageToHighlight = messageNum
 							}
@@ -92,7 +92,7 @@ struct UserMessageRow: View {
 							Image(systemName: "arrowshape.turn.up.left.fill")
 								.symbolRenderingMode(.hierarchical).imageScale(.large)
 								.foregroundColor(.accentColor).padding(.leading)
-							Text(messageReply?.displayedPayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
+							Text(replyMessage?.displayedPayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
 						}
 						.padding(10)
 						.overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.blue, lineWidth: 0.5))
@@ -137,8 +137,7 @@ struct UserMessageRow: View {
 						}
 					}
 					
-					// Tapback Responses - Pass the closure to trigger the parent redraw
-					TapbackResponses(message: message, onRead: onInteractionComplete)
+					TapbackResponses(tapbacks: tapbacks)
 					
 					// ACK Error
 					HStack {

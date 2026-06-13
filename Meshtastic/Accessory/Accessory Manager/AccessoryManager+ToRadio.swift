@@ -117,7 +117,7 @@ extension AccessoryManager {
 
 		try await send(toRadio)
 		if let adminDescription {
-			Logger.mesh.debug("\(adminDescription, privacy: .public)")
+			Logger.admin.debug("\(adminDescription, privacy: .public)")
 		}
 	}
 
@@ -168,7 +168,7 @@ extension AccessoryManager {
 					// Update local database with the new node info
 					// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
 					let shouldFavorite = connectedDeviceRole != .clientBase
-					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite)
+					await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false)
 				}
 			} catch {
 				Logger.data.error("Failed to decode contact data: \(error.localizedDescription, privacy: .public)")
@@ -373,6 +373,7 @@ extension AccessoryManager {
 					Task {
 						let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 						try await send(toRadio, debugDescription: logString)
+						Logger.mesh.info("💬 \(logString, privacy: .public)")
 					}
 					do {
 						try context.save()
@@ -489,6 +490,14 @@ extension AccessoryManager {
 				chan.role = (i == 0) ? .primary : .secondary
 				chan.settings = cs
 				chan.index = i
+				// Ensure moduleSettings is always explicitly set so the device
+				// stores a defined position_precision value. QR codes typically
+				// omit moduleSettings which causes the firmware to default to 32
+				// (full precision), leaking exact GPS coordinates.
+				if !cs.hasModuleSettings {
+					chan.settings.moduleSettings.positionPrecision = 0
+					chan.settings.moduleSettings.isMuted = false
+				}
 				i += 1
 
 				var adminPacket = AdminMessage()
@@ -818,12 +827,14 @@ extension AccessoryManager {
 		try await send(toRadio, debugDescription: logString)
 
 			do {
-				context.delete(node.user!)
+				if let user = node.user {
+					context.delete(user)
+				}
 				context.delete(node)
 				try context.save()
 			} catch {
 				let nsError = error as NSError
-				Logger.data.error("🚫 Error deleting node from core data: \(nsError, privacy: .public)")
+				Logger.data.error("🚫 Error deleting node: \(nsError, privacy: .public)")
 			}
 
 	}
@@ -1083,6 +1094,36 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	public func saveNeighborInfoModuleConfig(config: ModuleConfig.NeighborInfoConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.neighborInfo = config
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("saveNeighborInfoModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved Neighbor Info Module Config for \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+
+		await MeshPackets.shared.upsertNeighborInfoModuleConfigPacket(config: config, nodeNum: toUser.num)
+
+		return Int64(meshPacket.id)
+	}
+
 	public func savePaxcounterModuleConfig(config: ModuleConfig.PaxcounterConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
 
 		var adminPacket = AdminMessage()
@@ -1204,6 +1245,61 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	public func requestAudioModuleConfig(fromUser: UserEntity, toUser: UserEntity) async throws {
+
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.audioConfig
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("requestAudioModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛎️ Requested Audio Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+	}
+
+	public func saveAudioModuleConfig(config: ModuleConfig.AudioConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.audio = config
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("saveAudioModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved Audio Module Config for \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+
+		await MeshPackets.shared.upsertAudioModuleConfigPacket(config: config, nodeNum: toUser.num)
+
+		return Int64(meshPacket.id)
+	}
+
 	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
 
 		var adminPacket = AdminMessage()
@@ -1256,6 +1352,30 @@ extension AccessoryManager {
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "🛎️ Requested External Notificaiton Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+	}
+
+	public func requestNeighborInfoModuleConfig(fromUser: UserEntity, toUser: UserEntity) async throws {
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.neighborinfoConfig
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("requestNeighborInfoModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛎️ Requested Neighbor Info Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
@@ -2077,6 +2197,61 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	public func saveTrafficManagementModuleConfig(config: ModuleConfig.TrafficManagementConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.trafficManagement = config
+		if fromUser != toUser {
+			adminPacket.sessionPasskey = toUser.userNode?.sessionPasskey ?? Data()
+		}
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("saveTrafficManagementModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved Traffic Management Module Config for \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+
+		await MeshPackets.shared.upsertTrafficManagementModuleConfigPacket(config: config, nodeNum: toUser.num)
+
+		return Int64(meshPacket.id)
+	}
+
+	public func requestTrafficManagementModuleConfig(fromUser: UserEntity, toUser: UserEntity) async throws {
+
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.trafficmanagementConfig
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		guard let adminData: Data = try? adminPacket.serializedData() else {
+			throw AccessoryError.ioFailed("requestTrafficManagementModuleConfig: Unable to serialize admin packet")
+		}
+		dataMessage.payload = adminData
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛎️ Requested Traffic Management Module Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
+		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+	}
+
 	public func requestDisplayConfig(fromUser: UserEntity, toUser: UserEntity) async throws {
 
 		var adminPacket = AdminMessage()
@@ -2291,5 +2466,41 @@ extension AccessoryManager {
 		try await send(toRadio, debugDescription: logString)
 
 		return Int64(meshPacket.id)
+	}
+
+	func sendLocalStatsRequest(destNum: Int64, wantResponse: Bool) async throws {
+		guard let fromNodeNum = self.activeConnection?.device.num else {
+			Logger.services.error("Error while sending local stats request.  No active device.")
+			throw AccessoryError.ioFailed("No active device")
+		}
+
+		var telemetryPacket = Telemetry()
+		telemetryPacket.localStats = LocalStats()
+
+		var meshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(destNum)
+		meshPacket.from = UInt32(fromNodeNum)
+		meshPacket.wantAck = true
+		meshPacket.decoded.wantResponse = wantResponse
+
+		var dataMessage = DataMessage()
+		if let serializedData: Data = try? telemetryPacket.serializedData() {
+			dataMessage.payload = serializedData
+			dataMessage.portnum = PortNum.telemetryApp
+			dataMessage.wantResponse = wantResponse
+			meshPacket.decoded = dataMessage
+		} else {
+			throw AccessoryError.ioFailed("sendLocalStatsRequest: Unable to serialize telemetry packet")
+		}
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let logString = String.localizedStringWithFormat("📊 Sent Local Stats Request from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
+		try await send(toRadio, debugDescription: logString)
+
+		Logger.mesh.info("📊 \(logString, privacy: .public)")
 	}
 }

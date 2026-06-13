@@ -79,11 +79,11 @@ struct Messages: View {
 			}
 		} content: {
 			switch router.messagesState {
-			case .channels(let channelId, let messageId):
+			case .channels:
 				ChannelList(node: $node, channelSelection: $channelSelection)
 					// Removed navigationTitle and navigationBarTitleDisplayMode here.
 					// ChannelList.swift now handles this within its own NavigationStack.
-			case .directMessages(let userNum, let messageId):
+			case .directMessages:
 				UserList(node: $node, userSelection: $userSelection)
 					// Removed navigationTitle here. UserList will handle this.
 			case nil:

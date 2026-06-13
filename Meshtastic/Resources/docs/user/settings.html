@@ -13,7 +13,7 @@
 <p>General app preferences including map style, notification behaviour, and theme. These affect only the app — not the radio.</p>
 <h3>Data Management</h3>
 <ul>
-<li><strong>Erase All App Data</strong> — clears the local database, translation cache, and all stored settings. Use this as a last resort.</li>
+<li><strong>Erase All App Data</strong> — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.</li>
 <li><strong>NodeDB Reset</strong> — resets the node database on your connected radio. When prompted, you can choose to <strong>Preserve Favorites</strong> so your starred nodes are retained after the reset.</li>
 <li><strong>Reset App Settings</strong> — restores default app preferences without affecting your node database.</li>
 </ul>
@@ -59,6 +59,50 @@
 <p>Device role, serial output, debug log streaming, and node info broadcast interval.</p>
 <h3>Display</h3>
 <p>Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.</p>
+<h4>Compass Orientation</h4>
+<p>Controls which direction the on-device compass points when the screen is at rest. Use this when your radio is mounted at an angle or upside-down.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0°</td>
+<td>Default orientation — north at the top.</td>
+</tr>
+<tr>
+<td>90°</td>
+<td>Rotated 90° clockwise.</td>
+</tr>
+<tr>
+<td>180°</td>
+<td>Rotated 180° (upside-down).</td>
+</tr>
+<tr>
+<td>270°</td>
+<td>Rotated 270° clockwise (90° counter-clockwise).</td>
+</tr>
+<tr>
+<td>0° Inverted</td>
+<td>Default orientation with the display flipped (mirrored).</td>
+</tr>
+<tr>
+<td>90° Inverted</td>
+<td>90° clockwise with the display flipped.</td>
+</tr>
+<tr>
+<td>180° Inverted</td>
+<td>180° with the display flipped.</td>
+</tr>
+<tr>
+<td>270° Inverted</td>
+<td>270° clockwise with the display flipped.</td>
+</tr>
+</tbody>
+</table>
 <h3>Network</h3>
 <p>Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).</p>
 <h3>Position</h3>
@@ -80,6 +124,10 @@
 <td>Control NeoPixel/LED lighting on supported hardware.</td>
 </tr>
 <tr>
+<td>Audio</td>
+<td>Codec2 voice communication settings. Only available when LoRa region is set to <strong>LORA_24</strong> (2.4 GHz). Configure Codec2 encoding, bitrate, PTT pin, and I2S GPIO pins.</td>
+</tr>
+<tr>
 <td>Canned Messages</td>
 <td>Pre-programmed message shortcuts accessible from the device buttons.</td>
 </tr>
@@ -96,12 +144,16 @@
 <td>Uplink/downlink messages to an MQTT broker for internet bridging.</td>
 </tr>
 <tr>
+<td>Neighbor Info</td>
+<td>Periodically broadcasts information about directly-heard neighbors to help visualise mesh topology. Update interval ranges from 4 hours (default) to 72 hours. Enable <strong>Transmit over LoRa</strong> to share neighbour data over the radio in addition to MQTT and PhoneAPI.</td>
+</tr>
+<tr>
 <td>Range Test</td>
 <td>Automated range testing with position logging.</td>
 </tr>
 <tr>
 <td>Pax Counter</td>
-<td>Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection.</td>
+<td>Anonymised foot-traffic counting via Bluetooth/Wi-Fi probe detection. Configure WiFi Threshold (dBm) and BLE Threshold (dBm) to control the RSSI sensitivity for device counting — default is −80 dBm for both.</td>
 </tr>
 <tr>
 <td>Ringtone</td>
@@ -118,6 +170,98 @@
 <tr>
 <td>Telemetry</td>
 <td>Device, environment, and air-quality sensor reporting.</td>
+</tr>
+<tr>
+<td>Traffic Management</td>
+<td>Mesh traffic optimisation — deduplication, rate limiting, and hop management. Requires firmware 2.8.0+.</td>
+</tr>
+</tbody>
+</table>
+<h3>Traffic Management</h3>
+<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enabled</td>
+<td>Master enable for the traffic management module.</td>
+</tr>
+<tr>
+<td><strong>Position Deduplication</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Position Dedup</td>
+<td>Drop redundant position broadcasts from the same node.</td>
+</tr>
+<tr>
+<td>Precision Bits</td>
+<td>Number of bits of precision for position deduplication (0–32). Lower values merge more positions.</td>
+</tr>
+<tr>
+<td>Min Interval (s)</td>
+<td>Minimum seconds between position updates from the same node.</td>
+</tr>
+<tr>
+<td><strong>NodeInfo Direct Response</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Direct Response</td>
+<td>Respond to NodeInfo requests directly from local cache instead of flooding the mesh.</td>
+</tr>
+<tr>
+<td>Max Hops</td>
+<td>Minimum hop distance from requestor before responding to NodeInfo requests.</td>
+</tr>
+<tr>
+<td><strong>Rate Limiting</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Rate Limiting</td>
+<td>Enable per-node rate limiting to throttle chatty nodes.</td>
+</tr>
+<tr>
+<td>Window (s)</td>
+<td>Time window in seconds for rate limiting calculations.</td>
+</tr>
+<tr>
+<td>Max Packets</td>
+<td>Maximum packets allowed per node within the rate limit window.</td>
+</tr>
+<tr>
+<td><strong>Unknown Packet Handling</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Drop Unknown</td>
+<td>Enable dropping of unknown/undecryptable packets.</td>
+</tr>
+<tr>
+<td>Threshold</td>
+<td>Number of unknown packets received from a node before dropping.</td>
+</tr>
+<tr>
+<td><strong>Hop Management</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Exhaust Hop Telemetry</td>
+<td>Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected).</td>
+</tr>
+<tr>
+<td>Exhaust Hop Position</td>
+<td>Set hop_limit to 0 for relayed position broadcasts (own packets unaffected).</td>
+</tr>
+<tr>
+<td>Router Preserve Hops</td>
+<td>Preserve hop_limit for router-to-router traffic.</td>
 </tr>
 </tbody>
 </table>

@@ -69,6 +69,20 @@ struct GenerateMessageMarkdownTests {
 
 // MARK: - TelemetryEnums Aqi
 
+@Suite("Local stats telemetry export")
+struct LocalStatsTelemetryExportTests {
+
+	@Test func csvPreservesZeroNoiseFloor() {
+		let telemetry = TelemetryEntity()
+		telemetry.metricsType = 4
+		telemetry.noiseFloor = 0
+
+		let csv = telemetryToCsvFile(telemetry: [telemetry], metricsType: 4)
+
+		#expect(csv.split(separator: "\n").last?.split(separator: ",").first?.trimmingCharacters(in: .whitespaces) == "0")
+	}
+}
+
 @Suite("Aqi getAqi boundary values")
 struct AqiGetAqiBoundaryTests {
 

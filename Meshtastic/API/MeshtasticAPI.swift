@@ -35,7 +35,7 @@ private struct DeviceHardware: Codable {
 	let hwModel: Int
 	let hwModelSlug: String
 	let platformioTarget: String
-	let architecture: Architecture
+	let architecture: String
 	let activelySupported: Bool
 	let displayName: String
 	let supportLevel: Int?
@@ -102,7 +102,14 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		if isTest {
 			return MeshtasticAPI(container: nil)
 		}
-		return MeshtasticAPI(container: PersistenceController.shared.container)
+#if DEBUG
+		let environment = ProcessInfo.processInfo.environment
+		let arguments = ProcessInfo.processInfo.arguments
+		if arguments.contains("--meshtastic-perf-seed") || environment["MESHTASTIC_PERF_SEED_NODES"] != nil {
+			return MeshtasticAPI(container: nil)
+		}
+#endif
+		return MeshtasticAPI(container: MainActor.assumeIsolated { PersistenceController.shared.container })
 	}()
 	
 	// MARK: - Constants
@@ -122,8 +129,13 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		self.container = container
 		guard container != nil else { return }
 		Task.detached {
-			try? await self.refreshDevicesAPIData()
+			// Load bundled catalog first — instant display, no network needed.
+			try? await self.refreshBundledDevicesData()
 			try? await self.refreshFirmwareAPIData()
+			// Then silently update from the live API in the background.
+			Task.detached(priority: .utility) {
+				try? await self.refreshDevicesAPIData()
+			}
 		}
 	}
 	
@@ -137,7 +149,6 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		let apiData = try await Self.firmwareURLEndpoint.data(timeout: 5.0)
 		
 		let decodedFirmware = try decoder.decode(FirmwareReleases.self, from: apiData)
-
 		let stableVersions = Set(decodedFirmware.releases.stable.map { $0.id })
 		let alphaVersions = Set(decodedFirmware.releases.alpha.map { $0.id })
 
@@ -180,33 +191,16 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		await MainActor.run {
 			self.isLoadingFirmwareList = false
 		}
-
 	}
-	
-	func refreshDevicesAPIData() async throws {
-		await MainActor.run {
-			self.isLoadingDeviceList = true
-		}
 
-		// PHASE 1: Network (Async) - Get the JSON first
-		var apiData: Data?
-		do {
-			apiData = try await Self.deviceURLEndpoint.data(timeout: 5.0)
-		} catch {
-			Logger.services.error("Unable to fetch device hardware from network: \(error.localizedDescription, privacy: .public)")
+	func refreshDevicesAPIData() async throws {
+		// Silent background update — bundled data already loaded at launch, no spinner needed.
+		defer {
+			Task { @MainActor in self.isLoadingDeviceList = false }
 		}
-		
-		// Fallback to local bundle
-		if apiData == nil {
-			if let bundledJsonURL = Bundle.main.url(forResource: "DeviceHardware.json", withExtension: nil) {
-				apiData = try? Data(contentsOf: bundledJsonURL)
-			}
-		}
-		
-		guard let finalData = apiData else {
-			throw MeshtasticAPIError.unableToRetreviveJSON
-		}
-		
+		// PHASE 1: Network only — no bundle fallback (bundle was already loaded at init).
+		let finalData = try await Self.deviceURLEndpoint.data(timeout: 10.0)
+		guard !finalData.isEmpty else { throw MeshtasticAPIError.unableToRetreviveJSON }
 		// Decode Swift Structs (Safe to do off the DB thread)
 		let decodedDevices = try decoder.decode([DeviceHardware].self, from: finalData)
 
@@ -235,7 +229,7 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				deviceEntity.hwModel = Int64(device.hwModel)
 				deviceEntity.hwModelSlug = device.hwModelSlug
 				deviceEntity.platformioTarget = device.platformioTarget
-				deviceEntity.architecture = device.architecture.rawValue
+deviceEntity.architecture = device.architecture
 				deviceEntity.activelySupported = device.activelySupported
 				deviceEntity.displayName = device.displayName
 				deviceEntity.supportLevel = device.supportLevel ?? 0
@@ -285,11 +279,106 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			Self.deleteOrphanedImages(context: context)
 			try? context.save()
 		}
-		
-		await MainActor.run {
-			self.isLoadingDeviceList = false
+		// PHASE 4: Import msh.to device links
+		await importDeviceLinks()
+	}
+
+	// MARK: - Device Links Import
+
+	/// Import the msh.to URL catalog into `DeviceLinkEntity` records.
+	private func importDeviceLinks() async {
+		guard let decoded = await loadMshToUrls() else {
+			Logger.services.warning("Unable to load msh.to urls (API and bundled fallback both failed)")
+			return
 		}
 
+		await MainActor.run {
+			let context = container!.mainContext
+			var importedCount = 0
+			let importedShortCodes = Set(decoded.routes.map { $0.shortCode })
+
+			for route in decoded.routes {
+				let code = route.shortCode
+				let isVendor = route.type == .vendor
+				let isMarketplace = route.type == .marketplace
+
+				// Marketplace shipping regions: the marketplace key appears as a prefix or
+				// suffix of the short code (e.g. "rokland-…" or "…-aliexpress").
+				var regions: [String]?
+				if isMarketplace {
+					regions = decoded.marketplaces.first(where: { entry in
+						let key = entry.key
+						return code == key
+							|| code.hasPrefix("\(key)-") || code.hasPrefix("\(key)_")
+							|| code.hasSuffix("-\(key)") || code.hasSuffix("_\(key)")
+					})?.value.regions
+				}
+
+				let redirectUrl = "https://msh.to/\(code)"
+
+				var descriptor = FetchDescriptor<DeviceLinkEntity>(
+					predicate: #Predicate { $0.shortCode == code }
+				)
+				descriptor.fetchLimit = 1
+
+				if let existing = try? context.fetch(descriptor).first {
+					existing.originalUrl = redirectUrl
+					existing.linkDescription = route.description
+					existing.isVendor = isVendor
+					existing.isMarketplace = isMarketplace
+					existing.targets = route.targets
+					existing.regions = regions
+				} else {
+					context.insert(DeviceLinkEntity(
+						shortCode: code,
+						originalUrl: redirectUrl,
+						linkDescription: route.description,
+						isVendor: isVendor,
+						isMarketplace: isMarketplace,
+						targets: route.targets,
+						regions: regions
+					))
+				}
+				importedCount += 1
+			}
+
+			// Delete orphaned links no longer present in the catalog
+			let allLinksDescriptor = FetchDescriptor<DeviceLinkEntity>()
+			if let allLinks = try? context.fetch(allLinksDescriptor) {
+				for link in allLinks where !importedShortCodes.contains(link.shortCode) {
+					context.delete(link)
+				}
+			}
+
+			Logger.services.info("Device links import: \(importedCount, privacy: .public) short codes imported")
+			try? context.save()
+		}
+	}
+
+	/// Load the msh.to URL catalog from the API, falling back to the bundled `urls.json`
+	/// when the network is unavailable (e.g. first launch offline, or a connect with no
+	/// internet). Both share the new `{ Routes, Marketplaces }` shape.
+	private func loadMshToUrls() async -> MshToUrlsFile? {
+		if let url = URL(string: "https://msh.to/api/urls") {
+			var request = URLRequest(url: url)
+			request.timeoutInterval = 15
+			request.cachePolicy = .reloadRevalidatingCacheData
+			if let (data, response) = try? await URLSession.shared.data(for: request),
+			   let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+			   let decoded = try? JSONDecoder().decode(MshToUrlsFile.self, from: data) {
+				Logger.services.info("Loaded msh.to urls from API (\(decoded.routes.count, privacy: .public) routes)")
+				return decoded
+			}
+			Logger.services.warning("msh.to API fetch failed; falling back to bundled urls.json")
+		}
+
+		guard let bundledURL = Bundle.main.url(forResource: "urls", withExtension: "json"),
+			  let data = try? Data(contentsOf: bundledURL),
+			  let decoded = try? JSONDecoder().decode(MshToUrlsFile.self, from: data) else {
+			return nil
+		}
+		Logger.services.info("Loaded msh.to urls from bundled urls.json (\(decoded.routes.count, privacy: .public) routes)")
+		return decoded
 	}
 	
 	private func processFirmware(release: FirmwareRelease, releaseType: ReleaseType, context: ModelContext) {
@@ -460,5 +549,78 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 		if let images = try? context.fetch(descriptor) {
 			images.forEach { context.delete($0) }
 		}
+	}
+}
+
+extension MeshtasticAPI {
+	func refreshBundledDevicesData() async throws {
+		await MainActor.run { self.isLoadingDeviceList = true }
+		let bundledData = try Self.bundledDeviceHardwareData()
+		let decodedDevices = try decoder.decode([DeviceHardware].self, from: bundledData)
+		try await MainActor.run {
+			let context = container!.mainContext
+			for device in decodedDevices {
+				let target = device.platformioTarget
+				var descriptor = FetchDescriptor<DeviceHardwareEntity>(predicate: #Predicate { $0.platformioTarget == target })
+				descriptor.fetchLimit = 1
+				let existing = try? context.fetch(descriptor).first
+				let deviceEntity: DeviceHardwareEntity
+				if let existing {
+					deviceEntity = existing
+				} else {
+					deviceEntity = DeviceHardwareEntity()
+					context.insert(deviceEntity)
+				}
+				deviceEntity.hwModel = Int64(device.hwModel)
+				deviceEntity.hwModelSlug = device.hwModelSlug
+				deviceEntity.platformioTarget = device.platformioTarget
+			deviceEntity.architecture = device.architecture
+				deviceEntity.activelySupported = device.activelySupported
+				deviceEntity.displayName = device.displayName
+				deviceEntity.supportLevel = device.supportLevel ?? 0
+				deviceEntity.requiresDfu = device.requiresDfu ?? false
+				deviceEntity.hasInkHud = device.hasInkHud ?? false
+				deviceEntity.partitionScheme = device.partitionScheme
+				deviceEntity.hasMui = device.hasMui ?? false
+				deviceEntity.key = device.key
+				deviceEntity.variant = device.variant
+				var tags = [DeviceHardwareTagEntity]()
+				if let tagList = device.tags {
+					for tagString in tagList {
+						if let tagEntity = try? Self.findOrCreateTag(tag: tagString, context: context) {
+							tags.append(tagEntity)
+						}
+					}
+				}
+				deviceEntity.tags = tags
+			}
+			Self.deleteOrphanedTags(context: context)
+			try context.save()
+		}
+		await withTaskGroup(of: Void.self) { group in
+			for device in decodedDevices {
+				group.addTask {
+					guard let imagesList = device.images else { return }
+					for imageName in imagesList {
+						await self.processImage(imageName: imageName, platform: device.platformioTarget)
+					}
+				}
+			}
+		}
+		await MainActor.run {
+			let context = container!.mainContext
+			Self.deleteOrphanedImages(context: context)
+			try? context.save()
+		}
+		await importDeviceLinks()
+		await MainActor.run { self.isLoadingDeviceList = false }
+	}
+
+	private static func bundledDeviceHardwareData() throws -> Data {
+		guard let bundledJsonURL = Bundle.main.url(forResource: "DeviceHardware.json", withExtension: nil),
+			  let bundledData = try? Data(contentsOf: bundledJsonURL) else {
+			throw MeshtasticAPIError.unableToRetreviveJSON
+		}
+		return bundledData
 	}
 }

@@ -1318,6 +1318,18 @@
     ]
   },
   {
+    "hwModel": 118,
+    "hwModelSlug": "RAK6421",
+    "platformioTarget": "native",
+    "architecture": "portduino",
+    "activelySupported": true,
+    "supportLevel": 1,
+    "displayName": "RAK6421 Hat+",
+    "tags": [
+      "RAK"
+    ]
+  },
+  {
     "hwModel": 119,
     "hwModelSlug": "THINKNODE_M4",
     "platformioTarget": "thinknode_m4",
@@ -1347,6 +1359,18 @@
     "requiresDfu": true,
     "images": [
       "thinknode_m6.svg"
+    ]
+  },
+  {
+    "hwModel": 121,
+    "hwModelSlug": "MESHSTICK_1262",
+    "platformioTarget": "native",
+    "architecture": "portduino",
+    "activelySupported": true,
+    "supportLevel": 1,
+    "displayName": "Elecrow Meshstick 1262",
+    "tags": [
+      "Elecrow"
     ]
   },
   {
@@ -1404,14 +1428,27 @@
     "hwModelSlug": "HELTEC_MESH_NODE_T096",
     "platformioTarget": "heltec-mesh-node-t096",
     "architecture": "nrf52840",
-    "activelySupported": false,
+    "activelySupported": true,
     "supportLevel": 1,
-    "displayName": "Heltec Mesh Node 096",
+    "displayName": "Heltec Mesh Node T096",
     "tags": [
       "Heltec"
     ],
     "images": [
-      "heltec-mesh-node-t096.svg"
+      "heltec-t096.svg"
     ]
+  },
+  {
+    "hwModel": 129,
+    "hwModelSlug": "THINKNODE_M7",
+    "platformioTarget": "thinknode_m7",
+    "architecture": "esp32-s3",
+    "activelySupported": false,
+    "supportLevel": 1,
+    "displayName": "ThinkNode M7",
+    "tags": [
+      "Elecrow"
+    ],
+    "requiresDfu": false
   }
 ]

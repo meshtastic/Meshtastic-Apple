@@ -1,10 +1,16 @@
 <!--
 Sync Impact Report
-  Version change: 1.2.0 → 1.3.0
+  Version change: 1.3.1 → 1.3.2
   Modified principles: none
-  Updated sections: none
-  Added sections:
-    - Principle VIII (Meshtastic Design Standards Compliance)
+  Updated sections:
+    - Development Workflow → Documentation: changes are now recorded in a
+      per-guide "What's New" page (docs/user/whats-new.md,
+      docs/developer/whats-new.md) — the first item in each guide, rendered
+      in-app and on the website — using the shared
+      `**Month YYYY** — [Page](path.md) — sentence` format showing ~12 months;
+      docs/index.md is a Quick Links hub; no release notes / RELEASENOTES.md;
+      rebuild in-app HTML with `--beta`
+  Added sections: none
   Removed sections: N/A
   Templates requiring updates:
     - .specify/templates/plan-template.md ✅ no changes needed
@@ -197,7 +203,25 @@ cross-platform consistency as standards evolve.
 - **Protobuf Updates**: Run `scripts/gen_protos.sh`, build, test,
   and commit the generated changes.
 - **Documentation**: Update project documentation to reflect changes.
-  Release notes go in `Meshtastic/RELEASENOTES.md`.
+  Do NOT add release notes or a `RELEASENOTES.md`. Instead, record
+  changes in the per-guide "What's New" page, which is the first item
+  (`nav_order: 0`, title "What's New") in each guide and renders both in
+  the app and on the docs website. Use the
+  `**Month YYYY** — [Page title](relative/path.md) — One sentence` format,
+  newest at the top; show roughly the last 12 months and trim entries
+  older than a year. In-app links are section-relative (`settings.md`,
+  not `user/settings`).
+  - `docs/user/whats-new.md` — user-facing changes and new/updated user
+    pages.
+  - `docs/developer/whats-new.md` — architectural or procedural changes
+    and new/updated developer pages.
+
+  The website home `docs/index.md` is a Quick Links nav hub (no changelog),
+  and the guide landings `docs/user.md` / `docs/developer.md` link to their
+  "What's New" child rather than duplicating it. After editing any in-app
+  doc, run `scripts/build-docs.sh --output Meshtastic/Resources/docs --beta`
+  to regenerate the bundled HTML under `Meshtastic/Resources/docs/` (the
+  `--beta` flag preserves the pre-release banner the repo ships with).
 
 ## Governance
 
@@ -219,4 +243,4 @@ with these principles.
   MUST be justified in the PR description and approved by a
   maintainer.
 
-**Version**: 1.3.0 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-05-03
+**Version**: 1.3.2 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-06-03

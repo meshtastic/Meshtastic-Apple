@@ -98,6 +98,10 @@
   → Transport.send(data:)
   → Radio
 </code></pre>
+<h2>Connection Sequencing</h2>
+<p><code>AccessoryManager+Connect</code> runs connection setup as a sequenced series of steps: transport connect, heartbeat, <code>wantConfig</code>, optional database retrieval, and version checks.</p>
+<p>During an explicit radio switch from the Connect view, the app uses the same connect pipeline but enables an extra post-config refresh. Once <code>sendWantConfig()</code> completes for the newly selected device, the app first applies the bundled <code>DeviceHardware.json</code> catalog and bundled device images to SwiftData, then schedules <code>MeshtasticAPI.shared.refreshDevicesAPIData()</code> in the background. That network refresh updates the same locally cached hardware catalog from <code>https://api.meshtastic.org/resource/deviceHardware</code> without blocking the rest of the connection sequence.</p>
+<p>This refresh is only enabled for the switch-radio flow. Automatic reconnects and ordinary connects continue using the standard transport handshake without forcing a hardware catalog refresh.</p>
 <h2>Adding a New Packet Type</h2>
 <ol>
 <li>Add the protobuf definition in the <code>protobufs/</code> submodule.</li>

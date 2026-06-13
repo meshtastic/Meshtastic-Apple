@@ -34,6 +34,7 @@ final class TelemetryEntity {
 	var iaq: Int32?
 	var irLux: Float?
 	var lux: Float?
+	var noiseFloor: Int32?
 	var powerCh1Current: Float?
 	var powerCh1Voltage: Float?
 	var powerCh2Current: Float?

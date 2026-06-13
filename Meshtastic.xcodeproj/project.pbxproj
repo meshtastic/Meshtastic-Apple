@@ -112,6 +112,7 @@
         25F5D5C02C3F6DA6008036E3 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5BF2C3F6DA6008036E3 /* Router.swift */; };
         25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5C12C3F6E4B008036E3 /* AppState.swift */; };
         25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F5D5D02C4375DF008036E3 /* RouterTests.swift */; };
+        AA0120250000000000000C01 /* PacketStreamModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0120250000000000000C02 /* PacketStreamModelTests.swift */; };
         2849A5E4CE9FDC1DB33DFA34 /* TAKConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01028778B8BFD81F7A039593 /* TAKConnection.swift */; };
         300424F80C4A445A0FBAE82D /* TAKMeshtasticBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D006C85B250291D5925F30 /* TAKMeshtasticBridge.swift */; };
         3D3417B42E2730EC006A988B /* GeoJSONOverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */; };
@@ -300,6 +301,12 @@
         DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */; };
         DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */; };
         DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */; };
+        BCCA0BAB2F1C5C25007648E5 /* LocalStatsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */; };
+        DEA1C1302F10002000A1B2C3 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */; };
+        DEA1C1322F10002000A1B2C3 /* NeighborInfoConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */; };
+        DEA1C1342F10002000A1B2C3 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */; };
+        DEA1C1362F10002000A1B2C3 /* BackupManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */; };
+        DEA1C1382F10002000A1B2C3 /* BackupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */; };
         DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
         DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
         DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */; };
@@ -422,6 +429,12 @@
         DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
         DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */; };
         DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
+        DD000001275499A500A42001 /* PerformanceSeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000000275499A500A42001 /* PerformanceSeedData.swift */; };
+        DEA1C1202F10001000A1B2C3 /* BackupModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1212F10001000A1B2C3 /* BackupModels.swift */; };
+        DEA1C1222F10001000A1B2C3 /* NodeBackupManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */; };
+        DEA1C1242F10001000A1B2C3 /* NodeBackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */; };
+        DEA1C1262F10001000A1B2C3 /* NodeBackupManager+Import.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1272F10001000A1B2C3 /* NodeBackupManager+Import.swift */; };
+        DEA1C0DE2F10000100A1B2C3 /* CoreDataMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C0DF2F10000100A1B2C3 /* CoreDataMigrationService.swift */; };
         DDC94FC129CE063B0082EA6E /* BatteryLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */; };
         DDC94FC229CE063B0082EA6E /* BatteryLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */; };
         DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */; };
@@ -430,6 +443,7 @@
         DDD5BB092C285DDC007E03CA /* AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB082C285DDC007E03CA /* AppLog.swift */; };
         DDD5BB0B2C285E45007E03CA /* LogDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0A2C285E45007E03CA /* LogDetail.swift */; };
         DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */; };
+        AA0120250000000000000B01 /* PacketStreamModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0120250000000000000B02 /* PacketStreamModel.swift */; };
         DDD5BB182C2F9C36007E03CA /* OSLogEntryLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */; };
         DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD6EEAE29BC024700383354 /* Firmware.swift */; };
         DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */; };
@@ -462,6 +476,7 @@
         DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
         DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
         DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */; };
+        BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */; };
         DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */; };
         DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */; };
         DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */; };
@@ -477,6 +492,10 @@
         E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
         EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */; };
         FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
+		EBC37722779D4F2E9D537D74 /* DeviceLinksSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281DB7C20B6F46B89F4AB29E /* DeviceLinksSection.swift */; };
+		FCEFC176A62447319948ACEF /* DeviceLinkDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24506086F81240A9BFE18FA6 /* DeviceLinkDirectory.swift */; };
+		B734732C0C394582BD6CD0CA /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = AF44FDF549704E29A8E5FE2F /* urls.json */; };
+		1A8723A6288B46538396E9F1 /* DeviceLinkEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF32D1D722C64814981AB215 /* DeviceLinkEntity.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -633,6 +652,7 @@
         25F5D5C12C3F6E4B008036E3 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
         25F5D5C72C4375A8008036E3 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
         25F5D5D02C4375DF008036E3 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
+        AA0120250000000000000C02 /* PacketStreamModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketStreamModelTests.swift; sourceTree = "<group>"; };
         2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerManager.swift; sourceTree = "<group>"; };
         31483AF5F5354D3481698E32 /* TelemetryEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEntity.swift; sourceTree = "<group>"; };
         38DF7D72AA0A450399DBC592 /* MeshtasticSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchema.swift; sourceTree = "<group>"; };
@@ -692,6 +712,9 @@
         AA000401SIRI000000000021 /* se */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = se; path = se.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
         AA000401SIRI000000000022 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hans"; path = "zh-Hans.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
         AA000401SIRI000000000023 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
+        AA000401SIRI000000000024 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ko; path = ko.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
+        AA000401SIRI000000000025 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hant"; path = "zh-Hant.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
+        AA000401SIRI000000000026 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "pt-BR"; path = "pt-BR.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
         AA0005WTCH00000000FR0001 /* MeshtasticWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWatchApp.swift; sourceTree = "<group>"; };
         AA0005WTCH00000000FR0002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
         AA0005WTCH00000000FR0003 /* MeshNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshNode.swift; sourceTree = "<group>"; };
@@ -833,6 +856,12 @@
         DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
         DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterConfig.swift; sourceTree = "<group>"; };
         DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterLog.swift; sourceTree = "<group>"; };
+        BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStatsLog.swift; sourceTree = "<group>"; };
+        DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfig.swift; sourceTree = "<group>"; };
+        DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeighborInfoConfig.swift; sourceTree = "<group>"; };
+        DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
+        DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupManagement/BackupManagement.swift"; sourceTree = "<group>"; };
+        DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupManagement/BackupRowView.swift"; sourceTree = "<group>"; };
         DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
         DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
         DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAltitudeChart.swift; sourceTree = "<group>"; };
@@ -994,6 +1023,12 @@
         DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorConfig.swift; sourceTree = "<group>"; };
         DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV16.xcdatamodel; sourceTree = "<group>"; };
         DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+        DD000000275499A500A42001 /* PerformanceSeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceSeedData.swift; sourceTree = "<group>"; };
+        DEA1C1212F10001000A1B2C3 /* BackupModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupModels.swift; sourceTree = "<group>"; };
+        DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManaging.swift; sourceTree = "<group>"; };
+        DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeBackupManager.swift; sourceTree = "<group>"; };
+        DEA1C1272F10001000A1B2C3 /* NodeBackupManager+Import.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NodeBackupManager+Import.swift"; sourceTree = "<group>"; };
+        DEA1C0DF2F10000100A1B2C3 /* CoreDataMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataMigrationService.swift; sourceTree = "<group>"; };
         DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevel.swift; sourceTree = "<group>"; };
         DDC94FC329CED7280082EA6E /* MeshtasticDataModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV10.xcdatamodel; sourceTree = "<group>"; };
         DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RtttlConfig.swift; sourceTree = "<group>"; };
@@ -1006,6 +1041,7 @@
         DDD5BB0A2C285E45007E03CA /* LogDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetail.swift; sourceTree = "<group>"; };
         DDD5BB0C2C285F00007E03CA /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
         DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogFilter.swift; sourceTree = "<group>"; };
+        AA0120250000000000000B02 /* PacketStreamModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketStreamModel.swift; sourceTree = "<group>"; };
         DDD5BB142C28680D007E03CA /* MeshtasticDataModelV 38.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 38.xcdatamodel"; sourceTree = "<group>"; };
         DDD5BB152C28B1E4007E03CA /* AppData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppData.swift; sourceTree = "<group>"; };
         DDD5BB172C2F9C36007E03CA /* OSLogEntryLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLogEntryLog.swift; sourceTree = "<group>"; };
@@ -1044,6 +1080,7 @@
         DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV11.xcdatamodel; sourceTree = "<group>"; };
         DDDF34392E2CB8E600356DC3 /* MeshtasticDataModelV 54.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 54.xcdatamodel"; sourceTree = "<group>"; };
         DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IgnoreNodeButton.swift; sourceTree = "<group>"; };
+        BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocalStatsButton.swift; sourceTree = "<group>"; };
         DDDFE7402D0D4A070044463C /* MeshtasticDataModelV 47.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 47.xcdatamodel"; sourceTree = "<group>"; };
         DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsEnums.swift; sourceTree = "<group>"; };
         DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteLog.swift; sourceTree = "<group>"; };
@@ -1065,6 +1102,10 @@
         F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
         F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanView.swift; sourceTree = "<group>"; };
         FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
+		281DB7C20B6F46B89F4AB29E /* DeviceLinksSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinksSection.swift; sourceTree = "<group>"; };
+		24506086F81240A9BFE18FA6 /* DeviceLinkDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkDirectory.swift; sourceTree = "<group>"; };
+		AF44FDF549704E29A8E5FE2F /* urls.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = urls.json; sourceTree = "<group>"; };
+		BF32D1D722C64814981AB215 /* DeviceLinkEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkEntity.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -1453,6 +1494,7 @@
             children = (
                 DD4074682F1233F400BCC22F /* ExchangeUserInfoButton.swift */,
                 DDDFE73E2D0D48FF0044463C /* IgnoreNodeButton.swift */,
+                BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */,
                 251926842C3BA97800249DF5 /* FavoriteNodeButton.swift */,
                 251926892C3BB1B200249DF5 /* ExchangePositionsButton.swift */,
                 DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */,
@@ -1479,6 +1521,7 @@
                 AA00010022E2730EC0060000 /* ConnectViewTests.swift */,
                 DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
                 25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
+                AA0120250000000000000C02 /* PacketStreamModelTests.swift */,
                 AA000301CPTST000000000001 /* CarPlayTests.swift */,
                 DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */,
                 DD000002STREXTTST00000000 /* StringExtensionTests.swift */,
@@ -1726,6 +1769,7 @@
                 DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
                 6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
                 DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */,
+                BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */,
                 DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */,
                 8D3F8A402D44C2A6009EAAA4 /* PowerMetricsLog.swift */,
             );
@@ -1754,6 +1798,7 @@
                 DDD5BB152C28B1E4007E03CA /* AppData.swift */,
                 DDD5BB082C285DDC007E03CA /* AppLog.swift */,
                 DD4A911D2708C65400501B7E /* AppSettings.swift */,
+				24506086F81240A9BFE18FA6 /* DeviceLinkDirectory.swift */,
                 ABB99DEA2E2EA1C500CFBD05 /* AppIconPicker.swift */,
                 DDA0B6B1294CDC55001356EC /* Channels.swift */,
                 DD1B8F3F2B35E2F10022AABC /* GPSStatus.swift */,
@@ -1767,6 +1812,8 @@
                 0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */,
                 1D5AD8037A0D583C614B0597 /* Tools.swift */,
                 71084780865585DCE48BD08F /* Discovery */,
+                DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */,
+                DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */,
                 AA003DOC0000003000000001 /* HelpAndDocumentation */,
             );
             path = Settings;
@@ -1808,10 +1855,12 @@
             isa = PBXGroup;
             children = (
                 DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */,
+                DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */,
                 DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */,
                 DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */,
                 DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */,
                 DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
+                DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */,
                 DD41582928585C32009B0E59 /* RangeTestConfig.swift */,
                 DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */,
                 DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */,
@@ -1820,6 +1869,7 @@
                 FE57A71500000000000000A1 /* StatusMessageConfig.swift */,
                 AA0001042F07A4B000600001 /* TAKModuleConfig.swift */,
                 DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
+                DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */,
             );
             path = Module;
             sourceTree = "<group>";
@@ -2031,6 +2081,7 @@
                 45E6EDE744E3446FA1084499 /* ChannelEntity.swift */,
                 4B88B4AE298C43D1B8F4516C /* ConfigModels.swift */,
                 23C2BE262EE9F4BD00F6A997 /* DeviceHardwareEntity.swift */,
+				BF32D1D722C64814981AB215 /* DeviceLinkEntity.swift */,
                 AA00SDRF0001 /* DeviceHardwareImageEntity.swift */,
                 AA00SDRF0002 /* DeviceHardwareTagEntity.swift */,
                 BEC437CA60D4A60C870E63CA /* DiscoveredNodeEntity.swift */,
@@ -2068,6 +2119,7 @@
                 DDB75A192A05EB67006ED576 /* alpha.png */,
                 DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
                 DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
+				AF44FDF549704E29A8E5FE2F /* urls.json */,
                 518D504DED9874EBF9D76578 /* Certificates */,
                 AA003DOC0000005000000001 /* docs */,
             );
@@ -2146,7 +2198,13 @@
         DDC4D5662754996200A4208E /* Persistence */ = {
             isa = PBXGroup;
             children = (
+                DEA1C1212F10001000A1B2C3 /* BackupModels.swift */,
+                DEA1C0DF2F10000100A1B2C3 /* CoreDataMigrationService.swift */,
+                DEA1C1272F10001000A1B2C3 /* NodeBackupManager+Import.swift */,
+                DEA1C1252F10001000A1B2C3 /* NodeBackupManager.swift */,
+                DEA1C1232F10001000A1B2C3 /* NodeBackupManaging.swift */,
                 DDC4D567275499A500A4208E /* Persistence.swift */,
+                DD000000275499A500A42001 /* PerformanceSeedData.swift */,
                 DD964FC52975DBFD007C176F /* QuerySwiftData.swift */,
                 DD3CC6C128EB9D4900FA9159 /* UpdateSwiftData.swift */,
             );
@@ -2174,6 +2232,7 @@
             children = (
                 DDD5BB0A2C285E45007E03CA /* LogDetail.swift */,
                 DDD5BB0F2C285FB3007E03CA /* AppLogFilter.swift */,
+                AA0120250000000000000B02 /* PacketStreamModel.swift */,
             );
             path = Logs;
             sourceTree = "<group>";
@@ -2187,6 +2246,7 @@
                 DDAD49EB2AFAE82500B4425D /* Map */,
                 DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
                 DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
+				281DB7C20B6F46B89F4AB29E /* DeviceLinksSection.swift */,
                 DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
                 AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */,
                 DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
@@ -2462,6 +2522,7 @@
                 DD98EB2B2E7A838D0016320A /* AppIcon_MPowered.icon in Resources */,
                 DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
                 DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
+				B734732C0C394582BD6CD0CA /* urls.json in Resources */,
                 DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
                 8E587743574CE17703E892C6 /* Certificates in Resources */,
                 AA003DOC0000004000000001 /* docs in Resources */,
@@ -2532,6 +2593,7 @@
                 AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
                 DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
                 25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
+                AA0120250000000000000C01 /* PacketStreamModelTests.swift in Sources */,
                 AA000301CPTST000000000002 /* CarPlayTests.swift in Sources */,
                 DD000001NODNAVTST00000001 /* NodeNavigationTests.swift in Sources */,
                 DD000002STREXTTST00000001 /* StringExtensionTests.swift in Sources */,
@@ -2687,6 +2749,7 @@
                 DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
                 AA000001303050030000B001 /* Color+Brand.swift in Sources */,
                 DDDFE73F2D0D48FF0044463C /* IgnoreNodeButton.swift in Sources */,
+                BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */,
                 3D3417D42E2DC293006A988B /* MapDataFiles.swift in Sources */,
                 DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */,
                 DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
@@ -2699,6 +2762,7 @@
                 251926902C3CB44900249DF5 /* ClientHistoryButton.swift in Sources */,
                 237AEB932E1FE4BA003B7CE3 /* Connection.swift in Sources */,
                 DDD5BB102C285FB3007E03CA /* AppLogFilter.swift in Sources */,
+                AA0120250000000000000B01 /* PacketStreamModel.swift in Sources */,
                 237AEB952E1FE516003B7CE3 /* Device.swift in Sources */,
                 2373AE172D0A26620086C749 /* EnvironmentDefaultSeries.swift in Sources */,
                 233E99B82D849C6500CC3A77 /* HumidityCompactWidget.swift in Sources */,
@@ -2706,16 +2770,30 @@
                 233E99C12D849D6000CC3A77 /* DistanceCompactWidget.swift in Sources */,
                 DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
                 108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */,
+                DEA1C1302F10002000A1B2C3 /* AudioConfig.swift in Sources */,
+                DEA1C1362F10002000A1B2C3 /* BackupManagement.swift in Sources */,
+                DEA1C1382F10002000A1B2C3 /* BackupRowView.swift in Sources */,
                 DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */,
                 DDDB445229F8ACF900EE2349 /* Date.swift in Sources */,
                 2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */,
                 23C2BD2B2EE8993800F6A997 /* DeviceHardwareImage.swift in Sources */,
+                DEA1C1202F10001000A1B2C3 /* BackupModels.swift in Sources */,
+                DEA1C1262F10001000A1B2C3 /* NodeBackupManager+Import.swift in Sources */,
+                DEA1C1242F10001000A1B2C3 /* NodeBackupManager.swift in Sources */,
+                DEA1C1222F10001000A1B2C3 /* NodeBackupManaging.swift in Sources */,
+                DEA1C1322F10002000A1B2C3 /* NeighborInfoConfig.swift in Sources */,
                 DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
+                DD000001275499A500A42001 /* PerformanceSeedData.swift in Sources */,
+                DEA1C0DE2F10000100A1B2C3 /* CoreDataMigrationService.swift in Sources */,
                 DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */,
                 DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */,
                 AA11223344556677AABB0001 /* DiscoveryTips.swift in Sources */,
                 23C2BE272EE9F4BD00F6A997 /* DeviceHardwareEntity.swift in Sources */,
+				1A8723A6288B46538396E9F1 /* DeviceLinkEntity.swift in Sources */,
+                EBC37722779D4F2E9D537D74 /* DeviceLinksSection.swift in Sources */,
+                FCEFC176A62447319948ACEF /* DeviceLinkDirectory.swift in Sources */,
                 D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */,
+                DEA1C1342F10002000A1B2C3 /* TrafficManagementConfig.swift in Sources */,
                 DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */,
                 23196A6E2EF1BA9100B1504B /* ESP32WifiOTAViewModel.swift in Sources */,
                 DD1BEF4E2E03916A0090CE24 /* ChannelsHelp.swift in Sources */,
@@ -2905,6 +2983,7 @@
                 BCB613872C69A0FB00485544 /* AppIntentErrors.swift in Sources */,
                 DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
                 DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,
+                BCCA0BAB2F1C5C25007648E5 /* LocalStatsLog.swift in Sources */,
                 BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */,
                 23E23F922E392C2B00919073 /* LogRecord+StringRepresentation.swift in Sources */,
                 25F5D5C22C3F6E4B008036E3 /* AppState.swift in Sources */,
@@ -3020,6 +3099,9 @@
                 AA000401SIRI000000000021 /* se */,
                 AA000401SIRI000000000022 /* zh-Hans */,
                 AA000401SIRI000000000023 /* zh-Hant-TW */,
+                AA000401SIRI000000000024 /* ko */,
+                AA000401SIRI000000000025 /* zh-Hant */,
+                AA000401SIRI000000000026 /* pt-BR */,
             );
             name = AppIntentVocabulary.plist;
             sourceTree = "<group>";
@@ -3504,71 +3586,71 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
-            requirement = {
-                kind = upToNextMinorVersion;
-                minimumVersion = 0.2.2;
-            };
-        };
-        102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
-            requirement = {
-                kind = versionRange;
-                maximumVersion = 4.0.0;
-                minimumVersion = 3.3.0;
-            };
-        };
-        2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/swhitty/SwiftDraw";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 0.25.3;
-            };
-        };
-        2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 4.16.0;
-            };
-        };
-        259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/apple/swift-protobuf.git";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 1.26.0;
-            };
-        };
-        DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 1.17.0;
-            };
-        };
-        DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/emqx/CocoaMQTT";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 2.0.0;
-            };
-        };
-        AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
-            isa = XCRemoteSwiftPackageReference;
-            repositoryURL = "https://github.com/swiftlang/swift-markdown";
-            requirement = {
-                kind = upToNextMajorVersion;
-                minimumVersion = 0.5.0;
-            };
-        };
+		10794B212F8713CB000CA23F /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.5.1;
+			};
+		};
+		102B5EA92E172F41003D191E /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
+			requirement = {
+				kind = versionRange;
+				maximumVersion = 4.0.0;
+				minimumVersion = 3.3.0;
+			};
+		};
+		2315D1A62EEF2ED400E0FAE7 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swhitty/SwiftDraw";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.25.3;
+			};
+		};
+		2388EC362EDF450200F6F982 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.16.0;
+			};
+		};
+		259792242C2F10B600AD1659 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.26.0;
+			};
+		};
+		AA009SMD0000000000000001 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-markdown";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.0;
+			};
+		};
+		DD00003A000SNAP00000000 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.0;
+			};
+		};
+		DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/emqx/CocoaMQTT";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
