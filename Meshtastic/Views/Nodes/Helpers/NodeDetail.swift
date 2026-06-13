@@ -802,15 +802,21 @@ private struct GenerateCoverageOverlayButton: View {
 			frequencyMHz: coverageFrequencyMHz(for: loRaConfig)
 		)
 		let overlayName = coverageOverlayName()
-		let endpoint = coverageEndpointURL()
+		let endpoint: URL
+		do {
+			endpoint = try coverageEndpointURL()
+		} catch {
+			presentAlert(title: "Coverage Overlay Failed", message: error.localizedDescription)
+			return
+		}
 
 		MapDataManager.shared.initialize()
 		isGenerating = true
 		Task {
 			do {
-				let generationResult = try await Self.coverageContours(endpoint: endpoint, payload: payload)
+				let data = try await SitePlannerCoverageClient().generateContours(from: endpoint, request: payload)
 				let metadata = try await MapDataManager.shared.processGeoJSONData(
-					generationResult.data,
+					data,
 					originalName: overlayName,
 					fileExtension: "geojson",
 					makeActive: true
@@ -821,7 +827,7 @@ private struct GenerateCoverageOverlayButton: View {
 					isGenerating = false
 					presentAlert(
 						title: "Coverage Overlay Generated",
-						message: "Added '\(metadata.originalName)' with \(metadata.overlayCount) RF bands \(generationResult.detail)."
+						message: "Added '\(metadata.originalName)' with \(metadata.overlayCount) RF bands from the Site Planner endpoint."
 					)
 				}
 			} catch {
@@ -833,30 +839,15 @@ private struct GenerateCoverageOverlayButton: View {
 		}
 	}
 
-	private func coverageEndpointURL() -> URL? {
+	private func coverageEndpointURL() throws -> URL {
 		let trimmedEndpoint = sitePlannerCoverageEndpoint.trimmingCharacters(in: .whitespacesAndNewlines)
 		guard !trimmedEndpoint.isEmpty,
 			  let endpoint = URL(string: trimmedEndpoint),
 			  let scheme = endpoint.scheme?.lowercased(),
 			  ["http", "https"].contains(scheme) else {
-			return nil
+			throw SitePlannerCoverageError.missingEndpoint
 		}
 		return endpoint
-	}
-
-	private static func coverageContours(endpoint: URL?, payload: SitePlannerCoverageRequest) async throws -> (data: Data, detail: String) {
-		guard let endpoint else {
-			let data = try LocalCoverageOverlayGenerator.estimatedContours(for: payload)
-			return (data, "using a local radio-distance estimate")
-		}
-
-		do {
-			let data = try await SitePlannerCoverageClient().generateContours(from: endpoint, request: payload)
-			return (data, "from the Site Planner endpoint")
-		} catch {
-			let data = try LocalCoverageOverlayGenerator.estimatedContours(for: payload)
-			return (data, "using a local estimate because the Site Planner endpoint was unavailable")
-		}
 	}
 
 	private func presentAlert(title: String, message: String) {

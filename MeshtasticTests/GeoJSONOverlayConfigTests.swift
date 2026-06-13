@@ -189,6 +189,65 @@ struct RFGeoJSONOverlayTests {
 		#expect(feature.dbm == -118)
 	}
 
+	@Test func sitePlannerClientPostsCoverageRequestToEndpoint() async throws {
+		let endpoint = try #require(URL(string: "https://coverage.example.test/api/coverage/contours"))
+		let responseData = """
+		{
+			"type": "FeatureCollection",
+			"features": [
+				{
+					"type": "Feature",
+					"properties": {
+						"dbm": -118,
+						"color": "rgb(125, 50, 168)"
+					},
+					"geometry": {
+						"type": "MultiPolygon",
+						"coordinates": [
+							[
+								[
+									[-121.0, 37.0],
+									[-121.0, 37.1],
+									[-120.9, 37.1],
+									[-120.9, 37.0],
+									[-121.0, 37.0]
+								]
+							]
+						]
+					}
+				}
+			]
+		}
+		""".data(using: .utf8)!
+		let configuration = URLSessionConfiguration.ephemeral
+		configuration.protocolClasses = [SitePlannerCoverageURLProtocol.self]
+		SitePlannerCoverageURLProtocol.responseData = responseData
+		SitePlannerCoverageURLProtocol.observedRequest = nil
+		SitePlannerCoverageURLProtocol.observedBody = nil
+
+		let request = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txPower: 22.0,
+			frequencyMHz: 915.0
+		)
+		let data = try await SitePlannerCoverageClient(session: URLSession(configuration: configuration))
+			.generateContours(from: endpoint, request: request)
+		let observedRequest = try #require(SitePlannerCoverageURLProtocol.observedRequest)
+		let body = try #require(SitePlannerCoverageURLProtocol.observedBody)
+		let object = try JSONSerialization.jsonObject(with: body) as? [String: Any]
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+
+		#expect(observedRequest.url == endpoint)
+		#expect(observedRequest.httpMethod == "POST")
+		#expect(observedRequest.value(forHTTPHeaderField: "Content-Type") == "application/json")
+		#expect(observedRequest.value(forHTTPHeaderField: "Accept") == "application/geo+json, application/json")
+		#expect(object?["lat"] as? Double == 37.3349)
+		#expect(object?["lon"] as? Double == -122.0090)
+		#expect(object?["tx_power"] as? Double == 22.0)
+		#expect(collection.features.count == 1)
+	}
+
 	@Test func encodesSitePlannerCoverageRequestShape() throws {
 		let request = SitePlannerCoverageRequest(
 			lat: 37.3349,
@@ -220,25 +279,71 @@ struct RFGeoJSONOverlayTests {
 		#expect(object?["high_resolution"] as? Bool == false)
 	}
 
-	@Test func localCoverageEstimateCreatesRenderableContours() throws {
-		let request = SitePlannerCoverageRequest(
-			lat: 37.3349,
-			lon: -122.0090,
-			txPower: 20.0,
-			frequencyMHz: 907.0
-		)
+	@Test func sitePlannerEndpointErrorsAreActionable() {
+		let missingEndpoint = SitePlannerCoverageError.missingEndpoint.localizedDescription
+		let httpError = SitePlannerCoverageError.httpStatus(405, "405 Not Allowed").localizedDescription
 
-		let data = try LocalCoverageOverlayGenerator.estimatedContours(for: request)
-		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
-		let feature = try #require(collection.features.first)
-		let styledFeature = GeoJSONStyledFeature(feature: feature, overlayId: "local-rf")
+		#expect(missingEndpoint.contains("hosted Site Planner contour endpoint"))
+		#expect(missingEndpoint.contains("does not expose an API"))
+		#expect(httpError.contains("HTTP 405"))
+		#expect(httpError.contains("405 Not Allowed"))
+	}
+}
 
-		#expect(collection.type == "FeatureCollection")
-		#expect(collection.features.count == 12)
-		#expect(feature.geometry.type == "MultiPolygon")
-		#expect(feature.dbm == -130)
-		#expect(feature.rfPredictionColor == "rgb(12, 7, 134)")
-		#expect(styledFeature.createOverlays().allSatisfy { $0.overlay is MKPolygon })
+private final class SitePlannerCoverageURLProtocol: URLProtocol {
+	nonisolated(unsafe) static var responseData = Data()
+	nonisolated(unsafe) static var observedRequest: URLRequest?
+	nonisolated(unsafe) static var observedBody: Data?
+
+	override class func canInit(with request: URLRequest) -> Bool {
+		true
+	}
+
+	override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+		request
+	}
+
+	override func startLoading() {
+		Self.observedRequest = request
+		Self.observedBody = Self.bodyData(from: request)
+		guard let response = HTTPURLResponse(
+			url: request.url!,
+			statusCode: 200,
+			httpVersion: nil,
+			headerFields: ["Content-Type": "application/geo+json"]
+		) else {
+			return
+		}
+		client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+		client?.urlProtocol(self, didLoad: Self.responseData)
+		client?.urlProtocolDidFinishLoading(self)
+	}
+
+	override func stopLoading() {}
+
+	private static func bodyData(from request: URLRequest) -> Data? {
+		if let httpBody = request.httpBody {
+			return httpBody
+		}
+
+		guard let stream = request.httpBodyStream else {
+			return nil
+		}
+
+		stream.open()
+		defer { stream.close() }
+
+		var data = Data()
+		var buffer = [UInt8](repeating: 0, count: 4096)
+		while stream.hasBytesAvailable {
+			let count = stream.read(&buffer, maxLength: buffer.count)
+			if count > 0 {
+				data.append(buffer, count: count)
+			} else {
+				break
+			}
+		}
+		return data
 	}
 }
 

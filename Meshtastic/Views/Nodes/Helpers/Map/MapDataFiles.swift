@@ -55,11 +55,11 @@ struct MapDataFiles: View {
 				}
 			}
 			Section(header: Text("Coverage Prediction")) {
-				Text("Generated node coverage works offline with a local radio-distance estimate. Add a compatible Site Planner endpoint here to use terrain-aware GeoJSON contours when one is available.")
+				Text("Generate node coverage through a hosted Site Planner contour endpoint. The endpoint should accept the Site Planner request JSON and return GeoJSON contours.")
 					.font(.callout)
 					.foregroundColor(.secondary)
 
-				TextField("Site Planner API Endpoint", text: $sitePlannerCoverageEndpoint)
+				TextField("https://example.com/api/coverage/contours", text: $sitePlannerCoverageEndpoint)
 					.keyboardType(.URL)
 					.textInputAutocapitalization(.never)
 					.autocorrectionDisabled()
