@@ -388,6 +388,35 @@ struct RFGeoJSONOverlayTests {
 		#expect(data.count < 10 * 1024 * 1024)
 	}
 
+	@Test func nativeSitePlannerDetailedContoursStayImportable() async throws {
+		let payload = SitePlannerCoverageRequest(
+			lat: 37.5,
+			lon: -122.5,
+			txHeight: 2.0,
+			txPower: 20.0,
+			frequencyMHz: 915.0,
+			radius: 750.0
+		)
+		let coarseData = try await NativeSitePlannerCoverageClient(
+			terrainProvider: .seaLevel,
+			contourMaxDimension: 40,
+			runChunkSize: 1024
+		)
+		.generateContours(request: payload)
+		let detailedData = try await NativeSitePlannerCoverageClient(
+			terrainProvider: .seaLevel,
+			contourMaxDimension: 160,
+			runChunkSize: 1024
+		)
+		.generateContours(request: payload)
+		let coarseCollection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: coarseData)
+		let detailedCollection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: detailedData)
+
+		#expect(coordinatePairCount(in: detailedCollection) > coordinatePairCount(in: coarseCollection))
+		#expect(detailedData.count > coarseData.count)
+		#expect(detailedData.count < 10 * 1024 * 1024)
+	}
+
 	@Test func nativeSitePlannerTerrainNamingMatchesSitePlanner() {
 		#expect(NativeSitePlannerTerrainService.tileName(for: NativeSitePlannerPageRef(minNorth: 51, minWest: 114)) == "N51W115")
 		#expect(NativeSitePlannerTerrainService.tileName(for: NativeSitePlannerPageRef(minNorth: -34, minWest: 342)) == "S34E017")
@@ -414,6 +443,39 @@ struct RFGeoJSONOverlayTests {
 		#expect(tiffError.contains("GeoTIFF"))
 		#expect(tiffError.contains("GeoJSON"))
 		#expect(SitePlannerCoverageClient.usesPublicSitePlanner(for: URL(string: "https://site.meshtastic.org")!))
+	}
+}
+
+private func coordinatePairCount(in collection: GeoJSONFeatureCollection) -> Int {
+	collection.features.reduce(0) { count, feature in
+		count + coordinatePairCount(in: feature.geometry.coordinates)
+	}
+}
+
+private func coordinatePairCount(in value: AnyCodableValue) -> Int {
+	guard case .array(let values) = value else {
+		return 0
+	}
+	if values.count >= 2,
+	   values[0].numericValue != nil,
+	   values[1].numericValue != nil {
+		return 1
+	}
+	return values.reduce(0) { count, value in
+		count + coordinatePairCount(in: value)
+	}
+}
+
+private extension AnyCodableValue {
+	var numericValue: Double? {
+		switch self {
+		case .double(let value):
+			return value
+		case .int(let value):
+			return Double(value)
+		default:
+			return nil
+		}
 	}
 }
 

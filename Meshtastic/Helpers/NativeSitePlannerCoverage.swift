@@ -20,7 +20,8 @@ struct NativeSitePlannerTerrainProvider: Sendable {
 
 struct NativeSitePlannerCoverageClient: Sendable {
 	var terrainProvider: NativeSitePlannerTerrainProvider = .live
-	var contourMaxDimension = 180
+	var contourMaxDimension = 360
+	var contourByteLimit = 9_500_000
 	var runChunkSize = 256
 
 	func generateContours(request payload: SitePlannerCoverageRequest) async throws -> Data {
@@ -28,6 +29,7 @@ struct NativeSitePlannerCoverageClient: Sendable {
 			request: payload,
 			terrainProvider: terrainProvider,
 			contourMaxDimension: contourMaxDimension,
+			contourByteLimit: contourByteLimit,
 			runChunkSize: runChunkSize
 		)
 	}
@@ -70,6 +72,7 @@ private actor NativeSitePlannerCoverageRunner {
 		request payload: SitePlannerCoverageRequest,
 		terrainProvider: NativeSitePlannerTerrainProvider,
 		contourMaxDimension: Int,
+		contourByteLimit: Int,
 		runChunkSize: Int
 	) async throws -> Data {
 		let params = try engineParameters(for: payload)
@@ -150,7 +153,8 @@ private actor NativeSitePlannerCoverageRunner {
 		return try Self.featureCollectionData(
 			from: result,
 			request: payload,
-			maxDimension: contourMaxDimension
+			maxDimension: contourMaxDimension,
+			byteLimit: contourByteLimit
 		)
 	}
 
@@ -181,14 +185,37 @@ private actor NativeSitePlannerCoverageRunner {
 	private static func featureCollectionData(
 		from raster: CoverageRaster,
 		request: SitePlannerCoverageRequest,
-		maxDimension: Int
+		maxDimension: Int,
+		byteLimit: Int
+	) throws -> Data {
+		var dimension = min(max(40, maxDimension), 512)
+		let minimumDimension = 120
+		let effectiveByteLimit = max(256_000, byteLimit)
+
+		while true {
+			let data = try featureCollectionData(from: raster, request: request, gridMaxDimension: dimension)
+			if data.count <= effectiveByteLimit || dimension <= minimumDimension {
+				return data
+			}
+			let nextDimension = max(minimumDimension, Int(Double(dimension) * 0.82))
+			if nextDimension == dimension {
+				return data
+			}
+			dimension = nextDimension
+		}
+	}
+
+	private static func featureCollectionData(
+		from raster: CoverageRaster,
+		request: SitePlannerCoverageRequest,
+		gridMaxDimension: Int
 	) throws -> Data {
 		let floorDbm = max(request.minDbm, request.signalThreshold)
 		let maxDbm = request.maxDbm
 		let span = max(maxDbm - floorDbm, 1.0)
 		let bandCount = 12
 		let levels = (0..<bandCount).map { floorDbm + (span * Double($0)) / Double(bandCount) }
-		let grid = Self.preparedGrid(from: raster, maxDimension: max(20, maxDimension), sentinel: floorDbm - max(6.0, span / Double(bandCount)))
+		let grid = Self.preparedGrid(from: raster, maxDimension: gridMaxDimension, sentinel: floorDbm - max(6.0, span / Double(bandCount)))
 
 		let features: [[String: Any]] = levels.compactMap { level in
 			let polygons = Self.rowRunPolygons(for: grid, threshold: level)
@@ -267,10 +294,12 @@ private actor NativeSitePlannerCoverageRunner {
 	private static func rowRunPolygons(for grid: PreparedCoverageGrid, threshold: Double) -> [[[[Double]]]] {
 		let lonPerColumn = (grid.bounds.east - grid.bounds.west) / Double(grid.width)
 		let latPerRow = (grid.bounds.north - grid.bounds.south) / Double(grid.height)
-		var polygons: [[[[Double]]]] = []
+		var rectangles: [CoverageRunRectangle] = []
+		var activeRuns: [CoverageRunKey: Int] = [:]
 
 		for y in 0..<grid.height {
 			var x = 0
+			var nextActiveRuns: [CoverageRunKey: Int] = [:]
 			while x < grid.width {
 				while x < grid.width && grid.values[y * grid.width + x] < threshold {
 					x += 1
@@ -281,22 +310,33 @@ private actor NativeSitePlannerCoverageRunner {
 					x += 1
 				}
 				let endX = x
-				let west = grid.bounds.west + Double(startX) * lonPerColumn
-				let east = grid.bounds.west + Double(endX) * lonPerColumn
-				let north = grid.bounds.north - Double(y) * latPerRow
-				let south = grid.bounds.north - Double(y + 1) * latPerRow
-				let ring = [
-					[west, south],
-					[west, north],
-					[east, north],
-					[east, south],
-					[west, south]
-				]
-				polygons.append([ring])
+				let key = CoverageRunKey(startX: startX, endX: endX)
+				if let rectangleIndex = activeRuns[key], rectangles[rectangleIndex].endY == y {
+					rectangles[rectangleIndex].endY = y + 1
+					nextActiveRuns[key] = rectangleIndex
+				} else {
+					let rectangleIndex = rectangles.count
+					rectangles.append(CoverageRunRectangle(startX: startX, endX: endX, startY: y, endY: y + 1))
+					nextActiveRuns[key] = rectangleIndex
+				}
 			}
+			activeRuns = nextActiveRuns
 		}
 
-		return polygons
+		return rectangles.map { rectangle in
+			let west = grid.bounds.west + Double(rectangle.startX) * lonPerColumn
+			let east = grid.bounds.west + Double(rectangle.endX) * lonPerColumn
+			let north = grid.bounds.north - Double(rectangle.startY) * latPerRow
+			let south = grid.bounds.north - Double(rectangle.endY) * latPerRow
+			let ring = [
+				[west, south],
+				[west, north],
+				[east, north],
+				[east, south],
+				[west, south]
+			]
+			return [ring]
+		}
 	}
 
 	private static func color(for dbm: Double, minDbm: Double, maxDbm: Double, scale: String) -> String {
@@ -697,4 +737,16 @@ private struct PreparedCoverageGrid {
 	var height: Int
 	var values: [Double]
 	var bounds: CoverageBounds
+}
+
+private struct CoverageRunKey: Hashable {
+	var startX: Int
+	var endX: Int
+}
+
+private struct CoverageRunRectangle {
+	var startX: Int
+	var endX: Int
+	var startY: Int
+	var endY: Int
 }
