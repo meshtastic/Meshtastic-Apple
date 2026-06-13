@@ -1516,6 +1516,37 @@ extension MeshPackets {
 		}
 	}
 
+	/// Stores the live status message a node broadcasts over NODE_STATUS_APP. This is the
+	/// node's currently advertised status (shown in the node list), separate from the
+	/// configured value retrieved via admin (`statusMessageConfig`). Mirrors Android's
+	/// `handleReceivedNodeStatus`: an empty status clears the stored value.
+	func upsertNodeStatusPacket(packet: MeshPacket) {
+		let fetchNum = Int64(packet.from)
+		guard let statusMessage = try? StatusMessage(serializedBytes: packet.decoded.payload) else {
+			Logger.data.error("💥 [NodeStatus] Failed to decode StatusMessage from \(fetchNum.toHex(), privacy: .public)")
+			return
+		}
+
+		let logString = String.localizedStringWithFormat("Node status received: %@".localized, String(fetchNum))
+		Logger.data.info("📬 \(logString, privacy: .public)")
+
+		var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+		fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			guard !fetchedNode.isEmpty else {
+				Logger.data.error("💥 [NodeStatus] No node found matching \(fetchNum.toHex(), privacy: .public) unable to save node status")
+				return
+			}
+			fetchedNode[0].nodeStatus = statusMessage.status.isEmpty ? nil : statusMessage.status
+			savePendingChanges()
+			Logger.data.info("💾 [NodeStatus] Updated for node: \(fetchNum.toHex(), privacy: .public)")
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [NodeStatus] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
 	func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Store & Forward module config received: %@".localized, String(nodeNum))

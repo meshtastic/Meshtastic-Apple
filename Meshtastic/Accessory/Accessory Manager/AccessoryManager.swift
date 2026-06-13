@@ -670,7 +670,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .audioApp:
 					Logger.mesh.info("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
 				case .nodeStatusApp:
-					Logger.mesh.info("🕸️ MESH PACKET received for Node Status App UNHANDLED")
+					await MeshPackets.shared.upsertNodeStatusPacket(packet: packet)
 				case .tracerouteApp:
 					handleTraceRouteApp(packet)
 				case .neighborinfoApp:

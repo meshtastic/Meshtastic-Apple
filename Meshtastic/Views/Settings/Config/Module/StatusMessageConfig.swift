@@ -95,7 +95,12 @@ struct StatusMessageConfig: View {
 	}
 
 	func setStatusMessageValues() {
-		self.nodeStatus = node?.statusMessageConfig?.nodeStatus ?? ""
+		// Match Android: prefer the configured value, but if it's blank fall back to the
+		// node's live broadcast status (NODE_STATUS_APP) so the field reflects what the
+		// node is currently advertising rather than appearing empty.
+		let configValue = node?.statusMessageConfig?.nodeStatus ?? ""
+		let liveValue = node?.nodeStatus ?? ""
+		self.nodeStatus = configValue.isEmpty && !liveValue.isEmpty ? liveValue : configValue
 		self.hasChanges = false
 	}
 }
