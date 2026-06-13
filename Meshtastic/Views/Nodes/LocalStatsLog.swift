@@ -442,17 +442,19 @@ private extension LocalStatsLog {
 	/// Single source of the view's derived data. Runs one SwiftData fetch and recomputes
 	/// the cached chart inputs. Called on appear, when the node hears new packets, and
 	/// after a clear — never from `body`, so chart scrolling does no fetching or sorting.
+	@MainActor
 	func refreshData() {
 		let stats = node.safeTelemetries(ofType: 4)
 		localStats = stats
 
-		let readings = stats
-			.filter { $0.time != nil }
-			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
-			.compactMap { point -> LocalStatsChartPoint? in
+		// safeTelemetries already returns rows sorted by time descending; compactMap
+		// preserves that order, so reversing yields ascending without a second sort.
+		let readings = Array(
+			stats.compactMap { point -> LocalStatsChartPoint? in
 				guard let time = point.time, let noiseFloor = point.noiseFloor else { return nil }
 				return LocalStatsChartPoint(time: time, noiseFloor: noiseFloor)
-			}
+			}.reversed()
+		)
 		noiseFloorReadings = readings
 
 		let values = readings.map { Int($0.noiseFloor) }
