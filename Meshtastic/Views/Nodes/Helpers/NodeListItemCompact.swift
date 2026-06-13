@@ -173,7 +173,10 @@ struct NodeListItemCompact: View {
 		let cachedHasEnvironmentMetrics = shouldShowTelemetry ? rowSummary?.hasEnvironmentMetrics ?? false : false
 		let cachedHasDetectionSensorMetrics = shouldShowTelemetry ? rowSummary?.hasDetectionSensorMetrics ?? false : false
 		let cachedHasTraceRoutes = shouldShowTelemetry ? rowSummary?.hasTraceRoutes ?? false : false
-		LazyVStack(alignment: .leading) {
+		// Plain VStack, not LazyVStack: a LazyVStack inside a List cell returns inconsistent
+		// self-sized heights and trips UICollectionViewCompositionalLayout's recursive
+		// layout-loop trap on iOS 18+/26. See NodeListItem for the full explanation.
+		VStack(alignment: .leading) {
 			HStack {
 				// First Column
 				VStack(alignment: .center) {

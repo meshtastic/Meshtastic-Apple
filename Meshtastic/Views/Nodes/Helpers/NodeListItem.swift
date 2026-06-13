@@ -164,7 +164,12 @@ struct NodeListItem: View {
 		let cachedHasDetectionSensorMetrics = rowSummary?.hasDetectionSensorMetrics ?? false
 		let cachedHasTraceRoutes = rowSummary?.hasTraceRoutes ?? false
 		let cachedHasLogs = cachedHasPositions || cachedHasEnvironmentMetrics || cachedHasDetectionSensorMetrics || cachedHasTraceRoutes
-		LazyVStack(alignment: .leading) {
+		// A plain VStack — NOT LazyVStack. A LazyVStack reports inconsistent self-sized
+		// heights when measured inside a List cell (it sizes lazily from a scroll viewport),
+		// which sends UICollectionViewCompositionalLayout into a recursive layout loop and
+		// traps on iOS 18+/26 (_UICollectionViewFeedbackLoopDebugger). The laziness was also
+		// pointless here — it wrapped a single HStack.
+		VStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)

@@ -336,7 +336,9 @@ private struct BuildTestNodeStandardRow: View {
 	private var modemPreset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	var body: some View {
-		LazyVStack(alignment: .leading) {
+		// Plain VStack, not LazyVStack: a LazyVStack inside a List cell returns inconsistent
+		// self-sized heights and trips the recursive layout-loop trap on iOS 18+/26.
+		VStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
 					CircleText(text: node.shortName, color: Color(UIColor(hex: 0x76A5AF)), circleSize: 70)
@@ -402,7 +404,9 @@ private struct BuildTestNodeCompactRow: View {
 	let node: BuildTestNodeSnapshot
 
 	var body: some View {
-		LazyVStack(alignment: .leading) {
+		// Plain VStack, not LazyVStack: a LazyVStack inside a List cell returns inconsistent
+		// self-sized heights and trips the recursive layout-loop trap on iOS 18+/26.
+		VStack(alignment: .leading) {
 			HStack {
 				VStack(alignment: .center) {
 					CircleText(text: node.shortName, color: Color(UIColor(hex: 0x76A5AF)), circleSize: 42)
