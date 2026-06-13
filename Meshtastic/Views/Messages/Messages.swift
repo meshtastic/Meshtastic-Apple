@@ -35,15 +35,15 @@ struct Messages: View {
 		return getNodeInfo(id: nodeNum, context: context)
 	}
 
+	/// Binding handed to ChannelList/UserList. The getter resolves `node` from the live context on
+	/// every read (never a captured/cached object), so the retained closure can't read a reset
+	/// NodeInfoEntity if a container recreation happens before this view re-renders.
+	private var nodeBinding: Binding<NodeInfoEntity?> {
+		Binding(get: { self.node }, set: { self.nodeNum = $0?.num })
+	}
+
 	var body: some View {
-		// Resolve once per render and hand children a binding backed by the node's `num`, so no
-		// view holds a NodeInfoEntity across a container recreation.
-		let node = node
-		let nodeBinding = Binding<NodeInfoEntity?>(
-			get: { node },
-			set: { nodeNum = $0?.num }
-		)
-		return NavigationSplitView(columnVisibility: $columnVisibility) {
+		NavigationSplitView(columnVisibility: $columnVisibility) {
 			List(selection: $router.messagesState) {
 				NavigationLink(value: MessagesNavigationState.channels()) {
 					Spacer()
