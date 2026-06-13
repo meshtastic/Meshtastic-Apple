@@ -5,7 +5,6 @@ import Testing
 import Foundation
 import CoreLocation
 import MapKit
-import Network
 @testable import Meshtastic
 
 // MARK: - AnyCodableValue Tests
@@ -91,7 +90,7 @@ struct AnyCodableValueCodableTests {
 
 // MARK: - RF Prediction GeoJSON Tests
 
-@Suite("RF prediction GeoJSON overlays")
+@Suite("RF prediction GeoJSON overlays", .serialized)
 struct RFGeoJSONOverlayTests {
 	private static var contourFeatureCollectionData: Data {
 		"""
@@ -220,13 +219,13 @@ struct RFGeoJSONOverlayTests {
 		#expect(feature.dbm == -118)
 	}
 
-	@Test func sitePlannerClientPostsCoverageRequestToEndpoint() async throws {
-		let endpoint = try #require(URL(string: "https://coverage.example.test/api/coverage/contours"))
+	@Test func sitePlannerClientAcceptsDirectGeoJSONResponse() async throws {
+		let endpoint = try #require(URL(string: "https://coverage.example.test/api"))
 		let configuration = URLSessionConfiguration.ephemeral
 		configuration.protocolClasses = [SitePlannerCoverageURLProtocol.self]
-		SitePlannerCoverageURLProtocol.responseData = Self.contourFeatureCollectionData
-		SitePlannerCoverageURLProtocol.observedRequest = nil
-		SitePlannerCoverageURLProtocol.observedBody = nil
+		SitePlannerCoverageURLProtocol.prepare(responses: [
+			.init(contentType: "application/geo+json", data: Self.contourFeatureCollectionData)
+		])
 
 		let request = SitePlannerCoverageRequest(
 			lat: 37.3349,
@@ -236,25 +235,30 @@ struct RFGeoJSONOverlayTests {
 		)
 		let data = try await SitePlannerCoverageClient(session: URLSession(configuration: configuration))
 			.generateContours(from: endpoint, request: request)
-		let observedRequest = try #require(SitePlannerCoverageURLProtocol.observedRequest)
-		let body = try #require(SitePlannerCoverageURLProtocol.observedBody)
-		let object = try JSONSerialization.jsonObject(with: body) as? [String: Any]
+		let observedRequest = try #require(SitePlannerCoverageURLProtocol.observedRequests().first)
+		let object = try JSONSerialization.jsonObject(with: observedRequest.body) as? [String: Any]
 		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
 
-		#expect(observedRequest.url == endpoint)
-		#expect(observedRequest.httpMethod == "POST")
-		#expect(observedRequest.value(forHTTPHeaderField: "Content-Type") == "application/json")
-		#expect(observedRequest.value(forHTTPHeaderField: "Accept") == "application/geo+json, application/json")
+		#expect(observedRequest.url == URL(string: "https://coverage.example.test/api/predict"))
+		#expect(observedRequest.method == "POST")
+		#expect(observedRequest.headers["Content-Type"] == "application/json")
+		#expect(observedRequest.headers["Accept"] == "application/geo+json, application/json, image/tiff")
 		#expect(object?["lat"] as? Double == 37.3349)
 		#expect(object?["lon"] as? Double == -122.0090)
 		#expect(object?["tx_power"] as? Double == 22.0)
 		#expect(collection.features.count == 1)
 	}
 
-	@Test func sitePlannerClientReachesLocalHTTPContourEndpointEndToEnd() async throws {
-		let server = SitePlannerContourHTTPServer(responseData: Self.contourFeatureCollectionData)
-		let endpoint = try await server.start()
-		defer { server.stop() }
+	@Test func sitePlannerClientRunsPredictStatusResultFlowEndToEnd() async throws {
+		let endpoint = try #require(URL(string: "https://site.meshtastic.org"))
+		let configuration = URLSessionConfiguration.ephemeral
+		configuration.protocolClasses = [SitePlannerCoverageURLProtocol.self]
+		SitePlannerCoverageURLProtocol.prepare(responses: [
+			.init(json: #"{"task_id":"site-planner-task"}"#),
+			.init(json: #"{"task_id":"site-planner-task","status":"processing"}"#),
+			.init(json: #"{"task_id":"site-planner-task","status":"completed"}"#),
+			.init(contentType: "application/geo+json", data: Self.contourFeatureCollectionData)
+		])
 
 		let payload = SitePlannerCoverageRequest(
 			lat: 37.3349,
@@ -262,23 +266,30 @@ struct RFGeoJSONOverlayTests {
 			txPower: 20.0,
 			frequencyMHz: 907.0
 		)
-		let configuration = URLSessionConfiguration.ephemeral
-		configuration.timeoutIntervalForRequest = 10
-		configuration.timeoutIntervalForResource = 10
-		let data = try await SitePlannerCoverageClient(session: URLSession(configuration: configuration))
+		let data = try await SitePlannerCoverageClient(
+			session: URLSession(configuration: configuration),
+			pollIntervalNanoseconds: 0,
+			timeoutInterval: 10
+		)
 			.generateContours(from: endpoint, request: payload)
-		let request = try #require(server.recordedRequest())
-		let bodyObject = try JSONSerialization.jsonObject(with: request.body) as? [String: Any]
+		let requests = SitePlannerCoverageURLProtocol.observedRequests()
+		let predictRequest = try #require(requests.first)
+		let bodyObject = try JSONSerialization.jsonObject(with: predictRequest.body) as? [String: Any]
 		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
 
-		#expect(request.method == "POST")
-		#expect(request.path == "/api/coverage/contours")
-		#expect(request.headers["content-type"] == "application/json")
-		#expect(request.headers["accept"] == "application/geo+json, application/json")
+		#expect(requests.map(\.url.path) == ["/predict", "/status/site-planner-task", "/status/site-planner-task", "/result/site-planner-task"])
+		#expect(predictRequest.method == "POST")
+		#expect(predictRequest.headers["Content-Type"] == "application/json")
+		#expect(predictRequest.headers["Accept"] == "application/geo+json, application/json, image/tiff")
 		#expect(bodyObject?["lat"] as? Double == 37.3349)
 		#expect(bodyObject?["lon"] as? Double == -122.0090)
 		#expect(bodyObject?["tx_power"] as? Double == 20.0)
 		#expect(bodyObject?["frequency_mhz"] as? Double == 907.0)
+		#expect(bodyObject?["rx_gain"] as? Double == 2.0)
+		#expect(bodyObject?["signal_threshold"] as? Double == -130.0)
+		#expect(bodyObject?["colormap"] as? String == "plasma")
+		#expect(bodyObject?["min_dbm"] as? Double == -130.0)
+		#expect(bodyObject?["max_dbm"] as? Double == -80.0)
 		#expect(collection.features.count == 1)
 
 		MapDataManager.shared.initialize()
@@ -291,11 +302,28 @@ struct RFGeoJSONOverlayTests {
 		try await MapDataManager.shared.deleteFile(metadata)
 	}
 
-	@Test func appAllowsLocalHTTPCoverageEndpoints() throws {
-		let infoDictionary = try #require(Bundle.main.infoDictionary)
-		let appTransportSecurity = try #require(infoDictionary["NSAppTransportSecurity"] as? [String: Any])
+	@Test func sitePlannerClientReportsGeoTIFFResultsClearly() async throws {
+		let endpoint = try #require(URL(string: "https://site.meshtastic.org"))
+		let configuration = URLSessionConfiguration.ephemeral
+		configuration.protocolClasses = [SitePlannerCoverageURLProtocol.self]
+		SitePlannerCoverageURLProtocol.prepare(responses: [
+			.init(json: #"{"task_id":"site-planner-task"}"#),
+			.init(json: #"{"task_id":"site-planner-task","status":"completed"}"#),
+			.init(contentType: "image/tiff", data: Data([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00]))
+		])
 
-		#expect(appTransportSecurity["NSAllowsLocalNetworking"] as? Bool == true)
+		do {
+			_ = try await SitePlannerCoverageClient(
+				session: URLSession(configuration: configuration),
+				pollIntervalNanoseconds: 0,
+				timeoutInterval: 10
+			)
+				.generateContours(from: endpoint, request: SitePlannerCoverageRequest(lat: 37.3349, lon: -122.0090))
+			Issue.record("Expected GeoTIFF result to fail until raster import is supported.")
+		} catch {
+			#expect(error.localizedDescription.contains("GeoTIFF"))
+			#expect(error.localizedDescription.contains("GeoJSON"))
+		}
 	}
 
 	@Test func encodesSitePlannerCoverageRequestShape() throws {
@@ -317,6 +345,8 @@ struct RFGeoJSONOverlayTests {
 		#expect(object?["system_loss"] as? Double == 2.0)
 		#expect(object?["frequency_mhz"] as? Double == 915.0)
 		#expect(object?["rx_height"] as? Double == 1.0)
+		#expect(object?["rx_gain"] as? Double == 2.0)
+		#expect(object?["signal_threshold"] as? Double == -130.0)
 		#expect(object?["clutter_height"] as? Double == 1.0)
 		#expect(object?["ground_dielectric"] as? Double == 15.0)
 		#expect(object?["ground_conductivity"] as? Double == 0.005)
@@ -327,23 +357,50 @@ struct RFGeoJSONOverlayTests {
 		#expect(object?["situation_fraction"] as? Double == 95.0)
 		#expect(object?["time_fraction"] as? Double == 95.0)
 		#expect(object?["high_resolution"] as? Bool == false)
+		#expect(object?["colormap"] as? String == "plasma")
+		#expect(object?["min_dbm"] as? Double == -130.0)
+		#expect(object?["max_dbm"] as? Double == -80.0)
 	}
 
 	@Test func sitePlannerEndpointErrorsAreActionable() {
 		let missingEndpoint = SitePlannerCoverageError.missingEndpoint.localizedDescription
+		let publicSiteError = SitePlannerCoverageError.publicSiteAPIUnavailable.localizedDescription
 		let httpError = SitePlannerCoverageError.httpStatus(405, "405 Not Allowed").localizedDescription
+		let tiffError = SitePlannerCoverageError.unsupportedGeoTIFFResult.localizedDescription
 
-		#expect(missingEndpoint.contains("hosted Site Planner contour endpoint"))
-		#expect(missingEndpoint.contains("does not expose an API"))
+		#expect(missingEndpoint.contains("/predict"))
+		#expect(missingEndpoint.contains("/status/{task_id}"))
+		#expect(missingEndpoint.contains("/result/{task_id}"))
+		#expect(publicSiteError.contains("HTTP 405"))
+		#expect(publicSiteError.contains("/predict"))
+		#expect(publicSiteError.contains("/result/{task_id}"))
 		#expect(httpError.contains("HTTP 405"))
 		#expect(httpError.contains("405 Not Allowed"))
+		#expect(tiffError.contains("GeoTIFF"))
+		#expect(tiffError.contains("GeoJSON"))
 	}
 }
 
 private final class SitePlannerCoverageURLProtocol: URLProtocol {
-	nonisolated(unsafe) static var responseData = Data()
-	nonisolated(unsafe) static var observedRequest: URLRequest?
-	nonisolated(unsafe) static var observedBody: Data?
+	struct StubResponse {
+		var statusCode: Int
+		var headers: [String: String]
+		var data: Data
+
+		init(statusCode: Int = 200, contentType: String = "application/json", data: Data) {
+			self.statusCode = statusCode
+			self.headers = ["Content-Type": contentType]
+			self.data = data
+		}
+
+		init(statusCode: Int = 200, json: String) {
+			self.init(statusCode: statusCode, contentType: "application/json", data: Data(json.utf8))
+		}
+	}
+
+	private static let lock = NSLock()
+	nonisolated(unsafe) private static var responses: [StubResponse] = []
+	nonisolated(unsafe) private static var requests: [RecordedRequest] = []
 
 	override class func canInit(with request: URLRequest) -> Bool {
 		true
@@ -354,22 +411,54 @@ private final class SitePlannerCoverageURLProtocol: URLProtocol {
 	}
 
 	override func startLoading() {
-		Self.observedRequest = request
-		Self.observedBody = Self.bodyData(from: request)
+		let body = Self.bodyData(from: request) ?? Data()
+		let responseStub = Self.record(request: request, body: body)
 		guard let response = HTTPURLResponse(
 			url: request.url!,
-			statusCode: 200,
+			statusCode: responseStub.statusCode,
 			httpVersion: nil,
-			headerFields: ["Content-Type": "application/geo+json"]
+			headerFields: responseStub.headers
 		) else {
 			return
 		}
 		client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-		client?.urlProtocol(self, didLoad: Self.responseData)
+		client?.urlProtocol(self, didLoad: responseStub.data)
 		client?.urlProtocolDidFinishLoading(self)
 	}
 
 	override func stopLoading() {}
+
+	static func prepare(responses: [StubResponse]) {
+		lock.lock()
+		Self.responses = responses
+		Self.requests = []
+		lock.unlock()
+	}
+
+	static func observedRequests() -> [RecordedRequest] {
+		lock.lock()
+		defer { lock.unlock() }
+		return requests
+	}
+
+	private static func record(request: URLRequest, body: Data) -> StubResponse {
+		lock.lock()
+		defer { lock.unlock() }
+
+		requests.append(
+			RecordedRequest(
+				url: request.url!,
+				method: request.httpMethod ?? "",
+				headers: request.allHTTPHeaderFields ?? [:],
+				body: body
+			)
+		)
+
+		if responses.isEmpty {
+			return StubResponse(statusCode: 500, json: #"{"error":"missing test response"}"#)
+		}
+		return responses.removeFirst()
+	}
 
 	private static func bodyData(from request: URLRequest) -> Data? {
 		if let httpBody = request.httpBody {
@@ -397,157 +486,11 @@ private final class SitePlannerCoverageURLProtocol: URLProtocol {
 	}
 }
 
-private struct SitePlannerHTTPRequest {
+private struct RecordedRequest {
+	let url: URL
 	let method: String
-	let path: String
 	let headers: [String: String]
 	let body: Data
-}
-
-private enum SitePlannerHTTPServerError: Error {
-	case missingPort
-	case invalidEndpoint
-}
-
-private final class SitePlannerContourHTTPServer {
-	private static let headerSeparator = Data("\r\n\r\n".utf8)
-
-	private let responseData: Data
-	private let queue = DispatchQueue(label: "SitePlannerContourHTTPServer")
-	private let lock = NSLock()
-	private var listener: NWListener?
-	private var request: SitePlannerHTTPRequest?
-
-	init(responseData: Data) {
-		self.responseData = responseData
-	}
-
-	func start() async throws -> URL {
-		let listener = try NWListener(using: .tcp, on: .any)
-		listener.newConnectionHandler = { [weak self] connection in
-			self?.handle(connection)
-		}
-		self.listener = listener
-
-		let port: UInt16 = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<UInt16, Error>) in
-			var didResume = false
-			listener.stateUpdateHandler = { state in
-				switch state {
-				case .ready:
-					guard !didResume else { return }
-					didResume = true
-					guard let port = listener.port else {
-						continuation.resume(throwing: SitePlannerHTTPServerError.missingPort)
-						return
-					}
-					continuation.resume(returning: port.rawValue)
-				case .failed(let error):
-					guard !didResume else { return }
-					didResume = true
-					continuation.resume(throwing: error)
-				default:
-					break
-				}
-			}
-			listener.start(queue: queue)
-		}
-
-		guard let endpoint = URL(string: "http://127.0.0.1:\(port)/api/coverage/contours") else {
-			throw SitePlannerHTTPServerError.invalidEndpoint
-		}
-		return endpoint
-	}
-
-	func stop() {
-		listener?.cancel()
-		listener = nil
-	}
-
-	func recordedRequest() -> SitePlannerHTTPRequest? {
-		lock.lock()
-		defer { lock.unlock() }
-		return request
-	}
-
-	private func handle(_ connection: NWConnection) {
-		connection.start(queue: queue)
-		receive(on: connection, bufferedData: Data())
-	}
-
-	private func receive(on connection: NWConnection, bufferedData: Data) {
-		connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { [weak self] data, _, isComplete, error in
-			guard let self else { return }
-
-			var nextData = bufferedData
-			if let data {
-				nextData.append(data)
-			}
-
-			if let request = Self.parseRequest(from: nextData) {
-				self.record(request)
-				self.respond(on: connection, statusCode: 200, body: self.responseData)
-				return
-			}
-
-			if error != nil || isComplete {
-				self.respond(on: connection, statusCode: 400, body: Data())
-				return
-			}
-
-			self.receive(on: connection, bufferedData: nextData)
-		}
-	}
-
-	private func record(_ request: SitePlannerHTTPRequest) {
-		lock.lock()
-		self.request = request
-		lock.unlock()
-	}
-
-	private func respond(on connection: NWConnection, statusCode: Int, body: Data) {
-		let reason = statusCode == 200 ? "OK" : "Bad Request"
-		let headers = "HTTP/1.1 \(statusCode) \(reason)\r\nContent-Type: application/geo+json\r\nContent-Length: \(body.count)\r\nConnection: close\r\n\r\n"
-		var response = Data(headers.utf8)
-		response.append(body)
-		connection.send(content: response, completion: .contentProcessed { _ in
-			connection.cancel()
-		})
-	}
-
-	private static func parseRequest(from data: Data) -> SitePlannerHTTPRequest? {
-		guard let separatorRange = data.range(of: headerSeparator),
-			  let headerString = String(data: data[..<separatorRange.lowerBound], encoding: .utf8) else {
-			return nil
-		}
-
-		let headerLines = headerString.components(separatedBy: "\r\n")
-		guard let requestLine = headerLines.first else { return nil }
-		let requestParts = requestLine.split(separator: " ", maxSplits: 2).map(String.init)
-		guard requestParts.count >= 2 else { return nil }
-
-		var headers: [String: String] = [:]
-		for line in headerLines.dropFirst() {
-			guard let colonIndex = line.firstIndex(of: ":") else { continue }
-			let key = line[..<colonIndex].lowercased()
-			let valueStart = line.index(after: colonIndex)
-			headers[String(key)] = line[valueStart...].trimmingCharacters(in: .whitespaces)
-		}
-
-		let contentLength = Int(headers["content-length"] ?? "0") ?? 0
-		let bodyStart = separatorRange.upperBound
-		guard data.distance(from: bodyStart, to: data.endIndex) >= contentLength else {
-			return nil
-		}
-		let bodyEnd = data.index(bodyStart, offsetBy: contentLength)
-		let body = Data(data[bodyStart..<bodyEnd])
-
-		return SitePlannerHTTPRequest(
-			method: requestParts[0],
-			path: requestParts[1],
-			headers: headers,
-			body: body
-		)
-	}
 }
 
 // MARK: - AnyCodableValue toAnyObject Tests

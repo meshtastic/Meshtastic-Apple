@@ -496,21 +496,29 @@ extension Foundation.Notification.Name {
 
 struct SitePlannerCoverageClient: Sendable {
 	var session: URLSession = .shared
+	var pollIntervalNanoseconds: UInt64 = 1_000_000_000
+	var timeoutInterval: TimeInterval = 180
 
-	func generateContours(from endpoint: URL, request payload: SitePlannerCoverageRequest) async throws -> Data {
-		var request = URLRequest(url: endpoint)
+	func generateContours(from sitePlannerURL: URL, request payload: SitePlannerCoverageRequest) async throws -> Data {
+		try await generateCoverage(from: sitePlannerURL, request: payload)
+	}
+
+	func generateCoverage(from sitePlannerURL: URL, request payload: SitePlannerCoverageRequest) async throws -> Data {
+		let predictURL = Self.predictURL(from: sitePlannerURL)
+		var request = URLRequest(url: predictURL)
 		request.httpMethod = "POST"
-		request.timeoutInterval = 180
+		request.timeoutInterval = timeoutInterval
 		request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-		request.setValue("application/geo+json, application/json", forHTTPHeaderField: "Accept")
+		request.setValue("application/geo+json, application/json, image/tiff", forHTTPHeaderField: "Accept")
 		request.httpBody = try JSONEncoder().encode(payload)
 
-		let (data, response) = try await session.data(for: request)
-		if let httpResponse = response as? HTTPURLResponse,
-		   !(200...299).contains(httpResponse.statusCode) {
-			throw SitePlannerCoverageError.httpStatus(httpResponse.statusCode, Self.responseSnippet(from: data))
+		let (data, _) = try await data(for: request)
+		if let normalizedData = try? Self.normalizedFeatureCollectionData(from: data) {
+			return normalizedData
 		}
-		return try Self.normalizedFeatureCollectionData(from: data)
+
+		let prediction = try JSONDecoder().decode(SitePlannerPredictionResponse.self, from: data)
+		return try await pollCoverageResult(taskID: prediction.taskId, baseURL: Self.baseURL(from: sitePlannerURL))
 	}
 
 	static func normalizedFeatureCollectionData(from data: Data) throws -> Data {
@@ -567,13 +575,108 @@ struct SitePlannerCoverageClient: Sendable {
 		}
 		return String(string.prefix(240))
 	}
+
+	private func pollCoverageResult(taskID: String, baseURL: URL) async throws -> Data {
+		let deadline = Date().addingTimeInterval(timeoutInterval)
+		while true {
+			let statusURL = baseURL.appendingPathComponent("status").appendingPathComponent(taskID)
+			var statusRequest = URLRequest(url: statusURL)
+			statusRequest.timeoutInterval = timeoutInterval
+			statusRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+
+			let (statusData, _) = try await data(for: statusRequest)
+			let statusResponse = try JSONDecoder().decode(SitePlannerStatusResponse.self, from: statusData)
+			switch statusResponse.status.lowercased() {
+			case "completed", "complete", "done", "success":
+				return try await fetchCoverageResult(taskID: taskID, baseURL: baseURL)
+			case "failed", "error":
+				throw SitePlannerCoverageError.failed(statusResponse.error)
+			case "processing", "pending", "running", "queued":
+				break
+			default:
+				throw SitePlannerCoverageError.unexpectedStatus(statusResponse.status)
+			}
+
+			guard Date() < deadline else {
+				throw SitePlannerCoverageError.timeout
+			}
+			try await Task.sleep(nanoseconds: pollIntervalNanoseconds)
+		}
+	}
+
+	private func fetchCoverageResult(taskID: String, baseURL: URL) async throws -> Data {
+		let resultURL = baseURL.appendingPathComponent("result").appendingPathComponent(taskID)
+		var request = URLRequest(url: resultURL)
+		request.timeoutInterval = timeoutInterval
+		request.setValue("application/geo+json, application/json, image/tiff", forHTTPHeaderField: "Accept")
+
+		let (data, response) = try await data(for: request)
+		if let normalizedData = try? Self.normalizedFeatureCollectionData(from: data) {
+			return normalizedData
+		}
+		if Self.isTIFF(data: data, response: response) {
+			throw SitePlannerCoverageError.unsupportedGeoTIFFResult
+		}
+		throw SitePlannerCoverageError.missingFeatureCollection
+	}
+
+	private func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+		let (data, response) = try await session.data(for: request)
+		guard let httpResponse = response as? HTTPURLResponse else {
+			throw SitePlannerCoverageError.invalidResponse
+		}
+		guard (200...299).contains(httpResponse.statusCode) else {
+			if httpResponse.statusCode == 405,
+			   request.url?.host?.lowercased() == "site.meshtastic.org" {
+				throw SitePlannerCoverageError.publicSiteAPIUnavailable
+			}
+			throw SitePlannerCoverageError.httpStatus(httpResponse.statusCode, Self.responseSnippet(from: data))
+		}
+		return (data, httpResponse)
+	}
+
+	private static func predictURL(from sitePlannerURL: URL) -> URL {
+		if sitePlannerURL.lastPathComponent.lowercased() == "predict" {
+			return sitePlannerURL
+		}
+		return sitePlannerURL.appendingPathComponent("predict")
+	}
+
+	private static func baseURL(from sitePlannerURL: URL) -> URL {
+		var baseURL = sitePlannerURL
+		if baseURL.lastPathComponent.lowercased() == "predict" {
+			baseURL.deleteLastPathComponent()
+		}
+		return baseURL
+	}
+
+	private static func isTIFF(data: Data, response: HTTPURLResponse) -> Bool {
+		let contentType = response.value(forHTTPHeaderField: "Content-Type")?.lowercased()
+		if contentType?.contains("image/tiff") == true || contentType?.contains("image/geotiff") == true {
+			return true
+		}
+
+		return data.starts(with: Data([0x49, 0x49, 0x2A, 0x00])) || data.starts(with: Data([0x4D, 0x4D, 0x00, 0x2A]))
+	}
+}
+
+private struct SitePlannerPredictionResponse: Decodable {
+	var taskId: String
+
+	enum CodingKeys: String, CodingKey {
+		case taskId = "task_id"
+	}
+}
+
+private struct SitePlannerStatusResponse: Decodable {
+	var status: String
+	var error: String?
 }
 
 /// Meshtastic Site Planner's legacy coverage request shape.
 ///
-/// The Site Planner repository currently computes locally, but documents this
-/// payload as the shape a hosted contour endpoint can consume before returning
-/// `coverageContours()` GeoJSON.
+/// This mirrors the Site Planner request fields used by the current local
+/// engine and the earlier `/predict` FastAPI backend.
 struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 	var lat: Double
 	var lon: Double
@@ -583,6 +686,8 @@ struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 	var systemLoss: Double
 	var frequencyMHz: Double
 	var rxHeight: Double
+	var rxGain: Double
+	var signalThreshold: Double
 	var clutterHeight: Double
 	var groundDielectric: Double
 	var groundConductivity: Double
@@ -593,6 +698,9 @@ struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 	var situationFraction: Double
 	var timeFraction: Double
 	var highResolution: Bool
+	var colormap: String
+	var minDbm: Double
+	var maxDbm: Double
 
 	enum CodingKeys: String, CodingKey {
 		case lat
@@ -603,6 +711,8 @@ struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 		case systemLoss = "system_loss"
 		case frequencyMHz = "frequency_mhz"
 		case rxHeight = "rx_height"
+		case rxGain = "rx_gain"
+		case signalThreshold = "signal_threshold"
 		case clutterHeight = "clutter_height"
 		case groundDielectric = "ground_dielectric"
 		case groundConductivity = "ground_conductivity"
@@ -613,6 +723,9 @@ struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 		case situationFraction = "situation_fraction"
 		case timeFraction = "time_fraction"
 		case highResolution = "high_resolution"
+		case colormap
+		case minDbm = "min_dbm"
+		case maxDbm = "max_dbm"
 	}
 
 	init(
@@ -624,6 +737,8 @@ struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 		systemLoss: Double = 2.0,
 		frequencyMHz: Double = 907.0,
 		rxHeight: Double = 1.0,
+		rxGain: Double = 2.0,
+		signalThreshold: Double = -130.0,
 		clutterHeight: Double = 1.0,
 		groundDielectric: Double = 15.0,
 		groundConductivity: Double = 0.005,
@@ -633,7 +748,10 @@ struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 		radius: Double = 30_000.0,
 		situationFraction: Double = 95.0,
 		timeFraction: Double = 95.0,
-		highResolution: Bool = false
+		highResolution: Bool = false,
+		colormap: String = "plasma",
+		minDbm: Double = -130.0,
+		maxDbm: Double = -80.0
 	) {
 		self.lat = lat
 		self.lon = lon
@@ -643,6 +761,8 @@ struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 		self.systemLoss = systemLoss
 		self.frequencyMHz = frequencyMHz
 		self.rxHeight = rxHeight
+		self.rxGain = rxGain
+		self.signalThreshold = signalThreshold
 		self.clutterHeight = clutterHeight
 		self.groundDielectric = groundDielectric
 		self.groundConductivity = groundConductivity
@@ -653,25 +773,49 @@ struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
 		self.situationFraction = situationFraction
 		self.timeFraction = timeFraction
 		self.highResolution = highResolution
+		self.colormap = colormap
+		self.minDbm = minDbm
+		self.maxDbm = maxDbm
 	}
 }
 
 enum SitePlannerCoverageError: Error, LocalizedError {
 	case missingEndpoint
+	case invalidResponse
+	case publicSiteAPIUnavailable
 	case httpStatus(Int, String?)
+	case failed(String?)
+	case timeout
+	case unexpectedStatus(String)
 	case missingFeatureCollection
+	case unsupportedGeoTIFFResult
 
 	var errorDescription: String? {
 		switch self {
 		case .missingEndpoint:
-			return "Add a hosted Site Planner contour endpoint in Map Data before generating coverage. The public Site Planner website runs predictions in the browser and does not expose an API."
+			return "Enter a Site Planner URL before generating coverage. Hosted Site Planner APIs should expose /predict, /status/{task_id}, and /result/{task_id}."
+		case .invalidResponse:
+			return "Site Planner returned an invalid response."
+		case .publicSiteAPIUnavailable:
+			return "The public Site Planner website returned HTTP 405 for /predict. Enter a hosted Site Planner API URL that exposes /predict, /status/{task_id}, and /result/{task_id}."
 		case .httpStatus(let statusCode, let responseBody):
 			if let responseBody {
 				return "Site Planner request failed with HTTP \(statusCode): \(responseBody)"
 			}
 			return "Site Planner request failed with HTTP \(statusCode)."
+		case .failed(let message):
+			if let message, !message.isEmpty {
+				return "Site Planner prediction failed: \(message)"
+			}
+			return "Site Planner prediction failed."
+		case .timeout:
+			return "Site Planner prediction timed out before a result was ready."
+		case .unexpectedStatus(let status):
+			return "Site Planner returned an unexpected prediction status: \(status)."
 		case .missingFeatureCollection:
 			return "Site Planner response did not contain GeoJSON contours."
+		case .unsupportedGeoTIFFResult:
+			return "Site Planner returned a GeoTIFF raster result. Map coverage generation currently imports GeoJSON contours; use a Site Planner API result that returns GeoJSON."
 		}
 	}
 }

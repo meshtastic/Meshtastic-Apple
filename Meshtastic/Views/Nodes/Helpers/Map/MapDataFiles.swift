@@ -6,7 +6,7 @@ struct MapDataFiles: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject private var mapDataManager = MapDataManager.shared
-	@AppStorage("sitePlannerCoverageEndpoint") private var sitePlannerCoverageEndpoint = ""
+	@AppStorage("sitePlannerCoverageEndpoint") private var sitePlannerCoverageEndpoint = "https://site.meshtastic.org"
 
 	@State private var isShowingFilePicker = false
 	@State private var isProcessing = false
@@ -55,11 +55,11 @@ struct MapDataFiles: View {
 				}
 			}
 			Section(header: Text("Coverage Prediction")) {
-				Text("Generate node coverage through a hosted Site Planner contour endpoint. The endpoint should accept the Site Planner request JSON and return GeoJSON contours.")
+				Text("Generate node coverage from a Site Planner API. The app posts to /predict, polls /status, and imports GeoJSON contours from /result.")
 					.font(.callout)
 					.foregroundColor(.secondary)
 
-				TextField("https://example.com/api/coverage/contours", text: $sitePlannerCoverageEndpoint)
+				TextField("https://site.meshtastic.org", text: $sitePlannerCoverageEndpoint)
 					.keyboardType(.URL)
 					.textInputAutocapitalization(.never)
 					.autocorrectionDisabled()
@@ -107,6 +107,9 @@ struct MapDataFiles: View {
 		.onAppear {
 			// Initialize map data manager if needed
 			mapDataManager.initialize()
+			if sitePlannerCoverageEndpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+				sitePlannerCoverageEndpoint = "https://site.meshtastic.org"
+			}
 		}
 	}
 

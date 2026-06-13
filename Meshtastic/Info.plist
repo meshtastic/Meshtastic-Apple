@@ -93,11 +93,6 @@
 		<string>INSearchForMessagesIntent</string>
 		<string>INSetMessageAttributeIntent</string>
 	</array>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>

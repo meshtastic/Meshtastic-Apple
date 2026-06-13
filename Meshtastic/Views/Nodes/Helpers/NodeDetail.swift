@@ -753,7 +753,7 @@ struct NodeDetail: View {
 private struct GenerateCoverageOverlayButton: View {
 	let node: NodeInfoEntity
 
-	@AppStorage("sitePlannerCoverageEndpoint") private var sitePlannerCoverageEndpoint = ""
+	@AppStorage("sitePlannerCoverageEndpoint") private var sitePlannerCoverageEndpoint = "https://site.meshtastic.org"
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@State private var isGenerating = false
 	@State private var isShowingAlert = false
@@ -827,7 +827,7 @@ private struct GenerateCoverageOverlayButton: View {
 					isGenerating = false
 					presentAlert(
 						title: "Coverage Overlay Generated",
-						message: "Added '\(metadata.originalName)' with \(metadata.overlayCount) RF bands from the Site Planner endpoint."
+						message: "Added '\(metadata.originalName)' with \(metadata.overlayCount) RF bands from Site Planner."
 					)
 				}
 			} catch {
@@ -841,8 +841,8 @@ private struct GenerateCoverageOverlayButton: View {
 
 	private func coverageEndpointURL() throws -> URL {
 		let trimmedEndpoint = sitePlannerCoverageEndpoint.trimmingCharacters(in: .whitespacesAndNewlines)
-		guard !trimmedEndpoint.isEmpty,
-			  let endpoint = URL(string: trimmedEndpoint),
+		let endpointString = trimmedEndpoint.isEmpty ? "https://site.meshtastic.org" : trimmedEndpoint
+		guard let endpoint = URL(string: endpointString),
 			  let scheme = endpoint.scheme?.lowercased(),
 			  ["http", "https"].contains(scheme) else {
 			throw SitePlannerCoverageError.missingEndpoint
