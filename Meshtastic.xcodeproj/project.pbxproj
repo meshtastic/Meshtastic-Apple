@@ -483,6 +483,7 @@
         DDF45C342BC1A48E005ED5F2 /* MQTTIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C332BC1A48E005ED5F2 /* MQTTIcon.swift */; };
         DDF45C372BC46A5A005ED5F2 /* TimeZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF45C362BC46A5A005ED5F2 /* TimeZone.swift */; };
         DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */; };
+        FE57A71500000000000000A2 /* StatusMessageConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE57A71500000000000000A1 /* StatusMessageConfig.swift */; };
         DDF82CBD2D5BC69200DC25EC /* NavigateToButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */; };
         DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
         DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
@@ -1091,6 +1092,7 @@
         DDF45C382BC46B16005ED5F2 /* MeshtasticDataModelV33.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV33.xcdatamodel; sourceTree = "<group>"; };
         DDF6B2462A9AEB9E00BA6931 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
         DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreForwardConfig.swift; sourceTree = "<group>"; };
+        FE57A71500000000000000A1 /* StatusMessageConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMessageConfig.swift; sourceTree = "<group>"; };
         DDF82CBC2D5BC69200DC25EC /* NavigateToButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigateToButton.swift; sourceTree = "<group>"; };
         DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
         DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
@@ -1864,6 +1866,7 @@
                 DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */,
                 DD6193782863875F00E59241 /* SerialConfig.swift */,
                 DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */,
+                FE57A71500000000000000A1 /* StatusMessageConfig.swift */,
                 AA0001042F07A4B000600001 /* TAKModuleConfig.swift */,
                 DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
                 DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */,
@@ -3005,6 +3008,7 @@
                 DDDB26442AAC0206003AFCB7 /* NodeDetail.swift in Sources */,
                 DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
                 DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */,
+                FE57A71500000000000000A2 /* StatusMessageConfig.swift in Sources */,
                 233E99C72D84A70900CC3A77 /* SoilCompactWidgets.swift in Sources */,
                 BCE2D3C92C7C377F008E6199 /* FactoryResetNodeIntent.swift in Sources */,
                 DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,

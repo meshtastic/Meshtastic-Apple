@@ -254,6 +254,8 @@ actor MeshPackets {
 			upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum)
 		case .storeForward:
 			upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum)
+		case .statusmessage:
+			upsertStatusMessageModuleConfigPacket(config: config.statusmessage, nodeNum: nodeNum)
 		case .tak:
 			upsertTAKModuleConfigPacket(config: config.tak, nodeNum: nodeNum)
 		case .trafficManagement:
@@ -720,6 +722,8 @@ actor MeshPackets {
 					self.upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from))
 				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.tak(moduleConfig.tak) {
 					self.upsertTAKModuleConfigPacket(config: moduleConfig.tak, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.statusmessage(moduleConfig.statusmessage) {
+					self.upsertStatusMessageModuleConfigPacket(config: moduleConfig.statusmessage, nodeNum: Int64(packet.from))
 				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.trafficManagement(moduleConfig.trafficManagement) {
 					self.upsertTrafficManagementModuleConfigPacket(config: moduleConfig.trafficManagement, nodeNum: Int64(packet.from))
 				}

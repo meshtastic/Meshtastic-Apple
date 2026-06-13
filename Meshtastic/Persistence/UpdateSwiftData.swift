@@ -1634,6 +1634,71 @@ extension MeshPackets {
 		}
 	}
 
+	func upsertStatusMessageModuleConfigPacket(config: ModuleConfig.StatusMessageConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
+
+		let logString = String.localizedStringWithFormat("Status Message module config received: %@".localized, String(nodeNum))
+		Logger.data.info("📬 \(logString, privacy: .public)")
+
+		let fetchNum = Int64(nodeNum)
+			var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+			fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			if !fetchedNode.isEmpty {
+				if fetchedNode[0].statusMessageConfig == nil {
+					let newConfig = StatusMessageConfigEntity()
+					modelContext.insert(newConfig)
+					newConfig.nodeStatus = config.nodeStatus
+					fetchedNode[0].statusMessageConfig = newConfig
+				} else {
+					fetchedNode[0].statusMessageConfig?.nodeStatus = config.nodeStatus
+				}
+				if sessionPasskey != nil {
+					fetchedNode[0].sessionPasskey = sessionPasskey
+					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
+				}
+				savePendingChanges()
+					Logger.data.info("💾 [StatusMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
+			} else {
+				Logger.data.error("💥 [StatusMessageConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Status Message Module Config")
+			}
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [StatusMessageConfigEntity] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
+	/// Stores the live status message a node broadcasts over NODE_STATUS_APP. This is the
+	/// node's currently advertised status (shown in the node list), separate from the
+	/// configured value retrieved via admin (`statusMessageConfig`). Mirrors Android's
+	/// `handleReceivedNodeStatus`: an empty status clears the stored value.
+	func upsertNodeStatusPacket(packet: MeshPacket) {
+		let fetchNum = Int64(packet.from)
+		guard let statusMessage = try? StatusMessage(serializedBytes: packet.decoded.payload) else {
+			Logger.data.error("💥 [NodeStatus] Failed to decode StatusMessage from \(fetchNum.toHex(), privacy: .public)")
+			return
+		}
+
+		let logString = String.localizedStringWithFormat("Node status received: %@".localized, String(fetchNum))
+		Logger.data.info("📬 \(logString, privacy: .public)")
+
+		var fetchNodeInfoRequest = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == fetchNum })
+		fetchNodeInfoRequest.fetchLimit = 1
+		do {
+			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
+			guard !fetchedNode.isEmpty else {
+				Logger.data.error("💥 [NodeStatus] No node found matching \(fetchNum.toHex(), privacy: .public) unable to save node status")
+				return
+			}
+			fetchedNode[0].nodeStatus = statusMessage.status.isEmpty ? nil : statusMessage.status
+			savePendingChanges()
+			Logger.data.info("💾 [NodeStatus] Updated for node: \(fetchNum.toHex(), privacy: .public)")
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("💥 [NodeStatus] Fetching node for core data failed: \(nsError, privacy: .public)")
+		}
+	}
+
 	func upsertStoreForwardModuleConfigPacket(config: ModuleConfig.StoreForwardConfig, nodeNum: Int64, sessionPasskey: Data? = Data()) {
 		
 		let logString = String.localizedStringWithFormat("Store & Forward module config received: %@".localized, String(nodeNum))

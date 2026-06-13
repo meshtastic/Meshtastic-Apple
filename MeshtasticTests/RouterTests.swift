@@ -210,6 +210,7 @@ struct RouterTests {
 		("ringtone", SettingsNavigationState.ringtone),
 		("serial", SettingsNavigationState.serial),
 		("security", SettingsNavigationState.security),
+		("statusMessage", SettingsNavigationState.statusMessage),
 		("storeAndForward", SettingsNavigationState.storeAndForward),
 		("telemetry", SettingsNavigationState.telemetry),
 		("trafficManagement", SettingsNavigationState.trafficManagement),

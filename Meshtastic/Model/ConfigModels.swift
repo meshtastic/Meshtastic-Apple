@@ -322,6 +322,14 @@ final class StoreForwardConfigEntity {
 }
 
 @Model
+final class StatusMessageConfigEntity {
+	var nodeStatus: String = ""
+	var statusMessageConfigNode: NodeInfoEntity?
+
+	init() {}
+}
+
+@Model
 final class TAKConfigEntity {
 	var role: Int32 = 0
 	var team: Int32 = 0

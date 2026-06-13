@@ -714,7 +714,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .audioApp:
 					Logger.mesh.info("[Audio] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .nodeStatusApp:
-					Logger.mesh.info("[Node Status] packet received from \(packet.from.toHex(), privacy: .public)")
+					await MeshPackets.shared.upsertNodeStatusPacket(packet: packet)
 				case .tracerouteApp:
 					handleTraceRouteApp(packet)
 				case .neighborinfoApp:
@@ -907,6 +907,11 @@ extension AccessoryManager {
 	/// handshook) since v2 is now the predominant firmware in the field.
 	var supportsTAKv2: Bool {
 		checkIsVersionSupported(forVersion: "2.8.0")
+	}
+
+	/// StatusMessage module was introduced in firmware 2.6.0.
+	var supportsStatusMessage: Bool {
+		checkIsVersionSupported(forVersion: "2.6.0")
 	}
 }
 

@@ -18,6 +18,9 @@ final class NodeInfoEntity {
 	var id: Int64 = 0
 	var ignored: Bool = false
 	var lastHeard: Date?
+	/// Live status message broadcast by the node over NODE_STATUS_APP (nil when empty).
+	/// Distinct from `statusMessageConfig`, which is the configured value retrieved via admin.
+	var nodeStatus: String?
 	@Attribute(.unique) var num: Int64 = 0
 	var peripheralId: String?
 	var rssi: Int32 = 0
@@ -103,6 +106,9 @@ final class NodeInfoEntity {
 
 	@Relationship(deleteRule: .nullify, inverse: \SerialConfigEntity.serialConfigNode)
 	var serialConfig: SerialConfigEntity?
+
+	@Relationship(deleteRule: .nullify, inverse: \StatusMessageConfigEntity.statusMessageConfigNode)
+	var statusMessageConfig: StatusMessageConfigEntity?
 
 	@Relationship(deleteRule: .nullify, inverse: \StoreForwardConfigEntity.storeForwardConfigNode)
 	var storeForwardConfig: StoreForwardConfigEntity?

@@ -54,6 +54,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			RTTTLConfigEntity.self,
 			SecurityConfigEntity.self,
 			SerialConfigEntity.self,
+			StatusMessageConfigEntity.self,
 			StoreForwardConfigEntity.self,
 			TAKConfigEntity.self,
 			TrafficManagementConfigEntity.self,
