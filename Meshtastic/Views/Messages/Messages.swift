@@ -17,11 +17,30 @@ struct Messages: View {
 	@ObservedObject	var router: Router
 	@Binding var unreadChannelMessages: Int
 	@Binding var unreadDirectMessages: Int
-	@State var node: NodeInfoEntity?
+	/// Store the connected node's `num`, NOT the `NodeInfoEntity` itself, and resolve the object
+	/// from the live context every render (see `node`). Caching the SwiftData model here traps
+	/// ("destroyed by ModelContext.reset") when the container is recreated (data clear / node
+	/// switch) while this view still reads `node?.myInfo`; a fresh fetch returns nil safely.
+	@State private var nodeNum: Int64?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
+
+	/// Resolves the connected node from the current context on each access. Never cached, so it
+	/// can't outlive a container recreation. `getNodeInfo` is a `try?` fetch and returns nil if
+	/// the store is mid-reset.
+	private var node: NodeInfoEntity? {
+		guard let nodeNum else { return nil }
+		return getNodeInfo(id: nodeNum, context: context)
+	}
+
+	/// Binding handed to ChannelList/UserList. The getter resolves `node` from the live context on
+	/// every read (never a captured/cached object), so the retained closure can't read a reset
+	/// NodeInfoEntity if a container recreation happens before this view re-renders.
+	private var nodeBinding: Binding<NodeInfoEntity?> {
+		Binding(get: { self.node }, set: { self.nodeNum = $0?.num })
+	}
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
@@ -80,11 +99,11 @@ struct Messages: View {
 		} content: {
 			switch router.messagesState {
 			case .channels:
-				ChannelList(node: $node, channelSelection: $channelSelection)
+				ChannelList(node: nodeBinding, channelSelection: $channelSelection)
 					// Removed navigationTitle and navigationBarTitleDisplayMode here.
 					// ChannelList.swift now handles this within its own NavigationStack.
 			case .directMessages:
-				UserList(node: $node, userSelection: $userSelection)
+				UserList(node: nodeBinding, userSelection: $userSelection)
 					// Removed navigationTitle here. UserList will handle this.
 			case nil:
 				Text("Select a conversation type")
@@ -117,8 +136,8 @@ struct Messages: View {
 
 	private func setupNavigationState() {
 		let nodeId = Int64(UserDefaults.preferredPeripheralNum)
-		if nodeId > 0 && node == nil {
-			node = getNodeInfo(id: nodeId, context: context)
+		if nodeId > 0 && nodeNum == nil {
+			nodeNum = nodeId
 		}
 
 		guard let state = router.messagesState else {
