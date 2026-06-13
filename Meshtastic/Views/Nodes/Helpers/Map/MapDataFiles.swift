@@ -55,7 +55,7 @@ struct MapDataFiles: View {
 				}
 			}
 			Section(header: Text("Coverage Prediction")) {
-				Text("Generated node coverage uses a Site Planner-compatible endpoint that accepts node radio settings and returns GeoJSON contours.")
+				Text("Generated node coverage works offline with a local radio-distance estimate. Add a compatible Site Planner endpoint here to use terrain-aware GeoJSON contours when one is available.")
 					.font(.callout)
 					.foregroundColor(.secondary)
 

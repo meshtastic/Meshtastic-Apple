@@ -219,6 +219,27 @@ struct RFGeoJSONOverlayTests {
 		#expect(object?["time_fraction"] as? Double == 95.0)
 		#expect(object?["high_resolution"] as? Bool == false)
 	}
+
+	@Test func localCoverageEstimateCreatesRenderableContours() throws {
+		let request = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txPower: 20.0,
+			frequencyMHz: 907.0
+		)
+
+		let data = try LocalCoverageOverlayGenerator.estimatedContours(for: request)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let feature = try #require(collection.features.first)
+		let styledFeature = GeoJSONStyledFeature(feature: feature, overlayId: "local-rf")
+
+		#expect(collection.type == "FeatureCollection")
+		#expect(collection.features.count == 12)
+		#expect(feature.geometry.type == "MultiPolygon")
+		#expect(feature.dbm == -130)
+		#expect(feature.rfPredictionColor == "rgb(12, 7, 134)")
+		#expect(styledFeature.createOverlays().allSatisfy { $0.overlay is MKPolygon })
+	}
 }
 
 // MARK: - AnyCodableValue toAnyObject Tests

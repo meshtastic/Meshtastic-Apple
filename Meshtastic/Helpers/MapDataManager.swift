@@ -557,6 +557,113 @@ struct SitePlannerCoverageClient: Sendable {
 	}
 }
 
+enum LocalCoverageOverlayGenerator {
+	private static let earthRadiusMeters = 6_371_008.8
+	private static let receiverSensitivityDbm = -130
+	private static let maxDbm = -80
+	private static let bandCount = 12
+	private static let polygonPoints = 96
+	private static let colorRamp = [
+		"rgb(12, 7, 134)",
+		"rgb(51, 5, 151)",
+		"rgb(85, 2, 163)",
+		"rgb(122, 4, 167)",
+		"rgb(156, 23, 158)",
+		"rgb(188, 55, 135)",
+		"rgb(215, 88, 107)",
+		"rgb(236, 121, 83)",
+		"rgb(250, 159, 58)",
+		"rgb(253, 196, 39)",
+		"rgb(241, 231, 37)",
+		"rgb(240, 249, 33)"
+	]
+
+	static func estimatedContours(for request: SitePlannerCoverageRequest) throws -> Data {
+		let thresholds = coverageThresholds()
+		let features: [[String: Any]] = thresholds.enumerated().compactMap { index, dbm in
+			let radiusMeters = estimatedRadiusMeters(for: Double(dbm), request: request)
+			guard radiusMeters > 0 else { return nil }
+
+			return [
+				"type": "Feature",
+				"properties": [
+					"dbm": dbm,
+					"color": colorRamp[min(index, colorRamp.count - 1)],
+					"label": ">= \(dbm) dBm"
+				],
+				"geometry": [
+					"type": "MultiPolygon",
+					"coordinates": [[circleRing(
+						lat: request.lat,
+						lon: request.lon,
+						radiusMeters: radiusMeters
+					)]]
+				]
+			]
+		}
+
+		let featureCollection: [String: Any] = [
+			"type": "FeatureCollection",
+			"features": features
+		]
+		return try JSONSerialization.data(withJSONObject: featureCollection)
+	}
+
+	private static func coverageThresholds() -> [Int] {
+		let span = maxDbm - receiverSensitivityDbm
+		return (0..<bandCount).map { receiverSensitivityDbm + (span * $0 / bandCount) }
+	}
+
+	private static func estimatedRadiusMeters(for thresholdDbm: Double, request: SitePlannerCoverageRequest) -> Double {
+		let maxRadiusMeters = max(1_000.0, request.radius)
+		let frequencyMHz = max(1.0, request.frequencyMHz)
+		let fsplAtOneKilometer = 32.44 + 20.0 * log10(frequencyMHz)
+		let receivedAtOneKilometer = request.txPower + request.txGain - request.systemLoss - fsplAtOneKilometer
+		let pathLossExponent = 3.3
+		let distanceKm = pow(10.0, (receivedAtOneKilometer - thresholdDbm) / (10.0 * pathLossExponent))
+		let radiusMeters = distanceKm * 1_000.0
+		return min(maxRadiusMeters, max(250.0, radiusMeters))
+	}
+
+	private static func circleRing(lat: Double, lon: Double, radiusMeters: Double) -> [[Double]] {
+		let latRadians = lat * .pi / 180.0
+		let lonRadians = lon * .pi / 180.0
+		let angularDistance = radiusMeters / earthRadiusMeters
+		let sinLat = sin(latRadians)
+		let cosLat = cos(latRadians)
+		let cosAngular = cos(angularDistance)
+		let sinAngular = sin(angularDistance)
+
+		var ring: [[Double]] = []
+		ring.reserveCapacity(polygonPoints + 1)
+
+		for index in 0..<polygonPoints {
+			let bearing = 2.0 * .pi * Double(index) / Double(polygonPoints)
+			let destinationLat = asin(sinLat * cosAngular + cosLat * sinAngular * cos(bearing))
+			let destinationLon = lonRadians + atan2(
+				sin(bearing) * sinAngular * cosLat,
+				cosAngular - sinLat * sin(destinationLat)
+			)
+			ring.append([
+				normalizeLongitude(destinationLon * 180.0 / .pi),
+				destinationLat * 180.0 / .pi
+			])
+		}
+
+		if let first = ring.first {
+			ring.append(first)
+		}
+		return ring
+	}
+
+	private static func normalizeLongitude(_ longitude: Double) -> Double {
+		var normalized = longitude
+		while normalized < -180.0 { normalized += 360.0 }
+		while normalized > 180.0 { normalized -= 360.0 }
+		return normalized
+	}
+}
+
 /// Meshtastic Site Planner's legacy coverage request shape.
 ///
 /// The Site Planner repository currently computes locally, but documents this
