@@ -161,6 +161,7 @@ struct MeshMap: View {
 								selectedNode: $selectedNode,
 								selectedWaypoint: $selectedWaypoint,
 								enabledOverlayConfigs: $enabledOverlayConfigs,
+								isMapVisible: isMapVisible,
 								positionSnapshots: visiblePositionSnapshots
 						)
 					}
