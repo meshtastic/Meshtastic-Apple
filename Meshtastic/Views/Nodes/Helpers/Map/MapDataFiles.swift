@@ -55,7 +55,7 @@ struct MapDataFiles: View {
 				}
 			}
 			Section(header: Text("Coverage Prediction")) {
-				Text("Generate node coverage with Site Planner. The default uses Site Planner's local browser engine; hosted API URLs can use /predict, /status, and /result.")
+				Text("Generate node coverage on device with the Site Planner engine. Custom hosted API URLs can use /predict, /status, and /result.")
 					.font(.callout)
 					.foregroundColor(.secondary)
 

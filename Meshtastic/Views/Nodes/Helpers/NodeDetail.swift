@@ -815,8 +815,8 @@ private struct GenerateCoverageOverlayButton: View {
 		Task {
 			do {
 				let data: Data
-				if SitePlannerCoverageClient.usesBrowserSitePlanner(for: endpoint) {
-					data = try await SitePlannerBrowserCoverageClient().generateContours(from: endpoint, request: payload)
+				if SitePlannerCoverageClient.usesPublicSitePlanner(for: endpoint) {
+					data = try await NativeSitePlannerCoverageClient().generateContours(request: payload)
 				} else {
 					data = try await SitePlannerCoverageClient().generateContours(from: endpoint, request: payload)
 				}

@@ -362,29 +362,39 @@ struct RFGeoJSONOverlayTests {
 		#expect(object?["max_dbm"] as? Double == -80.0)
 	}
 
-	@Test @MainActor func sitePlannerBrowserConfigHashBuildsShareableSitePlannerParams() throws {
-		let request = SitePlannerCoverageRequest(
-			lat: 37.3349,
-			lon: -122.0090,
+	@Test func nativeSitePlannerEngineGeneratesGeoJSONWithoutNetwork() async throws {
+		let payload = SitePlannerCoverageRequest(
+			lat: 37.5,
+			lon: -122.5,
+			txHeight: 2.0,
 			txPower: 20.0,
-			frequencyMHz: 915.0
+			frequencyMHz: 915.0,
+			radius: 750.0
 		)
+		let data = try await NativeSitePlannerCoverageClient(
+			terrainProvider: .seaLevel,
+			contourMaxDimension: 40,
+			runChunkSize: 1024
+		)
+		.generateContours(request: payload)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let feature = try #require(collection.features.first)
 
-		let data = try decodedBase64URL(SitePlannerBrowserCoverageClient.sitePlannerConfigHash(for: request))
-		let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-		let transmitter = object?["transmitter"] as? [String: Any]
-		let receiver = object?["receiver"] as? [String: Any]
-		let simulation = object?["simulation"] as? [String: Any]
-		let display = object?["display"] as? [String: Any]
-		let txPowerWatts = try #require(transmitter?["tx_power"] as? Double)
+		#expect(collection.type == "FeatureCollection")
+		#expect(collection.features.count > 0)
+		#expect(feature.geometry.type == "MultiPolygon")
+		#expect(feature.rfPredictionColor?.hasPrefix("rgb(") == true)
+		#expect(feature.effectiveFillOpacity > 0)
+		#expect(data.count < 10 * 1024 * 1024)
+	}
 
-		#expect(transmitter?["tx_lat"] as? Double == 37.3349)
-		#expect(transmitter?["tx_lon"] as? Double == -122.0090)
-		#expect(abs(txPowerWatts - 0.1) < 0.0001)
-		#expect(transmitter?["tx_freq"] as? Double == 915.0)
-		#expect(receiver?["rx_sensitivity"] as? Double == -130.0)
-		#expect(simulation?["simulation_extent"] as? Double == 30.0)
-		#expect(display?["color_scale"] as? String == "plasma")
+	@Test func nativeSitePlannerTerrainNamingMatchesSitePlanner() {
+		#expect(NativeSitePlannerTerrainService.tileName(for: NativeSitePlannerPageRef(minNorth: 51, minWest: 114)) == "N51W115")
+		#expect(NativeSitePlannerTerrainService.tileName(for: NativeSitePlannerPageRef(minNorth: -34, minWest: 342)) == "S34E017")
+		#expect(NativeSitePlannerTerrainService.tileURLs(for: "N51W115").map(\.absoluteString) == [
+			"https://elevation-tiles-prod.s3.amazonaws.com/v2/skadi/N51/N51W115.hgt.gz",
+			"https://elevation-tiles-prod.s3.amazonaws.com/skadi/N51/N51W115.hgt.gz"
+		])
 	}
 
 	@Test func sitePlannerEndpointErrorsAreActionable() {
@@ -403,18 +413,7 @@ struct RFGeoJSONOverlayTests {
 		#expect(httpError.contains("405 Not Allowed"))
 		#expect(tiffError.contains("GeoTIFF"))
 		#expect(tiffError.contains("GeoJSON"))
-		#expect(SitePlannerCoverageClient.usesBrowserSitePlanner(for: URL(string: "https://site.meshtastic.org")!))
-	}
-
-	private func decodedBase64URL(_ string: String) throws -> Data {
-		var base64 = string
-			.replacingOccurrences(of: "-", with: "+")
-			.replacingOccurrences(of: "_", with: "/")
-		let padding = base64.count % 4
-		if padding > 0 {
-			base64.append(String(repeating: "=", count: 4 - padding))
-		}
-		return try #require(Data(base64Encoded: base64))
+		#expect(SitePlannerCoverageClient.usesPublicSitePlanner(for: URL(string: "https://site.meshtastic.org")!))
 	}
 }
 

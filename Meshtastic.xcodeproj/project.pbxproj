@@ -178,7 +178,6 @@
 		AA003DOC0000002000000006 /* DocTranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000006 /* DocTranslationService.swift */; };
 		AA003DOC0000002000000007 /* TranslationCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000007 /* TranslationCache.swift */; };
 		AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000008 /* DocTranslationTests.swift */; };
-		DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */; };
 		AA003DOC0000004000000001 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000005000000001 /* docs */; };
 		AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003FM00000001000000001 /* FoundationModelAvailability.swift */; };
 		AA004FMT0000002000000001 /* MarkdownFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA004FMT0000001000000001 /* MarkdownFormatting.swift */; };
@@ -205,6 +204,7 @@
 		B16C760DB291CFAB5335EADB /* TAKCertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */; };
 		B399E8A42B6F486400E4488E /* RetryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B399E8A32B6F486400E4488E /* RetryButton.swift */; };
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
+		B6901C97A72910E659C92565 /* SitePlannerDriver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0AAF98C37B69C57425C770E2 /* SitePlannerDriver.cpp */; };
 		B734732C0C394582BD6CD0CA /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = AF44FDF549704E29A8E5FE2F /* urls.json */; };
 		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
 		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
@@ -230,6 +230,7 @@
 		C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
 		C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
 		D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
+		D5E80D648240167C91CA98D6 /* itwom3.0.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F4EA3D490D1E4E78FB3E6C4 /* itwom3.0.cpp */; };
 		D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */; };
 		D75A5D73360C42D6B0CB2894 /* MessageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3204EF969484E549C139730 /* MessageEntity.swift */; };
 		D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */; };
@@ -295,6 +296,7 @@
 		DD000031FWEDTENUM0000001 /* FirmwareEditionEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */; };
 		DD00003ASUPPORTLVL0000001 /* SupportLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */; };
 		DD00003C000SNAP00000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DD00003B000SNAP00000000 /* SnapshotTesting */; };
+		DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD09240001E7FAD600E70001 /* MapLegend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD09240002E7FAD600E70001 /* MapLegend.swift */; };
@@ -485,11 +487,12 @@
 		DEA1C1302F10002000A1B2C3 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */; };
 		DEA1C1322F10002000A1B2C3 /* NeighborInfoConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */; };
 		DEA1C1342F10002000A1B2C3 /* TrafficManagementConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */; };
-		DEA1C1362F10002000A1B2C3 /* BackupManagement/BackupManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1372F10002000A1B2C3 /* BackupManagement/BackupManagement.swift */; };
-		DEA1C1382F10002000A1B2C3 /* BackupManagement/BackupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1392F10002000A1B2C3 /* BackupManagement/BackupRowView.swift */; };
+		DEA1C1362F10002000A1B2C3 /* BackupManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */; };
+		DEA1C1382F10002000A1B2C3 /* BackupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */; };
 		E340A7CA75194A49AB8763C7 /* WaypointEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */; };
 		E3ED80145D0E873011982556 /* TAKServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B37CCEE8B44A4BA123ED118 /* TAKServerManager.swift */; };
 		EBC37722779D4F2E9D537D74 /* DeviceLinksSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281DB7C20B6F46B89F4AB29E /* DeviceLinksSection.swift */; };
+		EE0DE80535F75429963DA26D /* NativeSitePlannerCoverage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAD009FE70A95B3C86644C42 /* NativeSitePlannerCoverage.swift */; };
 		EE7E2D900ACAC8053153354A /* DiscoveryScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */; };
 		FCEFC176A62447319948ACEF /* DeviceLinkDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24506086F81240A9BFE18FA6 /* DeviceLinkDirectory.swift */; };
 		FE508F9AF5AD5DA20AA64DBF /* AccessoryManager+TAK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82232A3CF2DD284ED5B9B8ED /* AccessoryManager+TAK.swift */; };
@@ -560,6 +563,7 @@
 		05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchemaV1.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
+		0AAF98C37B69C57425C770E2 /* SitePlannerDriver.cpp */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.cpp; path = SitePlannerDriver.cpp; sourceTree = "<group>"; };
 		0E644AE784C52500A9241481 /* SearchForMessagesIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchForMessagesIntentHandler.swift; sourceTree = "<group>"; };
 		10794B242F8C2C90000CA23F /* RouteDataPackageGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDataPackageGenerator.swift; sourceTree = "<group>"; };
 		108FFECA2DD3F43C00BFAA81 /* ShareContactQRDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareContactQRDialog.swift; sourceTree = "<group>"; };
@@ -678,6 +682,7 @@
 		6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppDelegate.swift; sourceTree = "<group>"; };
 		6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorLog.swift; sourceTree = "<group>"; };
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
+		6F4EA3D490D1E4E78FB3E6C4 /* itwom3.0.cpp */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.cpp; path = itwom3.0.cpp; sourceTree = "<group>"; };
 		7101240749F24E96835A040A /* NodeInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntity.swift; sourceTree = "<group>"; };
 		748E4806582595DE80D455CD /* CoTXMLParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoTXMLParser.swift; sourceTree = "<group>"; };
 		7F1B62B5CB54395476C3A924 /* GenericCoTHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GenericCoTHandler.swift; sourceTree = "<group>"; };
@@ -735,7 +740,6 @@
 		AA003DOC0000001000000006 /* DocTranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationService.swift; sourceTree = "<group>"; };
 		AA003DOC0000001000000007 /* TranslationCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TranslationCache.swift; path = Meshtastic/Services/TranslationCache.swift; sourceTree = "<group>"; };
 		AA003DOC0000001000000008 /* DocTranslationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationTests.swift; sourceTree = "<group>"; };
-		DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkTests.swift; sourceTree = "<group>"; };
 		AA003DOC0000005000000001 /* docs */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
 		AA003FM00000001000000001 /* FoundationModelAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FoundationModelAvailability.swift; path = Meshtastic/Services/FoundationModelAvailability.swift; sourceTree = "<group>"; };
 		AA004FMT0000001000000001 /* MarkdownFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownFormatting.swift; sourceTree = "<group>"; };
@@ -784,6 +788,7 @@
 		BF32D1D722C64814981AB215 /* DeviceLinkEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkEntity.swift; sourceTree = "<group>"; };
 		CA63632A10C2DD076FA222BE /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
 		CDA6A18109101FA06A9FBBFB /* SetMessageAttributeIntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMessageAttributeIntentHandler.swift; sourceTree = "<group>"; };
+		D7EB9CC3A38FF565EF68161C /* SitePlannerDriver.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = SitePlannerDriver.h; sourceTree = "<group>"; };
 		D8D66A4063FE4E868CD30D3C /* TraceRouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteModels.swift; sourceTree = "<group>"; };
 		D93068D22B8129510066FBC8 /* MessageContextMenuItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContextMenuItems.swift; sourceTree = "<group>"; };
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
@@ -799,6 +804,7 @@
 		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
 		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
 		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
+		DAD009FE70A95B3C86644C42 /* NativeSitePlannerCoverage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeSitePlannerCoverage.swift; sourceTree = "<group>"; };
 		DB55D64F064C45ADBD31ABF8 /* RouteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteModels.swift; sourceTree = "<group>"; };
 		DC5970BC1CAF4B66999C7248 /* MyInfoEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntity.swift; sourceTree = "<group>"; };
 		DD000000275499A500A42001 /* PerformanceSeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceSeedData.swift; sourceTree = "<group>"; };
@@ -849,6 +855,7 @@
 		DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFirmwareNotificationTests.swift; sourceTree = "<group>"; };
 		DD000031FWEDTENUM0000000 /* FirmwareEditionEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareEditionEnum.swift; sourceTree = "<group>"; };
 		DD00003ASUPPORTLVL0000000 /* SupportLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportLevel.swift; sourceTree = "<group>"; };
+		DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkTests.swift; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD04804A2E9295A5005F946C /* MeshtasticDataModelV 55.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 55.xcdatamodel"; sourceTree = "<group>"; };
@@ -1098,10 +1105,11 @@
 		DEA1C1312F10002000A1B2C3 /* AudioConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfig.swift; sourceTree = "<group>"; };
 		DEA1C1332F10002000A1B2C3 /* NeighborInfoConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeighborInfoConfig.swift; sourceTree = "<group>"; };
 		DEA1C1352F10002000A1B2C3 /* TrafficManagementConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficManagementConfig.swift; sourceTree = "<group>"; };
-		DEA1C1372F10002000A1B2C3 /* BackupManagement/BackupManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManagement/BackupManagement.swift; sourceTree = "<group>"; };
-		DEA1C1392F10002000A1B2C3 /* BackupManagement/BackupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManagement/BackupRowView.swift; sourceTree = "<group>"; };
+		DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManagement/BackupManagement.swift; sourceTree = "<group>"; };
+		DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManagement/BackupRowView.swift; sourceTree = "<group>"; };
 		E98797BFD67F449B9ACCEDA7 /* WaypointEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntity.swift; sourceTree = "<group>"; };
 		F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySummaryView.swift; sourceTree = "<group>"; };
+		F2CEC2829F58A5511821141B /* Meshtastic-Bridging-Header.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Meshtastic-Bridging-Header.h"; sourceTree = "<group>"; };
 		F3204EF969484E549C139730 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
 		F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanView.swift; sourceTree = "<group>"; };
 		FC99855DBF52EBBBE07CEBA9 /* DiscoveryScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngine.swift; sourceTree = "<group>"; };
@@ -1109,7 +1117,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		236CA24C2EE3071A00A47F96 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		236CA24C2EE3071A00A47F96 /* Exceptions for "images" folder in "Meshtastic" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				crowpanel_2_8.svg,
@@ -1177,8 +1185,29 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		236CA20D2EE3036A00A47F96 /* images */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (236CA24C2EE3071A00A47F96 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = images; sourceTree = "<group>"; };
-		DD4C11E02E8099C3003F2F2E /* PreferenceKeys */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PreferenceKeys; sourceTree = "<group>"; };
+		236CA20D2EE3036A00A47F96 /* images */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				236CA24C2EE3071A00A47F96 /* Exceptions for "images" folder in "Meshtastic" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = images;
+			sourceTree = "<group>";
+		};
+		DD4C11E02E8099C3003F2F2E /* PreferenceKeys */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = PreferenceKeys;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1580,6 +1609,17 @@
 			path = MeshtasticTests;
 			sourceTree = "<group>";
 		};
+		4982F0E863970DE88CDBE4B9 /* NativeSitePlanner */ = {
+			isa = PBXGroup;
+			children = (
+				D7EB9CC3A38FF565EF68161C /* SitePlannerDriver.h */,
+				0AAF98C37B69C57425C770E2 /* SitePlannerDriver.cpp */,
+				6F4EA3D490D1E4E78FB3E6C4 /* itwom3.0.cpp */,
+			);
+			name = NativeSitePlanner;
+			path = NativeSitePlanner;
+			sourceTree = "<group>";
+		};
 		5EC3D356BFF0031F67B3499A /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -1814,8 +1854,8 @@
 				0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */,
 				1D5AD8037A0D583C614B0597 /* Tools.swift */,
 				71084780865585DCE48BD08F /* Discovery */,
-				DEA1C1372F10002000A1B2C3 /* BackupManagement/BackupManagement.swift */,
-				DEA1C1392F10002000A1B2C3 /* BackupManagement/BackupRowView.swift */,
+				DEA1C1372F10002000A1B2C3 /* BackupManagement.swift */,
+				DEA1C1392F10002000A1B2C3 /* BackupRowView.swift */,
 				AA003DOC0000003000000001 /* HelpAndDocumentation */,
 			);
 			path = Settings;
@@ -2061,6 +2101,8 @@
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
 				6DA39D8D2A92DC52007E311C /* MeshtasticAppDelegate.swift */,
+				4982F0E863970DE88CDBE4B9 /* NativeSitePlanner */,
+				F2CEC2829F58A5511821141B /* Meshtastic-Bridging-Header.h */,
 			);
 			path = Meshtastic;
 			sourceTree = "<group>";
@@ -2206,6 +2248,7 @@
 				3D3417B32E2730EC006A988B /* GeoJSONOverlayManager.swift */,
 				AA004FMT0000001000000001 /* MarkdownFormatting.swift */,
 				C37572859BC745C4284A9B42 /* TAK */,
+				DAD009FE70A95B3C86644C42 /* NativeSitePlannerCoverage.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -2788,8 +2831,8 @@
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
 				108FFECD2DD4005600BFAA81 /* NodeInfoEntityToNodeInfo.swift in Sources */,
 				DEA1C1302F10002000A1B2C3 /* AudioConfig.swift in Sources */,
-				DEA1C1362F10002000A1B2C3 /* BackupManagement/BackupManagement.swift in Sources */,
-				DEA1C1382F10002000A1B2C3 /* BackupManagement/BackupRowView.swift in Sources */,
+				DEA1C1362F10002000A1B2C3 /* BackupManagement.swift in Sources */,
+				DEA1C1382F10002000A1B2C3 /* BackupRowView.swift in Sources */,
 				DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */,
 				DDDB445229F8ACF900EE2349 /* Date.swift in Sources */,
 				2373AE132D0A216C0086C749 /* MetricsChartSeries.swift in Sources */,
@@ -3061,6 +3104,9 @@
 				DD6F657D2C6EC2910053C113 /* HelpItem.swift in Sources */,
 				DD000031FWEDTENUM0000001 /* FirmwareEditionEnum.swift in Sources */,
 				DDC1B81B2AB5377B00C71E39 /* PersistentTipStyle.swift in Sources */,
+				EE0DE80535F75429963DA26D /* NativeSitePlannerCoverage.swift in Sources */,
+				B6901C97A72910E659C92565 /* SitePlannerDriver.cpp in Sources */,
+				D5E80D648240167C91CA98D6 /* itwom3.0.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3421,6 +3467,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Meshtastic/Meshtastic-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3470,6 +3517,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Meshtastic/Meshtastic-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
