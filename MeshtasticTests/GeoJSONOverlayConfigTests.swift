@@ -4,6 +4,7 @@
 import Testing
 import Foundation
 import CoreLocation
+import MapKit
 @testable import Meshtastic
 
 // MARK: - AnyCodableValue Tests
@@ -84,6 +85,64 @@ struct AnyCodableValueCodableTests {
 		} else {
 			Issue.record("Expected .object")
 		}
+	}
+}
+
+// MARK: - RF Prediction GeoJSON Tests
+
+@Suite("RF prediction GeoJSON overlays")
+struct RFGeoJSONOverlayTests {
+
+	@Test func multiPolygonCreatesRenderablePolygonOverlays() throws {
+		let data = """
+		{
+			"type": "FeatureCollection",
+			"features": [
+				{
+					"type": "Feature",
+					"properties": {
+						"dbm": -110,
+						"color": "rgb(31, 119, 180)",
+						"label": ">= -110 dBm"
+					},
+					"geometry": {
+						"type": "MultiPolygon",
+						"coordinates": [
+							[
+								[
+									[-121.0, 37.0],
+									[-121.0, 37.1],
+									[-120.9, 37.1],
+									[-120.9, 37.0],
+									[-121.0, 37.0]
+								]
+							],
+							[
+								[
+									[-120.8, 37.0],
+									[-120.8, 37.1],
+									[-120.7, 37.1],
+									[-120.7, 37.0],
+									[-120.8, 37.0]
+								]
+							]
+						]
+					}
+				}
+			]
+		}
+		""".data(using: .utf8)!
+
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let feature = try #require(collection.features.first)
+		let styledFeature = GeoJSONStyledFeature(feature: feature, overlayId: "rf")
+
+		#expect(feature.geometry.type == "MultiPolygon")
+		#expect(feature.rfPredictionColor == "rgb(31, 119, 180)")
+		#expect(feature.dbm == -110)
+		#expect(feature.effectiveFillOpacity > 0)
+		#expect(styledFeature.createOverlays().count == 2)
+		#expect(styledFeature.createOverlays().allSatisfy { $0.overlay is MKPolygon })
 	}
 }
 

@@ -263,10 +263,20 @@ struct MeshMapContent: MapContent {
 							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
 					}
 				} else if geometryType == "Polygon" {
-					if let overlay = styledFeature.createOverlay() as? MKPolygon {
-						MapPolygon(overlay)
-							.foregroundStyle(styledFeature.fillColor)
-							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+					ForEach(styledFeature.createOverlays()) { renderableOverlay in
+						if let overlay = renderableOverlay.overlay as? MKPolygon {
+							MapPolygon(overlay)
+								.foregroundStyle(styledFeature.fillColor)
+								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+						}
+					}
+				} else if geometryType == "MultiPolygon" {
+					ForEach(styledFeature.createOverlays()) { renderableOverlay in
+						if let overlay = renderableOverlay.overlay as? MKPolygon {
+							MapPolygon(overlay)
+								.foregroundStyle(styledFeature.fillColor)
+								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+						}
 					}
 				}
 			}
