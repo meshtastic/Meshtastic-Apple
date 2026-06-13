@@ -6,34 +6,79 @@
 //
 
 import SwiftUI
+import UIKit
 import Charts
 import OSLog
-import TipKit
 
 struct LocalStatsLog: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	private let noiseFloorTip = NoiseFloorTip()
 
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
+	@State private var isPresentingNoiseFloorInfo = false
 
 	@Bindable var node: NodeInfoEntity
 	@State private var sortOrder = [KeyPathComparator(\TelemetryEntity.time, order: .reverse)]
 	@State private var selection: TelemetryEntity.ID?
-	@State private var chartSelection: Date?
+	@State private var selectedChartRange: LocalStatsChartRange = .day
+	@State private var chartScrollPosition = Date()
 
 	private var localStats: [TelemetryEntity] {
 		node.safeTelemetries(ofType: 4)
 	}
 
 	private var chartData: [TelemetryEntity] {
-		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 		return localStats
-			.filter { if let time = $0.time, let cutoff = oneWeekAgo { return time >= cutoff } else { return false } }
+			.filter { $0.time != nil }
 			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+	}
+
+	private var noiseFloorReadings: [LocalStatsChartPoint] {
+		chartData.compactMap { point in
+			guard let time = point.time, let noiseFloor = point.noiseFloor else { return nil }
+			return LocalStatsChartPoint(time: time, noiseFloor: noiseFloor)
+		}
+	}
+
+	private var chartDataDuration: TimeInterval {
+		guard let firstTime = noiseFloorReadings.first?.time,
+			  let lastTime = noiseFloorReadings.last?.time else {
+			return LocalStatsChartRange.minimumVisibleDuration
+		}
+		return max(lastTime.timeIntervalSince(firstTime), LocalStatsChartRange.minimumVisibleDuration)
+	}
+
+	private var chartVisibleDuration: TimeInterval {
+		chartVisibleDuration(for: selectedChartRange)
+	}
+
+	private var chartXAxisLabelCount: Int {
+		idiom == .phone ? 2 : 6
+	}
+
+	private var chartXAxisFormat: Date.FormatStyle {
+		let dayDuration = LocalStatsChartRange.day.duration ?? 24 * 60 * 60
+		if chartVisibleDuration <= dayDuration {
+			return Date.FormatStyle()
+				.hour(.twoDigits(amPM: .omitted))
+				.minute()
+		}
+		return Date.FormatStyle()
+			.month(.defaultDigits)
+			.day(.defaultDigits)
+	}
+
+	private var chartYDomain: ClosedRange<Int> {
+		let values = noiseFloorReadings.map { Int($0.noiseFloor) }
+		guard let minValue = values.min(), let maxValue = values.max() else {
+			return -130 ... -60
+		}
+		let lower = min(minValue - 5, -115)
+		let upper = max(maxValue + 5, -75)
+		return lower ... upper
 	}
 
 	private var dateFormatString: String {
@@ -44,18 +89,14 @@ struct LocalStatsLog: View {
 	var body: some View {
 		VStack {
 			if node.hasLocalStats {
-				TipView(noiseFloorTip, arrowEdge: .top)
-					.tipViewStyle(PersistentTipStyle())
-					.padding(.horizontal)
-
-				if !chartData.isEmpty {
+				if !noiseFloorReadings.isEmpty {
 					chartView
 				}
 				tableView
-				buttonView
 			} else {
 				ContentUnavailableView("No Local Stats", systemImage: "waveform")
 			}
+			buttonView
 		}
 		.navigationTitle("Local Stats Log")
 		.navigationBarTitleDisplayMode(.inline)
@@ -63,6 +104,28 @@ struct LocalStatsLog: View {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
+			ToolbarItem(placement: .topBarLeading) {
+				Button {
+					isPresentingNoiseFloorInfo = true
+				} label: {
+					Label("Noise Floor Info", systemImage: "info.circle")
+				}
+			}
+		}
+		.sheet(isPresented: $isPresentingNoiseFloorInfo) {
+			NavigationStack {
+				NoiseFloorInfoView()
+					.navigationTitle("Noise Floor")
+					.navigationBarTitleDisplayMode(.inline)
+					.toolbar {
+						ToolbarItem(placement: .confirmationAction) {
+							Button("Done") {
+								isPresentingNoiseFloorInfo = false
+							}
+						}
+					}
+			}
+			.presentationDetents([.medium])
 		}
 		.fileExporter(
 			isPresented: $isExporting,
@@ -79,34 +142,82 @@ struct LocalStatsLog: View {
 				}
 			}
 		)
+		.onAppear {
+			resetChartViewToLatest()
+		}
 	}
 
 	private var chartView: some View {
-		GroupBox(label: Label("\(localStats.count) Readings Total", systemImage: "waveform")) {
-			Chart(chartData) { point in
-				if let pointTime = point.time, let noiseFloor = point.noiseFloor {
-					LineMark(
-						x: .value("Time", pointTime),
-						y: .value("Noise Floor", Int(noiseFloor))
-					)
-					.foregroundStyle(Color.accentColor)
-					.interpolationMethod(.linear)
+		GroupBox {
+			VStack(alignment: .leading, spacing: 10) {
+				chartControlsView
+				Chart {
+					ForEach(noiseFloorReadings) { point in
+						LineMark(
+							x: .value("Time", point.time),
+							y: .value("Noise Floor", Int(point.noiseFloor))
+						)
+						.foregroundStyle(Color.accentColor)
+						.interpolationMethod(.linear)
+					}
+					if noiseFloorReadings.count == 1, let point = noiseFloorReadings.first {
+						PointMark(
+							x: .value("Time", point.time),
+							y: .value("Noise Floor", Int(point.noiseFloor))
+						)
+						.foregroundStyle(Color.accentColor)
+					}
+					RuleMark(y: .value("Busy Floor (-85 dBm)", -85))
+						.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
+						.foregroundStyle(.red)
 				}
-				RuleMark(y: .value("Threshold (-85 dBm)", -85))
-					.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
-					.foregroundStyle(.red)
+				.chartXAxis {
+					AxisMarks(position: .bottom, values: .automatic(desiredCount: chartXAxisLabelCount)) { _ in
+						AxisGridLine()
+						AxisTick()
+						AxisValueLabel(format: chartXAxisFormat)
+					}
+				}
+				.chartYAxis {
+					AxisMarks(position: .leading)
+				}
+				.chartYScale(domain: chartYDomain)
+				.chartScrollableAxes(.horizontal)
+				.chartXVisibleDomain(length: chartVisibleDuration)
+				.chartScrollPosition(x: $chartScrollPosition)
+				.chartLegend(.hidden)
+				.frame(height: idiom == .phone ? 240 : 320)
+				.padding(.bottom, 8)
 			}
-			.chartXAxis(content: {
-				AxisMarks(position: .top)
-			})
-			.chartXSelection(value: $chartSelection)
-			.chartYScale(domain: -130 ... -60)
-			.chartForegroundStyleScale([
-				"Noise Floor": Color.accentColor
-			])
-			.chartLegend(position: .automatic, alignment: .bottom)
+		} label: {
+			Label("\(localStats.count) Local Stats Readings", systemImage: "chart.xyaxis.line")
 		}
-		.frame(minHeight: 240)
+		.padding(.horizontal)
+		.onChange(of: selectedChartRange) { _, newRange in
+			resetChartViewToLatest(for: newRange)
+		}
+	}
+
+	private var chartControlsView: some View {
+		HStack(spacing: 8) {
+			Picker("Visible Range", selection: $selectedChartRange) {
+				ForEach(LocalStatsChartRange.allCases) { range in
+					Text(range.title).tag(range)
+				}
+			}
+			.pickerStyle(.segmented)
+
+			Button {
+				resetChartViewToLatest()
+			} label: {
+				Label("Latest", systemImage: "forward.end")
+					.labelStyle(.iconOnly)
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.small)
+			.accessibilityHint("Scrolls the chart to the newest reading")
+		}
 	}
 
 	@ViewBuilder
@@ -122,25 +233,26 @@ struct LocalStatsLog: View {
 		Table(localStats, selection: $selection, sortOrder: $sortOrder) {
 			TableColumn("Local Stats") { ls in
 				HStack {
-					Text(ls.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
-						.font(.caption)
-						.fontWeight(.semibold)
+					CopyableLocalStatsField(
+						timestampText(for: ls),
+						title: "Timestamp",
+						font: .caption,
+						fontWeight: .semibold
+					)
 					Spacer()
 				}
 				HStack {
-					if let noiseFloor = ls.noiseFloor {
-						Text("Noise Floor \(noiseFloor) dBm")
-							.foregroundColor(noiseFloorColor(noiseFloor))
-					} else {
-						Text("Noise Floor No Reading")
-							.foregroundColor(.gray)
-					}
+					CopyableLocalStatsField(
+						phoneNoiseFloorText(for: ls),
+						title: "Noise Floor",
+						color: noiseFloorTextColor(for: ls)
+					)
 					Spacer()
 				}
 				HStack {
-					Text("Relayed: \(ls.numTxRelay)")
-					Text("Canceled: \(ls.numTxRelayCanceled)")
-					Text("Dupes: \(ls.numRxDupe)")
+					CopyableLocalStatsField("Relayed: \(ls.numTxRelay)", title: "Relayed")
+					CopyableLocalStatsField("Canceled: \(ls.numTxRelayCanceled)", title: "Canceled")
+					CopyableLocalStatsField("Dupes: \(ls.numRxDupe)", title: "Dupes")
 					Spacer()
 				}
 				.font(.caption)
@@ -152,106 +264,150 @@ struct LocalStatsLog: View {
 	private var macTableView: some View {
 		Table(localStats, selection: $selection, sortOrder: $sortOrder) {
 			TableColumn("Noise Floor") { ls in
-				if let noiseFloor = ls.noiseFloor {
-					Text("\(noiseFloor) dBm")
-						.foregroundColor(noiseFloorColor(noiseFloor))
-				} else {
-					Text("No Reading")
-						.foregroundColor(.gray)
-				}
+				CopyableLocalStatsField(
+					noiseFloorValueText(for: ls),
+					title: "Noise Floor",
+					color: noiseFloorTextColor(for: ls)
+				)
 			}
 			TableColumn("Uptime") { ls in
-				if let uptimeSeconds = ls.uptimeSeconds {
-					let now = Date.now
-					let later = now + TimeInterval(uptimeSeconds)
-					let components = (now..<later).formatted(.components(style: .narrow))
-					Text(components)
-				} else {
-					Text(Constants.nilValueIndicator)
-				}
+				CopyableLocalStatsField(uptimeText(for: ls), title: "Uptime")
 			}
 			.width(min: 100)
 			TableColumn("Relayed") { ls in
-				Text("\(ls.numTxRelay)")
+				CopyableLocalStatsField("\(ls.numTxRelay)", title: "Relayed")
 			}
 			.width(min: 80)
 			TableColumn("Canceled") { ls in
-				Text("\(ls.numTxRelayCanceled)")
+				CopyableLocalStatsField("\(ls.numTxRelayCanceled)", title: "Canceled")
 			}
 			.width(min: 80)
 			TableColumn("Dupes") { ls in
-				Text("\(ls.numRxDupe)")
+				CopyableLocalStatsField("\(ls.numRxDupe)", title: "Dupes")
 			}
 			.width(min: 80)
 			TableColumn("Packets Tx") { ls in
-				Text("\(ls.numPacketsTx)")
+				CopyableLocalStatsField("\(ls.numPacketsTx)", title: "Packets Tx")
 			}
 			.width(min: 80)
 			TableColumn("Packets Rx") { ls in
-				Text("\(ls.numPacketsRx)")
+				CopyableLocalStatsField("\(ls.numPacketsRx)", title: "Packets Rx")
 			}
 			.width(min: 80)
 			TableColumn("Bad Rx") { ls in
-				Text("\(ls.numPacketsRxBad)")
+				CopyableLocalStatsField("\(ls.numPacketsRxBad)", title: "Bad Rx")
 			}
 			.width(min: 80)
 			TableColumn("Nodes Online") { ls in
-				Text("\(ls.numOnlineNodes)")
+				CopyableLocalStatsField("\(ls.numOnlineNodes)", title: "Nodes Online")
 			}
 			.width(min: 100)
 			TableColumn("Timestamp") { ls in
-				Text(ls.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized)
+				CopyableLocalStatsField(timestampText(for: ls), title: "Timestamp")
 			}
 			.width(min: 180)
 		}
 	}
 
 	private var buttonView: some View {
-		HStack {
-			Button(role: .destructive) {
-				isPresentingClearLogConfirm = true
-			} label: {
-				Label("Clear Log", systemImage: "trash.fill")
-			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(idiom == .phone ? .regular : .large)
-			.padding(.bottom)
-			.padding(.leading)
-			.confirmationDialog(
-				"Are you sure?",
-				isPresented: $isPresentingClearLogConfirm,
-				titleVisibility: .visible
-			) {
-				Button("Delete all local stats?", role: .destructive) {
-					Task {
-						if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 4) {
-							Logger.data.notice("Cleared Local Stats for \(node.num, privacy: .public)")
-						} else {
-							Logger.data.error("Clear Local Stats Log Failed")
+		HStack(spacing: 8) {
+			if node.hasLocalStats {
+				Button(role: .destructive) {
+					isPresentingClearLogConfirm = true
+				} label: {
+					Label {
+						Text("Clear")
+							.lineLimit(1)
+					} icon: {
+						Image(systemName: "trash.fill")
+					}
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(idiom == .phone ? .regular : .large)
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresentingClearLogConfirm,
+					titleVisibility: .visible
+				) {
+					Button("Delete all local stats?", role: .destructive) {
+						Task {
+							if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 4) {
+								Logger.data.notice("Cleared Local Stats for \(node.num, privacy: .public)")
+							} else {
+								Logger.data.error("Clear Local Stats Log Failed")
+							}
 						}
 					}
 				}
 			}
 
-			Button {
-				exportString = telemetryToCsvFile(telemetry: localStats, metricsType: 4)
-				isExporting = true
-			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
-			}
+			RequestLocalStatsButton(
+				node: node,
+				title: "Request",
+				cooldownTitle: "Wait",
+				systemImage: "arrow.clockwise"
+			)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(idiom == .phone ? .regular : .large)
-			.padding(.bottom)
-			.padding(.trailing)
+
+			if node.hasLocalStats {
+				Button {
+					exportString = telemetryToCsvFile(telemetry: localStats, metricsType: 4)
+					isExporting = true
+				} label: {
+					Label {
+						Text("Save")
+							.lineLimit(1)
+					} icon: {
+						Image(systemName: "square.and.arrow.down")
+					}
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(idiom == .phone ? .regular : .large)
+			}
 		}
+		.frame(maxWidth: .infinity)
+		.padding(.horizontal)
+		.padding(.bottom)
 		.onChange(of: selection) { _, newSelection in
 			guard let metrics = localStats.first(where: { $0.id == newSelection }) else {
 				return
 			}
-			chartSelection = metrics.time
+			if let time = metrics.time {
+				chartScrollPosition = scrollStart(containing: time)
+			}
 		}
+	}
+
+	private func chartVisibleDuration(for range: LocalStatsChartRange) -> TimeInterval {
+		guard let duration = range.duration else {
+			return chartDataDuration
+		}
+		return min(duration, chartDataDuration)
+	}
+
+	private func resetChartViewToLatest(for range: LocalStatsChartRange? = nil) {
+		guard let firstTime = noiseFloorReadings.first?.time,
+			  let latestTime = noiseFloorReadings.last?.time else {
+			return
+		}
+		let duration = chartVisibleDuration(for: range ?? selectedChartRange)
+		chartScrollPosition = max(firstTime, latestTime.addingTimeInterval(-duration))
+	}
+
+	private func scrollStart(containing date: Date) -> Date {
+		guard let firstTime = noiseFloorReadings.first?.time,
+			  let latestTime = noiseFloorReadings.last?.time else {
+			return date
+		}
+		let visibleDuration = chartVisibleDuration
+		let lowerBound = firstTime
+		let upperBound = max(firstTime, latestTime.addingTimeInterval(-visibleDuration))
+		let centeredStart = date.addingTimeInterval(-visibleDuration / 2)
+		return min(max(centeredStart, lowerBound), upperBound)
 	}
 
 	private func noiseFloorColor(_ value: Int32) -> Color {
@@ -263,27 +419,138 @@ struct LocalStatsLog: View {
 			return .red
 		}
 	}
+
+	private func timestampText(for localStats: TelemetryEntity) -> String {
+		localStats.time?.formattedDate(format: dateFormatString) ?? "Unknown Age".localized
+	}
+
+	private func phoneNoiseFloorText(for localStats: TelemetryEntity) -> String {
+		guard let noiseFloor = localStats.noiseFloor else {
+			return "Noise Floor No Reading"
+		}
+		return "Noise Floor \(noiseFloor) dBm"
+	}
+
+	private func noiseFloorValueText(for localStats: TelemetryEntity) -> String {
+		guard let noiseFloor = localStats.noiseFloor else {
+			return "No Reading"
+		}
+		return "\(noiseFloor) dBm"
+	}
+
+	private func noiseFloorTextColor(for localStats: TelemetryEntity) -> Color {
+		guard let noiseFloor = localStats.noiseFloor else {
+			return .gray
+		}
+		return noiseFloorColor(noiseFloor)
+	}
+
+	private func uptimeText(for localStats: TelemetryEntity) -> String {
+		guard let uptimeSeconds = localStats.uptimeSeconds else {
+			return Constants.nilValueIndicator
+		}
+		let now = Date.now
+		let later = now + TimeInterval(uptimeSeconds)
+		return (now..<later).formatted(.components(style: .narrow))
+	}
 }
 
-private struct NoiseFloorTip: Tip {
-	var id: String {
-		"tip.localStats.noiseFloor"
+private struct CopyableLocalStatsField: View {
+	let value: String
+	let title: String
+	let font: Font?
+	let fontWeight: Font.Weight?
+	let color: Color?
+
+	init(
+		_ value: String,
+		title: String,
+		font: Font? = nil,
+		fontWeight: Font.Weight? = nil,
+		color: Color? = nil
+	) {
+		self.value = value
+		self.title = title
+		self.font = font
+		self.fontWeight = fontWeight
+		self.color = color
 	}
 
-	var title: Text {
-		Text("Noise Floor")
+	var body: some View {
+		Text(value)
+			.font(font)
+			.fontWeight(fontWeight)
+			.foregroundColor(color)
+			.textSelection(.enabled)
+			.contextMenu {
+				Button {
+					UIPasteboard.general.string = value
+				} label: {
+					Label("Copy \(title)", systemImage: "doc.on.doc")
+				}
+			}
+	}
+}
+
+private struct LocalStatsChartPoint: Identifiable {
+	let time: Date
+	let noiseFloor: Int32
+
+	var id: Date { time }
+}
+
+private enum LocalStatsChartRange: String, CaseIterable, Identifiable {
+	case hour
+	case sixHours
+	case day
+	case week
+	case all
+
+	static let minimumVisibleDuration: TimeInterval = 15 * 60
+
+	var id: String { rawValue }
+
+	var title: String {
+		switch self {
+		case .hour:
+			return "1h"
+		case .sixHours:
+			return "6h"
+		case .day:
+			return "24h"
+		case .week:
+			return "7d"
+		case .all:
+			return "All"
+		}
 	}
 
-	var message: Text? {
-		Text("Noise floor is a directional diagnostic. Readings can vary quickly, and external filters can lower or skew the displayed value due to insertion loss or in-band interference.")
+	var duration: TimeInterval? {
+		switch self {
+		case .hour:
+			return 60 * 60
+		case .sixHours:
+			return 6 * 60 * 60
+		case .day:
+			return 24 * 60 * 60
+		case .week:
+			return 7 * 24 * 60 * 60
+		case .all:
+			return nil
+		}
 	}
+}
 
-	var image: Image? {
-		Image(systemName: "waveform.path.ecg")
-	}
-
-	var options: [TipOption] {
-		Tips.IgnoresDisplayFrequency(true)
-		Tips.MaxDisplayCount(3)
+private struct NoiseFloorInfoView: View {
+	var body: some View {
+		List {
+			Section {
+				Label("Lower values usually mean a quieter receiver environment.", systemImage: "speaker.wave.1")
+				Label("Readings can vary quickly with nearby transmitters, antenna setup, filters, and local interference.", systemImage: "antenna.radiowaves.left.and.right")
+				Label("The red reference line marks a busy -85 dBm floor, not a hard failure threshold.", systemImage: "exclamationmark.triangle")
+			} header: {
+				Text("How to read it")
+			}
+		}
 	}
 }

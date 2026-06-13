@@ -189,6 +189,7 @@ Pass variables to the simulator using the `SIMCTL_CHILD_` prefix (the prefix is 
 |----------|---------|-------------|
 | `MESHTASTIC_PERF_SEED_NODES` | — | **Required to activate.** Number of nodes to seed (e.g. `5000`). |
 | `MESHTASTIC_PERF_TELEMETRY_HISTORY` | `3` | Device + environment metric samples per node. |
+| `MESHTASTIC_PERF_LOCAL_STATS_HISTORY` | `MESHTASTIC_PERF_TELEMETRY_HISTORY` | Local stats samples per node, including synthetic noise floor, packet counters, utilization, and node counts. |
 | `MESHTASTIC_PERF_POSITION_HISTORY` | `3` | Position history entries per node. |
 | `MESHTASTIC_PERF_DIRECT_MESSAGES` | `0` | Direct messages to seed between node 0 and node 1. |
 | `MESHTASTIC_PERF_CHANNEL_MESSAGES` | `0` | Channel messages to seed on channel 0. |
@@ -213,11 +214,31 @@ SIMCTL_CHILD_MESHTASTIC_PERF_COMPACT_LIST=true \
 xcrun simctl launch <UDID> gvh.MeshtasticClient
 ```
 
+### Example: seed local stats for noise-floor chart work
+
+Use a smaller node count and a larger local stats history when tuning the Local Stats Log UI. This keeps the simulator responsive while giving the chart enough variation to show quiet periods, busy periods, and occasional interference spikes.
+
+```bash
+SIMCTL_CHILD_MESHTASTIC_PERF_SEED_NODES=20 \
+SIMCTL_CHILD_MESHTASTIC_PERF_LOCAL_STATS_HISTORY=168 \
+SIMCTL_CHILD_MESHTASTIC_PERF_TELEMETRY_HISTORY=3 \
+SIMCTL_CHILD_MESHTASTIC_PERF_POSITION_HISTORY=3 \
+SIMCTL_CHILD_MESHTASTIC_PERF_RESET_STORE=true \
+SIMCTL_CHILD_MESHTASTIC_PERF_ENABLE_DISCOVERY=0 \
+xcrun simctl launch <UDID> gvh.MeshtasticClient \
+  --meshtastic-perf-seed \
+  --meshtastic-perf-start-local-stats
+```
+
+`--meshtastic-perf-start-local-stats` selects seeded node `0x0A000000` and opens its Local Stats Log directly in DEBUG simulator builds.
+
+Add `--meshtastic-perf-local-stats-same-hour` when checking short-range noise-floor chart layout. It keeps local stats samples in the same hour at 5-minute intervals, which makes `1h` axis label clipping easy to reproduce.
+
 On subsequent launches **without** `MESHTASTIC_PERF_RESET_STORE`, the harness detects the existing node count and skips re-seeding, so the app starts at full speed against the already-seeded store.
 
 ### What to expect
 
-5 000 nodes (3 telemetry samples/type, 3 positions/node) seed in approximately **12 seconds** on an Apple Silicon Mac. The app navigates automatically to the Nodes tab. Typical idle CPU after seeding is under 2%.
+5 000 nodes (3 device/environment telemetry samples, 3 local stats samples, 3 positions/node) seed in approximately **12 seconds** on an Apple Silicon Mac. The app navigates automatically to the Nodes tab. Typical idle CPU after seeding is under 2%.
 
 > **Tip — Checking seed progress**
 > Seed log lines are emitted at `Info` level under the `🗄️ Data` OSLog category. To stream them:
