@@ -174,15 +174,12 @@ extension AccessoryManager {
 					throw AccessoryError.connectionFailed("Firmware version not available")
 				}
 				
-				let lastDotIndex = firmwareVersion.lastIndex(of: ".")
-				if lastDotIndex == nil {
+				guard let version = DeviceMetadataEntity.displayFirmwareVersion(from: firmwareVersion), version.contains(".") else {
 					throw AccessoryError.versionMismatch("🚨" + "Update Your Firmware".localized)
 				}
 				
-				let version = firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: firmwareVersion))].dropLast()
-				
 				// TODO: do we really need to store the firmware version in the UserDefaults?
-				UserDefaults.firmwareVersion = String(version)
+				UserDefaults.firmwareVersion = version
 				
 				let supportedVersion = self.checkIsVersionSupported(forVersion: self.minimumVersion)
 				if !supportedVersion {
@@ -228,14 +225,7 @@ extension AccessoryManager {
 				}
 				
 				if let device = self.activeConnection?.device {
-					var version: String?
-					if let firmwareVersion = device.firmwareVersion {
-						if let lastDotIndex = firmwareVersion.lastIndex(of: ".") {
-							version = String(firmwareVersion[...(lastDotIndex)].dropLast())
-						} else {
-							version = firmwareVersion
-						}
-					}
+					let version = device.firmwareVersion.flatMap(DeviceMetadataEntity.displayFirmwareVersion)
 				
 					let connectionWasRestored = (withConnection != nil)
 					Logger.datadog.action(.connect(firmwareVersion: version,

@@ -406,11 +406,7 @@ actor MeshPackets {
 				newMetadata.role = Int32(metadata.role.rawValue)
 				newMetadata.positionFlags = Int32(metadata.positionFlags)
 				newMetadata.excludedModules = Int32(metadata.excludedModules)
-				// Swift does strings weird, this does work to get the version without the github hash
-				let lastDotIndex = metadata.firmwareVersion.lastIndex(of: ".")
-				var version = metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: metadata.firmwareVersion))]
-				version = version.dropLast()
-				newMetadata.firmwareVersion = String(version)
+				newMetadata.firmwareVersion = DeviceMetadataEntity.displayFirmwareVersion(from: metadata.firmwareVersion)
 				if fetchedNode.count > 0 {
 					fetchedNode[0].metadata = newMetadata
 					if sessionPasskey?.count != 0 {

@@ -26,4 +26,18 @@ final class DeviceMetadataEntity {
 	var metadataNode: NodeInfoEntity?
 
 	init() {}
+
+	static func displayFirmwareVersion(from rawVersion: String) -> String? {
+		let version = rawVersion.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !version.isEmpty else {
+			return nil
+		}
+
+		let components = version.split(separator: ".", omittingEmptySubsequences: false)
+		guard components.count > 3 else {
+			return version
+		}
+
+		return components.dropLast().joined(separator: ".")
+	}
 }
