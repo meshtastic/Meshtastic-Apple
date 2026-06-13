@@ -814,7 +814,12 @@ private struct GenerateCoverageOverlayButton: View {
 		isGenerating = true
 		Task {
 			do {
-				let data = try await SitePlannerCoverageClient().generateContours(from: endpoint, request: payload)
+				let data: Data
+				if SitePlannerCoverageClient.usesBrowserSitePlanner(for: endpoint) {
+					data = try await SitePlannerBrowserCoverageClient().generateContours(from: endpoint, request: payload)
+				} else {
+					data = try await SitePlannerCoverageClient().generateContours(from: endpoint, request: payload)
+				}
 				let metadata = try await MapDataManager.shared.processGeoJSONData(
 					data,
 					originalName: overlayName,

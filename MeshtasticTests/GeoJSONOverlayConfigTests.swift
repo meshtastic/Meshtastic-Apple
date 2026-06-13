@@ -362,6 +362,31 @@ struct RFGeoJSONOverlayTests {
 		#expect(object?["max_dbm"] as? Double == -80.0)
 	}
 
+	@Test @MainActor func sitePlannerBrowserConfigHashBuildsShareableSitePlannerParams() throws {
+		let request = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txPower: 20.0,
+			frequencyMHz: 915.0
+		)
+
+		let data = try decodedBase64URL(SitePlannerBrowserCoverageClient.sitePlannerConfigHash(for: request))
+		let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+		let transmitter = object?["transmitter"] as? [String: Any]
+		let receiver = object?["receiver"] as? [String: Any]
+		let simulation = object?["simulation"] as? [String: Any]
+		let display = object?["display"] as? [String: Any]
+		let txPowerWatts = try #require(transmitter?["tx_power"] as? Double)
+
+		#expect(transmitter?["tx_lat"] as? Double == 37.3349)
+		#expect(transmitter?["tx_lon"] as? Double == -122.0090)
+		#expect(abs(txPowerWatts - 0.1) < 0.0001)
+		#expect(transmitter?["tx_freq"] as? Double == 915.0)
+		#expect(receiver?["rx_sensitivity"] as? Double == -130.0)
+		#expect(simulation?["simulation_extent"] as? Double == 30.0)
+		#expect(display?["color_scale"] as? String == "plasma")
+	}
+
 	@Test func sitePlannerEndpointErrorsAreActionable() {
 		let missingEndpoint = SitePlannerCoverageError.missingEndpoint.localizedDescription
 		let publicSiteError = SitePlannerCoverageError.publicSiteAPIUnavailable.localizedDescription
@@ -371,13 +396,25 @@ struct RFGeoJSONOverlayTests {
 		#expect(missingEndpoint.contains("/predict"))
 		#expect(missingEndpoint.contains("/status/{task_id}"))
 		#expect(missingEndpoint.contains("/result/{task_id}"))
-		#expect(publicSiteError.contains("HTTP 405"))
+		#expect(publicSiteError.contains("does not expose"))
 		#expect(publicSiteError.contains("/predict"))
 		#expect(publicSiteError.contains("/result/{task_id}"))
 		#expect(httpError.contains("HTTP 405"))
 		#expect(httpError.contains("405 Not Allowed"))
 		#expect(tiffError.contains("GeoTIFF"))
 		#expect(tiffError.contains("GeoJSON"))
+		#expect(SitePlannerCoverageClient.usesBrowserSitePlanner(for: URL(string: "https://site.meshtastic.org")!))
+	}
+
+	private func decodedBase64URL(_ string: String) throws -> Data {
+		var base64 = string
+			.replacingOccurrences(of: "-", with: "+")
+			.replacingOccurrences(of: "_", with: "/")
+		let padding = base64.count % 4
+		if padding > 0 {
+			base64.append(String(repeating: "=", count: 4 - padding))
+		}
+		return try #require(Data(base64Encoded: base64))
 	}
 }
 
