@@ -64,7 +64,7 @@ workflows:
 
 | Workflow | What it does |
 |---|---|
-| [`docs-release-gate.yml`](.github/workflows/docs-release-gate.yml) | Fails the release if any bundled HTML still carries the pre-release banner. If it fails, re-run `scripts/cut-release-docs.sh X.YY.ZZ` and re-push the tag. |
+| [`docs-release-gate.yml`](.github/workflows/docs-release-gate.yml) | Fails the release if any bundled HTML still carries the pre-release banner. If it fails, re-run `scripts/cut-release-docs.sh X.YY.ZZ`, then **delete and recreate the tag** — re-running the script makes a new commit, so a plain re-push won't move the existing tag. The workflow prints the exact recovery commands (`git tag -d vX.YY.ZZ && git push origin :refs/tags/vX.YY.ZZ`, then re-tag and push `vX.YY.ZZ`). |
 | [`docs-release.yml`](.github/workflows/docs-release.yml) | Builds and deploys this repo's GitHub Pages docs site (production, no beta banner). |
 | [`docs-release-bundle.yml`](.github/workflows/docs-release-bundle.yml) | Creates the GitHub **Release** for the tag and attaches `meshtastic-apple-docs-<version>.tar.gz` — the canonical English user/developer guides and screenshots, in the repo's `docs/` layout. |
 
@@ -84,10 +84,14 @@ every docs commit to `main`.
 1. Perform final testing and quality checks on the `X.YY.ZZ-release` branch.
     a. If any hotfix changes are required, merge those changes into `X.YY.ZZ-release`.
     b. After merging these changes into the release branch, cherry-pick the changes onto `main`.
-2. Once everything is ready, create a final tag for the release:
+2. Once everything is ready, push the final release tag. Use the **`v`-prefixed**
+   form — this is the same `vX.YY.ZZ` tag created by the Docs Release Step, and the
+   docs release workflows only trigger on `v*.*.*` (a bare `X.YY.ZZ` tag would never
+   publish the docs bundle or Pages). See
+   [Documentation Publishing & Website Sync](#documentation-publishing--website-sync).
    ```sh
-   git tag -a X.YY.ZZ -m "Release version X.Y.Z"
-   git push origin X.YY.ZZ
+   git tag -a vX.YY.ZZ -m "Release vX.YY.ZZ"
+   git push origin vX.YY.ZZ
    ```
 
 Thank you for following the release process and helping to ensure the stability and quality of Meshtastic!
