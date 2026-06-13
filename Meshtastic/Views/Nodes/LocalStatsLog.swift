@@ -26,30 +26,16 @@ struct LocalStatsLog: View {
 	@State private var selectedChartRange: LocalStatsChartRange = .day
 	@State private var chartScrollPosition = Date()
 
-	private var localStats: [TelemetryEntity] {
-		node.safeTelemetries(ofType: 4)
-	}
-
-	private var chartData: [TelemetryEntity] {
-		return localStats
-			.filter { $0.time != nil }
-			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
-	}
-
-	private var noiseFloorReadings: [LocalStatsChartPoint] {
-		chartData.compactMap { point in
-			guard let time = point.time, let noiseFloor = point.noiseFloor else { return nil }
-			return LocalStatsChartPoint(time: time, noiseFloor: noiseFloor)
-		}
-	}
-
-	private var chartDataDuration: TimeInterval {
-		guard let firstTime = noiseFloorReadings.first?.time,
-			  let lastTime = noiseFloorReadings.last?.time else {
-			return LocalStatsChartRange.minimumVisibleDuration
-		}
-		return max(lastTime.timeIntervalSince(firstTime), LocalStatsChartRange.minimumVisibleDuration)
-	}
+	// Derived data is cached in @State and recomputed only when the underlying telemetry
+	// changes (refreshData), NOT in `body`. `localStats` is a SwiftData fetch
+	// (node.safeTelemetries), and the chart binds its scroll offset to @State
+	// (chartScrollPosition), so `body` re-evaluates on every scroll frame. Recomputing
+	// these getters there fired ~8 fetches + sorts per frame and janked scrolling.
+	@State private var localStats: [TelemetryEntity] = []
+	@State private var noiseFloorReadings: [LocalStatsChartPoint] = []
+	@State private var chartYDomain: ClosedRange<Int> = -130 ... -60
+	@State private var chartDataDuration: TimeInterval = LocalStatsChartRange.minimumVisibleDuration
+	@State private var didLoad = false
 
 	private var chartVisibleDuration: TimeInterval {
 		chartVisibleDuration(for: selectedChartRange)
@@ -71,16 +57,6 @@ struct LocalStatsLog: View {
 			.day(.defaultDigits)
 	}
 
-	private var chartYDomain: ClosedRange<Int> {
-		let values = noiseFloorReadings.map { Int($0.noiseFloor) }
-		guard let minValue = values.min(), let maxValue = values.max() else {
-			return -130 ... -60
-		}
-		let lower = min(minValue - 5, -115)
-		let upper = max(maxValue + 5, -75)
-		return lower ... upper
-	}
-
 	private var dateFormatString: String {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
 		return (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
@@ -88,12 +64,12 @@ struct LocalStatsLog: View {
 
 	var body: some View {
 		VStack {
-			if node.hasLocalStats {
+			if !localStats.isEmpty {
 				if !noiseFloorReadings.isEmpty {
 					chartView
 				}
 				tableView
-			} else {
+			} else if didLoad {
 				ContentUnavailableView("No Local Stats", systemImage: "waveform")
 			}
 			buttonView
@@ -143,7 +119,13 @@ struct LocalStatsLog: View {
 			}
 		)
 		.onAppear {
+			refreshData()
 			resetChartViewToLatest()
+		}
+		.onChange(of: node.lastHeard) {
+			// New packets (including local-stats telemetry) update lastHeard; refetch then.
+			// Scrolling the chart does not touch lastHeard, so it never triggers a refetch.
+			refreshData()
 		}
 	}
 
@@ -311,7 +293,7 @@ struct LocalStatsLog: View {
 
 	private var buttonView: some View {
 		HStack(spacing: 8) {
-			if node.hasLocalStats {
+			if !localStats.isEmpty {
 				Button(role: .destructive) {
 					isPresentingClearLogConfirm = true
 				} label: {
@@ -331,9 +313,10 @@ struct LocalStatsLog: View {
 					titleVisibility: .visible
 				) {
 					Button("Delete all local stats?", role: .destructive) {
-						Task {
+						Task { @MainActor in
 							if await MeshPackets.shared.clearTelemetry(destNum: node.num, metricsType: 4) {
 								Logger.data.notice("Cleared Local Stats for \(node.num, privacy: .public)")
+								refreshData()
 							} else {
 								Logger.data.error("Clear Local Stats Log Failed")
 							}
@@ -352,7 +335,7 @@ struct LocalStatsLog: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(idiom == .phone ? .regular : .large)
 
-			if node.hasLocalStats {
+			if !localStats.isEmpty {
 				Button {
 					exportString = telemetryToCsvFile(telemetry: localStats, metricsType: 4)
 					isExporting = true
@@ -452,6 +435,40 @@ struct LocalStatsLog: View {
 		let now = Date.now
 		let later = now + TimeInterval(uptimeSeconds)
 		return (now..<later).formatted(.components(style: .narrow))
+	}
+}
+
+private extension LocalStatsLog {
+	/// Single source of the view's derived data. Runs one SwiftData fetch and recomputes
+	/// the cached chart inputs. Called on appear, when the node hears new packets, and
+	/// after a clear — never from `body`, so chart scrolling does no fetching or sorting.
+	func refreshData() {
+		let stats = node.safeTelemetries(ofType: 4)
+		localStats = stats
+
+		let readings = stats
+			.filter { $0.time != nil }
+			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+			.compactMap { point -> LocalStatsChartPoint? in
+				guard let time = point.time, let noiseFloor = point.noiseFloor else { return nil }
+				return LocalStatsChartPoint(time: time, noiseFloor: noiseFloor)
+			}
+		noiseFloorReadings = readings
+
+		let values = readings.map { Int($0.noiseFloor) }
+		if let minValue = values.min(), let maxValue = values.max() {
+			chartYDomain = min(minValue - 5, -115) ... max(maxValue + 5, -75)
+		} else {
+			chartYDomain = -130 ... -60
+		}
+
+		if let firstTime = readings.first?.time, let lastTime = readings.last?.time {
+			chartDataDuration = max(lastTime.timeIntervalSince(firstTime), LocalStatsChartRange.minimumVisibleDuration)
+		} else {
+			chartDataDuration = LocalStatsChartRange.minimumVisibleDuration
+		}
+
+		didLoad = true
 	}
 }
 
