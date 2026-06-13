@@ -550,6 +550,9 @@ struct NodeDetail: View {
 					user: user
 				)
 			}
+			if latestPosition != nil {
+				GenerateCoverageOverlayButton(node: node)
+			}
 			if let connectedNode {
 				FavoriteNodeButton(
 					node: node
@@ -744,6 +747,163 @@ struct NodeDetail: View {
 			}
 		}
 		return false
+	}
+}
+
+private struct GenerateCoverageOverlayButton: View {
+	let node: NodeInfoEntity
+
+	@AppStorage("sitePlannerCoverageEndpoint") private var sitePlannerCoverageEndpoint = ""
+	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
+	@State private var isGenerating = false
+	@State private var isShowingAlert = false
+	@State private var alertTitle = ""
+	@State private var alertMessage = ""
+
+	var body: some View {
+		Button {
+			generateCoverageOverlay()
+		} label: {
+			Label {
+				Text(isGenerating ? "Generating Coverage Overlay" : "Generate Coverage Overlay")
+			} icon: {
+				if isGenerating {
+					ProgressView()
+						.controlSize(.small)
+				} else {
+					Image(systemName: "antenna.radiowaves.left.and.right")
+						.symbolRenderingMode(.hierarchical)
+				}
+			}
+		}
+		.disabled(isGenerating)
+		.accessibilityIdentifier("generateCoverageOverlayButton")
+		.alert(alertTitle, isPresented: $isShowingAlert) {
+			Button("Ok") { }
+		} message: {
+			Text(alertMessage)
+		}
+	}
+
+	private func generateCoverageOverlay() {
+		let trimmedEndpoint = sitePlannerCoverageEndpoint.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !trimmedEndpoint.isEmpty else {
+			presentAlert(
+				title: "Coverage API Not Set",
+				message: "Add a Site Planner API endpoint in Map Data, then generate coverage from this node."
+			)
+			return
+		}
+
+		guard let endpoint = URL(string: trimmedEndpoint),
+			  let scheme = endpoint.scheme?.lowercased(),
+			  ["http", "https"].contains(scheme) else {
+			presentAlert(
+				title: "Invalid Coverage API",
+				message: "Enter a valid HTTP or HTTPS Site Planner API endpoint in Map Data."
+			)
+			return
+		}
+
+		guard let coordinate = node.latestPosition?.nodeCoordinate else {
+			presentAlert(
+				title: "No Node Position",
+				message: "This node needs a valid position before coverage can be generated."
+			)
+			return
+		}
+
+		let loRaConfig = node.loRaConfig
+		let payload = SitePlannerCoverageRequest(
+			lat: coordinate.latitude,
+			lon: coordinate.longitude,
+			txPower: coverageTransmitPower(for: loRaConfig),
+			frequencyMHz: coverageFrequencyMHz(for: loRaConfig)
+		)
+		let overlayName = coverageOverlayName()
+
+		MapDataManager.shared.initialize()
+		isGenerating = true
+		Task {
+			do {
+				let data = try await SitePlannerCoverageClient().generateContours(from: endpoint, request: payload)
+				let metadata = try await MapDataManager.shared.processGeoJSONData(
+					data,
+					originalName: overlayName,
+					fileExtension: "geojson",
+					makeActive: true
+				)
+
+				await MainActor.run {
+					mapOverlaysEnabled = true
+					isGenerating = false
+					presentAlert(
+						title: "Coverage Overlay Generated",
+						message: "Added '\(metadata.originalName)' with \(metadata.overlayCount) RF bands."
+					)
+				}
+			} catch {
+				await MainActor.run {
+					isGenerating = false
+					presentAlert(title: "Coverage Overlay Failed", message: error.localizedDescription)
+				}
+			}
+		}
+	}
+
+	private func presentAlert(title: String, message: String) {
+		alertTitle = title
+		alertMessage = message
+		isShowingAlert = true
+	}
+
+	private func coverageOverlayName() -> String {
+		let nodeName = node.user?.longName ?? node.user?.shortName ?? node.num.toHex()
+		return "Coverage \(nodeName)"
+	}
+
+	private func coverageTransmitPower(for config: LoRaConfigEntity?) -> Double {
+		let configuredPower = config?.txPower ?? 0
+		return configuredPower > 0 ? Double(configuredPower) : 20.0
+	}
+
+	private func coverageFrequencyMHz(for config: LoRaConfigEntity?) -> Double {
+		if let overrideFrequency = config?.overrideFrequency, overrideFrequency > 0 {
+			return Double(overrideFrequency)
+		}
+
+		guard let region = RegionCodes(rawValue: Int(config?.regionCode ?? 0)) else {
+			return 907.0
+		}
+
+		switch region {
+		case .eu433, .anz433, .ua433, .my433, .ph433, .kz433:
+			return 433.0
+		case .eu868, .ua868, .ph868, .euN868:
+			return 868.0
+		case .eu866:
+			return 866.0
+		case .nz865, .np865, .`in`, .kz863:
+			return 865.0
+		case .eu874:
+			return 874.0
+		case .eu917:
+			return 917.0
+		case .my919:
+			return 919.0
+		case .jp, .kr, .tw, .th:
+			return 920.0
+		case .sg923:
+			return 923.0
+		case .cn:
+			return 470.0
+		case .ru:
+			return 868.0
+		case .lora24, .itu12M, .itu22M:
+			return 2_400.0
+		case .us, .anz, .ph915, .br902, .unset:
+			return 907.0
+		}
 	}
 }
 

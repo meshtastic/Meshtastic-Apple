@@ -221,6 +221,12 @@ struct MapSettingsForm: View {
 			// Initialize map data manager
 			mapDataManager.initialize()
 		}
+		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileImported)) { notification in
+			if let importedFileId = notification.object as? UUID {
+				mapOverlaysEnabled = true
+				enabledOverlayConfigs.insert(importedFileId)
+			}
+		}
 
 	}
 }

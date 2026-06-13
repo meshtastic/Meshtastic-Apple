@@ -6,6 +6,7 @@ struct MapDataFiles: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject private var mapDataManager = MapDataManager.shared
+	@AppStorage("sitePlannerCoverageEndpoint") private var sitePlannerCoverageEndpoint = ""
 
 	@State private var isShowingFilePicker = false
 	@State private var isProcessing = false
@@ -52,6 +53,16 @@ struct MapDataFiles: View {
 							.foregroundColor(.secondary)
 					}
 				}
+			}
+			Section(header: Text("Coverage Prediction")) {
+				Text("Generated node coverage uses a Site Planner-compatible endpoint that accepts node radio settings and returns GeoJSON contours.")
+					.font(.callout)
+					.foregroundColor(.secondary)
+
+				TextField("Site Planner API Endpoint", text: $sitePlannerCoverageEndpoint)
+					.keyboardType(.URL)
+					.textInputAutocapitalization(.never)
+					.autocorrectionDisabled()
 			}
 			Section(header: Text("Uploaded Map Overlays")) {
 

@@ -413,6 +413,11 @@ struct MeshMap: View {
 				enabledOverlayConfigs.remove(deletedFileId)
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileImported)) { notification in
+			if let importedFileId = notification.object as? UUID {
+				enabledOverlayConfigs.insert(importedFileId)
+			}
+		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didActivateNotification)) { _ in
 			refreshMapWindowOpenState()
 		}

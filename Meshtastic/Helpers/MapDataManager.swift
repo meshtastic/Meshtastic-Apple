@@ -70,34 +70,56 @@ class MapDataManager: ObservableObject {
 		// 2. Validate file
 		try validateFile(at: sourceURL)
 
-		// 2. Create directories if needed
+		let originalName = sourceURL.deletingPathExtension().lastPathComponent
+		let data = try Data(contentsOf: sourceURL)
+		return try await processGeoJSONData(
+			data,
+			originalName: originalName,
+			fileExtension: sourceURL.pathExtension,
+			makeActive: uploadedFiles.isEmpty
+		)
+	}
+
+	/// Process and store GeoJSON data from a remote source such as Meshtastic Site Planner contours.
+	func processGeoJSONData(_ data: Data, originalName: String, fileExtension: String = "geojson", makeActive: Bool = true) async throws -> MapDataMetadata {
+		guard Int64(data.count) <= maxFileSize else {
+			throw MapDataError.fileTooLarge
+		}
+
 		guard createDirectoriesIfNeeded() else {
 			throw MapDataError.directoryCreationFailed
 		}
 
-		// 3. Generate destination filename
+		let normalizedData: Data
+		do {
+			normalizedData = try SitePlannerCoverageClient.normalizedFeatureCollectionData(from: data)
+		} catch SitePlannerCoverageError.missingFeatureCollection {
+			throw MapDataError.invalidContent
+		}
+		_ = try getOverlayCount(from: normalizedData)
+
 		let timestamp = Date().timeIntervalSince1970
-		let originalName = sourceURL.deletingPathExtension().lastPathComponent
-		let fileExtension = sourceURL.pathExtension
-		let newFilename = "\(originalName)_\(Int(timestamp)).\(fileExtension)"
+		let sanitizedName = sanitizedFilenameComponent(originalName)
+		let sanitizedExtension = sanitizedFileExtension(fileExtension)
+		let newFilename = "\(sanitizedName)_\(Int(timestamp)).\(sanitizedExtension)"
 
 		guard let destURL = getUserUploadedDirectory()?.appendingPathComponent(newFilename) else {
 			throw MapDataError.invalidDestination
 		}
 
-		// 4. Copy file to app storage
-		try FileManager.default.copyItem(at: sourceURL, to: destURL)
+		try normalizedData.write(to: destURL, options: .atomic)
 
-		// 5. Process and validate content
-		let metadata = try await processFileContent(at: destURL, originalName: originalName)
+		let metadata = try await processFileContent(at: destURL, originalName: originalName, makeActive: makeActive)
 
-		// 6. Save metadata and update UI on main thread
 		await MainActor.run {
 			uploadedFiles.append(metadata)
-			// Clear cached configuration to force reload
 			activeFeatureCollection = nil
 		}
 		try saveMetadata()
+		GeoJSONOverlayManager.shared.clearCache()
+		await MainActor.run {
+			NotificationCenter.default.post(name: Foundation.Notification.Name.mapDataFileImported, object: metadata.id)
+		}
 
 		return metadata
 	}
@@ -125,23 +147,13 @@ class MapDataManager: ObservableObject {
 	}
 
 	/// Process file content and extract metadata
-	private func processFileContent(at url: URL, originalName: String) async throws -> MapDataMetadata {
+	private func processFileContent(at url: URL, originalName: String, makeActive: Bool) async throws -> MapDataMetadata {
 		let fileAttributes = try url.resourceValues(forKeys: [.fileSizeKey, .creationDateKey])
 		let fileSize = fileAttributes.fileSize ?? 0
 		let uploadDate = fileAttributes.creationDate ?? Date()
 
-		// Read and process file content on background queue
-		let (data, overlayCount) = try await withCheckedThrowingContinuation { continuation in
-			Task.detached {
-				do {
-					let data = try Data(contentsOf: url)
-					let overlayCount = try self.getOverlayCount(from: data)
-					continuation.resume(returning: (data, overlayCount))
-				} catch {
-					continuation.resume(throwing: error)
-				}
-			}
-		}
+		let data = try Data(contentsOf: url)
+		let overlayCount = try getOverlayCount(from: data)
 
 		// Validate GeoJSON schema
 		let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
@@ -158,14 +170,11 @@ class MapDataManager: ObservableObject {
 		// Validate each feature
 		for feature in features {
 			guard let geometry = feature["geometry"] as? [String: Any],
-				  let coordinates = geometry["coordinates"] as? [Any],
-				  let geometryType = geometry["type"] as? String else {
+				  geometry["coordinates"] is [Any],
+				  geometry["type"] is String else {
 				throw NSError(domain: "MapDataManager", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid feature structure in GeoJSON"])
 			}
 		}
-
-		// If this is the first file uploaded, make it active by default
-		let isFirstFile = uploadedFiles.isEmpty
 
 		return MapDataMetadata(
 			filename: url.lastPathComponent,
@@ -176,7 +185,7 @@ class MapDataManager: ObservableObject {
 			license: nil, // Will be extracted from content if available
 			attribution: nil, // Will be extracted from content if available
 			overlayCount: overlayCount,
-			isActive: isFirstFile
+			isActive: makeActive
 		)
 	}
 
@@ -188,6 +197,22 @@ class MapDataManager: ObservableObject {
 			return features.count
 		}
 		throw MapDataError.invalidContent
+	}
+
+	private func sanitizedFilenameComponent(_ value: String) -> String {
+		let allowedCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+		let sanitized = value.unicodeScalars.map { scalar in
+			allowedCharacters.contains(scalar) ? String(scalar) : "_"
+		}
+		.joined()
+		.trimmingCharacters(in: CharacterSet(charactersIn: "_"))
+		return sanitized.isEmpty ? "map_overlay" : sanitized
+	}
+
+	private func sanitizedFileExtension(_ value: String) -> String {
+		let lowercased = value.lowercased()
+		let allowedExtensions = ["json", "geojson"]
+		return allowedExtensions.contains(lowercased) ? lowercased : "geojson"
 	}
 
 	/// Load feature collection from a single file
@@ -466,4 +491,169 @@ enum MapDataError: Error, LocalizedError {
 // MARK: - Notification Names
 extension Foundation.Notification.Name {
 	static let mapDataFileDeleted = Foundation.Notification.Name("mapDataFileDeleted")
+	static let mapDataFileImported = Foundation.Notification.Name("mapDataFileImported")
+}
+
+struct SitePlannerCoverageClient: Sendable {
+	func generateContours(from endpoint: URL, request payload: SitePlannerCoverageRequest) async throws -> Data {
+		var request = URLRequest(url: endpoint)
+		request.httpMethod = "POST"
+		request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+		request.setValue("application/geo+json, application/json", forHTTPHeaderField: "Accept")
+		request.httpBody = try JSONEncoder().encode(payload)
+
+		let (data, response) = try await URLSession.shared.data(for: request)
+		if let httpResponse = response as? HTTPURLResponse,
+		   !(200...299).contains(httpResponse.statusCode) {
+			throw SitePlannerCoverageError.httpStatus(httpResponse.statusCode)
+		}
+		return try Self.normalizedFeatureCollectionData(from: data)
+	}
+
+	static func normalizedFeatureCollectionData(from data: Data) throws -> Data {
+		let jsonObject = try JSONSerialization.jsonObject(with: data)
+		guard let featureCollection = findFeatureCollection(in: jsonObject) else {
+			throw SitePlannerCoverageError.missingFeatureCollection
+		}
+
+		let normalizedData = try JSONSerialization.data(withJSONObject: featureCollection, options: [])
+		_ = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: normalizedData)
+		return normalizedData
+	}
+
+	private static func findFeatureCollection(in object: Any) -> [String: Any]? {
+		if let dictionary = object as? [String: Any] {
+			if dictionary["type"] as? String == "FeatureCollection",
+			   dictionary["features"] is [[String: Any]] {
+				return dictionary
+			}
+
+			let preferredKeys = ["geojson", "contours", "featureCollection", "coverage", "data", "result"]
+			for key in preferredKeys {
+				if let value = dictionary[key],
+				   let featureCollection = findFeatureCollection(in: value) {
+					return featureCollection
+				}
+			}
+
+			for value in dictionary.values {
+				if let featureCollection = findFeatureCollection(in: value) {
+					return featureCollection
+				}
+			}
+		}
+
+		if let features = object as? [[String: Any]],
+		   !features.isEmpty,
+		   features.allSatisfy(isGeoJSONFeature) {
+			return ["type": "FeatureCollection", "features": features]
+		}
+
+		return nil
+	}
+
+	private static func isGeoJSONFeature(_ object: [String: Any]) -> Bool {
+		object["type"] as? String == "Feature" && object["geometry"] is [String: Any]
+	}
+}
+
+/// Meshtastic Site Planner's legacy coverage request shape.
+///
+/// The Site Planner repository currently computes locally, but documents this
+/// payload as the shape a hosted contour endpoint can consume before returning
+/// `coverageContours()` GeoJSON.
+struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
+	var lat: Double
+	var lon: Double
+	var txHeight: Double
+	var txPower: Double
+	var txGain: Double
+	var systemLoss: Double
+	var frequencyMHz: Double
+	var rxHeight: Double
+	var clutterHeight: Double
+	var groundDielectric: Double
+	var groundConductivity: Double
+	var atmosphereBending: Double
+	var radioClimate: String
+	var polarization: String
+	var radius: Double
+	var situationFraction: Double
+	var timeFraction: Double
+	var highResolution: Bool
+
+	enum CodingKeys: String, CodingKey {
+		case lat
+		case lon
+		case txHeight = "tx_height"
+		case txPower = "tx_power"
+		case txGain = "tx_gain"
+		case systemLoss = "system_loss"
+		case frequencyMHz = "frequency_mhz"
+		case rxHeight = "rx_height"
+		case clutterHeight = "clutter_height"
+		case groundDielectric = "ground_dielectric"
+		case groundConductivity = "ground_conductivity"
+		case atmosphereBending = "atmosphere_bending"
+		case radioClimate = "radio_climate"
+		case polarization
+		case radius
+		case situationFraction = "situation_fraction"
+		case timeFraction = "time_fraction"
+		case highResolution = "high_resolution"
+	}
+
+	init(
+		lat: Double,
+		lon: Double,
+		txHeight: Double = 2.0,
+		txPower: Double = 20.0,
+		txGain: Double = 2.0,
+		systemLoss: Double = 2.0,
+		frequencyMHz: Double = 907.0,
+		rxHeight: Double = 1.0,
+		clutterHeight: Double = 1.0,
+		groundDielectric: Double = 15.0,
+		groundConductivity: Double = 0.005,
+		atmosphereBending: Double = 301.0,
+		radioClimate: String = "continental_temperate",
+		polarization: String = "vertical",
+		radius: Double = 30_000.0,
+		situationFraction: Double = 95.0,
+		timeFraction: Double = 95.0,
+		highResolution: Bool = false
+	) {
+		self.lat = lat
+		self.lon = lon
+		self.txHeight = txHeight
+		self.txPower = txPower
+		self.txGain = txGain
+		self.systemLoss = systemLoss
+		self.frequencyMHz = frequencyMHz
+		self.rxHeight = rxHeight
+		self.clutterHeight = clutterHeight
+		self.groundDielectric = groundDielectric
+		self.groundConductivity = groundConductivity
+		self.atmosphereBending = atmosphereBending
+		self.radioClimate = radioClimate
+		self.polarization = polarization
+		self.radius = radius
+		self.situationFraction = situationFraction
+		self.timeFraction = timeFraction
+		self.highResolution = highResolution
+	}
+}
+
+enum SitePlannerCoverageError: Error, LocalizedError {
+	case httpStatus(Int)
+	case missingFeatureCollection
+
+	var errorDescription: String? {
+		switch self {
+		case .httpStatus(let statusCode):
+			return "Site Planner request failed with HTTP \(statusCode)."
+		case .missingFeatureCollection:
+			return "Site Planner response did not contain GeoJSON contours."
+		}
+	}
 }

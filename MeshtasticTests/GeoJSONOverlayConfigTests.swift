@@ -144,6 +144,81 @@ struct RFGeoJSONOverlayTests {
 		#expect(styledFeature.createOverlays().count == 2)
 		#expect(styledFeature.createOverlays().allSatisfy { $0.overlay is MKPolygon })
 	}
+
+	@Test func normalizesSitePlannerContourResponseWrapper() throws {
+		let data = """
+		{
+			"contours": {
+				"type": "FeatureCollection",
+				"features": [
+					{
+						"type": "Feature",
+						"properties": {
+							"dbm": -118,
+							"color": "rgb(125, 50, 168)",
+							"label": ">= -118 dBm"
+						},
+						"geometry": {
+							"type": "MultiPolygon",
+							"coordinates": [
+								[
+									[
+										[-121.0, 37.0],
+										[-121.0, 37.1],
+										[-120.9, 37.1],
+										[-120.9, 37.0],
+										[-121.0, 37.0]
+									]
+								]
+							]
+						}
+					}
+				]
+			}
+		}
+		""".data(using: .utf8)!
+
+		let normalizedData = try SitePlannerCoverageClient.normalizedFeatureCollectionData(from: data)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: normalizedData)
+		let feature = try #require(collection.features.first)
+
+		#expect(collection.type == "FeatureCollection")
+		#expect(collection.features.count == 1)
+		#expect(feature.geometry.type == "MultiPolygon")
+		#expect(feature.rfPredictionColor == "rgb(125, 50, 168)")
+		#expect(feature.dbm == -118)
+	}
+
+	@Test func encodesSitePlannerCoverageRequestShape() throws {
+		let request = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txPower: 22.0,
+			frequencyMHz: 915.0
+		)
+
+		let data = try JSONEncoder().encode(request)
+		let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+		#expect(object?["lat"] as? Double == 37.3349)
+		#expect(object?["lon"] as? Double == -122.0090)
+		#expect(object?["tx_height"] as? Double == 2.0)
+		#expect(object?["tx_power"] as? Double == 22.0)
+		#expect(object?["tx_gain"] as? Double == 2.0)
+		#expect(object?["system_loss"] as? Double == 2.0)
+		#expect(object?["frequency_mhz"] as? Double == 915.0)
+		#expect(object?["rx_height"] as? Double == 1.0)
+		#expect(object?["clutter_height"] as? Double == 1.0)
+		#expect(object?["ground_dielectric"] as? Double == 15.0)
+		#expect(object?["ground_conductivity"] as? Double == 0.005)
+		#expect(object?["atmosphere_bending"] as? Double == 301.0)
+		#expect(object?["radio_climate"] as? String == "continental_temperate")
+		#expect(object?["polarization"] as? String == "vertical")
+		#expect(object?["radius"] as? Double == 30_000.0)
+		#expect(object?["situation_fraction"] as? Double == 95.0)
+		#expect(object?["time_fraction"] as? Double == 95.0)
+		#expect(object?["high_resolution"] as? Bool == false)
+	}
 }
 
 // MARK: - AnyCodableValue toAnyObject Tests
