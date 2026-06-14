@@ -9,6 +9,7 @@ struct DeviceOnboarding: View {
 	enum SetupGuide: Hashable {
 		case notifications
 		case location
+		case backgroundActivity
 		case bluetooth
 		case localNetwork
 		case siri
@@ -181,22 +182,6 @@ struct DeviceOnboarding: View {
 						UserDefaults.enableSmartPosition = true
 					}
 					makeRow(
-						icon: "location.fill",
-						title: String(localized: "Continuous Location Updates"),
-						subtitle: String(localized: "Keep the mesh map updated and send your position to the mesh even while using other apps.")
-					)
-					Toggle(isOn: $locationsHandler.backgroundActivity) {
-						Label {
-							Text("Enable Background Activity")
-						} icon: {
-							Image(systemName: "location.circle.fill")
-						}
-					}
-					.fixedSize()
-					.scaleEffect(0.85)
-					.padding(.leading, 52)
-					.tint(.accentColor)
-					makeRow(
 						icon: "lines.measurement.horizontal",
 						title: String(localized: "Distance Measurements"),
 						subtitle: String(localized: "Display the distance between your phone and other Meshtastic nodes with positions.")
@@ -229,6 +214,64 @@ struct DeviceOnboarding: View {
 		}
 	}
 	
+	var backgroundActivityView: some View {
+		VStack {
+			ScrollView(.vertical) {
+				VStack {
+					Text("Background Activity")
+						.font(.largeTitle.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+				.padding(.horizontal)
+				VStack(alignment: .leading, spacing: 16) {
+					Text(createBackgroundActivityString())
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
+					makeRow(
+						icon: "location.fill",
+						title: String(localized: "Continuous Location Updates"),
+						subtitle: String(localized: "Keep the mesh map updated and send your position to the mesh even while using other apps.")
+					)
+					makeRow(
+						icon: "antenna.radiowaves.left.and.right",
+						title: String(localized: "Background Mesh Tracking"),
+						subtitle: String(localized: "Receive position updates from other nodes and maintain an accurate picture of the mesh while in the background.")
+					)
+					makeRow(
+						icon: "battery.100.bolt",
+						title: String(localized: "Battery Usage"),
+						subtitle: String(localized: "Enabling background activity may increase battery usage. You can toggle this at any time in the app settings.")
+					)
+					Toggle(isOn: $locationsHandler.backgroundActivity) {
+						Label {
+							Text("Enable Background Activity")
+						} icon: {
+							Image(systemName: "location.circle.fill")
+						}
+					}
+					.fixedSize()
+					.scaleEffect(0.85)
+					.padding(.leading, 52)
+					.tint(.accentColor)
+				}
+				.padding()
+			}
+			Spacer()
+			Button {
+				Task {
+					await goToNextStep(after: .backgroundActivity)
+				}
+			} label: {
+				Text("Continue")
+					.frame(maxWidth: 400)
+			}
+			.capsuleButtonStyle()
+			.padding(.bottom)
+		}
+	}
+
 	var localNetworkView: some View {
 		VStack {
 			ScrollView(.vertical) {
@@ -387,6 +430,8 @@ struct DeviceOnboarding: View {
 						notificationView
 					case .location:
 						locationView
+					case .backgroundActivity:
+						backgroundActivityView
 					case .bluetooth:
 						bluetoothView
 					case .localNetwork:
@@ -483,7 +528,7 @@ struct DeviceOnboarding: View {
 				return .location
 			}
 			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
-				return .bluetooth
+				return .backgroundActivity
 			}
 			return nil
 		case .notifications:
@@ -491,10 +536,15 @@ struct DeviceOnboarding: View {
 				return .location
 			}
 			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
-				return .bluetooth
+				return .backgroundActivity
 			}
 			return nil
 		case .location:
+			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
+				return .backgroundActivity
+			}
+			return .bluetooth
+		case .backgroundActivity:
 			return .bluetooth
 		case .bluetooth:
 			return .localNetwork
@@ -531,6 +581,15 @@ struct DeviceOnboarding: View {
 		return fullText
 	}
 	
+	func createBackgroundActivityString() -> AttributedString {
+		var fullText = AttributedString(localized: "Meshtastic can continue tracking the mesh and updating your location while running in the background. You can update background activity permissions at any time from settings.")
+		if let range = fullText.range(of: String(localized: "settings")) {
+			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
+			fullText[range].foregroundColor = .blue
+		}
+		return fullText
+	}
+
 	func createLocalNetworkString() -> AttributedString {
 		var fullText = AttributedString("Meshtastic accesses your local network to connect to TCP-based accessories.  You can update the local network permissions at any time from settings.")
 		if let range = fullText.range(of: "settings") {
