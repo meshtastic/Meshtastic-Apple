@@ -41,6 +41,10 @@ struct NodeInfoItem: View {
 		node.user?.hwDisplayName ?? node.user?.hwModel ?? "Unknown"
 	}
 
+	private var isPortduino: Bool {
+		node.user?.hwModel == "PORTDUINO"
+	}
+
 	private var supportLevel: SupportLevel {
 		guard let device = hardware.first else { return .discontinued }
 		return SupportLevel(rawValue: device.supportLevel) ?? .discontinued
@@ -48,6 +52,7 @@ struct NodeInfoItem: View {
 
 	private var sectionTitle: String {
 		if node.user?.hwModel == "UNSET" { return "Hardware" }
+		if isPortduino { return "Community Hardware" }
 		switch supportLevel {
 		case .flagship:
 			return "Supported Hardware"
@@ -109,6 +114,25 @@ struct NodeInfoItem: View {
 					Text(modelName)
 						.font(.subheadline)
 						.foregroundStyle(.secondary)
+					Spacer()
+					supportRosette
+						.font(.title2)
+				}
+				.listRowSeparator(.hidden)
+			} else if isPortduino {
+				// MARK: - Portduino / Linux (community-supported, no firmware)
+				HStack(spacing: 16) {
+					DeviceHardwareImage(platformioTarget: "native")
+						.frame(width: 60, height: 60)
+						.cornerRadius(8)
+					VStack(alignment: .leading, spacing: 4) {
+						Text(modelName)
+							.font(.subheadline)
+							.foregroundStyle(.secondary)
+						Text("Community supported Linux device.")
+							.font(.caption)
+							.foregroundStyle(.tertiary)
+					}
 					Spacer()
 					supportRosette
 						.font(.title2)
