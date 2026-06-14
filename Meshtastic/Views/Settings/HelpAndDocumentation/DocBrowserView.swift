@@ -127,7 +127,13 @@ struct DocBrowserView: View {
 							}
 						}
 					}
+					// .sidebar is required on Mac Catalyst for Section(isExpanded:)
+					// collapsible behaviour — .insetGrouped silently drops the toggle.
+					#if targetEnvironment(macCatalyst)
+					.listStyle(.sidebar)
+					#else
 					.listStyle(.insetGrouped)
+					#endif
 				}
 			}
 		}
