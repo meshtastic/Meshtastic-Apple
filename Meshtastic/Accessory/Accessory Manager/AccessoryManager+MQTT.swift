@@ -11,11 +11,11 @@ import OSLog
 @preconcurrency import SwiftData
 import MeshtasticProtobufs
 
-// Serialises MQTT-sourced BLE writes and enforces a per-packet minimum interval.
-// CocoaMQTT calls its delegate on a background thread; this actor gates entry so
-// at most one forwarded packet is in-flight over BLE at any time. Packets that
-// arrive while a write is in progress are dropped rather than queued, which
-// prevents the device's firmware from being overwhelmed by global broker traffic.
+// Serialises MQTT-sourced BLE writes by allowing at most one forwarded packet
+// in-flight over BLE at any time. CocoaMQTT calls its delegate on a background
+// thread; this actor gates entry and drops packets that arrive while a write is
+// already in progress rather than queuing them, preventing the device firmware
+// from being overwhelmed by global broker traffic.
 actor MqttForwardGate {
 	private var busy = false
 
@@ -34,7 +34,7 @@ actor MqttForwardGate {
 extension AccessoryManager {
 
 	// One shared gate — drops concurrent MQTT→BLE writes instead of queuing them.
-	nonisolated(unsafe) static let mqttForwardGate = MqttForwardGate()
+	static let mqttForwardGate = MqttForwardGate()
 
 	func initializeMqtt() async {
 		guard let deviceNum = activeConnection?.device.num else {
