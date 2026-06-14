@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Body -->
+  <ellipse cx="100" cy="130" rx="52" ry="60" fill="#1a1a1a"/>
+  <!-- White belly -->
+  <ellipse cx="100" cy="140" rx="30" ry="42" fill="#f5f5f5"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="68" rx="42" ry="44" fill="#1a1a1a"/>
+  <!-- Eyes -->
+  <ellipse cx="88" cy="62" rx="10" ry="11" fill="white"/>
+  <ellipse cx="112" cy="62" rx="10" ry="11" fill="white"/>
+  <circle cx="89" cy="63" r="6" fill="#1a1a1a"/>
+  <circle cx="113" cy="63" r="6" fill="#1a1a1a"/>
+  <circle cx="91" cy="61" r="2" fill="white"/>
+  <circle cx="115" cy="61" r="2" fill="white"/>
+  <!-- Beak -->
+  <polygon points="100,76 91,85 109,85" fill="#f5a623"/>
+  <!-- Feet -->
+  <ellipse cx="82" cy="188" rx="20" ry="9" fill="#f5a623"/>
+  <ellipse cx="118" cy="188" rx="20" ry="9" fill="#f5a623"/>
+  <!-- Meshtastic antenna signal dots -->
+  <circle cx="152" cy="40" r="5" fill="#67ea94"/>
+  <circle cx="165" cy="28" r="4" fill="#67ea94" opacity="0.7"/>
+  <circle cx="178" cy="16" r="3" fill="#67ea94" opacity="0.4"/>
+</svg>
