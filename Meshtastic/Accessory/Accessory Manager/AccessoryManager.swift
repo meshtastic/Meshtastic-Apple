@@ -343,6 +343,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		await wantDatabaseGate.cancelAll()
 		await wantDatabaseGate.reset()
 
+		// Stop the MQTT proxy so it doesn't forward broker packets over BLE during reconnect,
+		// which would starve the wantConfig handshake. initializeMqtt() restarts it in Step 8.
+		if mqttProxyConnected {
+			mqttManager.mqttClientProxy?.disconnect()
+		}
+
 		// Save any pending changes and let SwiftData manage object lifecycle on disconnect.
 		try? context.save()
 		Logger.data.info("💾 [AccessoryManager] Saved context on disconnect")

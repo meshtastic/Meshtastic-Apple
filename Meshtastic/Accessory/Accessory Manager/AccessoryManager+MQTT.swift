@@ -11,7 +11,30 @@ import OSLog
 @preconcurrency import SwiftData
 import MeshtasticProtobufs
 
+// Serialises MQTT-sourced BLE writes and enforces a per-packet minimum interval.
+// CocoaMQTT calls its delegate on a background thread; this actor gates entry so
+// at most one forwarded packet is in-flight over BLE at any time. Packets that
+// arrive while a write is in progress are dropped rather than queued, which
+// prevents the device's firmware from being overwhelmed by global broker traffic.
+actor MqttForwardGate {
+	private var busy = false
+
+	// Returns true if the caller should proceed, false if it should drop the packet.
+	func tryAcquire() -> Bool {
+		guard !busy else { return false }
+		busy = true
+		return true
+	}
+
+	func release() {
+		busy = false
+	}
+}
+
 extension AccessoryManager {
+
+	// One shared gate — drops concurrent MQTT→BLE writes instead of queuing them.
+	nonisolated(unsafe) static let mqttForwardGate = MqttForwardGate()
 
 	func initializeMqtt() async {
 		guard let deviceNum = activeConnection?.device.num else {
@@ -71,6 +94,7 @@ extension AccessoryManager {
 
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
 		if message.topic.contains("/stat/") {
+			Logger.services.debug("📲 [MQTT] dropping /stat/ message on \(message.topic, privacy: .public)")
 			return
 		}
 
@@ -82,10 +106,13 @@ extension AccessoryManager {
 		let forwardData: Data
 		if var envelope = try? ServiceEnvelope(serializedData: rawData),
 		   envelope.hasPacket, envelope.packet.hopLimit > 0 {
+			let original = envelope.packet.hopLimit
 			envelope.packet.hopLimit = 0
 			forwardData = (try? envelope.serializedData()) ?? rawData
+			Logger.services.info("📲 [MQTT] forwarding \(message.topic, privacy: .public) — zeroed hop_limit \(original, privacy: .public)→0 bytes=\(rawData.count, privacy: .public)")
 		} else {
 			forwardData = rawData
+			Logger.services.info("📲 [MQTT] forwarding \(message.topic, privacy: .public) — hop_limit already 0 or non-envelope bytes=\(rawData.count, privacy: .public)")
 		}
 
 		var proxyMessage = MqttClientProxyMessage()
@@ -95,7 +122,18 @@ extension AccessoryManager {
 
 		var toRadio = ToRadio()
 		toRadio.mqttClientProxyMessage = proxyMessage
+
+		// Gate: drop this packet if a previous MQTT→BLE write is still in-flight.
+		// The public broker can deliver global LongFast traffic faster than BLE can
+		// drain it. Queuing every packet would overwhelm the device's radio stack;
+		// dropping excess is preferable to building an unbounded BLE write backlog.
 		Task {
+			let gate = AccessoryManager.mqttForwardGate
+			guard await gate.tryAcquire() else {
+				Logger.services.debug("📲 [MQTT] drop (BLE write in-flight): \(message.topic, privacy: .public)")
+				return
+			}
+			defer { Task { await gate.release() } }
 			try? await self.send(toRadio)
 		}
 	}
