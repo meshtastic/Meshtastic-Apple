@@ -23,9 +23,11 @@ class MqttClientProxyManager {
 	private static let defaultKeepAliveInterval: Int32 = 60
 	weak var delegate: MqttClientProxyManagerDelegate?
 	var mqttClientProxy: CocoaMQTT?
-	var topic = "msh"
+	/// Per-channel subscription topics built in `connectFromConfigSettings`.
+	/// Mirrors Android: one `prefix/2/e/<channelName>/+` per downlink-enabled channel,
+	/// plus `prefix/2/e/PKI/+` which is always subscribed.
+	var topics: [String] = []
 	var debugLog = false
-	var shouldSubscribe = true
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		let originalAddress = node.mqttConfig?.address ?? "mqtt.meshtastic.org"
 		let defaultServerAddress = "mqtt.meshtastic.org"
@@ -44,24 +46,34 @@ class MqttClientProxyManager {
 		let port = defaultServerPort
 		let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 		let prefix = root!
-		let hasAnyDownlinkEnabled = node.myInfo?.channels.contains { $0.downlinkEnabled } ?? false
-		
-		shouldSubscribe = hasAnyDownlinkEnabled
-		
-		topic = prefix + "/2/e" + "/#"
+
+		// Build per-channel subscription topics (mirrors Android MQTTRepositoryImpl):
+		// - one topic per downlink-enabled channel: prefix/2/e/<channelName>/+
+		// - PKI channel is always subscribed regardless of downlink settings
+		var newTopics: [String] = []
+		for channel in node.myInfo?.channels ?? [] {
+			if channel.downlinkEnabled, let name = channel.name, !name.isEmpty {
+				newTopics.append(prefix + "/2/e/" + name + "/+")
+			}
+		}
+		newTopics.append(prefix + "/2/e/PKI/+")
+		topics = newTopics
+
 		// Require opt in to map report terms to connect
 		if node.mqttConfig?.mapReportingEnabled ?? false && UserDefaults.mapReportingOptIn || !(node.mqttConfig?.mapReportingEnabled ?? false) {
-			connect(host: host, port: port, useSsl: useSsl, topic: topic, node: node)
+			connect(host: host, port: port, useSsl: useSsl, node: node)
 		} else {
 			delegate?.onMqttError(message: "MQTT Map Reporting Terms need to be accepted.")
 		}
 	}
-	func connect(host: String, port: Int, useSsl: Bool, topic: String?, node: NodeInfoEntity) {
+	func connect(host: String, port: Int, useSsl: Bool, node: NodeInfoEntity) {
 		guard !host.isEmpty else {
 			delegate?.onMqttDisconnected()
 			return
 		}
-		let clientId = "MeshtasticAppleMqttProxy-" + (node.user?.userId ?? String(ProcessInfo().processIdentifier))
+		// UUID suffix prevents SESSION_TAKEN_OVER when multiple clients share the same node ID
+		// (mirrors Android: "MeshtasticAndroidMqttProxy-<nodeId>-<uuid>")
+		let clientId = "MeshtasticAppleMqttProxy-" + (node.user?.userId ?? String(ProcessInfo().processIdentifier)) + "-" + UUID().uuidString
 		mqttClientProxy = CocoaMQTT(clientID: clientId, host: host, port: UInt16(port))
 		if let mqttClient = mqttClientProxy {
 			mqttClient.enableSSL = useSsl

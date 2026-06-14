@@ -420,7 +420,7 @@ struct ChannelMessageList: View {
 						mqttProxyConnected: accessoryManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
 						mqttUplinkEnabled: channel.uplinkEnabled,
 						mqttDownlinkEnabled: channel.downlinkEnabled,
-						mqttTopic: accessoryManager.mqttManager.topic
+						mqttTopic: accessoryManager.mqttManager.topics.first(where: { $0.contains("/2/e/\(channel.name ?? "")") }) ?? accessoryManager.mqttManager.topics.first ?? ""
 					)
 				}
 			}
