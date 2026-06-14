@@ -55,11 +55,12 @@ extension AccessoryManager {
 	func onMqttConnected() {
 		mqttProxyConnected = true
 		mqttError = ""
-		if mqttManager.shouldSubscribe {
-			Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected now subscribing to \(self.mqttManager.topic, privacy: .public).")
-			mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
-		} else {
-			Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected not subscribing since downlink is not on")
+		for topic in mqttManager.topics {
+			Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected subscribing to \(topic, privacy: .public).")
+			mqttManager.mqttClientProxy?.subscribe(topic, qos: .qos1)
+		}
+		if mqttManager.topics.isEmpty {
+			Logger.services.info("📲 [MQTT Client Proxy] onMqttConnected - no topics to subscribe to")
 		}
 	}
 
@@ -72,13 +73,27 @@ extension AccessoryManager {
 		if message.topic.contains("/stat/") {
 			return
 		}
+
+		// Clamp hop_limit to 0 on downlink ServiceEnvelopes before forwarding to
+		// the device. Packets with hop_limit > 0 would be re-broadcast over RF,
+		// flooding the mesh with traffic that arrived via MQTT. hop_start is
+		// preserved so receivers can still compute how far the packet travelled.
+		let rawData = Data(message.payload)
+		let forwardData: Data
+		if var envelope = try? ServiceEnvelope(serializedData: rawData),
+		   envelope.hasPacket, envelope.packet.hopLimit > 0 {
+			envelope.packet.hopLimit = 0
+			forwardData = (try? envelope.serializedData()) ?? rawData
+		} else {
+			forwardData = rawData
+		}
+
 		var proxyMessage = MqttClientProxyMessage()
 		proxyMessage.topic = message.topic
-		proxyMessage.data = Data(message.payload)
+		proxyMessage.data = forwardData
 		proxyMessage.retained = message.retained
 
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
+		var toRadio = ToRadio()
 		toRadio.mqttClientProxyMessage = proxyMessage
 		Task {
 			try? await self.send(toRadio)
