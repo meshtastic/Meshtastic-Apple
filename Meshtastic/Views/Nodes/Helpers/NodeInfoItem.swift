@@ -134,8 +134,7 @@ struct NodeInfoItem: View {
 							.foregroundStyle(.tertiary)
 					}
 					Spacer()
-					Image(systemName: "person.2.fill")
-						.foregroundStyle(.green)
+					supportRosette
 						.font(.title2)
 				}
 				.listRowSeparator(.hidden)
