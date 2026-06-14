@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Jun 2026** — [MQTT](mqtt.md) — MQTT client proxy improvements: per-channel downlink subscriptions, zero-hop injection to prevent RF re-broadcast, password masking, and removal of the deprecated JSON mode toggle.
+
 **Jun 2026** — [Settings](settings.md) — Packet Stream: watch mesh packets cross the network live in the Debug Logs view, paced for readability, with collapsible Categories and Log Levels filters.
 
 **May 2026** — [Settings](settings.md) — Audio Module Config: Codec2 voice communication settings, only available on 2.4 GHz radios (LORA_24 region).
