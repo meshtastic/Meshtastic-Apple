@@ -12,6 +12,19 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 
 	@Published var series: [MetricsChartSeries]
 
+	/// Namespace under which each series' `visible` flag is persisted. When `nil`, visibility is
+	/// not saved (the default for the collection-conformance initializers).
+	private let persistenceKey: String?
+	/// Backing store for persisted visibility. Defaults to `.standard`; tests inject an isolated suite.
+	private let store: UserDefaults
+
+	init(persistenceKey: String? = nil, series: [MetricsChartSeries], store: UserDefaults = .standard) {
+		self.series = series
+		self.persistenceKey = persistenceKey
+		self.store = store
+		applyPersistedVisibility()
+	}
+
 	var visible: [MetricsChartSeries] {
 		return series.filter { $0.visible }
 	}
@@ -20,7 +33,33 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		if series.contains(aSeries) {
 			self.objectWillChange.send()
 			aSeries.visible.toggle()
+			persistVisibility()
 		}
+	}
+
+	private var storageKey: String? {
+		persistenceKey.map { "metricsSeriesVisibility.\($0)" }
+	}
+
+	/// Restores each series' `visible` flag from the store. Series absent from the saved map
+	/// (e.g. added in a later app version) keep their default visibility.
+	private func applyPersistedVisibility() {
+		guard let storageKey, let stored = store.dictionary(forKey: storageKey) as? [String: Bool] else { return }
+		for aSeries in series {
+			if let isVisible = stored[aSeries.id] {
+				aSeries.visible = isVisible
+			}
+		}
+	}
+
+	/// Persists the current visibility of every series so it survives the view being recreated.
+	private func persistVisibility() {
+		guard let storageKey else { return }
+		var map: [String: Bool] = [:]
+		for aSeries in series {
+			map[aSeries.id] = aSeries.visible
+		}
+		store.set(map, forKey: storageKey)
 	}
 
 	func foregroundStyle<T>(forName: String, chartRange: ClosedRange<T>? = nil) -> AnyShapeStyle? where T: BinaryFloatingPoint {
@@ -122,9 +161,15 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 	typealias Element = MetricsChartSeries
 	typealias SubSequence = ArraySlice<Element>
 
-	required init() { series = [] }
+	required init() {
+		series = []
+		persistenceKey = nil
+		store = .standard
+	}
 	required init<S: Sequence>(_ series: S) where S.Element == Element {
 		self.series = Array(series)
+		persistenceKey = nil
+		store = .standard
 	}
 
 	var startIndex: Int { series.startIndex }

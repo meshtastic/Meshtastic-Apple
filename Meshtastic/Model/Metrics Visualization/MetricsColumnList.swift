@@ -10,8 +10,17 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 
 	@Published var columns: [MetricsTableColumn]
 
-	init(columns: [MetricsTableColumn]) {
+	/// Namespace under which each column's `visible` flag is persisted. When `nil`, visibility is
+	/// not saved (the default for the collection-conformance initializers).
+	private let persistenceKey: String?
+	/// Backing store for persisted visibility. Defaults to `.standard`; tests inject an isolated suite.
+	private let store: UserDefaults
+
+	init(persistenceKey: String? = nil, columns: [MetricsTableColumn], store: UserDefaults = .standard) {
 		self.columns = columns
+		self.persistenceKey = persistenceKey
+		self.store = store
+		applyPersistedVisibility()
 	}
 
 	var visible: [MetricsTableColumn] {
@@ -22,7 +31,33 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 		if columns.contains(column) {
 			self.objectWillChange.send()
 			column.visible.toggle()
+			persistVisibility()
 		}
+	}
+
+	private var storageKey: String? {
+		persistenceKey.map { "metricsColumnVisibility.\($0)" }
+	}
+
+	/// Restores each column's `visible` flag from the store. Columns absent from the saved map
+	/// (e.g. added in a later app version) keep their default visibility.
+	private func applyPersistedVisibility() {
+		guard let storageKey, let stored = store.dictionary(forKey: storageKey) as? [String: Bool] else { return }
+		for column in columns {
+			if let isVisible = stored[column.id] {
+				column.visible = isVisible
+			}
+		}
+	}
+
+	/// Persists the current visibility of every column so it survives the view being recreated.
+	private func persistVisibility() {
+		guard let storageKey else { return }
+		var map: [String: Bool] = [:]
+		for column in columns {
+			map[column.id] = column.visible
+		}
+		store.set(map, forKey: storageKey)
 	}
 
 	var gridItems: [GridItem] {
@@ -52,9 +87,15 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 	typealias Element = MetricsTableColumn
 	typealias SubSequence = ArraySlice<Element>
 
-	required init() { columns = [] }
+	required init() {
+		columns = []
+		persistenceKey = nil
+		store = .standard
+	}
 	required init<S: Sequence>(_ columns: S) where S.Element == Element {
 		self.columns = Array(columns)
+		persistenceKey = nil
+		store = .standard
 	}
 
 	var startIndex: Int { columns.startIndex }
