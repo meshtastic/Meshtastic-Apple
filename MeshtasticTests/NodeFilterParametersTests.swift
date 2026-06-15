@@ -68,15 +68,16 @@ struct NodeFilterParametersTests {
 		#expect(filters.deviceRoles == Set(expectedRoles))
 	}
 
-	// MARK: - @AppStorage Persistence Tests
+	// MARK: - Persistence Tests
 
-	@Test("Search text persists across instances")
-	func searchTextPersistence() {
+	@Test("Search text is not persisted across instances")
+	func searchTextIsNotPersisted() {
 		let filters1 = NodeFilterParameters(store: defaults)
 		filters1.searchText = "Test Node"
 
+		// searchText is intentionally session-only — a stale search on relaunch hides most nodes.
 		let filters2 = NodeFilterParameters(store: defaults)
-		#expect(filters2.searchText == "Test Node")
+		#expect(filters2.searchText == "")
 	}
 
 	@Test("Boolean filters persist across instances")
@@ -303,32 +304,29 @@ struct NodeFilterParametersTests {
 		#expect(newFilters.hopsAway == 0.0)
 	}
 
-	@Test("Special characters in search text persist")
+	@Test("Special characters in search text round-trip")
 	func specialCharactersInSearchText() {
 		let filters = NodeFilterParameters(store: defaults)
 		filters.searchText = "Test!@#$%^&*()_+-=[]{}|;':\",./<>?"
 
-		let newFilters = NodeFilterParameters(store: defaults)
-		#expect(newFilters.searchText == "Test!@#$%^&*()_+-=[]{}|;':\",./<>?")
+		#expect(filters.searchText == "Test!@#$%^&*()_+-=[]{}|;':\",./<>?")
 	}
 
-	@Test("Unicode in search text persists")
+	@Test("Unicode in search text round-trips")
 	func unicodeInSearchText() {
 		let filters = NodeFilterParameters(store: defaults)
 		filters.searchText = "测试 Тест 🎉🚀"
 
-		let newFilters = NodeFilterParameters(store: defaults)
-		#expect(newFilters.searchText == "测试 Тест 🎉🚀")
+		#expect(filters.searchText == "测试 Тест 🎉🚀")
 	}
 
-	@Test("Long search text persists")
+	@Test("Long search text round-trips")
 	func longSearchText() {
 		let filters = NodeFilterParameters(store: defaults)
 		let longText = String(repeating: "A", count: 1000)
 		filters.searchText = longText
 
-		let newFilters = NodeFilterParameters(store: defaults)
-		#expect(newFilters.searchText == longText)
+		#expect(filters.searchText == longText)
 	}
 
 	@Test("Large device roles set persists")
@@ -343,7 +341,7 @@ struct NodeFilterParametersTests {
 
 	// MARK: - Reset/Clear Tests
 
-	@Test("Resetting all filters restores defaults")
+	@Test("reset() restores defaults and clears persisted values")
 	func resetAllFilters() {
 		let filters = NodeFilterParameters(store: defaults)
 
@@ -361,24 +359,25 @@ struct NodeFilterParametersTests {
 		filters.deviceRoles = [1, 2, 3]
 		filters.viaLora = false
 
-		// Reset to defaults
-		filters.searchText = ""
-		filters.isOnline = false
-		filters.isPkiEncrypted = false
-		filters.isFavorite = false
-		filters.isIgnored = false
-		filters.isEnvironment = false
-		filters.distanceFilter = false
-		filters.maxDistance = 800_000
-		filters.hopsAway = -1.0
-		filters.roleFilter = false
-		filters.deviceRoles = []
-		filters.viaLora = true
-		filters.viaMqtt = true
+		filters.reset()
 
-		// Verify all are back to defaults
+		// In-memory values are back to defaults
+		#expect(filters.searchText == "")
+		#expect(filters.isOnline == false)
+		#expect(filters.isPkiEncrypted == false)
+		#expect(filters.isFavorite == false)
+		#expect(filters.isIgnored == false)
+		#expect(filters.isEnvironment == false)
+		#expect(filters.distanceFilter == false)
+		#expect(filters.maxDistance == 800_000)
+		#expect(filters.hopsAway == -1.0)
+		#expect(filters.roleFilter == false)
+		#expect(filters.deviceRoles.isEmpty)
+		#expect(filters.viaLora == true)
+		#expect(filters.viaMqtt == true)
+
+		// reset() persists the defaults, so a fresh instance loads them too
 		let newFilters = NodeFilterParameters(store: defaults)
-		#expect(newFilters.searchText == "")
 		#expect(newFilters.isOnline == false)
 		#expect(newFilters.isPkiEncrypted == false)
 		#expect(newFilters.isFavorite == false)
