@@ -1529,6 +1529,7 @@ extension MeshPackets {
 					fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled
 					fetchedNode[0].mqttConfig?.tlsEnabled = config.tlsEnabled
 					fetchedNode[0].mqttConfig?.mapReportingEnabled = config.mapReportingEnabled
+					fetchedNode[0].mqttConfig?.mapReportingShouldReportLocation = config.mapReportSettings.shouldReportLocation
 					fetchedNode[0].mqttConfig?.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
 					fetchedNode[0].mqttConfig?.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 				}
