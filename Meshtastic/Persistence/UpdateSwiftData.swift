@@ -578,8 +578,8 @@ extension MeshPackets {
 			
 			if let positionMessage = try? Position(serializedBytes: packet.decoded.payload) {
 				
-				/// Don't save empty position packets from null island or apple park
-				if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
+				/// Don't save placeholder position packets from null island (0, 0) or Apple Park.
+				if positionMessage.hasValidCoordinates {
 					var fetchedNode = try modelContext.fetch(fetchNodePositionRequest)
 					// Create a stub node if one doesn't exist yet — it will be updated when the NodeInfo packet arrives
 					if fetchedNode.isEmpty {
@@ -665,7 +665,10 @@ extension MeshPackets {
 						Logger.data.debug("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")
 					}
 				} else {
-					Logger.data.error("💥 Empty POSITION_APP Packet: \((try? packet.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
+					// Valid POSITION_APP packet that carries no usable coordinates (e.g. a node with no
+					// GPS fix sending only a timestamp, or a null-island/Apple-Park placeholder). This is
+					// expected — there's simply nothing to plot — so log it as debug rather than an error.
+					Logger.data.debug("📍 [Position] packet without coordinates from \(packet.from.toHex(), privacy: .public) — nothing to plot")
 				}
 			}
 		} catch {
