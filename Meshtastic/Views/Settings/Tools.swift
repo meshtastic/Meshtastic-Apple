@@ -11,6 +11,7 @@ import CoreNFC
 #endif
 import MeshtasticProtobufs
 import OSLog
+import UniformTypeIdentifiers
 
 @available(iOS 18, *)
 struct Tools: View {
@@ -20,6 +21,11 @@ struct Tools: View {
 	#if !targetEnvironment(macCatalyst)
 	@StateObject private var nfcReader = NFCReader()
 	#endif
+
+	@State private var isExportingConfig = false
+	@State private var exportConfigDocument = DeviceProfileDocument()
+	@State private var exportConfigFilename = "device-config"
+	@State private var isPresentingExportFailedAlert = false
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -63,10 +69,58 @@ struct Tools: View {
 						#endif
 					}
 				}
+
+				Section(header: Text("Export Device Configuration")) {
+					if let node = connectedNode {
+						Text("Save the connected node's full configuration (radio, module, and channel settings) to a file you can back up or import on another device.")
+							.font(.caption)
+							.foregroundColor(.secondary)
+						Button {
+							exportConfiguration(for: node)
+						} label: {
+							Label("Export Configuration", systemImage: "square.and.arrow.up")
+						}
+					} else {
+						Text("Connect to a node to export its configuration.")
+							.font(.caption)
+							.foregroundColor(.secondary)
+					}
+				}
 			}
 		}
 		.navigationTitle("Tools")
 		.navigationBarTitleDisplayMode(.inline)
+		.fileExporter(
+			isPresented: $isExportingConfig,
+			document: exportConfigDocument,
+			contentType: UTType(filenameExtension: "cfg") ?? .data,
+			defaultFilename: exportConfigFilename
+		) { result in
+			switch result {
+			case .success:
+				Logger.services.info("Device configuration export succeeded.")
+			case .failure(let error):
+				Logger.services.error("Device configuration export failed: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+		.alert("Export Failed", isPresented: $isPresentingExportFailedAlert) {
+			Button("OK") { }.keyboardShortcut(.defaultAction)
+		} message: {
+			Text("The device configuration could not be prepared for export.")
+		}
+	}
+
+	private func exportConfiguration(for node: NodeInfoEntity) {
+		do {
+			let data = try node.exportDeviceProfile().serializedData()
+			exportConfigDocument = DeviceProfileDocument(profileData: data)
+			let nodeName = node.user?.longName ?? "Node"
+			exportConfigFilename = "\(nodeName) Config \(Date.now.exportTimestamp)"
+			isExportingConfig = true
+		} catch {
+			Logger.services.error("Failed to serialize device profile: \(error.localizedDescription, privacy: .public)")
+			isPresentingExportFailedAlert = true
+		}
 	}
 }
 
