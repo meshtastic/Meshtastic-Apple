@@ -39,25 +39,14 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 		persistenceKey.map { "metricsColumnVisibility.\($0)" }
 	}
 
-	/// Restores each column's `visible` flag from the store. Columns absent from the saved map
-	/// (e.g. added in a later app version) keep their default visibility.
 	private func applyPersistedVisibility() {
-		guard let storageKey, let stored = store.dictionary(forKey: storageKey) as? [String: Bool] else { return }
-		for column in columns {
-			if let isVisible = stored[column.id] {
-				column.visible = isVisible
-			}
-		}
+		MetricsVisibilityPersistence.restore(columns, key: storageKey, store: store,
+			id: { $0.id }, setVisible: { $0.visible = $1 })
 	}
 
-	/// Persists the current visibility of every column so it survives the view being recreated.
 	private func persistVisibility() {
-		guard let storageKey else { return }
-		var map: [String: Bool] = [:]
-		for column in columns {
-			map[column.id] = column.visible
-		}
-		store.set(map, forKey: storageKey)
+		MetricsVisibilityPersistence.persist(columns, key: storageKey, store: store,
+			id: { $0.id }, isVisible: { $0.visible })
 	}
 
 	var gridItems: [GridItem] {
@@ -135,5 +124,44 @@ class MetricsColumnList: ObservableObject, RandomAccessCollection, RangeReplacea
 	func insert(_ newElement: Element, at index: Int) {
 		objectWillChange.send()
 		columns.insert(newElement, at: index)
+	}
+}
+
+/// Persists a per-element `visible` flag under a namespaced `UserDefaults` key. Shared by
+/// `MetricsColumnList` and `MetricsSeriesList`, whose elements both expose a `String` id and a
+/// mutable `visible` flag, so the read/cast/loop logic lives here once instead of in each class.
+enum MetricsVisibilityPersistence {
+
+	/// Restores each element's `visible` flag from the store. Elements absent from the saved map
+	/// (e.g. added in a later app version) keep their current (default) visibility.
+	static func restore<Element>(
+		_ elements: [Element],
+		key: String?,
+		store: UserDefaults,
+		id: (Element) -> String,
+		setVisible: (Element, Bool) -> Void
+	) {
+		guard let key, let stored = store.dictionary(forKey: key) as? [String: Bool] else { return }
+		for element in elements {
+			if let isVisible = stored[id(element)] {
+				setVisible(element, isVisible)
+			}
+		}
+	}
+
+	/// Persists the current visibility of every element so it survives the view being recreated.
+	static func persist<Element>(
+		_ elements: [Element],
+		key: String?,
+		store: UserDefaults,
+		id: (Element) -> String,
+		isVisible: (Element) -> Bool
+	) {
+		guard let key else { return }
+		var map: [String: Bool] = [:]
+		for element in elements {
+			map[id(element)] = isVisible(element)
+		}
+		store.set(map, forKey: key)
 	}
 }

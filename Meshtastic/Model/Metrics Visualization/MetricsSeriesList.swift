@@ -41,25 +41,14 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		persistenceKey.map { "metricsSeriesVisibility.\($0)" }
 	}
 
-	/// Restores each series' `visible` flag from the store. Series absent from the saved map
-	/// (e.g. added in a later app version) keep their default visibility.
 	private func applyPersistedVisibility() {
-		guard let storageKey, let stored = store.dictionary(forKey: storageKey) as? [String: Bool] else { return }
-		for aSeries in series {
-			if let isVisible = stored[aSeries.id] {
-				aSeries.visible = isVisible
-			}
-		}
+		MetricsVisibilityPersistence.restore(series, key: storageKey, store: store,
+			id: { $0.id }, setVisible: { $0.visible = $1 })
 	}
 
-	/// Persists the current visibility of every series so it survives the view being recreated.
 	private func persistVisibility() {
-		guard let storageKey else { return }
-		var map: [String: Bool] = [:]
-		for aSeries in series {
-			map[aSeries.id] = aSeries.visible
-		}
-		store.set(map, forKey: storageKey)
+		MetricsVisibilityPersistence.persist(series, key: storageKey, store: store,
+			id: { $0.id }, isVisible: { $0.visible })
 	}
 
 	func foregroundStyle<T>(forName: String, chartRange: ClosedRange<T>? = nil) -> AnyShapeStyle? where T: BinaryFloatingPoint {
