@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="swiftdata">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>SwiftData</h1>
+<h1>SwiftData</h1>
 <p>The app uses SwiftData exclusively for persistence. Do not introduce SQLite, Realm, Core Data, or any other persistence library.</p>
 <h2>ModelContainer Setup</h2>
 <p><code>PersistenceController.shared</code> (in <code>Meshtastic/Persistence/PersistenceController.swift</code>) creates and owns the <code>ModelContainer</code>. It is initialised once at app launch in <code>MeshtasticApp.swift</code> and injected via <code>.modelContainer(PersistenceController.shared.container)</code>.</p>
