@@ -21,7 +21,7 @@ struct NodeList: View {
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
 	@State private var shareContactNode: NodeInfoEntity?
-	@StateObject var filters = NodeFilterParameters()
+	@ObservedObject var filters = NodeFilterParameters.shared
 	@State var isEditingFilters = false
 	@State private var showingHelp = false
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
@@ -104,12 +104,27 @@ struct NodeList: View {
 				.foregroundColor(.accentColor)
 				.buttonStyle(.borderedProminent)
 				Spacer()
+				if filters.isFiltering {
+					Button(action: {
+						withAnimation {
+							filters.reset()
+						}
+					}) {
+						Image(systemName: "arrow.counterclockwise.circle")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+					.accessibilityLabel("Reset node filters")
+					.accessibilityHint("Clears all active node filters.")
+				}
 				Button(action: {
 					withAnimation {
 						isEditingFilters = !isEditingFilters
 					}
 				}) {
-					Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+					Image(systemName: filters.isFiltering ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
 						.padding(.vertical, 5)
 				}
 				.tint(Color(UIColor.secondarySystemBackground))

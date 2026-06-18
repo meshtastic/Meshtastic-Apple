@@ -55,7 +55,7 @@ struct MeshMap: View {
 	@State var isMeshMap = true
 	@State private var showLegend = false
 	/// Filter
-	@StateObject var filters = NodeFilterParameters()
+	@ObservedObject var filters = NodeFilterParameters.shared
 	/// Track whether a detached Mesh Map window is currently open.
 	@State private var isMapWindowOpen = false
 
