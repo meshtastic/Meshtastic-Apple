@@ -58,6 +58,9 @@ final class DiscoveryScanEngine {
 	// MARK: Internal State
 
 	private var homePreset: ModemPresets?
+	/// Full snapshot of the LoRa config as it was before the scan started, so every field
+	/// (frequency slot, overrides, MQTT flags, …) can be restored exactly afterward (#1952).
+	private var homeLoRaConfig: Config.LoRaConfig?
 	private var presetQueue: [ModemPresets] = []
 	private var currentPresetResult: DiscoveryPresetResultEntity?
 	private var dwellTask: Task<Void, Never>?
@@ -126,8 +129,11 @@ final class DiscoveryScanEngine {
 		// Record home preset from current LoRa config
 		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
 		let connectedNode = getNodeInfo(id: connectedNodeNum, context: context)
-		if let loraConfig = connectedNode?.loRaConfig {
+		if let loraConfig = connectedNode?.loRaConfig, !loraConfig.isDeleted {
 			homePreset = ModemPresets(rawValue: Int(loraConfig.modemPreset))
+			// Snapshot the complete config so restore puts back the frequency slot and all
+			// other LoRa settings exactly — not just the modem preset (#1952).
+			homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
 		}
 
 		// Create session
@@ -206,6 +212,41 @@ final class DiscoveryScanEngine {
 		await sendPresetChange(nextPreset)
 	}
 
+	// MARK: - LoRa Config Helper
+
+	/// Builds a complete `Config.LoRaConfig` proto from the stored entity, preserving every
+	/// field. `saveLoRaConfig` replaces the device's entire LoRa config, so any field left at
+	/// its proto default is written as 0/false on the radio — e.g. `channelNum` (frequency
+	/// slot) → 0, which silently moves the radio off the user's frequency and wipes their
+	/// settings. The discovery scan only needs to change the modem preset, so everything else
+	/// must be carried through (#1952).
+	/// - Parameter presetOverride: when set, replaces the modem preset (used while shifting
+	///   presets); when `nil`, the entity's own preset is used (used to snapshot/restore home).
+	///
+	/// Internal (not private) so the field-preservation guarantee can be unit-tested.
+	func loRaConfigProto(from entity: LoRaConfigEntity, presetOverride: ModemPresets?) -> Config.LoRaConfig {
+		var config = Config.LoRaConfig()
+		if let resolvedPreset = presetOverride ?? ModemPresets(rawValue: Int(entity.modemPreset)) {
+			config.modemPreset = resolvedPreset.protoEnumValue()
+		}
+		config.region = Config.LoRaConfig.RegionCode(rawValue: Int(entity.regionCode)) ?? .unset
+		config.usePreset = entity.usePreset
+		config.hopLimit = UInt32(entity.hopLimit)
+		config.txEnabled = entity.txEnabled
+		config.txPower = entity.txPower
+		config.channelNum = UInt32(entity.channelNum)
+		config.bandwidth = UInt32(entity.bandwidth)
+		config.codingRate = UInt32(entity.codingRate)
+		config.spreadFactor = UInt32(entity.spreadFactor)
+		config.frequencyOffset = entity.frequencyOffset
+		config.overrideFrequency = entity.overrideFrequency
+		config.overrideDutyCycle = entity.overrideDutyCycle
+		config.sx126XRxBoostedGain = entity.sx126xRxBoostedGain
+		config.ignoreMqtt = entity.ignoreMqtt
+		config.configOkToMqtt = entity.okToMqtt
+		return config
+	}
+
 	// MARK: - Send Preset Change
 
 	private func sendPresetChange(_ preset: ModemPresets) async {
@@ -219,16 +260,18 @@ final class DiscoveryScanEngine {
 			return
 		}
 
-		var loraConfig = Config.LoRaConfig()
-		loraConfig.modemPreset = preset.protoEnumValue()
-
-		// Copy existing config values if available
+		// Carry through EVERY existing LoRa field, changing only the modem preset. The device
+		// applies the whole config, so building a partial one zeroes the omitted fields —
+		// notably channelNum (frequency slot) → 0, which moves the radio off the user's
+		// frequency and breaks the scan for non-default-primary setups (#1952).
+		let loraConfig: Config.LoRaConfig
 		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
-			loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(existingConfig.regionCode)) ?? .unset
-			loraConfig.hopLimit = UInt32(existingConfig.hopLimit)
-			loraConfig.txEnabled = existingConfig.txEnabled
-			loraConfig.txPower = existingConfig.txPower
-			loraConfig.usePreset = existingConfig.usePreset
+			loraConfig = loRaConfigProto(from: existingConfig, presetOverride: preset)
+		} else {
+			var minimal = Config.LoRaConfig()
+			minimal.modemPreset = preset.protoEnumValue()
+			loraConfig = minimal
+			Logger.discovery.warning("📡 [Discovery] No existing LoRa config to copy — sending preset-only config")
 		}
 
 		do {
@@ -575,8 +618,11 @@ extension DiscoveryScanEngine {
 	// MARK: - Restore Home Preset
 
 	func restoreHomePreset() async {
-		guard let homePreset, let accessoryManager, let context = modelContext else {
-			Logger.discovery.info("📡 [Discovery] No home preset to restore → Idle")
+		// Restore the full config snapshot captured at scan start — preset, frequency slot,
+		// overrides and all — rather than rebuilding a partial config that would drop the
+		// user's frequency slot and other settings (#1952).
+		guard let homeLoRaConfig, let accessoryManager, let context = modelContext else {
+			Logger.discovery.info("📡 [Discovery] No home config to restore → Idle")
 			cleanupAndIdle()
 			return
 		}
@@ -585,27 +631,16 @@ extension DiscoveryScanEngine {
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let toUser = connectedNode.user else {
-			Logger.discovery.error("📡 [Discovery] Cannot restore home preset — no connected node")
+			Logger.discovery.error("📡 [Discovery] Cannot restore home config — no connected node")
 			cleanupAndIdle()
 			return
 		}
 
-		var loraConfig = Config.LoRaConfig()
-		loraConfig.modemPreset = homePreset.protoEnumValue()
-
-		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
-			loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(existingConfig.regionCode)) ?? .unset
-			loraConfig.hopLimit = UInt32(existingConfig.hopLimit)
-			loraConfig.txEnabled = existingConfig.txEnabled
-			loraConfig.txPower = existingConfig.txPower
-			loraConfig.usePreset = existingConfig.usePreset
-		}
-
 		do {
-			_ = try await accessoryManager.saveLoRaConfig(config: loraConfig, fromUser: fromUser, toUser: toUser)
-			Logger.discovery.info("📡 [Discovery] Restored home preset: \(homePreset.name)")
+			_ = try await accessoryManager.saveLoRaConfig(config: homeLoRaConfig, fromUser: fromUser, toUser: toUser)
+			Logger.discovery.info("📡 [Discovery] Restored home LoRa config — preset: \(self.homePreset?.name ?? "unknown"), frequency slot: \(homeLoRaConfig.channelNum)")
 		} catch {
-			Logger.discovery.error("📡 [Discovery] Failed to restore home preset: \(error.localizedDescription)")
+			Logger.discovery.error("📡 [Discovery] Failed to restore home config: \(error.localizedDescription)")
 		}
 
 		cleanupAndIdle()
@@ -712,6 +747,7 @@ extension DiscoveryScanEngine {
 		deviceMetricsHistory = [:]
 		awaitingDisconnect = false
 		interruptedDwellRemaining = nil
+		homeLoRaConfig = nil
 		transitionTo(.idle)
 	}
 
