@@ -64,44 +64,120 @@ struct NodeDistanceFilterBounds {
 
 @MainActor
 final class NodeFilterParameters: ObservableObject {
-	// Public variables
+
+	/// Shared, app-wide filter instance. `NodeList`, `MeshMap`, and `UserList` all observe this
+	/// single object, so a filter set on one screen applies across the app. Using one shared
+	/// instance — rather than three independent `@StateObject`s — keeps behavior consistent with
+	/// the global `nodeFilter.*` persisted keys, which are not namespaced per screen.
+	static let shared = NodeFilterParameters()
+
+	private enum Keys {
+		static let isOnline = "nodeFilter.isOnline"
+		static let isPkiEncrypted = "nodeFilter.isPkiEncrypted"
+		static let isFavorite = "nodeFilter.isFavorite"
+		static let isIgnored = "nodeFilter.isIgnored"
+		static let isEnvironment = "nodeFilter.isEnvironment"
+		static let distanceFilter = "nodeFilter.distanceFilter"
+		static let maxDistance = "nodeFilter.maxDistance"
+		static let hopsAway = "nodeFilter.hopsAway"
+		static let roleFilter = "nodeFilter.roleFilter"
+		static let deviceRoles = "nodeFilter.deviceRoles"
+		static let viaLora = "nodeFilter.viaLora"
+		static let viaMqtt = "nodeFilter.viaMqtt"
+	}
+
+	/// Search text is intentionally **not** persisted — relaunching into a stale search that hides
+	/// most nodes is confusing. It lives in memory for the app session only.
 	@Published var searchText = ""
-	@Published var isOnline = false
-	@Published var isPkiEncrypted = false
-	@Published var isFavorite = false
-	@Published var isIgnored = false
-	@Published var isEnvironment = false
-	@Published var distanceFilter = false
-	@Published var maxDistance: Double = 800_000
-	@Published var hopsAway: Double = -1.0
-	@Published var roleFilter = false
-	@Published var deviceRoles: Set<Int> = []
-	
-	// Private backing vars
-	@Published private var _viaLora = true
-	@Published private var _viaMqtt = true
-	
+
+	// Each filter is `@Published` (so SwiftUI observers update live when it toggles — an
+	// `@AppStorage` property inside an `ObservableObject` reads/writes `UserDefaults` but does NOT
+	// fire `objectWillChange`) and mirrors its value to `store` in `didSet` so it survives relaunch.
+	@Published var isOnline: Bool { didSet { store.set(isOnline, forKey: Keys.isOnline) } }
+	@Published var isPkiEncrypted: Bool { didSet { store.set(isPkiEncrypted, forKey: Keys.isPkiEncrypted) } }
+	@Published var isFavorite: Bool { didSet { store.set(isFavorite, forKey: Keys.isFavorite) } }
+	@Published var isIgnored: Bool { didSet { store.set(isIgnored, forKey: Keys.isIgnored) } }
+	@Published var isEnvironment: Bool { didSet { store.set(isEnvironment, forKey: Keys.isEnvironment) } }
+	@Published var distanceFilter: Bool { didSet { store.set(distanceFilter, forKey: Keys.distanceFilter) } }
+	@Published var maxDistance: Double { didSet { store.set(maxDistance, forKey: Keys.maxDistance) } }
+	@Published var hopsAway: Double { didSet { store.set(hopsAway, forKey: Keys.hopsAway) } }
+	@Published var roleFilter: Bool { didSet { store.set(roleFilter, forKey: Keys.roleFilter) } }
+
+	@Published var deviceRoles: Set<Int> = [] {
+		didSet { store.set(Array(deviceRoles), forKey: Keys.deviceRoles) }
+	}
+
+	// `viaLora`/`viaMqtt` use private `@Published` storage with public wrappers that enforce "at
+	// least one ON". Being `@Published`, mutating the backing value publishes `objectWillChange`;
+	// `didSet` persists it.
+	@Published private var _viaLora: Bool { didSet { store.set(_viaLora, forKey: Keys.viaLora) } }
+	@Published private var _viaMqtt: Bool { didSet { store.set(_viaMqtt, forKey: Keys.viaMqtt) } }
+
+	/// Backing store for all persisted filter values. Defaults to `.standard`; tests inject an
+	/// isolated suite so they don't read or clobber the shared `UserDefaults.standard` domain.
+	private let store: UserDefaults
+
 	// Public computed wrappers with enforcement
 	var viaLora: Bool {
 		get { _viaLora }
 		set {
-			objectWillChange.send()
 			_viaLora = newValue
 			if !_viaLora && !_viaMqtt {
 				_viaMqtt = true   // enforce at least one ON
 			}
 		}
 	}
-	
+
 	var viaMqtt: Bool {
 		get { _viaMqtt }
 		set {
-			objectWillChange.send()
 			_viaMqtt = newValue
 			if !_viaLora && !_viaMqtt {
 				_viaLora = true   // enforce at least one ON
 			}
 		}
+	}
+
+	/// - Parameter store: The `UserDefaults` instance backing all persisted filter values.
+	///   Defaults to `.standard`; pass an isolated suite in tests.
+	init(store: UserDefaults = .standard) {
+		self.store = store
+
+		// Property observers do not fire for assignments made inside `init`, so loading persisted
+		// values here reads from `store` without writing back to it.
+		isOnline = store.object(forKey: Keys.isOnline) as? Bool ?? false
+		isPkiEncrypted = store.object(forKey: Keys.isPkiEncrypted) as? Bool ?? false
+		isFavorite = store.object(forKey: Keys.isFavorite) as? Bool ?? false
+		isIgnored = store.object(forKey: Keys.isIgnored) as? Bool ?? false
+		isEnvironment = store.object(forKey: Keys.isEnvironment) as? Bool ?? false
+		distanceFilter = store.object(forKey: Keys.distanceFilter) as? Bool ?? false
+		maxDistance = store.object(forKey: Keys.maxDistance) as? Double ?? 800_000
+		hopsAway = store.object(forKey: Keys.hopsAway) as? Double ?? -1.0
+		roleFilter = store.object(forKey: Keys.roleFilter) as? Bool ?? false
+		_viaLora = store.object(forKey: Keys.viaLora) as? Bool ?? true
+		_viaMqtt = store.object(forKey: Keys.viaMqtt) as? Bool ?? true
+
+		if let storedRoles = store.array(forKey: Keys.deviceRoles) as? [Int] {
+			deviceRoles = Set(storedRoles)
+		}
+	}
+
+	/// Restores every filter to its default and clears the search text. Backs the reset affordance
+	/// on the node and contact lists.
+	func reset() {
+		searchText = ""
+		isOnline = false
+		isPkiEncrypted = false
+		isFavorite = false
+		isIgnored = false
+		isEnvironment = false
+		distanceFilter = false
+		maxDistance = 800_000
+		hopsAway = -1.0
+		roleFilter = false
+		deviceRoles = []
+		_viaLora = true
+		_viaMqtt = true
 	}
 
 	/// Whether any filter is actively narrowing results (ignoring search text).

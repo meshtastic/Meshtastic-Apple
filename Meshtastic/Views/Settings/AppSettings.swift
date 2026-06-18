@@ -207,7 +207,7 @@ struct AppSettings: View {
 								}
 								await MeshPackets.shared.flushDebouncedSaves()
 								await MeshPackets.shared.clearDatabase(includeRoutes: true)
-								AccessoryManager.shared.resetDatabaseAfterClear()
+								await AccessoryManager.shared.resetDatabaseAfterClear()
 								clearNotifications()
 								// Repopulate device catalog immediately — no reconnect happens after a full reset.
 								try? await MeshtasticAPI.shared.refreshBundledDevicesData()

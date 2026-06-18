@@ -20,74 +20,10 @@ struct DeviceOnboarding: View {
 	@State var locationStatus = LocationsHandler.shared.manager.authorizationStatus
 	@AppStorage("provideLocation") private var provideLocation: Bool = false
 	@AppStorage("provideLocationInterval") private var provideLocationInterval: Int = 30
+	@AppStorage("channelMessageNotifications") private var channelMessageNotifications: Bool = true
+	@AppStorage("newNodeNotifications") private var newNodeNotifications: Bool = false
+	@AppStorage("lowBatteryNotifications") private var lowBatteryNotifications: Bool = false
 	@Environment(\.dismiss) var dismiss
-	/// The Title View
-	var title: some View {
-		VStack {
-			Text("Welcome to Meshtastic")
-				.font(.title.bold())
-				.multilineTextAlignment(.center)
-				.fixedSize(horizontal: false, vertical: true)
-		}
-	}
-	
-	var welcomeView: some View {
-		VStack(spacing: 0) {
-			ScrollView(.vertical) {
-				VStack {
-					// Title
-					title
-						.padding(.top)
-					VStack(alignment: .leading, spacing: 16) {
-						makeRow(
-							icon: "person.2.shield",
-							title: String(localized: "User Privacy"),
-							subtitle: String(localized: "Meshtastic does not collect any personal information. We do anonymously collect usage and crash data to improve the app.")
-						)
-						makeRow(
-							icon: "bell.badge",
-							title: String(localized: "Message Notifications"),
-							subtitle: String(localized: "Receive notifications for incoming messages and critical alerts even when the app is in the background.")
-						)
-						makeRow(
-							icon: "location",
-							title: String(localized: "Track and Share Locations"),
-							subtitle: String(localized: "Share your location in real-time and keep your group coordinated with integrated GPS features.")
-						)
-						makeRow(
-							icon: "custom.bluetooth",
-							title: String(localized: "Bluetooth Connectivity"),
-							subtitle: String(localized: "Connect to your Meshtastic node via Bluetooth Low Energy for the best messaging experience.")
-						)
-						makeRow(
-							icon: "network",
-							title: String(localized: "Local Network Access"),
-							subtitle: String(localized: "Connect to nodes on your local Wi-Fi network.")
-						)
-						makeRow(
-							icon: "car.fill",
-							title: String(localized: "Siri & CarPlay"),
-							subtitle: String(localized: "Send and receive Meshtastic messages hands-free using Siri and CarPlay.")
-						)
-					}
-					.padding(.horizontal)
-					.padding(.bottom)
-				}
-			}
-			.interactiveDismissDisabled()
-			Button {
-				Task {
-					await goToNextStep(after: nil)
-				}
-			} label: {
-				Text("Get started")
-					.frame(maxWidth: 400)
-			}
-			.capsuleButtonStyle()
-			.padding(.bottom)
-		}
-	}
-	
 	var notificationView: some View {
 		VStack {
 			ScrollView(.vertical) {
@@ -98,8 +34,11 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 				}
 				.padding(.horizontal)
-				Spacer()
 				VStack(alignment: .leading, spacing: 16) {
+					Text(createNotificationsString())
+						.font(.body.bold())
+						.multilineTextAlignment(.center)
+						.fixedSize(horizontal: false, vertical: true)
 					Text("Send Notifications")
 						.font(.title2.bold())
 						.multilineTextAlignment(.center)
@@ -107,17 +46,22 @@ struct DeviceOnboarding: View {
 					makeRow(
 						icon: "message",
 						title: String(localized: "Incoming Messages"),
-						subtitle: String(localized: "Notifications for channel and direct messages.")
+						subtitle: String(localized: "Notifications for channel and direct messages."),
+						isOn: $channelMessageNotifications
 					)
 					makeRow(
 						icon: "flipphone",
+						color: .green,
 						title: String(localized: "New Nodes"),
-						subtitle: String(localized: "Notifications for newly discovered nodes.")
+						subtitle: String(localized: "Notifications for newly discovered nodes."),
+						isOn: $newNodeNotifications
 					)
 					makeRow(
 						icon: "battery.25percent",
+						color: .orange,
 						title: String(localized: "Low Battery"),
-						subtitle: String(localized: "Notifications for low battery alerts for the connected device.")
+						subtitle: String(localized: "Notifications for low battery alerts for the connected device."),
+						isOn: $lowBatteryNotifications
 					)
 					Text("Critical Alerts")
 						.font(.title2.bold())
@@ -125,6 +69,7 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 					makeRow(
 						icon: "exclamationmark.triangle.fill",
+						color: .red,
 						subtitle: String(localized: "Select packets sent as critical will ignore the mute switch and Do Not Disturb settings in the OS notification center.")
 					)
 				}
@@ -143,8 +88,19 @@ struct DeviceOnboarding: View {
 			.capsuleButtonStyle()
 			.padding(.bottom)
 		}
+		.onAppear {
+			if UserDefaults.standard.object(forKey: "channelMessageNotifications") == nil {
+				channelMessageNotifications = true
+			}
+			if UserDefaults.standard.object(forKey: "newNodeNotifications") == nil {
+				newNodeNotifications = false
+			}
+			if UserDefaults.standard.object(forKey: "lowBatteryNotifications") == nil {
+				lowBatteryNotifications = false
+			}
+		}
 	}
-	
+
 	var locationView: some View {
 		VStack {
 			ScrollView(.vertical) {
@@ -163,19 +119,9 @@ struct DeviceOnboarding: View {
 					makeRow(
 						icon: "location",
 						title: String(localized: "Share Location"),
-						subtitle: String(localized: "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node.")
+						subtitle: String(localized: "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node."),
+						isOn: $provideLocation
 					)
-					Toggle(isOn: $provideLocation ) {
-						Label {
-							Text("Share Location")
-						} icon: {
-							Image(systemName: "location.circle")
-						}
-					}
-					.fixedSize()
-					.scaleEffect(0.85)
-					.padding(.leading, 52)
-					.tint(.accentColor)
 					.onChange(of: provideLocation) {
 						UserDefaults.provideLocationInterval = 30
 						UserDefaults.enableSmartPosition = true
@@ -183,31 +129,24 @@ struct DeviceOnboarding: View {
 					makeRow(
 						icon: "location.fill",
 						title: String(localized: "Continuous Location Updates"),
-						subtitle: String(localized: "Keep the mesh map updated and send your position to the mesh even while using other apps.")
+						subtitle: String(localized: "Keep the mesh map updated and send your position to the mesh even while using other apps."),
+						isOn: $locationsHandler.backgroundActivity
 					)
-					Toggle(isOn: $locationsHandler.backgroundActivity) {
-						Label {
-							Text("Enable Background Activity")
-						} icon: {
-							Image(systemName: "location.circle.fill")
-						}
-					}
-					.fixedSize()
-					.scaleEffect(0.85)
-					.padding(.leading, 52)
-					.tint(.accentColor)
 					makeRow(
 						icon: "lines.measurement.horizontal",
+						color: .indigo,
 						title: String(localized: "Distance Measurements"),
 						subtitle: String(localized: "Display the distance between your phone and other Meshtastic nodes with positions.")
 					)
 					makeRow(
 						icon: "line.3.horizontal.decrease.circle",
+						color: .orange,
 						title: String(localized: "Distance Filters"),
 						subtitle: String(localized: "Filter the node list and mesh map based on proximity to your phone.")
 					)
 					makeRow(
 						icon: "mappin",
+						color: .green,
 						title: String(localized: "Mesh Map Location"),
 						subtitle: String(localized: "Enables the blue location dot for your phone in the mesh map.")
 					)
@@ -246,16 +185,19 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 					makeRow(
 						icon: "network",
+						color: .green,
 						title: "Network-based Nodes".localized,
 						subtitle: "The Meshtastic App can connect to and manage network-enabled nodes.".localized
 					)
 					makeRow(
 						icon: "person.and.background.dotted",
+						color: .indigo,
 						title: "Background Connections".localized,
 						subtitle: "Background network connections are not supported and may disconnect when you leave the app.".localized
 					)
 					makeRow(
 						icon: "arrow.trianglehead.2.clockwise",
+						color: .orange,
 						title: "Minimum Firmware Version".localized,
 						subtitle: "For the best connection experience, minimum firmware version 2.7.4 is required.".localized
 					)
@@ -287,6 +229,7 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 				}
 				.padding(.horizontal)
+				.padding(.top, 44)
 				VStack(alignment: .leading, spacing: 16) {
 					Text(createBluetoothString())
 						.font(.body.bold())
@@ -294,11 +237,13 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 					makeRow(
 						icon: "custom.bluetooth",
+						color: .teal,
 						title: "Bluetooth Connected Nodes".localized,
 						subtitle: "The most reliable messaging experience is with Bluetooth Low Energy connected nodes.".localized
 					)
 					makeRow(
 						icon: "person.and.background.dotted",
+						color: .indigo,
 						title: "Background Connections".localized,
 						subtitle: "Bluetooth Low Energy supports background connections. When possible, the application will remain connected to these accessories while the app is in the background.".localized
 					)
@@ -337,6 +282,7 @@ struct DeviceOnboarding: View {
 						.fixedSize(horizontal: false, vertical: true)
 					makeRow(
 						icon: "car.fill",
+						color: .red,
 						title: String(localized: "CarPlay Messaging"),
 						subtitle: String(localized: "Read and reply to Meshtastic channel and direct messages directly from your car's display using CarPlay.")
 					)
@@ -347,16 +293,19 @@ struct DeviceOnboarding: View {
 					)
 					makeRow(
 						icon: "bubble",
+						color: .indigo,
 						title: String(localized: "Send a Direct Message"),
 						subtitle: String(localized: "\"Send a Meshtastic direct message\" — send a private message to a node.")
 					)
 					makeRow(
 						icon: "power",
+						color: .orange,
 						title: String(localized: "Shut Down / Restart Node"),
 						subtitle: String(localized: "\"Shut down my Meshtastic node\" or \"Restart my Meshtastic node\".")
 					)
 					makeRow(
 						icon: "antenna.radiowaves.left.and.right.slash",
+						color: .green,
 						title: String(localized: "Disconnect Node"),
 						subtitle: String(localized: "\"Disconnect Meshtastic\" — disconnect from the connected BLE node.")
 					)
@@ -380,7 +329,7 @@ struct DeviceOnboarding: View {
 	
 	var body: some View {
 		NavigationStack(path: $navigationPath) {
-			welcomeView
+			bluetoothView
 				.navigationDestination(for: SetupGuide.self) { guide in
 					switch guide {
 					case .notifications:
@@ -396,6 +345,7 @@ struct DeviceOnboarding: View {
 					}
 				}
 		}
+		.interactiveDismissDisabled()
 		.toolbar(.hidden)
 	}
 
@@ -432,29 +382,29 @@ struct DeviceOnboarding: View {
 	@ViewBuilder
 	func makeRow(
 		icon: String,
+		color: Color = .accentColor,
 		title: String = "",
-		subtitle: String
+		subtitle: String,
+		isOn: Binding<Bool>? = nil
 	) -> some View {
 		HStack(alignment: .center) {
-			if icon.starts(with: "custom.") {
-				Image(icon)
-					.resizable()
-					.symbolRenderingMode(.multicolor)
-					.font(.subheadline)
-					.aspectRatio(contentMode: .fit)
-					.padding(.horizontal)
-					.padding(.vertical, 8)
-					.frame(width: 72, height: 60)
-			} else {
-				Image(systemName: icon)
-					.resizable()
-					.symbolRenderingMode(.multicolor)
-					.font(.subheadline)
-					.aspectRatio(contentMode: .fit)
-					.padding(.horizontal)
-					.padding(.vertical, 8)
-					.frame(width: 72, height: 60)
+			ZStack {
+				RoundedRectangle(cornerRadius: 11)
+					.fill(color.opacity(0.1))
+					.frame(width: 40, height: 40)
+				if icon.starts(with: "custom.") {
+					Image(icon)
+						.resizable()
+						.aspectRatio(contentMode: .fit)
+						.frame(width: 22, height: 22)
+						.foregroundStyle(color)
+				} else {
+					Image(systemName: icon)
+						.font(.system(size: 20))
+						.foregroundStyle(color)
+				}
 			}
+			.frame(width: 72, height: 60)
 			VStack(alignment: .leading) {
 				Text(title)
 					.font(.footnote.weight(.semibold))
@@ -465,6 +415,13 @@ struct DeviceOnboarding: View {
 					.foregroundColor(.secondary)
 					.fixedSize(horizontal: false, vertical: true)
 			}.multilineTextAlignment(.leading)
+			if let binding = isOn {
+				Spacer()
+				Toggle("", isOn: binding)
+					.labelsHidden()
+					.fixedSize()
+					.tint(.accentColor)
+			}
 		}.accessibilityElement(children: .combine)
 	}
 	// MARK: Navigation
@@ -476,29 +433,17 @@ struct DeviceOnboarding: View {
 	) -> SetupGuide? {
 		switch step {
 		case .none:
-			if notificationStatus == .notDetermined && criticalAlertSetting == .notSupported {
-				return .notifications
-			}
-			if locationStatus == .notDetermined || locationStatus == .restricted || locationStatus == .denied {
-				return .location
-			}
-			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
-				return .bluetooth
-			}
-			return nil
-		case .notifications:
-			if locationStatus == .notDetermined || locationStatus == .restricted || locationStatus == .denied {
-				return .location
-			}
-			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
-				return .bluetooth
-			}
-			return nil
-		case .location:
 			return .bluetooth
 		case .bluetooth:
 			return .localNetwork
 		case .localNetwork:
+			return .notifications
+		case .notifications:
+			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
+				return .siri
+			}
+			return .location
+		case .location:
 			return .siri
 		case .siri:
 			return nil
@@ -516,12 +461,21 @@ struct DeviceOnboarding: View {
 			locationStatus: locationStatus
 		) {
 			navigationPath.append(next)
-		} else if step == .siri {
+		} else {
 			dismiss()
 		}
 	}
 	
 	// MARK: Formatting
+	func createNotificationsString() -> AttributedString {
+		var fullText = AttributedString("Allow Meshtastic to send you notifications for messages, node events, and critical alerts. You can update notification permissions at any time from settings.")
+		if let range = fullText.range(of: "settings") {
+			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
+			fullText[range].foregroundColor = .blue
+		}
+		return fullText
+	}
+
 	func createLocationString() -> AttributedString {
 		var fullText = AttributedString(localized: "Meshtastic uses your phone's location to enable a number of features. You can update your location permissions at any time from settings.")
 		if let range = fullText.range(of: String(localized: "settings")) {

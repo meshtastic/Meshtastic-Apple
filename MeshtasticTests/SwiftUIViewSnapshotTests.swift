@@ -1991,3 +1991,47 @@ struct AppLogFilterAccordionTests {
 		#expect(off != on)
 	}
 }
+
+// MARK: - DeviceOnboarding Snapshot Tests
+//
+// Snapshots of the redesigned first-launch permission flow (#1938) for the
+// Getting Started docs. Each screen is an accessible computed property on
+// DeviceOnboarding; we render them at full device height so the Spacer-pinned
+// Continue button lands at the bottom as it does on-device. The shared
+// AccessoryManager is injected because DeviceOnboarding declares it as an
+// @EnvironmentObject — it is not read during render (only in the Continue
+// button actions), but its presence keeps the host stable.
+
+@Suite("DeviceOnboarding Snapshots")
+@MainActor
+struct DeviceOnboardingSnapshotTests {
+
+	private func screen<V: View>(_ view: V) -> some View {
+		view.environmentObject(AccessoryManager.shared)
+	}
+
+	@Test("Bluetooth permission screen")
+	func bluetoothScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().bluetoothView), width: 390, height: 844, named: "onboarding_bluetooth", forDocs: true)
+	}
+
+	@Test("Local network permission screen")
+	func localNetworkScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().localNetworkView), width: 390, height: 844, named: "onboarding_localNetwork", forDocs: true)
+	}
+
+	@Test("Notifications permission screen")
+	func notificationsScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().notificationView), width: 390, height: 844, named: "onboarding_notifications", forDocs: true)
+	}
+
+	@Test("Location permission screen")
+	func locationScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().locationView), width: 390, height: 844, named: "onboarding_location", forDocs: true)
+	}
+
+	@Test("Siri & Shortcuts screen")
+	func siriScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().siriView), width: 390, height: 844, named: "onboarding_siri", forDocs: true)
+	}
+}

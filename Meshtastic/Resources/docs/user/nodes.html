@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="nodes">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>Nodes List</h1>
+<h1>Nodes List</h1>
 <p>The Nodes tab shows every device your radio has heard on the mesh. Tap any node for details.</p>
 <h2>Node Status</h2>
 <table>
@@ -173,6 +173,51 @@
 <li><strong>Ignore / Remove from ignored</strong> — hide this node from normal views</li>
 <li><strong>Remove</strong> — remove the node from your local database</li>
 </ul>
+<h2>Filtering &amp; Search</h2>
+<p>Tap the filter icon above the list to narrow which nodes are shown. Filters apply across the Nodes list, the contacts picker in Messages, and the map, so a filter set in one place takes effect everywhere.</p>
+<table>
+<thead>
+<tr>
+<th>Filter</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Online</strong></td>
+<td>Only nodes heard in the last two hours.</td>
+</tr>
+<tr>
+<td><strong>Favorites</strong></td>
+<td>Only nodes you have starred.</td>
+</tr>
+<tr>
+<td><strong>Public Key Encryption</strong></td>
+<td>Only nodes using PKI-encrypted direct messages.</td>
+</tr>
+<tr>
+<td><strong>Environment</strong></td>
+<td>Only nodes reporting environment telemetry (temperature, humidity, pressure).</td>
+</tr>
+<tr>
+<td><strong>Hops Away</strong></td>
+<td>Limit to nodes within a chosen number of hops, including direct (0-hop) only.</td>
+</tr>
+<tr>
+<td><strong>Distance</strong></td>
+<td>Limit to nodes within a chosen radius of your location. Falls back to the connected device's last position when phone location is unavailable.</td>
+</tr>
+<tr>
+<td><strong>Roles</strong></td>
+<td>Show only the device roles you select.</td>
+</tr>
+<tr>
+<td><strong>Connection</strong></td>
+<td>Show nodes reachable via LoRa, via MQTT, or both. At least one is always kept on.</td>
+</tr>
+</tbody>
+</table>
+<p>Filters are <strong>remembered between launches</strong> — the app reopens with the same filters applied. Search text is the exception: it is intentionally cleared on relaunch so you never reopen into a stale search that hides most of your nodes. Use the <strong>reset</strong> affordance to clear every filter and the search text at once.</p>
 <h2>Additional Icons</h2>
 <p>Tap a node and scroll to the Logs section for detailed metrics:</p>
 <table>

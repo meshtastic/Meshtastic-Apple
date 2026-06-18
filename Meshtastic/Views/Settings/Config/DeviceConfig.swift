@@ -191,7 +191,7 @@ struct DeviceConfig: View {
 										try await Task.sleep(for: .milliseconds(500))
 										await MeshPackets.shared.flushDebouncedSaves()
 										await MeshPackets.shared.clearDatabase(includeRoutes: false, preserveFavorites: true)
-										AccessoryManager.shared.resetDatabaseAfterClear()
+										await AccessoryManager.shared.resetDatabaseAfterClear()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("NodeDB Reset Failed")
@@ -213,7 +213,7 @@ struct DeviceConfig: View {
 										try await Task.sleep(for: .milliseconds(500))
 										await MeshPackets.shared.flushDebouncedSaves()
 										await MeshPackets.shared.clearDatabase(includeRoutes: false)
-										AccessoryManager.shared.resetDatabaseAfterClear()
+										await AccessoryManager.shared.resetDatabaseAfterClear()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("NodeDB Reset Failed")
@@ -247,7 +247,7 @@ struct DeviceConfig: View {
 										try await Task.sleep(for: .milliseconds(500))
 										await MeshPackets.shared.flushDebouncedSaves()
 										await MeshPackets.shared.clearDatabase(includeRoutes: false)
-										AccessoryManager.shared.resetDatabaseAfterClear()
+										await AccessoryManager.shared.resetDatabaseAfterClear()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("Factory Reset Failed")
@@ -267,7 +267,7 @@ struct DeviceConfig: View {
 										try await Task.sleep(for: .milliseconds(500))
 										await MeshPackets.shared.flushDebouncedSaves()
 										await MeshPackets.shared.clearDatabase(includeRoutes: false)
-										AccessoryManager.shared.resetDatabaseAfterClear()
+										await AccessoryManager.shared.resetDatabaseAfterClear()
 										clearNotifications()
 									} catch {
 										Logger.mesh.error("Factory Reset Failed")

@@ -114,21 +114,27 @@ struct DocBrowserView: View {
 					}
 					List {
 						ForEach(filteredSections, id: \.section) { item in
-							Section(translatedSectionName(item.section), isExpanded: sectionExpansion(item.section)) {
-								ForEach(item.pages) { page in
-								NavigationLink {
-									DocPageView(page: page)
-								} label: {
-									pageLabel(page)
-									}
-									.accessibilityLabel(translatedPageTitle(page))
-									.accessibilityHint("Opens \(translatedPageTitle(page)) documentation")
-								}
+							let expansion = sectionExpansion(item.section)
+							#if targetEnvironment(macCatalyst)
+							// Mac Catalyst gets the native collapsible section; `.sidebar` (below)
+							// renders its disclosure toggle.
+							Section(translatedSectionName(item.section), isExpanded: expansion) {
+								pageRows(item.pages)
 							}
+							#else
+							// iOS uses `.insetGrouped`, which silently drops `Section(isExpanded:)`'s
+							// toggle — leaving the collapsed-by-default Developer section unreachable.
+							// A custom tappable header restores collapse/expand on iOS.
+							Section {
+								if expansion.wrappedValue {
+									pageRows(item.pages)
+								}
+							} header: {
+								sectionHeader(item.section, expansion: expansion)
+							}
+							#endif
 						}
 					}
-					// .sidebar is required on Mac Catalyst for Section(isExpanded:)
-					// collapsible behaviour — .insetGrouped silently drops the toggle.
 					#if targetEnvironment(macCatalyst)
 					.listStyle(.sidebar)
 					#else
@@ -210,6 +216,49 @@ struct DocBrowserView: View {
 			}
 			startLabelTranslations()
 		}
+	}
+
+	/// The navigation rows for a section's pages. Shared by the native (Catalyst) and custom (iOS)
+	/// collapsible section layouts.
+	@ViewBuilder
+	private func pageRows(_ pages: [DocPage]) -> some View {
+		ForEach(pages) { page in
+			NavigationLink {
+				DocPageView(page: page)
+			} label: {
+				pageLabel(page)
+			}
+			.accessibilityLabel(translatedPageTitle(page))
+			.accessibilityHint("Opens \(translatedPageTitle(page)) documentation")
+		}
+	}
+
+	/// Tappable, collapsible section header. Replaces `Section(isExpanded:)`'s built-in toggle,
+	/// which only renders with `.sidebar` (not `.insetGrouped`). The chevron rotates with the
+	/// expansion state. Disabled while a search is active, since matches force every section open.
+	@ViewBuilder
+	private func sectionHeader(_ section: DocSection, expansion: Binding<Bool>) -> some View {
+		Button {
+			withAnimation(.easeInOut(duration: 0.2)) {
+				expansion.wrappedValue.toggle()
+			}
+		} label: {
+			HStack {
+				Text(translatedSectionName(section))
+				Spacer()
+				Image(systemName: "chevron.forward")
+					.font(.caption.weight(.semibold))
+					.foregroundStyle(.secondary)
+					.rotationEffect(.degrees(expansion.wrappedValue ? 90 : 0))
+			}
+			.contentShape(Rectangle())
+		}
+		.buttonStyle(.plain)
+		.disabled(!searchText.isEmpty)
+		.textCase(nil)
+		.accessibilityLabel(translatedSectionName(section))
+		.accessibilityValue(expansion.wrappedValue ? "Expanded" : "Collapsed")
+		.accessibilityHint(expansion.wrappedValue ? "Double tap to collapse" : "Double tap to expand")
 	}
 
 	@ViewBuilder

@@ -333,50 +333,73 @@ struct OutputIntervalsEnumTests {
 @Suite("NodeInfo isValidPosition")
 struct NodeInfoIsValidPositionTests {
 
+	private func nodeInfo(lat: Int32, long: Int32) -> NodeInfo {
+		var info = NodeInfo()
+		var pos = Position()
+		pos.latitudeI = lat
+		pos.longitudeI = long
+		info.position = pos
+		return info
+	}
+
 	@Test func validPosition() {
-		var info = NodeInfo()
-		var pos = Position()
-		pos.latitudeI = 377749000
-		pos.longitudeI = -1224194000
-		info.position = pos
-		// Test via the extension from @testable import Meshtastic
-		let isValid = info.hasPosition &&
-			info.position.longitudeI != 0 &&
-			info.position.latitudeI != 0 &&
-			info.position.latitudeI != 373346000 &&
-			info.position.longitudeI != -1220090000
-		#expect(isValid == true)
+		#expect(nodeInfo(lat: 377749000, long: -1224194000).isValidPosition == true)
 	}
 
-	@Test func zeroCoords_invalid() {
-		var info = NodeInfo()
-		var pos = Position()
-		pos.latitudeI = 0
-		pos.longitudeI = 0
-		info.position = pos
-		let isValid = info.hasPosition &&
-			info.position.longitudeI != 0 &&
-			info.position.latitudeI != 0
-		#expect(isValid == false)
+	@Test func nullIsland_invalid() {
+		#expect(nodeInfo(lat: 0, long: 0).isValidPosition == false)
 	}
 
-	@Test func excludedPosition_invalid() {
-		var info = NodeInfo()
-		var pos = Position()
-		pos.latitudeI = 373346000
-		pos.longitudeI = -1220090000
-		info.position = pos
-		let isValid = info.hasPosition &&
-			info.position.longitudeI != 0 &&
-			info.position.latitudeI != 0 &&
-			info.position.latitudeI != 373346000 &&
-			info.position.longitudeI != -1220090000
-		#expect(isValid == false)
+	@Test func applePark_invalid() {
+		#expect(nodeInfo(lat: 373346000, long: -1220090000).isValidPosition == false)
 	}
 
 	@Test func noPosition_invalid() {
 		let info = NodeInfo()
 		#expect(info.hasPosition == false)
+		#expect(info.isValidPosition == false)
+	}
+}
+
+@Suite("Position hasValidCoordinates")
+struct PositionHasValidCoordinatesTests {
+
+	private func position(lat: Int32, long: Int32) -> Position {
+		var pos = Position()
+		pos.latitudeI = lat
+		pos.longitudeI = long
+		return pos
+	}
+
+	@Test func realCoordinates_valid() {
+		#expect(position(lat: 377749000, long: -1224194000).hasValidCoordinates == true)
+	}
+
+	@Test func nullIsland_invalid() {
+		#expect(position(lat: 0, long: 0).hasValidCoordinates == false)
+	}
+
+	@Test func applePark_invalid() {
+		#expect(position(lat: 373346000, long: -1220090000).hasValidCoordinates == false)
+	}
+
+	// A position with either component zero is treated as "no location" app-wide (it would
+	// not render via nodeCoordinate), so it must not count as valid — matching the convention.
+	@Test func latitudeZero_invalid() {
+		#expect(position(lat: 0, long: -1224194000).hasValidCoordinates == false)
+	}
+
+	@Test func longitudeZero_invalid() {
+		#expect(position(lat: 377749000, long: 0).hasValidCoordinates == false)
+	}
+
+	// Sharing only one coordinate with Apple Park is a real position, not the placeholder.
+	@Test func appleParkLatitudeOnly_valid() {
+		#expect(position(lat: 373346000, long: -1224194000).hasValidCoordinates == true)
+	}
+
+	@Test func appleParkLongitudeOnly_valid() {
+		#expect(position(lat: 377749000, long: -1220090000).hasValidCoordinates == true)
 	}
 }
 
