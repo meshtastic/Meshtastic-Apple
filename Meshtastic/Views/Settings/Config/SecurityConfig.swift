@@ -78,6 +78,9 @@ struct SecurityConfig: View {
 						.keyboardType(.alphabet)
 						.foregroundStyle(.tertiary)
 						.disableAutocorrection(true)
+						// Retained as the iOS copy path (long-press to select); the Copy button
+						// above is the reliable path on Mac Catalyst, where this doesn't offer
+						// a right-click "Copy" inside a Form (#1943).
 						.textSelection(.enabled)
 						.background(
 							RoundedRectangle(cornerRadius: 10.0)
