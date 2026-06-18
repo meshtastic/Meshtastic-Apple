@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="mqtt">
-<div class="pre-release-banner">⚠️ <strong>Pre-release</strong> — subject to change</div><h1>MQTT</h1>
+<h1>MQTT</h1>
 <p>The MQTT module allows a Meshtastic node to bridge mesh traffic to an MQTT broker, extending the mesh over the internet and enabling integration with home automation systems.</p>
 <h2>What MQTT Does</h2>
 <p>A node with MQTT enabled acts as a gateway: it publishes received mesh packets to an MQTT broker and optionally subscribes to a topic so that remote nodes can inject packets back into the local mesh.</p>
@@ -79,7 +79,7 @@
 </tr>
 <tr>
 <td>JSON Enabled</td>
-<td>Publish decoded JSON packets in addition to the binary protobuf format. Useful for home automation integrations.</td>
+<td>Removed. JSON packet support was deprecated and removed in firmware.</td>
 </tr>
 <tr>
 <td>TLS Enabled</td>

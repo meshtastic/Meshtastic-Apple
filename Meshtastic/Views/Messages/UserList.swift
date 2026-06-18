@@ -17,7 +17,7 @@ struct UserList: View {
 	@State private var editingFilters = false
 	@State private var showingHelp = false
 	@State private var showingTrustConfirm: Bool = false
-	@StateObject private var filters: NodeFilterParameters = NodeFilterParameters()
+	@ObservedObject private var filters: NodeFilterParameters = .shared
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
 
@@ -44,12 +44,27 @@ struct UserList: View {
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
 					Spacer()
+					if filters.isFiltering {
+						Button(action: {
+							withAnimation {
+								filters.reset()
+							}
+						}) {
+							Image(systemName: "arrow.counterclockwise.circle")
+								.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
+						.accessibilityLabel("Reset contact filters")
+						.accessibilityHint("Clears all active contact filters.")
+					}
 					Button(action: {
 						withAnimation {
 							editingFilters = !editingFilters
 						}
 					}) {
-						Image(systemName: !editingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+						Image(systemName: filters.isFiltering ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
 							.padding(.vertical, 5)
 					}
 					.tint(Color(UIColor.secondarySystemBackground))

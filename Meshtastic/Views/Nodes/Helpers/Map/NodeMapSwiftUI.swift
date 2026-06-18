@@ -64,21 +64,21 @@ struct NodeMapSwiftUI: View {
 	@State private var mapRegion = MKCoordinateRegion.init()
 
 	var body: some View {
-		Group {
-			if totalPositionCount > 0 {
-				mapWithNavigation
-			} else {
-				ContentUnavailableView("No Positions", systemImage: "mappin.slash")
+		if node.modelContext != nil {
+			Group {
+				if totalPositionCount > 0 {
+					mapWithNavigation
+				} else {
+					ContentUnavailableView("No Positions", systemImage: "mappin.slash")
+				}
 			}
-		}
-		.onChange(of: node) {
-			handleNodeChange()
-		}
-		.onChange(of: node.lastHeard) {
-			refreshPositions()
-		}
-		.onAppear {
-			handleAppear()
+			.onChange(of: node) {
+				handleNodeChange()
+				refreshPositions()
+			}
+			.onAppear {
+				handleAppear()
+			}
 		}
 	}
 

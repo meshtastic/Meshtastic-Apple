@@ -7,8 +7,8 @@
         "keywords": [
             "radio",
             "app",
-            "device",
             "bluetooth",
+            "device",
             "connected",
             "radios",
             "meshtastic",
@@ -36,7 +36,7 @@
             "status",
             "start"
         ],
-        "charCount": 2492
+        "charCount": 2452
     },
     {
         "id": "carplay",
@@ -75,7 +75,7 @@
             "contact",
             "channels"
         ],
-        "charCount": 3418
+        "charCount": 3378
     },
     {
         "id": "discovery",
@@ -114,7 +114,7 @@
             "ranked",
             "radio"
         ],
-        "charCount": 2027
+        "charCount": 1987
     },
     {
         "id": "firmware",
@@ -122,8 +122,8 @@
         "section": "user",
         "navOrder": 5,
         "keywords": [
-            "update",
             "firmware",
+            "update",
             "radio",
             "updates",
             "app",
@@ -139,7 +139,6 @@
             "troubleshooting",
             "transfer",
             "stable",
-            "release",
             "meshtastic",
             "list",
             "hardware",
@@ -151,9 +150,10 @@
             "binary",
             "available",
             "after",
-            "within"
+            "within",
+            "way"
         ],
-        "charCount": 1850
+        "charCount": 1810
     },
     {
         "id": "getting-started",
@@ -162,37 +162,37 @@
         "navOrder": 1,
         "keywords": [
             "radio",
-            "name",
+            "step",
             "meshtastic",
+            "app",
+            "nodes",
+            "name",
             "tap",
             "tab",
-            "step",
-            "nodes",
-            "device",
-            "app",
             "settings",
             "mesh",
-            "see",
-            "node",
-            "nearby",
+            "device",
             "messages",
             "connect",
             "bluetooth",
+            "short",
+            "see",
+            "permission",
+            "open",
+            "node",
+            "nearby",
+            "map",
+            "location",
+            "ios",
+            "first",
+            "amp",
             "within",
             "tip",
-            "started",
-            "short",
-            "send",
-            "region",
-            "open",
-            "map",
-            "lora",
-            "list",
-            "ios",
-            "icon",
-            "enter"
+            "time",
+            "tapping",
+            "started"
         ],
-        "charCount": 2034
+        "charCount": 2899
     },
     {
         "id": "map",
@@ -231,7 +231,7 @@
             "trail",
             "time"
         ],
-        "charCount": 2665
+        "charCount": 2625
     },
     {
         "id": "messages",
@@ -243,9 +243,9 @@
             "message",
             "text",
             "key",
+            "messages",
             "formatting",
             "channels",
-            "messages",
             "markdown",
             "delimiters",
             "not",
@@ -270,7 +270,7 @@
             "encryption",
             "direct"
         ],
-        "charCount": 7424
+        "charCount": 7384
     },
     {
         "id": "mqtt",
@@ -281,10 +281,10 @@
             "mqtt",
             "broker",
             "enabled",
-            "packets",
             "mesh",
             "topic",
             "public",
+            "packets",
             "meshtastic",
             "tls",
             "node",
@@ -294,22 +294,22 @@
             "not",
             "internet",
             "username",
-            "useful",
             "uplink",
             "unencrypted",
             "traffic",
             "than",
+            "support",
             "security",
             "root",
+            "removed",
             "rather",
             "publishing",
             "publishes",
             "password",
-            "over",
-            "optional",
-            "only"
+            "packet",
+            "over"
         ],
-        "charCount": 2527
+        "charCount": 2443
     },
     {
         "id": "nodes",
@@ -319,36 +319,36 @@
         "keywords": [
             "node",
             "device",
-            "from",
-            "packets",
-            "shown",
             "nodes",
+            "from",
+            "only",
+            "shown",
+            "packets",
+            "messages",
             "key",
             "hardware",
             "broadcasts",
+            "shows",
             "not",
             "name",
-            "messages",
+            "list",
+            "direct",
             "client",
             "supported",
-            "shows",
+            "public",
+            "location",
             "links",
+            "hops",
+            "heard",
             "firmware",
             "channel",
             "updates",
+            "tap",
             "status",
             "section",
-            "role",
-            "remove",
-            "public",
-            "message",
-            "mesh",
-            "list",
-            "heard",
-            "direct",
-            "devices"
+            "search"
         ],
-        "charCount": 5700
+        "charCount": 6865
     },
     {
         "id": "settings",
@@ -364,16 +364,16 @@
             "language",
             "from",
             "traffic",
-            "hop",
             "settings",
+            "hop",
             "nodes",
+            "mesh",
             "management",
             "translation",
+            "set",
             "region",
             "packets",
-            "mesh",
             "translated",
-            "set",
             "rate",
             "limit",
             "firmware",
@@ -387,7 +387,7 @@
             "limiting",
             "enable"
         ],
-        "charCount": 7970
+        "charCount": 7998
     },
     {
         "id": "signal-meter",
@@ -426,7 +426,7 @@
             "good",
             "friend"
         ],
-        "charCount": 4032
+        "charCount": 3992
     },
     {
         "id": "tak",
@@ -465,7 +465,7 @@
             "position",
             "pickers"
         ],
-        "charCount": 6113
+        "charCount": 6073
     },
     {
         "id": "telemetry",
@@ -473,8 +473,8 @@
         "section": "user",
         "navOrder": 8,
         "keywords": [
-            "node",
             "telemetry",
+            "node",
             "sensor",
             "quality",
             "air",
@@ -504,7 +504,7 @@
             "noise",
             "meshtastic"
         ],
-        "charCount": 3882
+        "charCount": 3842
     },
     {
         "id": "translate",
@@ -521,9 +521,9 @@
             "app",
             "localizer",
             "local",
+            "translate",
             "amp",
             "translation",
-            "translate",
             "review",
             "open",
             "scripts",
@@ -543,7 +543,7 @@
             "automatically",
             "version"
         ],
-        "charCount": 4775
+        "charCount": 4735
     },
     {
         "id": "units-and-locale",
@@ -557,13 +557,13 @@
             "metric",
             "measurement",
             "node",
+            "units",
             "temperature",
             "imperial",
             "distances",
             "distance",
             "date",
             "amp",
-            "units",
             "telemetry",
             "meshtastic",
             "device",
@@ -582,7 +582,7 @@
             "uses",
             "time"
         ],
-        "charCount": 4793
+        "charCount": 4753
     },
     {
         "id": "watch",
@@ -611,6 +611,7 @@
             "compass",
             "colour",
             "bearing",
+            "apple",
             "toward",
             "top",
             "nodes",
@@ -618,10 +619,9 @@
             "meaning",
             "list",
             "finding",
-            "current",
-            "circle"
+            "current"
         ],
-        "charCount": 3153
+        "charCount": 3113
     },
     {
         "id": "whats-new",
@@ -632,17 +632,22 @@
             "new",
             "settings",
             "page",
-            "app",
             "messages",
+            "app",
+            "nodes",
+            "list",
+            "jun",
             "docs",
             "device",
             "watch",
             "translation",
             "translate",
             "recent",
+            "now",
+            "node",
             "live",
-            "list",
             "ios",
+            "filters",
             "explaining",
             "documentation",
             "config",
@@ -653,14 +658,9 @@
             "users",
             "translations",
             "top",
-            "snr",
-            "signal",
-            "rssi",
-            "roughly",
-            "radios",
-            "older"
+            "snr"
         ],
-        "charCount": 3006
+        "charCount": 3634
     },
     {
         "id": "adding-features",
@@ -695,11 +695,11 @@
             "file",
             "existing",
             "create",
+            "adding",
             "url",
-            "tests",
-            "testing"
+            "tests"
         ],
-        "charCount": 2704
+        "charCount": 2664
     },
     {
         "id": "architecture",
@@ -738,7 +738,7 @@
             "ble",
             "app"
         ],
-        "charCount": 4462
+        "charCount": 4422
     },
     {
         "id": "carplay",
@@ -777,7 +777,7 @@
             "while",
             "using"
         ],
-        "charCount": 2203
+        "charCount": 2163
     },
     {
         "id": "codebase",
@@ -816,7 +816,7 @@
             "tcp",
             "swiftdata"
         ],
-        "charCount": 3578
+        "charCount": 3538
     },
     {
         "id": "contributing",
@@ -838,14 +838,13 @@
             "all",
             "under",
             "tests",
-            "subject",
-            "release",
             "org",
             "only",
             "new",
             "ios",
             "github",
             "deep",
+            "contributing",
             "body",
             "apple",
             "app",
@@ -853,9 +852,10 @@
             "use",
             "uikit",
             "type",
-            "submodule"
+            "submodule",
+            "subject"
         ],
-        "charCount": 2937
+        "charCount": 2897
     },
     {
         "id": "deep-links",
@@ -875,12 +875,12 @@
             "tab",
             "nodes",
             "nodenum",
+            "deep",
             "amp",
             "tak",
             "lora",
             "links",
             "device",
-            "deep",
             "connect",
             "app",
             "waypointid",
@@ -894,7 +894,7 @@
             "security",
             "routes"
         ],
-        "charCount": 3026
+        "charCount": 3040
     },
     {
         "id": "measurement",
@@ -933,7 +933,7 @@
             "text",
             "string"
         ],
-        "charCount": 6392
+        "charCount": 6352
     },
     {
         "id": "swiftdata",
@@ -972,7 +972,7 @@
             "schema",
             "nodeinfoentity"
         ],
-        "charCount": 9767
+        "charCount": 9727
     },
     {
         "id": "tak-protocol",
@@ -1011,7 +1011,7 @@
             "supportstakv2",
             "routes"
         ],
-        "charCount": 7693
+        "charCount": 7653
     },
     {
         "id": "testing",
@@ -1031,11 +1031,11 @@
             "expect",
             "cgimage",
             "await",
+            "testing",
             "router",
             "mainactor",
             "func",
             "throws",
-            "testing",
             "snapshot",
             "result",
             "require",
@@ -1050,7 +1050,7 @@
             "suite",
             "screenshots"
         ],
-        "charCount": 3738
+        "charCount": 3698
     },
     {
         "id": "transport",
@@ -1058,8 +1058,8 @@
         "section": "developer",
         "navOrder": 4,
         "keywords": [
-            "accessorymanager",
             "transport",
+            "accessorymanager",
             "connect",
             "toradio",
             "swift",
@@ -1089,7 +1089,7 @@
             "ble",
             "background"
         ],
-        "charCount": 3759
+        "charCount": 3719
     },
     {
         "id": "whats-new",
@@ -1128,6 +1128,6 @@
             "carplay",
             "based"
         ],
-        "charCount": 2442
+        "charCount": 2402
     }
 ]

@@ -142,9 +142,32 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// `repointToFreshContainer()` plus a UI refresh: bumps `databaseResetID` so @Query-backed
 	/// views rebind to the recreated container. Use at clear sites with no follow-up reconnect;
 	/// the node-switch flow repoints first and refreshes the UI itself after its restore.
-	func resetDatabaseAfterClear() {
+	///
+	/// Pops every tab to its root and yields *before* recreating the container. Detail views such
+	/// as `ChannelMessageList` bind a `@Bindable ChannelEntity` directly; if one is still mounted
+	/// when the container is torn down, reading that now-invalid object traps with "This model
+	/// instance was destroyed by calling ModelContext.reset". Popping + yielding lets SwiftUI
+	/// unmount those views first. Mirrors the node-switch flow in `backupCurrentAndRestoreDatabase`
+	/// (Views/Connect/Connect.swift).
+	func resetDatabaseAfterClear() async {
+		// `appState` (and its `router`) are wired up at launch and are required for the safety
+		// guarantee here. Bail loudly rather than recreating the container without first popping the
+		// detail views: a half-done reset (container torn down, views still mounted) would
+		// reintroduce the exact ModelContext.reset crash this method exists to prevent. The data was
+		// already cleared by the preceding `clearDatabase`, so skipping the container swap is the
+		// safe degradation.
+		guard let appState else {
+			Logger.data.error("💾 [Database] resetDatabaseAfterClear skipped: appState is nil — cannot pop views before recreating the container")
+			return
+		}
+		let router = appState.router
+		router.popToRoot(tab: .messages)
+		router.popToRoot(tab: .nodes)
+		router.popToRoot(tab: .map)
+		router.popToRoot(tab: .settings)
+		await Task.yield()
 		repointToFreshContainer()
-		appState?.databaseResetID = UUID()
+		appState.databaseResetID = UUID()
 	}
 
 	// Published Stuff
@@ -201,6 +224,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	
 	var heartbeatTimer: ResettableTimer?
 	var heartbeatResponseTimer: ResettableTimer?
+	/// How long a TCP/serial connection may sit idle (no data or log packets) before we send a
+	/// keep-alive heartbeat. The timer is resettable, so an active link never sends one — heartbeats
+	/// only fire after this much silence. BLE does not use this at all (Core Bluetooth manages the
+	/// link); see `Transport.requiresPeriodicHeartbeat`.
+	static let heartbeatInterval: TimeInterval = 15.0
 	private var isClosingConnection = false
 
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
@@ -471,7 +499,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			await self.processFromRadio(fromRadio)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
 
 		case .logMessage(let message):
@@ -482,7 +510,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.didReceiveLog(message: message)
 			Task {
 				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
 		
 		case .rssiUpdate(let rssi):
@@ -928,7 +956,10 @@ extension AccessoryManager {
 			self.heartbeatTimer = nil
 		}
 		
-		self.heartbeatTimer = ResettableTimer(isRepeating: true, debugName: Bundle.main.isDebug ? "Send Heartbeat" : nil) {
+		// No debugName: this timer is reset on every received data/log packet, so a per-reset debug
+		// line would flood the log on busy TCP/serial links. The meaningful "heartbeat sent" log
+		// below still fires only when a heartbeat is actually sent (i.e. after an idle interval).
+		self.heartbeatTimer = ResettableTimer(isRepeating: true) {
 			Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
 			try? await self.sendHeartbeat()
 		}
@@ -936,7 +967,10 @@ extension AccessoryManager {
 		// We can send heartbeats for older versions just fine, but only 2.7.4 and up will respond with
 		// a definite queueStatus packet.
 		if self.checkIsVersionSupported(forVersion: "2.7.4") {
-			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false, debugName: Bundle.main.isDebug ? "Heartbeat Timeout" : nil) { @MainActor in
+			// No debugName: this timer is cancelled on every received data/log packet, so a per-cancel
+			// debug line would flood the log on busy links. The timeout error below still fires if a
+			// heartbeat truly goes unanswered.
+			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor in
 				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
 				// If we're in the middle of a connection cancel it.
 				await self.connectionStepper?.cancel()
@@ -950,7 +984,7 @@ extension AccessoryManager {
 				}
 			}
 		}
-		await self.heartbeatTimer?.reset(delay: .seconds(15.0))
+		await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 	}
 }
 
