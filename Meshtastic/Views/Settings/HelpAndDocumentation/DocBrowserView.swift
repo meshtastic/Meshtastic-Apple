@@ -246,7 +246,7 @@ struct DocBrowserView: View {
 			HStack {
 				Text(translatedSectionName(section))
 				Spacer()
-				Image(systemName: "chevron.right")
+				Image(systemName: "chevron.forward")
 					.font(.caption.weight(.semibold))
 					.foregroundStyle(.secondary)
 					.rotationEffect(.degrees(expansion.wrappedValue ? 90 : 0))
