@@ -142,9 +142,32 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// `repointToFreshContainer()` plus a UI refresh: bumps `databaseResetID` so @Query-backed
 	/// views rebind to the recreated container. Use at clear sites with no follow-up reconnect;
 	/// the node-switch flow repoints first and refreshes the UI itself after its restore.
-	func resetDatabaseAfterClear() {
+	///
+	/// Pops every tab to its root and yields *before* recreating the container. Detail views such
+	/// as `ChannelMessageList` bind a `@Bindable ChannelEntity` directly; if one is still mounted
+	/// when the container is torn down, reading that now-invalid object traps with "This model
+	/// instance was destroyed by calling ModelContext.reset". Popping + yielding lets SwiftUI
+	/// unmount those views first. Mirrors the node-switch flow in `backupCurrentAndRestoreDatabase`
+	/// (Views/Connect/Connect.swift).
+	func resetDatabaseAfterClear() async {
+		// `appState` (and its `router`) are wired up at launch and are required for the safety
+		// guarantee here. Bail loudly rather than recreating the container without first popping the
+		// detail views: a half-done reset (container torn down, views still mounted) would
+		// reintroduce the exact ModelContext.reset crash this method exists to prevent. The data was
+		// already cleared by the preceding `clearDatabase`, so skipping the container swap is the
+		// safe degradation.
+		guard let appState else {
+			Logger.data.error("💾 [Database] resetDatabaseAfterClear skipped: appState is nil — cannot pop views before recreating the container")
+			return
+		}
+		let router = appState.router
+		router.popToRoot(tab: .messages)
+		router.popToRoot(tab: .nodes)
+		router.popToRoot(tab: .map)
+		router.popToRoot(tab: .settings)
+		await Task.yield()
 		repointToFreshContainer()
-		appState?.databaseResetID = UUID()
+		appState.databaseResetID = UUID()
 	}
 
 	// Published Stuff
