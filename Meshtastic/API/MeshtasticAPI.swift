@@ -304,14 +304,15 @@ deviceEntity.architecture = device.architecture
 
 				// Marketplace shipping regions: the marketplace key appears as a prefix or
 				// suffix of the short code (e.g. "rokland-…" or "…-aliexpress").
-				var regions: [String]?
+				// Non-marketplace links keep an empty `regions` (see DeviceLinkEntity).
+				var regions: [String] = []
 				if isMarketplace {
 					regions = decoded.marketplaces.first(where: { entry in
 						let key = entry.key
 						return code == key
 							|| code.hasPrefix("\(key)-") || code.hasPrefix("\(key)_")
 							|| code.hasSuffix("-\(key)") || code.hasSuffix("_\(key)")
-					})?.value.regions
+					})?.value.regions ?? []
 				}
 
 				let redirectUrl = "https://msh.to/\(code)"
