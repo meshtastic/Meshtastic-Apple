@@ -170,9 +170,9 @@
             "tap",
             "tab",
             "settings",
-            "messages",
             "mesh",
             "device",
+            "messages",
             "connect",
             "bluetooth",
             "short",
@@ -185,14 +185,14 @@
             "location",
             "ios",
             "first",
+            "amp",
             "within",
             "tip",
             "time",
             "tapping",
-            "started",
-            "setup"
+            "started"
         ],
-        "charCount": 2864
+        "charCount": 2899
     },
     {
         "id": "map",
