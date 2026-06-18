@@ -89,6 +89,18 @@ struct DiscoveryScanEngineTests {
 			#expect(!scanning, "Expected isScanning=false for state \(state)")
 		}
 	}
+
+	// MARK: - Reconnect timeout resolution (#1952 item 3)
+
+	@Test func reconnectTimeoutResolvesToDwellOnlyWhenConnectedAndSubscribed() {
+		// Connected & subscribed → resume dwelling (covers a missed disconnect edge that
+		// previously left the scan hung on one preset and never rotating).
+		#expect(DiscoveryScanEngine.reconnectTimeoutResolution(isConnected: true, isSubscribed: true) == .dwell)
+		// Anything short of fully connected → pause (link genuinely down).
+		#expect(DiscoveryScanEngine.reconnectTimeoutResolution(isConnected: false, isSubscribed: false) == .paused)
+		#expect(DiscoveryScanEngine.reconnectTimeoutResolution(isConnected: true, isSubscribed: false) == .paused)
+		#expect(DiscoveryScanEngine.reconnectTimeoutResolution(isConnected: false, isSubscribed: true) == .paused)
+	}
 }
 
 // MARK: - LoRa config preservation (#1952)
