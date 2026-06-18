@@ -306,26 +306,28 @@ private struct FilteredNodeList: View {
 	// The body of the view
 	var body: some View {
 		List(displayedNodes, selection: $selectedNodeNum) { entry in
-			NavigationLink(value: entry.id) {
-				switch nodeListDensity {
-				case .compact:
-					NodeListItemCompact(
+			if entry.node.modelContext != nil {
+				NavigationLink(value: entry.id) {
+					switch nodeListDensity {
+					case .compact:
+						NodeListItemCompact(
+							node: entry.node,
+							isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
+							connectedNode: accessoryManager.activeConnection?.device.num ?? -1)
+					case .standard:
+						NodeListItem(
+							node: entry.node,
+							isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
+							connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+						)
+					}
+				}
+				.contextMenu {
+					contextMenuActions(
 						node: entry.node,
-						isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
-						connectedNode: accessoryManager.activeConnection?.device.num ?? -1)
-				case .standard:
-					NodeListItem(
-						node: entry.node,
-						isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
-						connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+						connectedNode: connectedNode
 					)
 				}
-			}
-			.contextMenu {
-				contextMenuActions(
-					node: entry.node,
-					connectedNode: connectedNode
-				)
 			}
 		}
 		.navigationTitle(String.localizedStringWithFormat("Nodes (%@)".localized, String(displayedNodes.count)))
