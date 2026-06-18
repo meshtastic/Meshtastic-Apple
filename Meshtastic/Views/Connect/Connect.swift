@@ -518,17 +518,17 @@ struct Connect: View {
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
-		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(mostRecent?.uptimeSeconds ?? 0),
+		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(bitPattern: mostRecent?.uptimeSeconds ?? 0),
 																	  channelUtilization: mostRecent?.channelUtilization ?? 0.0,
 																	  airtime: mostRecent?.airUtilTx ?? 0.0,
-																	  sentPackets: UInt32(mostRecent?.numPacketsTx ?? 0),
-																	  receivedPackets: UInt32(mostRecent?.numPacketsRx ?? 0),
-																	  badReceivedPackets: UInt32(mostRecent?.numPacketsRxBad ?? 0),
-																	  dupeReceivedPackets: UInt32(mostRecent?.numRxDupe ?? 0),
-																	  packetsSentRelay: UInt32(mostRecent?.numTxRelay ?? 0),
-																	  packetsCanceledRelay: UInt32(mostRecent?.numTxRelayCanceled ?? 0),
-																	  nodesOnline: UInt32(mostRecent?.numOnlineNodes ?? 0),
-																	  totalNodes: UInt32(mostRecent?.numTotalNodes ?? 0),
+																	  sentPackets: UInt32(bitPattern: mostRecent?.numPacketsTx ?? 0),
+																	  receivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRx ?? 0),
+																	  badReceivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRxBad ?? 0),
+																	  dupeReceivedPackets: UInt32(bitPattern: mostRecent?.numRxDupe ?? 0),
+																	  packetsSentRelay: UInt32(bitPattern: mostRecent?.numTxRelay ?? 0),
+																	  packetsCanceledRelay: UInt32(bitPattern: mostRecent?.numTxRelayCanceled ?? 0),
+																	  nodesOnline: UInt32(bitPattern: mostRecent?.numOnlineNodes ?? 0),
+																	  totalNodes: UInt32(bitPattern: mostRecent?.numTotalNodes ?? 0),
 																	  timerRange: Date.now...future)
 		
 		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
