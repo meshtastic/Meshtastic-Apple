@@ -446,7 +446,7 @@ extension AccessoryManager {
 			for (index, node) in routingMessage.route.enumerated() {
 				var hopNode = getNodeInfo(id: Int64(node), context: context)
 				if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
-					hopNode = createNodeInfo(num: Int64(node), context: context)
+					hopNode = findOrCreateNode(num: Int64(node), context: context)
 				}
 				let traceRouteHop = TraceRouteHopEntity()
 				context.insert(traceRouteHop)
@@ -510,7 +510,7 @@ extension AccessoryManager {
 				for (index, node) in routingMessage.routeBack.enumerated() {
 					var hopNode = getNodeInfo(id: Int64(node), context: context)
 					if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
-						hopNode = createNodeInfo(num: Int64(node), context: context)
+						hopNode = findOrCreateNode(num: Int64(node), context: context)
 					}
 					let traceRouteHop = TraceRouteHopEntity()
 					context.insert(traceRouteHop)

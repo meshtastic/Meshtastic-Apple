@@ -299,3 +299,28 @@ func createNodeInfo(num: Int64, context: ModelContext) -> NodeInfoEntity {
 	context.insert(newUser)
 	return newNode
 }
+
+/// Returns the `NodeInfoEntity` for `num`, creating and inserting a stub only when none exists yet.
+///
+/// `NodeInfoEntity.num` is `@Attribute(.unique)`. SwiftData resolves unique collisions against the
+/// **saved** store only — it does NOT dedup against un-saved inserts pending in the same context.
+/// So a plain `fetch`-then-`insert` can leave two pending rows with the same `num` (e.g. a POSITION
+/// packet creates a stub before the matching NodeInfo packet arrives, or two packets for a new node
+/// arrive back-to-back before a save), which then traps at insert/save time with a SwiftData
+/// assertion (`_assertionFailure`, "…remapped to a temporary identifier… fatal logic error in
+/// DefaultStore"). Routing every node creation through this helper — which checks pending inserts in
+/// addition to the store — guarantees exactly one node per `num`.
+func findOrCreateNode(num: Int64, context: ModelContext) -> NodeInfoEntity {
+	var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == num })
+	descriptor.fetchLimit = 1
+	if let existing = (try? context.fetch(descriptor))?.first {
+		return existing
+	}
+	// `fetch` only sees saved rows; an un-saved insert for this `num` won't appear above.
+	if let pending = context.insertedModelsArray.lazy
+		.compactMap({ $0 as? NodeInfoEntity })
+		.first(where: { $0.num == num }) {
+		return pending
+	}
+	return createNodeInfo(num: num, context: context)
+}
