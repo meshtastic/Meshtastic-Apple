@@ -184,6 +184,14 @@ struct NodeList: View {
 //  FilteredNodeList.swift
 //  Meshtastic
 //
+/// Wraps a NodeInfoEntity with a pre-extracted stable identity so that List/ForEach never
+/// reads a key path on a live SwiftData object during diffing. If the backing object is
+/// faulted between snapshot and render, the identity comparison still works safely.
+private struct NodeListEntry: Identifiable {
+	let id: Int64
+	let node: NodeInfoEntity
+}
+
 private struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var router: Router
@@ -193,7 +201,7 @@ private struct FilteredNodeList: View {
 	/// Throttled snapshot of the filtered/sorted nodes actually shown. Recomputed on a gentle
 	/// cadence (see `.task`) instead of in `body`, so the full-node-set scan in `displayNodes`
 	/// doesn't run on every SwiftData write — which pegged the CPU on reconnect with a large DB.
-	@State private var displayedNodes: [NodeInfoEntity] = []
+	@State private var displayedNodes: [NodeListEntry] = []
 
 	var connectedNode: NodeInfoEntity?
 	@Binding var isPresentingDeleteNodeAlert: Bool
@@ -250,7 +258,7 @@ private struct FilteredNodeList: View {
 		)
 	}
 
-	private func displayNodes(activeNodeNum: Int64?) -> [NodeInfoEntity] {
+	private func displayNodes(activeNodeNum: Int64?) -> [NodeListEntry] {
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
@@ -292,30 +300,30 @@ private struct FilteredNodeList: View {
 		}
 		nodes.append(contentsOf: favoriteNodes)
 		nodes.append(contentsOf: regularNodes)
-		return nodes
+		return nodes.map { NodeListEntry(id: $0.num, node: $0) }
 	}
 
 	// The body of the view
 	var body: some View {
-		List(displayedNodes, id: \.num, selection: $selectedNodeNum) { node in
-			NavigationLink(value: node.num) {
+		List(displayedNodes, selection: $selectedNodeNum) { entry in
+			NavigationLink(value: entry.id) {
 				switch nodeListDensity {
 				case .compact:
 					NodeListItemCompact(
-						node: node,
-						isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
+						node: entry.node,
+						isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
 						connectedNode: accessoryManager.activeConnection?.device.num ?? -1)
 				case .standard:
 					NodeListItem(
-						node: node,
-						isDirectlyConnected: node.num == accessoryManager.activeDeviceNum,
+						node: entry.node,
+						isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
 						connectedNode: accessoryManager.activeConnection?.device.num ?? -1
 					)
 				}
 			}
 			.contextMenu {
 				contextMenuActions(
-					node: node,
+					node: entry.node,
 					connectedNode: connectedNode
 				)
 			}
