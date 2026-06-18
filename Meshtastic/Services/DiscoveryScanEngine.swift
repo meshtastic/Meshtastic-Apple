@@ -54,6 +54,10 @@ final class DiscoveryScanEngine {
 	var dwellDuration: TimeInterval = 900 // 15 minutes default
 	var session: DiscoverySessionEntity?
 	var errorMessage: String?
+	/// Non-blocking advisory shown when the device's LoRa setup means discovery can't land on
+	/// the public frequency for every preset — e.g. a manually-set frequency slot, which the
+	/// firmware can't auto-translate across presets. The scan still runs. See #1952.
+	var configurationWarning: String?
 
 	// MARK: Internal State
 
@@ -123,8 +127,9 @@ final class DiscoveryScanEngine {
 			return
 		}
 
-		// Clear any previous error
+		// Clear any previous error/advisory
 		errorMessage = nil
+		configurationWarning = nil
 
 		// Record home preset from current LoRa config
 		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
@@ -134,6 +139,20 @@ final class DiscoveryScanEngine {
 			// Snapshot the complete config so restore puts back the frequency slot and all
 			// other LoRa settings exactly — not just the modem preset (#1952).
 			homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
+
+			// Discovery relies on the firmware auto-deriving each preset's frequency from the
+			// primary channel (Frequency Slot 0). A manually-set frequency slot can't be
+			// translated across presets, so non-home presets may scan a different frequency than
+			// the public mesh and find nothing. Warn rather than silently mislead (#1952 item 1).
+			if loraConfig.channelNum != 0 {
+				// `channelNum` is Int32 (matches %d's expected C int); use localizedStringWithFormat
+				// for locale-aware number formatting, matching the rest of the app.
+				configurationWarning = String.localizedStringWithFormat(
+					"This device uses a manual Frequency Slot (%d). Local Mesh Discovery assumes the public/default channel as primary with automatic frequency (Slot 0); results for presets other than your current one may be incomplete.".localized,
+					loraConfig.channelNum
+				)
+				Logger.discovery.warning("📡 [Discovery] Manual frequency slot \(loraConfig.channelNum) — discovery results may be incomplete for non-home presets")
+			}
 		}
 
 		// Create session
@@ -350,17 +369,61 @@ final class DiscoveryScanEngine {
 		}
 	}
 
+	/// Seconds to wait for the device to reboot before we stop requiring an observed BLE
+	/// disconnect (see `awaitingDisconnect`). A reboot+reconnect normally completes within this.
+	private static let reconnectGraceSeconds = 30
+	/// Hard cap on the whole reconnect wait before giving up.
+	private static let reconnectTimeoutSeconds = 120
+
+	/// Once the post-preset-change reconnect window elapses, decide where a still-`.reconnecting`
+	/// scan should go: connected & subscribed → resume dwelling (covers a missed disconnect edge
+	/// or a recovered link); otherwise the link is genuinely down → pause. Pure for testability.
+	nonisolated static func reconnectTimeoutResolution(isConnected: Bool, isSubscribed: Bool) -> DiscoveryScanState {
+		(isConnected && isSubscribed) ? .dwell : .paused
+	}
+
 	private func startReconnectTimeout() {
 		reconnectTimeoutTask?.cancel()
 		reconnectTimeoutTask = Task { [weak self] in
-			do {
-				try await Task.sleep(for: .seconds(120))
-				guard let self, self.currentState == .reconnecting else { return }
-				Logger.discovery.warning("📡 [Discovery] Reconnect timeout (120s) → Paused")
-				self.transitionTo(.paused)
-			} catch {
-				// Cancelled — expected when reconnection succeeds
+			// Grace period: give the device time to reboot and BLE to cycle. If we never observe
+			// the disconnect edge (missed event, or a reconnect faster than the observer can see
+			// it), stop requiring it — otherwise the scan hangs on this preset forever and never
+			// rotates (#1952 item 3).
+			do { try await Task.sleep(for: .seconds(Self.reconnectGraceSeconds)) } catch { return }
+			guard let self, self.currentState == .reconnecting else { return }
+
+			// After the grace period we no longer require an observed disconnect edge.
+			if self.awaitingDisconnect {
+				self.awaitingDisconnect = false
+				Logger.discovery.warning("📡 [Discovery] No disconnect observed \(Self.reconnectGraceSeconds)s after preset change — no longer requiring one")
 			}
+			// If the device is back — whether or not we ever saw the disconnect, and whether or
+			// not the observer's subscribe edge fired — proceed to dwell now rather than waiting
+			// out the full timeout. (Checked regardless of awaitingDisconnect: the observer
+			// clears it on the disconnect edge, so gating this on it would skip the fast path in
+			// exactly the missed-subscribe-edge case it exists to handle.)
+			let connected = self.accessoryManager?.isConnected ?? false
+			let subscribed = self.accessoryManager.map { $0.state == .subscribed } ?? false
+			if connected && subscribed {
+				Logger.discovery.info("📡 [Discovery] Connected & subscribed after grace → Dwell")
+				self.transitionTo(.dwell)
+				self.startDwellTimer()
+				return
+			}
+
+			// Still not back: wait out the remaining window. With `awaitingDisconnect` now clear,
+			// the connection observer will advance us to dwell the instant we reconnect. If the
+			// window fully elapses, recover if we're somehow connected, else pause.
+			let remaining = Self.reconnectTimeoutSeconds - Self.reconnectGraceSeconds
+			do { try await Task.sleep(for: .seconds(remaining)) } catch { return }
+			guard self.currentState == .reconnecting else { return }
+			let resolution = Self.reconnectTimeoutResolution(
+				isConnected: self.accessoryManager?.isConnected ?? false,
+				isSubscribed: self.accessoryManager.map { $0.state == .subscribed } ?? false
+			)
+			Logger.discovery.warning("📡 [Discovery] Reconnect window elapsed (\(Self.reconnectTimeoutSeconds)s) → \(resolution)")
+			self.transitionTo(resolution)
+			if resolution == .dwell { self.startDwellTimer() }
 		}
 	}
 
