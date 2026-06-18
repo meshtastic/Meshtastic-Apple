@@ -289,10 +289,4 @@ final class NodeFilterParameters: ObservableObject {
 
 		return true
 	}
-
-	init() {
-		if let storedRoles = UserDefaults.standard.array(forKey: "nodeFilter.deviceRoles") as? [Int] {
-			self.deviceRoles = Set(storedRoles)
-		}
-	}
 }
