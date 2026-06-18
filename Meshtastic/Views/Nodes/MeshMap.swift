@@ -130,13 +130,13 @@ struct MeshMap: View {
 		}
 		combine(&key, filterRefreshKey)
 		for position in positions.prefix(64) {
-			combine(&key, position.nodePosition?.num ?? 0)
+			combine(&key, Int64(truncatingIfNeeded: position.persistentModelID.hashValue))
 			combine(&key, Int64(position.latitudeI))
 			combine(&key, Int64(position.longitudeI))
 			combine(&key, Int64(position.precisionBits))
 		}
 		if let last = positions.last {
-			combine(&key, last.nodePosition?.num ?? 0)
+			combine(&key, Int64(truncatingIfNeeded: last.persistentModelID.hashValue))
 			combine(&key, Int64(last.latitudeI))
 				combine(&key, Int64(last.longitudeI))
 			}
