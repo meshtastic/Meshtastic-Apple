@@ -747,6 +747,9 @@ extension DiscoveryScanEngine {
 		deviceMetricsHistory = [:]
 		awaitingDisconnect = false
 		interruptedDwellRemaining = nil
+		// Clear both home snapshots together so a later scan that starts without a readable
+		// LoRa config doesn't inherit a stale preset/config from a previous scan (#1952).
+		homePreset = nil
 		homeLoRaConfig = nil
 		transitionTo(.idle)
 	}
