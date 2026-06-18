@@ -1,5 +1,5 @@
 {
-  "api_hash": "73ebeda095e6bdfc84abc6526d7c471dcca2dbc4a0145da34c5d9754b090bcf1",
+  "api_hash": "97728430a7f5f6becbf7dc1e727331e88a81bbee01b2474e293f75161329de81",
   "files": {
     "crowpanel_2_4.svg": {
       "etag": "\"29194e5a415e5aee034b2d4a3ba2e398\""
@@ -77,7 +77,7 @@
       "etag": "\"3b483e95371895fbaf5d22a289a9a48e\""
     },
     "meshtasticd_tux.svg": {
-      "etag": "\"bundled\""
+      "etag": "\"b1dd17d142f042f588989d682c159356\""
     },
     "meteor_pro.svg": {
       "etag": "\"db5044328b825421851b963479fab9ca\""
@@ -189,6 +189,9 @@
     },
     "thinknode_m6.svg": {
       "etag": "\"d2cc380005e0d8ea839cc32104b14813\""
+    },
+    "tlora-c6.svg": {
+      "etag": "\"750e3861d8271eba9bcbab24f1699708\""
     },
     "tlora-t3s3-epaper.svg": {
       "etag": "\"7aa92389d32074449bf4ce92b8ea5fad\""

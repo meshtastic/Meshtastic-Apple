@@ -91,3 +91,4 @@ fastlane/test_output
 
 iOSInjectionProject/
 **/secrets.json
+.mcp.json
