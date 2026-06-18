@@ -178,6 +178,7 @@
 		AA003DOC0000002000000006 /* DocTranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000006 /* DocTranslationService.swift */; };
 		AA003DOC0000002000000007 /* TranslationCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000007 /* TranslationCache.swift */; };
 		AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000001000000008 /* DocTranslationTests.swift */; };
+		DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */; };
 		AA003DOC0000004000000001 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = AA003DOC0000005000000001 /* docs */; };
 		AA003FM00000002000000001 /* FoundationModelAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA003FM00000001000000001 /* FoundationModelAvailability.swift */; };
 		AA004FMT0000002000000001 /* MarkdownFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA004FMT0000001000000001 /* MarkdownFormatting.swift */; };
@@ -734,6 +735,7 @@
 		AA003DOC0000001000000006 /* DocTranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationService.swift; sourceTree = "<group>"; };
 		AA003DOC0000001000000007 /* TranslationCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TranslationCache.swift; path = Meshtastic/Services/TranslationCache.swift; sourceTree = "<group>"; };
 		AA003DOC0000001000000008 /* DocTranslationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocTranslationTests.swift; sourceTree = "<group>"; };
+		DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkTests.swift; sourceTree = "<group>"; };
 		AA003DOC0000005000000001 /* docs */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
 		AA003FM00000001000000001 /* FoundationModelAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FoundationModelAvailability.swift; path = Meshtastic/Services/FoundationModelAvailability.swift; sourceTree = "<group>"; };
 		AA004FMT0000001000000001 /* MarkdownFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownFormatting.swift; sourceTree = "<group>"; };
@@ -1573,6 +1575,7 @@
 				DD000030EVTFWNTST0000000 /* EventFirmwareNotificationTests.swift */,
 				AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
 				AA003DOC0000001000000008 /* DocTranslationTests.swift */,
+				DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -2601,6 +2604,7 @@
 				1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */,
 				AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */,
 				AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */,
+				DD0000DEVLNKTST000000001 /* DeviceLinkTests.swift in Sources */,
 				AA009MCT0000002000000001 /* MarkdownConverterTests.swift in Sources */,
 				AA0001012E2730EC00600001 /* ConnectViewTests.swift in Sources */,
 				DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
