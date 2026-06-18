@@ -145,9 +145,11 @@ final class DiscoveryScanEngine {
 			// translated across presets, so non-home presets may scan a different frequency than
 			// the public mesh and find nothing. Warn rather than silently mislead (#1952 item 1).
 			if loraConfig.channelNum != 0 {
-				configurationWarning = String(
-					format: "This device uses a manual Frequency Slot (%d). Local Mesh Discovery assumes the public/default channel as primary with automatic frequency (Slot 0); results for presets other than your current one may be incomplete.".localized,
-					Int(loraConfig.channelNum)
+				// `channelNum` is Int32 (matches %d's expected C int); use localizedStringWithFormat
+				// for locale-aware number formatting, matching the rest of the app.
+				configurationWarning = String.localizedStringWithFormat(
+					"This device uses a manual Frequency Slot (%d). Local Mesh Discovery assumes the public/default channel as primary with automatic frequency (Slot 0); results for presets other than your current one may be incomplete.".localized,
+					loraConfig.channelNum
 				)
 				Logger.discovery.warning("📡 [Discovery] Manual frequency slot \(loraConfig.channelNum) — discovery results may be incomplete for non-home presets")
 			}
@@ -390,18 +392,23 @@ final class DiscoveryScanEngine {
 			do { try await Task.sleep(for: .seconds(Self.reconnectGraceSeconds)) } catch { return }
 			guard let self, self.currentState == .reconnecting else { return }
 
+			// After the grace period we no longer require an observed disconnect edge.
 			if self.awaitingDisconnect {
 				self.awaitingDisconnect = false
 				Logger.discovery.warning("📡 [Discovery] No disconnect observed \(Self.reconnectGraceSeconds)s after preset change — no longer requiring one")
-				// Already back? Proceed to dwell now rather than waiting out the full timeout.
-				let connected = self.accessoryManager?.isConnected ?? false
-				let subscribed = self.accessoryManager.map { $0.state == .subscribed } ?? false
-				if connected && subscribed {
-					Logger.discovery.info("📡 [Discovery] Connected & subscribed → Dwell")
-					self.transitionTo(.dwell)
-					self.startDwellTimer()
-					return
-				}
+			}
+			// If the device is back — whether or not we ever saw the disconnect, and whether or
+			// not the observer's subscribe edge fired — proceed to dwell now rather than waiting
+			// out the full timeout. (Checked regardless of awaitingDisconnect: the observer
+			// clears it on the disconnect edge, so gating this on it would skip the fast path in
+			// exactly the missed-subscribe-edge case it exists to handle.)
+			let connected = self.accessoryManager?.isConnected ?? false
+			let subscribed = self.accessoryManager.map { $0.state == .subscribed } ?? false
+			if connected && subscribed {
+				Logger.discovery.info("📡 [Discovery] Connected & subscribed after grace → Dwell")
+				self.transitionTo(.dwell)
+				self.startDwellTimer()
+				return
 			}
 
 			// Still not back: wait out the remaining window. With `awaitingDisconnect` now clear,
