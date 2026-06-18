@@ -142,7 +142,20 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// `repointToFreshContainer()` plus a UI refresh: bumps `databaseResetID` so @Query-backed
 	/// views rebind to the recreated container. Use at clear sites with no follow-up reconnect;
 	/// the node-switch flow repoints first and refreshes the UI itself after its restore.
-	func resetDatabaseAfterClear() {
+	///
+	/// Pops every tab to its root and yields *before* recreating the container. Detail views such
+	/// as `ChannelMessageList` bind a `@Bindable ChannelEntity` directly; if one is still mounted
+	/// when the container is torn down, reading that now-invalid object traps with "This model
+	/// instance was destroyed by calling ModelContext.reset". Popping + yielding lets SwiftUI
+	/// unmount those views first. Mirrors the node-switch flow in `restoreNodeFromBackup`.
+	func resetDatabaseAfterClear() async {
+		if let router = appState?.router {
+			router.popToRoot(tab: .messages)
+			router.popToRoot(tab: .nodes)
+			router.popToRoot(tab: .map)
+			router.popToRoot(tab: .settings)
+		}
+		await Task.yield()
 		repointToFreshContainer()
 		appState?.databaseResetID = UUID()
 	}
