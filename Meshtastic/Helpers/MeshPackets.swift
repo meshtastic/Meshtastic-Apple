@@ -391,7 +391,7 @@ actor MeshPackets {
 					}
 				} else {
 					if fromNum > 0 {
-						let newNode = createNodeInfo(num: Int64(fromNum), context: modelContext)
+						let newNode = findOrCreateNode(num: Int64(fromNum), context: modelContext)
 						newNode.metadata = newMetadata
 					}
 				}
