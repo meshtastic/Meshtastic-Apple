@@ -22,7 +22,7 @@ Value: Fine-grained PAT scoped to `meshtastic/translations` with `contents:write
 
 ```bash
 # Rebuild bundled docs (copies .md source files into bundle)
-bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta
+bash scripts/build-docs.sh --output Meshtastic/Resources/docs
 ```
 
 ### Test
