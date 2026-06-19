@@ -86,6 +86,11 @@ final class DiscoveryScanEngine {
 	}
 	private var deviceMetricsHistory: [Int64: [DeviceMetricsEntry]] = [:]
 
+	/// When the current preset's dwell began. Local-stats telemetry from the connected node that
+	/// arrives at/after this time reflects the preset's frequency, so it's used to window the
+	/// noise-floor / channel-utilization samples captured for the preset result.
+	private var presetDwellStart: Date?
+
 	var isScanning: Bool {
 		switch currentState {
 		case .shifting, .reconnecting, .dwell, .paused, .restoring:
@@ -194,6 +199,10 @@ final class DiscoveryScanEngine {
 		session?.presetResults.append(presetResult)
 		currentPresetResult = presetResult
 		modelContext?.insert(presetResult)
+
+		// Start the local-stats window for this preset. The radio is offline during the config
+		// change/reboot, so no stale samples land before the new frequency is active.
+		presetDwellStart = Date()
 
 		Logger.discovery.info("📡 [Discovery] Shifting to preset: \(nextPreset.name)")
 
@@ -799,6 +808,7 @@ extension DiscoveryScanEngine {
 		connectionObserver?.cancel()
 		accessoryManager?.discoveryScanEngine = nil
 		deviceMetricsHistory = [:]
+		presetDwellStart = nil
 		awaitingDisconnect = false
 		interruptedDwellRemaining = nil
 		// Clear both home snapshots together so a later scan that starts without a readable
@@ -819,31 +829,49 @@ extension DiscoveryScanEngine {
 			return
 		}
 
-		// Read most recent local stats (metricsType == 4) persisted by MeshPackets
-		let localStatsTelemetry = connectedNode.telemetries
+		// All local stats (metricsType == 4) persisted by MeshPackets, oldest → newest.
+		let allLocalStats = connectedNode.telemetries
 			.filter { $0.metricsType == 4 }
 			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
 
-		guard let latest = localStatsTelemetry.last else {
+		// Prefer the samples that arrived during THIS preset's dwell — they reflect the preset's
+		// frequency. Fall back to the single most recent sample if none landed in the window.
+		let windowStart = presetDwellStart ?? .distantPast
+		let windowed = allLocalStats.filter { ($0.time ?? .distantPast) >= windowStart }
+		let samples = windowed.isEmpty ? Array(allLocalStats.suffix(1)) : windowed
+
+		guard let latest = samples.last else {
 			Logger.discovery.info("📡 [Discovery] No local stats telemetry found for connected node")
 			return
 		}
 
-		// Channel utilization and airtime
-		if let channelUtil = latest.channelUtilization {
-			result.averageChannelUtilization = Double(channelUtil)
+		// Channel utilization and airtime — average the point-in-time readings over the window.
+		let channelUtils = samples.compactMap { $0.channelUtilization.map(Double.init) }
+		if !channelUtils.isEmpty {
+			result.averageChannelUtilization = channelUtils.reduce(0, +) / Double(channelUtils.count)
 		}
-		if let airtime = latest.airUtilTx {
-			result.averageAirtimeRate = Double(airtime)
+		let airtimes = samples.compactMap { $0.airUtilTx.map(Double.init) }
+		if !airtimes.isEmpty {
+			result.averageAirtimeRate = airtimes.reduce(0, +) / Double(airtimes.count)
 		}
 
-		// Raw local stats (mirrors live activity data)
+		// Noise floor (dBm) — average over the window when the local-stats packets carry it.
+		// Frequency-specific, so this characterizes how quiet the preset's channel was.
+		let noiseFloors = samples.compactMap { $0.noiseFloor.map(Double.init) }
+		if !noiseFloors.isEmpty {
+			result.averageNoiseFloor = noiseFloors.reduce(0, +) / Double(noiseFloors.count)
+			result.noiseFloorSampleCount = noiseFloors.count
+		}
+
+		// Raw local stats — counters are cumulative, so use the latest sample.
 		result.numPacketsTx = Int(latest.numPacketsTx)
 		result.numPacketsRx = Int(latest.numPacketsRx)
 		result.numPacketsRxBad = Int(latest.numPacketsRxBad)
 		result.numRxDupe = Int(latest.numRxDupe)
 		result.numTxRelay = Int(latest.numTxRelay)
 		result.numTxRelayCanceled = Int(latest.numTxRelayCanceled)
+		result.numOnlineNodes = Int(latest.numOnlineNodes)
+		result.numTotalNodes = Int(latest.numTotalNodes)
 		if let uptime = latest.uptimeSeconds {
 			result.uptimeSeconds = Int(uptime)
 		}
@@ -859,6 +887,7 @@ extension DiscoveryScanEngine {
 			result.packetFailureRate = Double(badRx) / Double(totalPackets)
 		}
 
-		Logger.discovery.info("📡 [Discovery] Local stats captured — Ch Util: \(latest.channelUtilization ?? 0)%, Airtime: \(latest.airUtilTx ?? 0)%, Tx: \(totalTx), Rx: \(totalRx), Bad: \(badRx)")
+		let noiseFloorLog = result.noiseFloorSampleCount > 0 ? String(format: "%.0f dBm (%d samples)", result.averageNoiseFloor, result.noiseFloorSampleCount) : "n/a"
+		Logger.discovery.info("📡 [Discovery] Local stats captured (\(samples.count) sample(s)) — Ch Util: \(String(format: "%.1f", result.averageChannelUtilization))%, Airtime: \(String(format: "%.2f", result.averageAirtimeRate))%, Noise Floor: \(noiseFloorLog), Tx: \(totalTx), Rx: \(totalRx), Bad: \(badRx)")
 	}
 }
