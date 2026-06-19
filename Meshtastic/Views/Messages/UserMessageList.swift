@@ -440,6 +440,13 @@ struct UserMessageList: View {
 				.onChange(of: appState.unreadDirectMessages) {
 					refreshIfNeeded()
 				}
+				// A routing/admin ACK for a sent message bumps appState.messageAckUpdate. Reload
+				// directly (rather than the token-gated refreshIfNeeded) so any ACK-field change
+				// — receivedACK, realACK, or a later ackError/NAK on an already-acked message —
+				// surfaces immediately instead of waiting for the 5s poll or re-entry.
+				.onChange(of: appState.messageAckUpdate) {
+					loadMessages(markReadAfterLoad: routerIsShowingThisUser())
+				}
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {

@@ -12,6 +12,12 @@ class AppState: ObservableObject {
 	/// refetch, so they drop objects cached from the previous node's database. Applied
 	/// as `.id(appState.databaseResetID)` on the root content view.
 	@Published var databaseResetID = UUID()
+	/// Bumped whenever a routing ACK (delivery receipt) is persisted for a sent message.
+	/// Open message conversations observe this to refresh their delivery indicators
+	/// immediately, instead of waiting for the periodic poll. ACK writes happen in
+	/// MeshPackets' isolated ModelActor context, so the already-loaded message objects
+	/// don't observe the change on their own.
+	@Published var messageAckUpdate = 0
 
 	var totalUnreadMessages: Int {
 		unreadChannelMessages + unreadDirectMessages

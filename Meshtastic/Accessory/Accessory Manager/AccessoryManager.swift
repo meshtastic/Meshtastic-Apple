@@ -691,9 +691,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for routingPacket.")
 						return
 					}
-					await MeshPackets.shared.routingPacket(packet: packet, connectedNodeNum: deviceNum)
+					await MeshPackets.shared.routingPacket(packet: packet, connectedNodeNum: deviceNum, appState: appState)
 				case .adminApp:
-					await MeshPackets.shared.adminAppPacket(packet: packet)
+					await MeshPackets.shared.adminAppPacket(packet: packet, appState: appState)
 				case .replyApp:
 					Logger.mesh.info("[Reply] packet received from \(packet.from.toHex(), privacy: .public)")
 					guard let deviceNum = activeConnection?.device.num else {

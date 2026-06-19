@@ -275,6 +275,7 @@
 		DD00001BINTCVRTST0000001 /* IntentConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */; };
 		DD00001CMAPDATTST0000001 /* MapDataModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */; };
 		DD00001DCDENTTST00000001 /* EntityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001DCDENTTST00000000 /* EntityTests.swift */; };
+		DD000031ACKXCTXTST000001 /* AckCrossContextRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000031ACKXCTXTST000000 /* AckCrossContextRefreshTests.swift */; };
 		DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */; };
 		DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */; };
 		DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */; };
@@ -830,6 +831,7 @@
 		DD00001BINTCVRTST0000000 /* IntentConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentConverterTests.swift; sourceTree = "<group>"; };
 		DD00001CMAPDATTST0000000 /* MapDataModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataModelTests.swift; sourceTree = "<group>"; };
 		DD00001DCDENTTST00000000 /* EntityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityTests.swift; sourceTree = "<group>"; };
+		DD000031ACKXCTXTST000000 /* AckCrossContextRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AckCrossContextRefreshTests.swift; sourceTree = "<group>"; };
 		DD00001EURLDETTST0000000 /* URLExtensionDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLExtensionDetailedTests.swift; sourceTree = "<group>"; };
 		DD00001FFWVMERRTST000000 /* FirmwareViewModelErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareViewModelErrorTests.swift; sourceTree = "<group>"; };
 		DD000020TAKBRDTST0000000 /* TAKBridgeDetailedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKBridgeDetailedTests.swift; sourceTree = "<group>"; };
@@ -1576,6 +1578,7 @@
 				AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
 				AA003DOC0000001000000008 /* DocTranslationTests.swift */,
 				DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */,
+				DD000031ACKXCTXTST000000 /* AckCrossContextRefreshTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -2640,6 +2643,7 @@
 				DD00001BINTCVRTST0000001 /* IntentConverterTests.swift in Sources */,
 				DD00001CMAPDATTST0000001 /* MapDataModelTests.swift in Sources */,
 				DD00001DCDENTTST00000001 /* EntityTests.swift in Sources */,
+				DD000031ACKXCTXTST000001 /* AckCrossContextRefreshTests.swift in Sources */,
 				DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */,
 				DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */,
 				DD000020TAKBRDTST0000001 /* TAKBridgeDetailedTests.swift in Sources */,

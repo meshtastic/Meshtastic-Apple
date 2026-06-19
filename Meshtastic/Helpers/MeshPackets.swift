@@ -115,6 +115,14 @@ actor MeshPackets {
 		}
 	}
 
+	/// Commit a delivery-ACK write immediately and nudge open conversations to refresh.
+	/// Shared by every ACK-writing path (routing ACKs and admin-response ACKs) so the
+	/// live delivery-indicator update never depends on which path delivered the receipt.
+	func saveAck(appState: AppState?, caller: String) {
+		savePendingChanges(caller: caller)
+		Task { @MainActor in appState?.messageAckUpdate += 1 }
+	}
+
 	// MARK: - Debounced Save for High-Frequency Packets
 
 	/// Timer task for debounced saves (position/telemetry).
@@ -647,7 +655,7 @@ actor MeshPackets {
 		return nil
 	}
 
-	func adminAppPacket (packet: MeshPacket) {
+	func adminAppPacket (packet: MeshPacket, appState: AppState?) {
 		if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
 
 			if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
@@ -735,11 +743,11 @@ actor MeshPackets {
 				Logger.admin.error("🕸️ MESH PACKET received Admin App UNHANDLED \((try? packet.decoded.jsonString()) ?? "JSON Decode Failure", privacy: .public)")
 			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
-			self.adminResponseAck(packet: packet)
+			self.adminResponseAck(packet: packet, appState: appState)
 		}
 	}
 
-	private func adminResponseAck (packet: MeshPacket) {
+	private func adminResponseAck (packet: MeshPacket, appState: AppState?) {
 		let requestID = Int64(packet.decoded.requestID)
 		let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
 		do {
@@ -752,7 +760,7 @@ actor MeshPackets {
 				fetchedMessage[0].relayNode = Int64(packet.relayNode)
 				fetchedMessage[0].ackSNR = packet.rxSnr
 
-				savePendingChanges()
+				saveAck(appState: appState, caller: "adminResponseAck")
 			}
 		} catch {
 			Logger.data.error("Failed to fetch admin message by requestID: \(error.localizedDescription, privacy: .public)")
@@ -791,7 +799,7 @@ actor MeshPackets {
 		}
 	}
 
-	func routingPacket (packet: MeshPacket, connectedNodeNum: Int64) {
+	func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, appState: AppState?) {
 		if let routingMessage = try? Routing(serializedBytes: packet.decoded.payload) {
 
 			let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
@@ -829,8 +837,13 @@ actor MeshPackets {
 				} else {
 					return
 				}
-				scheduleDebouncedSave()
-				Logger.data.debug("💾 ACK buffered for Message: \(packet.decoded.requestID, privacy: .public)")
+				// Persist the ACK right away (rather than via the debounced batch) so the
+				// open conversation's reload below reads the committed state, then signal the
+				// UI. ACKs are low-frequency, so flushing the shared context here — which also
+				// matches the existing adminResponseAck path — is an acceptable trade-off
+				// against the position/telemetry debounce.
+				saveAck(appState: appState, caller: "routingPacket-ack")
+				Logger.data.debug("💾 ACK saved for Message: \(packet.decoded.requestID, privacy: .public)")
 			} catch {
 				let nsError = error as NSError
 				Logger.data.error("Error Saving ACK for message: \(packet.id, privacy: .public) Error: \(nsError, privacy: .public)")
