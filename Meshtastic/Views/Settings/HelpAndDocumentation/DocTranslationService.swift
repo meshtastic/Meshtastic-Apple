@@ -24,6 +24,19 @@ enum TranslationState: Equatable {
 	case english
 }
 
+// MARK: - TranslationBackendStatus
+
+/// Whether the device can translate documentation right now.
+enum TranslationBackendStatus: Equatable {
+	/// A backend (installed Apple Translation pack or FoundationModels) can translate now.
+	case available
+	/// Apple Translation supports the language but the on-device pack isn't installed — the UI
+	/// can offer to download it.
+	case needsLanguagePack
+	/// No translation backend is available for this language.
+	case unavailable
+}
+
 // MARK: - DocTranslationService
 
 actor DocTranslationService {
@@ -731,17 +744,18 @@ actor DocTranslationService {
 	// MARK: - Translation Engine
 
 	/// Translates a markdown source file, preserving non-translatable segments.
-	/// True only if a real translation backend can translate to `targetLanguage` right now —
-	/// either the Apple Translation language pack is installed, or FoundationModels is available.
+	/// Whether a real translation backend can produce a translation to `targetLanguage`.
 	///
-	/// When neither is true, per-segment translation silently returns the English source, which
-	/// would otherwise be cached and even uploaded to the community repo as a bogus "translation"
-	/// (this is exactly how `es/2.7.13` ended up as 100% English). Callers MUST bail before
-	/// producing any output when this returns false.
-	private func translationBackendAvailable(for targetLanguage: String) async -> Bool {
+	/// When no backend is available, per-segment translation silently returns the English source,
+	/// which would otherwise be cached and even uploaded to the community repo as a bogus
+	/// "translation" (this is exactly how `es/2.7.13` ended up as 100% English). Callers MUST bail
+	/// before producing any output unless the result is `.available`. `.needsLanguagePack` means
+	/// Apple Translation supports the language but the on-device pack isn't installed yet — the UI
+	/// can offer to download it.
+	func translationBackendStatus(for targetLanguage: String) async -> TranslationBackendStatus {
 		#if canImport(FoundationModels)
 		if #available(iOS 26, *), await FoundationModelAvailability.shared.isAvailable {
-			return true
+			return .available
 		}
 		#endif
 		#if !targetEnvironment(macCatalyst)
@@ -750,10 +764,18 @@ actor DocTranslationService {
 				from: Locale.Language(identifier: "en"),
 				to: Locale.Language(identifier: targetLanguage)
 			)
-			if status == .installed { return true }
+			switch status {
+			case .installed: return .available
+			case .supported: return .needsLanguagePack
+			default: return .unavailable
+			}
 		}
 		#endif
-		return false
+		return .unavailable
+	}
+
+	private func translationBackendAvailable(for targetLanguage: String) async -> Bool {
+		await translationBackendStatus(for: targetLanguage) == .available
 	}
 
 	private func translateMarkdown(page: DocPage, targetLanguage: String) async -> String? {

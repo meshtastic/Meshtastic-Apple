@@ -2,6 +2,9 @@
 
 import SwiftUI
 import OSLog
+#if !targetEnvironment(macCatalyst)
+import Translation
+#endif
 
 struct DocBrowserView: View {
 
@@ -12,6 +15,11 @@ struct DocBrowserView: View {
 	@State private var labelTranslationTask: Task<Void, Never>?
 	@State private var translationProgress: String?
 	@State private var prefetchTask: Task<Void, Never>?
+	/// Language code that the docs can be translated into but whose Apple Translation pack isn't
+	/// installed yet. Non-nil drives the "download language pack" prompt.
+	@State private var needsLanguagePack: String?
+	/// Language code currently being downloaded — non-nil activates the download `translationTask`.
+	@State private var downloadingLanguage: String?
 
 	private let bundle = DocBundle.shared
 
@@ -112,6 +120,9 @@ struct DocBrowserView: View {
 						.padding(.vertical, 10)
 						.background(.bar)
 					}
+					if let needsLanguagePack {
+						languageDownloadBanner(languageCode: needsLanguagePack)
+					}
 					List {
 						ForEach(filteredSections, id: \.section) { item in
 							let expansion = sectionExpansion(item.section)
@@ -153,26 +164,7 @@ struct DocBrowserView: View {
 				// Already have translated folder — just translate the few UI chrome strings
 				startLabelTranslations()
 			} else {
-				// Try downloading community translations first, then start full prefetch
-				prefetchTask = Task {
-					let languageCode = Bundle.main.documentationLanguageCode
-					if languageCode != "en" {
-						let built = await CommunityTranslationFetcher.shared.buildTranslatedFolder(languageCode: languageCode)
-						if built {
-							await MainActor.run {
-								bundle.load()
-							}
-						}
-						// Start full translation pipeline: dev docs → user docs → nav labels
-						if !isUsingTranslatedFolder {
-							await DocTranslationService.shared.prefetchAll()
-						}
-					}
-					// Refresh nav labels from cache after prefetch completes
-					await MainActor.run {
-						startLabelTranslations()
-					}
-				}
+				kickoffTranslation()
 			}
 			Logger.docs.debug("DocBrowserView appeared — \(pages.count) pages loaded")
 		}
@@ -216,6 +208,10 @@ struct DocBrowserView: View {
 			}
 			startLabelTranslations()
 		}
+			.modifier(LanguagePackDownloadModifier(
+				downloadingLanguage: $downloadingLanguage,
+				onDownloaded: { kickoffTranslation() }
+			))
 	}
 
 	/// The navigation rows for a section's pages. Shared by the native (Catalyst) and custom (iOS)
@@ -318,5 +314,108 @@ struct DocBrowserView: View {
 				}
 			}
 		}
+	}
+
+	/// Runs the doc translation pipeline: community CDN download first, then on-device
+	/// translation if a backend is available, otherwise prompt to download the language pack.
+	/// Reloads the bundle afterward so the browser switches to the translated folder in-session.
+	private func kickoffTranslation() {
+		prefetchTask?.cancel()
+		needsLanguagePack = nil
+		prefetchTask = Task {
+			let languageCode = Bundle.main.documentationLanguageCode
+			guard languageCode != "en" else { return }
+
+			// Community translations need no on-device backend — try them first.
+			let built = await CommunityTranslationFetcher.shared.buildTranslatedFolder(languageCode: languageCode)
+			if built {
+				await MainActor.run { bundle.load() }
+			}
+
+			if !isUsingTranslatedFolder {
+				switch await DocTranslationService.shared.translationBackendStatus(for: languageCode) {
+				case .available:
+					await DocTranslationService.shared.prefetchAll()
+					// prefetchAll renders a complete translated folder; reload so the browser
+					// switches to it without needing a cold relaunch.
+					await MainActor.run { bundle.load() }
+				case .needsLanguagePack:
+					await MainActor.run { needsLanguagePack = languageCode }
+				case .unavailable:
+					break
+				}
+			}
+
+			await MainActor.run { startLabelTranslations() }
+		}
+	}
+
+	/// Banner offering to download the Apple Translation language pack for the docs language.
+	@ViewBuilder
+	private func languageDownloadBanner(languageCode: String) -> some View {
+		HStack(spacing: 12) {
+			Image(systemName: "arrow.down.circle.fill")
+				.font(.title2)
+				.foregroundStyle(.blue)
+			VStack(alignment: .leading, spacing: 2) {
+				Text("Translate Documentation")
+					.font(.headline)
+				Text("Download the \(languageDisplayName(languageCode)) language pack to read the documentation in your language.")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
+			Spacer()
+			if downloadingLanguage == languageCode {
+				ProgressView()
+			} else {
+				Button("Download") { downloadingLanguage = languageCode }
+					.buttonStyle(.borderedProminent)
+			}
+		}
+		.padding(.horizontal)
+		.padding(.vertical, 10)
+		.background(.bar)
+	}
+
+	private func languageDisplayName(_ code: String) -> String {
+		Locale.current.localizedString(forLanguageCode: code) ?? code
+	}
+}
+
+// MARK: - Language Pack Download
+
+/// Drives an Apple Translation language-pack download. When `downloadingLanguage` is set, the
+/// `translationTask` activates and `prepareTranslation()` triggers the system download flow;
+/// `onDownloaded` re-runs the translation pipeline once the pack is installed. Compiled to a
+/// no-op on Mac Catalyst / pre-iOS 26, where the Translation framework is unavailable.
+private struct LanguagePackDownloadModifier: ViewModifier {
+	@Binding var downloadingLanguage: String?
+	let onDownloaded: () -> Void
+
+	func body(content: Content) -> some View {
+		#if !targetEnvironment(macCatalyst)
+		if #available(iOS 26, *) {
+			content.translationTask(
+				downloadingLanguage.map {
+					TranslationSession.Configuration(
+						source: Locale.Language(identifier: "en"),
+						target: Locale.Language(identifier: $0))
+				}
+			) { session in
+				do {
+					try await session.prepareTranslation()
+					await MainActor.run { downloadingLanguage = nil }
+					onDownloaded()
+				} catch {
+					await MainActor.run { downloadingLanguage = nil }
+					Logger.docs.error("DocBrowserView: language pack download failed: \(error.localizedDescription, privacy: .public)")
+				}
+			}
+		} else {
+			content
+		}
+		#else
+		content
+		#endif
 	}
 }
