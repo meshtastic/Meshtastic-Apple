@@ -110,6 +110,7 @@ struct ChannelList: View {
 						Text(LocalizedStringKey(mostRecent?.messagePayload ?? " "))
 							.font(.footnote)
 							.foregroundColor(.onSurfaceVariant)
+							.fixedSize(horizontal: false, vertical: true)
 					}
 				}
 			}
@@ -126,7 +127,7 @@ struct ChannelList: View {
 			.alignmentGuide(.listRowSeparatorLeading) {
 				$0[.leading]
 			}
-			.frame(height: 62)
+			.frame(minHeight: 62, alignment: .center)
 			.contextMenu {
 				if hasMessages {
 					Button(role: .destructive) {

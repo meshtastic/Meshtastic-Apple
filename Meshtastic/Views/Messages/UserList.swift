@@ -294,6 +294,7 @@ private struct DirectMessageUserRow: View {
 					Text(user.longName ?? "Unknown".localized)
 						.font(.headline)
 						.allowsTightening(true)
+						.fixedSize(horizontal: false, vertical: true)
 					Spacer()
 					if user.userNode?.favorite ?? false {
 						Image(systemName: "star.fill")
@@ -309,11 +310,12 @@ private struct DirectMessageUserRow: View {
 						Text(LocalizedStringKey(summary.payload))
 							.font(.footnote)
 							.foregroundColor(.onSurfaceVariant)
+							.fixedSize(horizontal: false, vertical: true)
 					}
 				}
 			}
 		}
-		.frame(height: 62)
+		.frame(minHeight: 62, alignment: .center)
 		.alignmentGuide(.listRowSeparatorLeading) {
 			$0[.leading]
 		}

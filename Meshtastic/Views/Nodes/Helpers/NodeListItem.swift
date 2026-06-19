@@ -338,6 +338,7 @@ struct IconAndText: View {
 				.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 				.foregroundColor(textColor)
 				.allowsTightening(true)
+				.fixedSize(horizontal: false, vertical: true)
 		}
 	}
 }
