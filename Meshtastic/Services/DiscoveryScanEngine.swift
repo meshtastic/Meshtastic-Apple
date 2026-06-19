@@ -96,6 +96,10 @@ final class DiscoveryScanEngine {
 	/// arrive during this dwell) and consider the full local-stats history for RF metrics.
 	private var seedFromExistingData = false
 
+	/// Short dwell used by `startCurrentPresetScan()` — the report is built from seeded history,
+	/// so it only needs a brief window to fold in any live packets before finalizing.
+	static let currentPresetScanDwell: TimeInterval = 60
+
 	var isScanning: Bool {
 		switch currentState {
 		case .shifting, .reconnecting, .dwell, .paused, .restoring:
@@ -930,7 +934,9 @@ extension DiscoveryScanEngine {
 
 		selectedPresets = [preset]
 		seedFromExistingData = true
-		Logger.discovery.info("📡 [Discovery] Starting current-preset scan on \(preset.name, privacy: .public) (seeded from existing data)")
+		// The report comes from seeded history — only dwell briefly to fold in live packets.
+		dwellDuration = Self.currentPresetScanDwell
+		Logger.discovery.info("📡 [Discovery] Starting current-preset scan on \(preset.name, privacy: .public) (seeded; \(Int(Self.currentPresetScanDwell))s dwell)")
 		await startScan()
 	}
 
