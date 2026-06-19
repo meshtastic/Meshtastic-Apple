@@ -228,6 +228,7 @@
 		BD7B1A838F8245A0B6BE56C5 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CCF00CDD3D48C9B9DCA554 /* WatchSessionManager.swift */; };
 		C1B995B38DC97D13D90D9C1A /* DiscoverySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B6FB13C4D4E03503BB1DF8 /* DiscoverySummaryView.swift */; };
 		C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */; };
+		FDAF8808342245C4817C93EC /* NetworkConfigIPConversionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18295AFE686247778632C6DE /* NetworkConfigIPConversionTests.swift */; };
 		C79BFC99EDCC89DD45082753 /* DiscoveryScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CA8BAC814CF82E127EEABF /* DiscoveryScanView.swift */; };
 		D02589957BD040969FCB8663 /* PositionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97241903A924144A3EEB679 /* PositionEntity.swift */; };
 		D748D59A3AF3253FFCDEF8BF /* DiscoveryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D942B763789DEA044C5EBD6 /* DiscoveryMapView.swift */; };
@@ -754,6 +755,7 @@
 		AA10D0002D00000000000001 /* DiscoverySummaryPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverySummaryPDF.swift; sourceTree = "<group>"; };
 		AA11223344556677AABB0002 /* DiscoveryTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryTips.swift; sourceTree = "<group>"; };
 		AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryScanEngineTests.swift; sourceTree = "<group>"; };
+		18295AFE686247778632C6DE /* NetworkConfigIPConversionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConfigIPConversionTests.swift; sourceTree = "<group>"; };
 		AB61EBF02E3326DC00B35962 /* NodeListItemCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItemCompact.swift; sourceTree = "<group>"; };
 		AB6E72752E3FC85A00639328 /* LayoutEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEnums.swift; sourceTree = "<group>"; };
 		ABA8E63F2E2F2A2300E27791 /* AppIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconButton.swift; sourceTree = "<group>"; };
@@ -1532,6 +1534,7 @@
 				DD000006GEOTST0000000000 /* GeoExtensionTests.swift */,
 				DD000007LORATST000000000 /* LoraDeviceEnumTests.swift */,
 				AAD14FA280F0A130730DEB93 /* DiscoveryScanEngineTests.swift */,
+				18295AFE686247778632C6DE /* NetworkConfigIPConversionTests.swift */,
 				64C6057F9508D4356DAF411F /* DiscoveryModelTests.swift */,
 				AA003DOC0000001000000005 /* DocBundleTests.swift */,
 				DD000008APPSTST000000000 /* AppSettingsEnumTests.swift */,
@@ -2601,6 +2604,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C54AC9F4DA920A4F718CE21A /* DiscoveryScanEngineTests.swift in Sources */,
+				FDAF8808342245C4817C93EC /* NetworkConfigIPConversionTests.swift in Sources */,
 				1396606FC903D7DA662B6326 /* DiscoveryModelTests.swift in Sources */,
 				AA003DOC0000002000000005 /* DocBundleTests.swift in Sources */,
 				AA003DOC0000002000000008 /* DocTranslationTests.swift in Sources */,
