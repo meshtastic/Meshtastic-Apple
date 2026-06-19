@@ -42,6 +42,9 @@ jobs:
         env:
           JEKYLL_ENV: production
           DOCS_VERSION: ${{ steps.version.outputs.version }}
+          # The Gemfile lives in docs/ (where setup-ruby installed the bundle), but this
+          # step runs from the repo root — point bundler at it so `bundle exec` resolves.
+          BUNDLE_GEMFILE: ${{ github.workspace }}/docs/Gemfile
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
