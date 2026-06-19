@@ -241,6 +241,7 @@ struct DiscoverySummaryView: View {
 					$0.packetSuccessRate > 0 || $0.packetFailureRate > 0
 					|| $0.numPacketsTx > 0 || $0.numPacketsRx > 0
 					|| $0.averageChannelUtilization > 0 || $0.averageAirtimeRate > 0
+					|| $0.noiseFloorSampleCount > 0
 				}, id: \.presetName) { result in
 					rfHealthCard(result)
 				}
@@ -287,6 +288,10 @@ struct DiscoverySummaryView: View {
 						.foregroundStyle(.orange)
 					Label("\(result.numRxDupe) duplicate", systemImage: "doc.on.doc")
 						.foregroundStyle(.secondary)
+					if result.noiseFloorSampleCount > 0 {
+						Label(String(format: "%.0f dBm noise", result.averageNoiseFloor), systemImage: "waveform")
+							.foregroundStyle(result.averageNoiseFloor < -110 ? .green : (result.averageNoiseFloor > -95 ? .red : .orange))
+					}
 				}
 			}
 			.font(.caption)
