@@ -68,6 +68,9 @@ struct DiscoveryScanView: View {
 					}
 					presetPickerSection
 					dwellConfigSection
+					if connectedNode != nil {
+						currentDataReportSection(engine)
+					}
 				}
 
 				scanControlSection(engine)
@@ -168,6 +171,21 @@ struct DiscoveryScanView: View {
 				Text("90 min").tag(90)
 				Text("120 min").tag(120)
 				Text("180 min").tag(180)
+			}
+		}
+	}
+
+	// MARK: - Current Data Report
+
+	private func currentDataReportSection(_ engine: DiscoveryScanEngine) -> some View {
+		Section(
+			header: Text("Current Preset"),
+			footer: Text("Scan only your radio's current preset, seeded with everything already collected — every node heard, per-node message and sensor counts, and RF health including noise floor — so the run starts from your full history rather than an empty scan. Stop anytime to view the summary.")
+		) {
+			Button {
+				Task { await engine.startCurrentPresetScan() }
+			} label: {
+				Label("Scan Current Preset", systemImage: "doc.text.magnifyingglass")
 			}
 		}
 	}

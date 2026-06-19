@@ -91,6 +91,11 @@ final class DiscoveryScanEngine {
 	/// noise-floor / channel-utilization samples captured for the preset result.
 	private var presetDwellStart: Date?
 
+	/// Set for a "current preset" scan: seed the preset's results from everything already in
+	/// SwiftData at dwell start (so the run reflects all accumulated data, not just packets that
+	/// arrive during this dwell) and consider the full local-stats history for RF metrics.
+	private var seedFromExistingData = false
+
 	var isScanning: Bool {
 		switch currentState {
 		case .shifting, .reconnecting, .dwell, .paused, .restoring:
@@ -203,6 +208,13 @@ final class DiscoveryScanEngine {
 		// Start the local-stats window for this preset. The radio is offline during the config
 		// change/reboot, so no stale samples land before the new frequency is active.
 		presetDwellStart = Date()
+
+		// "Current preset" scan: fold in everything already collected for this preset so the run
+		// reflects accumulated history, and widen the local-stats window to the full history.
+		if seedFromExistingData {
+			seedDiscoveredNodesFromDatabase()
+			presetDwellStart = nil
+		}
 
 		Logger.discovery.info("📡 [Discovery] Shifting to preset: \(nextPreset.name)")
 
@@ -809,6 +821,7 @@ extension DiscoveryScanEngine {
 		accessoryManager?.discoveryScanEngine = nil
 		deviceMetricsHistory = [:]
 		presetDwellStart = nil
+		seedFromExistingData = false
 		awaitingDisconnect = false
 		interruptedDwellRemaining = nil
 		// Clear both home snapshots together so a later scan that starts without a readable
@@ -889,5 +902,96 @@ extension DiscoveryScanEngine {
 
 		let noiseFloorLog = result.noiseFloorSampleCount > 0 ? String(format: "%.0f dBm (%d samples)", result.averageNoiseFloor, result.noiseFloorSampleCount) : "n/a"
 		Logger.discovery.info("📡 [Discovery] Local stats captured (\(samples.count) sample(s)) — Ch Util: \(String(format: "%.1f", result.averageChannelUtilization))%, Airtime: \(String(format: "%.2f", result.averageAirtimeRate))%, Noise Floor: \(noiseFloorLog), Tx: \(totalTx), Rx: \(totalRx), Bad: \(badRx)")
+	}
+}
+
+// MARK: - DiscoveryScanEngine + Current Preset Scan
+
+extension DiscoveryScanEngine {
+
+	/// Starts a discovery scan limited to the radio's CURRENT modem preset, seeded with everything
+	/// already in SwiftData. The radio is already on this preset, so there's no config change or
+	/// reboot — the dwell begins immediately and `seedDiscoveredNodesFromDatabase()` folds in all
+	/// accumulated data so the run reflects "one long run" on the current preset, then live packets
+	/// during the dwell keep refining it.
+	func startCurrentPresetScan() async {
+		guard currentState == .idle else {
+			Logger.discovery.warning("📡 [Discovery] Cannot start current-preset scan — not idle")
+			return
+		}
+		guard let context = modelContext else {
+			Logger.discovery.error("📡 [Discovery] Cannot start current-preset scan — no model context")
+			return
+		}
+
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let preset = (getNodeInfo(id: connectedNodeNum, context: context)?.loRaConfig?.modemPreset)
+			.flatMap { ModemPresets(rawValue: Int($0)) } ?? .longFast
+
+		selectedPresets = [preset]
+		seedFromExistingData = true
+		Logger.discovery.info("📡 [Discovery] Starting current-preset scan on \(preset.name, privacy: .public) (seeded from existing data)")
+		await startScan()
+	}
+
+	/// Seeds the active preset's result with a discovered node for every node already known in
+	/// SwiftData — names, hops/role, last position, per-node text-message and sensor-packet counts.
+	/// Nodes already added by a live packet this dwell are skipped so live updates aren't lost.
+	/// Used by `startCurrentPresetScan()` so the run starts from the full accumulated picture.
+	func seedDiscoveredNodesFromDatabase() {
+		guard let context = modelContext, let session, let result = currentPresetResult else { return }
+		let presetName = activePreset?.name ?? result.presetName
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+
+		// Per-node text-message counts (single fetch, grouped by sender).
+		var messageCounts: [Int64: Int] = [:]
+		if let messages = try? context.fetch(FetchDescriptor<MessageEntity>()) {
+			for msg in messages {
+				if let from = msg.fromUser?.num { messageCounts[from, default: 0] += 1 }
+			}
+		}
+
+		let allNodes = (try? context.fetch(FetchDescriptor<NodeInfoEntity>())) ?? []
+		let userLat = session.userLatitude
+		let userLon = session.userLongitude
+		var seeded = 0
+		for node in allNodes where node.num != connectedNodeNum {
+			// A live packet may have already created this node for the preset — don't duplicate.
+			if session.discoveredNodes.contains(where: { $0.nodeNum == node.num && $0.presetName == presetName }) {
+				continue
+			}
+			let dn = DiscoveredNodeEntity()
+			dn.nodeNum = node.num
+			dn.shortName = node.user?.shortName ?? ""
+			dn.longName = node.user?.longName ?? ""
+			let hops = Int(node.hopsAway)
+			dn.hopCount = hops
+			dn.neighborType = hops <= 1 ? "direct" : "mesh"
+			dn.snr = node.snr
+			dn.rssi = Int(node.rssi)
+			// Infrastructure roles: Router (2), Router Late (11), Client Base (12)
+			dn.isInfrastructure = [2, 11, 12].contains(Int(node.user?.role ?? 0))
+			if let pos = node.positions.last {
+				dn.latitude = pos.latitude ?? 0.0
+				dn.longitude = pos.longitude ?? 0.0
+				if userLat != 0.0 || userLon != 0.0, dn.latitude != 0.0 || dn.longitude != 0.0 {
+					let userLocation = CLLocation(latitude: userLat, longitude: userLon)
+					let nodeLocation = CLLocation(latitude: dn.latitude, longitude: dn.longitude)
+					dn.distanceFromUser = userLocation.distance(from: nodeLocation)
+				}
+			}
+			dn.messageCount = messageCounts[node.num] ?? 0
+			// Sensor packets ≈ environment (1) + air-quality (2) telemetry the node has reported.
+			dn.sensorPacketCount = node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 2 }.count
+			dn.presetName = presetName
+			dn.session = session
+			dn.presetResult = result
+			context.insert(dn)
+			session.discoveredNodes.append(dn)
+			result.nodes.append(dn)
+			seeded += 1
+		}
+
+		Logger.discovery.info("📡 [Discovery] Seeded \(seeded) node(s) from existing data into \(presetName, privacy: .public)")
 	}
 }
