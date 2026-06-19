@@ -63,7 +63,7 @@ struct DocBrowserView: View {
 			return bundle.pagesBySection()
 		}
 		let lowered = searchText.lowercased()
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+		let languageCode = Bundle.main.documentationLanguageCode
 		let searchIndex = bundle.searchIndex(for: languageCode)
 		let searchEntryById = Dictionary(
 			(searchIndex ?? []).map { ($0.id, $0) },
@@ -155,7 +155,7 @@ struct DocBrowserView: View {
 			} else {
 				// Try downloading community translations first, then start full prefetch
 				prefetchTask = Task {
-					let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+					let languageCode = Bundle.main.documentationLanguageCode
 					if languageCode != "en" {
 						let built = await CommunityTranslationFetcher.shared.buildTranslatedFolder(languageCode: languageCode)
 						if built {
@@ -274,7 +274,7 @@ struct DocBrowserView: View {
 	private func startLabelTranslations() {
 		labelTranslationTask?.cancel()
 
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+		let languageCode = Bundle.main.documentationLanguageCode
 		guard languageCode != "en", !pages.isEmpty else { return }
 
 		let capturedPages = pages

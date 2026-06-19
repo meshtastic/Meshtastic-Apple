@@ -725,15 +725,47 @@ actor DocTranslationService {
 	}
 
 	private func currentLanguageCode() -> String {
-		Locale.current.language.languageCode?.identifier ?? "en"
+		Bundle.main.documentationLanguageCode
 	}
 
 	// MARK: - Translation Engine
 
 	/// Translates a markdown source file, preserving non-translatable segments.
+	/// True only if a real translation backend can translate to `targetLanguage` right now —
+	/// either the Apple Translation language pack is installed, or FoundationModels is available.
+	///
+	/// When neither is true, per-segment translation silently returns the English source, which
+	/// would otherwise be cached and even uploaded to the community repo as a bogus "translation"
+	/// (this is exactly how `es/2.7.13` ended up as 100% English). Callers MUST bail before
+	/// producing any output when this returns false.
+	private func translationBackendAvailable(for targetLanguage: String) async -> Bool {
+		#if canImport(FoundationModels)
+		if #available(iOS 26, *), await FoundationModelAvailability.shared.isAvailable {
+			return true
+		}
+		#endif
+		#if !targetEnvironment(macCatalyst)
+		if #available(iOS 26, *) {
+			let status = await LanguageAvailability().status(
+				from: Locale.Language(identifier: "en"),
+				to: Locale.Language(identifier: targetLanguage)
+			)
+			if status == .installed { return true }
+		}
+		#endif
+		return false
+	}
+
 	private func translateMarkdown(page: DocPage, targetLanguage: String) async -> String? {
 		guard let mdURL = page.markdownURL,
 			  let mdContent = try? String(contentsOf: mdURL, encoding: .utf8) else {
+			return nil
+		}
+
+		// Bail before producing anything if no real backend can translate — otherwise every
+		// segment falls back to the English source and we'd cache/upload English as a translation.
+		guard await translationBackendAvailable(for: targetLanguage) else {
+			Logger.docs.warning("DocTranslationService: No translation backend for \(targetLanguage, privacy: .public) (language pack not installed and FoundationModels unavailable) — skipping \(page.id, privacy: .public) instead of caching English.")
 			return nil
 		}
 
