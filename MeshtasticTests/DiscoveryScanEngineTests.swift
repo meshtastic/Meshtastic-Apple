@@ -105,11 +105,16 @@ struct DiscoveryScanEngineTests {
 
 // MARK: - LoRa config preservation (#1952)
 
-/// The scan changes only the modem preset; it must carry through every other LoRa field.
-/// Building a partial config previously zeroed omitted fields on the device — notably
-/// `channelNum` (frequency slot) → 0 — moving the radio off the user's frequency and wiping
-/// their settings, and never restoring them. These lock in that `loRaConfigProto` preserves
-/// the full config.
+/// `loRaConfigProto` is the full-fidelity copy used to snapshot the user's config at scan
+/// start and restore it verbatim afterward, so it must carry through every LoRa field. Building
+/// a partial config previously zeroed omitted fields on the device — bandwidth, coding rate,
+/// MQTT flags, etc. — wiping the user's settings and never restoring them. These lock in that
+/// `loRaConfigProto` preserves the full config.
+///
+/// Note: the per-preset config the scan actually sends forces the default frequency slot
+/// (`channelNum = 0`) in `sendPresetChange` so the firmware auto-derives each preset's
+/// frequency; the user's real slot lives only in the snapshot and is restored when the scan
+/// ends. `loRaConfigProto` itself never zeroes the slot — that override is applied at send time.
 @MainActor
 @Suite("DiscoveryScanEngine LoRa config preservation (#1952)")
 struct DiscoveryScanEngineLoRaConfigTests {
@@ -136,14 +141,15 @@ struct DiscoveryScanEngineLoRaConfigTests {
 		return entity
 	}
 
-	@Test("Preset change preserves the frequency slot and every other LoRa field")
+	@Test("loRaConfigProto overrides only the preset and carries through every other field")
 	func presetChangePreservesAllFields() {
 		let engine = DiscoveryScanEngine()
 		let config = engine.loRaConfigProto(from: makeEntity(), presetOverride: .longSlow)
 
 		// Only the modem preset changes.
 		#expect(config.modemPreset == ModemPresets.longSlow.protoEnumValue())
-		// Everything else is carried through (the #1952 bug zeroed these).
+		// Everything else is carried through (the #1952 bug zeroed these). The frequency slot is
+		// preserved here for the snapshot/restore path; the scan send path zeroes it separately.
 		#expect(config.channelNum == 20)
 		#expect(config.region.rawValue == 1)
 		#expect(config.usePreset)

@@ -103,14 +103,6 @@ struct DiscoveryScanView: View {
 							.foregroundStyle(.red)
 					}
 				}
-
-				if let configurationWarning = engine.configurationWarning {
-					Section {
-						Label(configurationWarning, systemImage: "exclamationmark.triangle")
-							.foregroundStyle(.orange)
-							.font(.callout)
-					}
-				}
 			}
 		}
 		.navigationTitle("Local Mesh Discovery")
