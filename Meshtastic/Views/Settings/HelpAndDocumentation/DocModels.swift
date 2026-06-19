@@ -164,7 +164,7 @@ final class DocBundle {
 	func allPages() -> [DocPage] { pages }
 
 	func load() {
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+		let languageCode = Bundle.main.documentationLanguageCode
 
 		// Try loading from pre-rendered translated folder first
 		if languageCode != "en", let translatedPages = loadTranslated(languageCode: languageCode) {

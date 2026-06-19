@@ -85,7 +85,7 @@ description: "Task list for feature: App Documentation (Jekyll Site + In-App AI)
 - [X] T030 [P] [US1] Author `docs/developer/swiftdata.md` — `ModelContainer`, `@Model`, schema migration with `VersionedSchema` (FR-015)
 - [X] T031 [P] [US1] Author `docs/developer/testing.md` — Swift Testing setup, snapshot test infrastructure, `renderImage` helper (FR-015)
 - [X] T032 [P] [US1] Author `docs/developer/contributing.md` — PR workflow, branch naming, commit message style, SwiftLint rules (FR-015)
-- [X] T033 [US1] Run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta` to produce initial HTML bundle and `index.json`; commit generated output
+- [X] T033 [US1] Run `bash scripts/build-docs.sh --output Meshtastic/Resources/docs` to produce initial HTML bundle and `index.json`; commit generated output
 - [X] T034 [US1] Run `bash scripts/copy-snapshots.sh --output Meshtastic/Resources/docs/assets/screenshots`; commit PNGs
 - [X] T035 [US1] Create `docs/_data/versions.yml` with initial beta entry (`version: "beta"`, `path: "/beta/"`, `is_prerelease: true`) (FR-020)
 - [X] T036 [US1] Create `.github/workflows/docs-deploy.yml` — trigger: push to `main`; steps: install cmark-gfm, build-docs.sh --beta, copy-snapshots.sh, upload-pages-artifact, deploy-pages (FR-012, contracts/ci-workflow-contract.md)
@@ -143,7 +143,7 @@ description: "Task list for feature: App Documentation (Jekyll Site + In-App AI)
 
 - [X] T048 [P] [US4] Review and polish all 7 developer docs authored in T026–T032 for accuracy against current codebase: verify type names, file paths, and code patterns match `Meshtastic/` source
 - [X] T049 [P] [US4] Add snapshot tests for `DocBrowserView` developer section in `MeshtasticTests/SwiftUIViewSnapshotTests.swift` — renders developer pages in TOC without errors
-- [X] T050 [US4] Rebuild HTML bundle after content polish: `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta`; commit updated HTML and index
+- [X] T050 [US4] Rebuild HTML bundle after content polish: `bash scripts/build-docs.sh --output Meshtastic/Resources/docs`; commit updated HTML and index
 
 **Checkpoint**: Developer Guide section visible in-app and on GitHub Pages; content accurately describes current architecture
 

@@ -117,7 +117,7 @@
 - [x] T023 [P] Create `MeshtasticTests/MarkdownConverterTests.swift` — test headings, paragraphs, code fences, tables, callouts, inline formatting, images, HTML passthrough, link rewriting, front matter stripping
 - [x] T024 [P] Update `docs/user/translate.md` with markdown translation pipeline description
 - [x] T025 [P] Update `docs/developer/architecture.md` with `DocsTranslationUploader`, `CommunityTranslationFetcher`, and `MarkdownConverter` documentation
-- [x] T026 Regenerate bundled HTML docs: `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta`
+- [x] T026 Regenerate bundled HTML docs: `bash scripts/build-docs.sh --output Meshtastic/Resources/docs`
 - [x] T027 Run `quickstart.md` validation — verify end-to-end flow with French language on iOS 26+ device
 - [x] T039 Add `TranslatedSearchEntry` model to `DocModels.swift` and translated search index storage to `DocBundle`
 - [x] T040 Add `generateSearchIndex(for:)` and `extractKeywords(from:)` to `DocTranslationService` — generates translated keyword index after prefetch

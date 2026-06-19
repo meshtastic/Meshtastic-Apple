@@ -45,7 +45,7 @@ Once that core flow worked, additional validation exposed practical issues aroun
 - Repeated Mac Catalyst build verification:
 	- `xcodebuild -workspace Meshtastic.xcworkspace -scheme Meshtastic -destination 'platform=macOS,variant=Mac Catalyst' build`
 - Documentation rebuild verification:
-	- `bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta`
+	- `bash scripts/build-docs.sh --output Meshtastic/Resources/docs`
 
 Note: targeted tests were not run locally because of the current macOS host / test target version mismatch.
 

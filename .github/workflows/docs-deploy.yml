@@ -81,7 +81,7 @@ jobs:
         run: sudo apt-get install -y cmark-gfm
 
       - name: Build docs bundle
-        run: bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta
+        run: bash scripts/build-docs.sh --output Meshtastic/Resources/docs
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1

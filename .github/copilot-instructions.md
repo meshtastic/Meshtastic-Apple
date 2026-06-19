@@ -195,7 +195,7 @@ The app ships a complete offline documentation system (feature `003-app-docs-mar
   - The `**` closing the title must be immediately adjacent to the last word (no trailing space): `> **Tip — Title**` ✓, `> **Tip — Title **` ✗.
 - **After editing any `.md` file under `docs/`**, regenerate the bundled HTML and commit it:
   ```bash
-  bash scripts/build-docs.sh --output Meshtastic/Resources/docs --beta
+  bash scripts/build-docs.sh --output Meshtastic/Resources/docs
   ```
   Then copy updated snapshots if needed:
   ```bash

@@ -349,13 +349,3 @@ picture img {
     margin-bottom: 6px;
     color: var(--warning-border);
 }
-
-/* ── Pre-release warning banner ── */
-.pre-release-banner {
-    background-color: var(--warning-bg);
-    border: 1px solid var(--warning-border);
-    border-radius: 6px;
-    padding: 10px 14px;
-    margin-bottom: 16px;
-    font-size: 0.875rem;
-}
