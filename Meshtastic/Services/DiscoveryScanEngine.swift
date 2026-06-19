@@ -100,6 +100,9 @@ final class DiscoveryScanEngine {
 	/// so it only needs a brief window to fold in any live packets before finalizing.
 	static let currentPresetScanDwell: TimeInterval = 60
 
+	/// Paces the animated reveal of seeded nodes onto the map during a current-preset scan.
+	private var seedTask: Task<Void, Never>?
+
 	var isScanning: Bool {
 		switch currentState {
 		case .shifting, .reconnecting, .dwell, .paused, .restoring:
@@ -214,10 +217,13 @@ final class DiscoveryScanEngine {
 		presetDwellStart = Date()
 
 		// "Current preset" scan: fold in everything already collected for this preset so the run
-		// reflects accumulated history, and widen the local-stats window to the full history.
+		// reflects accumulated history, and widen the local-stats window to the full history. The
+		// seeded nodes are revealed onto the map progressively over the dwell (accelerated
+		// playback) rather than all at once.
 		if seedFromExistingData {
-			seedDiscoveredNodesFromDatabase()
 			presetDwellStart = nil
+			seedTask?.cancel()
+			seedTask = Task { [weak self] in await self?.revealSeededNodesFromDatabase() }
 		}
 
 		Logger.discovery.info("📡 [Discovery] Shifting to preset: \(nextPreset.name)")
@@ -497,6 +503,9 @@ final class DiscoveryScanEngine {
 			guard !Task.isCancelled else { return }
 			Logger.discovery.info("📡 [Discovery] Dwell complete for preset: \(self.activePreset?.name ?? "unknown")")
 
+			// Make sure the animated seed reveal has finished so every node is counted.
+			await self.seedTask?.value
+
 			// Finalize preset result
 			self.finalizePresetResult()
 
@@ -679,9 +688,10 @@ final class DiscoveryScanEngine {
 		Logger.discovery.info("📡 [Discovery] Stopping scan...")
 		dwellTask?.cancel()
 		reconnectTimeoutTask?.cancel()
+		seedTask?.cancel()
 		transitionTo(.restoring)
 
-		// Save partial results
+		// Save partial results (whatever was revealed so far)
 		finalizePresetResult()
 		session?.completionStatus = "stopped"
 
@@ -826,6 +836,8 @@ extension DiscoveryScanEngine {
 		deviceMetricsHistory = [:]
 		presetDwellStart = nil
 		seedFromExistingData = false
+		seedTask?.cancel()
+		seedTask = nil
 		awaitingDisconnect = false
 		interruptedDwellRemaining = nil
 		// Clear both home snapshots together so a later scan that starts without a readable
@@ -940,11 +952,12 @@ extension DiscoveryScanEngine {
 		await startScan()
 	}
 
-	/// Seeds the active preset's result with a discovered node for every node already known in
-	/// SwiftData — names, hops/role, last position, per-node text-message and sensor-packet counts.
-	/// Nodes already added by a live packet this dwell are skipped so live updates aren't lost.
-	/// Used by `startCurrentPresetScan()` so the run starts from the full accumulated picture.
-	func seedDiscoveredNodesFromDatabase() {
+	/// Reveals a discovered node for every node already known in SwiftData onto the map
+	/// progressively over the dwell — an accelerated playback of the accumulated history rather
+	/// than dumping them all at once. Names, hops/role, last position, and per-node message/sensor
+	/// counts are filled in; nodes a live packet already added this dwell are skipped. Used by
+	/// `startCurrentPresetScan()`.
+	func revealSeededNodesFromDatabase() async {
 		guard let context = modelContext, let session, let result = currentPresetResult else { return }
 		let presetName = activePreset?.name ?? result.presetName
 		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
@@ -958,46 +971,66 @@ extension DiscoveryScanEngine {
 		}
 
 		let allNodes = (try? context.fetch(FetchDescriptor<NodeInfoEntity>())) ?? []
+		// Skip the connected node and any node a live packet already added this dwell.
+		let candidates = allNodes.filter { node in
+			node.num != connectedNodeNum
+				&& !session.discoveredNodes.contains(where: { $0.nodeNum == node.num && $0.presetName == presetName })
+		}
+		guard !candidates.isEmpty else { return }
+
 		let userLat = session.userLatitude
 		let userLon = session.userLongitude
+
+		// Spread the reveal across ~85% of the dwell (so it finishes before finalize), in batches
+		// over ~120 ticks for a smooth, accelerated fill regardless of mesh size.
+		let revealWindow = max(2.0, dwellDuration * 0.85)
+		let ticks = 120.0
+		let tick = max(0.08, revealWindow / ticks)
+		let batchSize = max(1, Int((Double(candidates.count) / ticks).rounded(.up)))
+
+		var index = 0
 		var seeded = 0
-		for node in allNodes where node.num != connectedNodeNum {
-			// A live packet may have already created this node for the preset — don't duplicate.
-			if session.discoveredNodes.contains(where: { $0.nodeNum == node.num && $0.presetName == presetName }) {
-				continue
-			}
-			let dn = DiscoveredNodeEntity()
-			dn.nodeNum = node.num
-			dn.shortName = node.user?.shortName ?? ""
-			dn.longName = node.user?.longName ?? ""
-			let hops = Int(node.hopsAway)
-			dn.hopCount = hops
-			dn.neighborType = hops <= 1 ? "direct" : "mesh"
-			dn.snr = node.snr
-			dn.rssi = Int(node.rssi)
-			// Infrastructure roles: Router (2), Router Late (11), Client Base (12)
-			dn.isInfrastructure = [2, 11, 12].contains(Int(node.user?.role ?? 0))
-			if let pos = node.positions.last {
-				dn.latitude = pos.latitude ?? 0.0
-				dn.longitude = pos.longitude ?? 0.0
-				if userLat != 0.0 || userLon != 0.0, dn.latitude != 0.0 || dn.longitude != 0.0 {
-					let userLocation = CLLocation(latitude: userLat, longitude: userLon)
-					let nodeLocation = CLLocation(latitude: dn.latitude, longitude: dn.longitude)
-					dn.distanceFromUser = userLocation.distance(from: nodeLocation)
+		while index < candidates.count {
+			if Task.isCancelled { break }
+			let end = min(index + batchSize, candidates.count)
+			for node in candidates[index..<end] {
+				let dn = DiscoveredNodeEntity()
+				dn.nodeNum = node.num
+				dn.shortName = node.user?.shortName ?? ""
+				dn.longName = node.user?.longName ?? ""
+				let hops = Int(node.hopsAway)
+				dn.hopCount = hops
+				dn.neighborType = hops <= 1 ? "direct" : "mesh"
+				dn.snr = node.snr
+				dn.rssi = Int(node.rssi)
+				// Infrastructure roles: Router (2), Router Late (11), Client Base (12)
+				dn.isInfrastructure = [2, 11, 12].contains(Int(node.user?.role ?? 0))
+				if let pos = node.positions.last {
+					dn.latitude = pos.latitude ?? 0.0
+					dn.longitude = pos.longitude ?? 0.0
+					if userLat != 0.0 || userLon != 0.0, dn.latitude != 0.0 || dn.longitude != 0.0 {
+						let userLocation = CLLocation(latitude: userLat, longitude: userLon)
+						let nodeLocation = CLLocation(latitude: dn.latitude, longitude: dn.longitude)
+						dn.distanceFromUser = userLocation.distance(from: nodeLocation)
+					}
 				}
+				dn.messageCount = messageCounts[node.num] ?? 0
+				// Sensor packets ≈ environment (1) + air-quality (2) telemetry the node has reported.
+				dn.sensorPacketCount = node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 2 }.count
+				dn.presetName = presetName
+				dn.session = session
+				dn.presetResult = result
+				context.insert(dn)
+				session.discoveredNodes.append(dn)
+				result.nodes.append(dn)
+				seeded += 1
 			}
-			dn.messageCount = messageCounts[node.num] ?? 0
-			// Sensor packets ≈ environment (1) + air-quality (2) telemetry the node has reported.
-			dn.sensorPacketCount = node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 2 }.count
-			dn.presetName = presetName
-			dn.session = session
-			dn.presetResult = result
-			context.insert(dn)
-			session.discoveredNodes.append(dn)
-			result.nodes.append(dn)
-			seeded += 1
+			index = end
+			if index < candidates.count {
+				try? await Task.sleep(for: .seconds(tick))
+			}
 		}
 
-		Logger.discovery.info("📡 [Discovery] Seeded \(seeded) node(s) from existing data into \(presetName, privacy: .public)")
+		Logger.discovery.info("📡 [Discovery] Revealed \(seeded) seeded node(s) onto the map for \(presetName, privacy: .public)")
 	}
 }
