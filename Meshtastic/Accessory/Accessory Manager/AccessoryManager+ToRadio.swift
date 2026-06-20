@@ -86,28 +86,6 @@ extension AccessoryManager {
 		}
 	}
 
-	public func saveTimeZone(config: Config.DeviceConfig, user: Int64) async throws -> Int64 {
-		var adminPacket = AdminMessage()
-		adminPacket.setConfig.device = config
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(user)
-		meshPacket.from	= UInt32(user)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		var dataMessage = DataMessage()
-		guard let adminData: Data = try? adminPacket.serializedData() else {
-			throw AccessoryError.ioFailed("saveTimeZone: Unable to serialize Admin packet")
-		}
-		dataMessage.payload = adminData
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
-
-		let messageDescription = "⌚ Device Config timezone was empty set timezone to \(config.tzdef)"
-		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
-		return Int64(meshPacket.id)
-	}
-
 	// Send an admin message to a radio, save a message to core data for logging
 	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String?) async throws {
 

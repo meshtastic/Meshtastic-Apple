@@ -632,36 +632,6 @@ struct NodeDetail: View {
 		   accessoryManager.isConnected {
 			Section("Administration") {
 				let administrationUserPair = self.administrationUserPair
-				if UserDefaults.enableAdministration {
-					Button {
-						Task {
-							guard let administrationUserPair else { return }
-							do {
-								_ = try await accessoryManager.requestDeviceMetadata(
-									fromUser: administrationUserPair.fromUser,
-									toUser: administrationUserPair.toUser
-								)
-								Logger.mesh.info("Sent node metadata request from node details")
-							} catch {
-								Logger.mesh.error("Failed to send node metadata request from node details")
-							}
-						}
-					} label: {
-						Label {
-							Text("Refresh device metadata")
-						} icon: {
-							Image(systemName: "arrow.clockwise")
-						}
-					}
-					.disabled(administrationUserPair == nil)
-				}
-				if metadata.hasBuzzer {
-					FindNodeButton(
-						fromUser: administrationUserPair?.fromUser,
-						toUser: administrationUserPair?.toUser,
-						nodeName: node.user?.longName ?? "this node"
-					)
-				}
 				if metadata.canShutdown {
 					Button {
 						showingShutdownConfirm = true

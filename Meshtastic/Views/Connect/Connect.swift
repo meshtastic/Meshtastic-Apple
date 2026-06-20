@@ -841,22 +841,24 @@ func switchToDevice(
 		try? await accessoryManager.disconnect()
 	}
 
-	await backupCurrentDatabase(forTargetNode: targetNodeNum, accessoryManager: accessoryManager)
-
 	if let targetNodeNum {
-		let restoreResult = await backupCurrentAndRestoreDatabase(
-			forNode: targetNodeNum,
-			accessoryManager: accessoryManager,
-			appState: appState,
-			selectedTab: .connect
-		)
-		switch restoreResult {
-		case .success:
-			Logger.backup.info("💾 Backup restored for target node \(targetNodeNum)")
-		case .skipped(let reason):
-			Logger.backup.warning("💾 Restore skipped: \(reason, privacy: .public)")
-		case .noBackupFound:
-			Logger.backup.info("💾 No backup for target node \(targetNodeNum) — radio will populate fresh data")
+		if currentNodeNum == targetNodeNum {
+			Logger.backup.info("💾 Target node is already active; skipping database backup/restore")
+		} else {
+			let restoreResult = await backupCurrentAndRestoreDatabase(
+				forNode: targetNodeNum,
+				accessoryManager: accessoryManager,
+				appState: appState,
+				selectedTab: .connect
+			)
+			switch restoreResult {
+			case .success:
+				Logger.backup.info("💾 Backup restored for target node \(targetNodeNum)")
+			case .skipped(let reason):
+				Logger.backup.warning("💾 Restore skipped: \(reason, privacy: .public)")
+			case .noBackupFound:
+				Logger.backup.info("💾 No backup for target node \(targetNodeNum) — radio will populate fresh data")
+			}
 		}
 	} else {
 		Logger.backup.warning("💾 Target node num is nil — cannot restore, radio will populate fresh data")

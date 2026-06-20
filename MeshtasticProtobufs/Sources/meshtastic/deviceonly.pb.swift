@@ -132,8 +132,8 @@ public struct NodeInfoLite: Sendable {
   public var num: UInt32 = 0
 
   ///
-  /// Returns the Signal-to-noise ratio (SNR) of the last received message,
-  /// as measured by the receiver. Return SNR of the last received message in dB
+  /// In-memory SNR of the last received message in dB. Not serialised directly:
+  /// always zeroed before encode; persisted as snr_q4 = 19 below.
   public var snr: Float = 0
 
   ///
@@ -183,6 +183,12 @@ public struct NodeInfoLite: Sendable {
   ///
   /// The public key of the user's device, for PKI-based encrypted DMs.
   public var publicKey: Data = Data()
+
+  ///
+  /// Q4-encoded SNR: dB × 4, sint32 zigzag. Matches RouteDiscovery convention.
+  /// Encode: snr_q4 = (int32_t)(snr * 4.0f). Decode: snr = snr_q4 / 4.0f.
+  /// float snr is always zeroed on disk; this field carries all persisted SNR.
+  public var snrQ4: Int32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -644,7 +650,7 @@ extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfoLite"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{2}\u{3}snr\0\u{3}last_heard\0\u{2}\u{2}channel\0\u{4}\u{2}hops_away\0\u{4}\u{3}next_hop\0\u{1}bitfield\0\u{3}long_name\0\u{3}short_name\0\u{3}hw_model\0\u{1}role\0\u{3}public_key\0\u{b}user\0\u{b}position\0\u{b}device_metrics\0\u{b}via_mqtt\0\u{b}is_favorite\0\u{b}is_ignored\0\u{c}\u{2}\u{1}\u{c}\u{3}\u{1}\u{c}\u{6}\u{1}\u{c}\u{8}\u{1}\u{c}\u{a}\u{1}\u{c}\u{b}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{2}\u{3}snr\0\u{3}last_heard\0\u{2}\u{2}channel\0\u{4}\u{2}hops_away\0\u{4}\u{3}next_hop\0\u{1}bitfield\0\u{3}long_name\0\u{3}short_name\0\u{3}hw_model\0\u{1}role\0\u{3}public_key\0\u{3}snr_q4\0\u{b}user\0\u{b}position\0\u{b}device_metrics\0\u{b}via_mqtt\0\u{b}is_favorite\0\u{b}is_ignored\0\u{c}\u{2}\u{1}\u{c}\u{3}\u{1}\u{c}\u{6}\u{1}\u{c}\u{8}\u{1}\u{c}\u{a}\u{1}\u{c}\u{b}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -664,6 +670,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       case 16: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
       case 17: try { try decoder.decodeSingularEnumField(value: &self.role) }()
       case 18: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
+      case 19: try { try decoder.decodeSingularSInt32Field(value: &self.snrQ4) }()
       default: break
       }
     }
@@ -710,6 +717,9 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if !self.publicKey.isEmpty {
       try visitor.visitSingularBytesField(value: self.publicKey, fieldNumber: 18)
     }
+    if self.snrQ4 != 0 {
+      try visitor.visitSingularSInt32Field(value: self.snrQ4, fieldNumber: 19)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -726,6 +736,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if lhs.hwModel != rhs.hwModel {return false}
     if lhs.role != rhs.role {return false}
     if lhs.publicKey != rhs.publicKey {return false}
+    if lhs.snrQ4 != rhs.snrQ4 {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -1478,6 +1478,11 @@ public struct HamParameters: Sendable {
   /// Optional short name of user
   public var shortName: String = String()
 
+  ///
+  /// Optional long name of user
+  /// Appended to callsign
+  public var longName: String = String()
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -3066,7 +3071,7 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HamParameters"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}call_sign\0\u{3}tx_power\0\u{1}frequency\0\u{3}short_name\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}call_sign\0\u{3}tx_power\0\u{1}frequency\0\u{3}short_name\0\u{3}long_name\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3078,6 +3083,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 2: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
       case 3: try { try decoder.decodeSingularFloatField(value: &self.frequency) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.shortName) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.longName) }()
       default: break
       }
     }
@@ -3096,6 +3102,9 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if !self.shortName.isEmpty {
       try visitor.visitSingularStringField(value: self.shortName, fieldNumber: 4)
     }
+    if !self.longName.isEmpty {
+      try visitor.visitSingularStringField(value: self.longName, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3104,6 +3113,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.txPower != rhs.txPower {return false}
     if lhs.frequency != rhs.frequency {return false}
     if lhs.shortName != rhs.shortName {return false}
+    if lhs.longName != rhs.longName {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

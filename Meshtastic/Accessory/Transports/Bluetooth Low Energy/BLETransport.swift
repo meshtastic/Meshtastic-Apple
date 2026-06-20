@@ -147,6 +147,46 @@ actor BLETransport: Transport {
 		cleanupTask = nil
 	}
 
+	private func waitForPoweredOnCentral() async throws {
+		guard centralManager != nil else {
+			throw AccessoryError.connectionFailed("Bluetooth not initialized")
+		}
+
+		if centralManager.state == .poweredOn {
+			return
+		}
+
+		Logger.transport.info("🛜 [BLE] Waiting for poweredOn before connecting. Current state: \(cbManagerStateDescription(self.centralManager.state), privacy: .public)")
+		await setupCompleteGate.reset()
+
+		// Avoid missing a racing state transition between the state check and gate reset.
+		if centralManager.state == .poweredOn {
+			await setupCompleteGate.open()
+			return
+		}
+
+		try await setupCompleteGate.wait()
+
+		guard centralManager.state == .poweredOn else {
+			throw AccessoryError.connectionFailed("Bluetooth is not ready: \(cbManagerStateDescription(centralManager.state))")
+		}
+	}
+
+	private func peripheral(for device: Device) throws -> CBPeripheral {
+		guard let id = UUID(uuidString: device.identifier) else {
+			throw AccessoryError.connectionFailed("Invalid BLE peripheral identifier")
+		}
+		if let discovered = discoveredPeripherals[id]?.peripheral {
+			return discovered
+		}
+		if let retrieved = centralManager.retrievePeripherals(withIdentifiers: [id]).first {
+			Logger.transport.info("🛜 [BLE] Retrieved cached peripheral for reconnect: \(retrieved.name ?? device.name, privacy: .public) (\(id, privacy: .public))")
+			discoveredPeripherals[id] = (peripheral: retrieved, lastSeen: Date())
+			return retrieved
+		}
+		throw AccessoryError.connectionFailed("Peripheral not found")
+	}
+
 	func handleCentralState(_ state: CBManagerState, central: CBCentralManager) {
 		Logger.transport.error("🛜 [BLE] State has transitioned to: \(cbManagerStateDescription(state), privacy: .public)")
 		switch state {
@@ -189,11 +229,11 @@ actor BLETransport: Transport {
 
 		case .resetting:
 			status = .error("Bluetooth is resetting")
-			// Perhaps don't finish, wait for next state
+			Task { await setupCompleteGate.reset() }
 
 		case .unknown:
 			status = .error("Bluetooth state is unknown")
-			// Perhaps wait
+			Task { await setupCompleteGate.reset() }
 		@unknown default:
 			status = .error("Unknown Bluetooth state")
 			Task { await self.setupCompleteGate.throwAll(AccessoryError.connectionFailed("Unknown Bluetooth State"))}
@@ -231,10 +271,9 @@ actor BLETransport: Transport {
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		guard let peripheral = discoveredPeripherals[UUID(uuidString: device.identifier)!] else {
-			throw AccessoryError.connectionFailed("Peripheral not found")
-		}
-		
+		try await waitForPoweredOnCentral()
+		let peripheral = try peripheral(for: device)
+
 		do {
 			if await self.activeConnection?.peripheral.state == .disconnected {
 				Logger.transport.error("🛜 [BLE] Connect request while an active (but disconnected)")
@@ -248,24 +287,32 @@ actor BLETransport: Transport {
 						return
 					}
 					self.connectContinuation = cont
-					self.connectingPeripheral = peripheral.peripheral
+					self.connectingPeripheral = peripheral
 					guard centralManager != nil else {
+						self.connectContinuation = nil
+						self.connectingPeripheral = nil
 						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
 						return
 					}
-					centralManager.connect(peripheral.peripheral)
+					guard centralManager.state == .poweredOn else {
+						self.connectContinuation = nil
+						self.connectingPeripheral = nil
+						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth is not ready: \(cbManagerStateDescription(centralManager.state))"))
+						return
+					}
+					centralManager.connect(peripheral)
 				}
 				self.activeConnection = newConnection
 				return newConnection
 			} onCancel: {
 				Task {
-					await self.cancelConnectContinuation(for: peripheral.peripheral)
+					await self.cancelConnectContinuation(for: peripheral)
 				}
 			}
 			Logger.transport.debug("🛜 [BLE] Connect complete.")
 			return returnConnection
 		} catch {
-			connectionDidDisconnect(fromPeripheral: peripheral.peripheral)
+			connectionDidDisconnect(fromPeripheral: peripheral)
 			throw error
 		}
 	}

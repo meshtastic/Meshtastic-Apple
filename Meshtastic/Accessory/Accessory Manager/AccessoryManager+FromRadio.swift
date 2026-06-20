@@ -212,14 +212,10 @@ extension AccessoryManager {
 		// Local config parses out the variants.  Should we do that here maybe?
 		await MeshPackets.shared.localConfig(config: config, nodeNum: Int64(truncatingIfNeeded: deviceNum), nodeLongName: longName)
 
-		// Handle Timezone
 		if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-			var dc = config.device
-			if dc.tzdef.isEmpty {
-				dc.tzdef =  TimeZone.current.posixDescription
-				Task {
-					try? await saveTimeZone(config: dc, user: deviceNum)
-				}
+			let deviceConfig = config.device
+			if deviceConfig.tzdef.isEmpty {
+				Logger.admin.info("Skipping automatic timezone config write during connect sync for node \(deviceNum.toHex(), privacy: .public)")
 			}
 		}
 	}

@@ -20,7 +20,6 @@ struct Tools: View {
 	#if !targetEnvironment(macCatalyst)
 	@StateObject private var nfcReader = NFCReader()
 	#endif
-	@State private var metadataRequestAlert: MetadataRequestAlert?
 
 	var connectedNode: NodeInfoEntity? {
 		if let num = accessoryManager.activeDeviceNum {
@@ -53,24 +52,29 @@ struct Tools: View {
 			List {
 				Section(header: Text("Find Node")) {
 					if let node = connectedNode {
-						FindNodeButton(
-							fromUser: node.user,
-							toUser: node.user,
-							nodeName: node.user?.longName ?? "this node"
-						)
-						Button {
-							requestConnectedNodeMetadata()
-						} label: {
-							Label("Refresh Device Metadata", systemImage: "arrow.clockwise")
-						}
-						.disabled(node.user == nil)
-						if node.metadata?.hasBuzzer != true {
-							Text("Firmware will report whether this connected node has a supported buzzer.")
-								.foregroundStyle(.secondary)
+						if node.metadata?.hasBuzzer == true {
+							FindNodeButton(
+								fromUser: node.user,
+								toUser: node.user,
+								nodeName: node.user?.longName ?? "this node"
+							)
+						} else {
+							Label {
+								Text("This connected node does not report buzzer hardware.")
+									.foregroundStyle(.secondary)
+							} icon: {
+								Image(systemName: "speaker.slash")
+									.symbolRenderingMode(.hierarchical)
+							}
 						}
 					} else {
-						Text("Connect to a node to make its buzzer beep.")
-							.foregroundStyle(.secondary)
+						Label {
+							Text("Connect to a node to use Find Node.")
+								.foregroundStyle(.secondary)
+						} icon: {
+							Image(systemName: "wifi.slash")
+								.symbolRenderingMode(.hierarchical)
+						}
 					}
 				}
 				Section(header: Text("Create Node Contact NFC Tag")) {
@@ -90,49 +94,6 @@ struct Tools: View {
 		}
 		.navigationTitle("Tools")
 		.navigationBarTitleDisplayMode(.inline)
-		.alert(item: $metadataRequestAlert) { alert in
-			Alert(
-				title: Text(alert.title),
-				message: Text(alert.message),
-				dismissButton: .default(Text("OK"))
-			)
-		}
-	}
-
-	private func requestConnectedNodeMetadata() {
-		guard let user = connectedNode?.user else {
-			metadataRequestAlert = MetadataRequestAlert(
-				title: String(localized: "Metadata Unavailable"),
-				message: String(localized: "Connect to a node, then try again.")
-			)
-			return
-		}
-
-		Task {
-			do {
-				_ = try await accessoryManager.requestDeviceMetadata(fromUser: user, toUser: user)
-				await MainActor.run {
-					metadataRequestAlert = MetadataRequestAlert(
-						title: String(localized: "Metadata Requested"),
-						message: String(localized: "The app requested updated device metadata from the connected node.")
-					)
-				}
-			} catch {
-				await MainActor.run {
-					metadataRequestAlert = MetadataRequestAlert(
-						title: String(localized: "Metadata Request Failed"),
-						message: String(localized: "The request could not be sent. Check the connection and try again.")
-					)
-				}
-				Logger.services.warning("Failed to request connected node metadata: \(error)")
-			}
-		}
-	}
-
-	private struct MetadataRequestAlert: Identifiable {
-		let id = UUID()
-		let title: String
-		let message: String
 	}
 }
 
