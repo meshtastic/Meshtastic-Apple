@@ -228,6 +228,67 @@ struct RFGeoJSONOverlayTests {
 		#expect(feature.dbm == -118)
 	}
 
+	@Test func annotatedCoverageDataAppliesOpacityAndRFMetadata() async throws {
+		let request = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txHeight: 12.0,
+			txPower: 24.0,
+			txGain: 5.5,
+			systemLoss: 1.5,
+			frequencyMHz: 915.0,
+			rxHeight: 2.5,
+			signalThreshold: -128.0,
+			radius: 45_000.0,
+			highResolution: true,
+			colormap: "viridis",
+			minDbm: -128.0
+		)
+
+		let data = try SitePlannerCoverageClient.annotatedCoverageFeatureCollectionData(
+			from: Self.contourFeatureCollectionData,
+			request: request,
+			overlayOpacity: 0.35
+		)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let feature = try #require(collection.features.first)
+		let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+		let properties = try #require(json?["properties"] as? [String: Any])
+		let featureProperties = try #require((json?["features"] as? [[String: Any]])?.first?["properties"] as? [String: Any])
+
+		#expect(feature.effectiveFillOpacity == 0.35)
+		#expect(feature.effectiveStrokeOpacity == 0.55)
+		#expect(featureProperties["fill-opacity"] as? Double == 0.35)
+		#expect(featureProperties["stroke-opacity"] as? Double == 0.55)
+		#expect(properties["tx_height_m"] as? Double == 12.0)
+		#expect(properties["rx_height_m"] as? Double == 2.5)
+		#expect(properties["radius_km"] as? Double == 45.0)
+		#expect(properties["frequency_mhz"] as? Double == 915.0)
+		#expect(properties["tx_power_dbm"] as? Double == 24.0)
+		#expect(properties["tx_gain_dbi"] as? Double == 5.5)
+		#expect(properties["system_loss_db"] as? Double == 1.5)
+		#expect(properties["overlay_opacity"] as? Double == 0.35)
+		#expect(properties["high_resolution"] as? Bool == true)
+		#expect(properties["colormap"] as? String == "viridis")
+
+		MapDataManager.shared.initialize()
+		let metadata = try await MapDataManager.shared.processGeoJSONData(
+			data,
+			originalName: "Annotated Coverage Test",
+			makeActive: false
+		)
+		#expect(metadata.rfSummary?.txHeightMeters == 12.0)
+		#expect(metadata.rfSummary?.rxHeightMeters == 2.5)
+		#expect(metadata.rfSummary?.radiusKilometers == 45.0)
+		#expect(metadata.rfSummary?.frequencyMHz == 915.0)
+		#expect(metadata.rfSummary?.txPowerDbm == 24.0)
+		#expect(metadata.rfSummary?.txGainDbi == 5.5)
+		#expect(metadata.rfSummary?.systemLossDb == 1.5)
+		#expect(metadata.rfSummary?.overlayOpacity == 0.35)
+		#expect(metadata.rfSummary?.highResolution == true)
+		try await MapDataManager.shared.deleteFile(metadata)
+	}
+
 	@Test func sitePlannerClientAcceptsDirectGeoJSONResponse() async throws {
 		let endpoint = try #require(URL(string: "https://coverage.example.test/api"))
 		let configuration = URLSessionConfiguration.ephemeral

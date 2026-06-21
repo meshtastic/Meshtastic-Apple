@@ -185,6 +185,10 @@ struct MapDataFileRow: View {
 
 	var body: some View {
 		HStack {
+			Image(systemName: file.rfSummary == nil ? "doc" : "antenna.radiowaves.left.and.right")
+				.font(.title3)
+				.foregroundColor(file.rfSummary == nil ? .secondary : .accentColor)
+				.frame(width: 28)
 			VStack {
 				HStack {
 					Text(file.originalName)

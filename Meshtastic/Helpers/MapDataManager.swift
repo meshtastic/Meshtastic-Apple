@@ -232,7 +232,16 @@ class MapDataManager: ObservableObject {
 			coveredFraction: doubleValue(properties["covered_fraction"]),
 			source: properties["source"] as? String,
 			contourMaxDimension: intValue(properties["contour_max_dimension"]),
-			contourSmoothingRadius: intValue(properties["contour_smoothing_radius"])
+			contourSmoothingRadius: intValue(properties["contour_smoothing_radius"]),
+			txHeightMeters: doubleValue(properties["tx_height_m"]),
+			rxHeightMeters: doubleValue(properties["rx_height_m"]),
+			radiusKilometers: doubleValue(properties["radius_km"]),
+			frequencyMHz: doubleValue(properties["frequency_mhz"]),
+			txPowerDbm: doubleValue(properties["tx_power_dbm"]),
+			txGainDbi: doubleValue(properties["tx_gain_dbi"]),
+			systemLossDb: doubleValue(properties["system_loss_db"]),
+			overlayOpacity: doubleValue(properties["overlay_opacity"]),
+			highResolution: boolValue(properties["high_resolution"])
 		)
 	}
 
@@ -244,6 +253,26 @@ class MapDataManager: ObservableObject {
 			return Double(value)
 		case let value as NSNumber:
 			return value.doubleValue
+		default:
+			return nil
+		}
+	}
+
+	private static func boolValue(_ value: Any?) -> Bool? {
+		switch value {
+		case let value as Bool:
+			return value
+		case let value as NSNumber:
+			return value.boolValue
+		case let value as String:
+			switch value.lowercased() {
+			case "true", "yes", "1":
+				return true
+			case "false", "no", "0":
+				return false
+			default:
+				return nil
+			}
 		default:
 			return nil
 		}
@@ -512,6 +541,15 @@ struct MapDataRFSummary: Codable, Equatable {
 	let source: String?
 	let contourMaxDimension: Int?
 	let contourSmoothingRadius: Int?
+	let txHeightMeters: Double?
+	let rxHeightMeters: Double?
+	let radiusKilometers: Double?
+	let frequencyMHz: Double?
+	let txPowerDbm: Double?
+	let txGainDbi: Double?
+	let systemLossDb: Double?
+	let overlayOpacity: Double?
+	let highResolution: Bool?
 
 	var compactDescription: String {
 		let area = String(format: "%.1f", areaKm2)
@@ -526,7 +564,29 @@ struct MapDataRFSummary: Codable, Equatable {
 			let percent = String(format: "%.0f%%", coveredFraction * 100.0)
 			parts.append("\(percent) of modeled cells covered")
 		}
+		if let txHeightMeters, let rxHeightMeters {
+			parts.append("TX \(Self.measurementString(txHeightMeters)) AGL, RX \(Self.measurementString(rxHeightMeters)) AGL")
+		}
+		if let frequencyMHz {
+			parts.append("\(String(format: "%.0f", frequencyMHz)) MHz")
+		}
+		if let radiusKilometers {
+			parts.append("\(String(format: "%.0f", radiusKilometers)) km radius")
+		}
+		if let overlayOpacity {
+			parts.append("\(String(format: "%.0f%%", overlayOpacity * 100.0)) opacity")
+		}
+		if highResolution == true {
+			parts.append("high detail")
+		}
 		return parts.joined(separator: "; ")
+	}
+
+	private static func measurementString(_ value: Double) -> String {
+		if value < 10 {
+			return String(format: "%.1f m", value)
+		}
+		return String(format: "%.0f m", value)
 	}
 }
 
@@ -609,6 +669,53 @@ struct SitePlannerCoverageClient: Sendable {
 		let normalizedData = try JSONSerialization.data(withJSONObject: featureCollection, options: [])
 		_ = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: normalizedData)
 		return normalizedData
+	}
+
+	static func annotatedCoverageFeatureCollectionData(
+		from data: Data,
+		request payload: SitePlannerCoverageRequest,
+		overlayOpacity: Double
+	) throws -> Data {
+		let normalizedData = try normalizedFeatureCollectionData(from: data)
+		guard var collection = try JSONSerialization.jsonObject(with: normalizedData) as? [String: Any] else {
+			throw SitePlannerCoverageError.missingFeatureCollection
+		}
+
+		let opacity = min(1.0, max(0.05, overlayOpacity))
+		let strokeOpacity = min(1.0, max(opacity, opacity + 0.20))
+		var properties = collection["properties"] as? [String: Any] ?? [:]
+		properties["tx_height_m"] = round2(payload.txHeight)
+		properties["rx_height_m"] = round2(payload.rxHeight)
+		properties["radius_km"] = round2(payload.radius / 1_000.0)
+		properties["frequency_mhz"] = round2(payload.frequencyMHz)
+		properties["tx_power_dbm"] = round2(payload.txPower)
+		properties["tx_gain_dbi"] = round2(payload.txGain)
+		properties["system_loss_db"] = round2(payload.systemLoss)
+		properties["signal_threshold_dbm"] = round2(payload.signalThreshold)
+		properties["overlay_opacity"] = round2(opacity)
+		properties["high_resolution"] = payload.highResolution
+		properties["colormap"] = payload.colormap
+		collection["properties"] = properties
+
+		if var features = collection["features"] as? [[String: Any]] {
+			for index in features.indices {
+				var feature = features[index]
+				var featureProperties = feature["properties"] as? [String: Any] ?? [:]
+				featureProperties["fill-opacity"] = round2(opacity)
+				featureProperties["stroke-opacity"] = round2(strokeOpacity)
+				feature["properties"] = featureProperties
+				features[index] = feature
+			}
+			collection["features"] = features
+		}
+
+		let resultData = try JSONSerialization.data(withJSONObject: collection, options: [])
+		_ = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: resultData)
+		return resultData
+	}
+
+	private static func round2(_ value: Double) -> Double {
+		(value * 100.0).rounded() / 100.0
 	}
 
 	private static func findFeatureCollection(in object: Any) -> [String: Any]? {

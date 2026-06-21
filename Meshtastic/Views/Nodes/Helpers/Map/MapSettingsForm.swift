@@ -168,7 +168,7 @@ struct MapSettingsForm: View {
 										}
 									} icon: {
 										let isEnabled = enabledOverlayConfigs.contains(file.id)
-										Image(systemName: isEnabled ? "doc.fill" : "doc")
+										Image(systemName: file.rfSummary == nil ? (isEnabled ? "doc.fill" : "doc") : "antenna.radiowaves.left.and.right")
 											.foregroundColor(isEnabled ? .accentColor : .secondary)
 									}
 								}
