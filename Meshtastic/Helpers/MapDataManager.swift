@@ -166,6 +166,7 @@ class MapDataManager: ObservableObject {
 			  let features = geoJSON["features"] as? [[String: Any]] else {
 			throw NSError(domain: "MapDataManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "GeoJSON must be a FeatureCollection with features"])
 		}
+		let rfSummary = Self.rfSummary(from: geoJSON)
 
 		// Validate each feature
 		for feature in features {
@@ -185,6 +186,7 @@ class MapDataManager: ObservableObject {
 			license: nil, // Will be extracted from content if available
 			attribution: nil, // Will be extracted from content if available
 			overlayCount: overlayCount,
+			rfSummary: rfSummary,
 			isActive: makeActive
 		)
 	}
@@ -213,6 +215,51 @@ class MapDataManager: ObservableObject {
 		let lowercased = value.lowercased()
 		let allowedExtensions = ["json", "geojson"]
 		return allowedExtensions.contains(lowercased) ? lowercased : "geojson"
+	}
+
+	private static func rfSummary(from geoJSON: [String: Any]) -> MapDataRFSummary? {
+		guard let properties = geoJSON["properties"] as? [String: Any],
+			  let thresholdDbm = doubleValue(properties["threshold_dbm"]),
+			  let areaKm2 = doubleValue(properties["covered_area_km2"]),
+			  let maxRangeKm = doubleValue(properties["max_range_km"]) else {
+			return nil
+		}
+
+		return MapDataRFSummary(
+			thresholdDbm: thresholdDbm,
+			areaKm2: areaKm2,
+			maxRangeKm: maxRangeKm,
+			coveredFraction: doubleValue(properties["covered_fraction"]),
+			source: properties["source"] as? String,
+			contourMaxDimension: intValue(properties["contour_max_dimension"]),
+			contourSmoothingRadius: intValue(properties["contour_smoothing_radius"])
+		)
+	}
+
+	private static func doubleValue(_ value: Any?) -> Double? {
+		switch value {
+		case let value as Double:
+			return value
+		case let value as Int:
+			return Double(value)
+		case let value as NSNumber:
+			return value.doubleValue
+		default:
+			return nil
+		}
+	}
+
+	private static func intValue(_ value: Any?) -> Int? {
+		switch value {
+		case let value as Int:
+			return value
+		case let value as Double:
+			return Int(value)
+		case let value as NSNumber:
+			return value.intValue
+		default:
+			return nil
+		}
 	}
 
 	/// Load feature collection from a single file
@@ -432,9 +479,10 @@ struct MapDataMetadata: Codable, Identifiable {
 	let license: String?
 	let attribution: String?
 	let overlayCount: Int
+	let rfSummary: MapDataRFSummary?
 	var isActive: Bool
 
-	init(filename: String, originalName: String, uploadDate: Date, fileSize: Int64, format: String, license: String?, attribution: String?, overlayCount: Int, isActive: Bool) {
+	init(filename: String, originalName: String, uploadDate: Date, fileSize: Int64, format: String, license: String?, attribution: String?, overlayCount: Int, rfSummary: MapDataRFSummary? = nil, isActive: Bool) {
 		self.id = UUID()
 		self.filename = filename
 		self.originalName = originalName
@@ -444,6 +492,7 @@ struct MapDataMetadata: Codable, Identifiable {
 		self.license = license
 		self.attribution = attribution
 		self.overlayCount = overlayCount
+		self.rfSummary = rfSummary
 		self.isActive = isActive
 	}
 
@@ -452,6 +501,32 @@ struct MapDataMetadata: Codable, Identifiable {
 		formatter.allowedUnits = [.useKB, .useMB]
 		formatter.countStyle = .file
 		return formatter.string(fromByteCount: fileSize)
+	}
+}
+
+struct MapDataRFSummary: Codable, Equatable {
+	let thresholdDbm: Double
+	let areaKm2: Double
+	let maxRangeKm: Double
+	let coveredFraction: Double?
+	let source: String?
+	let contourMaxDimension: Int?
+	let contourSmoothingRadius: Int?
+
+	var compactDescription: String {
+		let area = String(format: "%.1f", areaKm2)
+		let range = String(format: "%.1f", maxRangeKm)
+		let threshold = String(format: "%.0f", thresholdDbm)
+		return "\(area) sq km >= \(threshold) dBm, \(range) km max"
+	}
+
+	var detailDescription: String {
+		var parts = [compactDescription]
+		if let coveredFraction {
+			let percent = String(format: "%.0f%%", coveredFraction * 100.0)
+			parts.append("\(percent) of modeled cells covered")
+		}
+		return parts.joined(separator: "; ")
 	}
 }
 
@@ -801,7 +876,7 @@ enum SitePlannerCoverageError: Error, LocalizedError {
 		case .invalidResponse:
 			return "Site Planner returned an invalid response."
 		case .publicSiteAPIUnavailable:
-			return "The public Site Planner website does not expose a hosted /predict API. Use the default public Site Planner URL, or enter a hosted API URL that exposes /predict, /status/{task_id}, and /result/{task_id}."
+			return "The default public Site Planner URL runs coverage on device. Hosted API URLs must expose /predict, /status/{task_id}, and /result/{task_id}."
 		case .httpStatus(let statusCode, let responseBody):
 			if let responseBody {
 				return "Site Planner request failed with HTTP \(statusCode): \(responseBody)"

@@ -20,7 +20,8 @@ struct NativeSitePlannerTerrainProvider: Sendable {
 
 struct NativeSitePlannerCoverageClient: Sendable {
 	var terrainProvider: NativeSitePlannerTerrainProvider = .live
-	var contourMaxDimension = 360
+	var contourMaxDimension = 640
+	var contourSmoothingRadius = 1
 	var contourByteLimit = 9_500_000
 	var runChunkSize = 256
 
@@ -29,6 +30,7 @@ struct NativeSitePlannerCoverageClient: Sendable {
 			request: payload,
 			terrainProvider: terrainProvider,
 			contourMaxDimension: contourMaxDimension,
+			contourSmoothingRadius: contourSmoothingRadius,
 			contourByteLimit: contourByteLimit,
 			runChunkSize: runChunkSize
 		)
@@ -72,6 +74,7 @@ private actor NativeSitePlannerCoverageRunner {
 		request payload: SitePlannerCoverageRequest,
 		terrainProvider: NativeSitePlannerTerrainProvider,
 		contourMaxDimension: Int,
+		contourSmoothingRadius: Int,
 		contourByteLimit: Int,
 		runChunkSize: Int
 	) async throws -> Data {
@@ -154,6 +157,7 @@ private actor NativeSitePlannerCoverageRunner {
 			from: result,
 			request: payload,
 			maxDimension: contourMaxDimension,
+			smoothingRadius: contourSmoothingRadius,
 			byteLimit: contourByteLimit
 		)
 	}
@@ -186,14 +190,20 @@ private actor NativeSitePlannerCoverageRunner {
 		from raster: CoverageRaster,
 		request: SitePlannerCoverageRequest,
 		maxDimension: Int,
+		smoothingRadius: Int,
 		byteLimit: Int
 	) throws -> Data {
-		var dimension = min(max(40, maxDimension), 512)
-		let minimumDimension = 120
+		var dimension = min(max(40, maxDimension), 900)
+		let minimumDimension = 180
 		let effectiveByteLimit = max(256_000, byteLimit)
 
 		while true {
-			let data = try featureCollectionData(from: raster, request: request, gridMaxDimension: dimension)
+			let data = try featureCollectionData(
+				from: raster,
+				request: request,
+				gridMaxDimension: dimension,
+				smoothingRadius: smoothingRadius
+			)
 			if data.count <= effectiveByteLimit || dimension <= minimumDimension {
 				return data
 			}
@@ -208,14 +218,18 @@ private actor NativeSitePlannerCoverageRunner {
 	private static func featureCollectionData(
 		from raster: CoverageRaster,
 		request: SitePlannerCoverageRequest,
-		gridMaxDimension: Int
+		gridMaxDimension: Int,
+		smoothingRadius: Int
 	) throws -> Data {
 		let floorDbm = max(request.minDbm, request.signalThreshold)
 		let maxDbm = request.maxDbm
 		let span = max(maxDbm - floorDbm, 1.0)
 		let bandCount = 12
 		let levels = (0..<bandCount).map { floorDbm + (span * Double($0)) / Double(bandCount) }
-		let grid = Self.preparedGrid(from: raster, maxDimension: gridMaxDimension, sentinel: floorDbm - max(6.0, span / Double(bandCount)))
+		let sentinel = floorDbm - max(6.0, span / Double(bandCount))
+		let preparedGrid = Self.preparedGrid(from: raster, maxDimension: gridMaxDimension, sentinel: sentinel)
+		let grid = Self.smoothedGrid(preparedGrid, radius: smoothingRadius)
+		let summary = Self.coverageSummary(from: raster, request: request, threshold: floorDbm)
 
 		let features: [[String: Any]] = levels.compactMap { level in
 			let polygons = Self.rowRunPolygons(for: grid, threshold: level)
@@ -247,6 +261,15 @@ private actor NativeSitePlannerCoverageRunner {
 
 		let collection: [String: Any] = [
 			"type": "FeatureCollection",
+			"properties": [
+				"source": "native-site-planner",
+				"threshold_dbm": summary.thresholdDbm,
+				"covered_area_km2": summary.areaKm2,
+				"max_range_km": summary.maxRangeKm,
+				"covered_fraction": summary.coveredFraction,
+				"contour_max_dimension": gridMaxDimension,
+				"contour_smoothing_radius": max(0, smoothingRadius)
+			],
 			"features": features
 		]
 		let data = try JSONSerialization.data(withJSONObject: collection, options: [])
@@ -289,6 +312,41 @@ private actor NativeSitePlannerCoverageRunner {
 			values: values,
 			bounds: raster.bounds
 		)
+	}
+
+	private static func smoothedGrid(_ grid: PreparedCoverageGrid, radius: Int) -> PreparedCoverageGrid {
+		let radius = max(0, radius)
+		guard radius > 0, grid.width > 1, grid.height > 1 else {
+			return grid
+		}
+
+		let window = Double(radius * 2 + 1)
+		var current = grid.values
+		var temporary = current
+		for _ in 0..<3 {
+			for y in 0..<grid.height {
+				let row = y * grid.width
+				for x in 0..<grid.width {
+					var sum = 0.0
+					for offset in -radius...radius {
+						let clampedX = min(grid.width - 1, max(0, x + offset))
+						sum += current[row + clampedX]
+					}
+					temporary[row + x] = sum / window
+				}
+			}
+			for x in 0..<grid.width {
+				for y in 0..<grid.height {
+					var sum = 0.0
+					for offset in -radius...radius {
+						let clampedY = min(grid.height - 1, max(0, y + offset))
+						sum += temporary[clampedY * grid.width + x]
+					}
+					current[y * grid.width + x] = sum / window
+				}
+			}
+		}
+		return PreparedCoverageGrid(width: grid.width, height: grid.height, values: current, bounds: grid.bounds)
 	}
 
 	private static func rowRunPolygons(for grid: PreparedCoverageGrid, threshold: Double) -> [[[[Double]]]] {
@@ -353,6 +411,66 @@ private actor NativeSitePlannerCoverageRunner {
 		return "rgb(\(rgb[0]), \(rgb[1]), \(rgb[2]))"
 	}
 
+	private static func coverageSummary(
+		from raster: CoverageRaster,
+		request: SitePlannerCoverageRequest,
+		threshold: Double
+	) -> CoverageSummary {
+		let latDegreesPerRow = abs(raster.bounds.north - raster.bounds.south) / Double(raster.height)
+		let lonDegreesPerColumn = abs(raster.bounds.east - raster.bounds.west) / Double(raster.width)
+		let cellHeightMeters = latDegreesPerRow * metersPerDegreeLatitude
+
+		var coveredCells = 0
+		var computedCells = 0
+		var areaSquareMeters = 0.0
+		var maxRangeMeters = 0.0
+
+		for row in 0..<raster.height {
+			let latitude = raster.bounds.north - (Double(row) + 0.5) * latDegreesPerRow
+			let rowArea = cellHeightMeters
+				* lonDegreesPerColumn
+				* metersPerDegreeLatitude
+				* max(0.0, cos(latitude * .pi / 180.0))
+			let rowOffset = row * raster.width
+			for column in 0..<raster.width {
+				let index = rowOffset + column
+				guard raster.hasCoverage(at: index) else { continue }
+				computedCells += 1
+				let dbm = Double(raster.signal[index]) - 200.0
+				guard dbm >= threshold else { continue }
+				coveredCells += 1
+				areaSquareMeters += rowArea
+				let longitude = raster.bounds.west + (Double(column) + 0.5) * lonDegreesPerColumn
+				let distance = haversineMeters(
+					lat1: request.lat,
+					lon1: request.lon,
+					lat2: latitude,
+					lon2: longitude
+				)
+				if distance > maxRangeMeters {
+					maxRangeMeters = distance
+				}
+			}
+		}
+
+		return CoverageSummary(
+			thresholdDbm: threshold,
+			areaKm2: round2(areaSquareMeters / 1_000_000.0),
+			maxRangeKm: round2(maxRangeMeters / 1_000.0),
+			coveredFraction: computedCells == 0 ? 0 : round2(Double(coveredCells) / Double(computedCells))
+		)
+	}
+
+	private static func haversineMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double) -> Double {
+		let lat1Radians = lat1 * .pi / 180.0
+		let lat2Radians = lat2 * .pi / 180.0
+		let deltaLat = (lat2 - lat1) * .pi / 180.0
+		let deltaLon = (lon2 - lon1) * .pi / 180.0
+		let a = sin(deltaLat / 2) * sin(deltaLat / 2)
+			+ cos(lat1Radians) * cos(lat2Radians) * sin(deltaLon / 2) * sin(deltaLon / 2)
+		return 2 * earthRadiusMeters * asin(min(1.0, sqrt(a)))
+	}
+
 	private static func check(_ result: Int32, _ operation: String) throws {
 		if result < 0 {
 			throw NativeSitePlannerCoverageError.engineFailed(operation, result)
@@ -382,6 +500,8 @@ private actor NativeSitePlannerCoverageRunner {
 		"horizontal": Int32(0),
 		"vertical": Int32(1)
 	]
+	private static let metersPerDegreeLatitude = 111_320.0
+	private static let earthRadiusMeters = 6_371_000.0
 
 	private static let plasmaRamp = [
 		[13, 8, 135],
@@ -730,6 +850,13 @@ private struct CoverageRaster {
 	func hasCoverage(at index: Int) -> Bool {
 		(mask[index] & 248) != 0
 	}
+}
+
+private struct CoverageSummary {
+	var thresholdDbm: Double
+	var areaKm2: Double
+	var maxRangeKm: Double
+	var coveredFraction: Double
 }
 
 private struct PreparedCoverageGrid {

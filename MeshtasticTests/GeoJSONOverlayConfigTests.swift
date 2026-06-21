@@ -96,6 +96,15 @@ struct RFGeoJSONOverlayTests {
 		"""
 		{
 			"type": "FeatureCollection",
+			"properties": {
+				"source": "native-site-planner",
+				"threshold_dbm": -130,
+				"covered_area_km2": 12.4,
+				"max_range_km": 5.6,
+				"covered_fraction": 0.42,
+				"contour_max_dimension": 640,
+				"contour_smoothing_radius": 1
+			},
 			"features": [
 				{
 					"type": "Feature",
@@ -299,6 +308,12 @@ struct RFGeoJSONOverlayTests {
 			makeActive: false
 		)
 		#expect(metadata.overlayCount == 1)
+		#expect(metadata.rfSummary?.thresholdDbm == -130.0)
+		#expect(metadata.rfSummary?.areaKm2 == 12.4)
+		#expect(metadata.rfSummary?.maxRangeKm == 5.6)
+		#expect(metadata.rfSummary?.coveredFraction == 0.42)
+		#expect(metadata.rfSummary?.contourMaxDimension == 640)
+		#expect(metadata.rfSummary?.contourSmoothingRadius == 1)
 		try await MapDataManager.shared.deleteFile(metadata)
 	}
 
@@ -379,12 +394,19 @@ struct RFGeoJSONOverlayTests {
 		.generateContours(request: payload)
 		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
 		let feature = try #require(collection.features.first)
+		let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+		let properties = try #require(json?["properties"] as? [String: Any])
 
 		#expect(collection.type == "FeatureCollection")
 		#expect(collection.features.count > 0)
 		#expect(feature.geometry.type == "MultiPolygon")
 		#expect(feature.rfPredictionColor?.hasPrefix("rgb(") == true)
 		#expect(feature.effectiveFillOpacity > 0)
+		#expect(properties["source"] as? String == "native-site-planner")
+		#expect(properties["threshold_dbm"] as? Double == -130.0)
+		#expect((properties["covered_area_km2"] as? Double ?? 0) > 0)
+		#expect((properties["max_range_km"] as? Double ?? 0) > 0)
+		#expect(properties["contour_smoothing_radius"] as? Int == 1)
 		#expect(data.count < 10 * 1024 * 1024)
 	}
 
@@ -435,7 +457,8 @@ struct RFGeoJSONOverlayTests {
 		#expect(missingEndpoint.contains("/predict"))
 		#expect(missingEndpoint.contains("/status/{task_id}"))
 		#expect(missingEndpoint.contains("/result/{task_id}"))
-		#expect(publicSiteError.contains("does not expose"))
+		#expect(publicSiteError.contains("runs coverage on device"))
+		#expect(publicSiteError.contains("Hosted API URLs"))
 		#expect(publicSiteError.contains("/predict"))
 		#expect(publicSiteError.contains("/result/{task_id}"))
 		#expect(httpError.contains("HTTP 405"))

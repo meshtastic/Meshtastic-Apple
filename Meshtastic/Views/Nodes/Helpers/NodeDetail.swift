@@ -795,11 +795,14 @@ private struct GenerateCoverageOverlayButton: View {
 		}
 
 		let loRaConfig = node.loRaConfig
+		let receiverSensitivity = coverageReceiverSensitivity(for: loRaConfig)
 		let payload = SitePlannerCoverageRequest(
 			lat: coordinate.latitude,
 			lon: coordinate.longitude,
 			txPower: coverageTransmitPower(for: loRaConfig),
-			frequencyMHz: coverageFrequencyMHz(for: loRaConfig)
+			frequencyMHz: coverageFrequencyMHz(for: loRaConfig),
+			signalThreshold: receiverSensitivity,
+			minDbm: receiverSensitivity
 		)
 		let overlayName = coverageOverlayName()
 		let endpoint: URL
@@ -832,7 +835,7 @@ private struct GenerateCoverageOverlayButton: View {
 					isGenerating = false
 					presentAlert(
 						title: "Coverage Overlay Generated",
-						message: "Added '\(metadata.originalName)' with \(metadata.overlayCount) RF bands from Site Planner."
+						message: coverageGeneratedMessage(metadata: metadata)
 					)
 				}
 			} catch {
@@ -869,6 +872,57 @@ private struct GenerateCoverageOverlayButton: View {
 	private func coverageTransmitPower(for config: LoRaConfigEntity?) -> Double {
 		let configuredPower = config?.txPower ?? 0
 		return configuredPower > 0 ? Double(configuredPower) : 20.0
+	}
+
+	private func coverageReceiverSensitivity(for config: LoRaConfigEntity?) -> Double {
+		let preset = ModemPresets(rawValue: Int(config?.modemPreset ?? 0)) ?? .longFast
+		let baseSensitivity = coverageBaseSensitivity(for: preset)
+		let defaultCodingRate = coverageDefaultCodingRate(for: preset)
+		let codingRate = Int(config?.codingRate ?? 0)
+		guard (5...8).contains(codingRate), codingRate > defaultCodingRate else {
+			return baseSensitivity
+		}
+		return baseSensitivity - Double(codingRate - defaultCodingRate)
+	}
+
+	private func coverageBaseSensitivity(for preset: ModemPresets) -> Double {
+		switch preset {
+		case .shortTurbo:
+			return -117.0
+		case .shortFast:
+			return -121.0
+		case .shortSlow:
+			return -124.0
+		case .medFast:
+			return -127.0
+		case .medSlow:
+			return -130.0
+		case .longFast:
+			return -133.0
+		case .longModerate:
+			return -136.0
+		case .longSlow:
+			return -137.0
+		case .longTurbo, .liteFast, .liteSlow, .narrowFast, .narrowSlow:
+			return -130.0
+		}
+	}
+
+	private func coverageDefaultCodingRate(for preset: ModemPresets) -> Int {
+		switch preset {
+		case .longModerate, .longSlow:
+			return 8
+		default:
+			return 5
+		}
+	}
+
+	private func coverageGeneratedMessage(metadata: MapDataMetadata) -> String {
+		let base = "Added '\(metadata.originalName)' with \(metadata.overlayCount) RF bands from Site Planner."
+		if let rfSummary = metadata.rfSummary {
+			return "\(base)\n\(rfSummary.detailDescription)"
+		}
+		return base
 	}
 
 	private func coverageFrequencyMHz(for config: LoRaConfigEntity?) -> Double {

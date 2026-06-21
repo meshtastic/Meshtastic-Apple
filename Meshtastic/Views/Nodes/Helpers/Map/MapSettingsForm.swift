@@ -160,6 +160,11 @@ struct MapSettingsForm: View {
 													.font(.caption2)
 													.foregroundColor(.secondary)
 											}
+											if let rfSummary = file.rfSummary {
+												Text(rfSummary.compactDescription)
+													.font(.caption2)
+													.foregroundColor(.secondary)
+											}
 										}
 									} icon: {
 										let isEnabled = enabledOverlayConfigs.contains(file.id)

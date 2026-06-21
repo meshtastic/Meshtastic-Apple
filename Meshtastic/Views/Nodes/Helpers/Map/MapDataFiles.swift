@@ -219,6 +219,12 @@ struct MapDataFileRow: View {
 						.font(.caption2)
 						.foregroundColor(.secondary)
 				}
+				if let rfSummary = file.rfSummary {
+					Text(rfSummary.detailDescription)
+						.font(.caption2)
+						.foregroundColor(.secondary)
+						.frame(maxWidth: .infinity, alignment: .leading)
+				}
 			}
 		}
 		if showDivider {
