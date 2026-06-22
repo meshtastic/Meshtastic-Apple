@@ -18,6 +18,16 @@ struct Settings: View {
 	@Query(sort: \NodeInfoEntity.lastHeard, order: .reverse)
 	private var nodes: [NodeInfoEntity]
 
+	/// Nodes for the admin / configuration picker, ordered favorites-first while
+	/// preserving the `@Query`'s `lastHeard`-descending order within each group. The
+	/// favorite-on-top behavior can't be expressed as a SwiftData `@Query` sort
+	/// because `favorite` is a `Bool` and `Bool` isn't `Comparable` (so it's not a
+	/// valid `SortDescriptor` key); it's applied here as a cheap stable partition.
+	/// See `NodeInfoEntity.adminPickerOrder`.
+	private var sortedNodes: [NodeInfoEntity] {
+		NodeInfoEntity.adminPickerOrder(nodes)
+	}
+
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
 
@@ -531,7 +541,7 @@ struct Settings: View {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
 									}
-									ForEach(nodes) { node in
+									ForEach(sortedNodes) { node in
 										/// Connected Node
 										if node.num == accessoryManager.activeDeviceNum ?? 0 {
 											Label {
