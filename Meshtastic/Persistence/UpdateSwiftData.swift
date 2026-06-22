@@ -863,6 +863,7 @@ extension MeshPackets {
 					newLoRaConfig.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 					newLoRaConfig.ignoreMqtt = config.ignoreMqtt
 					newLoRaConfig.okToMqtt = config.configOkToMqtt
+					newLoRaConfig.paFanDisabled = config.paFanDisabled
 					fetchedNode[0].loRaConfig = newLoRaConfig
 				} else {
 					fetchedNode[0].loRaConfig?.regionCode = Int32(config.region.rawValue)
@@ -881,7 +882,7 @@ extension MeshPackets {
 					fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 					fetchedNode[0].loRaConfig?.ignoreMqtt = config.ignoreMqtt
 					fetchedNode[0].loRaConfig?.okToMqtt = config.configOkToMqtt
-					fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
+					fetchedNode[0].loRaConfig?.paFanDisabled = config.paFanDisabled
 				}
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey

@@ -15,6 +15,7 @@ final class DeviceHardwareEntity {
 	var displayName: String?
 	var hasInkHud: Bool = false
 	var hasMui: Bool = false
+	var hasPaFan: Bool = false
 	@Attribute(.unique) var hwModel: Int64 = 0
 	var hwModelSlug: String?
 	var key: String?

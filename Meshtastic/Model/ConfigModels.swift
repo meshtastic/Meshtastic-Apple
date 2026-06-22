@@ -150,6 +150,7 @@ final class LoRaConfigEntity {
 	var okToMqtt: Bool = false
 	var overrideDutyCycle: Bool = false
 	var overrideFrequency: Float = 0.0
+	var paFanDisabled: Bool = false
 	var regionCode: Int32 = 0
 	var spreadFactor: Int32 = 0
 	var sx126xRxBoostedGain: Bool = false

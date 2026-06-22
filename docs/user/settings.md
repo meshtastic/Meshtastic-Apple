@@ -32,6 +32,7 @@ LoRa settings control how your radio communicates on the mesh:
 | Modem Preset | Speed/range trade-off. Most users should use Long Fast or Long Slow. |
 | Hop Limit | The number of times a message is repeated by other nodes. Higher values increase range but also mesh traffic. |
 | Frequency Slot | Fine-tune the exact frequency within your region. |
+| PA Fan Disabled | Disable the built-in PA cooling fan on supported hardware (e.g. T-Beam Supreme). Only shown when the connected device has a PA fan. |
 
 ### Channels
 
