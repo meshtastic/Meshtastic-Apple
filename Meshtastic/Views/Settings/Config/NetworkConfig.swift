@@ -304,18 +304,21 @@ struct NetworkConfig: View {
 		self.hasChanges = false
 	}
 
+	// Firmware stores IPv4 addresses little-endian (first octet = least-significant
+	// byte), matching the Arduino IPAddress / Android convention. Encode and decode
+	// must use the same order or addresses display and write byte-reversed.
 	func ipStringToUInt32(_ ipString: String) -> UInt32 {
 		let parts = ipString.split(separator: ".").compactMap { UInt32($0) }
 		guard parts.count == 4, parts.allSatisfy({ $0 <= 255 }) else { return 0 }
-		return (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]
+		return parts[0] | (parts[1] << 8) | (parts[2] << 16) | (parts[3] << 24)
 	}
 
 	func uint32ToIpString(_ value: UInt32) -> String {
 		if value == 0 { return "" }
-		let a = (value >> 24) & 0xFF
-		let b = (value >> 16) & 0xFF
-		let c = (value >> 8) & 0xFF
-		let d = value & 0xFF
+		let a = value & 0xFF
+		let b = (value >> 8) & 0xFF
+		let c = (value >> 16) & 0xFF
+		let d = (value >> 24) & 0xFF
 		return "\(a).\(b).\(c).\(d)"
 	}
 }
