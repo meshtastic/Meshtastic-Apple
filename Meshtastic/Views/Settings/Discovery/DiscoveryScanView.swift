@@ -42,47 +42,14 @@ struct DiscoveryScanView: View {
 
 	var body: some View {
 		GeometryReader { proxy in
-			List {
-				TipView(discoveryScanTip)
-					.listRowBackground(Color.clear)
-					.listRowInsets(EdgeInsets())
-
-				if let engine {
-					if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
-						scanProgressSection(engine)
-					}
-
-					if engine.currentState == .idle {
-						presetPickerSection
-						dwellConfigSection
-						if connectedNode != nil {
-							currentDataReportSection(engine)
-						}
-					}
-
-					scanControlSection(engine)
-
-					if engine.currentState == .complete, let session = engine.session {
-						NavigationLink {
-							DiscoverySummaryView(session: session)
-						} label: {
-							Label("View Summary", systemImage: "chart.bar.doc.horizontal")
-						}
-					}
-
-					if let session = engine.session, engine.isScanning || engine.currentState == .complete {
-						Section(header: Text("Discovery Map")) {
-							discoveryMap(for: session, engine: engine, availableHeight: proxy.size.height)
-								.listRowInsets(EdgeInsets())
-						}
-					}
-
-					if let errorMessage = engine.errorMessage {
-						Section {
-							Label(errorMessage, systemImage: "exclamationmark.triangle")
-								.foregroundStyle(.red)
-						}
-					}
+			Group {
+				if let engine, usesFillMapLayout, let session = engine.session,
+				   engine.isScanning || engine.currentState == .complete {
+					// iPad / Mac Catalyst, scanning or complete: a non-scrolling layout with a compact
+					// status header and the map filling all remaining space (no scrolling).
+					mapFillingLayout(engine, session: session)
+				} else {
+					scanList(proxy: proxy)
 				}
 			}
 			.navigationTitle("Local Mesh Discovery")
@@ -101,6 +68,151 @@ struct DiscoveryScanView: View {
 				}
 				engine?.configure(accessoryManager: accessoryManager, modelContext: context)
 				engine?.checkForInterruptedSessions(context: context)
+			}
+		}
+	}
+
+	/// iPad and Mac Catalyst show a non-scrolling, map-filling layout while scanning or when a scan
+	/// is complete; iPhone keeps the scrolling list so the controls aren't cramped on a small screen.
+	private var usesFillMapLayout: Bool {
+		#if targetEnvironment(macCatalyst)
+		return true
+		#else
+		return UIDevice.current.userInterfaceIdiom == .pad
+		#endif
+	}
+
+	// MARK: - Scrolling List (iPhone, and the idle configuration screen)
+
+	@ViewBuilder
+	private func scanList(proxy: GeometryProxy) -> some View {
+		List {
+			TipView(discoveryScanTip)
+				.listRowBackground(Color.clear)
+				.listRowInsets(EdgeInsets())
+
+			if let engine {
+				if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
+					scanProgressSection(engine)
+				}
+
+				if engine.currentState == .idle {
+					presetPickerSection
+					dwellConfigSection
+					if connectedNode != nil {
+						currentDataReportSection(engine)
+					}
+				}
+
+				scanControlSection(engine)
+
+				if engine.currentState == .complete, let session = engine.session {
+					NavigationLink {
+						DiscoverySummaryView(session: session)
+					} label: {
+						Label("View Summary", systemImage: "chart.bar.doc.horizontal")
+					}
+				}
+
+				if let session = engine.session, engine.isScanning || engine.currentState == .complete {
+					Section(header: Text("Discovery Map")) {
+						discoveryMap(for: session, engine: engine, availableHeight: proxy.size.height)
+							.listRowInsets(EdgeInsets())
+					}
+				}
+
+				if let errorMessage = engine.errorMessage {
+					Section {
+						Label(errorMessage, systemImage: "exclamationmark.triangle")
+							.foregroundStyle(.red)
+					}
+				}
+			}
+		}
+	}
+
+	// MARK: - Map-Filling Layout (iPad / Mac Catalyst)
+
+	/// A non-scrolling layout: a compact status header at its natural height, with the map taking
+	/// all remaining vertical space. Because it's a `VStack` (not a `List`), nothing scrolls — the
+	/// map simply fills whatever is left after the header.
+	@ViewBuilder
+	private func mapFillingLayout(_ engine: DiscoveryScanEngine, session: DiscoverySessionEntity) -> some View {
+		VStack(spacing: 0) {
+			statusHeader(engine, session: session)
+			DiscoveryMapView(
+				discoveredNodes: session.discoveredNodes,
+				userLatitude: session.userLatitude,
+				userLongitude: session.userLongitude,
+				isScanning: engine.currentState == .dwell
+			)
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
+		}
+	}
+
+	@ViewBuilder
+	private func statusHeader(_ engine: DiscoveryScanEngine, session: DiscoverySessionEntity) -> some View {
+		VStack(alignment: .leading, spacing: 8) {
+			HStack {
+				if let activePreset = engine.activePreset {
+					Label(activePreset.description, systemImage: "antenna.radiowaves.left.and.right")
+						.font(.headline)
+				}
+				Spacer()
+				Text(stateDescription(engine))
+					.foregroundStyle(.secondary)
+			}
+
+			if engine.currentState == .dwell {
+				VStack(alignment: .leading, spacing: 2) {
+					HStack {
+						Text("Time Remaining")
+						Spacer()
+						Text(formatDuration(engine.dwellTimeRemaining)).monospacedDigit()
+					}
+					.font(.caption)
+					.foregroundStyle(.secondary)
+					ProgressView(value: 1.0 - (engine.dwellTimeRemaining / engine.dwellDuration))
+				}
+			}
+
+			HStack {
+				Text("\(session.discoveredNodes.count) nodes discovered")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+				Spacer()
+				statusControls(engine)
+			}
+		}
+		.padding()
+		.background(Color(.secondarySystemBackground))
+	}
+
+	@ViewBuilder
+	private func statusControls(_ engine: DiscoveryScanEngine) -> some View {
+		if engine.isScanning {
+			Button(role: .destructive) {
+				Task { await engine.stopScan() }
+			} label: {
+				Label("Stop Scan", systemImage: "stop.fill")
+			}
+			.buttonStyle(.borderedProminent)
+		} else if engine.currentState == .complete, let session = engine.session {
+			HStack(spacing: 8) {
+				NavigationLink {
+					DiscoverySummaryView(session: session)
+				} label: {
+					Label("View Summary", systemImage: "chart.bar.doc.horizontal")
+				}
+				.buttonStyle(.bordered)
+				Button {
+					selectedPresets = []
+					engine.session = nil
+					engine.currentState = .idle
+				} label: {
+					Label("New Scan", systemImage: "arrow.counterclockwise")
+				}
+				.buttonStyle(.bordered)
 			}
 		}
 	}
