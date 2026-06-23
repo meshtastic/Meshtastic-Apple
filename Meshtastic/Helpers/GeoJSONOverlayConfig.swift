@@ -188,6 +188,13 @@ struct GeoJSONStyledFeature: Identifiable {
 
 	/// Builds an MKOverlay from a GeoJSON feature. Static so it can be called from init.
 	private static func makeOverlay(for feature: GeoJSONFeature) -> MKOverlay? {
+		// Point/MultiPoint geometries render as map annotations (markers), not overlays —
+		// MKGeoJSONDecoder returns an MKPointAnnotation (not an MKOverlay) for them, so running them
+		// through the overlay path below logged a spurious "no valid MKOverlay geometry" error for
+		// every point. Skip them silently; they're drawn via the annotation path (#1970).
+		let geometryType = feature.geometry.type.lowercased()
+		guard geometryType != "point", geometryType != "multipoint" else { return nil }
+
 		let featureDict: [String: Any] = [
 			"type": feature.type,
 			"geometry": [
