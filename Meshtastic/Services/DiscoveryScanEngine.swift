@@ -61,6 +61,11 @@ final class DiscoveryScanEngine {
 	/// Full snapshot of the LoRa config as it was before the scan started, so every field
 	/// (frequency slot, overrides, MQTT flags, …) can be restored exactly afterward (#1952).
 	private var homeLoRaConfig: Config.LoRaConfig?
+	/// Snapshot of the user's primary channel, captured only when the scan temporarily switches its
+	/// key to the default so the radio can decode the public mesh. Restored verbatim when the scan
+	/// finishes. Channel changes don't reboot the radio, so this is applied before — and restored
+	/// after — the LoRa preset changes, while the connection is still up.
+	private var homePrimaryChannel: Channel?
 	private var presetQueue: [ModemPresets] = []
 	private var currentPresetResult: DiscoveryPresetResultEntity?
 	private var dwellTask: Task<Void, Never>?
@@ -99,6 +104,10 @@ final class DiscoveryScanEngine {
 	/// Short dwell used by `startCurrentPresetScan()` — the report is built from seeded history,
 	/// so it only needs a brief window to fold in any live packets before finalizing.
 	static let currentPresetScanDwell: TimeInterval = 60
+
+	/// The well-known public/default channel key (single byte `0x01`, i.e. "AQ=="). A primary
+	/// channel using this key — or no key at all — can decode the public mesh.
+	private static let defaultChannelKey = Data([0x01])
 
 	/// Paces the animated reveal of seeded nodes onto the map during a current-preset scan.
 	private var seedTask: Task<Void, Never>?
@@ -154,6 +163,11 @@ final class DiscoveryScanEngine {
 			// returns the user to their real slot when the scan finishes.
 			homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
 		}
+
+		// If the primary channel isn't on the default key, temporarily switch it so the radio can
+		// decode the public mesh during the scan. Channel changes don't reboot the radio, so this is
+		// sent now (while connected) ahead of any preset change, and restored before teardown.
+		await prepareDefaultKeyChannel(connectedNode: connectedNode)
 
 		// Create session
 		let newSession = DiscoverySessionEntity()
@@ -707,6 +721,11 @@ extension DiscoveryScanEngine {
 	// MARK: - Restore Home Preset
 
 	func restoreHomePreset() async {
+		// Restore the primary channel FIRST, while the link is up — channel changes don't reboot,
+		// so this must happen before the LoRa restore below (which does reboot the radio). No-op
+		// unless the scan switched the key to the default.
+		await restorePrimaryChannel()
+
 		// Restore the full config snapshot captured at scan start — preset, frequency slot,
 		// overrides and all — rather than rebuilding a partial config that would drop the
 		// user's frequency slot and other settings (#1952).
@@ -844,6 +863,7 @@ extension DiscoveryScanEngine {
 		// LoRa config doesn't inherit a stale preset/config from a previous scan (#1952).
 		homePreset = nil
 		homeLoRaConfig = nil
+		homePrimaryChannel = nil
 		transitionTo(.idle)
 	}
 
@@ -1032,5 +1052,79 @@ extension DiscoveryScanEngine {
 		}
 
 		Logger.discovery.info("📡 [Discovery] Revealed \(seeded) seeded node(s) onto the map for \(presetName, privacy: .public)")
+	}
+}
+
+// MARK: - DiscoveryScanEngine + Primary Channel
+
+extension DiscoveryScanEngine {
+
+	/// Builds a complete `Channel` proto from a stored `ChannelEntity`, preserving name, key,
+	/// up/downlink, and position precision so a saved copy round-trips the user's channel exactly.
+	/// Internal (not private) so the snapshot/restore fidelity can be unit-tested.
+	func channelProto(from entity: ChannelEntity) -> Channel {
+		var channel = Channel()
+		channel.index = entity.index
+		channel.role = Channel.Role(rawValue: Int(entity.role)) ?? .secondary
+		channel.settings.name = entity.name ?? ""
+		channel.settings.psk = entity.psk ?? Data()
+		channel.settings.uplinkEnabled = entity.uplinkEnabled
+		channel.settings.downlinkEnabled = entity.downlinkEnabled
+		channel.settings.moduleSettings.positionPrecision = UInt32(entity.positionPrecision)
+		return channel
+	}
+
+	/// Whether a channel key counts as the public/default key (none, empty, or the single `0x01`
+	/// byte). A primary channel on this key needs no swap to decode the public mesh.
+	private static func isDefaultChannelKey(_ psk: Data?) -> Bool {
+		guard let psk, !psk.isEmpty else { return true }
+		return psk == defaultChannelKey
+	}
+
+	/// If the connected radio's primary channel uses a custom key, snapshot it and send a copy on
+	/// the default key so the scan can decode the public mesh. A no-op when the primary is already
+	/// on the default key. `saveChannel` doesn't reboot the radio, so this applies immediately while
+	/// the link is up; `restorePrimaryChannel()` puts the original key back when the scan finishes.
+	private func prepareDefaultKeyChannel(connectedNode: NodeInfoEntity?) async {
+		guard let accessoryManager,
+			  let connectedNode,
+			  let fromUser = connectedNode.user,
+			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
+
+		guard !Self.isDefaultChannelKey(primary.psk) else { return }
+
+		// Snapshot the real primary channel so its key can be restored verbatim after the scan.
+		homePrimaryChannel = channelProto(from: primary)
+
+		var scanChannel = channelProto(from: primary)
+		scanChannel.settings.psk = Self.defaultChannelKey
+		do {
+			_ = try await accessoryManager.saveChannel(channel: scanChannel, fromUser: fromUser, toUser: fromUser)
+			Logger.discovery.info("📡 [Discovery] Primary channel temporarily switched to the default key for the scan")
+		} catch {
+			// Leave the snapshot in place so restore still runs; surface the failure.
+			Logger.discovery.error("📡 [Discovery] Failed to set default-key channel: \(error.localizedDescription)")
+		}
+	}
+
+	/// Restores the user's original primary channel captured in `prepareDefaultKeyChannel`. No-op
+	/// unless the scan switched the key. Called before the LoRa restore (which reboots) so it lands
+	/// while the link is up.
+	private func restorePrimaryChannel() async {
+		guard let homePrimaryChannel, let accessoryManager, let context = modelContext else { return }
+		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
+			  let fromUser = connectedNode.user else {
+			Logger.discovery.error("📡 [Discovery] Cannot restore primary channel — no connected node")
+			self.homePrimaryChannel = nil
+			return
+		}
+		do {
+			_ = try await accessoryManager.saveChannel(channel: homePrimaryChannel, fromUser: fromUser, toUser: fromUser)
+			Logger.discovery.info("📡 [Discovery] Restored the primary channel key after the scan")
+		} catch {
+			Logger.discovery.error("📡 [Discovery] Failed to restore primary channel: \(error.localizedDescription)")
+		}
+		self.homePrimaryChannel = nil
 	}
 }

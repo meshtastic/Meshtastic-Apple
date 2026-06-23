@@ -20,7 +20,6 @@ struct DiscoveryScanView: View {
 	@State private var selectedPresets: Set<ModemPresets> = []
 	@State private var dwellMinutes: Int = 15
 	@State private var showHistory = false
-	@State private var showDefaultKeyAlert = false
 
 	@State private var engine: DiscoveryScanEngine?
 
@@ -31,13 +30,6 @@ struct DiscoveryScanView: View {
 		)
 		descriptor.fetchLimit = 1
 		return try? context.fetch(descriptor).first
-	}
-
-	private var primaryChannelUsesDefaultKey: Bool {
-		guard let channels = connectedNode?.myInfo?.channels else { return true }
-		guard let primaryChannel = channels.first(where: { $0.role == 1 }) else { return true }
-		let defaultKey = Data([0x01])
-		return primaryChannel.psk == nil || primaryChannel.psk == defaultKey || primaryChannel.psk?.isEmpty == true
 	}
 
 	private var availablePresets: [ModemPresets] {
@@ -60,12 +52,6 @@ struct DiscoveryScanView: View {
 				}
 
 				if engine.currentState == .idle {
-					if !primaryChannelUsesDefaultKey {
-						Section {
-							Label("The primary channel must use the default key to perform a discovery scan.", systemImage: "exclamationmark.triangle.fill")
-								.foregroundStyle(.orange)
-						}
-					}
 					presetPickerSection
 					dwellConfigSection
 					if connectedNode != nil {
@@ -124,14 +110,6 @@ struct DiscoveryScanView: View {
 			}
 			engine?.configure(accessoryManager: accessoryManager, modelContext: context)
 			engine?.checkForInterruptedSessions(context: context)
-			if !primaryChannelUsesDefaultKey {
-				showDefaultKeyAlert = true
-			}
-		}
-		.alert("Default Key Required", isPresented: $showDefaultKeyAlert) {
-			Button("OK", role: .cancel) { }
-		} message: {
-			Text("Local Mesh Discovery requires the primary channel to use the default key. Please reset your primary channel key to the default before scanning.")
 		}
 	}
 
@@ -180,12 +158,12 @@ struct DiscoveryScanView: View {
 	private func currentDataReportSection(_ engine: DiscoveryScanEngine) -> some View {
 		Section(
 			header: Text("Current Preset"),
-			footer: Text("Scan only your radio's current preset, seeded with everything already collected — every node heard, per-node message and sensor counts, and RF health including noise floor — so the run starts from your full history rather than an empty scan. Stop anytime to view the summary.")
+			footer: Text("Analyze only your radio's current preset, seeded with everything already collected — every node heard, per-node message and sensor counts, and RF health including noise floor — so the run starts from your full history rather than an empty scan. Stop anytime to view the summary.")
 		) {
 			Button {
 				Task { await engine.startCurrentPresetScan() }
 			} label: {
-				Label("Scan Current Preset", systemImage: "doc.text.magnifyingglass")
+				Label("Analyze Current Preset", systemImage: "doc.text.magnifyingglass")
 			}
 		}
 	}
@@ -244,7 +222,7 @@ struct DiscoveryScanView: View {
 				} label: {
 					Label("Start Scan", systemImage: "play.fill")
 				}
-				.disabled(selectedPresets.isEmpty || !accessoryManager.isConnected || !primaryChannelUsesDefaultKey)
+				.disabled(selectedPresets.isEmpty || !accessoryManager.isConnected)
 			} else if engine.isScanning {
 				Button(role: .destructive) {
 					Task { await engine.stopScan() }
