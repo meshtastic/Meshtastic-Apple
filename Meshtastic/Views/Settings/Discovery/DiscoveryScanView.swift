@@ -41,65 +41,67 @@ struct DiscoveryScanView: View {
 	private let discoveryScanTip = DiscoveryScanTip()
 
 	var body: some View {
-		List {
-			TipView(discoveryScanTip)
-				.listRowBackground(Color.clear)
-				.listRowInsets(EdgeInsets())
+		GeometryReader { proxy in
+			List {
+				TipView(discoveryScanTip)
+					.listRowBackground(Color.clear)
+					.listRowInsets(EdgeInsets())
 
-			if let engine {
-				if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
-					scanProgressSection(engine)
-				}
+				if let engine {
+					if engine.isScanning || engine.currentState == .complete || engine.currentState == .analysis {
+						scanProgressSection(engine)
+					}
 
-				if engine.currentState == .idle {
-					presetPickerSection
-					dwellConfigSection
-					if connectedNode != nil {
-						currentDataReportSection(engine)
+					if engine.currentState == .idle {
+						presetPickerSection
+						dwellConfigSection
+						if connectedNode != nil {
+							currentDataReportSection(engine)
+						}
+					}
+
+					scanControlSection(engine)
+
+					if engine.currentState == .complete, let session = engine.session {
+						NavigationLink {
+							DiscoverySummaryView(session: session)
+						} label: {
+							Label("View Summary", systemImage: "chart.bar.doc.horizontal")
+						}
+					}
+
+					if let session = engine.session, engine.isScanning || engine.currentState == .complete {
+						Section(header: Text("Discovery Map")) {
+							discoveryMap(for: session, engine: engine, availableHeight: proxy.size.height)
+								.listRowInsets(EdgeInsets())
+						}
+					}
+
+					if let errorMessage = engine.errorMessage {
+						Section {
+							Label(errorMessage, systemImage: "exclamationmark.triangle")
+								.foregroundStyle(.red)
+						}
 					}
 				}
-
-				scanControlSection(engine)
-
-				if engine.currentState == .complete, let session = engine.session {
+			}
+			.navigationTitle("Local Mesh Discovery")
+			.toolbar {
+				ToolbarItem(placement: .topBarTrailing) {
 					NavigationLink {
-						DiscoverySummaryView(session: session)
+						DiscoveryHistoryView()
 					} label: {
-						Label("View Summary", systemImage: "chart.bar.doc.horizontal")
-					}
-				}
-
-				if let session = engine.session, engine.isScanning || engine.currentState == .complete {
-					Section(header: Text("Discovery Map")) {
-						discoveryMap(for: session, engine: engine)
-							.listRowInsets(EdgeInsets())
-					}
-				}
-
-				if let errorMessage = engine.errorMessage {
-					Section {
-						Label(errorMessage, systemImage: "exclamationmark.triangle")
-							.foregroundStyle(.red)
+						Image(systemName: "clock.arrow.circlepath")
 					}
 				}
 			}
-		}
-		.navigationTitle("Local Mesh Discovery")
-		.toolbar {
-			ToolbarItem(placement: .topBarTrailing) {
-				NavigationLink {
-					DiscoveryHistoryView()
-				} label: {
-					Image(systemName: "clock.arrow.circlepath")
+			.onAppear {
+				if engine == nil {
+					engine = accessoryManager.discoveryEngine
 				}
+				engine?.configure(accessoryManager: accessoryManager, modelContext: context)
+				engine?.checkForInterruptedSessions(context: context)
 			}
-		}
-		.onAppear {
-			if engine == nil {
-				engine = accessoryManager.discoveryEngine
-			}
-			engine?.configure(accessoryManager: accessoryManager, modelContext: context)
-			engine?.checkForInterruptedSessions(context: context)
 		}
 	}
 
@@ -160,12 +162,14 @@ struct DiscoveryScanView: View {
 
 	// MARK: - Discovery Map
 
-	/// The discovery map sized for the device. On iPad and Mac Catalyst it fills most of the List's
-	/// visible area (via `containerRelativeFrame`) so the map is the dominant element rather than a
-	/// short fixed band; the rest of the controls remain reachable by scrolling. iPhone keeps a
-	/// compact fixed height so it doesn't crowd out the scan controls on a small screen.
+	/// The discovery map sized for the device. On iPad and Mac Catalyst it fills most of the screen's
+	/// available height (`availableHeight` comes from the `GeometryReader` wrapping the `List` —
+	/// `containerRelativeFrame` inside a List row resolves against the self-sizing cell, not the
+	/// window, so it collapses) so the map is the dominant element rather than a short fixed band;
+	/// the controls remain reachable by scrolling. iPhone keeps a compact fixed height so it doesn't
+	/// crowd the controls on a small screen.
 	@ViewBuilder
-	private func discoveryMap(for session: DiscoverySessionEntity, engine: DiscoveryScanEngine) -> some View {
+	private func discoveryMap(for session: DiscoverySessionEntity, engine: DiscoveryScanEngine, availableHeight: CGFloat) -> some View {
 		let map = DiscoveryMapView(
 			discoveredNodes: session.discoveredNodes,
 			userLatitude: session.userLatitude,
@@ -173,10 +177,10 @@ struct DiscoveryScanView: View {
 			isScanning: engine.currentState == .dwell
 		)
 		#if targetEnvironment(macCatalyst)
-		map.containerRelativeFrame(.vertical) { length, _ in max(520, length * 0.85) }
+		map.frame(height: max(520, availableHeight * 0.8))
 		#else
 		if UIDevice.current.userInterfaceIdiom == .pad {
-			map.containerRelativeFrame(.vertical) { length, _ in max(450, length * 0.8) }
+			map.frame(height: max(450, availableHeight * 0.78))
 		} else {
 			map.frame(height: 300)
 		}
