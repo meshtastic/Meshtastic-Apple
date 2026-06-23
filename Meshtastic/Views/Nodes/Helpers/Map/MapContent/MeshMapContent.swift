@@ -60,6 +60,7 @@ struct MeshMapContent: MapContent {
 	// Map overlays
 	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
 	@Binding var enabledOverlayConfigs: Set<UUID>
+	var isMapVisible: Bool
 	
 	/// Pre-filtered, pre-extracted positions passed in from the parent view.
 	var positionSnapshots: [MeshMapPositionSnapshot]
@@ -197,9 +198,14 @@ struct MeshMapContent: MapContent {
 	
 	@MapContentBuilder
 	var meshMap: some MapContent {
-		// When snapshots are empty (tab off-screen), skip all expensive content
-		// to reduce memory from MapKit annotation/overlay view trees.
-		if !positionSnapshots.isEmpty {
+		// When the map is off-screen, skip expensive content to reduce memory from
+		// MapKit annotation/overlay view trees.
+		if isMapVisible {
+			/// GeoJSON Overlays with embedded styling
+			if showMapOverlays {
+				overlayContent
+			}
+
 			let snapshots = positionSnapshots
 			let isDense = snapshots.count > pulsingAnnotationLimit
 			// Only compute LoRa node coordinates when the convex hull is actually displayed.
@@ -218,19 +224,16 @@ struct MeshMapContent: MapContent {
 				}
 			}
 
-			/// GeoJSON Overlays with embedded styling
-			if showMapOverlays {
-				overlayContent
+			if !snapshots.isEmpty {
+				if isDense {
+					densePositionAnnotations(snapshots: snapshots)
+				} else {
+					positionAnnotations(snapshots: snapshots, showsPulse: true)
+					reducedPrecisionMapCircles
+				}
+				routeAnnotations
+				waypointAnnotations
 			}
-
-			if isDense {
-				densePositionAnnotations(snapshots: snapshots)
-			} else {
-				positionAnnotations(snapshots: snapshots, showsPulse: true)
-				reducedPrecisionMapCircles
-			}
-			routeAnnotations
-			waypointAnnotations
 		}
 	}
 	
@@ -263,10 +266,20 @@ struct MeshMapContent: MapContent {
 							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
 					}
 				} else if geometryType == "Polygon" {
-					if let overlay = styledFeature.createOverlay() as? MKPolygon {
-						MapPolygon(overlay)
-							.foregroundStyle(styledFeature.fillColor)
-							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+					ForEach(styledFeature.createOverlays()) { renderableOverlay in
+						if let overlay = renderableOverlay.overlay as? MKPolygon {
+							MapPolygon(overlay)
+								.foregroundStyle(styledFeature.fillColor)
+								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+						}
+					}
+				} else if geometryType == "MultiPolygon" {
+					ForEach(styledFeature.createOverlays()) { renderableOverlay in
+						if let overlay = renderableOverlay.overlay as? MKPolygon {
+							MapPolygon(overlay)
+								.foregroundStyle(styledFeature.fillColor)
+								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+						}
 					}
 				}
 			}

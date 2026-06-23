@@ -161,6 +161,7 @@ struct MeshMap: View {
 								selectedNode: $selectedNode,
 								selectedWaypoint: $selectedWaypoint,
 								enabledOverlayConfigs: $enabledOverlayConfigs,
+								isMapVisible: isMapVisible,
 								positionSnapshots: visiblePositionSnapshots
 						)
 					}
@@ -410,6 +411,11 @@ struct MeshMap: View {
 		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
 			if let deletedFileId = notification.object as? UUID {
 				enabledOverlayConfigs.remove(deletedFileId)
+			}
+		}
+		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileImported)) { notification in
+			if let importedFileId = notification.object as? UUID {
+				enabledOverlayConfigs.insert(importedFileId)
 			}
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didActivateNotification)) { _ in

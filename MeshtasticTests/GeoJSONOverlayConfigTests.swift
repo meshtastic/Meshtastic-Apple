@@ -4,6 +4,7 @@
 import Testing
 import Foundation
 import CoreLocation
+import MapKit
 @testable import Meshtastic
 
 // MARK: - AnyCodableValue Tests
@@ -85,6 +86,593 @@ struct AnyCodableValueCodableTests {
 			Issue.record("Expected .object")
 		}
 	}
+}
+
+// MARK: - RF Prediction GeoJSON Tests
+
+@Suite("RF prediction GeoJSON overlays", .serialized)
+struct RFGeoJSONOverlayTests {
+	private static var contourFeatureCollectionData: Data {
+		"""
+		{
+			"type": "FeatureCollection",
+			"properties": {
+				"source": "native-site-planner",
+				"threshold_dbm": -130,
+				"covered_area_km2": 12.4,
+				"max_range_km": 5.6,
+				"covered_fraction": 0.42,
+				"contour_max_dimension": 640,
+				"contour_smoothing_radius": 1
+			},
+			"features": [
+				{
+					"type": "Feature",
+					"properties": {
+						"dbm": -118,
+						"color": "rgb(125, 50, 168)"
+					},
+					"geometry": {
+						"type": "MultiPolygon",
+						"coordinates": [
+							[
+								[
+									[-121.0, 37.0],
+									[-121.0, 37.1],
+									[-120.9, 37.1],
+									[-120.9, 37.0],
+									[-121.0, 37.0]
+								]
+							]
+						]
+					}
+				}
+			]
+		}
+		""".data(using: .utf8)!
+	}
+
+	@Test func multiPolygonCreatesRenderablePolygonOverlays() throws {
+		let data = """
+		{
+			"type": "FeatureCollection",
+			"features": [
+				{
+					"type": "Feature",
+					"properties": {
+						"dbm": -110,
+						"color": "rgb(31, 119, 180)",
+						"label": ">= -110 dBm"
+					},
+					"geometry": {
+						"type": "MultiPolygon",
+						"coordinates": [
+							[
+								[
+									[-121.0, 37.0],
+									[-121.0, 37.1],
+									[-120.9, 37.1],
+									[-120.9, 37.0],
+									[-121.0, 37.0]
+								]
+							],
+							[
+								[
+									[-120.8, 37.0],
+									[-120.8, 37.1],
+									[-120.7, 37.1],
+									[-120.7, 37.0],
+									[-120.8, 37.0]
+								]
+							]
+						]
+					}
+				}
+			]
+		}
+		""".data(using: .utf8)!
+
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let feature = try #require(collection.features.first)
+		let styledFeature = GeoJSONStyledFeature(feature: feature, overlayId: "rf")
+
+		#expect(feature.geometry.type == "MultiPolygon")
+		#expect(feature.rfPredictionColor == "rgb(31, 119, 180)")
+		#expect(feature.dbm == -110)
+		#expect(feature.effectiveFillOpacity > 0)
+		#expect(styledFeature.createOverlays().count == 2)
+		#expect(styledFeature.createOverlays().allSatisfy { $0.overlay is MKPolygon })
+	}
+
+	@Test func normalizesSitePlannerContourResponseWrapper() throws {
+		let data = """
+		{
+			"contours": {
+				"type": "FeatureCollection",
+				"features": [
+					{
+						"type": "Feature",
+						"properties": {
+							"dbm": -118,
+							"color": "rgb(125, 50, 168)",
+							"label": ">= -118 dBm"
+						},
+						"geometry": {
+							"type": "MultiPolygon",
+							"coordinates": [
+								[
+									[
+										[-121.0, 37.0],
+										[-121.0, 37.1],
+										[-120.9, 37.1],
+										[-120.9, 37.0],
+										[-121.0, 37.0]
+									]
+								]
+							]
+						}
+					}
+				]
+			}
+		}
+		""".data(using: .utf8)!
+
+		let normalizedData = try SitePlannerCoverageClient.normalizedFeatureCollectionData(from: data)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: normalizedData)
+		let feature = try #require(collection.features.first)
+
+		#expect(collection.type == "FeatureCollection")
+		#expect(collection.features.count == 1)
+		#expect(feature.geometry.type == "MultiPolygon")
+		#expect(feature.rfPredictionColor == "rgb(125, 50, 168)")
+		#expect(feature.dbm == -118)
+	}
+
+	@Test func annotatedCoverageDataAppliesOpacityAndRFMetadata() async throws {
+		let request = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txHeight: 12.0,
+			txPower: 24.0,
+			txGain: 5.5,
+			systemLoss: 1.5,
+			frequencyMHz: 915.0,
+			rxHeight: 2.5,
+			signalThreshold: -128.0,
+			radius: 45_000.0,
+			highResolution: true,
+			colormap: "viridis",
+			minDbm: -128.0
+		)
+
+		let data = try SitePlannerCoverageClient.annotatedCoverageFeatureCollectionData(
+			from: Self.contourFeatureCollectionData,
+			request: request,
+			overlayOpacity: 0.35
+		)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let feature = try #require(collection.features.first)
+		let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+		let properties = try #require(json?["properties"] as? [String: Any])
+		let featureProperties = try #require((json?["features"] as? [[String: Any]])?.first?["properties"] as? [String: Any])
+
+		#expect(feature.effectiveFillOpacity == 0.35)
+		#expect(feature.effectiveStrokeOpacity == 0.55)
+		#expect(featureProperties["fill-opacity"] as? Double == 0.35)
+		#expect(featureProperties["stroke-opacity"] as? Double == 0.55)
+		#expect(properties["tx_height_m"] as? Double == 12.0)
+		#expect(properties["rx_height_m"] as? Double == 2.5)
+		#expect(properties["radius_km"] as? Double == 45.0)
+		#expect(properties["frequency_mhz"] as? Double == 915.0)
+		#expect(properties["tx_power_dbm"] as? Double == 24.0)
+		#expect(properties["tx_gain_dbi"] as? Double == 5.5)
+		#expect(properties["system_loss_db"] as? Double == 1.5)
+		#expect(properties["overlay_opacity"] as? Double == 0.35)
+		#expect(properties["high_resolution"] as? Bool == true)
+		#expect(properties["colormap"] as? String == "viridis")
+
+		MapDataManager.shared.initialize()
+		let metadata = try await MapDataManager.shared.processGeoJSONData(
+			data,
+			originalName: "Annotated Coverage Test",
+			makeActive: false
+		)
+		#expect(metadata.rfSummary?.txHeightMeters == 12.0)
+		#expect(metadata.rfSummary?.rxHeightMeters == 2.5)
+		#expect(metadata.rfSummary?.radiusKilometers == 45.0)
+		#expect(metadata.rfSummary?.frequencyMHz == 915.0)
+		#expect(metadata.rfSummary?.txPowerDbm == 24.0)
+		#expect(metadata.rfSummary?.txGainDbi == 5.5)
+		#expect(metadata.rfSummary?.systemLossDb == 1.5)
+		#expect(metadata.rfSummary?.overlayOpacity == 0.35)
+		#expect(metadata.rfSummary?.highResolution == true)
+		try await MapDataManager.shared.deleteFile(metadata)
+	}
+
+	@Test func sitePlannerClientAcceptsDirectGeoJSONResponse() async throws {
+		let endpoint = try #require(URL(string: "https://coverage.example.test/api"))
+		let configuration = URLSessionConfiguration.ephemeral
+		configuration.protocolClasses = [SitePlannerCoverageURLProtocol.self]
+		SitePlannerCoverageURLProtocol.prepare(responses: [
+			.init(contentType: "application/geo+json", data: Self.contourFeatureCollectionData)
+		])
+
+		let request = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txPower: 22.0,
+			frequencyMHz: 915.0
+		)
+		let data = try await SitePlannerCoverageClient(session: URLSession(configuration: configuration))
+			.generateContours(from: endpoint, request: request)
+		let observedRequest = try #require(SitePlannerCoverageURLProtocol.observedRequests().first)
+		let object = try JSONSerialization.jsonObject(with: observedRequest.body) as? [String: Any]
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+
+		#expect(observedRequest.url == URL(string: "https://coverage.example.test/api/predict"))
+		#expect(observedRequest.method == "POST")
+		#expect(observedRequest.headers["Content-Type"] == "application/json")
+		#expect(observedRequest.headers["Accept"] == "application/geo+json, application/json, image/tiff")
+		#expect(object?["lat"] as? Double == 37.3349)
+		#expect(object?["lon"] as? Double == -122.0090)
+		#expect(object?["tx_power"] as? Double == 22.0)
+		#expect(collection.features.count == 1)
+	}
+
+	@Test func sitePlannerClientRunsPredictStatusResultFlowEndToEnd() async throws {
+		let endpoint = try #require(URL(string: "https://site.meshtastic.org"))
+		let configuration = URLSessionConfiguration.ephemeral
+		configuration.protocolClasses = [SitePlannerCoverageURLProtocol.self]
+		SitePlannerCoverageURLProtocol.prepare(responses: [
+			.init(json: #"{"task_id":"site-planner-task"}"#),
+			.init(json: #"{"task_id":"site-planner-task","status":"processing"}"#),
+			.init(json: #"{"task_id":"site-planner-task","status":"completed"}"#),
+			.init(contentType: "application/geo+json", data: Self.contourFeatureCollectionData)
+		])
+
+		let payload = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txPower: 20.0,
+			frequencyMHz: 907.0
+		)
+		let data = try await SitePlannerCoverageClient(
+			session: URLSession(configuration: configuration),
+			pollIntervalNanoseconds: 0,
+			timeoutInterval: 10
+		)
+			.generateContours(from: endpoint, request: payload)
+		let requests = SitePlannerCoverageURLProtocol.observedRequests()
+		let predictRequest = try #require(requests.first)
+		let bodyObject = try JSONSerialization.jsonObject(with: predictRequest.body) as? [String: Any]
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+
+		#expect(requests.map(\.url.path) == ["/predict", "/status/site-planner-task", "/status/site-planner-task", "/result/site-planner-task"])
+		#expect(predictRequest.method == "POST")
+		#expect(predictRequest.headers["Content-Type"] == "application/json")
+		#expect(predictRequest.headers["Accept"] == "application/geo+json, application/json, image/tiff")
+		#expect(bodyObject?["lat"] as? Double == 37.3349)
+		#expect(bodyObject?["lon"] as? Double == -122.0090)
+		#expect(bodyObject?["tx_power"] as? Double == 20.0)
+		#expect(bodyObject?["frequency_mhz"] as? Double == 907.0)
+		#expect(bodyObject?["rx_gain"] as? Double == 2.0)
+		#expect(bodyObject?["signal_threshold"] as? Double == -130.0)
+		#expect(bodyObject?["colormap"] as? String == "plasma")
+		#expect(bodyObject?["min_dbm"] as? Double == -130.0)
+		#expect(bodyObject?["max_dbm"] as? Double == -80.0)
+		#expect(collection.features.count == 1)
+
+		MapDataManager.shared.initialize()
+		let metadata = try await MapDataManager.shared.processGeoJSONData(
+			data,
+			originalName: "E2E Coverage Test",
+			makeActive: false
+		)
+		#expect(metadata.overlayCount == 1)
+		#expect(metadata.rfSummary?.thresholdDbm == -130.0)
+		#expect(metadata.rfSummary?.areaKm2 == 12.4)
+		#expect(metadata.rfSummary?.maxRangeKm == 5.6)
+		#expect(metadata.rfSummary?.coveredFraction == 0.42)
+		#expect(metadata.rfSummary?.contourMaxDimension == 640)
+		#expect(metadata.rfSummary?.contourSmoothingRadius == 1)
+		try await MapDataManager.shared.deleteFile(metadata)
+	}
+
+	@Test func sitePlannerClientReportsGeoTIFFResultsClearly() async throws {
+		let endpoint = try #require(URL(string: "https://site.meshtastic.org"))
+		let configuration = URLSessionConfiguration.ephemeral
+		configuration.protocolClasses = [SitePlannerCoverageURLProtocol.self]
+		SitePlannerCoverageURLProtocol.prepare(responses: [
+			.init(json: #"{"task_id":"site-planner-task"}"#),
+			.init(json: #"{"task_id":"site-planner-task","status":"completed"}"#),
+			.init(contentType: "image/tiff", data: Data([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00]))
+		])
+
+		do {
+			_ = try await SitePlannerCoverageClient(
+				session: URLSession(configuration: configuration),
+				pollIntervalNanoseconds: 0,
+				timeoutInterval: 10
+			)
+				.generateContours(from: endpoint, request: SitePlannerCoverageRequest(lat: 37.3349, lon: -122.0090))
+			Issue.record("Expected GeoTIFF result to fail until raster import is supported.")
+		} catch {
+			#expect(error.localizedDescription.contains("GeoTIFF"))
+			#expect(error.localizedDescription.contains("GeoJSON"))
+		}
+	}
+
+	@Test func encodesSitePlannerCoverageRequestShape() throws {
+		let request = SitePlannerCoverageRequest(
+			lat: 37.3349,
+			lon: -122.0090,
+			txPower: 22.0,
+			frequencyMHz: 915.0
+		)
+
+		let data = try JSONEncoder().encode(request)
+		let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+		#expect(object?["lat"] as? Double == 37.3349)
+		#expect(object?["lon"] as? Double == -122.0090)
+		#expect(object?["tx_height"] as? Double == 2.0)
+		#expect(object?["tx_power"] as? Double == 22.0)
+		#expect(object?["tx_gain"] as? Double == 2.0)
+		#expect(object?["system_loss"] as? Double == 2.0)
+		#expect(object?["frequency_mhz"] as? Double == 915.0)
+		#expect(object?["rx_height"] as? Double == 1.0)
+		#expect(object?["rx_gain"] as? Double == 2.0)
+		#expect(object?["signal_threshold"] as? Double == -130.0)
+		#expect(object?["clutter_height"] as? Double == 1.0)
+		#expect(object?["ground_dielectric"] as? Double == 15.0)
+		#expect(object?["ground_conductivity"] as? Double == 0.005)
+		#expect(object?["atmosphere_bending"] as? Double == 301.0)
+		#expect(object?["radio_climate"] as? String == "continental_temperate")
+		#expect(object?["polarization"] as? String == "vertical")
+		#expect(object?["radius"] as? Double == 30_000.0)
+		#expect(object?["situation_fraction"] as? Double == 95.0)
+		#expect(object?["time_fraction"] as? Double == 95.0)
+		#expect(object?["high_resolution"] as? Bool == false)
+		#expect(object?["colormap"] as? String == "plasma")
+		#expect(object?["min_dbm"] as? Double == -130.0)
+		#expect(object?["max_dbm"] as? Double == -80.0)
+	}
+
+	@Test func nativeSitePlannerEngineGeneratesGeoJSONWithoutNetwork() async throws {
+		let payload = SitePlannerCoverageRequest(
+			lat: 37.5,
+			lon: -122.5,
+			txHeight: 2.0,
+			txPower: 20.0,
+			frequencyMHz: 915.0,
+			radius: 750.0
+		)
+		let data = try await NativeSitePlannerCoverageClient(
+			terrainProvider: .seaLevel,
+			contourMaxDimension: 40,
+			runChunkSize: 1024
+		)
+		.generateContours(request: payload)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let feature = try #require(collection.features.first)
+		let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+		let properties = try #require(json?["properties"] as? [String: Any])
+
+		#expect(collection.type == "FeatureCollection")
+		#expect(collection.features.count > 0)
+		#expect(feature.geometry.type == "MultiPolygon")
+		#expect(feature.rfPredictionColor?.hasPrefix("rgb(") == true)
+		#expect(feature.effectiveFillOpacity > 0)
+		#expect(properties["source"] as? String == "native-site-planner")
+		#expect(properties["threshold_dbm"] as? Double == -130.0)
+		#expect((properties["covered_area_km2"] as? Double ?? 0) > 0)
+		#expect((properties["max_range_km"] as? Double ?? 0) > 0)
+		#expect(properties["contour_smoothing_radius"] as? Int == 1)
+		#expect(data.count < 10 * 1024 * 1024)
+	}
+
+	@Test func nativeSitePlannerDetailedContoursStayImportable() async throws {
+		let payload = SitePlannerCoverageRequest(
+			lat: 37.5,
+			lon: -122.5,
+			txHeight: 2.0,
+			txPower: 20.0,
+			frequencyMHz: 915.0,
+			radius: 750.0
+		)
+		let coarseData = try await NativeSitePlannerCoverageClient(
+			terrainProvider: .seaLevel,
+			contourMaxDimension: 40,
+			runChunkSize: 1024
+		)
+		.generateContours(request: payload)
+		let detailedData = try await NativeSitePlannerCoverageClient(
+			terrainProvider: .seaLevel,
+			contourMaxDimension: 160,
+			runChunkSize: 1024
+		)
+		.generateContours(request: payload)
+		let coarseCollection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: coarseData)
+		let detailedCollection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: detailedData)
+
+		#expect(coordinatePairCount(in: detailedCollection) > coordinatePairCount(in: coarseCollection))
+		#expect(detailedData.count > coarseData.count)
+		#expect(detailedData.count < 10 * 1024 * 1024)
+	}
+
+	@Test func nativeSitePlannerTerrainNamingMatchesSitePlanner() {
+		#expect(NativeSitePlannerTerrainService.tileName(for: NativeSitePlannerPageRef(minNorth: 51, minWest: 114)) == "N51W115")
+		#expect(NativeSitePlannerTerrainService.tileName(for: NativeSitePlannerPageRef(minNorth: -34, minWest: 342)) == "S34E017")
+		#expect(NativeSitePlannerTerrainService.tileURLs(for: "N51W115").map(\.absoluteString) == [
+			"https://elevation-tiles-prod.s3.amazonaws.com/v2/skadi/N51/N51W115.hgt.gz",
+			"https://elevation-tiles-prod.s3.amazonaws.com/skadi/N51/N51W115.hgt.gz"
+		])
+	}
+
+	@Test func sitePlannerEndpointErrorsAreActionable() {
+		let missingEndpoint = SitePlannerCoverageError.missingEndpoint.localizedDescription
+		let publicSiteError = SitePlannerCoverageError.publicSiteAPIUnavailable.localizedDescription
+		let httpError = SitePlannerCoverageError.httpStatus(405, "405 Not Allowed").localizedDescription
+		let tiffError = SitePlannerCoverageError.unsupportedGeoTIFFResult.localizedDescription
+
+		#expect(missingEndpoint.contains("/predict"))
+		#expect(missingEndpoint.contains("/status/{task_id}"))
+		#expect(missingEndpoint.contains("/result/{task_id}"))
+		#expect(publicSiteError.contains("runs coverage on device"))
+		#expect(publicSiteError.contains("Hosted API URLs"))
+		#expect(publicSiteError.contains("/predict"))
+		#expect(publicSiteError.contains("/result/{task_id}"))
+		#expect(httpError.contains("HTTP 405"))
+		#expect(httpError.contains("405 Not Allowed"))
+		#expect(tiffError.contains("GeoTIFF"))
+		#expect(tiffError.contains("GeoJSON"))
+		#expect(SitePlannerCoverageClient.usesPublicSitePlanner(for: URL(string: "https://site.meshtastic.org")!))
+	}
+}
+
+private func coordinatePairCount(in collection: GeoJSONFeatureCollection) -> Int {
+	collection.features.reduce(0) { count, feature in
+		count + coordinatePairCount(in: feature.geometry.coordinates)
+	}
+}
+
+private func coordinatePairCount(in value: AnyCodableValue) -> Int {
+	guard case .array(let values) = value else {
+		return 0
+	}
+	if values.count >= 2,
+	   values[0].numericValue != nil,
+	   values[1].numericValue != nil {
+		return 1
+	}
+	return values.reduce(0) { count, value in
+		count + coordinatePairCount(in: value)
+	}
+}
+
+private extension AnyCodableValue {
+	var numericValue: Double? {
+		switch self {
+		case .double(let value):
+			return value
+		case .int(let value):
+			return Double(value)
+		default:
+			return nil
+		}
+	}
+}
+
+private final class SitePlannerCoverageURLProtocol: URLProtocol {
+	struct StubResponse {
+		var statusCode: Int
+		var headers: [String: String]
+		var data: Data
+
+		init(statusCode: Int = 200, contentType: String = "application/json", data: Data) {
+			self.statusCode = statusCode
+			self.headers = ["Content-Type": contentType]
+			self.data = data
+		}
+
+		init(statusCode: Int = 200, json: String) {
+			self.init(statusCode: statusCode, contentType: "application/json", data: Data(json.utf8))
+		}
+	}
+
+	private static let lock = NSLock()
+	nonisolated(unsafe) private static var responses: [StubResponse] = []
+	nonisolated(unsafe) private static var requests: [RecordedRequest] = []
+
+	override class func canInit(with request: URLRequest) -> Bool {
+		true
+	}
+
+	override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+		request
+	}
+
+	override func startLoading() {
+		let body = Self.bodyData(from: request) ?? Data()
+		let responseStub = Self.record(request: request, body: body)
+		guard let response = HTTPURLResponse(
+			url: request.url!,
+			statusCode: responseStub.statusCode,
+			httpVersion: nil,
+			headerFields: responseStub.headers
+		) else {
+			return
+		}
+		client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+		client?.urlProtocol(self, didLoad: responseStub.data)
+		client?.urlProtocolDidFinishLoading(self)
+	}
+
+	override func stopLoading() {}
+
+	static func prepare(responses: [StubResponse]) {
+		lock.lock()
+		Self.responses = responses
+		Self.requests = []
+		lock.unlock()
+	}
+
+	static func observedRequests() -> [RecordedRequest] {
+		lock.lock()
+		defer { lock.unlock() }
+		return requests
+	}
+
+	private static func record(request: URLRequest, body: Data) -> StubResponse {
+		lock.lock()
+		defer { lock.unlock() }
+
+		requests.append(
+			RecordedRequest(
+				url: request.url!,
+				method: request.httpMethod ?? "",
+				headers: request.allHTTPHeaderFields ?? [:],
+				body: body
+			)
+		)
+
+		if responses.isEmpty {
+			return StubResponse(statusCode: 500, json: #"{"error":"missing test response"}"#)
+		}
+		return responses.removeFirst()
+	}
+
+	private static func bodyData(from request: URLRequest) -> Data? {
+		if let httpBody = request.httpBody {
+			return httpBody
+		}
+
+		guard let stream = request.httpBodyStream else {
+			return nil
+		}
+
+		stream.open()
+		defer { stream.close() }
+
+		var data = Data()
+		var buffer = [UInt8](repeating: 0, count: 4096)
+		while stream.hasBytesAvailable {
+			let count = stream.read(&buffer, maxLength: buffer.count)
+			if count > 0 {
+				data.append(buffer, count: count)
+			} else {
+				break
+			}
+		}
+		return data
+	}
+}
+
+private struct RecordedRequest {
+	let url: URL
+	let method: String
+	let headers: [String: String]
+	let body: Data
 }
 
 // MARK: - AnyCodableValue toAnyObject Tests

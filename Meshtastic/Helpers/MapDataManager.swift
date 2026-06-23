@@ -70,34 +70,56 @@ class MapDataManager: ObservableObject {
 		// 2. Validate file
 		try validateFile(at: sourceURL)
 
-		// 2. Create directories if needed
+		let originalName = sourceURL.deletingPathExtension().lastPathComponent
+		let data = try Data(contentsOf: sourceURL)
+		return try await processGeoJSONData(
+			data,
+			originalName: originalName,
+			fileExtension: sourceURL.pathExtension,
+			makeActive: uploadedFiles.isEmpty
+		)
+	}
+
+	/// Process and store GeoJSON data from a remote source such as Meshtastic Site Planner contours.
+	func processGeoJSONData(_ data: Data, originalName: String, fileExtension: String = "geojson", makeActive: Bool = true) async throws -> MapDataMetadata {
+		guard Int64(data.count) <= maxFileSize else {
+			throw MapDataError.fileTooLarge
+		}
+
 		guard createDirectoriesIfNeeded() else {
 			throw MapDataError.directoryCreationFailed
 		}
 
-		// 3. Generate destination filename
+		let normalizedData: Data
+		do {
+			normalizedData = try SitePlannerCoverageClient.normalizedFeatureCollectionData(from: data)
+		} catch SitePlannerCoverageError.missingFeatureCollection {
+			throw MapDataError.invalidContent
+		}
+		_ = try getOverlayCount(from: normalizedData)
+
 		let timestamp = Date().timeIntervalSince1970
-		let originalName = sourceURL.deletingPathExtension().lastPathComponent
-		let fileExtension = sourceURL.pathExtension
-		let newFilename = "\(originalName)_\(Int(timestamp)).\(fileExtension)"
+		let sanitizedName = sanitizedFilenameComponent(originalName)
+		let sanitizedExtension = sanitizedFileExtension(fileExtension)
+		let newFilename = "\(sanitizedName)_\(Int(timestamp)).\(sanitizedExtension)"
 
 		guard let destURL = getUserUploadedDirectory()?.appendingPathComponent(newFilename) else {
 			throw MapDataError.invalidDestination
 		}
 
-		// 4. Copy file to app storage
-		try FileManager.default.copyItem(at: sourceURL, to: destURL)
+		try normalizedData.write(to: destURL, options: .atomic)
 
-		// 5. Process and validate content
-		let metadata = try await processFileContent(at: destURL, originalName: originalName)
+		let metadata = try await processFileContent(at: destURL, originalName: originalName, makeActive: makeActive)
 
-		// 6. Save metadata and update UI on main thread
 		await MainActor.run {
 			uploadedFiles.append(metadata)
-			// Clear cached configuration to force reload
 			activeFeatureCollection = nil
 		}
 		try saveMetadata()
+		GeoJSONOverlayManager.shared.clearCache()
+		await MainActor.run {
+			NotificationCenter.default.post(name: Foundation.Notification.Name.mapDataFileImported, object: metadata.id)
+		}
 
 		return metadata
 	}
@@ -125,23 +147,13 @@ class MapDataManager: ObservableObject {
 	}
 
 	/// Process file content and extract metadata
-	private func processFileContent(at url: URL, originalName: String) async throws -> MapDataMetadata {
+	private func processFileContent(at url: URL, originalName: String, makeActive: Bool) async throws -> MapDataMetadata {
 		let fileAttributes = try url.resourceValues(forKeys: [.fileSizeKey, .creationDateKey])
 		let fileSize = fileAttributes.fileSize ?? 0
 		let uploadDate = fileAttributes.creationDate ?? Date()
 
-		// Read and process file content on background queue
-		let (data, overlayCount) = try await withCheckedThrowingContinuation { continuation in
-			Task.detached {
-				do {
-					let data = try Data(contentsOf: url)
-					let overlayCount = try self.getOverlayCount(from: data)
-					continuation.resume(returning: (data, overlayCount))
-				} catch {
-					continuation.resume(throwing: error)
-				}
-			}
-		}
+		let data = try Data(contentsOf: url)
+		let overlayCount = try getOverlayCount(from: data)
 
 		// Validate GeoJSON schema
 		let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
@@ -154,18 +166,16 @@ class MapDataManager: ObservableObject {
 			  let features = geoJSON["features"] as? [[String: Any]] else {
 			throw NSError(domain: "MapDataManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "GeoJSON must be a FeatureCollection with features"])
 		}
+		let rfSummary = Self.rfSummary(from: geoJSON)
 
 		// Validate each feature
 		for feature in features {
 			guard let geometry = feature["geometry"] as? [String: Any],
-				  let coordinates = geometry["coordinates"] as? [Any],
-				  let geometryType = geometry["type"] as? String else {
+				  geometry["coordinates"] is [Any],
+				  geometry["type"] is String else {
 				throw NSError(domain: "MapDataManager", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid feature structure in GeoJSON"])
 			}
 		}
-
-		// If this is the first file uploaded, make it active by default
-		let isFirstFile = uploadedFiles.isEmpty
 
 		return MapDataMetadata(
 			filename: url.lastPathComponent,
@@ -176,7 +186,8 @@ class MapDataManager: ObservableObject {
 			license: nil, // Will be extracted from content if available
 			attribution: nil, // Will be extracted from content if available
 			overlayCount: overlayCount,
-			isActive: isFirstFile
+			rfSummary: rfSummary,
+			isActive: makeActive
 		)
 	}
 
@@ -188,6 +199,96 @@ class MapDataManager: ObservableObject {
 			return features.count
 		}
 		throw MapDataError.invalidContent
+	}
+
+	private func sanitizedFilenameComponent(_ value: String) -> String {
+		let allowedCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+		let sanitized = value.unicodeScalars.map { scalar in
+			allowedCharacters.contains(scalar) ? String(scalar) : "_"
+		}
+		.joined()
+		.trimmingCharacters(in: CharacterSet(charactersIn: "_"))
+		return sanitized.isEmpty ? "map_overlay" : sanitized
+	}
+
+	private func sanitizedFileExtension(_ value: String) -> String {
+		let lowercased = value.lowercased()
+		let allowedExtensions = ["json", "geojson"]
+		return allowedExtensions.contains(lowercased) ? lowercased : "geojson"
+	}
+
+	private static func rfSummary(from geoJSON: [String: Any]) -> MapDataRFSummary? {
+		guard let properties = geoJSON["properties"] as? [String: Any],
+			  let thresholdDbm = doubleValue(properties["threshold_dbm"]),
+			  let areaKm2 = doubleValue(properties["covered_area_km2"]),
+			  let maxRangeKm = doubleValue(properties["max_range_km"]) else {
+			return nil
+		}
+
+		return MapDataRFSummary(
+			thresholdDbm: thresholdDbm,
+			areaKm2: areaKm2,
+			maxRangeKm: maxRangeKm,
+			coveredFraction: doubleValue(properties["covered_fraction"]),
+			source: properties["source"] as? String,
+			contourMaxDimension: intValue(properties["contour_max_dimension"]),
+			contourSmoothingRadius: intValue(properties["contour_smoothing_radius"]),
+			txHeightMeters: doubleValue(properties["tx_height_m"]),
+			rxHeightMeters: doubleValue(properties["rx_height_m"]),
+			radiusKilometers: doubleValue(properties["radius_km"]),
+			frequencyMHz: doubleValue(properties["frequency_mhz"]),
+			txPowerDbm: doubleValue(properties["tx_power_dbm"]),
+			txGainDbi: doubleValue(properties["tx_gain_dbi"]),
+			systemLossDb: doubleValue(properties["system_loss_db"]),
+			overlayOpacity: doubleValue(properties["overlay_opacity"]),
+			highResolution: boolValue(properties["high_resolution"])
+		)
+	}
+
+	private static func doubleValue(_ value: Any?) -> Double? {
+		switch value {
+		case let value as Double:
+			return value
+		case let value as Int:
+			return Double(value)
+		case let value as NSNumber:
+			return value.doubleValue
+		default:
+			return nil
+		}
+	}
+
+	private static func boolValue(_ value: Any?) -> Bool? {
+		switch value {
+		case let value as Bool:
+			return value
+		case let value as NSNumber:
+			return value.boolValue
+		case let value as String:
+			switch value.lowercased() {
+			case "true", "yes", "1":
+				return true
+			case "false", "no", "0":
+				return false
+			default:
+				return nil
+			}
+		default:
+			return nil
+		}
+	}
+
+	private static func intValue(_ value: Any?) -> Int? {
+		switch value {
+		case let value as Int:
+			return value
+		case let value as Double:
+			return Int(value)
+		case let value as NSNumber:
+			return value.intValue
+		default:
+			return nil
+		}
 	}
 
 	/// Load feature collection from a single file
@@ -407,9 +508,10 @@ struct MapDataMetadata: Codable, Identifiable {
 	let license: String?
 	let attribution: String?
 	let overlayCount: Int
+	let rfSummary: MapDataRFSummary?
 	var isActive: Bool
 
-	init(filename: String, originalName: String, uploadDate: Date, fileSize: Int64, format: String, license: String?, attribution: String?, overlayCount: Int, isActive: Bool) {
+	init(filename: String, originalName: String, uploadDate: Date, fileSize: Int64, format: String, license: String?, attribution: String?, overlayCount: Int, rfSummary: MapDataRFSummary? = nil, isActive: Bool) {
 		self.id = UUID()
 		self.filename = filename
 		self.originalName = originalName
@@ -419,6 +521,7 @@ struct MapDataMetadata: Codable, Identifiable {
 		self.license = license
 		self.attribution = attribution
 		self.overlayCount = overlayCount
+		self.rfSummary = rfSummary
 		self.isActive = isActive
 	}
 
@@ -427,6 +530,63 @@ struct MapDataMetadata: Codable, Identifiable {
 		formatter.allowedUnits = [.useKB, .useMB]
 		formatter.countStyle = .file
 		return formatter.string(fromByteCount: fileSize)
+	}
+}
+
+struct MapDataRFSummary: Codable, Equatable {
+	let thresholdDbm: Double
+	let areaKm2: Double
+	let maxRangeKm: Double
+	let coveredFraction: Double?
+	let source: String?
+	let contourMaxDimension: Int?
+	let contourSmoothingRadius: Int?
+	let txHeightMeters: Double?
+	let rxHeightMeters: Double?
+	let radiusKilometers: Double?
+	let frequencyMHz: Double?
+	let txPowerDbm: Double?
+	let txGainDbi: Double?
+	let systemLossDb: Double?
+	let overlayOpacity: Double?
+	let highResolution: Bool?
+
+	var compactDescription: String {
+		let area = String(format: "%.1f", areaKm2)
+		let range = String(format: "%.1f", maxRangeKm)
+		let threshold = String(format: "%.0f", thresholdDbm)
+		return "\(area) sq km >= \(threshold) dBm, \(range) km max"
+	}
+
+	var detailDescription: String {
+		var parts = [compactDescription]
+		if let coveredFraction {
+			let percent = String(format: "%.0f%%", coveredFraction * 100.0)
+			parts.append("\(percent) of modeled cells covered")
+		}
+		if let txHeightMeters, let rxHeightMeters {
+			parts.append("TX \(Self.measurementString(txHeightMeters)) AGL, RX \(Self.measurementString(rxHeightMeters)) AGL")
+		}
+		if let frequencyMHz {
+			parts.append("\(String(format: "%.0f", frequencyMHz)) MHz")
+		}
+		if let radiusKilometers {
+			parts.append("\(String(format: "%.0f", radiusKilometers)) km radius")
+		}
+		if let overlayOpacity {
+			parts.append("\(String(format: "%.0f%%", overlayOpacity * 100.0)) opacity")
+		}
+		if highResolution == true {
+			parts.append("high detail")
+		}
+		return parts.joined(separator: "; ")
+	}
+
+	private static func measurementString(_ value: Double) -> String {
+		if value < 10 {
+			return String(format: "%.1f m", value)
+		}
+		return String(format: "%.0f m", value)
 	}
 }
 
@@ -466,4 +626,382 @@ enum MapDataError: Error, LocalizedError {
 // MARK: - Notification Names
 extension Foundation.Notification.Name {
 	static let mapDataFileDeleted = Foundation.Notification.Name("mapDataFileDeleted")
+	static let mapDataFileImported = Foundation.Notification.Name("mapDataFileImported")
+}
+
+struct SitePlannerCoverageClient: Sendable {
+	var session: URLSession = .shared
+	var pollIntervalNanoseconds: UInt64 = 1_000_000_000
+	var timeoutInterval: TimeInterval = 180
+
+	static func usesPublicSitePlanner(for sitePlannerURL: URL) -> Bool {
+		sitePlannerURL.host?.lowercased() == "site.meshtastic.org"
+	}
+
+	func generateContours(from sitePlannerURL: URL, request payload: SitePlannerCoverageRequest) async throws -> Data {
+		try await generateCoverage(from: sitePlannerURL, request: payload)
+	}
+
+	func generateCoverage(from sitePlannerURL: URL, request payload: SitePlannerCoverageRequest) async throws -> Data {
+		let predictURL = Self.predictURL(from: sitePlannerURL)
+		var request = URLRequest(url: predictURL)
+		request.httpMethod = "POST"
+		request.timeoutInterval = timeoutInterval
+		request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+		request.setValue("application/geo+json, application/json, image/tiff", forHTTPHeaderField: "Accept")
+		request.httpBody = try JSONEncoder().encode(payload)
+
+		let (data, _) = try await data(for: request)
+		if let normalizedData = try? Self.normalizedFeatureCollectionData(from: data) {
+			return normalizedData
+		}
+
+		let prediction = try JSONDecoder().decode(SitePlannerPredictionResponse.self, from: data)
+		return try await pollCoverageResult(taskID: prediction.taskId, baseURL: Self.baseURL(from: sitePlannerURL))
+	}
+
+	static func normalizedFeatureCollectionData(from data: Data) throws -> Data {
+		let jsonObject = try JSONSerialization.jsonObject(with: data)
+		guard let featureCollection = findFeatureCollection(in: jsonObject) else {
+			throw SitePlannerCoverageError.missingFeatureCollection
+		}
+
+		let normalizedData = try JSONSerialization.data(withJSONObject: featureCollection, options: [])
+		_ = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: normalizedData)
+		return normalizedData
+	}
+
+	static func annotatedCoverageFeatureCollectionData(
+		from data: Data,
+		request payload: SitePlannerCoverageRequest,
+		overlayOpacity: Double
+	) throws -> Data {
+		let normalizedData = try normalizedFeatureCollectionData(from: data)
+		guard var collection = try JSONSerialization.jsonObject(with: normalizedData) as? [String: Any] else {
+			throw SitePlannerCoverageError.missingFeatureCollection
+		}
+
+		let opacity = min(1.0, max(0.05, overlayOpacity))
+		let strokeOpacity = min(1.0, max(opacity, opacity + 0.20))
+		var properties = collection["properties"] as? [String: Any] ?? [:]
+		properties["tx_height_m"] = round2(payload.txHeight)
+		properties["rx_height_m"] = round2(payload.rxHeight)
+		properties["radius_km"] = round2(payload.radius / 1_000.0)
+		properties["frequency_mhz"] = round2(payload.frequencyMHz)
+		properties["tx_power_dbm"] = round2(payload.txPower)
+		properties["tx_gain_dbi"] = round2(payload.txGain)
+		properties["system_loss_db"] = round2(payload.systemLoss)
+		properties["signal_threshold_dbm"] = round2(payload.signalThreshold)
+		properties["overlay_opacity"] = round2(opacity)
+		properties["high_resolution"] = payload.highResolution
+		properties["colormap"] = payload.colormap
+		collection["properties"] = properties
+
+		if var features = collection["features"] as? [[String: Any]] {
+			for index in features.indices {
+				var feature = features[index]
+				var featureProperties = feature["properties"] as? [String: Any] ?? [:]
+				featureProperties["fill-opacity"] = round2(opacity)
+				featureProperties["stroke-opacity"] = round2(strokeOpacity)
+				feature["properties"] = featureProperties
+				features[index] = feature
+			}
+			collection["features"] = features
+		}
+
+		let resultData = try JSONSerialization.data(withJSONObject: collection, options: [])
+		_ = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: resultData)
+		return resultData
+	}
+
+	private static func round2(_ value: Double) -> Double {
+		(value * 100.0).rounded() / 100.0
+	}
+
+	private static func findFeatureCollection(in object: Any) -> [String: Any]? {
+		if let dictionary = object as? [String: Any] {
+			if dictionary["type"] as? String == "FeatureCollection",
+			   dictionary["features"] is [[String: Any]] {
+				return dictionary
+			}
+
+			let preferredKeys = ["geojson", "contours", "featureCollection", "coverage", "data", "result"]
+			for key in preferredKeys {
+				if let value = dictionary[key],
+				   let featureCollection = findFeatureCollection(in: value) {
+					return featureCollection
+				}
+			}
+
+			for value in dictionary.values {
+				if let featureCollection = findFeatureCollection(in: value) {
+					return featureCollection
+				}
+			}
+		}
+
+		if let features = object as? [[String: Any]],
+		   !features.isEmpty,
+		   features.allSatisfy(isGeoJSONFeature) {
+			return ["type": "FeatureCollection", "features": features]
+		}
+
+		return nil
+	}
+
+	private static func isGeoJSONFeature(_ object: [String: Any]) -> Bool {
+		object["type"] as? String == "Feature" && object["geometry"] is [String: Any]
+	}
+
+	private static func responseSnippet(from data: Data) -> String? {
+		guard let string = String(data: data, encoding: .utf8)?
+			.trimmingCharacters(in: .whitespacesAndNewlines),
+			  !string.isEmpty else {
+			return nil
+		}
+		return String(string.prefix(240))
+	}
+
+	private func pollCoverageResult(taskID: String, baseURL: URL) async throws -> Data {
+		let deadline = Date().addingTimeInterval(timeoutInterval)
+		while true {
+			let statusURL = baseURL.appendingPathComponent("status").appendingPathComponent(taskID)
+			var statusRequest = URLRequest(url: statusURL)
+			statusRequest.timeoutInterval = timeoutInterval
+			statusRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+
+			let (statusData, _) = try await data(for: statusRequest)
+			let statusResponse = try JSONDecoder().decode(SitePlannerStatusResponse.self, from: statusData)
+			switch statusResponse.status.lowercased() {
+			case "completed", "complete", "done", "success":
+				return try await fetchCoverageResult(taskID: taskID, baseURL: baseURL)
+			case "failed", "error":
+				throw SitePlannerCoverageError.failed(statusResponse.error)
+			case "processing", "pending", "running", "queued":
+				break
+			default:
+				throw SitePlannerCoverageError.unexpectedStatus(statusResponse.status)
+			}
+
+			guard Date() < deadline else {
+				throw SitePlannerCoverageError.timeout
+			}
+			try await Task.sleep(nanoseconds: pollIntervalNanoseconds)
+		}
+	}
+
+	private func fetchCoverageResult(taskID: String, baseURL: URL) async throws -> Data {
+		let resultURL = baseURL.appendingPathComponent("result").appendingPathComponent(taskID)
+		var request = URLRequest(url: resultURL)
+		request.timeoutInterval = timeoutInterval
+		request.setValue("application/geo+json, application/json, image/tiff", forHTTPHeaderField: "Accept")
+
+		let (data, response) = try await data(for: request)
+		if let normalizedData = try? Self.normalizedFeatureCollectionData(from: data) {
+			return normalizedData
+		}
+		if Self.isTIFF(data: data, response: response) {
+			throw SitePlannerCoverageError.unsupportedGeoTIFFResult
+		}
+		throw SitePlannerCoverageError.missingFeatureCollection
+	}
+
+	private func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+		let (data, response) = try await session.data(for: request)
+		guard let httpResponse = response as? HTTPURLResponse else {
+			throw SitePlannerCoverageError.invalidResponse
+		}
+		guard (200...299).contains(httpResponse.statusCode) else {
+			if httpResponse.statusCode == 405,
+			   request.url?.host?.lowercased() == "site.meshtastic.org" {
+				throw SitePlannerCoverageError.publicSiteAPIUnavailable
+			}
+			throw SitePlannerCoverageError.httpStatus(httpResponse.statusCode, Self.responseSnippet(from: data))
+		}
+		return (data, httpResponse)
+	}
+
+	private static func predictURL(from sitePlannerURL: URL) -> URL {
+		if sitePlannerURL.lastPathComponent.lowercased() == "predict" {
+			return sitePlannerURL
+		}
+		return sitePlannerURL.appendingPathComponent("predict")
+	}
+
+	private static func baseURL(from sitePlannerURL: URL) -> URL {
+		var baseURL = sitePlannerURL
+		if baseURL.lastPathComponent.lowercased() == "predict" {
+			baseURL.deleteLastPathComponent()
+		}
+		return baseURL
+	}
+
+	private static func isTIFF(data: Data, response: HTTPURLResponse) -> Bool {
+		let contentType = response.value(forHTTPHeaderField: "Content-Type")?.lowercased()
+		if contentType?.contains("image/tiff") == true || contentType?.contains("image/geotiff") == true {
+			return true
+		}
+
+		return data.starts(with: Data([0x49, 0x49, 0x2A, 0x00])) || data.starts(with: Data([0x4D, 0x4D, 0x00, 0x2A]))
+	}
+}
+
+private struct SitePlannerPredictionResponse: Decodable {
+	var taskId: String
+
+	enum CodingKeys: String, CodingKey {
+		case taskId = "task_id"
+	}
+}
+
+private struct SitePlannerStatusResponse: Decodable {
+	var status: String
+	var error: String?
+}
+
+/// Meshtastic Site Planner's legacy coverage request shape.
+///
+/// This mirrors the Site Planner request fields used by the current local
+/// engine and the earlier `/predict` FastAPI backend.
+struct SitePlannerCoverageRequest: Codable, Equatable, Sendable {
+	var lat: Double
+	var lon: Double
+	var txHeight: Double
+	var txPower: Double
+	var txGain: Double
+	var systemLoss: Double
+	var frequencyMHz: Double
+	var rxHeight: Double
+	var rxGain: Double
+	var signalThreshold: Double
+	var clutterHeight: Double
+	var groundDielectric: Double
+	var groundConductivity: Double
+	var atmosphereBending: Double
+	var radioClimate: String
+	var polarization: String
+	var radius: Double
+	var situationFraction: Double
+	var timeFraction: Double
+	var highResolution: Bool
+	var colormap: String
+	var minDbm: Double
+	var maxDbm: Double
+
+	enum CodingKeys: String, CodingKey {
+		case lat
+		case lon
+		case txHeight = "tx_height"
+		case txPower = "tx_power"
+		case txGain = "tx_gain"
+		case systemLoss = "system_loss"
+		case frequencyMHz = "frequency_mhz"
+		case rxHeight = "rx_height"
+		case rxGain = "rx_gain"
+		case signalThreshold = "signal_threshold"
+		case clutterHeight = "clutter_height"
+		case groundDielectric = "ground_dielectric"
+		case groundConductivity = "ground_conductivity"
+		case atmosphereBending = "atmosphere_bending"
+		case radioClimate = "radio_climate"
+		case polarization
+		case radius
+		case situationFraction = "situation_fraction"
+		case timeFraction = "time_fraction"
+		case highResolution = "high_resolution"
+		case colormap
+		case minDbm = "min_dbm"
+		case maxDbm = "max_dbm"
+	}
+
+	init(
+		lat: Double,
+		lon: Double,
+		txHeight: Double = 2.0,
+		txPower: Double = 20.0,
+		txGain: Double = 2.0,
+		systemLoss: Double = 2.0,
+		frequencyMHz: Double = 907.0,
+		rxHeight: Double = 1.0,
+		rxGain: Double = 2.0,
+		signalThreshold: Double = -130.0,
+		clutterHeight: Double = 1.0,
+		groundDielectric: Double = 15.0,
+		groundConductivity: Double = 0.005,
+		atmosphereBending: Double = 301.0,
+		radioClimate: String = "continental_temperate",
+		polarization: String = "vertical",
+		radius: Double = 30_000.0,
+		situationFraction: Double = 95.0,
+		timeFraction: Double = 95.0,
+		highResolution: Bool = false,
+		colormap: String = "plasma",
+		minDbm: Double = -130.0,
+		maxDbm: Double = -80.0
+	) {
+		self.lat = lat
+		self.lon = lon
+		self.txHeight = txHeight
+		self.txPower = txPower
+		self.txGain = txGain
+		self.systemLoss = systemLoss
+		self.frequencyMHz = frequencyMHz
+		self.rxHeight = rxHeight
+		self.rxGain = rxGain
+		self.signalThreshold = signalThreshold
+		self.clutterHeight = clutterHeight
+		self.groundDielectric = groundDielectric
+		self.groundConductivity = groundConductivity
+		self.atmosphereBending = atmosphereBending
+		self.radioClimate = radioClimate
+		self.polarization = polarization
+		self.radius = radius
+		self.situationFraction = situationFraction
+		self.timeFraction = timeFraction
+		self.highResolution = highResolution
+		self.colormap = colormap
+		self.minDbm = minDbm
+		self.maxDbm = maxDbm
+	}
+}
+
+enum SitePlannerCoverageError: Error, LocalizedError {
+	case missingEndpoint
+	case invalidResponse
+	case publicSiteAPIUnavailable
+	case httpStatus(Int, String?)
+	case failed(String?)
+	case timeout
+	case unexpectedStatus(String)
+	case missingFeatureCollection
+	case unsupportedGeoTIFFResult
+
+	var errorDescription: String? {
+		switch self {
+		case .missingEndpoint:
+			return "Enter a Site Planner URL before generating coverage. Hosted Site Planner APIs should expose /predict, /status/{task_id}, and /result/{task_id}."
+		case .invalidResponse:
+			return "Site Planner returned an invalid response."
+		case .publicSiteAPIUnavailable:
+			return "The default public Site Planner URL runs coverage on device. Hosted API URLs must expose /predict, /status/{task_id}, and /result/{task_id}."
+		case .httpStatus(let statusCode, let responseBody):
+			if let responseBody {
+				return "Site Planner request failed with HTTP \(statusCode): \(responseBody)"
+			}
+			return "Site Planner request failed with HTTP \(statusCode)."
+		case .failed(let message):
+			if let message, !message.isEmpty {
+				return "Site Planner prediction failed: \(message)"
+			}
+			return "Site Planner prediction failed."
+		case .timeout:
+			return "Site Planner prediction timed out before a result was ready."
+		case .unexpectedStatus(let status):
+			return "Site Planner returned an unexpected prediction status: \(status)."
+		case .missingFeatureCollection:
+			return "Site Planner response did not contain GeoJSON contours."
+		case .unsupportedGeoTIFFResult:
+			return "Site Planner returned a GeoTIFF raster result. Map coverage generation currently imports GeoJSON contours; use a Site Planner API result that returns GeoJSON."
+		}
+	}
 }

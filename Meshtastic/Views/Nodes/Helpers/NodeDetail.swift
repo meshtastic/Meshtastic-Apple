@@ -557,6 +557,9 @@ struct NodeDetail: View {
 					user: user
 				)
 			}
+			if latestPosition != nil {
+				GenerateCoverageOverlayButton(node: node)
+			}
 			if let connectedNode {
 				FavoriteNodeButton(
 					node: node
@@ -751,6 +754,457 @@ struct NodeDetail: View {
 			}
 		}
 		return false
+	}
+}
+
+private struct GenerateCoverageOverlayButton: View {
+	let node: NodeInfoEntity
+
+	@AppStorage("sitePlannerCoverageEndpoint") private var sitePlannerCoverageEndpoint = "https://site.meshtastic.org"
+	@AppStorage("sitePlannerCoverageTxHeightMeters") private var storedTxHeightMeters = 2.0
+	@AppStorage("sitePlannerCoverageRxHeightMeters") private var storedRxHeightMeters = 1.0
+	@AppStorage("sitePlannerCoverageRadiusKilometers") private var storedRadiusKilometers = 30.0
+	@AppStorage("sitePlannerCoverageHighResolution") private var storedHighResolution = false
+	@AppStorage("sitePlannerCoverageTxGainDbi") private var storedTxGainDbi = 2.0
+	@AppStorage("sitePlannerCoverageSystemLossDb") private var storedSystemLossDb = 2.0
+	@AppStorage("sitePlannerCoverageOverlayOpacity") private var storedOverlayOpacity = 0.45
+	@AppStorage("sitePlannerCoverageColormap") private var storedColormap = "plasma"
+	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
+	@State private var isGenerating = false
+	@State private var isShowingAlert = false
+	@State private var alertTitle = ""
+	@State private var alertMessage = ""
+	@State private var coverageSettings: CoverageOverlaySettings?
+
+	var body: some View {
+		Button {
+			showCoverageSettings()
+		} label: {
+			Label {
+				Text(isGenerating ? "Generating Coverage Overlay" : "Generate Coverage Overlay")
+			} icon: {
+				if isGenerating {
+					ProgressView()
+						.controlSize(.small)
+				} else {
+					Image(systemName: "antenna.radiowaves.left.and.right")
+						.symbolRenderingMode(.hierarchical)
+				}
+			}
+		}
+		.disabled(isGenerating)
+		.accessibilityIdentifier("generateCoverageOverlayButton")
+		.alert(alertTitle, isPresented: $isShowingAlert) {
+			Button("Ok") { }
+		} message: {
+			Text(alertMessage)
+		}
+		.sheet(item: $coverageSettings) { settings in
+			CoverageOverlaySettingsSheet(settings: settings, isGenerating: isGenerating) { updatedSettings in
+				persistCoverageSettings(updatedSettings)
+				generateCoverageOverlay(using: updatedSettings)
+			}
+		}
+	}
+
+	private func showCoverageSettings() {
+		guard let coordinate = node.latestPosition?.nodeCoordinate else {
+			presentAlert(
+				title: "No Node Position",
+				message: "This node needs a valid position before coverage can be generated."
+			)
+			return
+		}
+
+		let loRaConfig = node.loRaConfig
+		let receiverSensitivity = coverageReceiverSensitivity(for: loRaConfig)
+		let highResolution = storedHighResolution
+		let maximumRadius = highResolution ? 70.0 : 150.0
+		coverageSettings = CoverageOverlaySettings(
+			nodeName: coverageOverlayName(),
+			txHeightMeters: Self.clamped(storedTxHeightMeters, range: 0.5...60.0),
+			rxHeightMeters: Self.clamped(storedRxHeightMeters, range: 0.5...10.0),
+			txPowerDbm: Self.clamped(coverageTransmitPower(for: loRaConfig), range: 0.0...33.0),
+			txGainDbi: Self.clamped(storedTxGainDbi, range: -3.0...15.0),
+			systemLossDb: Self.clamped(storedSystemLossDb, range: 0.0...10.0),
+			frequencyMHz: coverageFrequencyMHz(for: loRaConfig),
+			signalThresholdDbm: receiverSensitivity,
+			defaultSignalThresholdDbm: receiverSensitivity,
+			radiusKilometers: Self.clamped(storedRadiusKilometers, range: 1.0...maximumRadius),
+			highResolution: highResolution,
+			overlayOpacity: Self.clamped(storedOverlayOpacity, range: 0.15...0.80),
+			colormap: CoverageOverlayColormap(rawValue: storedColormap) ?? .plasma,
+			latitude: coordinate.latitude,
+			longitude: coordinate.longitude
+		)
+	}
+
+	private func generateCoverageOverlay(using settings: CoverageOverlaySettings) {
+		let payload = SitePlannerCoverageRequest(
+			lat: settings.latitude,
+			lon: settings.longitude,
+			txHeight: settings.txHeightMeters,
+			txPower: settings.txPowerDbm,
+			txGain: settings.txGainDbi,
+			systemLoss: settings.systemLossDb,
+			frequencyMHz: settings.frequencyMHz,
+			rxHeight: settings.rxHeightMeters,
+			signalThreshold: settings.signalThresholdDbm,
+			radius: settings.radiusKilometers * 1_000.0,
+			highResolution: settings.highResolution,
+			colormap: settings.colormap.rawValue,
+			minDbm: settings.signalThresholdDbm
+		)
+		let overlayName = coverageOverlayName()
+		let endpoint: URL
+		do {
+			endpoint = try coverageEndpointURL()
+		} catch {
+			presentAlert(title: "Coverage Overlay Failed", message: error.localizedDescription)
+			return
+		}
+
+		MapDataManager.shared.initialize()
+		isGenerating = true
+		Task {
+			do {
+				let rawData: Data
+				if SitePlannerCoverageClient.usesPublicSitePlanner(for: endpoint) {
+					rawData = try await NativeSitePlannerCoverageClient(
+						contourMaxDimension: settings.highResolution ? 900 : 640
+					)
+					.generateContours(request: payload)
+				} else {
+					rawData = try await SitePlannerCoverageClient().generateContours(from: endpoint, request: payload)
+				}
+				let data = try SitePlannerCoverageClient.annotatedCoverageFeatureCollectionData(
+					from: rawData,
+					request: payload,
+					overlayOpacity: settings.overlayOpacity
+				)
+				let metadata = try await MapDataManager.shared.processGeoJSONData(
+					data,
+					originalName: overlayName,
+					fileExtension: "geojson",
+					makeActive: true
+				)
+
+				await MainActor.run {
+					mapOverlaysEnabled = true
+					isGenerating = false
+					presentAlert(
+						title: "Coverage Overlay Generated",
+						message: coverageGeneratedMessage(metadata: metadata)
+					)
+				}
+			} catch {
+				await MainActor.run {
+					isGenerating = false
+					presentAlert(title: "Coverage Overlay Failed", message: error.localizedDescription)
+				}
+			}
+		}
+	}
+
+	private func coverageEndpointURL() throws -> URL {
+		let trimmedEndpoint = sitePlannerCoverageEndpoint.trimmingCharacters(in: .whitespacesAndNewlines)
+		let endpointString = trimmedEndpoint.isEmpty ? "https://site.meshtastic.org" : trimmedEndpoint
+		guard let endpoint = URL(string: endpointString),
+			  let scheme = endpoint.scheme?.lowercased(),
+			  ["http", "https"].contains(scheme) else {
+			throw SitePlannerCoverageError.missingEndpoint
+		}
+		return endpoint
+	}
+
+	private func presentAlert(title: String, message: String) {
+		alertTitle = title
+		alertMessage = message
+		isShowingAlert = true
+	}
+
+	private func persistCoverageSettings(_ settings: CoverageOverlaySettings) {
+		storedTxHeightMeters = settings.txHeightMeters
+		storedRxHeightMeters = settings.rxHeightMeters
+		storedRadiusKilometers = settings.radiusKilometers
+		storedHighResolution = settings.highResolution
+		storedTxGainDbi = settings.txGainDbi
+		storedSystemLossDb = settings.systemLossDb
+		storedOverlayOpacity = settings.overlayOpacity
+		storedColormap = settings.colormap.rawValue
+	}
+
+	private static func clamped(_ value: Double, range: ClosedRange<Double>) -> Double {
+		min(range.upperBound, max(range.lowerBound, value))
+	}
+
+	private func coverageOverlayName() -> String {
+		let nodeName = node.user?.longName ?? node.user?.shortName ?? node.num.toHex()
+		return "Coverage \(nodeName)"
+	}
+
+	private func coverageTransmitPower(for config: LoRaConfigEntity?) -> Double {
+		let configuredPower = config?.txPower ?? 0
+		return configuredPower > 0 ? Double(configuredPower) : 20.0
+	}
+
+	private func coverageReceiverSensitivity(for config: LoRaConfigEntity?) -> Double {
+		let preset = ModemPresets(rawValue: Int(config?.modemPreset ?? 0)) ?? .longFast
+		let baseSensitivity = coverageBaseSensitivity(for: preset)
+		let defaultCodingRate = coverageDefaultCodingRate(for: preset)
+		let codingRate = Int(config?.codingRate ?? 0)
+		guard (5...8).contains(codingRate), codingRate > defaultCodingRate else {
+			return baseSensitivity
+		}
+		return baseSensitivity - Double(codingRate - defaultCodingRate)
+	}
+
+	private func coverageBaseSensitivity(for preset: ModemPresets) -> Double {
+		switch preset {
+		case .shortTurbo:
+			return -117.0
+		case .shortFast:
+			return -121.0
+		case .shortSlow:
+			return -124.0
+		case .medFast:
+			return -127.0
+		case .medSlow:
+			return -130.0
+		case .longFast:
+			return -133.0
+		case .longModerate:
+			return -136.0
+		case .longSlow:
+			return -137.0
+		case .longTurbo, .liteFast, .liteSlow, .narrowFast, .narrowSlow:
+			return -130.0
+		}
+	}
+
+	private func coverageDefaultCodingRate(for preset: ModemPresets) -> Int {
+		switch preset {
+		case .longModerate, .longSlow:
+			return 8
+		default:
+			return 5
+		}
+	}
+
+	private func coverageGeneratedMessage(metadata: MapDataMetadata) -> String {
+		let base = "Added '\(metadata.originalName)' with \(metadata.overlayCount) RF bands from Site Planner."
+		if let rfSummary = metadata.rfSummary {
+			return "\(base)\n\(rfSummary.detailDescription)"
+		}
+		return base
+	}
+
+	private func coverageFrequencyMHz(for config: LoRaConfigEntity?) -> Double {
+		if let overrideFrequency = config?.overrideFrequency, overrideFrequency > 0 {
+			return Double(overrideFrequency)
+		}
+
+		guard let region = RegionCodes(rawValue: Int(config?.regionCode ?? 0)) else {
+			return 907.0
+		}
+
+		switch region {
+		case .eu433, .anz433, .ua433, .my433, .ph433, .kz433:
+			return 433.0
+		case .eu868, .ua868, .ph868, .euN868:
+			return 868.0
+		case .eu866:
+			return 866.0
+		case .nz865, .np865, .`in`, .kz863:
+			return 865.0
+		case .eu874:
+			return 874.0
+		case .eu917:
+			return 917.0
+		case .my919:
+			return 919.0
+		case .jp, .kr, .tw, .th:
+			return 920.0
+		case .sg923:
+			return 923.0
+		case .cn:
+			return 470.0
+		case .ru:
+			return 868.0
+		case .lora24, .itu12M, .itu22M:
+			return 2_400.0
+		case .us, .anz, .ph915, .br902, .unset:
+			return 907.0
+		}
+	}
+}
+
+private enum CoverageOverlayColormap: String, CaseIterable, Identifiable {
+	case plasma
+	case viridis
+
+	var id: String { rawValue }
+
+	var title: String {
+		switch self {
+		case .plasma:
+			return "Plasma"
+		case .viridis:
+			return "Viridis"
+		}
+	}
+}
+
+private struct CoverageOverlaySettings: Identifiable {
+	let id = UUID()
+	let nodeName: String
+	var txHeightMeters: Double
+	var rxHeightMeters: Double
+	var txPowerDbm: Double
+	var txGainDbi: Double
+	var systemLossDb: Double
+	let frequencyMHz: Double
+	var signalThresholdDbm: Double
+	let defaultSignalThresholdDbm: Double
+	var radiusKilometers: Double
+	var highResolution: Bool
+	var overlayOpacity: Double
+	var colormap: CoverageOverlayColormap
+	let latitude: Double
+	let longitude: Double
+
+	var maximumRadiusKilometers: Double {
+		highResolution ? 70.0 : 150.0
+	}
+
+	mutating func clampRadiusForDetail() {
+		radiusKilometers = min(maximumRadiusKilometers, max(1.0, radiusKilometers))
+	}
+}
+
+private struct CoverageOverlaySettingsSheet: View {
+	@Environment(\.dismiss) private var dismiss
+	@State private var settings: CoverageOverlaySettings
+	let isGenerating: Bool
+	let onGenerate: (CoverageOverlaySettings) -> Void
+
+	init(
+		settings: CoverageOverlaySettings,
+		isGenerating: Bool,
+		onGenerate: @escaping (CoverageOverlaySettings) -> Void
+	) {
+		self._settings = State(initialValue: settings)
+		self.isGenerating = isGenerating
+		self.onGenerate = onGenerate
+	}
+
+	var body: some View {
+		NavigationStack {
+			Form {
+				Section {
+					Text(settings.nodeName)
+						.font(.headline)
+					LabeledContent("Frequency", value: "\(Self.integerString(settings.frequencyMHz)) MHz")
+				} footer: {
+					Text("Prediction uses this node's current LoRa region, preset, coding rate, and transmit power as the starting point.")
+				}
+
+				Section(
+					header: Text("Coverage"),
+					footer: Text("High Detail creates finer contours and is capped at 70 km to keep generation time and map rendering reasonable.")
+				) {
+					Toggle("High Detail", isOn: $settings.highResolution)
+						.tint(.accentColor)
+
+					LabeledContent("Range", value: "\(Self.integerString(settings.radiusKilometers)) km")
+					Slider(
+						value: $settings.radiusKilometers,
+						in: 1.0...settings.maximumRadiusKilometers,
+						step: 1.0
+					)
+
+					LabeledContent("Overlay Opacity", value: "\(Self.percentString(settings.overlayOpacity))")
+					Slider(value: $settings.overlayOpacity, in: 0.15...0.80, step: 0.05)
+
+					Picker("Color Ramp", selection: $settings.colormap) {
+						ForEach(CoverageOverlayColormap.allCases) { ramp in
+							Text(ramp.title).tag(ramp)
+						}
+					}
+				}
+
+				Section(
+					header: Text("Heights Above Ground"),
+					footer: Text("Use antenna height above the local ground, not elevation above sea level.")
+				) {
+					Stepper(value: $settings.txHeightMeters, in: 0.5...60.0, step: 0.5) {
+						LabeledContent("Transmitter", value: "\(Self.meterString(settings.txHeightMeters))")
+					}
+					Stepper(value: $settings.rxHeightMeters, in: 0.5...10.0, step: 0.5) {
+						LabeledContent("Receiver", value: "\(Self.meterString(settings.rxHeightMeters))")
+					}
+				}
+
+				Section(
+					header: Text("RF Assumptions"),
+					footer: Text("Lower receiver thresholds include weaker links. Higher thresholds show areas with stronger predicted signal.")
+				) {
+					Stepper(value: $settings.txPowerDbm, in: 0.0...33.0, step: 1.0) {
+						LabeledContent("Transmit Power", value: "\(Self.integerString(settings.txPowerDbm)) dBm")
+					}
+					Stepper(value: $settings.txGainDbi, in: -3.0...15.0, step: 0.5) {
+						LabeledContent("Antenna Gain", value: "\(Self.decimalString(settings.txGainDbi)) dBi")
+					}
+					Stepper(value: $settings.systemLossDb, in: 0.0...10.0, step: 0.5) {
+						LabeledContent("System Loss", value: "\(Self.decimalString(settings.systemLossDb)) dB")
+					}
+					Stepper(value: $settings.signalThresholdDbm, in: -145.0 ... -100.0, step: 1.0) {
+						LabeledContent("Receiver Threshold", value: "\(Self.integerString(settings.signalThresholdDbm)) dBm")
+					}
+					Button("Reset Receiver Threshold") {
+						settings.signalThresholdDbm = settings.defaultSignalThresholdDbm
+					}
+				}
+			}
+			.navigationTitle("Coverage Overlay")
+			.navigationBarTitleDisplayMode(.inline)
+			.toolbar {
+				ToolbarItem(placement: .cancellationAction) {
+					Button("Cancel") {
+						dismiss()
+					}
+				}
+				ToolbarItem(placement: .confirmationAction) {
+					Button("Generate") {
+						settings.clampRadiusForDetail()
+						onGenerate(settings)
+						dismiss()
+					}
+					.disabled(isGenerating)
+				}
+			}
+			.onChange(of: settings.highResolution) { _, _ in
+				settings.clampRadiusForDetail()
+			}
+		}
+		.presentationDetents([.medium, .large])
+		.presentationDragIndicator(.visible)
+	}
+
+	private static func integerString(_ value: Double) -> String {
+		String(format: "%.0f", value)
+	}
+
+	private static func decimalString(_ value: Double) -> String {
+		String(format: "%.1f", value)
+	}
+
+	private static func meterString(_ value: Double) -> String {
+		value < 10.0 ? String(format: "%.1f m", value) : String(format: "%.0f m", value)
+	}
+
+	private static func percentString(_ value: Double) -> String {
+		String(format: "%.0f%%", value * 100.0)
 	}
 }
 

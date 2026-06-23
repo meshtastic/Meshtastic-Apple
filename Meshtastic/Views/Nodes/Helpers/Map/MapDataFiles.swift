@@ -6,6 +6,7 @@ struct MapDataFiles: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@ObservedObject private var mapDataManager = MapDataManager.shared
+	@AppStorage("sitePlannerCoverageEndpoint") private var sitePlannerCoverageEndpoint = "https://site.meshtastic.org"
 
 	@State private var isShowingFilePicker = false
 	@State private var isProcessing = false
@@ -53,6 +54,16 @@ struct MapDataFiles: View {
 					}
 				}
 			}
+			Section(header: Text("Coverage Prediction")) {
+				Text("Generate node coverage on device with the Site Planner engine. Custom hosted API URLs can use /predict, /status, and /result.")
+					.font(.callout)
+					.foregroundColor(.secondary)
+
+				TextField("https://site.meshtastic.org", text: $sitePlannerCoverageEndpoint)
+					.keyboardType(.URL)
+					.textInputAutocapitalization(.never)
+					.autocorrectionDisabled()
+			}
 			Section(header: Text("Uploaded Map Overlays")) {
 
 				let uploadedFiles = mapDataManager.getUploadedFiles()
@@ -96,6 +107,9 @@ struct MapDataFiles: View {
 		.onAppear {
 			// Initialize map data manager if needed
 			mapDataManager.initialize()
+			if sitePlannerCoverageEndpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+				sitePlannerCoverageEndpoint = "https://site.meshtastic.org"
+			}
 		}
 	}
 
@@ -171,6 +185,10 @@ struct MapDataFileRow: View {
 
 	var body: some View {
 		HStack {
+			Image(systemName: file.rfSummary == nil ? "doc" : "antenna.radiowaves.left.and.right")
+				.font(.title3)
+				.foregroundColor(file.rfSummary == nil ? .secondary : .accentColor)
+				.frame(width: 28)
 			VStack {
 				HStack {
 					Text(file.originalName)
@@ -204,6 +222,12 @@ struct MapDataFileRow: View {
 					Text(file.uploadDate.formatted(date: .numeric, time: .shortened))
 						.font(.caption2)
 						.foregroundColor(.secondary)
+				}
+				if let rfSummary = file.rfSummary {
+					Text(rfSummary.detailDescription)
+						.font(.caption2)
+						.foregroundColor(.secondary)
+						.frame(maxWidth: .infinity, alignment: .leading)
 				}
 			}
 		}

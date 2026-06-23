@@ -160,10 +160,15 @@ struct MapSettingsForm: View {
 													.font(.caption2)
 													.foregroundColor(.secondary)
 											}
+											if let rfSummary = file.rfSummary {
+												Text(rfSummary.compactDescription)
+													.font(.caption2)
+													.foregroundColor(.secondary)
+											}
 										}
 									} icon: {
 										let isEnabled = enabledOverlayConfigs.contains(file.id)
-										Image(systemName: isEnabled ? "doc.fill" : "doc")
+										Image(systemName: file.rfSummary == nil ? (isEnabled ? "doc.fill" : "doc") : "antenna.radiowaves.left.and.right")
 											.foregroundColor(isEnabled ? .accentColor : .secondary)
 									}
 								}
@@ -220,6 +225,12 @@ struct MapSettingsForm: View {
 		.onAppear {
 			// Initialize map data manager
 			mapDataManager.initialize()
+		}
+		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileImported)) { notification in
+			if let importedFileId = notification.object as? UUID {
+				mapOverlaysEnabled = true
+				enabledOverlayConfigs.insert(importedFileId)
+			}
 		}
 
 	}
