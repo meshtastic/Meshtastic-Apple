@@ -194,6 +194,13 @@ struct DiscoverySummaryView: View {
 						Text(result.averageAirtimeRate > 0 ? "\(String(format: "%.2f", result.averageAirtimeRate))%" : "—")
 							.foregroundStyle(.primary)
 					}
+					HStack(spacing: 6) {
+						Image(systemName: "waveform")
+							.foregroundStyle(result.noiseFloorSampleCount == 0 ? Color.secondary : (result.averageNoiseFloor < -110 ? .green : (result.averageNoiseFloor > -95 ? .red : .orange)))
+						Text("Noise")
+						Text(result.noiseFloorSampleCount > 0 ? "\(String(format: "%.0f", result.averageNoiseFloor)) dBm" : "—")
+							.foregroundStyle(.primary)
+					}
 				}
 			}
 			.font(rowFont)
@@ -234,6 +241,7 @@ struct DiscoverySummaryView: View {
 					$0.packetSuccessRate > 0 || $0.packetFailureRate > 0
 					|| $0.numPacketsTx > 0 || $0.numPacketsRx > 0
 					|| $0.averageChannelUtilization > 0 || $0.averageAirtimeRate > 0
+					|| $0.noiseFloorSampleCount > 0
 				}, id: \.presetName) { result in
 					rfHealthCard(result)
 				}
@@ -280,6 +288,10 @@ struct DiscoverySummaryView: View {
 						.foregroundStyle(.orange)
 					Label("\(result.numRxDupe) duplicate", systemImage: "doc.on.doc")
 						.foregroundStyle(.secondary)
+					if result.noiseFloorSampleCount > 0 {
+						Label(String(format: "%.0f dBm noise", result.averageNoiseFloor), systemImage: "waveform")
+							.foregroundStyle(result.averageNoiseFloor < -110 ? .green : (result.averageNoiseFloor > -95 ? .red : .orange))
+					}
 				}
 			}
 			.font(.caption)
@@ -354,6 +366,15 @@ struct DiscoverySummaryView: View {
 					Text("Least congested: **\(leastCongested.presetName)** (\(String(format: "%.1f%%", leastCongested.averageChannelUtilization)) util)")
 				} icon: {
 					Image(systemName: "waveform.path")
+						.foregroundStyle(.green)
+				}
+			}
+
+			if let quietest = session.presetResults.filter({ $0.noiseFloorSampleCount > 0 }).min(by: { $0.averageNoiseFloor < $1.averageNoiseFloor }) {
+				Label {
+					Text("Quietest channel: **\(quietest.presetName)** (\(String(format: "%.0f", quietest.averageNoiseFloor)) dBm noise floor)")
+				} icon: {
+					Image(systemName: "waveform")
 						.foregroundStyle(.green)
 				}
 			}
@@ -474,7 +495,8 @@ struct DiscoverySummaryView: View {
 		prompt += "  - Extremely dense networks (>100 nodes, high traffic) should use ShortFast or ShortSlow.\n"
 		prompt += "  - Infrastructure nodes (routers) competing for airtime benefit most from faster presets.\n"
 		prompt += "  - Sensor-heavy networks generate more automated traffic; faster presets reduce airtime contention.\n"
-		prompt += "  - Reduced range from faster presets is usually offset by improved reliability in dense deployments.\n\n"
+		prompt += "  - Reduced range from faster presets is usually offset by improved reliability in dense deployments.\n"
+		prompt += "  - Noise Floor (dBm) is the RF background noise measured on each preset's frequency; lower (more negative) is quieter. A high noise floor (e.g. above -95 dBm) means an interference-heavy channel and lower effective range, so prefer a quieter preset when node activity is comparable.\n\n"
 
 		prompt += "Scan Date: \(session.timestamp.formatted())\n"
 		prompt += "Total Unique Nodes: \(session.totalUniqueNodes)\n\n"
@@ -488,6 +510,9 @@ struct DiscoverySummaryView: View {
 			}
 			if result.averageAirtimeRate > 0 {
 				prompt += "  Airtime: \(String(format: "%.2f%%", result.averageAirtimeRate))\n"
+			}
+			if result.noiseFloorSampleCount > 0 {
+				prompt += "  Noise Floor: \(String(format: "%.0f dBm", result.averageNoiseFloor))\n"
 			}
 			prompt += "\n"
 		}

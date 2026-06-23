@@ -35,6 +35,8 @@ erDiagram
         Double averageAirtimeRate
         Double packetSuccessRate
         Double packetFailureRate
+        Double averageNoiseFloor
+        Int noiseFloorSampleCount
     }
 
     DiscoveredNodeEntity {
@@ -102,6 +104,8 @@ Per-preset aggregated metrics within a session.
 | `averageAirtimeRate` | `Double` | `0.0` | Average Δ `air_util_tx` / elapsed (2-packet rule) |
 | `packetSuccessRate` | `Double` | `0.0` | From LocalStats: `numPacketsRx / (numPacketsRx + numRxBad)` |
 | `packetFailureRate` | `Double` | `0.0` | From LocalStats: `numRxBad / (numPacketsRx + numRxBad)` |
+| `averageNoiseFloor` | `Double` | `0.0` | Average noise floor (dBm) from LocalStats over the preset's dwell window; lower is a cleaner channel (FR-027) |
+| `noiseFloorSampleCount` | `Int` | `0` | Number of LocalStats samples that carried a noise-floor value (0 → no data) |
 | `session` | `DiscoverySessionEntity?` | `nil` | Inverse relationship |
 
 **Relationships**:
