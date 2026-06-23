@@ -63,6 +63,7 @@ struct MeshMapContent: MapContent {
 	
 	/// Pre-filtered, pre-extracted positions passed in from the parent view.
 	var positionSnapshots: [MeshMapPositionSnapshot]
+	var isMapVisible: Bool
 
 	@Query(sort: \WaypointEntity.name, order: .reverse)
 	var waypoints: [WaypointEntity]
@@ -275,6 +276,9 @@ struct MeshMapContent: MapContent {
 	
 	@MapContentBuilder
 	var body: some MapContent {
+		if showUserLocation && isMapVisible {
+			UserAnnotation()
+		}
 		meshMap
 	}
 }
