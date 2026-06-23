@@ -17,6 +17,9 @@ class MapDataManager: ObservableObject {
 	// MARK: - Properties
 	@Published private var uploadedFiles: [MapDataMetadata] = []
 	private var activeFeatureCollection: GeoJSONFeatureCollection?
+	private var featureCollectionCache: [UUID: CachedFeatureCollection] = [:]
+	private var featureCollectionCacheOrder: [UUID] = []
+	private let featureCollectionCacheLimit = 4
 
 	// MARK: - File Management
 
@@ -96,7 +99,7 @@ class MapDataManager: ObservableObject {
 		} catch SitePlannerCoverageError.missingFeatureCollection {
 			throw MapDataError.invalidContent
 		}
-		_ = try getOverlayCount(from: normalizedData)
+		let geoJSONInfo = try validatedGeoJSONInfo(from: normalizedData)
 
 		let timestamp = Date().timeIntervalSince1970
 		let sanitizedName = sanitizedFilenameComponent(originalName)
@@ -109,7 +112,18 @@ class MapDataManager: ObservableObject {
 
 		try normalizedData.write(to: destURL, options: .atomic)
 
-		let metadata = try await processFileContent(at: destURL, originalName: originalName, makeActive: makeActive)
+		let metadata = MapDataMetadata(
+			filename: destURL.lastPathComponent,
+			originalName: originalName,
+			uploadDate: Date(timeIntervalSince1970: timestamp),
+			fileSize: Int64(normalizedData.count),
+			format: sanitizedExtension,
+			license: nil,
+			attribution: nil,
+			overlayCount: geoJSONInfo.overlayCount,
+			rfSummary: geoJSONInfo.rfSummary,
+			isActive: makeActive
+		)
 
 		await MainActor.run {
 			uploadedFiles.append(metadata)
@@ -147,14 +161,7 @@ class MapDataManager: ObservableObject {
 	}
 
 	/// Process file content and extract metadata
-	private func processFileContent(at url: URL, originalName: String, makeActive: Bool) async throws -> MapDataMetadata {
-		let fileAttributes = try url.resourceValues(forKeys: [.fileSizeKey, .creationDateKey])
-		let fileSize = fileAttributes.fileSize ?? 0
-		let uploadDate = fileAttributes.creationDate ?? Date()
-
-		let data = try Data(contentsOf: url)
-		let overlayCount = try getOverlayCount(from: data)
-
+	private func validatedGeoJSONInfo(from data: Data) throws -> (overlayCount: Int, rfSummary: MapDataRFSummary?) {
 		// Validate GeoJSON schema
 		let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
 		guard let geoJSON = jsonObject as? [String: Any] else {
@@ -177,28 +184,7 @@ class MapDataManager: ObservableObject {
 			}
 		}
 
-		return MapDataMetadata(
-			filename: url.lastPathComponent,
-			originalName: originalName,
-			uploadDate: uploadDate,
-			fileSize: Int64(fileSize),
-			format: url.pathExtension.lowercased(),
-			license: nil, // Will be extracted from content if available
-			attribution: nil, // Will be extracted from content if available
-			overlayCount: overlayCount,
-			rfSummary: rfSummary,
-			isActive: makeActive
-		)
-	}
-
-	/// Get overlay count from raw GeoJSON data
-	private func getOverlayCount(from data: Data) throws -> Int {
-		// Parse as raw GeoJSON FeatureCollection
-		if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-		   let features = json["features"] as? [[String: Any]] {
-			return features.count
-		}
-		throw MapDataError.invalidContent
+		return (features.count, rfSummary)
 	}
 
 	private func sanitizedFilenameComponent(_ value: String) -> String {
@@ -233,6 +219,8 @@ class MapDataManager: ObservableObject {
 			source: properties["source"] as? String,
 			contourMaxDimension: intValue(properties["contour_max_dimension"]),
 			contourSmoothingRadius: intValue(properties["contour_smoothing_radius"]),
+			contourPolygonCount: intValue(properties["contour_polygon_count"]),
+			contourCoordinateCount: intValue(properties["contour_coordinate_count"]),
 			txHeightMeters: doubleValue(properties["tx_height_m"]),
 			rxHeightMeters: doubleValue(properties["rx_height_m"]),
 			radiusKilometers: doubleValue(properties["radius_km"]),
@@ -296,9 +284,29 @@ class MapDataManager: ObservableObject {
 		guard let fileURL = getUserUploadedDirectory()?.appendingPathComponent(file.filename) else {
 			throw MapDataError.fileNotFound
 		}
+		if let cached = featureCollectionCache[file.id], cached.matches(file) {
+			touchFeatureCollectionCache(file.id)
+			return cached.collection
+		}
 
 		let data = try Data(contentsOf: fileURL)
-		return try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		cacheFeatureCollection(collection, for: file)
+		return collection
+	}
+
+	private func cacheFeatureCollection(_ collection: GeoJSONFeatureCollection, for file: MapDataMetadata) {
+		featureCollectionCache[file.id] = CachedFeatureCollection(file: file, collection: collection)
+		touchFeatureCollectionCache(file.id)
+		while featureCollectionCacheOrder.count > featureCollectionCacheLimit {
+			let expired = featureCollectionCacheOrder.removeFirst()
+			featureCollectionCache.removeValue(forKey: expired)
+		}
+	}
+
+	private func touchFeatureCollectionCache(_ fileId: UUID) {
+		featureCollectionCacheOrder.removeAll { $0 == fileId }
+		featureCollectionCacheOrder.append(fileId)
 	}
 
 	// MARK: - Configuration Loading
@@ -310,6 +318,7 @@ class MapDataManager: ObservableObject {
 		}
 
 		var allFeatures: [GeoJSONFeature] = []
+		allFeatures.reserveCapacity(files.reduce(0) { $0 + $1.overlayCount })
 
 		for file in files {
 			do {
@@ -434,6 +443,8 @@ class MapDataManager: ObservableObject {
 		await MainActor.run {
 			if let index = uploadedFiles.firstIndex(where: { $0.filename == metadata.filename }) {
 				uploadedFiles.remove(at: index)
+				featureCollectionCache.removeValue(forKey: metadata.id)
+				featureCollectionCacheOrder.removeAll { $0 == metadata.id }
 			} else {
 				Logger.services.warning("🗑️ MapDataManager: File not found in uploadedFiles array")
 			}
@@ -471,10 +482,16 @@ class MapDataManager: ObservableObject {
 			  let data = try? Data(contentsOf: metadataURL),
 			  let files = try? JSONDecoder().decode([MapDataMetadata].self, from: data) else {
 			uploadedFiles = []
+			activeFeatureCollection = nil
+			featureCollectionCache = [:]
+			featureCollectionCacheOrder = []
 			return
 		}
 
 		uploadedFiles = files
+		activeFeatureCollection = nil
+		featureCollectionCache = [:]
+		featureCollectionCacheOrder = []
 	}
 
 	/// Save metadata to disk
@@ -484,7 +501,7 @@ class MapDataManager: ObservableObject {
 		}
 
 		let data = try JSONEncoder().encode(uploadedFiles)
-		try data.write(to: metadataURL)
+		try data.write(to: metadataURL, options: .atomic)
 	}
 
 	// MARK: - Initialization
@@ -533,6 +550,22 @@ struct MapDataMetadata: Codable, Identifiable {
 	}
 }
 
+private struct CachedFeatureCollection {
+	let filename: String
+	let fileSize: Int64
+	let collection: GeoJSONFeatureCollection
+
+	init(file: MapDataMetadata, collection: GeoJSONFeatureCollection) {
+		self.filename = file.filename
+		self.fileSize = file.fileSize
+		self.collection = collection
+	}
+
+	func matches(_ file: MapDataMetadata) -> Bool {
+		filename == file.filename && fileSize == file.fileSize
+	}
+}
+
 struct MapDataRFSummary: Codable, Equatable {
 	let thresholdDbm: Double
 	let areaKm2: Double
@@ -541,6 +574,8 @@ struct MapDataRFSummary: Codable, Equatable {
 	let source: String?
 	let contourMaxDimension: Int?
 	let contourSmoothingRadius: Int?
+	let contourPolygonCount: Int?
+	let contourCoordinateCount: Int?
 	let txHeightMeters: Double?
 	let rxHeightMeters: Double?
 	let radiusKilometers: Double?

@@ -864,7 +864,8 @@ private struct GenerateCoverageOverlayButton: View {
 				let rawData: Data
 				if SitePlannerCoverageClient.usesPublicSitePlanner(for: endpoint) {
 					rawData = try await NativeSitePlannerCoverageClient(
-						contourMaxDimension: settings.highResolution ? 900 : 640
+						contourMaxDimension: settings.highResolution ? 900 : 640,
+						contourPolygonLimit: settings.highResolution ? 4_500 : 2_500
 					)
 					.generateContours(request: payload)
 				} else {

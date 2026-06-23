@@ -468,6 +468,8 @@ struct RFGeoJSONOverlayTests {
 		#expect((properties["covered_area_km2"] as? Double ?? 0) > 0)
 		#expect((properties["max_range_km"] as? Double ?? 0) > 0)
 		#expect(properties["contour_smoothing_radius"] as? Int == 1)
+		#expect(properties["contour_polygon_count"] as? Int == polygonCount(in: collection))
+		#expect(properties["contour_coordinate_count"] as? Int == coordinatePairCount(in: collection))
 		#expect(data.count < 10 * 1024 * 1024)
 	}
 
@@ -498,6 +500,34 @@ struct RFGeoJSONOverlayTests {
 		#expect(coordinatePairCount(in: detailedCollection) > coordinatePairCount(in: coarseCollection))
 		#expect(detailedData.count > coarseData.count)
 		#expect(detailedData.count < 10 * 1024 * 1024)
+	}
+
+	@Test func nativeSitePlannerAdaptiveContoursReduceComplexOutputs() async throws {
+		let payload = SitePlannerCoverageRequest(
+			lat: 37.5,
+			lon: -122.5,
+			txHeight: 2.0,
+			txPower: 20.0,
+			frequencyMHz: 915.0,
+			radius: 750.0
+		)
+		let data = try await NativeSitePlannerCoverageClient(
+			terrainProvider: .seaLevel,
+			contourMaxDimension: 320,
+			contourPolygonLimit: 10,
+			runChunkSize: 1024
+		)
+		.generateContours(request: payload)
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+		let properties = try #require(json?["properties"] as? [String: Any])
+		let finalDimension = try #require(properties["contour_max_dimension"] as? Int)
+		let finalPolygonCount = try #require(properties["contour_polygon_count"] as? Int)
+
+		#expect(finalDimension < 320)
+		#expect(finalPolygonCount == polygonCount(in: collection))
+		#expect(properties["contour_coordinate_count"] as? Int == coordinatePairCount(in: collection))
+		#expect(data.count < 10 * 1024 * 1024)
 	}
 
 	@Test func nativeSitePlannerTerrainNamingMatchesSitePlanner() {
@@ -533,6 +563,22 @@ struct RFGeoJSONOverlayTests {
 private func coordinatePairCount(in collection: GeoJSONFeatureCollection) -> Int {
 	collection.features.reduce(0) { count, feature in
 		count + coordinatePairCount(in: feature.geometry.coordinates)
+	}
+}
+
+private func polygonCount(in collection: GeoJSONFeatureCollection) -> Int {
+	collection.features.reduce(0) { count, feature in
+		switch feature.geometry.type {
+		case "Polygon":
+			return count + 1
+		case "MultiPolygon":
+			if case .array(let polygons) = feature.geometry.coordinates {
+				return count + polygons.count
+			}
+			return count
+		default:
+			return count
+		}
 	}
 }
 

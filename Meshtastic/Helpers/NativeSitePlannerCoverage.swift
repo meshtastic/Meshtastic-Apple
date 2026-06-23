@@ -23,7 +23,8 @@ struct NativeSitePlannerCoverageClient: Sendable {
 	var contourMaxDimension = 640
 	var contourSmoothingRadius = 1
 	var contourByteLimit = 9_500_000
-	var runChunkSize = 256
+	var contourPolygonLimit = 2_500
+	var runChunkSize = 512
 
 	func generateContours(request payload: SitePlannerCoverageRequest) async throws -> Data {
 		try await NativeSitePlannerCoverageRunner.shared.generateContours(
@@ -32,6 +33,7 @@ struct NativeSitePlannerCoverageClient: Sendable {
 			contourMaxDimension: contourMaxDimension,
 			contourSmoothingRadius: contourSmoothingRadius,
 			contourByteLimit: contourByteLimit,
+			contourPolygonLimit: contourPolygonLimit,
 			runChunkSize: runChunkSize
 		)
 	}
@@ -76,6 +78,7 @@ private actor NativeSitePlannerCoverageRunner {
 		contourMaxDimension: Int,
 		contourSmoothingRadius: Int,
 		contourByteLimit: Int,
+		contourPolygonLimit: Int,
 		runChunkSize: Int
 	) async throws -> Data {
 		let params = try engineParameters(for: payload)
@@ -158,7 +161,8 @@ private actor NativeSitePlannerCoverageRunner {
 			request: payload,
 			maxDimension: contourMaxDimension,
 			smoothingRadius: contourSmoothingRadius,
-			byteLimit: contourByteLimit
+			byteLimit: contourByteLimit,
+			polygonLimit: contourPolygonLimit
 		)
 	}
 
@@ -191,36 +195,38 @@ private actor NativeSitePlannerCoverageRunner {
 		request: SitePlannerCoverageRequest,
 		maxDimension: Int,
 		smoothingRadius: Int,
-		byteLimit: Int
+		byteLimit: Int,
+		polygonLimit: Int
 	) throws -> Data {
 		var dimension = min(max(40, maxDimension), 900)
-		let minimumDimension = 180
+		let minimumDimension = min(120, dimension)
 		let effectiveByteLimit = max(256_000, byteLimit)
+		let effectivePolygonLimit = max(10, polygonLimit)
 
 		while true {
-			let data = try featureCollectionData(
+			let build = try featureCollectionBuild(
 				from: raster,
 				request: request,
 				gridMaxDimension: dimension,
 				smoothingRadius: smoothingRadius
 			)
-			if data.count <= effectiveByteLimit || dimension <= minimumDimension {
-				return data
+			if (build.data.count <= effectiveByteLimit && build.polygonCount <= effectivePolygonLimit) || dimension <= minimumDimension {
+				return build.data
 			}
 			let nextDimension = max(minimumDimension, Int(Double(dimension) * 0.82))
 			if nextDimension == dimension {
-				return data
+				return build.data
 			}
 			dimension = nextDimension
 		}
 	}
 
-	private static func featureCollectionData(
+	private static func featureCollectionBuild(
 		from raster: CoverageRaster,
 		request: SitePlannerCoverageRequest,
 		gridMaxDimension: Int,
 		smoothingRadius: Int
-	) throws -> Data {
+	) throws -> CoverageFeatureCollectionBuild {
 		let floorDbm = max(request.minDbm, request.signalThreshold)
 		let maxDbm = request.maxDbm
 		let span = max(maxDbm - floorDbm, 1.0)
@@ -230,11 +236,22 @@ private actor NativeSitePlannerCoverageRunner {
 		let preparedGrid = Self.preparedGrid(from: raster, maxDimension: gridMaxDimension, sentinel: sentinel)
 		let grid = Self.smoothedGrid(preparedGrid, radius: smoothingRadius)
 		let summary = Self.coverageSummary(from: raster, request: request, threshold: floorDbm)
+		var polygonCount = 0
+		var coordinateCount = 0
 
-		let features: [[String: Any]] = levels.compactMap { level in
-			let polygons = Self.rowRunPolygons(for: grid, threshold: level)
+		let features: [[String: Any]] = levels.enumerated().compactMap { index, level in
+			let upperBound = index + 1 < levels.count ? levels[index + 1] : nil
+			let polygons = Self.rowRunPolygons(for: grid, lowerBound: level, upperBound: upperBound)
 			guard !polygons.isEmpty else { return nil }
+			polygonCount += polygons.count
+			coordinateCount += Self.coordinateCount(in: polygons)
 			let color = Self.color(for: level, minDbm: request.minDbm, maxDbm: maxDbm, scale: request.colormap)
+			let label: String
+			if let upperBound {
+				label = "\(Int(level.rounded())) to \(Int(upperBound.rounded())) dBm"
+			} else {
+				label = ">= \(Int(level.rounded())) dBm"
+			}
 			return [
 				"type": "Feature",
 				"properties": [
@@ -245,7 +262,7 @@ private actor NativeSitePlannerCoverageRunner {
 					"stroke": color,
 					"stroke-width": 0.5,
 					"stroke-opacity": 0.65,
-					"label": ">= \(Int(level.rounded())) dBm",
+					"label": label,
 					"source": "native-site-planner"
 				],
 				"geometry": [
@@ -268,13 +285,15 @@ private actor NativeSitePlannerCoverageRunner {
 				"max_range_km": summary.maxRangeKm,
 				"covered_fraction": summary.coveredFraction,
 				"contour_max_dimension": gridMaxDimension,
-				"contour_smoothing_radius": max(0, smoothingRadius)
+				"contour_smoothing_radius": max(0, smoothingRadius),
+				"contour_polygon_count": polygonCount,
+				"contour_coordinate_count": coordinateCount
 			],
 			"features": features
 		]
 		let data = try JSONSerialization.data(withJSONObject: collection, options: [])
 		_ = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
-		return data
+		return CoverageFeatureCollectionBuild(data: data, polygonCount: polygonCount, coordinateCount: coordinateCount)
 	}
 
 	private static func preparedGrid(from raster: CoverageRaster, maxDimension: Int, sentinel: Double) -> PreparedCoverageGrid {
@@ -349,7 +368,7 @@ private actor NativeSitePlannerCoverageRunner {
 		return PreparedCoverageGrid(width: grid.width, height: grid.height, values: current, bounds: grid.bounds)
 	}
 
-	private static func rowRunPolygons(for grid: PreparedCoverageGrid, threshold: Double) -> [[[[Double]]]] {
+	private static func rowRunPolygons(for grid: PreparedCoverageGrid, lowerBound: Double, upperBound: Double?) -> [[[[Double]]]] {
 		let lonPerColumn = (grid.bounds.east - grid.bounds.west) / Double(grid.width)
 		let latPerRow = (grid.bounds.north - grid.bounds.south) / Double(grid.height)
 		var rectangles: [CoverageRunRectangle] = []
@@ -359,12 +378,12 @@ private actor NativeSitePlannerCoverageRunner {
 			var x = 0
 			var nextActiveRuns: [CoverageRunKey: Int] = [:]
 			while x < grid.width {
-				while x < grid.width && grid.values[y * grid.width + x] < threshold {
+				while x < grid.width && !Self.isInSignalBand(grid.values[y * grid.width + x], lowerBound: lowerBound, upperBound: upperBound) {
 					x += 1
 				}
 				guard x < grid.width else { break }
 				let startX = x
-				while x < grid.width && grid.values[y * grid.width + x] >= threshold {
+				while x < grid.width && Self.isInSignalBand(grid.values[y * grid.width + x], lowerBound: lowerBound, upperBound: upperBound) {
 					x += 1
 				}
 				let endX = x
@@ -394,6 +413,22 @@ private actor NativeSitePlannerCoverageRunner {
 				[west, south]
 			]
 			return [ring]
+		}
+	}
+
+	private static func isInSignalBand(_ value: Double, lowerBound: Double, upperBound: Double?) -> Bool {
+		guard value >= lowerBound else { return false }
+		if let upperBound {
+			return value < upperBound
+		}
+		return true
+	}
+
+	private static func coordinateCount(in polygons: [[[[Double]]]]) -> Int {
+		polygons.reduce(0) { polygonTotal, polygon in
+			polygonTotal + polygon.reduce(0) { ringTotal, ring in
+				ringTotal + ring.count
+			}
 		}
 	}
 
@@ -857,6 +892,12 @@ private struct CoverageSummary {
 	var areaKm2: Double
 	var maxRangeKm: Double
 	var coveredFraction: Double
+}
+
+private struct CoverageFeatureCollectionBuild {
+	var data: Data
+	var polygonCount: Int
+	var coordinateCount: Int
 }
 
 private struct PreparedCoverageGrid {

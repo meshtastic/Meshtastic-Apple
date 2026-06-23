@@ -48,6 +48,7 @@ class GeoJSONOverlayManager {
 		}
 
 		var styledFeatures: [GeoJSONStyledFeature] = []
+		styledFeatures.reserveCapacity(enabledFiles.reduce(0) { $0 + $1.overlayCount })
 		for feature in collection.features {
 			guard feature.isVisible else { continue }
 			styledFeatures.append(GeoJSONStyledFeature(
@@ -67,6 +68,7 @@ class GeoJSONOverlayManager {
 		}
 
 		var styledFeatures: [GeoJSONStyledFeature] = []
+		styledFeatures.reserveCapacity(collection.features.count)
 
 		for feature in collection.features {
 			// Skip invisible features
