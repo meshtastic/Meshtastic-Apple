@@ -51,7 +51,21 @@ struct Connect: View {
 			return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
 		}
 	}
-	
+
+	/// The connected node, but only while it's still a live SwiftData object.
+	///
+	/// `node` is cached in `@State` and survives across connection state changes, so after a
+	/// disconnect/reconnect or node switch — which recreate the ModelContext/container — the
+	/// cached reference can become faulted or detached. Reading any real attribute on a faulted
+	/// `@Model` traps (`_SD_get_faulting_backingdata` → `SIGTRAP`), and because the Connect tab
+	/// is always mounted and re-renders on `accessoryManager` state changes, that trap fires
+	/// during render. `modelContext` is safe metadata (nil on a detached/deleted object), so
+	/// gating every read through this accessor prevents the crash. (Same guard pattern as #1944.)
+	private var safeNode: NodeInfoEntity? {
+		guard let node, node.modelContext != nil else { return nil }
+		return node
+	}
+
 	var body: some View {
 		NavigationStack {
 			VStack(spacing: 0) {
@@ -66,7 +80,7 @@ struct Connect: View {
 							VStack(alignment: .leading) {
 								HStack {
 									VStack(alignment: .center) {
-										CircleText(text: node?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
+										CircleText(text: safeNode?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(safeNode?.num ?? 0))), circleSize: 90)
 											.padding(.trailing, 5)
 										if let batteryLevel = connectedBatteryLevel {
 											BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
@@ -75,7 +89,7 @@ struct Connect: View {
 									}
 									.padding(.trailing)
 									VStack(alignment: .leading) {
-										if node != nil {
+										if safeNode != nil {
 											HStack {
 												Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
 												if connectedDevice.wasRestored {
@@ -95,8 +109,8 @@ struct Connect: View {
 											Spacer()
 										}
 										.padding(0)
-										if node != nil {
-											Text("Firmware Version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "Unknown".localized)")
+										if safeNode != nil {
+											Text("Firmware Version").font(.callout)+Text(": \(safeNode?.metadata?.firmwareVersion ?? "Unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if accessoryManager.firmwareEdition.isEvent {
@@ -176,8 +190,8 @@ struct Connect: View {
 							}
 							.contextMenu {
 								
-								if node != nil {
-									Label("\(String(node!.num))", systemImage: "number")
+								if let node = safeNode {
+									Label("\(String(node.num))", systemImage: "number")
 #if !targetEnvironment(macCatalyst)
 									if accessoryManager.state == .subscribed {
 										Button {
@@ -210,7 +224,9 @@ struct Connect: View {
 										Button(role: .destructive) {
 											Task {
 												do {
-													try await accessoryManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!)
+													if let user = node.user {
+														try await accessoryManager.sendShutdown(fromUser: user, toUser: user)
+													}
 												} catch {
 													Logger.mesh.error("Shutdown Failed: \(error)")
 												}
@@ -225,7 +241,7 @@ struct Connect: View {
 							if isUnsetRegion {
 								HStack {
 									NavigationLink {
-										LoRaConfig(node: node)
+										LoRaConfig(node: safeNode)
 									} label: {
 										Label("Set LoRa Region", systemImage: "globe.americas.fill")
 											.foregroundColor(.red)
@@ -461,7 +477,7 @@ struct Connect: View {
 		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
-		.task(id: node?.num) {
+		.task(id: safeNode?.num) {
 			// Refresh the connected node's battery on an interval instead of fetching in
 			// `body` (which re-ran the TelemetryEntity query on every render — costly while
 			// ingestion churns the node @Query). Battery changes slowly, so 15s is plenty.
