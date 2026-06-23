@@ -164,10 +164,11 @@ final class DiscoveryScanEngine {
 			homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
 		}
 
-		// If the primary channel isn't on the default key, temporarily switch it so the radio can
-		// decode the public mesh during the scan. Channel changes don't reboot the radio, so this is
-		// sent now (while connected) ahead of any preset change, and restored before teardown.
-		await prepareDefaultKeyChannel(connectedNode: connectedNode)
+		// If the primary channel isn't the default public channel, temporarily switch it (key + name)
+		// so the radio can decode the public mesh and derive its frequency during the scan. Channel
+		// changes don't reboot the radio, so this is sent now (while connected) ahead of any preset
+		// change, and restored before teardown.
+		await prepareDefaultPublicChannel(connectedNode: connectedNode)
 
 		// Create session
 		let newSession = DiscoverySessionEntity()
@@ -1074,36 +1075,43 @@ extension DiscoveryScanEngine {
 		return channel
 	}
 
-	/// Whether a channel key counts as the public/default key (none, empty, or the single `0x01`
-	/// byte). A primary channel on this key needs no swap to decode the public mesh.
-	private static func isDefaultChannelKey(_ psk: Data?) -> Bool {
-		guard let psk, !psk.isEmpty else { return true }
-		return psk == defaultChannelKey
+	/// Whether the primary channel is already the default public channel — i.e. both the default key
+	/// (none, empty, or the single `0x01` byte) AND the default (empty) name. The public mesh uses
+	/// the empty name (the firmware renders it as "LongFast"); a custom name produces a different
+	/// channel hash and a different derived frequency, so it must be defaulted for the scan too.
+	private static func isDefaultPublicChannel(_ channel: ChannelEntity) -> Bool {
+		let keyIsDefault = channel.psk == nil || channel.psk?.isEmpty == true || channel.psk == defaultChannelKey
+		let nameIsDefault = channel.name == nil || channel.name?.isEmpty == true
+		return keyIsDefault && nameIsDefault
 	}
 
-	/// If the connected radio's primary channel uses a custom key, snapshot it and send a copy on
-	/// the default key so the scan can decode the public mesh. A no-op when the primary is already
-	/// on the default key. `saveChannel` doesn't reboot the radio, so this applies immediately while
-	/// the link is up; `restorePrimaryChannel()` puts the original key back when the scan finishes.
-	private func prepareDefaultKeyChannel(connectedNode: NodeInfoEntity?) async {
+	/// If the connected radio's primary channel isn't the default public channel, snapshot it and
+	/// send a copy with the default key AND default (empty) name so the scan can both decode the
+	/// public mesh and derive the public-mesh frequency for each preset (the firmware derives the
+	/// frequency from the primary channel name + preset). A no-op when the primary is already the
+	/// default public channel. `saveChannel` doesn't reboot the radio, so this applies immediately
+	/// while the link is up; `restorePrimaryChannel()` puts the original channel back when the scan
+	/// finishes.
+	private func prepareDefaultPublicChannel(connectedNode: NodeInfoEntity?) async {
 		guard let accessoryManager,
 			  let connectedNode,
 			  let fromUser = connectedNode.user,
 			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
 
-		guard !Self.isDefaultChannelKey(primary.psk) else { return }
+		guard !Self.isDefaultPublicChannel(primary) else { return }
 
-		// Snapshot the real primary channel so its key can be restored verbatim after the scan.
+		// Snapshot the real primary channel so it can be restored verbatim after the scan.
 		homePrimaryChannel = channelProto(from: primary)
 
 		var scanChannel = channelProto(from: primary)
 		scanChannel.settings.psk = Self.defaultChannelKey
+		scanChannel.settings.name = ""
 		do {
 			_ = try await accessoryManager.saveChannel(channel: scanChannel, fromUser: fromUser, toUser: fromUser)
-			Logger.discovery.info("📡 [Discovery] Primary channel temporarily switched to the default key for the scan")
+			Logger.discovery.info("📡 [Discovery] Primary channel temporarily switched to the default public channel for the scan")
 		} catch {
 			// Leave the snapshot in place so restore still runs; surface the failure.
-			Logger.discovery.error("📡 [Discovery] Failed to set default-key channel: \(error.localizedDescription)")
+			Logger.discovery.error("📡 [Discovery] Failed to set default public channel: \(error.localizedDescription)")
 		}
 	}
 

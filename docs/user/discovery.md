@@ -16,7 +16,7 @@ When your connected radio reports local statistics, the scanner also captures th
 
 Each preset is scanned on the **default frequency slot** so the radio listens on the same frequency the public mesh uses. If your radio is set to a custom frequency slot, the scan temporarily uses the default slot while it runs and restores your original LoRa configuration — including your frequency slot — automatically when the scan finishes.
 
-You no longer need to put your primary channel on the default key before scanning. If your primary channel uses a custom key, Local Mesh Discovery temporarily switches it to the default key so the radio can decode the public mesh, then restores your original channel automatically when the scan finishes. (Channel changes don't reboot the radio, so this happens instantly at the start and end of the scan.)
+You no longer need to put your primary channel on the default key before scanning. If your primary channel uses a custom key or name, Local Mesh Discovery temporarily switches it to the default public channel so the radio can both decode the public mesh and tune to its frequency, then restores your original channel automatically when the scan finishes. (Channel changes don't reboot the radio, so this happens instantly at the start and end of the scan.)
 
 On supported devices running iOS 26+, the on-device AI assistant analyses the scan results and recommends the best configuration for your location — no internet connection required.
 
