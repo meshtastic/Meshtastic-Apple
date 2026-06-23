@@ -71,18 +71,8 @@ struct DiscoveryScanView: View {
 
 				if let session = engine.session, engine.isScanning || engine.currentState == .complete {
 					Section(header: Text("Discovery Map")) {
-						DiscoveryMapView(
-							discoveredNodes: session.discoveredNodes,
-							userLatitude: session.userLatitude,
-							userLongitude: session.userLongitude,
-							isScanning: engine.currentState == .dwell
-						)
-						#if targetEnvironment(macCatalyst)
-						.frame(minHeight: 500, maxHeight: 700)
-						#else
-						.frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 450 : 300)
-						#endif
-						.listRowInsets(EdgeInsets())
+						discoveryMap(for: session, engine: engine)
+							.listRowInsets(EdgeInsets())
 					}
 				}
 
@@ -166,6 +156,31 @@ struct DiscoveryScanView: View {
 				Label("Analyze Current Preset", systemImage: "doc.text.magnifyingglass")
 			}
 		}
+	}
+
+	// MARK: - Discovery Map
+
+	/// The discovery map sized for the device. On iPad and Mac Catalyst it fills most of the List's
+	/// visible area (via `containerRelativeFrame`) so the map is the dominant element rather than a
+	/// short fixed band; the rest of the controls remain reachable by scrolling. iPhone keeps a
+	/// compact fixed height so it doesn't crowd out the scan controls on a small screen.
+	@ViewBuilder
+	private func discoveryMap(for session: DiscoverySessionEntity, engine: DiscoveryScanEngine) -> some View {
+		let map = DiscoveryMapView(
+			discoveredNodes: session.discoveredNodes,
+			userLatitude: session.userLatitude,
+			userLongitude: session.userLongitude,
+			isScanning: engine.currentState == .dwell
+		)
+		#if targetEnvironment(macCatalyst)
+		map.containerRelativeFrame(.vertical) { length, _ in max(520, length * 0.85) }
+		#else
+		if UIDevice.current.userInterfaceIdiom == .pad {
+			map.containerRelativeFrame(.vertical) { length, _ in max(450, length * 0.8) }
+		} else {
+			map.frame(height: 300)
+		}
+		#endif
 	}
 
 	// MARK: - Scan Progress
