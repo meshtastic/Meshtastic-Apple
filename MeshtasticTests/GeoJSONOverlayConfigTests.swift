@@ -874,6 +874,12 @@ struct GeoJSONFeaturePropertyTests {
 		#expect(feature.strokeOpacity == 1.0)
 	}
 
+	@Test func overlayManagerNormalizesOpacity() {
+		#expect(GeoJSONOverlayManager.normalizedOpacity(-1.0) == GeoJSONOverlayManager.minimumOpacity)
+		#expect(GeoJSONOverlayManager.normalizedOpacity(0.55) == 0.55)
+		#expect(GeoJSONOverlayManager.normalizedOpacity(2.0) == GeoJSONOverlayManager.maximumOpacity)
+	}
+
 	@Test func effectiveStrokeColor_usesStroke() {
 		let feature = makeFeature(properties: ["stroke": .string("#FF0000")])
 		#expect(feature.effectiveStrokeColor == "#FF0000")

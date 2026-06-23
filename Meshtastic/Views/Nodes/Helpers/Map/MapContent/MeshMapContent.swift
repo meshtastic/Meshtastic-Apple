@@ -59,6 +59,7 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedWaypoint: WaypointEntity?
 	// Map overlays
 	@AppStorage("mapOverlaysEnabled") private var showMapOverlays = false
+	@AppStorage("mapOverlayOpacity") private var mapOverlayOpacity = GeoJSONOverlayManager.defaultOpacity
 	@Binding var enabledOverlayConfigs: Set<UUID>
 	var isMapVisible: Bool
 	
@@ -240,6 +241,7 @@ struct MeshMapContent: MapContent {
 	var overlayContent: some MapContent {
 		// Get all features but filter by enabled configs
 		let allStyledFeatures = GeoJSONOverlayManager.shared.loadStyledFeaturesForConfigs(enabledOverlayConfigs)
+		let opacityMultiplier = GeoJSONOverlayManager.normalizedOpacity(mapOverlayOpacity)
 		
 		return Group {
 			// GeoJSONStyledFeature is Identifiable with a stable UUID assigned at creation.
@@ -253,8 +255,8 @@ struct MeshMapContent: MapContent {
 					if let coordinate = feature.geometry.coordinates.toCoordinate() {
 						Annotation(feature.name, coordinate: coordinate) {
 							Circle()
-								.fill(styledFeature.fillColor)
-								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+								.fill(styledFeature.fillColor(opacityMultiplier: opacityMultiplier))
+								.stroke(styledFeature.strokeColor(opacityMultiplier: opacityMultiplier), style: styledFeature.strokeStyle)
 								.frame(width: feature.markerRadius * 2, height: feature.markerRadius * 2)
 						}
 						.annotationTitles(.automatic)
@@ -263,22 +265,22 @@ struct MeshMapContent: MapContent {
 				} else if geometryType == "LineString" {
 					if let overlay = styledFeature.createOverlay() as? MKPolyline {
 						MapPolyline(overlay)
-							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+							.stroke(styledFeature.strokeColor(opacityMultiplier: opacityMultiplier), style: styledFeature.strokeStyle)
 					}
 				} else if geometryType == "Polygon" {
 					ForEach(styledFeature.createOverlays()) { renderableOverlay in
 						if let overlay = renderableOverlay.overlay as? MKPolygon {
 							MapPolygon(overlay)
-								.foregroundStyle(styledFeature.fillColor)
-								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+								.foregroundStyle(styledFeature.fillColor(opacityMultiplier: opacityMultiplier))
+								.stroke(styledFeature.strokeColor(opacityMultiplier: opacityMultiplier), style: styledFeature.strokeStyle)
 						}
 					}
 				} else if geometryType == "MultiPolygon" {
 					ForEach(styledFeature.createOverlays()) { renderableOverlay in
 						if let overlay = renderableOverlay.overlay as? MKPolygon {
 							MapPolygon(overlay)
-								.foregroundStyle(styledFeature.fillColor)
-								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+								.foregroundStyle(styledFeature.fillColor(opacityMultiplier: opacityMultiplier))
+								.stroke(styledFeature.strokeColor(opacityMultiplier: opacityMultiplier), style: styledFeature.strokeStyle)
 						}
 					}
 				}

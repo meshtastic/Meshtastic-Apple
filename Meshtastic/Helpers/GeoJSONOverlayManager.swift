@@ -5,6 +5,9 @@ import OSLog
 /// Manager for loading and managing raw GeoJSON feature collections with embedded styling
 class GeoJSONOverlayManager {
 	static let shared = GeoJSONOverlayManager()
+	static let defaultOpacity = 1.0
+	static let minimumOpacity = 0.10
+	static let maximumOpacity = 1.0
 	private init() {}
 
 	private var featureCollection: GeoJSONFeatureCollection?
@@ -150,5 +153,9 @@ class GeoJSONOverlayManager {
 		MapDataManager.shared.toggleFileActive(fileId)
 		// Clear cache to force reload with new file states
 		clearCache()
+	}
+
+	static func normalizedOpacity(_ opacity: Double) -> Double {
+		min(maximumOpacity, max(minimumOpacity, opacity))
 	}
 }

@@ -302,12 +302,27 @@ struct GeoJSONStyledFeature: Identifiable {
 
 	/// Get stroke color with opacity
 	var strokeColor: Color {
-		return Self.color(from: feature.rfPredictionColor ?? feature.effectiveStrokeColor).opacity(feature.effectiveStrokeOpacity)
+		strokeColor(opacityMultiplier: GeoJSONOverlayManager.defaultOpacity)
 	}
 
 	/// Get fill color with opacity
 	var fillColor: Color {
-		return Self.color(from: feature.effectiveFillColor).opacity(feature.effectiveFillOpacity)
+		fillColor(opacityMultiplier: GeoJSONOverlayManager.defaultOpacity)
+	}
+
+	func strokeColor(opacityMultiplier: Double) -> Color {
+		let opacity = Self.scaledOpacity(feature.effectiveStrokeOpacity, multiplier: opacityMultiplier)
+		return Self.color(from: feature.rfPredictionColor ?? feature.effectiveStrokeColor).opacity(opacity)
+	}
+
+	func fillColor(opacityMultiplier: Double) -> Color {
+		let opacity = Self.scaledOpacity(feature.effectiveFillOpacity, multiplier: opacityMultiplier)
+		return Self.color(from: feature.effectiveFillColor).opacity(opacity)
+	}
+
+	private static func scaledOpacity(_ opacity: Double, multiplier: Double) -> Double {
+		let normalizedMultiplier = GeoJSONOverlayManager.normalizedOpacity(multiplier)
+		return min(1.0, max(0.0, opacity * normalizedMultiplier))
 	}
 
 	private static func color(from styleValue: String) -> Color {

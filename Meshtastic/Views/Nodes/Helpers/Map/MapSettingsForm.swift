@@ -17,6 +17,7 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
+	@AppStorage("mapOverlayOpacity") private var mapOverlayOpacity = GeoJSONOverlayManager.defaultOpacity
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
@@ -132,6 +133,19 @@ struct MapSettingsForm: View {
 
 					// Show individual file toggles when overlays are enabled
 					if mapOverlaysEnabled && hasUserData {
+						LabeledContent("Opacity", value: Self.percentString(mapOverlayOpacity))
+						Slider(
+							value: Binding(
+								get: {
+									GeoJSONOverlayManager.normalizedOpacity(mapOverlayOpacity)
+								},
+								set: { newValue in
+									mapOverlayOpacity = GeoJSONOverlayManager.normalizedOpacity(newValue)
+								}
+							),
+							in: GeoJSONOverlayManager.minimumOpacity...GeoJSONOverlayManager.maximumOpacity,
+							step: 0.05
+						)
 						if !mapDataManager.getUploadedFiles().isEmpty {
 							// Individual file toggles
 							ForEach(mapDataManager.getUploadedFiles()) { file in
@@ -233,6 +247,10 @@ struct MapSettingsForm: View {
 			}
 		}
 
+	}
+
+	private static func percentString(_ value: Double) -> String {
+		String(format: "%.0f%%", GeoJSONOverlayManager.normalizedOpacity(value) * 100.0)
 	}
 }
 
