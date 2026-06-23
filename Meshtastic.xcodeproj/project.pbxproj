@@ -219,6 +219,8 @@
 		BCCA0BAB2F1C5C25007648E5 /* LocalStatsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */; };
 		BCCA0BAD2F1C5C60007648E5 /* RequestLocalStatsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */; };
 		BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */; };
+		BEEF00102F00000100000002 /* MeshtasticChannelURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEEF00102F00000100000001 /* MeshtasticChannelURL.swift */; };
+		BEEF00102F00000100000004 /* MeshtasticChannelURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEEF00102F00000100000003 /* MeshtasticChannelURLTests.swift */; };
 		BCD93CBA2D9E11A2006C9214 /* DisconnectNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */; };
 		BCDDFA9A2DBB180D0065189C /* ScrollToBottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */; };
 		BCE2D3C32C7ADF42008E6199 /* ShutDownNodeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */; };
@@ -776,6 +778,8 @@
 		BCCA0BAA2F1C5C25007648E5 /* LocalStatsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStatsLog.swift; sourceTree = "<group>"; };
 		BCCA0BAC2F1C5C60007648E5 /* RequestLocalStatsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocalStatsButton.swift; sourceTree = "<group>"; };
 		BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactURLHandler.swift; sourceTree = "<group>"; };
+		BEEF00102F00000100000001 /* MeshtasticChannelURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticChannelURL.swift; sourceTree = "<group>"; };
+		BEEF00102F00000100000003 /* MeshtasticChannelURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticChannelURLTests.swift; sourceTree = "<group>"; };
 		BCD93CB92D9E11A2006C9214 /* DisconnectNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectNodeIntent.swift; sourceTree = "<group>"; };
 		BCDDFA992DBB180D0065189C /* ScrollToBottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollToBottomButton.swift; sourceTree = "<group>"; };
 		BCE2D3C22C7ADF42008E6199 /* ShutDownNodeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShutDownNodeIntent.swift; sourceTree = "<group>"; };
@@ -1579,6 +1583,7 @@
 				AA009MCT0000001000000001 /* MarkdownConverterTests.swift */,
 				AA003DOC0000001000000008 /* DocTranslationTests.swift */,
 				DD0000DEVLNKTST000000000 /* DeviceLinkTests.swift */,
+				BEEF00102F00000100000003 /* MeshtasticChannelURLTests.swift */,
 			);
 			path = MeshtasticTests;
 			sourceTree = "<group>";
@@ -2199,6 +2204,7 @@
 				3D3417D12E2DC260006A988B /* MapDataManager.swift */,
 				3D3417C72E29D38A006A988B /* GeoJSONOverlayConfig.swift */,
 				BCD7448C2E0F2FA300F265A2 /* ContactURLHandler.swift */,
+				BEEF00102F00000100000001 /* MeshtasticChannelURL.swift */,
 				DDD43FE12A78C86B0083A3E9 /* Mqtt */,
 				DD1BEF492E0292220090CE24 /* KeychainHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
@@ -2662,6 +2668,7 @@
 				DD00002ESDMIGTST000000001 /* SwiftDataMigrationTests.swift in Sources */,
 				DD00002FSHRDTSTCNT000001 /* SharedTestContainer.swift in Sources */,
 				DD000030EVTFWNTST0000001 /* EventFirmwareNotificationTests.swift in Sources */,
+				BEEF00102F00000100000004 /* MeshtasticChannelURLTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2894,6 +2901,7 @@
 				BCB35B4F2E5FC42500B04F60 /* MessageNodeIntent.swift in Sources */,
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
 				BCD7448D2E0F2FAA00F265A2 /* ContactURLHandler.swift in Sources */,
+				BEEF00102F00000100000002 /* MeshtasticChannelURL.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */,
 				AB61EBF12E3326DC00B35962 /* NodeListItemCompact.swift in Sources */,

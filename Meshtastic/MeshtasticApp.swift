@@ -131,34 +131,30 @@ struct MeshtasticAppleApp: App {
 		}
 	}
 
-	private func handleChannelLinkURL(_ url: URL, fromActivity: Bool) {
+	@discardableResult
+	private func handleChannelLinkURL(_ url: URL, fromActivity: Bool) -> Bool {
 		// Reset the state before processing a new URL
 		self.saveChannelLink = nil
 
-		guard url.absoluteString.lowercased().contains("meshtastic.org/e/") else {
-			return
+		guard MeshtasticChannelURL.canHandle(url) else {
+			return false
 		}
 
-		let queryParams = url.queryParameters
-		let addChannels = Bool(queryParams?["add"] ?? "false") ?? false
-		var channelData: String?
-		let urlString = url.absoluteString
-
-		if let fragment = urlString.components(separatedBy: "#").last, !fragment.isEmpty {
-			channelData = fragment.components(separatedBy: "?").first
-		}
-		
-		guard let finalChannelData = channelData, !finalChannelData.isEmpty else {
-			Logger.mesh.error("Could not extract channel data from URL: \(url.absoluteString, privacy: .public)")
-			return
+		let channelLink: MeshtasticChannelURL
+		do {
+			channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
+		} catch {
+			Logger.mesh.error("Could not parse channel URL: \(url.absoluteString, privacy: .public) \(error.localizedDescription, privacy: .public)")
+			return false
 		}
 
-		self.saveChannelLink = SaveChannelLinkData(data: finalChannelData, add: addChannels)
-		Logger.services.debug("Add Channel \(addChannels, privacy: .public) with data: \(finalChannelData, privacy: .public)")
+		self.saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: channelLink.addChannels)
+		Logger.services.debug("Add Channel \(channelLink.addChannels, privacy: .public) with data: \(channelLink.payload, privacy: .public)")
 		
 		// Log based on the calling context
 		let source = fromActivity ? "User Activity" : "Open URL"
 		Logger.mesh.debug("User wants to open a Channel Settings URL (\(source)): \(url.absoluteString, privacy: .public)")
+		return true
 	}
 	
 	var body: some Scene {
@@ -192,7 +188,7 @@ struct MeshtasticAppleApp: App {
 					if let url = userActivity.webpageURL {
 						if url.absoluteString.lowercased().contains("meshtastic.org/v/#") == true {
 							ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
-						} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") == true {
+						} else if MeshtasticChannelURL.canHandle(url) {
 							// **Consolidated Call for User Activity**
 							handleChannelLinkURL(url, fromActivity: true)
 						}
@@ -208,7 +204,7 @@ struct MeshtasticAppleApp: App {
 					
 					if url.absoluteString.lowercased().contains("meshtastic.org/v/#") {
 						ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
-					} else if url.absoluteString.lowercased().contains("meshtastic.org/e/") {
+					} else if MeshtasticChannelURL.canHandle(url) {
 						// **Consolidated Call for Open URL**
 						handleChannelLinkURL(url, fromActivity: false)
 					} else if url.absoluteString.lowercased().contains("meshtastic:///") {

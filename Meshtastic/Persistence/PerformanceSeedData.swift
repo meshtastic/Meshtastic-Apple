@@ -24,6 +24,7 @@ struct PerformanceSeedConfiguration {
 	let initialTab: NavigationState.Tab
 	let opensLocalStatsLog: Bool
 	let localStatsSameHourSeed: Bool
+	let simulateConnectedNode: Bool
 }
 
 @MainActor
@@ -44,9 +45,10 @@ enum PerformanceSeedData {
 			resetStore: boolValue("MESHTASTIC_PERF_RESET_STORE", environment: environment) || arguments.contains("--meshtastic-perf-reset"),
 			compactNodeList: boolValue("MESHTASTIC_PERF_COMPACT_LIST", environment: environment) || arguments.contains("--meshtastic-perf-compact-list"),
 			disableDiscovery: !boolValue("MESHTASTIC_PERF_ENABLE_DISCOVERY", environment: environment),
-			initialTab: arguments.contains("--meshtastic-perf-start-map") ? .map : .nodes,
+			initialTab: arguments.contains("--meshtastic-perf-start-settings") ? .settings : (arguments.contains("--meshtastic-perf-start-map") ? .map : .nodes),
 			opensLocalStatsLog: arguments.contains("--meshtastic-perf-start-local-stats"),
-			localStatsSameHourSeed: arguments.contains("--meshtastic-perf-local-stats-same-hour")
+			localStatsSameHourSeed: arguments.contains("--meshtastic-perf-local-stats-same-hour"),
+			simulateConnectedNode: boolValue("MESHTASTIC_PERF_SIMULATE_CONNECTED_NODE", environment: environment) || arguments.contains("--meshtastic-perf-sim-connected")
 		)
 	}
 
@@ -72,12 +74,14 @@ enum PerformanceSeedData {
 		} else if existingNodeCount(context: context) >= configuration.nodeCount {
 			if requestedMessageCount > 0 && existingMessageCount(context: context) < requestedMessageCount {
 				seedMessageHistory(baseNodeNum: 0x0A00_0000, now: Date(), configuration: configuration, context: context)
-				try? context.save()
 			}
+			ensureLocalRadioConfig(baseNodeNum: 0x0A00_0000, context: context)
+			try? context.save()
 			router.selectedTab = configuration.initialTab
 			if configuration.opensLocalStatsLog {
 				router.selectedNodeNum = 0x0A00_0000
 			}
+			configureSimulatedConnectionIfNeeded(baseNodeNum: 0x0A00_0000, configuration: configuration)
 			Logger.data.info("📈 [PerfSeed] Existing large mesh seed found; skipping reseed")
 			return
 		}
@@ -102,6 +106,7 @@ enum PerformanceSeedData {
 			if configuration.opensLocalStatsLog {
 				router.selectedNodeNum = baseNodeNum
 			}
+			configureSimulatedConnectionIfNeeded(baseNodeNum: baseNodeNum, configuration: configuration)
 			let duration = Date().timeIntervalSince(start)
 			Logger.data.info("📈 [PerfSeed] Finished seeding \(configuration.nodeCount, privacy: .public) nodes in \(duration, privacy: .public) seconds")
 		} catch {
@@ -115,6 +120,15 @@ enum PerformanceSeedData {
 
 	private static func existingMessageCount(context: ModelContext) -> Int {
 		(try? context.fetchCount(FetchDescriptor<MessageEntity>())) ?? 0
+	}
+
+	private static func configureSimulatedConnectionIfNeeded(baseNodeNum: Int64, configuration: PerformanceSeedConfiguration) {
+		guard configuration.simulateConnectedNode else { return }
+		AccessoryManager.shared.simulateConnectedDevice(
+			num: baseNodeNum,
+			shortName: shortName(for: 0),
+			longName: "Perf Node 0"
+		)
 	}
 
 	private static func insertNode(
@@ -170,6 +184,7 @@ enum PerformanceSeedData {
 			myInfo.registered = true
 			myInfo.myInfoNode = node
 			context.insert(myInfo)
+			insertLocalRadioConfig(for: node, myInfo: myInfo, context: context)
 		}
 
 		insertTelemetry(for: node, index: index, now: now, configuration: configuration, context: context)
@@ -178,6 +193,75 @@ enum PerformanceSeedData {
 		if index.isMultiple(of: 25) {
 			insertTraceRoute(for: node, index: index, now: now, context: context)
 		}
+	}
+
+	private static func ensureLocalRadioConfig(baseNodeNum: Int64, context: ModelContext) {
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.num == baseNodeNum }
+		)
+		descriptor.fetchLimit = 1
+		guard let node = try? context.fetch(descriptor).first else { return }
+
+		if node.myInfo == nil {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = baseNodeNum
+			myInfo.registered = true
+			myInfo.myInfoNode = node
+			context.insert(myInfo)
+		}
+
+		if let myInfo = node.myInfo, node.loRaConfig == nil || myInfo.channels.isEmpty {
+			insertLocalRadioConfig(for: node, myInfo: myInfo, context: context)
+		}
+	}
+
+	private static func insertLocalRadioConfig(for node: NodeInfoEntity, myInfo: MyInfoEntity, context: ModelContext) {
+		if node.loRaConfig == nil {
+			let loRaConfig = LoRaConfigEntity()
+			loRaConfig.regionCode = 1
+			loRaConfig.modemPreset = 0
+			loRaConfig.hopLimit = 3
+			loRaConfig.channelNum = 20
+			loRaConfig.txEnabled = true
+			loRaConfig.usePreset = true
+			loRaConfig.loRaConfigNode = node
+			node.loRaConfig = loRaConfig
+			context.insert(loRaConfig)
+		}
+
+		guard myInfo.channels.isEmpty else { return }
+
+		let primary = makeSeedChannel(
+			index: 0,
+			name: "Primary",
+			role: 1,
+			id: 1001,
+			psk: Data((0..<16).map { UInt8($0) })
+		)
+		let rescueOps = makeSeedChannel(
+			index: 1,
+			name: "RescueOps",
+			role: 2,
+			id: 1002,
+			psk: Data((16..<32).map { UInt8($0) })
+		)
+
+		primary.myInfoChannel = myInfo
+		rescueOps.myInfoChannel = myInfo
+		myInfo.channels = [primary, rescueOps]
+		context.insert(primary)
+		context.insert(rescueOps)
+	}
+
+	private static func makeSeedChannel(index: Int32, name: String, role: Int32, id: Int32, psk: Data) -> ChannelEntity {
+		let channel = ChannelEntity()
+		channel.id = id
+		channel.index = index
+		channel.name = name
+		channel.positionPrecision = 32
+		channel.psk = psk
+		channel.role = role
+		return channel
 	}
 
 	private static func insertTelemetry(
