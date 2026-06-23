@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0516B3FE2F68892000D0FC40 /* NodeFilterParametersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */; };
+		05A1B2C32F70000100D0FC40 /* SettingsNodeSortTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05A1B2C42F70000100D0FC40 /* SettingsNodeSortTests.swift */; };
 		0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */; };
 		102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAA2E172F41003D191E /* DatadogCore */; };
 		102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 102B5EAC2E172F41003D191E /* DatadogCrashReporting */; };
@@ -558,6 +559,7 @@
 /* Begin PBXFileReference section */
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
 		05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeFilterParametersTests.swift; sourceTree = "<group>"; };
+		05A1B2C42F70000100D0FC40 /* SettingsNodeSortTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNodeSortTests.swift; sourceTree = "<group>"; };
 		05E0BD1A81CF4F6A90D56CE3 /* MeshtasticSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticSchemaV1.swift; sourceTree = "<group>"; };
 		0618E6D0DF90B74EE32E6C06 /* TAKServerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKServerConfig.swift; sourceTree = "<group>"; };
 		09936BEBD6D82479B2360FDC /* TAKCertificateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKCertificateManager.swift; sourceTree = "<group>"; };
@@ -1524,6 +1526,7 @@
 				DD9C70112E9F2A0000029299 /* DeviceOnboardingTests.swift */,
 				25F5D5D02C4375DF008036E3 /* RouterTests.swift */,
 				05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */,
+				05A1B2C42F70000100D0FC40 /* SettingsNodeSortTests.swift */,
 				AA0120250000000000000C02 /* PacketStreamModelTests.swift */,
 				AA000301CPTST000000000001 /* CarPlayTests.swift */,
 				DD000001NODNAVTST00000000 /* NodeNavigationTests.swift */,
@@ -2614,6 +2617,7 @@
 				DD9C70102E9F2A0000029299 /* DeviceOnboardingTests.swift in Sources */,
 				25F5D5D12C4375DF008036E3 /* RouterTests.swift in Sources */,
 				0516B3FE2F68892000D0FC40 /* NodeFilterParametersTests.swift in Sources */,
+				05A1B2C32F70000100D0FC40 /* SettingsNodeSortTests.swift in Sources */,
 				AA0120250000000000000C01 /* PacketStreamModelTests.swift in Sources */,
 				AA000301CPTST000000000002 /* CarPlayTests.swift in Sources */,
 				DD000001NODNAVTST00000001 /* NodeNavigationTests.swift in Sources */,

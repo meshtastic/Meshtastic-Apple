@@ -12,7 +12,7 @@ import SwiftUI
 // This is the default configuration used by the EnvironmentMetricsLog view for the chart
 extension MetricsSeriesList {
 	static var environmentDefaultChartSeries: MetricsSeriesList {
-		MetricsSeriesList([
+		MetricsSeriesList(persistenceKey: "environment", series: [
 			// Temperature Series Configuration
 			MetricsChartSeries(
 				id: "temperature",
