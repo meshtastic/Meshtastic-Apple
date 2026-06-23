@@ -1115,6 +1115,30 @@ actor MeshPackets {
 				Logger.mesh.info("\(messageLabel, privacy: .public) packet received from \(packet.from.toHex(), privacy: .public) — \(messageDetail, privacy: .public)")
 				let toNum = Int64(packet.to)
 				let fromNum = Int64(packet.from)
+				// A second copy of a message we already stored (same packet id) means another node also
+				// relayed it to us. Update the relay tracking on the existing message and stop here — do not
+				// insert a duplicate or fire a second notification. (SwiftData's unique constraint on
+				// messageId upserts the existing row on save, which would otherwise re-trigger the
+				// notification below.)
+				let packetMessageId = Int64(packet.id)
+				let dupeDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == packetMessageId })
+				if let existingMessage = try? modelContext.fetch(dupeDescriptor).first {
+					if packet.relayNode != 0 {
+						if existingMessage.relayNode == 0 {
+							// First relayer we've seen for this message: pin it as the named relay.
+							existingMessage.relayNode = Int64(packet.relayNode)
+						} else {
+							// A further node also relayed this copy: count it as an additional relay.
+							// relayNode stays pinned to the first relayer; the display shows it as "(+N)".
+							existingMessage.relays = existingMessage.relays &+ 1
+						}
+					}
+					if modelContext.hasChanges {
+						try? modelContext.save()
+					}
+					Logger.mesh.info("📡 Additional relayer for message \(packetMessageId, privacy: .public); extra relays now \(Int(existingMessage.relays), privacy: .public)")
+					return
+				}
 				let fetchDescriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == toNum || $0.num == fromNum })
 				do {
 					let fetchedUsers = try modelContext.fetch(fetchDescriptor)
