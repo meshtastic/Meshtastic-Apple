@@ -286,6 +286,37 @@ func createNodeInfo(num: Int64, context: ModelContext) -> NodeInfoEntity {
 	let newNode = NodeInfoEntity()
 	newNode.id = Int64(num)
 	newNode.num = Int64(num)
+	// Reuse an existing/pending user for this `num` rather than inserting a second one — see
+	// `findOrCreateUser`. Inserting a fresh `UserEntity` whose unique `num` collides with a row
+	// that already exists (saved or pending) is what trapped here (NodeInfoEntityExtension.swift /
+	// UpdateSwiftData.swift SwiftData `_assertionFailure`).
+	newNode.user = findOrCreateUser(num: num, context: context)
+	context.insert(newNode)
+	return newNode
+}
+
+/// Returns the `UserEntity` for `num`, creating and inserting a stub only when none exists yet.
+///
+/// `UserEntity.num` is `@Attribute(.unique)` and carries the same caveat as `NodeInfoEntity` (see
+/// `findOrCreateNode`): SwiftData resolves unique collisions against the **saved** store only, not
+/// against un-saved inserts pending in the same context. `createNodeInfo` previously inserted a
+/// fresh `UserEntity` unconditionally, so whenever a user row for `num` already existed — orphaned,
+/// or pending from another packet — while the matching `NodeInfoEntity` did not, that second unique
+/// insert trapped with a SwiftData assertion ("…remapped to a temporary identifier… fatal logic
+/// error in DefaultStore"). Routing user creation through this helper guarantees one user per `num`.
+/// An existing user keeps its real fields; only a brand-new stub gets the "Meshtastic XXXX" default.
+func findOrCreateUser(num: Int64, context: ModelContext) -> UserEntity {
+	var descriptor = FetchDescriptor<UserEntity>(predicate: #Predicate<UserEntity> { $0.num == num })
+	descriptor.fetchLimit = 1
+	if let existing = (try? context.fetch(descriptor))?.first {
+		return existing
+	}
+	// `fetch` only sees saved rows; an un-saved insert for this `num` won't appear above.
+	if let pending = context.insertedModelsArray.lazy
+		.compactMap({ $0 as? UserEntity })
+		.first(where: { $0.num == num }) {
+		return pending
+	}
 	let newUser = UserEntity()
 	newUser.num = Int64(num)
 	let userId = num.toHex()
@@ -294,10 +325,8 @@ func createNodeInfo(num: Int64, context: ModelContext) -> NodeInfoEntity {
 	newUser.longName = "Meshtastic \(last4)"
 	newUser.shortName = last4
 	newUser.hwModel = "UNSET"
-	newNode.user = newUser
-	context.insert(newNode)
 	context.insert(newUser)
-	return newNode
+	return newUser
 }
 
 /// Returns the `NodeInfoEntity` for `num`, creating and inserting a stub only when none exists yet.

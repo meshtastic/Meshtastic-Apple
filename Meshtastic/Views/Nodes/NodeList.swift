@@ -318,6 +318,20 @@ private struct FilteredNodeList: View {
 		return nodes.map { NodeListEntry(id: $0.num, node: $0) }
 	}
 
+	private func replaceDisplayedNodesIfNeeded(with newNodes: [NodeListEntry]) {
+		guard displayedNodeIDsDiffer(from: newNodes) else { return }
+		displayedNodes = newNodes
+	}
+
+	private func displayedNodeIDsDiffer(from newNodes: [NodeListEntry]) -> Bool {
+		guard displayedNodes.count == newNodes.count else { return true }
+		for (currentNode, newNode) in zip(displayedNodes, newNodes)
+			where currentNode.id != newNode.id || currentNode.node !== newNode.node {
+			return true
+		}
+		return false
+	}
+
 	// The body of the view
 	var body: some View {
 		List(displayedNodes, selection: $selectedNodeNum) { entry in
@@ -352,7 +366,7 @@ private struct FilteredNodeList: View {
 			// displayNodes (a scan over the whole node set) per write pegged the main thread
 			// on reconnect with a large DB. ~3/sec is imperceptible and keeps CPU sane.
 			while !Task.isCancelled {
-				displayedNodes = displayNodes(activeNodeNum: accessoryManager.activeDeviceNum)
+				replaceDisplayedNodesIfNeeded(with: displayNodes(activeNodeNum: accessoryManager.activeDeviceNum))
 				try? await Task.sleep(for: .milliseconds(350))
 			}
 		}
