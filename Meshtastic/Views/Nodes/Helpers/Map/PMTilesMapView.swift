@@ -483,10 +483,9 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// overlay, so overlay COUNT is the dominant cost — roads are stitched (see `stitch`) from
 	/// thousands of short MVT segments into a few hundred long polylines with the identical look.
 	@Published private(set) var polygons: [OfflineMapPolygon] = []
-	/// Arterials (major/medium/rail) — shown whenever the box is on screen.
+	/// Arterial network (major/medium/rail) — the only roads rendered. The residential grid is
+	/// dropped on purpose: thousands of SwiftUI-Map overlays hang MapKit on camera changes.
 	@Published private(set) var arterials: [OfflineMapPolyline] = []
-	/// Residential street grid (minor) — shown only when zoomed into a neighborhood (level-of-detail).
-	@Published private(set) var streets: [OfflineMapPolyline] = []
 
 	let isAvailable: Bool
 	/// The archive's coverage box (for the base fill + coverage rectangle), nil if unavailable.
@@ -534,12 +533,10 @@ final class OfflineVectorTileProvider: ObservableObject {
 			let result = Self.build(source: source, bounds: bounds, tiles: tiles)
 			Logger.services.info("📦 [Offline] \(result.stats.description)")
 			let arterials = result.polylines.filter { Self.isArterial($0.role) }
-			let streets = result.polylines.filter { !Self.isArterial($0.role) }
 			Task { @MainActor [weak self] in
 				guard let self else { return }
 				self.polygons = result.polygons
 				self.arterials = arterials
-				self.streets = streets
 			}
 		}
 	}
@@ -1015,18 +1012,15 @@ extension OfflineVectorTileProvider {
 /// before the node content so nodes draw on top. Colors resolve per appearance.
 struct OfflineVectorMapContent: MapContent {
 	let polygons: [OfflineMapPolygon]
-	/// Major/medium roads + rail — shown whenever the box is on screen.
+	/// Arterial network (major/medium roads + rail). The residential street grid is intentionally
+	/// NOT rendered: thousands of SwiftUI-Map overlays make MapKit reconcile them on the main thread
+	/// on every camera change → multi-second hangs on device (and viewport-culling them leaks GPU
+	/// memory in VectorKit). The arterial skeleton stays a few hundred overlays — smooth + leak-free.
 	let arterials: [OfflineMapPolyline]
-	/// Residential street grid — shown only when zoomed into a neighborhood (level-of-detail).
-	let streets: [OfflineMapPolyline]
 	let coverageBounds: GeoBounds?
 	/// When false, only the cheap border + label draw; the heavy fills/roads are skipped so the
-	/// thousands of overlays only exist while the coverage box is actually on screen.
+	/// overlays only exist while the coverage box is actually on screen.
 	let showDetail: Bool
-	/// Add the residential street grid (true only at street zoom).
-	let showMinorRoads: Bool
-	/// Use bolder arterial widths at city-overview zoom so they punch through the dense scene.
-	let roadsWide: Bool
 	let dark: Bool
 
 	private var coverageCorners: [CLLocationCoordinate2D]? {
@@ -1062,17 +1056,10 @@ struct OfflineVectorMapContent: MapContent {
 				MapPolygon(coordinates: polygon.coordinates)
 					.foregroundStyle(Self.fillColor(polygon.role, dark: dark))
 			}
-			// Residential street grid first (underneath), only when zoomed into a neighborhood.
-			if showMinorRoads {
-				ForEach(streets) { line in
-					MapPolyline(coordinates: line.coordinates)
-						.stroke(Self.strokeColor(line.role, dark: dark), lineWidth: Self.lineWidth(line.role, wide: false))
-				}
-			}
-			// Arterials on top — bold at city zoom so the road skeleton is instantly legible.
+			// Arterial network — bold so the road skeleton is instantly legible.
 			ForEach(arterials) { line in
 				MapPolyline(coordinates: line.coordinates)
-					.stroke(Self.strokeColor(line.role, dark: dark), lineWidth: Self.lineWidth(line.role, wide: roadsWide))
+					.stroke(Self.strokeColor(line.role, dark: dark), lineWidth: Self.lineWidth(line.role, wide: true))
 			}
 		}
 		// Coverage rectangle — thick accent border, like the mockup (always shown, cheap).

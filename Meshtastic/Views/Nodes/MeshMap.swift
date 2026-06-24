@@ -164,14 +164,6 @@ struct MeshMap: View {
 		return intersects && zoomedInEnough
 	}
 
-	/// Add the residential street grid only when zoomed into a neighborhood (span ≤ ~half the box
-	/// width). At city-overview zoom only the bold arterials draw — legible and far fewer overlays;
-	/// the dense minor grid would just be an invisible thin mess at that scale.
-	private var offlineShowsMinorRoads: Bool {
-		guard let region = visibleRegion else { return false }
-		return region.span.longitudeDelta <= 0.07
-	}
-
 	var body: some View {
 		let positionState = visiblePositionState
 		NavigationStack {
@@ -185,11 +177,8 @@ struct MeshMap: View {
 						OfflineVectorMapContent(
 							polygons: offlineVectors.polygons,
 							arterials: offlineVectors.arterials,
-							streets: offlineVectors.streets,
 							coverageBounds: offlineVectors.coverageBounds,
 							showDetail: offlineShowsDetail,
-							showMinorRoads: offlineShowsMinorRoads,
-							roadsWide: !offlineShowsMinorRoads,
 							dark: colorScheme == .dark
 						)
 						MeshMapContent(
