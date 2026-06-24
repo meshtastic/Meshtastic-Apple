@@ -106,9 +106,12 @@ struct PMTilesMapView: UIViewRepresentable {
 		// Draw the GeoJSON overlay (polygons/lines as overlays, points as annotations).
 		if let geoJSONURL { context.coordinator.addGeoJSON(from: geoJSONURL, to: mapView) }
 
-		// Frame the downloaded archive with the bounding box (same style as our test box).
+		// Frame the downloaded archive with a box snapped to the tile grid at max zoom — this is
+		// the ACTUAL extent of the extracted tiles (which snap outward from the requested bbox),
+		// rather than the requested bounding box itself.
 		if let bounds = source.geographicBounds {
-			context.coordinator.addBoundingBox(bounds, to: mapView)
+			let aligned = tileAlignedBounds(bounds, zoom: Int(source.tileMaxZoom))
+			context.coordinator.addBoundingBox(aligned, to: mapView)
 		}
 
 		// Frame the GeoJSON if present, else the archive's own bounds.
@@ -245,6 +248,28 @@ struct PMTilesMapView: UIViewRepresentable {
 			return view
 		}
 	}
+}
+
+// MARK: - Tile-aligned bounds
+
+/// Expands `bounds` outward to the slippy-map tile grid at `zoom` (Web Mercator), so the
+/// returned box exactly encloses the tiles that a `--bbox` extract would include.
+private func tileAlignedBounds(_ bounds: GeoBounds, zoom: Int) -> GeoBounds {
+	let n = Double(1 << max(0, zoom))
+	func lonToX(_ lon: Double) -> Int { Int(floor((lon + 180.0) / 360.0 * n)) }
+	func latToY(_ lat: Double) -> Int {
+		let r = lat * .pi / 180.0
+		return Int(floor((1.0 - log(tan(r) + 1.0 / cos(r)) / .pi) / 2.0 * n))
+	}
+	func xToLon(_ x: Int) -> Double { Double(x) / n * 360.0 - 180.0 }
+	func yToLat(_ y: Int) -> Double { atan(sinh(.pi * (1.0 - 2.0 * Double(y) / n))) * 180.0 / .pi }
+
+	let x0 = min(lonToX(bounds.minLon), lonToX(bounds.maxLon))
+	let x1 = max(lonToX(bounds.minLon), lonToX(bounds.maxLon))
+	let y0 = min(latToY(bounds.minLat), latToY(bounds.maxLat)) // north
+	let y1 = max(latToY(bounds.minLat), latToY(bounds.maxLat)) // south
+	return GeoBounds(minLon: xToLon(x0), minLat: yToLat(y1 + 1),
+					 maxLon: xToLon(x1 + 1), maxLat: yToLat(y0))
 }
 
 // MARK: - Convenience UIColor(hex:)
