@@ -17,34 +17,6 @@ private struct MeshMapVisiblePositionState {
 	let key: Int64
 }
 
-private enum MeshMapUserTrackingMode {
-	case none
-	case centered
-	case followingHeading
-
-	var systemImage: String {
-		switch self {
-		case .none:
-			"location.circle"
-		case .centered:
-			"location.circle.fill"
-		case .followingHeading:
-			"location.north.circle.fill"
-		}
-	}
-
-	var accessibilityLabel: Text {
-		switch self {
-		case .none:
-			Text("Center on me")
-		case .centered:
-			Text("Map centered on me")
-		case .followingHeading:
-			Text("Map following my heading")
-		}
-	}
-}
-
 struct MeshMap: View {
 	private let denseMapPositionLimit = 700
 
@@ -65,16 +37,11 @@ struct MeshMap: View {
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .standard
 	/// Map overlay configs
 	@State private var enabledOverlayConfigs: Set<UUID> = []
-	// Map Configuration
-	@Namespace var mapScope
 	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .excludingAll, showsTraffic: false)
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
 	@State private var visibleRegion: MKCoordinateRegion?
-	@State private var currentCamera: MapCamera?
-	@State private var userTrackingMode: MeshMapUserTrackingMode = .none
-	@State private var showingLocationPermissionAlert = false
 	@State private var editingSettings = false
 	@State private var editingFilters = false
 	@State var selectedNode: MeshMapSelectedNode?
@@ -181,8 +148,7 @@ struct MeshMap: View {
 			MapReader { reader in
 					Map(
 						position: $position,
-						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
-						scope: mapScope
+						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity)
 					) {
 						MeshMapContent(
 							showUserLocation: $showUserLocation,
@@ -197,14 +163,15 @@ struct MeshMap: View {
 						)
 					}
 					.id(meshMapDistance)
-					.mapScope(mapScope)
 					.mapStyle(mapStyle)
 					.mapControls {
-						MapScaleView(scope: mapScope)
+						MapScaleView()
 							.mapControlVisibility(.automatic)
-						MapPitchToggle(scope: mapScope)
+						MapPitchToggle()
 							.mapControlVisibility(.automatic)
-						MapCompass(scope: mapScope)
+						MapUserLocationButton()
+							.mapControlVisibility(.automatic)
+						MapCompass()
 							.mapControlVisibility(.automatic)
 					}
 					.controlSize(.regular)
@@ -213,7 +180,6 @@ struct MeshMap: View {
 							// distance is only used for long-press waypoint creation, so we don't need continuous updates which touch @State and force rerenders as we pan and (for distance in particular) zoom around the map. onEnd is more than enough.
 							distance = context.camera.distance
 							visibleRegion = context.region
-							currentCamera = context.camera
 						})
 					.onTapGesture(count: 1, perform: { position in
 						newWaypointCoord = reader.convert(position, from: .local) ?? CLLocationCoordinate2D.init()
@@ -294,14 +260,6 @@ struct MeshMap: View {
 				.sheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 				}
-				.alert("Location Access Needed", isPresented: $showingLocationPermissionAlert) {
-					Button("Open Settings") {
-						openAppSettings()
-					}
-					Button("Cancel", role: .cancel) {}
-				} message: {
-					Text("Allow location access to center the map on your position.")
-				}
 				.onChange(of: router.mapState) {
 					guard case .map = router.selectedTab else { return }
 					// TODO: handle deep link for waypoints
@@ -339,12 +297,6 @@ struct MeshMap: View {
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
 					HStack(spacing: 12) {
 						Spacer()
-						MeshMapUserLocationControl(
-							mode: userTrackingMode,
-							centerAction: { centerMapOnUser(followsHeading: false) },
-							followHeadingAction: { centerMapOnUser(followsHeading: true) },
-							stopAction: { stopFollowingUser() }
-						)
 						Button(action: {
 							withAnimation {
 								editingFilters = !editingFilters
@@ -405,11 +357,6 @@ struct MeshMap: View {
 			.onChange(of: positionState.key) {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
 				filters.fallbackLocation = activeDeviceCoordinate
-			}
-			.onChange(of: position.positionedByUser) { _, positionedByUser in
-				if positionedByUser {
-					userTrackingMode = .none
-				}
 			}
 			.onChange(of: allLatestPositions) {
 				filters.fallbackLocation = activeDeviceCoordinate
@@ -606,7 +553,6 @@ struct MeshMap: View {
 
 	// moves the map to a new coordinate
 	private func centerMapAt(coordinate: CLLocationCoordinate2D) {
-		userTrackingMode = .none
 		withAnimation(.easeInOut(duration: 0.2), {
 			position = .camera(
 				MapCamera(
@@ -617,42 +563,6 @@ struct MeshMap: View {
 				)
 			)
 		})
-	}
-
-	private func centerMapOnUser(followsHeading: Bool) {
-		switch LocationsHandler.shared.manager.authorizationStatus {
-		case .authorizedAlways, .authorizedWhenInUse:
-			break
-		case .notDetermined:
-			LocationsHandler.shared.manager.requestWhenInUseAuthorization()
-		case .denied, .restricted:
-			showingLocationPermissionAlert = true
-			return
-		@unknown default:
-			return
-		}
-
-		showUserLocation = true
-		userTrackingMode = followsHeading ? .followingHeading : .centered
-		withAnimation(.easeInOut(duration: 0.2)) {
-			position = .userLocation(followsHeading: followsHeading, fallback: .automatic)
-		}
-	}
-
-	private func stopFollowingUser() {
-		userTrackingMode = .none
-		if let currentCamera {
-			position = .camera(currentCamera)
-		} else if let visibleRegion {
-			position = .region(visibleRegion)
-		} else {
-			position = .automatic
-		}
-	}
-
-	private func openAppSettings() {
-		guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
-		UIApplication.shared.open(settingsURL)
 	}
 }
 
@@ -675,36 +585,5 @@ private extension PositionEntity {
 			return longitude >= minLongitude || longitude <= maxLongitude - 360
 		}
 		return longitude >= minLongitude && longitude <= maxLongitude
-	}
-}
-
-private struct MeshMapUserLocationControl: View {
-	let mode: MeshMapUserTrackingMode
-	let centerAction: () -> Void
-	let followHeadingAction: () -> Void
-	let stopAction: () -> Void
-
-	var body: some View {
-		Menu {
-			Button(action: centerAction) {
-				Label("Center on Me", systemImage: "location.circle")
-			}
-			Button(action: followHeadingAction) {
-				Label("Follow Heading", systemImage: "location.north.circle")
-			}
-			if mode != .none {
-				Divider()
-				Button(action: stopAction) {
-					Label("Stop Following", systemImage: "location.slash")
-				}
-			}
-		} label: {
-			Image(systemName: mode.systemImage)
-		} primaryAction: {
-			centerAction()
-		}
-		.accessibilityLabel(mode.accessibilityLabel)
-		.accessibilityHint(Text("Centers the map on your location. Touch and hold for follow heading."))
-		.glassButtonStyle()
 	}
 }
