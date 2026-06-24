@@ -44,6 +44,10 @@ struct MeshMap: View {
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
 	@State private var visibleRegion: MKCoordinateRegion?
+	/// Offline Protomaps basemap decoded once to native vector MapContent (static — never replaced
+	/// per camera move, which would churn MapKit's overlay layer and leak GPU memory).
+	@StateObject private var offlineVectors = OfflineVectorTileProvider()
+	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
 	@State var selectedNode: MeshMapSelectedNode?
@@ -143,6 +147,22 @@ struct MeshMap: View {
 		return MeshMapVisiblePositionState(positions: positions, key: key)
 	}
 
+	/// Draw the heavy offline detail only while the coverage box is actually on screen (and not at
+	/// a far-zoomed-out country view). Keeps the offline overlays — and their memory — scoped to
+	/// when you're looking at the offline area; elsewhere it costs nothing.
+	private var offlineShowsDetail: Bool {
+		guard let bounds = offlineVectors.coverageBounds, let region = visibleRegion else { return false }
+		let boxLatHalf = (bounds.maxLat - bounds.minLat) / 2
+		let boxLonHalf = (bounds.maxLon - bounds.minLon) / 2
+		let boxCenterLat = bounds.minLat + boxLatHalf
+		let boxCenterLon = bounds.minLon + boxLonHalf
+		let intersects = abs(region.center.latitude - boxCenterLat) < region.span.latitudeDelta / 2 + boxLatHalf
+			&& abs(region.center.longitude - boxCenterLon) < region.span.longitudeDelta / 2 + boxLonHalf
+		// Hide only when zoomed way out (box is a speck) — generous so it shows whenever relevant.
+		let notTooFar = region.span.longitudeDelta < boxLonHalf * 2 * 12
+		return intersects && notTooFar
+	}
+
 	var body: some View {
 		let positionState = visiblePositionState
 		NavigationStack {
@@ -153,6 +173,13 @@ struct MeshMap: View {
 						bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity),
 						scope: mapScope
 					) {
+						OfflineVectorMapContent(
+							polygons: offlineVectors.polygons,
+							polylines: offlineVectors.polylines,
+							coverageBounds: offlineVectors.coverageBounds,
+							showDetail: offlineShowsDetail,
+							dark: colorScheme == .dark
+						)
 						MeshMapContent(
 							showUserLocation: $showUserLocation,
 								showTraffic: $showTraffic,
@@ -177,10 +204,14 @@ struct MeshMap: View {
 					}
 					.controlSize(.regular)
 					.offset(y: 100)
+					.onAppear {
+						offlineVectors.updateIfNeeded()
+					}
 						.onMapCameraChange(frequency: MapCameraUpdateFrequency.onEnd, { context in
 							// distance is only used for long-press waypoint creation, so we don't need continuous updates which touch @State and force rerenders as we pan and (for distance in particular) zoom around the map. onEnd is more than enough.
 							distance = context.camera.distance
 							visibleRegion = context.region
+							offlineVectors.updateIfNeeded()
 						})
 					.onTapGesture(count: 1, perform: { position in
 						newWaypointCoord = reader.convert(position, from: .local) ?? CLLocationCoordinate2D.init()
