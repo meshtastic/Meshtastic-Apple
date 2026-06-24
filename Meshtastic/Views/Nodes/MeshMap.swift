@@ -158,9 +158,10 @@ struct MeshMap: View {
 		let boxCenterLon = bounds.minLon + boxLonHalf
 		let intersects = abs(region.center.latitude - boxCenterLat) < region.span.latitudeDelta / 2 + boxLatHalf
 			&& abs(region.center.longitude - boxCenterLon) < region.span.longitudeDelta / 2 + boxLonHalf
-		// Hide only when zoomed way out (box is a speck) — generous so it shows whenever relevant.
-		let notTooFar = region.span.longitudeDelta < boxLonHalf * 2 * 12
-		return intersects && notTooFar
+		// Render detail only when the box is a meaningful fraction of the view (≈1/6+), not a speck —
+		// avoids drawing thousands of overlays for a tiny on-screen area at city-overview zoom.
+		let zoomedInEnough = region.span.longitudeDelta < boxLonHalf * 2 * 6
+		return intersects && zoomedInEnough
 	}
 
 	var body: some View {
