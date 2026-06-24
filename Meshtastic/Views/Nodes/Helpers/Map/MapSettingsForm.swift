@@ -34,7 +34,8 @@ struct MapSettingsForm: View {
 				Section(header: Text("Map Options")) {
 					Picker(selection: $mapLayer, label: Text("")) {
 						ForEach(MapLayer.allCases, id: \.self) { layer in
-							if layer != MapLayer.offline {
+							// `.offline` (raster .pmtiles) is only meaningful on the new MKMapView map.
+							if layer != MapLayer.offline || useMeshMapMK {
 								Text(layer.localized.capitalized)
 							}
 						}

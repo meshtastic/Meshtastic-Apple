@@ -32,6 +32,20 @@ import MapKit
 import OSLog
 import SwiftUI
 
+// MARK: - Basemap configuration
+
+/// Declarative basemap config applied to the MKMapView (Apple basemap type + controls). The offline
+/// raster `.pmtiles` overlay (when `tilesURL` is set) draws ON TOP of whatever this selects.
+struct ClusterMapConfiguration: Equatable {
+	var layer: MapLayer = .standard
+	var showsTraffic = false
+	var showsPointsOfInterest = false
+	var showsUserLocation = true
+	var showsScale = true
+	var showsCompass = true
+	var showsPitchControl = true
+}
+
 // MARK: - Public declarative API
 
 /// A data-driven map. Pass your `items` and a `@ViewBuilder` that turns one item into its annotation
@@ -66,6 +80,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	@ViewBuilder let clusterContent: (Int) -> Cluster
 	/// Called when the user taps an item's pin. (Tapping a cluster zooms to fit its members instead.)
 	let onSelect: ((Item) -> Void)?
+	/// Apple basemap type + map controls. The offline raster overlay (if any) draws on top.
+	let configuration: ClusterMapConfiguration
 
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -78,6 +94,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		clustering: Bool = true,
 		tilesURL: URL? = nil,
 		onSelect: ((Item) -> Void)? = nil,
+		configuration: ClusterMapConfiguration = .init(),
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
 		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
 	) {
@@ -87,6 +104,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.clustering = clustering
 		self.tilesURL = tilesURL
 		self.onSelect = onSelect
+		self.configuration = configuration
 		self.pinContent = pinContent
 		self.clusterContent = clusterContent
 	}
@@ -106,6 +124,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 						 forAnnotationViewWithReuseIdentifier: HostingAnnotationView.reuseID)
 		mapView.register(HostingClusterView.self,
 						 forAnnotationViewWithReuseIdentifier: HostingClusterView.reuseID)
+
+		// Apple basemap type + controls.
+		context.coordinator.applyConfiguration(configuration, to: mapView)
 
 		// Offline raster basemap (optional). Mirrors PMTilesMapView.makeUIView exactly.
 		context.coordinator.installTileOverlay(on: mapView, url: tilesURL, dark: colorScheme == .dark)
@@ -127,6 +148,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// Keep the coordinator's closures fresh so SwiftUI state captured by the builders stays
 		// current on reuse (the representable is recreated each render; the coordinator persists).
 		refreshClosures(on: context.coordinator)
+
+		// 0) Apple basemap type + controls (diffed; only re-applied when it actually changed).
+		context.coordinator.applyConfiguration(configuration, to: mapView)
 
 		// 1) Offline basemap: rebuild only if the URL or the dark/light flag actually changed.
 		context.coordinator.installTileOverlay(on: mapView, url: tilesURL, dark: colorScheme == .dark)
@@ -176,6 +200,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		private var tileOverlay: OfflineTileOverlay?
 		private var tileURL: URL?
 
+		/// Last-applied basemap config, so we only touch `preferredConfiguration` when it changed
+		/// (re-applying it resets the rendered map and is visibly expensive).
+		private var appliedConfiguration: ClusterMapConfiguration?
+
 		// Camera feedback-loop guards.
 		/// True while WE push an external region in (so the resulting `regionDidChange` callback
 		/// doesn't write back out and ping-pong).
@@ -188,6 +216,43 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// groups them. (Computed, not stored: the Coordinator is nested in the generic
 		/// `ClusterMapView`, and Swift forbids static STORED properties on generic types.)
 		private static var clusterID: String { "ClusterMapView.item" }
+
+		// MARK: Basemap configuration (Apple map type + controls)
+
+		/// Apply the Apple basemap type + control flags, diffing so it's only set when changed.
+		func applyConfiguration(_ config: ClusterMapConfiguration, to mapView: MKMapView) {
+			guard appliedConfiguration != config else { return }
+			let firstApply = appliedConfiguration == nil
+			let typeChanged = appliedConfiguration?.layer != config.layer
+				|| appliedConfiguration?.showsTraffic != config.showsTraffic
+				|| appliedConfiguration?.showsPointsOfInterest != config.showsPointsOfInterest
+			appliedConfiguration = config
+
+			if firstApply || typeChanged {
+				let poi: MKPointOfInterestFilter = config.showsPointsOfInterest ? .includingAll : .excludingAll
+				switch config.layer {
+				case .standard:
+					let standard = MKStandardMapConfiguration(elevationStyle: .realistic)
+					standard.pointOfInterestFilter = poi
+					standard.showsTraffic = config.showsTraffic
+					mapView.preferredConfiguration = standard
+				case .hybrid, .offline:
+					// `.offline` uses a hybrid base (matching the old map); the offline raster overlay
+					// draws on top where it has coverage.
+					let hybrid = MKHybridMapConfiguration(elevationStyle: .realistic)
+					hybrid.pointOfInterestFilter = poi
+					hybrid.showsTraffic = config.showsTraffic
+					mapView.preferredConfiguration = hybrid
+				case .satellite:
+					mapView.preferredConfiguration = MKImageryMapConfiguration(elevationStyle: .realistic)
+				}
+			}
+
+			mapView.showsUserLocation = config.showsUserLocation
+			mapView.showsScale = config.showsScale
+			mapView.showsCompass = config.showsCompass
+			mapView.isPitchEnabled = config.showsPitchControl // iOS has no pitch-control button; enable the gesture
+		}
 
 		// MARK: Offline basemap (mirrors PMTilesMapView's swap-on-dark pattern)
 
@@ -403,6 +468,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		clustering: Bool = true,
 		tilesURL: URL? = nil,
 		onSelect: ((Item) -> Void)? = nil,
+		configuration: ClusterMapConfiguration = .init(),
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin
 	) {
 		self.init(items: items,
@@ -411,6 +477,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				  clustering: clustering,
 				  tilesURL: tilesURL,
 				  onSelect: onSelect,
+				  configuration: configuration,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
 	}

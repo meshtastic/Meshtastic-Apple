@@ -44,9 +44,6 @@ struct MeshMapMK: View {
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
 	@State private var visibleRegion: MKCoordinateRegion?
-	/// Offline Protomaps basemap decoded once to native vector MapContent (static — never replaced
-	/// per camera move, which would churn MapKit's overlay layer and leak GPU memory).
-	@StateObject private var offlineVectors = OfflineVectorTileProvider()
 	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
@@ -148,20 +145,26 @@ struct MeshMapMK: View {
 	}
 
 	/// Draw the heavy offline detail only while the coverage box is actually on screen (and not at
-	/// a far-zoomed-out country view). Keeps the offline overlays — and their memory — scoped to
-	/// when you're looking at the offline area; elsewhere it costs nothing.
-	private var offlineShowsDetail: Bool {
-		guard let bounds = offlineVectors.coverageBounds, let region = visibleRegion else { return false }
-		let boxLatHalf = (bounds.maxLat - bounds.minLat) / 2
-		let boxLonHalf = (bounds.maxLon - bounds.minLon) / 2
-		let boxCenterLat = bounds.minLat + boxLatHalf
-		let boxCenterLon = bounds.minLon + boxLonHalf
-		let intersects = abs(region.center.latitude - boxCenterLat) < region.span.latitudeDelta / 2 + boxLatHalf
-			&& abs(region.center.longitude - boxCenterLon) < region.span.longitudeDelta / 2 + boxLonHalf
-		// Render detail only when the box is a meaningful fraction of the view (≈1/6+), not a speck —
-		// avoids drawing thousands of overlays for a tiny on-screen area at city-overview zoom.
-		let zoomedInEnough = region.span.longitudeDelta < boxLonHalf * 2 * 6
-		return intersects && zoomedInEnough
+	/// Apple basemap type + controls fed to ClusterMapView (Phase 2).
+	private var clusterConfiguration: ClusterMapConfiguration {
+		ClusterMapConfiguration(
+			layer: selectedMapLayer,
+			showsTraffic: showTraffic,
+			showsPointsOfInterest: showPointsOfInterest,
+			showsUserLocation: showUserLocation
+		)
+	}
+
+	/// Offline raster basemap when the "Offline" layer is selected and tiles are present.
+	/// Prefers the street tiles (full roads, rasterized), then topo hillshade.
+	private var offlineTilesURL: URL? {
+		guard selectedMapLayer == .offline else { return nil }
+		let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+		for name in ["bellevue.pmtiles", "bellevue-topo.pmtiles"] {
+			let url = docs.appendingPathComponent(name)
+			if FileManager.default.fileExists(atPath: url.path) { return url }
+		}
+		return nil
 	}
 
 	var body: some View {
@@ -173,7 +176,9 @@ struct MeshMapMK: View {
 				coordinate: { $0.coordinate },
 				region: $visibleRegion,
 				clustering: true,
-				onSelect: { snapshot in selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) }
+				tilesURL: offlineTilesURL,
+				onSelect: { snapshot in selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
+				configuration: clusterConfiguration
 			) { snapshot in
 				AnimatedNodePin(
 					nodeColor: UIColor(hex: UInt32(snapshot.nodeNum)),
