@@ -542,13 +542,21 @@ struct ClusterMapDemoView: View {
 	@State private var clustering = true
 	@State private var nodes: [DemoNode] = ClusterMapDemoView.makeNodes(count: 300)
 
+	/// Streets = the vector `bellevue.pmtiles` rasterized to a full road map (neighborhood roads
+	/// included) by VectorTileRasterizer; Topo = the `bellevue-topo.pmtiles` hillshade. Both are a
+	/// single cached MKTileOverlay, so neither has the SwiftUI-overlay hang.
+	enum Basemap: String, CaseIterable { case streets = "Streets", topo = "Topo" }
+	@State private var basemap: Basemap = .streets
+
 	private var documents: URL {
 		FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 	}
-	private var tilesURL: URL? {
-		let url = documents.appendingPathComponent("bellevue-topo.pmtiles")
+	private func tilesURL(for basemap: Basemap) -> URL? {
+		let name = basemap == .topo ? "bellevue-topo.pmtiles" : "bellevue.pmtiles"
+		let url = documents.appendingPathComponent(name)
 		return FileManager.default.fileExists(atPath: url.path) ? url : nil
 	}
+	private var tilesURL: URL? { tilesURL(for: basemap) }
 
 	var body: some View {
 		ClusterMapView(
@@ -582,6 +590,12 @@ struct ClusterMapDemoView: View {
 		}
 		.navigationTitle("Cluster Map POC")
 		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				Picker("Basemap", selection: $basemap) {
+					ForEach(Basemap.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+				}
+				.pickerStyle(.segmented)
+			}
 			ToolbarItem(placement: .topBarTrailing) {
 				Toggle("Cluster", isOn: $clustering).toggleStyle(.button)
 			}

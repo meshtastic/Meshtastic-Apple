@@ -398,8 +398,8 @@ struct PMTilesMapDemoView: View {
 
 	var body: some View {
 		let geojson = documents.appendingPathComponent("test-bellevue-bbox.geojson")
-		// Prefer the raster topo (hillshade) basemap; fall back to the raster/vector street tiles.
-		let tiles = ["bellevue-topo.pmtiles", "bellevue.mbtiles", "bellevue.pmtiles"]
+		// Prefer the street tiles (vector → rasterized to full roads); topo is the fallback.
+		let tiles = ["bellevue.pmtiles", "bellevue.mbtiles", "bellevue-topo.pmtiles"]
 			.map { documents.appendingPathComponent($0) }
 			.first { FileManager.default.fileExists(atPath: $0.path) }
 		Group {
