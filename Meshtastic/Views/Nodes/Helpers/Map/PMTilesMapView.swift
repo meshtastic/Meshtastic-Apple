@@ -483,7 +483,10 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// overlay, so overlay COUNT is the dominant cost — roads are stitched (see `stitch`) from
 	/// thousands of short MVT segments into a few hundred long polylines with the identical look.
 	@Published private(set) var polygons: [OfflineMapPolygon] = []
-	@Published private(set) var polylines: [OfflineMapPolyline] = []
+	/// Arterials (major/medium/rail) — shown whenever the box is on screen.
+	@Published private(set) var arterials: [OfflineMapPolyline] = []
+	/// Residential street grid (minor) — shown only when zoomed into a neighborhood (level-of-detail).
+	@Published private(set) var streets: [OfflineMapPolyline] = []
 
 	let isAvailable: Bool
 	/// The archive's coverage box (for the base fill + coverage rectangle), nil if unavailable.
@@ -530,12 +533,20 @@ final class OfflineVectorTileProvider: ObservableObject {
 		queue.async { [weak self] in
 			let result = Self.build(source: source, bounds: bounds, tiles: tiles)
 			Logger.services.info("📦 [Offline] \(result.stats.description)")
+			let arterials = result.polylines.filter { Self.isArterial($0.role) }
+			let streets = result.polylines.filter { !Self.isArterial($0.role) }
 			Task { @MainActor [weak self] in
 				guard let self else { return }
 				self.polygons = result.polygons
-				self.polylines = result.polylines
+				self.arterials = arterials
+				self.streets = streets
 			}
 		}
+	}
+
+	/// Arterials are always drawn when the box is visible; everything else is the zoom-in-only grid.
+	nonisolated static func isArterial(_ role: OfflineFeatureRole) -> Bool {
+		role == .majorRoad || role == .mediumRoad || role == .rail || role == .boundary
 	}
 
 	/// Painter's order for stitched road layers (earlier = underneath).
@@ -1004,11 +1015,18 @@ extension OfflineVectorTileProvider {
 /// before the node content so nodes draw on top. Colors resolve per appearance.
 struct OfflineVectorMapContent: MapContent {
 	let polygons: [OfflineMapPolygon]
-	let polylines: [OfflineMapPolyline]
+	/// Major/medium roads + rail — shown whenever the box is on screen.
+	let arterials: [OfflineMapPolyline]
+	/// Residential street grid — shown only when zoomed into a neighborhood (level-of-detail).
+	let streets: [OfflineMapPolyline]
 	let coverageBounds: GeoBounds?
 	/// When false, only the cheap border + label draw; the heavy fills/roads are skipped so the
 	/// thousands of overlays only exist while the coverage box is actually on screen.
 	let showDetail: Bool
+	/// Add the residential street grid (true only at street zoom).
+	let showMinorRoads: Bool
+	/// Use bolder arterial widths at city-overview zoom so they punch through the dense scene.
+	let roadsWide: Bool
 	let dark: Bool
 
 	private var coverageCorners: [CLLocationCoordinate2D]? {
@@ -1044,10 +1062,17 @@ struct OfflineVectorMapContent: MapContent {
 				MapPolygon(coordinates: polygon.coordinates)
 					.foregroundStyle(Self.fillColor(polygon.role, dark: dark))
 			}
-			// Roads — stitched into far fewer, longer polylines (same look, one overlay each).
-			ForEach(polylines) { line in
+			// Residential street grid first (underneath), only when zoomed into a neighborhood.
+			if showMinorRoads {
+				ForEach(streets) { line in
+					MapPolyline(coordinates: line.coordinates)
+						.stroke(Self.strokeColor(line.role, dark: dark), lineWidth: Self.lineWidth(line.role, wide: false))
+				}
+			}
+			// Arterials on top — bold at city zoom so the road skeleton is instantly legible.
+			ForEach(arterials) { line in
 				MapPolyline(coordinates: line.coordinates)
-					.stroke(Self.strokeColor(line.role, dark: dark), lineWidth: Self.lineWidth(line.role))
+					.stroke(Self.strokeColor(line.role, dark: dark), lineWidth: Self.lineWidth(line.role, wide: roadsWide))
 			}
 		}
 		// Coverage rectangle — thick accent border, like the mockup (always shown, cheap).
@@ -1071,39 +1096,55 @@ struct OfflineVectorMapContent: MapContent {
 		}
 	}
 
+	// "Slate & Cream" palette: soft neutral earth (never pure black / stark white) so the box blends
+	// into the surrounding Apple basemap; road hierarchy carried by COLOR contrast (constant-width
+	// strokes can't do true casing) — warm arterials, near-white collectors, recessive gray streets.
 	private static func earthColor(dark: Bool) -> Color {
-		dark ? Color(red: 0.13, green: 0.13, blue: 0.14) : Color(red: 0.92, green: 0.91, blue: 0.88)
+		dark ? Color(red: 0.180, green: 0.180, blue: 0.190) : Color(red: 0.940, green: 0.935, blue: 0.920)
 	}
 
 	private static func fillColor(_ role: OfflineFeatureRole, dark: Bool) -> Color {
 		switch role {
-		case .water: return dark ? Color(red: 0.11, green: 0.16, blue: 0.24) : Color(red: 0.61, green: 0.75, blue: 0.91)
-		case .park: return dark ? Color(red: 0.13, green: 0.20, blue: 0.15) : Color(red: 0.78, green: 0.87, blue: 0.74)
-		case .green: return dark ? Color(red: 0.15, green: 0.19, blue: 0.16) : Color(red: 0.85, green: 0.89, blue: 0.81)
-		case .land: return dark ? Color(red: 0.16, green: 0.16, blue: 0.17) : Color(red: 0.90, green: 0.90, blue: 0.86)
-		default: return .clear
+		case .water:
+			return dark ? Color(red: 0.160, green: 0.220, blue: 0.300) : Color(red: 0.680, green: 0.800, blue: 0.920)
+		case .park, .green:
+			return dark ? Color(red: 0.170, green: 0.235, blue: 0.185) : Color(red: 0.830, green: 0.890, blue: 0.795)
+		case .land:
+			return dark ? Color(red: 0.185, green: 0.185, blue: 0.195) : Color(red: 0.925, green: 0.920, blue: 0.905)
+		default:
+			return .clear
 		}
 	}
 
 	private static func strokeColor(_ role: OfflineFeatureRole, dark: Bool) -> Color {
 		switch role {
-		case .majorRoad: return dark ? Color(red: 0.55, green: 0.49, blue: 0.34) : Color(red: 0.96, green: 0.78, blue: 0.45)
-		case .mediumRoad, .minorRoad: return dark ? Color(white: 0.5) : Color(white: 1.0)
-		case .path: return dark ? Color(white: 0.34) : Color(white: 0.72)
-		case .rail: return dark ? Color(white: 0.40) : Color(white: 0.6)
-		case .boundary: return dark ? Color(red: 0.45, green: 0.40, blue: 0.50) : Color(red: 0.6, green: 0.55, blue: 0.66)
-		default: return .clear
+		case .majorRoad:
+			return dark ? Color(red: 0.960, green: 0.860, blue: 0.620) : Color(red: 0.980, green: 0.760, blue: 0.330)
+		case .mediumRoad:
+			return dark ? Color(red: 0.880, green: 0.880, blue: 0.900) : Color(red: 1.000, green: 1.000, blue: 1.000)
+		case .minorRoad:
+			return dark ? Color(red: 0.610, green: 0.620, blue: 0.650) : Color(red: 0.730, green: 0.730, blue: 0.715)
+		case .path:
+			return dark ? Color(white: 0.43) : Color(white: 0.70)
+		case .rail:
+			return dark ? Color(red: 0.500, green: 0.520, blue: 0.560) : Color(red: 0.560, green: 0.580, blue: 0.620)
+		case .boundary:
+			return dark ? Color(red: 0.520, green: 0.470, blue: 0.580) : Color(red: 0.560, green: 0.510, blue: 0.610)
+		default:
+			return .clear
 		}
 	}
 
-	private static func lineWidth(_ role: OfflineFeatureRole) -> Double {
+	/// `wide` is true at city-overview zoom, where arterials are the only roads drawn and must punch
+	/// through; false at street zoom where the full grid is on screen and base widths keep it clean.
+	private static func lineWidth(_ role: OfflineFeatureRole, wide: Bool) -> Double {
 		switch role {
-		case .majorRoad: return 3.0
-		case .mediumRoad: return 2.0
-		case .minorRoad: return 1.2
-		case .path: return 0.8
-		case .rail: return 1.0
-		case .boundary: return 1.0
+		case .majorRoad: return wide ? 5.5 : 4.5
+		case .mediumRoad: return wide ? 3.2 : 2.8
+		case .minorRoad: return 1.6
+		case .path: return 1.0
+		case .rail: return 1.3
+		case .boundary: return 1.2
 		default: return 1.0
 		}
 	}
