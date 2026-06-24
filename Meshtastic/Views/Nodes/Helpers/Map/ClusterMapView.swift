@@ -46,6 +46,28 @@ struct ClusterMapConfiguration: Equatable {
 	var showsPitchControl = true
 }
 
+// MARK: - Overlays (polylines / polygons / circles)
+
+/// How to draw a `ClusterMapOverlay` (constant-width strokes; no casing).
+struct ClusterMapOverlayStyle {
+	var strokeUIColor: UIColor?
+	var fillUIColor: UIColor?
+	var lineWidth: CGFloat = 1
+	var lineDash: [NSNumber]?
+	var lineCap: CGLineCap = .round
+	var level: MKOverlayLevel = .aboveLabels
+}
+
+/// A caller overlay (route polyline, accuracy circle, convex hull, GeoJSON shape) + its style.
+/// `id` is the stable identity for diffing. MKOverlay geometry is immutable, so when an overlay's
+/// shape changes the caller must pass a NEW `overlay` object for the same `id` (identity diff →
+/// remove + re-add). Pass STABLE objects when unchanged (build them into @State, not in `body`).
+struct ClusterMapOverlay: Identifiable {
+	let id: AnyHashable
+	let overlay: MKOverlay
+	let style: ClusterMapOverlayStyle
+}
+
 // MARK: - Public declarative API
 
 /// A data-driven map. Pass your `items` and a `@ViewBuilder` that turns one item into its annotation
@@ -82,6 +104,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	let onSelect: ((Item) -> Void)?
 	/// Apple basemap type + map controls. The offline raster overlay (if any) draws on top.
 	let configuration: ClusterMapConfiguration
+	/// Vector overlays (accuracy circles, convex hull, routes, GeoJSON shapes). Diffed by `id`.
+	let overlays: [ClusterMapOverlay]
 
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -95,6 +119,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		tilesURL: URL? = nil,
 		onSelect: ((Item) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
+		overlays: [ClusterMapOverlay] = [],
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
 		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
 	) {
@@ -105,6 +130,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.tilesURL = tilesURL
 		self.onSelect = onSelect
 		self.configuration = configuration
+		self.overlays = overlays
 		self.pinContent = pinContent
 		self.clusterContent = clusterContent
 	}
@@ -131,6 +157,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// Offline raster basemap (optional). Mirrors PMTilesMapView.makeUIView exactly.
 		context.coordinator.installTileOverlay(on: mapView, url: tilesURL, dark: colorScheme == .dark)
 
+		// Vector overlays (circles / hull / routes / GeoJSON), diffed by id.
+		context.coordinator.syncOverlays(overlays, on: mapView)
+
 		// Initial camera, if the caller drives one. Guarded so we don't echo it back out.
 		if let region = region?.wrappedValue {
 			context.coordinator.isApplyingExternalRegion = true
@@ -154,6 +183,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 
 		// 1) Offline basemap: rebuild only if the URL or the dark/light flag actually changed.
 		context.coordinator.installTileOverlay(on: mapView, url: tilesURL, dark: colorScheme == .dark)
+
+		// 1b) Vector overlays — diffed by id (object-identity change → remove + re-add).
+		context.coordinator.syncOverlays(overlays, on: mapView)
 
 		// 2) Diff annotations by Identifiable id — add/remove/move ONLY what changed (no flicker).
 		context.coordinator.sync(items: items, coordinate: coordinate,
@@ -203,6 +235,12 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// Last-applied basemap config, so we only touch `preferredConfiguration` when it changed
 		/// (re-applying it resets the rendered map and is visibly expensive).
 		private var appliedConfiguration: ClusterMapConfiguration?
+
+		// Vector overlay diffing state.
+		/// id → the caller overlay currently on the map (source of truth for overlay diffing).
+		private var overlaysByID: [AnyHashable: ClusterMapOverlay] = [:]
+		/// Per-MKOverlay style, keyed by object identity, for O(1) lookup in `rendererFor`.
+		private var styleByOverlay: [ObjectIdentifier: ClusterMapOverlayStyle] = [:]
 
 		// Camera feedback-loop guards.
 		/// True while WE push an external region in (so the resulting `regionDidChange` callback
@@ -295,6 +333,41 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: false)
 				isApplyingExternalRegion = false
 			}
+		}
+
+		// MARK: Overlay diffing (circles / hull / routes / GeoJSON)
+
+		/// Reconcile caller overlays with the map by `id`. Same id + same object = unchanged. Same id
+		/// + DIFFERENT object (geometry/style changed) = remove old + add new. Never touches the
+		/// retained offline `tileOverlay` (that's owned by `installTileOverlay`).
+		func syncOverlays(_ overlays: [ClusterMapOverlay], on mapView: MKMapView) {
+			var seen = Set<AnyHashable>()
+			seen.reserveCapacity(overlays.count)
+			var toAdd: [ClusterMapOverlay] = []
+			var toRemove: [MKOverlay] = []
+
+			for entry in overlays {
+				seen.insert(entry.id)
+				if let existing = overlaysByID[entry.id] {
+					if existing.overlay === entry.overlay { continue } // unchanged
+					toRemove.append(existing.overlay)
+					styleByOverlay[ObjectIdentifier(existing.overlay)] = nil
+				}
+				overlaysByID[entry.id] = entry
+				styleByOverlay[ObjectIdentifier(entry.overlay)] = entry.style
+				toAdd.append(entry)
+			}
+
+			// Removals: any tracked id not present this pass (only OUR overlays — never the tileOverlay).
+			for id in overlaysByID.keys where !seen.contains(id) {
+				if let gone = overlaysByID.removeValue(forKey: id) {
+					styleByOverlay[ObjectIdentifier(gone.overlay)] = nil
+					toRemove.append(gone.overlay)
+				}
+			}
+
+			if !toRemove.isEmpty { mapView.removeOverlays(toRemove) }
+			for entry in toAdd { mapView.addOverlay(entry.overlay, level: entry.style.level) }
 		}
 
 		// MARK: Annotation diffing
@@ -412,11 +485,27 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// MARK: Overlay renderer
 
 		func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-			// Same renderer the repo uses for the offline overlay.
+			// Offline raster tiles first (same renderer the repo uses).
 			if let tileOverlay = overlay as? MKTileOverlay {
 				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
 			}
-			return MKOverlayRenderer(overlay: overlay)
+			// Styled caller overlay (circle / polyline / polygon), style looked up by object identity.
+			let style = styleByOverlay[ObjectIdentifier(overlay)] ?? ClusterMapOverlayStyle()
+			let renderer: MKOverlayPathRenderer
+			switch overlay {
+			case let circle as MKCircle: renderer = MKCircleRenderer(circle: circle)
+			case let polygon as MKPolygon: renderer = MKPolygonRenderer(polygon: polygon)
+			case let polyline as MKPolyline: renderer = MKPolylineRenderer(polyline: polyline)
+			case let multi as MKMultiPolyline: renderer = MKMultiPolylineRenderer(multiPolyline: multi)
+			case let multi as MKMultiPolygon: renderer = MKMultiPolygonRenderer(multiPolygon: multi)
+			default: return MKOverlayRenderer(overlay: overlay)
+			}
+			renderer.strokeColor = style.strokeUIColor
+			renderer.fillColor = style.fillUIColor
+			renderer.lineWidth = style.lineWidth
+			renderer.lineDashPattern = style.lineDash
+			renderer.lineCap = style.lineCap
+			return renderer
 		}
 
 		// MARK: Camera write-back (user gestures → region binding), loop-guarded
@@ -469,6 +558,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		tilesURL: URL? = nil,
 		onSelect: ((Item) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
+		overlays: [ClusterMapOverlay] = [],
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin
 	) {
 		self.init(items: items,
@@ -478,6 +568,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				  tilesURL: tilesURL,
 				  onSelect: onSelect,
 				  configuration: configuration,
+				  overlays: overlays,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
 	}

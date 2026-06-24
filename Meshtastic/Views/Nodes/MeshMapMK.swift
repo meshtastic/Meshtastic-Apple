@@ -44,6 +44,10 @@ struct MeshMapMK: View {
 	@State var position = MapCameraPosition.automatic
 	@State private var distance = 10000.0
 	@State private var visibleRegion: MKCoordinateRegion?
+	@AppStorage("enableMapConvexHull") private var showConvexHull = false
+	/// Vector overlays (accuracy circles + convex hull) — rebuilt on data change, stable between
+	/// renders so ClusterMapView's overlay diff is a no-op when nothing changed.
+	@State private var mapOverlays: [ClusterMapOverlay] = []
 	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
@@ -178,7 +182,8 @@ struct MeshMapMK: View {
 				clustering: true,
 				tilesURL: offlineTilesURL,
 				onSelect: { snapshot in selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
-				configuration: clusterConfiguration
+				configuration: clusterConfiguration,
+				overlays: mapOverlays
 			) { snapshot in
 				AnimatedNodePin(
 					nodeColor: UIColor(hex: UInt32(snapshot.nodeNum)),
@@ -333,6 +338,9 @@ struct MeshMapMK: View {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
 				filters.fallbackLocation = activeDeviceCoordinate
 			}
+			.onChange(of: showConvexHull) {
+				rebuildOverlays()
+			}
 			.onChange(of: allLatestPositions) {
 				filters.fallbackLocation = activeDeviceCoordinate
 			}
@@ -422,11 +430,61 @@ struct MeshMapMK: View {
 
 		private func refreshVisiblePositionSnapshots() {
 			visiblePositionSnapshots = makePositionSnapshots(from: visiblePositions)
+			rebuildOverlays()
 		}
 
 		private func refreshVisiblePositionSnapshots(from positions: [PositionEntity]) {
 			visiblePositionSnapshots = makePositionSnapshots(from: positions)
+			rebuildOverlays()
 		}
+
+	/// Rebuild the vector overlays (accuracy circles + convex hull) from the current snapshots.
+	/// Called on data change so the overlay objects are stable between renders. Ports the styling
+	/// from MeshMapContent's reducedPrecisionMapCircles + convex hull.
+	private func rebuildOverlays() {
+		var result: [ClusterMapOverlay] = []
+
+		// Reduced-precision accuracy circles, deduped by location + precision (lowest nodeNum wins).
+		var lowestNumForKey: [ReducedPrecisionMapCircleKey: Int64] = [:]
+		for snap in visiblePositionSnapshots where 12...15 ~= snap.precisionBits {
+			let key = ReducedPrecisionMapCircleKey(latitudeI: snap.latitudeI, longitudeI: snap.longitudeI, precisionBits: snap.precisionBits)
+			if let existing = lowestNumForKey[key] {
+				if snap.nodeNum < existing { lowestNumForKey[key] = snap.nodeNum }
+			} else {
+				lowestNumForKey[key] = snap.nodeNum
+			}
+		}
+		for (key, nodeNum) in lowestNumForKey {
+			let radius = PositionPrecision(rawValue: Int(key.precisionBits))?.precisionMeters ?? 0
+			guard radius > 0 else { continue }
+			let center = CLLocationCoordinate2D(latitude: Double(key.latitudeI) / 1e7, longitude: Double(key.longitudeI) / 1e7)
+			let color = UIColor(hex: UInt32(nodeNum))
+			result.append(ClusterMapOverlay(
+				id: "circle-\(nodeNum)",
+				overlay: MKCircle(center: center, radius: radius),
+				style: ClusterMapOverlayStyle(strokeUIColor: .white, fillUIColor: color.withAlphaComponent(0.25), lineWidth: 1)
+			))
+		}
+
+		// Convex hull over LoRa (non-MQTT) nodes, when enabled.
+		if showConvexHull {
+			let loraCoords = visiblePositionSnapshots.filter { !$0.viaMqtt }.map(\.coordinate)
+			if loraCoords.count > 2 {
+				var hull = loraCoords.getConvexHull()
+				if hull.count >= 3 {
+					result.append(ClusterMapOverlay(
+						id: "convexHull",
+						overlay: MKPolygon(coordinates: &hull, count: hull.count),
+						style: ClusterMapOverlayStyle(strokeUIColor: .systemBlue,
+													  fillUIColor: UIColor.systemIndigo.withAlphaComponent(0.4),
+													  lineWidth: 3)
+					))
+				}
+			}
+		}
+
+		mapOverlays = result
+	}
 
 	private func makePositionSnapshots(from positions: [PositionEntity]) -> [MeshMapPositionSnapshot] {
 		positions.compactMap { position -> MeshMapPositionSnapshot? in
