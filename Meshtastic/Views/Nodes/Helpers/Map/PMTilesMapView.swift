@@ -103,16 +103,14 @@ struct PMTilesMapView: UIViewRepresentable {
 		context.coordinator.tileOverlay = overlay
 		mapView.addOverlay(overlay, level: .aboveLabels)
 
-		// Draw the GeoJSON overlay (polygons/lines as overlays, points as annotations).
+		// Draw the GeoJSON overlay (lines as overlays, points as annotations).
 		if let geoJSONURL { context.coordinator.addGeoJSON(from: geoJSONURL, to: mapView) }
 
-		// Frame the downloaded archive with a box snapped to the tile grid at max zoom — this is
-		// the ACTUAL extent of the extracted tiles (which snap outward from the requested bbox),
-		// rather than the requested bounding box itself.
-		if let bounds = source.geographicBounds {
-			let aligned = tileAlignedBounds(bounds, zoom: Int(source.tileMaxZoom))
-			context.coordinator.addBoundingBox(aligned, to: mapView)
-		}
+		// Remember the archive extent + zoom range; the border is drawn dynamically per zoom
+		// (see updateBoundingBox) so it always sits on the actual rendered tile edges.
+		context.coordinator.requestedBounds = source.geographicBounds
+		context.coordinator.minZoom = Int(source.tileMinZoom)
+		context.coordinator.maxZoom = Int(source.tileMaxZoom)
 
 		// Frame the GeoJSON if present, else the archive's own bounds.
 		if let region = context.coordinator.geoJSONRegion {
@@ -124,6 +122,9 @@ struct PMTilesMapView: UIViewRepresentable {
 										longitudeDelta: max(0.02, bounds.maxLon - bounds.minLon))
 			mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: false)
 		}
+
+		// Draw the initial tile-aligned border for the now-set region.
+		context.coordinator.updateBoundingBox(on: mapView)
 		return mapView
 	}
 
@@ -148,29 +149,55 @@ struct PMTilesMapView: UIViewRepresentable {
 		/// Retained so the overlay can be rebuilt with the dark/light palette on appearance change.
 		var source: OfflineTileSource?
 		var tileOverlay: OfflineTileOverlay?
+		/// Archive extent + zoom range, used to redraw the tile-aligned border per zoom.
+		var requestedBounds: GeoBounds?
+		var minZoom = 0
+		var maxZoom = 22
+		private var boxOverlay: MKPolygon?
+		private var lastBoxZoom: Int?
 
-		/// Adds a styled rectangle around the archive's geographic bounds — the "box around the
-		/// downloaded protomap" — using the same look as the test GeoJSON box.
-		func addBoundingBox(_ bounds: GeoBounds, to mapView: MKMapView) {
+		func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+			updateBoundingBox(on: mapView)
+		}
+
+		/// Draws (or redraws) the border snapped to the tile grid at the map's CURRENT zoom, so it
+		/// lands on the actual rendered tile edges rather than floating off them.
+		func updateBoundingBox(on mapView: MKMapView) {
+			guard let bounds = requestedBounds else { return }
+			let zoom = currentTileZoom(mapView)
+			guard zoom != lastBoxZoom else { return }
+			lastBoxZoom = zoom
+
+			if let old = boxOverlay {
+				styles[ObjectIdentifier(old)] = nil
+				mapView.removeOverlay(old)
+			}
+
+			let aligned = tileAlignedBounds(bounds, zoom: zoom)
 			let corners = [
-				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
-				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
-				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
-				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
+				CLLocationCoordinate2D(latitude: aligned.minLat, longitude: aligned.minLon),
+				CLLocationCoordinate2D(latitude: aligned.minLat, longitude: aligned.maxLon),
+				CLLocationCoordinate2D(latitude: aligned.maxLat, longitude: aligned.maxLon),
+				CLLocationCoordinate2D(latitude: aligned.maxLat, longitude: aligned.minLon)
 			]
 			let polygon = MKPolygon(coordinates: corners, count: corners.count)
 			var style = GeoJSONStyle(properties: nil)
 			style.stroke = UIColor(hex: "#E76F51") ?? .systemOrange
-			style.strokeWidth = 3
-			style.fill = UIColor(hex: "#2A9D8F") ?? .systemTeal
-			style.fillOpacity = 0.15
+			style.strokeWidth = 2
+			style.fill = .clear
+			style.fillOpacity = 0
 			styles[ObjectIdentifier(polygon)] = style
+			boxOverlay = polygon
 			mapView.addOverlay(polygon, level: .aboveLabels)
+		}
 
-			if geoJSONRegion == nil {
-				let rect = polygon.boundingMapRect
-				geoJSONRegion = MKCoordinateRegion(rect.insetBy(dx: -rect.size.width * 0.12, dy: -rect.size.height * 0.12))
-			}
+		/// Integer slippy-map zoom for the map's current span, clamped to the archive's range.
+		/// Above maxZoom MapKit upsamples maxZoom tiles, so the data footprint stays maxZoom-aligned.
+		private func currentTileZoom(_ mapView: MKMapView) -> Int {
+			let width = max(1.0, Double(mapView.bounds.width))
+			let lonDelta = max(1e-9, mapView.region.span.longitudeDelta)
+			let zoom = log2(360.0 * width / (lonDelta * 256.0))
+			return min(maxZoom, max(minZoom, Int(zoom.rounded())))
 		}
 
 		/// Decodes a GeoJSON file with `MKGeoJSONDecoder` and adds its geometry to the map.
