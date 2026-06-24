@@ -18,9 +18,12 @@ import SwiftUI
 
 final class OfflineTileOverlay: MKTileOverlay {
 	private let source: OfflineTileSource
+	/// Selects the dark color palette when rasterizing vector tiles.
+	let dark: Bool
 
-	init(source: OfflineTileSource) {
+	init(source: OfflineTileSource, dark: Bool = false) {
 		self.source = source
+		self.dark = dark
 		super.init(urlTemplate: nil)
 		self.tileSize = CGSize(width: 256, height: 256)
 		self.minimumZ = Int(source.tileMinZoom)
@@ -39,7 +42,7 @@ final class OfflineTileOverlay: MKTileOverlay {
 		}
 		if source.isVectorTiles {
 			// Rasterize the MVT to a PNG in Swift so MapKit can display it (no MapLibre).
-			result(VectorTileRasterizer.png(mvt: data, z: path.z, x: path.x, y: path.y), nil)
+			result(VectorTileRasterizer.png(mvt: data, z: path.z, x: path.x, y: path.y, dark: dark), nil)
 		} else {
 			result(data, nil) // already raster
 		}
@@ -82,6 +85,8 @@ struct PMTilesMapView: UIViewRepresentable {
 	/// Optional GeoJSON overlay (e.g. the Bellevue bounding box) drawn on top.
 	var geoJSONURL: URL?
 
+	@Environment(\.colorScheme) private var colorScheme
+
 	func makeCoordinator() -> Coordinator { Coordinator() }
 
 	func makeUIView(context: Context) -> MKMapView {
@@ -92,8 +97,10 @@ struct PMTilesMapView: UIViewRepresentable {
 			Logger.services.error("📦 [Offline] Failed to open \(tilesURL.lastPathComponent, privacy: .public); showing Apple basemap.")
 			return mapView
 		}
+		context.coordinator.source = source
 
-		let overlay = OfflineTileOverlay(source: source)
+		let overlay = OfflineTileOverlay(source: source, dark: colorScheme == .dark)
+		context.coordinator.tileOverlay = overlay
 		mapView.addOverlay(overlay, level: .aboveLabels)
 
 		// Draw the GeoJSON overlay (polygons/lines as overlays, points as annotations).
@@ -117,13 +124,27 @@ struct PMTilesMapView: UIViewRepresentable {
 		return mapView
 	}
 
-	func updateUIView(_ uiView: MKMapView, context: Context) {}
+	func updateUIView(_ uiView: MKMapView, context: Context) {
+		// On a light/dark switch, swap the tile overlay so MapKit re-requests tiles, which the
+		// rasterizer then renders with the matching palette (same .pmtiles data).
+		guard let source = context.coordinator.source else { return }
+		let wantsDark = colorScheme == .dark
+		if context.coordinator.tileOverlay?.dark != wantsDark {
+			if let old = context.coordinator.tileOverlay { uiView.removeOverlay(old) }
+			let overlay = OfflineTileOverlay(source: source, dark: wantsDark)
+			context.coordinator.tileOverlay = overlay
+			uiView.addOverlay(overlay, level: .aboveLabels)
+		}
+	}
 
 	// MARK: Coordinator
 
 	final class Coordinator: NSObject, MKMapViewDelegate {
 		private var styles: [ObjectIdentifier: GeoJSONStyle] = [:]
 		private(set) var geoJSONRegion: MKCoordinateRegion?
+		/// Retained so the overlay can be rebuilt with the dark/light palette on appearance change.
+		var source: OfflineTileSource?
+		var tileOverlay: OfflineTileOverlay?
 
 		/// Adds a styled rectangle around the archive's geographic bounds — the "box around the
 		/// downloaded protomap" — using the same look as the test GeoJSON box.
