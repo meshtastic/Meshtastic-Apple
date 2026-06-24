@@ -79,6 +79,16 @@ uint8_t *splat_mask_ptr(int handle);
 /* Histogram of ITM errnum values 0..4 plus a bucket for anything else. */
 int splat_errnum_counts(int handle, int32_t *out6);
 
+/* Single transmitter->destination link analysis using the same ITM model as
+ * the coverage sweep. out5 receives [loss_db, dbm, distance_km, azimuth_deg,
+ * errnum]. Returns the profile point count (>= 2) or a negative SPLAT_E_* code. */
+int splat_point_to_point(int handle, double dst_lat_deg, double dst_lon_deg,
+                         double dst_alt_feet, double *out5);
+
+/* Packed [distance_km, ground_elevation_m] profile from the most recent
+ * splat_point_to_point call. Length is 2 * returned point count. */
+double *splat_p2p_profile_ptr(int handle);
+
 void splat_destroy(int handle);
 
 /* Heap helpers for hosts that need scratch buffers (wasm). */

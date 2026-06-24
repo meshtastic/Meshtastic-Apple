@@ -39,6 +39,135 @@ struct NativeSitePlannerCoverageClient: Sendable {
 	}
 }
 
+struct NativeSitePlannerPointToPointClient: Sendable {
+	var terrainProvider: NativeSitePlannerTerrainProvider = .live
+
+	func analyze(request: SitePlannerPointToPointRequest) async throws -> SitePlannerPointToPointResult {
+		try await NativeSitePlannerCoverageRunner.shared.analyzePointToPoint(
+			request: request,
+			terrainProvider: terrainProvider
+		)
+	}
+}
+
+struct SitePlannerPointToPointRequest: Equatable, Sendable {
+	var sourceLat: Double
+	var sourceLon: Double
+	var destinationLat: Double
+	var destinationLon: Double
+	var txHeight: Double
+	var txPower: Double
+	var txGain: Double
+	var systemLoss: Double
+	var frequencyMHz: Double
+	var rxHeight: Double
+	var rxGain: Double
+	var signalThreshold: Double
+	var clutterHeight: Double
+	var groundDielectric: Double
+	var groundConductivity: Double
+	var atmosphereBending: Double
+	var radioClimate: String
+	var polarization: String
+	var situationFraction: Double
+	var timeFraction: Double
+	var highResolution: Bool
+
+	init(
+		sourceLat: Double,
+		sourceLon: Double,
+		destinationLat: Double,
+		destinationLon: Double,
+		txHeight: Double = 2.0,
+		txPower: Double = 20.0,
+		txGain: Double = 2.0,
+		systemLoss: Double = 2.0,
+		frequencyMHz: Double = 907.0,
+		rxHeight: Double = 1.0,
+		rxGain: Double = 2.0,
+		signalThreshold: Double = -130.0,
+		clutterHeight: Double = 1.0,
+		groundDielectric: Double = 15.0,
+		groundConductivity: Double = 0.005,
+		atmosphereBending: Double = 301.0,
+		radioClimate: String = "continental_temperate",
+		polarization: String = "vertical",
+		situationFraction: Double = 95.0,
+		timeFraction: Double = 95.0,
+		highResolution: Bool = false
+	) {
+		self.sourceLat = sourceLat
+		self.sourceLon = sourceLon
+		self.destinationLat = destinationLat
+		self.destinationLon = destinationLon
+		self.txHeight = txHeight
+		self.txPower = txPower
+		self.txGain = txGain
+		self.systemLoss = systemLoss
+		self.frequencyMHz = frequencyMHz
+		self.rxHeight = rxHeight
+		self.rxGain = rxGain
+		self.signalThreshold = signalThreshold
+		self.clutterHeight = clutterHeight
+		self.groundDielectric = groundDielectric
+		self.groundConductivity = groundConductivity
+		self.atmosphereBending = atmosphereBending
+		self.radioClimate = radioClimate
+		self.polarization = polarization
+		self.situationFraction = situationFraction
+		self.timeFraction = timeFraction
+		self.highResolution = highResolution
+	}
+}
+
+struct SitePlannerPointToPointSample: Equatable, Sendable {
+	var distanceKm: Double
+	var groundElevationMeters: Double
+	var sightLineElevationMeters: Double
+	var fresnel60ElevationMeters: Double
+	var directClearanceMeters: Double
+	var fresnel60ClearanceMeters: Double
+}
+
+struct SitePlannerPointToPointObstruction: Equatable, Sendable {
+	var distanceKm: Double
+	var groundElevationMeters: Double
+	var sightLineElevationMeters: Double
+	var fresnel60ElevationMeters: Double
+	var directClearanceMeters: Double
+	var fresnel60ClearanceMeters: Double
+}
+
+struct SitePlannerPointToPointResult: Equatable, Identifiable, Sendable {
+	let id = UUID()
+	var sourceLat: Double
+	var sourceLon: Double
+	var destinationLat: Double
+	var destinationLon: Double
+	var lossDb: Double
+	var signalDbm: Double
+	var distanceKm: Double
+	var azimuthDegrees: Double
+	var errnum: Int
+	var signalThresholdDbm: Double
+	var linkMarginDb: Double
+	var samples: [SitePlannerPointToPointSample]
+	var directObstruction: SitePlannerPointToPointObstruction?
+	var fresnelObstruction: SitePlannerPointToPointObstruction?
+
+	var linkMeetsThreshold: Bool {
+		linkMarginDb >= 0
+	}
+
+	var hasDirectLineOfSight: Bool {
+		directObstruction == nil
+	}
+
+	var hasFresnelClearance: Bool {
+		fresnelObstruction == nil
+	}
+}
+
 enum NativeSitePlannerCoverageError: Error, LocalizedError {
 	case engineFailed(String, Int32)
 	case invalidRaster
@@ -103,25 +232,7 @@ private actor NativeSitePlannerCoverageRunner {
 		try Self.check(handle, "splat_create")
 		defer { splat_destroy(handle) }
 
-		let pageCount = try Self.checkedCount(splat_page_count(handle), "splat_page_count")
-		for pageIndex in 0..<pageCount {
-			var pageInfo = [Int32](repeating: 0, count: 2)
-			let infoResult = splat_page_info(handle, Int32(pageIndex), &pageInfo)
-			try Self.check(infoResult, "splat_page_info")
-			let pageRef = NativeSitePlannerPageRef(minNorth: Int(pageInfo[0]), minWest: Int(pageInfo[1]))
-			if let page = try await terrainProvider.loadPage(pageRef, params.resolutionIppd) {
-				let expectedCells = params.resolutionIppd * params.resolutionIppd
-				guard page.count == expectedCells else {
-					throw NativeSitePlannerCoverageError.invalidTerrain(
-						"page \(pageRef.minNorth),\(pageRef.minWest) has \(page.count) cells; expected \(expectedCells)."
-					)
-				}
-				let loadResult = page.withUnsafeBufferPointer { buffer in
-					splat_load_page(handle, Int32(pageIndex), buffer.baseAddress)
-				}
-				try Self.check(loadResult, "splat_load_page")
-			}
-		}
+		try await loadTerrainPages(handle: handle, resolutionIppd: params.resolutionIppd, terrainProvider: terrainProvider)
 
 		let radialCount = try Self.checkedCount(splat_radial_count(handle), "splat_radial_count")
 		let chunk = max(1, runChunkSize)
@@ -164,6 +275,143 @@ private actor NativeSitePlannerCoverageRunner {
 			byteLimit: contourByteLimit,
 			polygonLimit: contourPolygonLimit
 		)
+	}
+
+	func analyzePointToPoint(
+		request: SitePlannerPointToPointRequest,
+		terrainProvider: NativeSitePlannerTerrainProvider
+	) async throws -> SitePlannerPointToPointResult {
+		let distanceMeters = Self.haversineMeters(
+			lat1: request.sourceLat,
+			lon1: request.sourceLon,
+			lat2: request.destinationLat,
+			lon2: request.destinationLon
+		)
+		guard distanceMeters <= maxRadiusMeters else {
+			throw NativeSitePlannerCoverageError.unsupportedParameter("point-to-point distance is capped at 150 km.")
+		}
+		let useHighResolution = request.highResolution && distanceMeters <= maxRadiusMetersHD
+		let maximumRadius = useHighResolution ? maxRadiusMetersHD : maxRadiusMeters
+		let payload = SitePlannerCoverageRequest(
+			lat: request.sourceLat,
+			lon: request.sourceLon,
+			txHeight: request.txHeight,
+			txPower: request.txPower,
+			txGain: request.txGain,
+			systemLoss: request.systemLoss,
+			frequencyMHz: request.frequencyMHz,
+			rxHeight: request.rxHeight,
+			rxGain: request.rxGain,
+			signalThreshold: request.signalThreshold,
+			clutterHeight: request.clutterHeight,
+			groundDielectric: request.groundDielectric,
+			groundConductivity: request.groundConductivity,
+			atmosphereBending: request.atmosphereBending,
+			radioClimate: request.radioClimate,
+			polarization: request.polarization,
+			radius: max(1_000.0, min(maximumRadius, distanceMeters * 1.10)),
+			situationFraction: request.situationFraction,
+			timeFraction: request.timeFraction,
+			highResolution: useHighResolution,
+			minDbm: request.signalThreshold
+		)
+		let params = try engineParameters(for: payload)
+		let handle = splat_create(
+			request.sourceLat,
+			request.sourceLon,
+			params.txAltFeet,
+			params.rxAltFeet,
+			request.frequencyMHz,
+			params.erpWatts,
+			request.groundDielectric,
+			request.groundConductivity,
+			request.atmosphereBending,
+			params.radioClimate,
+			params.polarization,
+			params.confidence,
+			params.reliability,
+			request.clutterHeight,
+			params.radiusKilometers,
+			Int32(params.resolutionIppd)
+		)
+		try Self.check(handle, "splat_create")
+		defer { splat_destroy(handle) }
+
+		try await loadTerrainPages(handle: handle, resolutionIppd: params.resolutionIppd, terrainProvider: terrainProvider)
+
+		var values = [Double](repeating: 0, count: 5)
+		let profilePointCount = try Self.checkedCount(
+			splat_point_to_point(
+				handle,
+				request.destinationLat,
+				request.destinationLon,
+				request.rxHeight / metersPerFoot,
+				&values
+			),
+			"splat_point_to_point"
+		)
+		guard profilePointCount >= 2,
+			  let profilePointer = splat_p2p_profile_ptr(handle) else {
+			throw NativeSitePlannerCoverageError.invalidRaster
+		}
+
+		let profile = UnsafeBufferPointer(start: profilePointer, count: profilePointCount * 2)
+		let samples = Self.pointToPointSamples(
+			profile: profile,
+			pointCount: profilePointCount,
+			txHeightMeters: request.txHeight,
+			rxHeightMeters: request.rxHeight,
+			frequencyMHz: request.frequencyMHz
+		)
+		let directObstruction = Self.directObstruction(from: samples)
+		let fresnelObstruction = Self.fresnelObstruction(from: samples)
+		let signalDbm = values[1] + request.rxGain
+		let roundedSignal = Self.round2(signalDbm)
+		let roundedLoss = Self.round2(values[0])
+		let margin = Self.round2(signalDbm - request.signalThreshold)
+
+		return SitePlannerPointToPointResult(
+			sourceLat: request.sourceLat,
+			sourceLon: request.sourceLon,
+			destinationLat: request.destinationLat,
+			destinationLon: request.destinationLon,
+			lossDb: roundedLoss,
+			signalDbm: roundedSignal,
+			distanceKm: Self.round2(values[2]),
+			azimuthDegrees: Self.round2(values[3]),
+			errnum: Int(values[4]),
+			signalThresholdDbm: request.signalThreshold,
+			linkMarginDb: margin,
+			samples: samples,
+			directObstruction: directObstruction,
+			fresnelObstruction: fresnelObstruction
+		)
+	}
+
+	private func loadTerrainPages(
+		handle: Int32,
+		resolutionIppd: Int,
+		terrainProvider: NativeSitePlannerTerrainProvider
+	) async throws {
+		let pageCount = try Self.checkedCount(splat_page_count(handle), "splat_page_count")
+		for pageIndex in 0..<pageCount {
+			var pageInfo = [Int32](repeating: 0, count: 2)
+			let infoResult = splat_page_info(handle, Int32(pageIndex), &pageInfo)
+			try Self.check(infoResult, "splat_page_info")
+			let pageRef = NativeSitePlannerPageRef(minNorth: Int(pageInfo[0]), minWest: Int(pageInfo[1]))
+			if let page = try await terrainProvider.loadPage(pageRef, resolutionIppd) {
+				let expectedCells = resolutionIppd * resolutionIppd
+				guard page.count == expectedCells else {
+					throw NativeSitePlannerCoverageError.invalidTerrain(
+						"page \(pageRef.minNorth),\(pageRef.minWest) has \(page.count) cells; expected \(expectedCells)."
+					)
+				}
+				let loadResult = page.withUnsafeBufferPointer { buffer in
+					splat_load_page(handle, Int32(pageIndex), buffer.baseAddress)
+				}
+				try Self.check(loadResult, "splat_load_page")
+			}
+		}
 	}
 
 	private func engineParameters(for payload: SitePlannerCoverageRequest) throws -> EngineParameters {
@@ -504,6 +752,80 @@ private actor NativeSitePlannerCoverageRunner {
 		let a = sin(deltaLat / 2) * sin(deltaLat / 2)
 			+ cos(lat1Radians) * cos(lat2Radians) * sin(deltaLon / 2) * sin(deltaLon / 2)
 		return 2 * earthRadiusMeters * asin(min(1.0, sqrt(a)))
+	}
+
+	private static func pointToPointSamples(
+		profile: UnsafeBufferPointer<Double>,
+		pointCount: Int,
+		txHeightMeters: Double,
+		rxHeightMeters: Double,
+		frequencyMHz: Double
+	) -> [SitePlannerPointToPointSample] {
+		let totalDistanceKm = max(profile[(pointCount - 1) * 2], 0.001)
+		let totalDistanceMeters = totalDistanceKm * 1_000.0
+		let sourceAntennaMeters = profile[1] + txHeightMeters
+		let destinationAntennaMeters = profile[(pointCount - 1) * 2 + 1] + rxHeightMeters
+		let wavelengthMeters = 299.792458 / max(frequencyMHz, 1.0)
+		var samples: [SitePlannerPointToPointSample] = []
+		samples.reserveCapacity(pointCount)
+
+		for index in 0..<pointCount {
+			let distanceKm = max(0.0, profile[index * 2])
+			let groundElevationMeters = profile[index * 2 + 1]
+			let fraction = min(1.0, max(0.0, distanceKm / totalDistanceKm))
+			let sightLineElevationMeters = sourceAntennaMeters + (destinationAntennaMeters - sourceAntennaMeters) * fraction
+			let distanceFromSourceMeters = distanceKm * 1_000.0
+			let distanceToDestinationMeters = max(0.0, totalDistanceMeters - distanceFromSourceMeters)
+			let fresnelRadiusMeters: Double
+			if distanceFromSourceMeters > 0, distanceToDestinationMeters > 0 {
+				fresnelRadiusMeters = sqrt(
+					wavelengthMeters * distanceFromSourceMeters * distanceToDestinationMeters / totalDistanceMeters
+				)
+			} else {
+				fresnelRadiusMeters = 0.0
+			}
+			let fresnel60ElevationMeters = sightLineElevationMeters - 0.6 * fresnelRadiusMeters
+			samples.append(
+				SitePlannerPointToPointSample(
+					distanceKm: round2(distanceKm),
+					groundElevationMeters: round2(groundElevationMeters),
+					sightLineElevationMeters: round2(sightLineElevationMeters),
+					fresnel60ElevationMeters: round2(fresnel60ElevationMeters),
+					directClearanceMeters: round2(sightLineElevationMeters - groundElevationMeters),
+					fresnel60ClearanceMeters: round2(fresnel60ElevationMeters - groundElevationMeters)
+				)
+			)
+		}
+
+		return samples
+	}
+
+	private static func directObstruction(from samples: [SitePlannerPointToPointSample]) -> SitePlannerPointToPointObstruction? {
+		obstruction(from: samples) { $0.directClearanceMeters }
+	}
+
+	private static func fresnelObstruction(from samples: [SitePlannerPointToPointSample]) -> SitePlannerPointToPointObstruction? {
+		obstruction(from: samples) { $0.fresnel60ClearanceMeters }
+	}
+
+	private static func obstruction(
+		from samples: [SitePlannerPointToPointSample],
+		clearance: (SitePlannerPointToPointSample) -> Double
+	) -> SitePlannerPointToPointObstruction? {
+		guard samples.count > 2 else { return nil }
+		let interior = samples.dropFirst().dropLast()
+		guard let worst = interior.min(by: { clearance($0) < clearance($1) }),
+			  clearance(worst) < 0 else {
+			return nil
+		}
+		return SitePlannerPointToPointObstruction(
+			distanceKm: worst.distanceKm,
+			groundElevationMeters: worst.groundElevationMeters,
+			sightLineElevationMeters: worst.sightLineElevationMeters,
+			fresnel60ElevationMeters: worst.fresnel60ElevationMeters,
+			directClearanceMeters: worst.directClearanceMeters,
+			fresnel60ClearanceMeters: worst.fresnel60ClearanceMeters
+		)
 	}
 
 	private static func check(_ result: Int32, _ operation: String) throws {
