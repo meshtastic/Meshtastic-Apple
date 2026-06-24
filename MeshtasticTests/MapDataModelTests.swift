@@ -236,6 +236,9 @@ struct NotificationModelTests {
 
 // MARK: - Offline Vector Basemap Performance
 
+// Benchmark intentionally prints its measurements to the test log for perf tuning.
+// swiftlint:disable disable_print
+
 /// Headless benchmark for the offline Protomaps vector decode + road stitching pipeline.
 /// Drives quantitative perf tuning (overlay count is the dominant SwiftUI-Map cost).
 /// Reads the local `bellevue.pmtiles`; skips cleanly if it isn't present.
@@ -243,8 +246,13 @@ struct NotificationModelTests {
 @Suite("Offline Vector Basemap Perf")
 struct OfflineVectorPerfTests {
 
+	/// Repo-relative so it works on any clone (the file lives at the repo root, two levels up from
+	/// this test source). Read via the build machine's path — the simulator can reach host paths.
 	private var bellevueURL: URL {
-		URL(fileURLWithPath: "/Users/garthvanderhouwen/Source/Meshtastic-Apple/bellevue.pmtiles")
+		URL(fileURLWithPath: #filePath)
+			.deletingLastPathComponent()      // MeshtasticTests/
+			.deletingLastPathComponent()      // repo root
+			.appendingPathComponent("bellevue.pmtiles")
 	}
 
 	@Test("decode + stitch Bellevue — zoom sweep")
@@ -269,3 +277,5 @@ struct OfflineVectorPerfTests {
 		#expect(true)
 	}
 }
+
+// swiftlint:enable disable_print
