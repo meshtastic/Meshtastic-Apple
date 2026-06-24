@@ -17,6 +17,8 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
+	/// Migration escape hatch: ON = new MKMapView map (offline basemap + clustering); OFF = old SwiftUI map.
+	@AppStorage("useMeshMapMK") private var useMeshMapMK = true
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
@@ -191,6 +193,21 @@ struct MapSettingsForm: View {
 							}
 						}
 					}
+				}
+				Section(header: Text("Beta")) {
+					Toggle(isOn: $useMeshMapMK) {
+						Label {
+							VStack(alignment: .leading) {
+								Text("MapKit Mesh Map")
+								Text("Offline basemap + clustering (MKMapView). Off = classic map.")
+									.font(.caption)
+									.foregroundColor(.secondary)
+							}
+						} icon: {
+							Image(systemName: "circle.grid.3x3.fill")
+						}
+					}
+					.tint(.accentColor)
 				}
 			}
 			.navigationTitle("Map Options")

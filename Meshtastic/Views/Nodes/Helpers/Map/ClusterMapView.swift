@@ -64,6 +64,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	@ViewBuilder let pinContent: (Item) -> Pin
 	/// Builds the SwiftUI cluster badge from the collapsed member count.
 	@ViewBuilder let clusterContent: (Int) -> Cluster
+	/// Called when the user taps an item's pin. (Tapping a cluster zooms to fit its members instead.)
+	let onSelect: ((Item) -> Void)?
 
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -75,6 +77,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		region: Binding<MKCoordinateRegion?>? = nil,
 		clustering: Bool = true,
 		tilesURL: URL? = nil,
+		onSelect: ((Item) -> Void)? = nil,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
 		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
 	) {
@@ -83,6 +86,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.region = region
 		self.clustering = clustering
 		self.tilesURL = tilesURL
+		self.onSelect = onSelect
 		self.pinContent = pinContent
 		self.clusterContent = clusterContent
 	}
@@ -148,6 +152,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		coordinator.pinContent = { AnyView(pinContent($0)) }
 		coordinator.clusterContent = { AnyView(clusterContent($0)) }
 		coordinator.regionBinding = region
+		coordinator.onSelect = onSelect
 	}
 
 	// MARK: - Coordinator (MKMapViewDelegate + diffing + camera sync + offline overlay)
@@ -160,6 +165,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		var clusterContent: (Int) -> AnyView = { _ in AnyView(EmptyView()) }
 		/// The camera binding, set by the representable each render so the delegate can write back.
 		var regionBinding: Binding<MKCoordinateRegion?>?
+		/// Called when an item pin is tapped (set each render).
+		var onSelect: ((Item) -> Void)?
 
 		/// id → the backing annotation currently on the map. The single source of truth for diffing.
 		private var annotationsByID: [Item.ID: ItemAnnotation<Item>] = [:]
@@ -315,6 +322,28 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			return nil
 		}
 
+		// MARK: Selection — tap a pin → onSelect; tap a cluster → zoom to fit its members
+
+		func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+			if let cluster = view.annotation as? MKClusterAnnotation {
+				// Expand a cluster: zoom to the bounding rect of its members.
+				let rect = cluster.memberAnnotations.reduce(MKMapRect.null) { acc, member in
+					acc.union(MKMapRect(origin: MKMapPoint(member.coordinate), size: MKMapSize(width: 0, height: 0)))
+				}
+				if !rect.isNull {
+					let padded = rect.insetBy(dx: -rect.size.width * 0.3 - 1, dy: -rect.size.height * 0.3 - 1)
+					mapView.setVisibleMapRect(padded, animated: true)
+				}
+				mapView.deselectAnnotation(cluster, animated: false)
+				return
+			}
+			if let annotation = view.annotation as? ItemAnnotation<Item> {
+				onSelect?(annotation.item)
+				// Immediate deselect so re-tapping the SAME pin fires again (sheet binding de-dups).
+				mapView.deselectAnnotation(annotation, animated: false)
+			}
+		}
+
 		// MARK: Overlay renderer
 
 		func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -373,6 +402,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		region: Binding<MKCoordinateRegion?>? = nil,
 		clustering: Bool = true,
 		tilesURL: URL? = nil,
+		onSelect: ((Item) -> Void)? = nil,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin
 	) {
 		self.init(items: items,
@@ -380,6 +410,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				  region: region,
 				  clustering: clustering,
 				  tilesURL: tilesURL,
+				  onSelect: onSelect,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
 	}
