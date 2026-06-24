@@ -474,7 +474,6 @@ struct OfflineDecodeStats: CustomStringConvertible {
 	}
 }
 
-
 /// Decodes the vector tiles inside a `.pmtiles` archive into native MapKit shapes for the visible
 /// region. Decoding runs on a serial background queue (the archive is touched from one queue only);
 /// results are published on the main actor for SwiftUI `Map` to render.
@@ -540,18 +539,22 @@ final class OfflineVectorTileProvider: ObservableObject {
 	}
 
 	/// Painter's order for stitched road layers (earlier = underneath).
-	private static let roadDrawOrder: [OfflineFeatureRole] = [.path, .minorRoad, .mediumRoad, .majorRoad, .rail, .boundary]
+	nonisolated private static let roadDrawOrder: [OfflineFeatureRole] = [.path, .minorRoad, .mediumRoad, .majorRoad, .rail, .boundary]
 
 	/// Drop fills whose bounding box is smaller than this (meters) — invisible slivers/clutter.
-	static let defaultMinFillMeters: Double = 40
+	nonisolated static let defaultMinFillMeters: Double = 40
 	/// Drop stitched roads shorter than this (meters) — driveway/stub clutter, no visual value.
-	static let defaultMinRoadMeters: Double = 60
+	nonisolated static let defaultMinRoadMeters: Double = 60
 
 	/// Decode + stitch the given tiles into render-ready shapes, with measurement stats. Shared by
 	/// `updateIfNeeded` and the test/benchmark entry point so they exercise the identical pipeline.
-	static func build(source: OfflineTileSource, bounds: GeoBounds, tiles: [TileID],
-					  minFillMeters: Double = defaultMinFillMeters,
-					  minRoadMeters: Double = defaultMinRoadMeters) -> BuildResult {
+	nonisolated static func build(
+		source: OfflineTileSource,
+		bounds: GeoBounds,
+		tiles: [TileID],
+		minFillMeters: Double = defaultMinFillMeters,
+		minRoadMeters: Double = defaultMinRoadMeters
+	) -> BuildResult {
 		let clock = ContinuousClock()
 		var polys: [OfflineMapPolygon] = []
 		var rawSegmentsByRole: [OfflineFeatureRole: [[CLLocationCoordinate2D]]] = [:]
@@ -604,9 +607,12 @@ final class OfflineVectorTileProvider: ObservableObject {
 	}
 
 	/// Headless benchmark entry point: open the archive, pick tiles, and run the full build pipeline.
-	static func measure(url: URL, maxTiles: Int = 48,
-						minFillMeters: Double = defaultMinFillMeters,
-						minRoadMeters: Double = defaultMinRoadMeters) -> OfflineDecodeStats? {
+	nonisolated static func measure(
+		url: URL,
+		maxTiles: Int = 48,
+		minFillMeters: Double = defaultMinFillMeters,
+		minRoadMeters: Double = defaultMinRoadMeters
+	) -> OfflineDecodeStats? {
 		guard let source = OfflineTileSourceFactory.source(for: url), source.isVectorTiles,
 			  let bounds = source.geographicBounds else { return nil }
 		let tiles = boundsTiles(source: source, bounds: bounds, maxTiles: maxTiles)
@@ -614,9 +620,15 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return build(source: source, bounds: bounds, tiles: tiles, minFillMeters: minFillMeters, minRoadMeters: minRoadMeters).stats
 	}
 
+}
+
+// MARK: - Offline decode pipeline (pure functions, kept out of the class body for clarity/lint)
+
+extension OfflineVectorTileProvider {
+
 	// MARK: Geometry size helpers (for clutter filtering)
 
-	private static func lengthMeters(_ coordinates: [CLLocationCoordinate2D]) -> Double {
+	nonisolated private static func lengthMeters(_ coordinates: [CLLocationCoordinate2D]) -> Double {
 		guard coordinates.count >= 2 else { return 0 }
 		var total = 0.0
 		for index in 1..<coordinates.count {
@@ -625,7 +637,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return total
 	}
 
-	private static func boundingMeters(_ coordinates: [CLLocationCoordinate2D]) -> Double {
+	nonisolated private static func boundingMeters(_ coordinates: [CLLocationCoordinate2D]) -> Double {
 		guard let first = coordinates.first else { return 0 }
 		var minLat = first.latitude, maxLat = first.latitude
 		var minLon = first.longitude, maxLon = first.longitude
@@ -639,7 +651,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return max(height, width)
 	}
 
-	private static func distanceMeters(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Double {
+	nonisolated private static func distanceMeters(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Double {
 		let midLat = (a.latitude + b.latitude) / 2
 		let dLat = (b.latitude - a.latitude) * 111_320
 		let dLon = (b.longitude - a.longitude) * 111_320 * cos(midLat * .pi / 180)
@@ -651,7 +663,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// Greedily joins segments that share an endpoint into longer polylines. SwiftUI `Map` makes one
 	/// overlay per polyline, so fewer/longer polylines = far less MapKit overlay-layer work, with an
 	/// identical rendered result (segments are only joined where their endpoints actually coincide).
-	private static func stitch(_ segments: [[CLLocationCoordinate2D]]) -> [[CLLocationCoordinate2D]] {
+	nonisolated private static func stitch(_ segments: [[CLLocationCoordinate2D]]) -> [[CLLocationCoordinate2D]] {
 		guard segments.count > 1 else { return segments }
 		struct PointKey: Hashable { let x: Int32; let y: Int32 }
 		func key(_ coordinate: CLLocationCoordinate2D) -> PointKey {
@@ -702,7 +714,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 
 	/// All tiles covering the archive's coverage box, at the highest zoom whose tile count fits
 	/// the cap. Decoded once; vectors scale to any map zoom.
-	private static func boundsTiles(source: OfflineTileSource, bounds: GeoBounds, maxTiles: Int) -> [TileID] {
+	nonisolated private static func boundsTiles(source: OfflineTileSource, bounds: GeoBounds, maxTiles: Int) -> [TileID] {
 		let minZoom = Int(source.tileMinZoom)
 		let maxZoom = Int(source.tileMaxZoom)
 		var zoom = maxZoom
@@ -733,7 +745,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return result
 	}
 
-	private static func tileXY(lon: Double, lat: Double, zoom: Int) -> (x: Int, y: Int) {
+	nonisolated private static func tileXY(lon: Double, lat: Double, zoom: Int) -> (x: Int, y: Int) {
 		let n = Double(1 << zoom)
 		let x = Int(floor((lon + 180.0) / 360.0 * n))
 		let latRad = lat * .pi / 180.0
@@ -743,12 +755,12 @@ final class OfflineVectorTileProvider: ObservableObject {
 
 	// MARK: Decode (mvt-tools → MapKit shapes)
 
-	private static let parkKinds: Set<String> = [
+	nonisolated private static let parkKinds: Set<String> = [
 		"park", "garden", "recreation_ground", "pitch", "golf_course", "cemetery",
 		"forest", "wood", "grass", "meadow", "nature_reserve", "playground"
 	]
 
-	private static func decode(tile: TileID, source: OfflineTileSource, bounds: GeoBounds?) -> (polys: [OfflineMapPolygon], lines: [OfflineMapPolyline]) {
+	nonisolated private static func decode(tile: TileID, source: OfflineTileSource, bounds: GeoBounds?) -> (polys: [OfflineMapPolygon], lines: [OfflineMapPolyline]) {
 		guard let data = source.tileData(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)),
 			  let vector = VectorTile(data: data, x: tile.x, y: tile.y, z: tile.z, projection: .epsg4326) else {
 			return ([], [])
@@ -778,7 +790,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return (polys, lines)
 	}
 
-	private static func roadRole(_ kind: String?) -> OfflineFeatureRole {
+	nonisolated private static func roadRole(_ kind: String?) -> OfflineFeatureRole {
 		switch kind {
 		case "highway", "motorway", "freeway", "major_road", "trunk", "primary": return .majorRoad
 		case "medium_road", "secondary", "tertiary": return .mediumRoad
@@ -788,16 +800,16 @@ final class OfflineVectorTileProvider: ObservableObject {
 		}
 	}
 
-	private static func coord(_ coordinate: GISTools.Coordinate3D) -> CLLocationCoordinate2D {
+	nonisolated private static func coord(_ coordinate: GISTools.Coordinate3D) -> CLLocationCoordinate2D {
 		CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude)
 	}
 
 	// GISTools geometry types are fully qualified: the app target has its own `Polygon`/`Point`.
 	/// Douglas–Peucker tolerance (~9m). Drops redundant vertices so each overlay is cheaper for
 	/// MapKit to diff and redraw, without visibly changing shapes at basemap scale.
-	private static let simplifyEpsilon = 0.00008
+	nonisolated private static let simplifyEpsilon = 0.00008
 
-	private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String) {
+	nonisolated private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String) {
 		func add(_ ring: [GISTools.Coordinate3D]) {
 			var coords = ring.map(coord)
 			if let bounds { coords = clipPolygon(coords, to: bounds) }
@@ -817,7 +829,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		}
 	}
 
-	private static func appendPolylines(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into lines: inout [OfflineMapPolyline], id: () -> String) {
+	nonisolated private static func appendPolylines(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into lines: inout [OfflineMapPolyline], id: () -> String) {
 		func add(_ line: [GISTools.Coordinate3D]) {
 			let coords = line.map(coord)
 			let runs = bounds.map { clipPolyline(coords, to: $0) } ?? [coords]
@@ -842,7 +854,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 
 	/// Iterative Douglas–Peucker — drops vertices that are within `epsilon` of the line they'd lie
 	/// on, so overlays carry far fewer points. Runs once at decode time (off the main thread).
-	private static func simplify(_ points: [CLLocationCoordinate2D], epsilon: Double) -> [CLLocationCoordinate2D] {
+	nonisolated private static func simplify(_ points: [CLLocationCoordinate2D], epsilon: Double) -> [CLLocationCoordinate2D] {
 		guard points.count > 2 else { return points }
 		var keep = [Bool](repeating: false, count: points.count)
 		keep[0] = true
@@ -870,7 +882,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return result
 	}
 
-	private static func perpendicularDistance(_ point: CLLocationCoordinate2D, _ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D) -> Double {
+	nonisolated private static func perpendicularDistance(_ point: CLLocationCoordinate2D, _ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D) -> Double {
 		let dx = end.longitude - start.longitude
 		let dy = end.latitude - start.latitude
 		if dx == 0, dy == 0 {
@@ -885,7 +897,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 	// MARK: Clipping to the coverage box
 
 	/// Sutherland–Hodgman polygon clip against the archive's axis-aligned coverage box.
-	private static func clipPolygon(_ coords: [CLLocationCoordinate2D], to bounds: GeoBounds) -> [CLLocationCoordinate2D] {
+	nonisolated private static func clipPolygon(_ coords: [CLLocationCoordinate2D], to bounds: GeoBounds) -> [CLLocationCoordinate2D] {
 		guard coords.count >= 3 else { return [] }
 		var poly = coords
 		poly = clipEdge(poly, inside: { $0.longitude >= bounds.minLon }, cross: { lerpLon($0, $1, bounds.minLon) })
@@ -895,7 +907,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return poly
 	}
 
-	private static func clipEdge(
+	nonisolated private static func clipEdge(
 		_ poly: [CLLocationCoordinate2D],
 		inside: (CLLocationCoordinate2D) -> Bool,
 		cross: (CLLocationCoordinate2D, CLLocationCoordinate2D) -> CLLocationCoordinate2D
@@ -918,7 +930,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 	}
 
 	/// Liang–Barsky polyline clip — returns the inside runs (a line can enter/exit the box).
-	private static func clipPolyline(_ coords: [CLLocationCoordinate2D], to bounds: GeoBounds) -> [[CLLocationCoordinate2D]] {
+	nonisolated private static func clipPolyline(_ coords: [CLLocationCoordinate2D], to bounds: GeoBounds) -> [[CLLocationCoordinate2D]] {
 		guard coords.count >= 2 else { return [] }
 		var runs: [[CLLocationCoordinate2D]] = []
 		var current: [CLLocationCoordinate2D] = []
@@ -940,7 +952,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return runs
 	}
 
-	private static func liangBarsky(_ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D, _ bounds: GeoBounds) -> (Double, Double)? {
+	nonisolated private static func liangBarsky(_ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D, _ bounds: GeoBounds) -> (Double, Double)? {
 		let dx = end.longitude - start.longitude
 		let dy = end.latitude - start.latitude
 		var t0 = 0.0
@@ -968,20 +980,20 @@ final class OfflineVectorTileProvider: ObservableObject {
 		return (t0, t1)
 	}
 
-	private static func lerp(_ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D, _ t: Double) -> CLLocationCoordinate2D {
+	nonisolated private static func lerp(_ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D, _ t: Double) -> CLLocationCoordinate2D {
 		CLLocationCoordinate2D(
 			latitude: start.latitude + t * (end.latitude - start.latitude),
 			longitude: start.longitude + t * (end.longitude - start.longitude)
 		)
 	}
 
-	private static func lerpLon(_ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D, _ lon: Double) -> CLLocationCoordinate2D {
+	nonisolated private static func lerpLon(_ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D, _ lon: Double) -> CLLocationCoordinate2D {
 		let denominator = end.longitude - start.longitude
 		let t = denominator == 0 ? 0 : (lon - start.longitude) / denominator
 		return CLLocationCoordinate2D(latitude: start.latitude + t * (end.latitude - start.latitude), longitude: lon)
 	}
 
-	private static func lerpLat(_ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D, _ lat: Double) -> CLLocationCoordinate2D {
+	nonisolated private static func lerpLat(_ start: CLLocationCoordinate2D, _ end: CLLocationCoordinate2D, _ lat: Double) -> CLLocationCoordinate2D {
 		let denominator = end.latitude - start.latitude
 		let t = denominator == 0 ? 0 : (lat - start.latitude) / denominator
 		return CLLocationCoordinate2D(latitude: lat, longitude: start.longitude + t * (end.longitude - start.longitude))
