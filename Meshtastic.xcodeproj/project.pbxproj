@@ -7,10 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BB0000000000000000000000 /* PMTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000000 /* PMTilesArchive.swift */; };
-		BB0001000000000000000000 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001000000000000000000 /* MBTilesArchive.swift */; };
-		BB0002000000000000000000 /* VectorTileRasterizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002000000000000000000 /* VectorTileRasterizer.swift */; };
-		BB0003000000000000000000 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003000000000000000000 /* PMTilesMapView.swift */; };
 		0516B3FE2F68892000D0FC40 /* NodeFilterParametersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */; };
 		05A1B2C32F70000100D0FC40 /* SettingsNodeSortTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05A1B2C42F70000100D0FC40 /* SettingsNodeSortTests.swift */; };
 		0B9642EC0DB1B971CB26E8AE /* RadarSweepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E06A9BCC789BD452DFA9CFB /* RadarSweepView.swift */; };
@@ -211,6 +207,10 @@
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
 		B734732C0C394582BD6CD0CA /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = AF44FDF549704E29A8E5FE2F /* urls.json */; };
 		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
+		BB0000000000000000000000 /* PMTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000000 /* PMTilesArchive.swift */; };
+		BB0001000000000000000000 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001000000000000000000 /* MBTilesArchive.swift */; };
+		BB0002000000000000000000 /* VectorTileRasterizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002000000000000000000 /* VectorTileRasterizer.swift */; };
+		BB0003000000000000000000 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003000000000000000000 /* PMTilesMapView.swift */; };
 		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
 		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
 		BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */; };
@@ -374,6 +374,7 @@
 		DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FE272476C700F4AB02 /* LogDocument.swift */; };
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD86C7C52FE385D2000BC38E /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = AA009SMD0000000000000002 /* Markdown */; };
+		DD86D3ED2FEB9972000BC38E /* MVTTools in Frameworks */ = {isa = PBXBuildFile; productRef = DD86D3EC2FEB9972000BC38E /* MVTTools */; };
 		DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D409287F04F100BAEB7A /* InvalidVersion.swift */; };
 		DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */; };
 		DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */; };
@@ -561,10 +562,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AA0000000000000000000000 /* PMTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesArchive.swift; path = "Meshtastic/Helpers/Map/PMTilesArchive.swift"; sourceTree = SOURCE_ROOT; };
-		AA0001000000000000000000 /* MBTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MBTilesArchive.swift; path = "Meshtastic/Helpers/Map/MBTilesArchive.swift"; sourceTree = SOURCE_ROOT; };
-		AA0002000000000000000000 /* VectorTileRasterizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VectorTileRasterizer.swift; path = "Meshtastic/Helpers/Map/VectorTileRasterizer.swift"; sourceTree = SOURCE_ROOT; };
-		AA0003000000000000000000 /* PMTilesMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesMapView.swift; path = "Meshtastic/Views/Nodes/Helpers/Map/PMTilesMapView.swift"; sourceTree = SOURCE_ROOT; };
 		01028778B8BFD81F7A039593 /* TAKConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKConnection.swift; sourceTree = "<group>"; };
 		05A1B2C42F70000100D0FC40 /* SettingsNodeSortTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNodeSortTests.swift; sourceTree = "<group>"; };
 		05DCA1AE2F646B3B00D0724C /* NodeFilterParametersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeFilterParametersTests.swift; sourceTree = "<group>"; };
@@ -703,12 +700,16 @@
 		9155703C39B55FC9DDF3E4C1 /* TAKDataPackageGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TAKDataPackageGenerator.swift; sourceTree = "<group>"; };
 		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
 		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
+		AA0000000000000000000000 /* PMTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesArchive.swift; path = Meshtastic/Helpers/Map/PMTilesArchive.swift; sourceTree = SOURCE_ROOT; };
 		AA000002303050030000B001 /* Color+Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Brand.swift"; sourceTree = "<group>"; };
+		AA0001000000000000000000 /* MBTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MBTilesArchive.swift; path = Meshtastic/Helpers/Map/MBTilesArchive.swift; sourceTree = SOURCE_ROOT; };
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
 		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
+		AA0002000000000000000000 /* VectorTileRasterizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VectorTileRasterizer.swift; path = Meshtastic/Helpers/Map/VectorTileRasterizer.swift; sourceTree = SOURCE_ROOT; };
 		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
+		AA0003000000000000000000 /* PMTilesMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/PMTilesMapView.swift; sourceTree = SOURCE_ROOT; };
 		AA000301CPTST000000000001 /* CarPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayTests.swift; sourceTree = "<group>"; };
 		AA000401SIRI000000000010 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		AA000401SIRI000000000011 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = de; path = de.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
@@ -1217,6 +1218,7 @@
 				102B5EAD2E172F41003D191E /* DatadogCrashReporting in Frameworks */,
 				25A978BA2C13F8ED0003AAE7 /* MeshtasticProtobufs in Frameworks */,
 				102B5EAB2E172F41003D191E /* DatadogCore in Frameworks */,
+				DD86D3ED2FEB9972000BC38E /* MVTTools in Frameworks */,
 				102B5EAF2E172F41003D191E /* DatadogLogs in Frameworks */,
 				102B5EB12E172F41003D191E /* DatadogRUM in Frameworks */,
 				2315D1A82EEF2ED400E0FAE7 /* SwiftDraw in Frameworks */,
@@ -2427,6 +2429,7 @@
 				2388EC372EDF88E900F6F982 /* NordicDFU */,
 				2315D1A72EEF2ED400E0FAE7 /* SwiftDraw */,
 				AA009SMD0000000000000002 /* Markdown */,
+				DD86D3EC2FEB9972000BC38E /* MVTTools */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
@@ -3766,6 +3769,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DD0D3D202A55CEB10066DB71 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
 			productName = CocoaMQTT;
+		};
+		DD86D3EC2FEB9972000BC38E /* MVTTools */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD86D3572FEB9686000BC38E /* XCRemoteSwiftPackageReference "mvt-tools" */;
+			productName = MVTTools;
 		};
 /* End XCSwiftPackageProductDependency section */
 

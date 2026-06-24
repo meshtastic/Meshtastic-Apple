@@ -67,22 +67,24 @@ enum VectorTileRasterizer {
 
 	// MARK: - Drawing
 
-	private static func draw(_ geometry: GeoJsonGeometry, style: LayerStyle, scale: CGFloat, in cg: CGContext) {
+	// GISTools geometry types are fully qualified: the app target has its own `Polygon`/`Point`
+	// in scope, so the bare names are ambiguous.
+	private static func draw(_ geometry: GISTools.GeoJsonGeometry, style: LayerStyle, scale: CGFloat, in cg: CGContext) {
 		switch geometry {
-		case let polygon as Polygon:
+		case let polygon as GISTools.Polygon:
 			fill(rings: polygon.rings.map(\.coordinates), style: style, scale: scale, in: cg)
-		case let multi as MultiPolygon:
+		case let multi as GISTools.MultiPolygon:
 			for polygon in multi.polygons { fill(rings: polygon.rings.map(\.coordinates), style: style, scale: scale, in: cg) }
-		case let line as LineString:
+		case let line as GISTools.LineString:
 			stroke(lines: [line.coordinates], style: style, scale: scale, in: cg)
-		case let multi as MultiLineString:
+		case let multi as GISTools.MultiLineString:
 			stroke(lines: multi.lineStrings.map(\.coordinates), style: style, scale: scale, in: cg)
 		default:
 			break // points → labels, not drawn here
 		}
 	}
 
-	private static func fill(rings: [[Coordinate3D]], style: LayerStyle, scale: CGFloat, in cg: CGContext) {
+	private static func fill(rings: [[GISTools.Coordinate3D]], style: LayerStyle, scale: CGFloat, in cg: CGContext) {
 		guard let color = style.fill else { return }
 		let path = CGMutablePath()
 		for ring in rings where ring.count > 1 {
@@ -95,7 +97,7 @@ enum VectorTileRasterizer {
 		cg.fillPath(using: .evenOdd) // exterior + holes
 	}
 
-	private static func stroke(lines: [[Coordinate3D]], style: LayerStyle, scale: CGFloat, in cg: CGContext) {
+	private static func stroke(lines: [[GISTools.Coordinate3D]], style: LayerStyle, scale: CGFloat, in cg: CGContext) {
 		guard let color = style.stroke else { return }
 		let path = CGMutablePath()
 		for line in lines where line.count > 1 {
