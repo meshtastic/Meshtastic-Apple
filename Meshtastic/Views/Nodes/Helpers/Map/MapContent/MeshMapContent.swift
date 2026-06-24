@@ -244,27 +244,31 @@ struct MeshMapContent: MapContent {
 			// avoiding full teardown/rebuild of overlay views on each render.
 			ForEach(allStyledFeatures) { styledFeature in
 				let feature = styledFeature.feature
-				let geometryType = feature.geometry.type
-				
-				if geometryType == "Point" {
-					if let coordinate = feature.geometry.coordinates.toCoordinate() {
-						Annotation(feature.name, coordinate: coordinate) {
-							Circle()
-								.fill(styledFeature.fillColor)
-								.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
-								.frame(width: feature.markerRadius * 2, height: feature.markerRadius * 2)
-						}
-						.annotationTitles(.automatic)
-						.annotationSubtitles(.hidden)
-					}
-				} else if geometryType == "LineString" {
-					if let overlay = styledFeature.createOverlay() as? MKPolyline {
-						MapPolyline(overlay)
+
+				// Point and MultiPoint render as marker annotations — one per coordinate. Both the
+				// coordinates and overlays below are precomputed at init, and we iterate their indices
+				// to avoid allocating an Array(enumerated()) on every render pass.
+				ForEach(styledFeature.precomputedMarkerCoordinates.indices, id: \.self) { index in
+					Annotation(feature.name, coordinate: styledFeature.precomputedMarkerCoordinates[index]) {
+						Circle()
+							.fill(styledFeature.fillColor)
 							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+							.frame(width: feature.markerRadius * 2, height: feature.markerRadius * 2)
 					}
-				} else if geometryType == "Polygon" {
-					if let overlay = styledFeature.createOverlay() as? MKPolygon {
-						MapPolygon(overlay)
+					.annotationTitles(.automatic)
+					.annotationSubtitles(.hidden)
+				}
+
+				// LineString/Polygon and their Multi* variants render as one map shape per
+				// sub-geometry. precomputedOverlays has already flattened MKMulti* wrappers down to
+				// simple MKPolyline / MKPolygon, so a single type switch covers every overlay type.
+				ForEach(styledFeature.precomputedOverlays.indices, id: \.self) { index in
+					let overlay = styledFeature.precomputedOverlays[index]
+					if let polyline = overlay as? MKPolyline {
+						MapPolyline(polyline)
+							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
+					} else if let polygon = overlay as? MKPolygon {
+						MapPolygon(polygon)
 							.foregroundStyle(styledFeature.fillColor)
 							.stroke(styledFeature.strokeColor, style: styledFeature.strokeStyle)
 					}

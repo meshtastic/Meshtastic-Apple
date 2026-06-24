@@ -165,6 +165,19 @@ struct GeoJSONFeature: Codable {
 		default: return 4.0
 		}
 	}
+
+	/// Coordinates to draw as map markers. A Point yields one coordinate; a MultiPoint yields one
+	/// per sub-coordinate. Empty for every other geometry type (those render as overlays instead).
+	var markerCoordinates: [CLLocationCoordinate2D] {
+		switch geometry.type.lowercased() {
+		case "point":
+			return geometry.coordinates.toCoordinate().map { [$0] } ?? []
+		case "multipoint":
+			return geometry.coordinates.toCoordinates()
+		default:
+			return []
+		}
+	}
 }
 
 // MARK: - Styled Feature Wrapper
@@ -174,26 +187,32 @@ struct GeoJSONStyledFeature: Identifiable {
 	let id = UUID()
 	let feature: GeoJSONFeature
 	let overlayId: String
-	/// MKOverlay pre-computed once at init — avoids repeated JSONSerialization + MKGeoJSONDecoder
-	/// calls on every map render pass.
-	let precomputedOverlay: MKOverlay?
+	/// MKOverlays pre-computed once at init — avoids repeated JSONSerialization + MKGeoJSONDecoder
+	/// calls on every map render pass. A Multi* geometry contributes one overlay per sub-geometry,
+	/// so this is an array rather than a single optional. Empty for Point/MultiPoint (drawn as
+	/// annotations) and for geometries that produce no valid overlay.
+	let precomputedOverlays: [MKOverlay]
+	/// Marker coordinates pre-computed once at init for the same reason as `precomputedOverlays`:
+	/// `overlayContent` is rebuilt on every map render pass, so deriving these per frame would
+	/// re-walk the raw GeoJSON coordinate arrays each time.
+	let precomputedMarkerCoordinates: [CLLocationCoordinate2D]
 
 	init(feature: GeoJSONFeature, overlayId: String) {
 		self.feature = feature
 		self.overlayId = overlayId
-		// Call the static helper after all stored properties are assigned so `self` is available
-		// for the instance — but we don't actually need self here, so this is safe.
-		self.precomputedOverlay = GeoJSONStyledFeature.makeOverlay(for: feature)
+		// Compute the overlays/markers once here so the render path just iterates cached values.
+		self.precomputedOverlays = GeoJSONStyledFeature.makeOverlays(for: feature)
+		self.precomputedMarkerCoordinates = feature.markerCoordinates
 	}
 
-	/// Builds an MKOverlay from a GeoJSON feature. Static so it can be called from init.
-	private static func makeOverlay(for feature: GeoJSONFeature) -> MKOverlay? {
+	/// Builds the MKOverlays for a GeoJSON feature. Static so it can be called from init.
+	private static func makeOverlays(for feature: GeoJSONFeature) -> [MKOverlay] {
 		// Point/MultiPoint geometries render as map annotations (markers), not overlays —
 		// MKGeoJSONDecoder returns an MKPointAnnotation (not an MKOverlay) for them, so running them
 		// through the overlay path below logged a spurious "no valid MKOverlay geometry" error for
 		// every point. Skip them silently; they're drawn via the annotation path (#1970).
 		let geometryType = feature.geometry.type.lowercased()
-		guard geometryType != "point", geometryType != "multipoint" else { return nil }
+		guard geometryType != "point", geometryType != "multipoint" else { return [] }
 
 		let featureDict: [String: Any] = [
 			"type": feature.type,
@@ -207,20 +226,34 @@ struct GeoJSONStyledFeature: Identifiable {
 		do {
 			let geojsonData = try JSONSerialization.data(withJSONObject: featureDict)
 			let mkFeatures = try MKGeoJSONDecoder().decode(geojsonData)
-			if let mkFeature = mkFeatures.first as? MKGeoJSONFeature,
-			   let geometry = mkFeature.geometry.first as? MKOverlay {
-				return geometry
-			} else {
+			guard let mkFeature = mkFeatures.first as? MKGeoJSONFeature else {
+				Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to create overlay - no MKGeoJSONFeature decoded.")
+				return []
+			}
+			// A Multi* geometry decodes into several shapes; flatten any MKMultiPolygon/MKMultiPolyline
+			// wrapper into its components so the render layer only ever deals with simple MKPolygon /
+			// MKPolyline. Previously this kept only `.first`, silently dropping every other sub-geometry.
+			let overlays: [MKOverlay] = mkFeature.geometry.flatMap { shape -> [MKOverlay] in
+				switch shape {
+				case let multiPolygon as MKMultiPolygon:
+					return multiPolygon.polygons
+				case let multiPolyline as MKMultiPolyline:
+					return multiPolyline.polylines
+				case let overlay as MKOverlay:
+					return [overlay]
+				default:
+					return []
+				}
+			}
+			if overlays.isEmpty {
 				Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to create overlay - no valid MKOverlay geometry.")
 			}
+			return overlays
 		} catch {
 			Logger.services.error("🗺️ GeoJSONStyledFeature: Failed to build overlay: \(error.localizedDescription)")
 		}
-		return nil
+		return []
 	}
-
-	/// Returns the pre-computed overlay. Retained for API compatibility.
-	func createOverlay() -> MKOverlay? { precomputedOverlay }
 
 	/// Get stroke style for this feature
 	var strokeStyle: StrokeStyle {
@@ -353,5 +386,12 @@ enum AnyCodableValue: Codable {
 			return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 		}
 		return nil
+	}
+
+	// Helper to convert a MultiPoint-style array of [lon, lat] pairs to coordinates. Malformed
+	// entries are skipped rather than failing the whole set.
+	func toCoordinates() -> [CLLocationCoordinate2D] {
+		guard case .array(let items) = self else { return [] }
+		return items.compactMap { $0.toCoordinate() }
 	}
 }

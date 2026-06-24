@@ -4,6 +4,7 @@
 import Testing
 import Foundation
 import CoreLocation
+import MapKit
 @testable import Meshtastic
 
 // MARK: - AnyCodableValue Tests
@@ -415,5 +416,163 @@ struct GeoJSONFeatureCollectionCodableTests {
 		#expect(feature.fillOpacity == 0.5)
 		#expect(feature.strokeColor == "#000000")
 		#expect(feature.strokeWidth == 2.0)
+	}
+}
+
+// MARK: - Marker Coordinate Tests
+
+@Suite("GeoJSONFeature markerCoordinates")
+struct GeoJSONFeatureMarkerCoordinatesTests {
+
+	private func feature(type: String, coordinates: AnyCodableValue) -> GeoJSONFeature {
+		GeoJSONFeature(
+			type: "Feature",
+			id: nil,
+			geometry: GeoJSONGeometry(type: type, coordinates: coordinates),
+			properties: nil
+		)
+	}
+
+	@Test func pointYieldsSingleCoordinate() {
+		let f = feature(type: "Point", coordinates: .array([.double(-122.0), .double(37.0)]))
+		let coords = f.markerCoordinates
+		#expect(coords.count == 1)
+		#expect(abs(coords[0].latitude - 37.0) < 0.0001)
+		#expect(abs(coords[0].longitude - (-122.0)) < 0.0001)
+	}
+
+	@Test func multiPointYieldsOnePerCoordinate() {
+		let f = feature(type: "MultiPoint", coordinates: .array([
+			.array([.double(0), .double(0)]),
+			.array([.double(1), .double(1)]),
+			.array([.double(2), .double(2)])
+		]))
+		#expect(f.markerCoordinates.count == 3)
+	}
+
+	@Test func multiPointSkipsMalformedCoordinates() {
+		let f = feature(type: "MultiPoint", coordinates: .array([
+			.array([.double(0), .double(0)]),
+			.array([.double(1)]),            // too few elements
+			.string("nope")                  // not an array
+		]))
+		#expect(f.markerCoordinates.count == 1)
+	}
+
+	@Test func polygonHasNoMarkerCoordinates() {
+		let f = feature(type: "Polygon", coordinates: .array([.array([
+			.array([.double(0), .double(0)]),
+			.array([.double(1), .double(0)]),
+			.array([.double(1), .double(1)]),
+			.array([.double(0), .double(0)])
+		])]))
+		#expect(f.markerCoordinates.isEmpty)
+	}
+
+	@Test func toCoordinatesParsesPairs() {
+		let value = AnyCodableValue.array([
+			.array([.double(10), .double(20)]),
+			.array([.int(30), .int(40)])
+		])
+		let coords = value.toCoordinates()
+		#expect(coords.count == 2)
+		#expect(abs(coords[0].longitude - 10.0) < 0.0001)
+		#expect(abs(coords[1].latitude - 40.0) < 0.0001)
+	}
+
+	@Test func toCoordinatesOnNonArrayIsEmpty() {
+		#expect(AnyCodableValue.string("x").toCoordinates().isEmpty)
+	}
+}
+
+// MARK: - Multi* Overlay Tests
+
+/// Regression coverage for the Multi* geometry gap: `makeOverlays` must emit one overlay per
+/// sub-geometry (the old code kept only `.first`, silently dropping the rest), and Point/MultiPoint
+/// must produce no overlays (they render as annotations).
+@Suite("GeoJSONStyledFeature overlays")
+struct GeoJSONStyledFeatureOverlayTests {
+
+	private func styledFeature(geometryJSON: String) throws -> GeoJSONStyledFeature {
+		let json = """
+		{ "type": "FeatureCollection", "features": [
+			{ "type": "Feature", "geometry": \(geometryJSON), "properties": {} }
+		]}
+		"""
+		let collection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: Data(json.utf8))
+		return GeoJSONStyledFeature(feature: collection.features[0], overlayId: "test")
+	}
+
+	@Test func singlePolygonProducesOneOverlay() throws {
+		let sf = try styledFeature(geometryJSON: """
+		{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,1],[1,0],[0,0]]]}
+		""")
+		#expect(sf.precomputedOverlays.count == 1)
+		#expect(sf.precomputedOverlays.first is MKPolygon)
+	}
+
+	@Test func multiPolygonProducesOnePolygonPerSubGeometry() throws {
+		let sf = try styledFeature(geometryJSON: """
+		{"type":"MultiPolygon","coordinates":[
+			[[[0,0],[0,1],[1,1],[1,0],[0,0]]],
+			[[[2,2],[2,3],[3,3],[3,2],[2,2]]]
+		]}
+		""")
+		// The pre-fix code returned only the first sub-polygon (count 1).
+		#expect(sf.precomputedOverlays.count == 2)
+		#expect(sf.precomputedOverlays.allSatisfy { $0 is MKPolygon })
+	}
+
+	@Test func multiLineStringProducesOnePolylinePerSubGeometry() throws {
+		let sf = try styledFeature(geometryJSON: """
+		{"type":"MultiLineString","coordinates":[
+			[[0,0],[1,1]],
+			[[2,2],[3,3]],
+			[[4,4],[5,5]]
+		]}
+		""")
+		#expect(sf.precomputedOverlays.count == 3)
+		#expect(sf.precomputedOverlays.allSatisfy { $0 is MKPolyline })
+	}
+
+	@Test func lineStringProducesOnePolyline() throws {
+		let sf = try styledFeature(geometryJSON: """
+		{"type":"LineString","coordinates":[[0,0],[1,1],[2,2]]}
+		""")
+		#expect(sf.precomputedOverlays.count == 1)
+		#expect(sf.precomputedOverlays.first is MKPolyline)
+	}
+
+	@Test func pointProducesNoOverlays() throws {
+		let sf = try styledFeature(geometryJSON: """
+		{"type":"Point","coordinates":[-122.0,37.0]}
+		""")
+		#expect(sf.precomputedOverlays.isEmpty)
+	}
+
+	@Test func multiPointProducesNoOverlays() throws {
+		let sf = try styledFeature(geometryJSON: """
+		{"type":"MultiPoint","coordinates":[[0,0],[1,1]]}
+		""")
+		#expect(sf.precomputedOverlays.isEmpty)
+	}
+
+	// A geometry whose coordinates decode but yield no drawable shape (here an empty MultiPolygon)
+	// must return [] cleanly — the empty-result branch that logs "no valid MKOverlay geometry".
+	@Test func emptyMultiPolygonProducesNoOverlays() throws {
+		let sf = try styledFeature(geometryJSON: """
+		{"type":"MultiPolygon","coordinates":[]}
+		""")
+		#expect(sf.precomputedOverlays.isEmpty)
+	}
+
+	// Malformed coordinates that fail MKGeoJSONDecoder must fall through the catch to [] rather
+	// than returning a partial/garbage overlay set.
+	@Test func malformedGeometryProducesNoOverlays() throws {
+		// A LineString whose coordinates are strings, not [lon, lat] number pairs.
+		let sf = try styledFeature(geometryJSON: """
+		{"type":"LineString","coordinates":["nope","still nope"]}
+		""")
+		#expect(sf.precomputedOverlays.isEmpty)
 	}
 }

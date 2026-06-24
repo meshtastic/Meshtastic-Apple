@@ -158,8 +158,8 @@ class MapDataManager: ObservableObject {
 		// Validate each feature
 		for feature in features {
 			guard let geometry = feature["geometry"] as? [String: Any],
-				  let coordinates = geometry["coordinates"] as? [Any],
-				  let geometryType = geometry["type"] as? String else {
+				  geometry["coordinates"] is [Any],
+				  geometry["type"] is String else {
 				throw NSError(domain: "MapDataManager", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid feature structure in GeoJSON"])
 			}
 		}
