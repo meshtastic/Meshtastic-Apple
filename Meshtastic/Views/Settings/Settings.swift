@@ -515,6 +515,13 @@ struct Settings: View {
 						Image(systemName: "map")
 					}
 				}
+				NavigationLink(value: SettingsNavigationState.clusterMapTest) {
+					Label {
+						Text("Cluster Map (MKMapView)")
+					} icon: {
+						Image(systemName: "circle.grid.3x3.fill")
+					}
+				}
 				NavigationLink(value: SettingsNavigationState.routes) {
 					Label {
 						Text("Routes")
@@ -707,6 +714,8 @@ struct Settings: View {
 					BackupManagement()
 				case .offlineMapTest:
 					PMTilesMapDemoView()
+				case .clusterMapTest:
+					ClusterMapDemoView()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in

@@ -1,0 +1,620 @@
+//
+//  ClusterMapView.swift
+//  Meshtastic
+//
+//  SELF-CONTAINED PROOF OF CONCEPT — a declarative, data-driven SwiftUI wrapper over UIKit's
+//  `MKMapView`. It gives a `Map`-like call site (pass `items` + a `@ViewBuilder` per annotation)
+//  while keeping the three things SwiftUI's own `Map` can't do:
+//
+//    1. CUSTOM raster basemaps via `MKTileOverlay` (the repo's offline `.pmtiles` / `.mbtiles`).
+//    2. Native MapKit CLUSTERING (`clusteringIdentifier`) with a SwiftUI cluster badge.
+//    3. Precise annotation-view REUSE + Identifiable-id DIFFING (no flicker on update).
+//
+//  This file is standalone and does NOT touch the production `MeshMap`. It only REUSES symbols
+//  that already ship in the app target:
+//
+//    • OfflineTileSource / OfflineTileSourceFactory.source(for:)  (Helpers/Map/MBTilesArchive.swift)
+//    • OfflineTileOverlay(source:dark:)                            (…/Map/PMTilesMapView.swift)
+//    • GeoBounds                                                    (Helpers/Map/PMTilesArchive.swift)
+//    • AnimatedNodePin / CircleText / UIColor(hex: UInt32)          (node pin styling — demo only)
+//
+//  HOSTING APPROACH: SwiftUI annotation (and cluster) views are hosted inside `MKAnnotationView`
+//  via `UIHostingConfiguration` (iOS 16+). `MKAnnotationView` is a plain `UIView` and does NOT adopt
+//  `UIContentConfiguration`, so we cannot assign `view.contentConfiguration = …` directly (that is a
+//  cell-only API). Instead we call the public `UIHostingConfiguration().makeContentView()`, which
+//  returns a self-sizing `UIView & UIContentView`, embed it ONCE, and only swap its `.configuration`
+//  on reuse — so the SwiftUI host (and any running animation, e.g. the pulse) survives recycling.
+//
+//  Target: iOS 17+. `PulsingCircle` inside `AnimatedNodePin` self-gates to iOS 18.
+//
+
+import MapKit
+import OSLog
+import SwiftUI
+
+// MARK: - Public declarative API
+
+/// A data-driven map. Pass your `items` and a `@ViewBuilder` that turns one item into its annotation
+/// view; the wrapper diffs the array by `Identifiable.id`, hosts each view in an `MKAnnotationView`,
+/// and (optionally) clusters them. Optionally bind a two-way camera `region` and/or supply an
+/// offline `tilesURL` raster basemap.
+///
+/// ```swift
+/// ClusterMapView(items: nodes, region: $region, clustering: true, tilesURL: topoURL) { node in
+///     AnimatedNodePin(nodeColor: node.color, shortName: node.short, … )
+/// } clusterContent: { count in
+///     ClusterBadge(count: count)
+/// }
+/// ```
+struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepresentable {
+
+	/// The data source. Diffed by `Item.ID` on every `updateUIView` — only changed annotations move.
+	let items: [Item]
+	/// Per-item coordinate. A closure (not a key-path constraint) so items model location freely.
+	let coordinate: (Item) -> CLLocationCoordinate2D
+	/// Two-way camera binding. A `nil` wrapped value means "don't drive the camera"; supply a real
+	/// binding to read the user's pans/zooms back out AND to push programmatic region changes in.
+	let region: Binding<MKCoordinateRegion?>?
+	/// When true, annotations share a `clusteringIdentifier` so MapKit collapses nearby pins.
+	let clustering: Bool
+	/// Optional offline raster basemap (`.pmtiles` / `.mbtiles`). When set, an `OfflineTileOverlay`
+	/// replaces Apple's basemap (rebuilt on a light/dark switch, exactly like `PMTilesMapView`).
+	let tilesURL: URL?
+	/// Builds the SwiftUI view for one item's pin.
+	@ViewBuilder let pinContent: (Item) -> Pin
+	/// Builds the SwiftUI cluster badge from the collapsed member count.
+	@ViewBuilder let clusterContent: (Int) -> Cluster
+
+	@Environment(\.colorScheme) private var colorScheme
+
+	// MARK: Designated init (full control)
+
+	init(
+		items: [Item],
+		coordinate: @escaping (Item) -> CLLocationCoordinate2D,
+		region: Binding<MKCoordinateRegion?>? = nil,
+		clustering: Bool = true,
+		tilesURL: URL? = nil,
+		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
+		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
+	) {
+		self.items = items
+		self.coordinate = coordinate
+		self.region = region
+		self.clustering = clustering
+		self.tilesURL = tilesURL
+		self.pinContent = pinContent
+		self.clusterContent = clusterContent
+	}
+
+	// MARK: UIViewRepresentable
+
+	func makeCoordinator() -> Coordinator { Coordinator() }
+
+	func makeUIView(context: Context) -> MKMapView {
+		let mapView = MKMapView()
+		mapView.delegate = context.coordinator
+		refreshClosures(on: context.coordinator)
+
+		// Register the reusable view classes ONCE. With registered classes MapKit dequeues + reuses
+		// them itself (incl. the cluster MapKit synthesizes); `viewFor` only reconfigures contents.
+		mapView.register(HostingAnnotationView.self,
+						 forAnnotationViewWithReuseIdentifier: HostingAnnotationView.reuseID)
+		mapView.register(HostingClusterView.self,
+						 forAnnotationViewWithReuseIdentifier: HostingClusterView.reuseID)
+
+		// Offline raster basemap (optional). Mirrors PMTilesMapView.makeUIView exactly.
+		context.coordinator.installTileOverlay(on: mapView, url: tilesURL, dark: colorScheme == .dark)
+
+		// Initial camera, if the caller drives one. Guarded so we don't echo it back out.
+		if let region = region?.wrappedValue {
+			context.coordinator.isApplyingExternalRegion = true
+			mapView.setRegion(region, animated: false)
+			context.coordinator.isApplyingExternalRegion = false
+		}
+
+		// Seed the annotations through the same diffing path used by updates.
+		context.coordinator.sync(items: items, coordinate: coordinate,
+								 clustering: clustering, on: mapView)
+		return mapView
+	}
+
+	func updateUIView(_ mapView: MKMapView, context: Context) {
+		// Keep the coordinator's closures fresh so SwiftUI state captured by the builders stays
+		// current on reuse (the representable is recreated each render; the coordinator persists).
+		refreshClosures(on: context.coordinator)
+
+		// 1) Offline basemap: rebuild only if the URL or the dark/light flag actually changed.
+		context.coordinator.installTileOverlay(on: mapView, url: tilesURL, dark: colorScheme == .dark)
+
+		// 2) Diff annotations by Identifiable id — add/remove/move ONLY what changed (no flicker).
+		context.coordinator.sync(items: items, coordinate: coordinate,
+								 clustering: clustering, on: mapView)
+
+		// 3) Push an external region change in — but never while the user is driving the map, and
+		//    skip no-op writes. That's the feedback-loop guard (see Coordinator).
+		if let region = region?.wrappedValue,
+		   !context.coordinator.isUpdatingRegionFromMap,
+		   !context.coordinator.regionsApproximatelyEqual(mapView.region, region) {
+			context.coordinator.isApplyingExternalRegion = true
+			mapView.setRegion(region, animated: true)
+			// Cleared in regionDidChangeAnimated; also clear async in case no event fires.
+			DispatchQueue.main.async { context.coordinator.isApplyingExternalRegion = false }
+		}
+	}
+
+	/// Re-capture the SwiftUI builders + camera binding onto the (persistent) coordinator.
+	private func refreshClosures(on coordinator: Coordinator) {
+		coordinator.pinContent = { AnyView(pinContent($0)) }
+		coordinator.clusterContent = { AnyView(clusterContent($0)) }
+		coordinator.regionBinding = region
+	}
+
+	// MARK: - Coordinator (MKMapViewDelegate + diffing + camera sync + offline overlay)
+
+	final class Coordinator: NSObject, MKMapViewDelegate {
+
+		/// Builds the hosted SwiftUI pin for an item. Reset each render so captured state is fresh.
+		var pinContent: (Item) -> AnyView = { _ in AnyView(EmptyView()) }
+		/// Builds the hosted SwiftUI cluster badge for a member count.
+		var clusterContent: (Int) -> AnyView = { _ in AnyView(EmptyView()) }
+		/// The camera binding, set by the representable each render so the delegate can write back.
+		var regionBinding: Binding<MKCoordinateRegion?>?
+
+		/// id → the backing annotation currently on the map. The single source of truth for diffing.
+		private var annotationsByID: [Item.ID: ItemAnnotation<Item>] = [:]
+
+		// Offline basemap state (retained so the overlay can be rebuilt when only `dark` flips).
+		private var tileSource: OfflineTileSource?
+		private var tileOverlay: OfflineTileOverlay?
+		private var tileURL: URL?
+
+		// Camera feedback-loop guards.
+		/// True while WE push an external region in (so the resulting `regionDidChange` callback
+		/// doesn't write back out and ping-pong).
+		var isApplyingExternalRegion = false
+		/// True for the duration of a user-driven region write-back (so an interleaved update won't
+		/// fight the gesture by re-applying the binding mid-pan).
+		var isUpdatingRegionFromMap = false
+
+		/// Shared clustering identifier — all clustered item annotations use the same one so MapKit
+		/// groups them. (Computed, not stored: the Coordinator is nested in the generic
+		/// `ClusterMapView`, and Swift forbids static STORED properties on generic types.)
+		private static var clusterID: String { "ClusterMapView.item" }
+
+		// MARK: Offline basemap (mirrors PMTilesMapView's swap-on-dark pattern)
+
+		/// Adds the offline overlay, or rebuilds it when the URL or dark flag changed. Idempotent:
+		/// safe to call every `updateUIView`. The `source` is retained, so a light/dark switch only
+		/// rebuilds the cheap overlay wrapper, never re-opens the archive.
+		func installTileOverlay(on mapView: MKMapView, url: URL?, dark: Bool) {
+			// Nothing requested — drop any existing overlay (caller cleared tilesURL).
+			guard let url else {
+				if let old = tileOverlay { mapView.removeOverlay(old) }
+				tileOverlay = nil; tileSource = nil; tileURL = nil
+				return
+			}
+			let urlChanged = (tileURL != url)
+			let darkChanged = (tileOverlay?.dark != dark)
+			guard urlChanged || darkChanged || tileOverlay == nil else { return }
+
+			if urlChanged || tileSource == nil {
+				guard let source = OfflineTileSourceFactory.source(for: url) else {
+					Logger.services.error("📦 [ClusterMapView] Failed to open \(url.lastPathComponent, privacy: .public); using Apple basemap.")
+					return
+				}
+				tileSource = source
+				tileURL = url
+			}
+			guard let source = tileSource else { return }
+			if let old = tileOverlay { mapView.removeOverlay(old) }
+			let overlay = OfflineTileOverlay(source: source, dark: dark)
+			tileOverlay = overlay
+			mapView.addOverlay(overlay, level: .aboveLabels)
+
+			// If the caller didn't drive a region, frame the archive's own coverage so the basemap
+			// is visible on first appearance.
+			if regionBinding?.wrappedValue == nil, let bounds = source.geographicBounds {
+				let center = CLLocationCoordinate2D(latitude: (bounds.minLat + bounds.maxLat) / 2,
+													longitude: (bounds.minLon + bounds.maxLon) / 2)
+				let span = MKCoordinateSpan(latitudeDelta: max(0.02, bounds.maxLat - bounds.minLat),
+											longitudeDelta: max(0.02, bounds.maxLon - bounds.minLon))
+				isApplyingExternalRegion = true
+				mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: false)
+				isApplyingExternalRegion = false
+			}
+		}
+
+		// MARK: Annotation diffing
+
+		/// Reconcile on-map annotations with `items` by `Item.ID`, touching ONLY what changed.
+		///
+		///  • New id      → make an `ItemAnnotation`, add it.
+		///  • Removed id  → remove its annotation.
+		///  • Existing id → update the item in place; move the coordinate ONLY if it changed.
+		///
+		/// We never `removeAnnotations(all)` + re-add — that flickers and re-runs cluster layout.
+		/// Moves mutate the KVO-compliant `coordinate` in place so MapKit animates the existing view.
+		func sync(
+			items: [Item],
+			coordinate: (Item) -> CLLocationCoordinate2D,
+			clustering: Bool,
+			on mapView: MKMapView
+		) {
+			let wantClusterID: String? = clustering ? Self.clusterID : nil
+			var seen = Set<Item.ID>()
+			seen.reserveCapacity(items.count)
+			var toAdd: [ItemAnnotation<Item>] = []
+			var toReadd: [ItemAnnotation<Item>] = []
+
+			for item in items {
+				let id = item.id
+				seen.insert(id)
+				let coord = coordinate(item)
+
+				if let existing = annotationsByID[id] {
+					// Update in place — keeps the same MapKit view (no flicker).
+					existing.item = item
+					if !Self.coordinatesEqual(existing.coordinate, coord) {
+						existing.coordinate = coord // KVO → MapKit animates the move
+					}
+					// Toggling clustering at runtime requires re-add: clusteringIdentifier is only
+					// honored when the annotation is added.
+					if existing.clusteringIdentifier != wantClusterID {
+						existing.clusteringIdentifier = wantClusterID
+						mapView.removeAnnotation(existing)
+						toReadd.append(existing)
+					} else if let view = mapView.view(for: existing) as? HostingAnnotationView {
+						// Refresh a currently-visible view so it reflects the new item snapshot
+						// (e.g. an online/offline change).
+						view.configure(content: pinContent(item))
+					}
+				} else {
+					let annotation = ItemAnnotation(item: item, coordinate: coord,
+													clusteringIdentifier: wantClusterID)
+					annotationsByID[id] = annotation
+					toAdd.append(annotation)
+				}
+			}
+
+			// Removals: any tracked id not present this pass.
+			let removedIDs = annotationsByID.keys.filter { !seen.contains($0) }
+			if !removedIDs.isEmpty {
+				let removed = removedIDs.compactMap { annotationsByID.removeValue(forKey: $0) }
+				mapView.removeAnnotations(removed)
+			}
+			if !toReadd.isEmpty { mapView.addAnnotations(toReadd) }
+			if !toAdd.isEmpty { mapView.addAnnotations(toAdd) } // MapKit batches & clusters these
+		}
+
+		// MARK: MKMapViewDelegate — viewFor hosts SwiftUI in MKAnnotationView
+
+		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+			// MapKit's blue user-location dot — let MapKit own it.
+			if annotation is MKUserLocation { return nil }
+
+			// A cluster MapKit synthesized from our clustered annotations.
+			if let cluster = annotation as? MKClusterAnnotation {
+				let view = mapView.dequeueReusableAnnotationView(
+					withIdentifier: HostingClusterView.reuseID, for: cluster) as? HostingClusterView
+				view?.configure(content: clusterContent(cluster.memberAnnotations.count))
+				return view
+			}
+
+			// One of our item annotations.
+			if let item = annotation as? ItemAnnotation<Item> {
+				let view = mapView.dequeueReusableAnnotationView(
+					withIdentifier: HostingAnnotationView.reuseID, for: item) as? HostingAnnotationView
+				// `for:` already assigned `view.annotation = item`. Mirror clusteringIdentifier onto
+				// the VIEW too — MapKit reads it from the annotation view when forming clusters.
+				view?.clusteringIdentifier = item.clusteringIdentifier
+				view?.configure(content: pinContent(item.item))
+				return view
+			}
+
+			return nil
+		}
+
+		// MARK: Overlay renderer
+
+		func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+			// Same renderer the repo uses for the offline overlay.
+			if let tileOverlay = overlay as? MKTileOverlay {
+				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
+			}
+			return MKOverlayRenderer(overlay: overlay)
+		}
+
+		// MARK: Camera write-back (user gestures → region binding), loop-guarded
+
+		func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+			// Ignore the callback caused by our own external write (guard #1).
+			guard !isApplyingExternalRegion else {
+				isApplyingExternalRegion = false
+				return
+			}
+			guard let regionBinding else { return }
+			let newRegion = mapView.region
+			// Skip no-op writes so we don't thrash SwiftUI state (guard #2).
+			if let current = regionBinding.wrappedValue,
+			   regionsApproximatelyEqual(current, newRegion) { return }
+			isUpdatingRegionFromMap = true
+			defer { isUpdatingRegionFromMap = false }
+			regionBinding.wrappedValue = newRegion
+		}
+
+		// MARK: Helpers
+
+		static func coordinatesEqual(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Bool {
+			// ~1e-7° (~1 cm) is below MapKit's display resolution — don't churn on float noise.
+			abs(a.latitude - b.latitude) < 1e-7 && abs(a.longitude - b.longitude) < 1e-7
+		}
+
+		/// Loose equality so float jitter from MapKit doesn't count as "the binding changed".
+		/// (`MKCoordinateRegion` is intentionally not made `Equatable` — a fuzzy global `==` would
+		/// silently weaken every guard that uses it.)
+		func regionsApproximatelyEqual(_ a: MKCoordinateRegion, _ b: MKCoordinateRegion) -> Bool {
+			let centerTolerance = 1e-5, spanTolerance = 1e-5
+			return abs(a.center.latitude - b.center.latitude) < centerTolerance &&
+				   abs(a.center.longitude - b.center.longitude) < centerTolerance &&
+				   abs(a.span.latitudeDelta - b.span.latitudeDelta) < spanTolerance &&
+				   abs(a.span.longitudeDelta - b.span.longitudeDelta) < spanTolerance
+		}
+	}
+}
+
+// MARK: - Convenience initializer: default cluster badge
+
+extension ClusterMapView where Cluster == ClusterBadge {
+	/// `Map`-like init that uses the built-in count badge for clusters, so callers only supply the pin.
+	init(
+		items: [Item],
+		coordinate: @escaping (Item) -> CLLocationCoordinate2D,
+		region: Binding<MKCoordinateRegion?>? = nil,
+		clustering: Bool = true,
+		tilesURL: URL? = nil,
+		@ViewBuilder content pinContent: @escaping (Item) -> Pin
+	) {
+		self.init(items: items,
+				  coordinate: coordinate,
+				  region: region,
+				  clustering: clustering,
+				  tilesURL: tilesURL,
+				  content: pinContent,
+				  clusterContent: { ClusterBadge(count: $0) })
+	}
+}
+
+// MARK: - Backing MKAnnotation that carries the item by identity
+
+/// One MapKit annotation per caller item. MapKit requires `MKAnnotation` to be a class, so this is
+/// a reference type carrying the strongly-typed `item` plus its stable id. `coordinate` is
+/// `@objc dynamic` so mutating it in place is KVO-observed by MapKit and animates the existing view.
+private final class ItemAnnotation<Item: Identifiable>: NSObject, MKAnnotation {
+	@objc dynamic var coordinate: CLLocationCoordinate2D
+	/// Current item, replaced in place on update so the hosted view refreshes without the annotation
+	/// losing its MapKit identity (and thus its on-screen view + cluster membership).
+	var item: Item
+	let identifier: Item.ID
+	/// Non-nil enables clustering for this annotation; MapKit groups equal identifiers.
+	var clusteringIdentifier: String?
+
+	init(item: Item, coordinate: CLLocationCoordinate2D, clusteringIdentifier: String?) {
+		self.item = item
+		self.identifier = item.id
+		self.coordinate = coordinate
+		self.clusteringIdentifier = clusteringIdentifier
+		super.init()
+	}
+}
+
+/// Type-erased hook so `HostingAnnotationView` can read `clusteringIdentifier` off any
+/// `ItemAnnotation<…>` without naming the concrete `Item`.
+private protocol AnyClusteredAnnotation {
+	var anyClusteringIdentifier: String? { get }
+}
+extension ItemAnnotation: AnyClusteredAnnotation {
+	var anyClusteringIdentifier: String? { clusteringIdentifier }
+}
+
+// MARK: - Hosting annotation views (SwiftUI inside MKAnnotationView via UIHostingConfiguration)
+//
+// NOTE: `MKAnnotationView` is NOT a `contentConfiguration` host (only cells / list content views
+// are), so `view.contentConfiguration = UIHostingConfiguration { … }` does NOT compile against it.
+// We instead call `UIHostingConfiguration().makeContentView()` — a public iOS-16 API returning a
+// self-sizing `UIView & UIContentView` — and embed THAT once, swapping only its `.configuration`
+// on reuse so the SwiftUI host (and any running animation) survives recycling.
+
+/// Common base: keeps one hosting content view alive and re-applies a fresh `UIHostingConfiguration`
+/// on each `configure(content:)`, sizing the annotation view to the SwiftUI content.
+private class HostingAnnotationViewBase: MKAnnotationView {
+	/// The persistent `UIView & UIContentView` made from a `UIHostingConfiguration`.
+	private var hostContentView: (UIView & UIContentView)?
+
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		// Let the SwiftUI content extend beyond the view's nominal bounds (e.g. the 50pt pulse halo).
+		clipsToBounds = false
+		collisionMode = .circle
+		backgroundColor = .clear
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+	/// (Re)host `content`. Builds the hosting content view once; afterwards just swaps its
+	/// `configuration`, so the SwiftUI host persists across reuse.
+	func configure(content: AnyView) {
+		let configuration = UIHostingConfiguration { content }.margins(.all, 0)
+		if let hostContentView {
+			hostContentView.configuration = configuration
+		} else {
+			let view = configuration.makeContentView()
+			view.translatesAutoresizingMaskIntoConstraints = false
+			addSubview(view)
+			NSLayoutConstraint.activate([
+				view.centerXAnchor.constraint(equalTo: centerXAnchor),
+				view.centerYAnchor.constraint(equalTo: centerYAnchor)
+			])
+			hostContentView = view
+		}
+		// Size the annotation view to the hosted content so hit-testing / anchoring are correct.
+		let target = hostContentView?.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+			?? CGSize(width: 40, height: 40)
+		frame = CGRect(origin: frame.origin, size: CGSize(width: max(target.width, 1),
+														  height: max(target.height, 1)))
+		centerOffset = .zero // MapKit places the view's CENTER on the coordinate — what we want.
+	}
+}
+
+/// Hosts an arbitrary SwiftUI pin. Registered with the map so MapKit dequeues / reuses it.
+private final class HostingAnnotationView: HostingAnnotationViewBase {
+	static let reuseID = "ClusterMapView.pin"
+
+	/// MapKit reads `clusteringIdentifier` off the annotation VIEW when forming clusters; mirror the
+	/// annotation's identifier onto the view whenever the (reused) annotation is reassigned.
+	override var annotation: MKAnnotation? {
+		didSet {
+			if let clustered = annotation as? AnyClusteredAnnotation {
+				clusteringIdentifier = clustered.anyClusteringIdentifier
+			}
+		}
+	}
+}
+
+/// Hosts an arbitrary SwiftUI cluster badge.
+private final class HostingClusterView: HostingAnnotationViewBase {
+	static let reuseID = "ClusterMapView.cluster"
+
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		displayPriority = .defaultHigh // clusters win over individual pins when they overlap
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+// MARK: - Default cluster badge (a SwiftUI view, hosted just like the pins)
+
+/// The built-in cluster count badge used by the convenience initializer.
+struct ClusterBadge: View {
+	let count: Int
+
+	var body: some View {
+		Text("\(count)")
+			.font(.system(size: 15, weight: .bold, design: .rounded))
+			.foregroundStyle(.white)
+			.padding(8)
+			.frame(minWidth: 34, minHeight: 34)
+			.background(
+				Circle().fill(Color.accentColor)
+					.overlay(Circle().stroke(.white.opacity(0.9), lineWidth: 2))
+			)
+			.shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+	}
+}
+
+// =====================================================================================
+// MARK: - DEMO: ~300 node annotations around Bellevue, clustered, on the topo basemap
+// =====================================================================================
+
+/// A demo item. Real callers pass their own `Identifiable` model (e.g. a `NodeInfoEntity`).
+/// Mirrors the node fields the pin look needs (nodeNum → color, shortName, online).
+private struct DemoNode: Identifiable {
+	let id: Int            // stands in for nodeNum
+	let shortName: String
+	let coordinate: CLLocationCoordinate2D
+	let isOnline: Bool
+
+	/// Same scheme the app uses everywhere: node color derives from nodeNum via `UIColor(hex:)`.
+	var nodeColor: UIColor { UIColor(hex: UInt32(truncatingIfNeeded: id)) }
+}
+
+/// Reachable from Settings (mirror of `PMTilesMapDemoView`): ~300 clustered nodes around Bellevue on
+/// the `bellevue-topo.pmtiles` raster basemap. Drop the file into Files → On My iPhone → Meshtastic
+/// to see the offline basemap on device; otherwise it falls back to Apple's basemap.
+struct ClusterMapDemoView: View {
+	@State private var region: MKCoordinateRegion? = MKCoordinateRegion(
+		center: CLLocationCoordinate2D(latitude: 47.6101, longitude: -122.2015), // Bellevue, WA
+		span: MKCoordinateSpan(latitudeDelta: 0.18, longitudeDelta: 0.18)
+	)
+	@State private var clustering = true
+	@State private var nodes: [DemoNode] = ClusterMapDemoView.makeNodes(count: 300)
+
+	private var documents: URL {
+		FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+	}
+	private var tilesURL: URL? {
+		let url = documents.appendingPathComponent("bellevue-topo.pmtiles")
+		return FileManager.default.fileExists(atPath: url.path) ? url : nil
+	}
+
+	var body: some View {
+		ClusterMapView(
+			items: nodes,
+			coordinate: \.coordinate,
+			region: $region,
+			clustering: clustering,
+			tilesURL: tilesURL
+		) { node in
+			// The SAME node styling the production map uses, hosted in an MKAnnotationView.
+			// Stable per-node pulse phase so the halos don't all blink in lockstep.
+			// (PulsingCircle inside is iOS-18-gated by AnimatedNodePin itself.)
+			AnimatedNodePin(
+				nodeColor: node.nodeColor,
+				shortName: node.shortName,
+				hasDetectionSensorMetrics: false,
+				isOnline: node.isOnline,
+				calculatedDelay: Double(node.id % 12) * 0.1,
+				showsPulse: true
+			)
+		}
+		.ignoresSafeArea()
+		.overlay(alignment: .top) {
+			if tilesURL == nil {
+				Text("Drop bellevue-topo.pmtiles into Documents to see the offline basemap")
+					.font(.caption2)
+					.padding(8)
+					.background(.thinMaterial, in: Capsule())
+					.padding(.top, 8)
+			}
+		}
+		.navigationTitle("Cluster Map POC")
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				Toggle("Cluster", isOn: $clustering).toggleStyle(.button)
+			}
+			ToolbarItem(placement: .topBarTrailing) {
+				// Exercises the diff: regenerate the dataset; only changed pins move/add/remove.
+				Button("Shuffle") { nodes = Self.makeNodes(count: 300) }
+			}
+		}
+	}
+
+	/// ~300 nodes scattered in two overlapping blobs around Bellevue so clustering is exercised.
+	private static func makeNodes(count: Int) -> [DemoNode] {
+		let center = CLLocationCoordinate2D(latitude: 47.6101, longitude: -122.2015)
+		var generator = SystemRandomNumberGenerator()
+		let names = ["TST", "MESH", "NODE", "REPE", "BASE", "ROVR", "HILL", "LAKE", "PARK", "DTWN"]
+		return (0..<count).map { index in
+			// Two overlapping clusters (downtown + a north blob) so the map shows real grouping.
+			let northBias = index % 3 == 0
+			let latJitter = Double.random(in: -0.05...0.05, using: &generator) + (northBias ? 0.04 : 0)
+			let lonJitter = Double.random(in: -0.06...0.06, using: &generator)
+			return DemoNode(
+				id: 0x1000_0000 + index * 7919, // spread ids → varied colors
+				shortName: "\(names[index % names.count])\(index % 10)",
+				coordinate: CLLocationCoordinate2D(latitude: center.latitude + latJitter,
+												   longitude: center.longitude + lonJitter),
+				isOnline: index % 4 != 0
+			)
+		}
+	}
+}
+
+#Preview {
+	NavigationStack {
+		ClusterMapDemoView()
+	}
+}

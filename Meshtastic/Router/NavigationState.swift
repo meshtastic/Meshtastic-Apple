@@ -65,6 +65,7 @@ enum SettingsNavigationState: String {
 	case helpDocs
 	case backupManagement
 	case offlineMapTest
+	case clusterMapTest
 }
 
 struct NavigationState: Hashable {
