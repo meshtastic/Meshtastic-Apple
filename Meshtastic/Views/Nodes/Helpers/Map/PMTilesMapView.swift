@@ -16,24 +16,24 @@ import SwiftUI
 
 // MARK: - Tile overlay backed by a PMTiles archive
 
-final class PMTilesTileOverlay: MKTileOverlay {
-	private let archive: PMTilesArchive
+final class OfflineTileOverlay: MKTileOverlay {
+	private let source: OfflineTileSource
 
-	init(archive: PMTilesArchive) {
-		self.archive = archive
+	init(source: OfflineTileSource) {
+		self.source = source
 		super.init(urlTemplate: nil)
 		self.tileSize = CGSize(width: 256, height: 256)
-		self.minimumZ = Int(archive.header.minZoom)
-		self.maximumZ = Int(archive.header.maxZoom)
+		self.minimumZ = Int(source.tileMinZoom)
+		self.maximumZ = Int(source.tileMaxZoom)
 		// Replace Apple's basemap entirely so the map is fully offline.
 		self.canReplaceMapContent = true
 	}
 
 	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
-		// PMTiles uses the standard slippy-map (XYZ, origin top-left) scheme — same as
-		// MKTileOverlayPath — so no Y flip is needed.
+		// Both PMTiles and (after the source's own TMS flip) MBTiles are addressed by the
+		// standard slippy-map (XYZ, origin top-left) scheme — same as MKTileOverlayPath.
 		guard path.z >= 0, path.x >= 0, path.y >= 0,
-			  let data = archive.tileData(z: UInt8(path.z), x: UInt32(path.x), y: UInt32(path.y)) else {
+			  let data = source.tileData(z: UInt8(path.z), x: UInt32(path.x), y: UInt32(path.y)) else {
 			result(nil, nil) // no tile here — MapKit leaves it blank
 			return
 		}
@@ -72,8 +72,8 @@ private final class StyledPointAnnotation: MKPointAnnotation {
 // MARK: - SwiftUI representable
 
 struct PMTilesMapView: UIViewRepresentable {
-	/// Local `.pmtiles` raster archive to use as the offline basemap.
-	let pmtilesURL: URL
+	/// Local offline raster tile archive (`.pmtiles` or `.mbtiles`) used as the basemap.
+	let tilesURL: URL
 	/// Optional GeoJSON overlay (e.g. the Bellevue bounding box) drawn on top.
 	var geoJSONURL: URL?
 
@@ -83,12 +83,12 @@ struct PMTilesMapView: UIViewRepresentable {
 		let mapView = MKMapView()
 		mapView.delegate = context.coordinator
 
-		guard let archive = PMTilesArchive(url: pmtilesURL) else {
-			Logger.services.error("📦 [PMTiles] Failed to open \(pmtilesURL.lastPathComponent, privacy: .public); showing Apple basemap.")
+		guard let source = OfflineTileSourceFactory.source(for: tilesURL) else {
+			Logger.services.error("📦 [Offline] Failed to open \(tilesURL.lastPathComponent, privacy: .public); showing Apple basemap.")
 			return mapView
 		}
 
-		let overlay = PMTilesTileOverlay(archive: archive)
+		let overlay = OfflineTileOverlay(source: source)
 		mapView.addOverlay(overlay, level: .aboveLabels)
 
 		// Draw the GeoJSON overlay (polygons/lines as overlays, points as annotations).
@@ -97,8 +97,7 @@ struct PMTilesMapView: UIViewRepresentable {
 		// Frame the GeoJSON if present, else the archive's own bounds.
 		if let region = context.coordinator.geoJSONRegion {
 			mapView.setRegion(region, animated: false)
-		} else {
-			let bounds = archive.header.bounds
+		} else if let bounds = source.geographicBounds {
 			let center = CLLocationCoordinate2D(latitude: (bounds.minLat + bounds.maxLat) / 2,
 												longitude: (bounds.minLon + bounds.maxLon) / 2)
 			let span = MKCoordinateSpan(latitudeDelta: max(0.02, bounds.maxLat - bounds.minLat),
@@ -230,21 +229,24 @@ struct PMTilesMapDemoView: View {
 	private var documents: URL { FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0] }
 
 	var body: some View {
-		let pmtiles = documents.appendingPathComponent("bellevue.pmtiles")
 		let geojson = documents.appendingPathComponent("test-bellevue-bbox.geojson")
+		// Accept either container — whichever the rasterized output landed in.
+		let tiles = ["bellevue.mbtiles", "bellevue.pmtiles"]
+			.map { documents.appendingPathComponent($0) }
+			.first { FileManager.default.fileExists(atPath: $0.path) }
 		Group {
-			if FileManager.default.fileExists(atPath: pmtiles.path) {
-				PMTilesMapView(pmtilesURL: pmtiles,
+			if let tiles {
+				PMTilesMapView(tilesURL: tiles,
 							   geoJSONURL: FileManager.default.fileExists(atPath: geojson.path) ? geojson : nil)
 					.ignoresSafeArea()
 			} else {
 				ContentUnavailableView(
-					"No PMTiles file",
+					"No offline tiles",
 					systemImage: "map",
-					description: Text("Copy a raster bellevue.pmtiles into the app's Documents folder to test offline tiles.")
+					description: Text("Copy a raster bellevue.mbtiles or bellevue.pmtiles into the app's Documents folder to test offline tiles.")
 				)
 			}
 		}
-		.navigationTitle("Offline PMTiles")
+		.navigationTitle("Offline Tiles")
 	}
 }
