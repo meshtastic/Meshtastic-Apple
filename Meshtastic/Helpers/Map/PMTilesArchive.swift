@@ -34,6 +34,14 @@ enum PMTilesCompression: UInt8 {
 	case zstd = 4
 }
 
+/// Geographic bounds in degrees.
+struct GeoBounds: Equatable {
+	let minLon: Double
+	let minLat: Double
+	let maxLon: Double
+	let maxLat: Double
+}
+
 /// Parsed 127-byte PMTiles v3 header.
 struct PMTilesHeader {
 	let rootDirOffset: UInt64
@@ -45,8 +53,7 @@ struct PMTilesHeader {
 	let tileType: PMTilesTileType
 	let minZoom: UInt8
 	let maxZoom: UInt8
-	/// Geographic bounds in degrees: (minLon, minLat, maxLon, maxLat).
-	let bounds: (minLon: Double, minLat: Double, maxLon: Double, maxLat: Double)
+	let bounds: GeoBounds
 	let centerZoom: UInt8
 	let center: (lon: Double, lat: Double)
 }
@@ -108,7 +115,8 @@ final class PMTilesArchive {
 			tileType: PMTilesTileType(rawValue: data[99]) ?? .unknown,
 			minZoom: data[100],
 			maxZoom: data[101],
-			bounds: (Double(i32(102)) / 1e7, Double(i32(106)) / 1e7, Double(i32(110)) / 1e7, Double(i32(114)) / 1e7),
+			bounds: GeoBounds(minLon: Double(i32(102)) / 1e7, minLat: Double(i32(106)) / 1e7,
+							  maxLon: Double(i32(110)) / 1e7, maxLat: Double(i32(114)) / 1e7),
 			centerZoom: data[118],
 			center: (Double(i32(119)) / 1e7, Double(i32(123)) / 1e7)
 		)

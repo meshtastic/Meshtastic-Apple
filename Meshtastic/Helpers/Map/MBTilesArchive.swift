@@ -21,18 +21,23 @@ private let sqliteTransient = unsafeBitCast(-1, to: sqlite3_destructor_type.self
 /// Both `PMTilesArchive` and `MBTilesArchive` conform, so the MapKit shim is
 /// container-agnostic.
 protocol OfflineTileSource: AnyObject {
+	/// Returns the (already-decompressed) tile payload: raster bytes for raster archives,
+	/// or the raw MVT protobuf for vector archives (see `isVectorTiles`).
 	func tileData(z: UInt8, x: UInt32, y: UInt32) -> Data?
 	var tileMinZoom: UInt8 { get }
 	var tileMaxZoom: UInt8 { get }
-	/// (minLon, minLat, maxLon, maxLat) in degrees, if known.
-	var geographicBounds: (minLon: Double, minLat: Double, maxLon: Double, maxLat: Double)? { get }
+	/// Geographic extent of the archive, if known.
+	var geographicBounds: GeoBounds? { get }
+	/// True if the tiles are vector (MVT) and must be rasterized before MapKit can show them.
+	var isVectorTiles: Bool { get }
 }
 
 // PMTilesArchive already serves tiles by z/x/y — expose it through the shared protocol.
 extension PMTilesArchive: OfflineTileSource {
 	var tileMinZoom: UInt8 { header.minZoom }
 	var tileMaxZoom: UInt8 { header.maxZoom }
-	var geographicBounds: (minLon: Double, minLat: Double, maxLon: Double, maxLat: Double)? { header.bounds }
+	var geographicBounds: GeoBounds? { header.bounds }
+	var isVectorTiles: Bool { header.tileType == .mvt }
 }
 
 /// Reads raster tiles from a local `.mbtiles` (SQLite) file. Thread-safe: `tileData`
@@ -44,7 +49,8 @@ final class MBTilesArchive: OfflineTileSource {
 
 	let tileMinZoom: UInt8
 	let tileMaxZoom: UInt8
-	let geographicBounds: (minLon: Double, minLat: Double, maxLon: Double, maxLat: Double)?
+	let geographicBounds: GeoBounds?
+	let isVectorTiles: Bool
 
 	init?(url: URL) {
 		var handle: OpaquePointer?
@@ -68,15 +74,13 @@ final class MBTilesArchive: OfflineTileSource {
 		tileMaxZoom = UInt8(metadata("maxzoom").flatMap { Int($0) } ?? 22)
 		if let parts = metadata("bounds")?.split(separator: ",").compactMap({ Double($0.trimmingCharacters(in: .whitespaces)) }),
 		   parts.count == 4 {
-			geographicBounds = (parts[0], parts[1], parts[2], parts[3])
+			geographicBounds = GeoBounds(minLon: parts[0], minLat: parts[1], maxLon: parts[2], maxLat: parts[3])
 		} else {
 			geographicBounds = nil
 		}
 
 		let format = metadata("format")?.lowercased() ?? "png"
-		if format == "pbf" || format == "mvt" {
-			Logger.services.warning("📦 [MBTiles] Archive is VECTOR (\(format, privacy: .public)) — MapKit cannot render it; use raster tiles.")
-		}
+		isVectorTiles = (format == "pbf" || format == "mvt")
 	}
 
 	deinit { if let db { sqlite3_close(db) } }

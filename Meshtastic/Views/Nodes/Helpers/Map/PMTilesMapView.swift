@@ -37,7 +37,12 @@ final class OfflineTileOverlay: MKTileOverlay {
 			result(nil, nil) // no tile here — MapKit leaves it blank
 			return
 		}
-		result(data, nil)
+		if source.isVectorTiles {
+			// Rasterize the MVT to a PNG in Swift so MapKit can display it (no MapLibre).
+			result(VectorTileRasterizer.png(mvt: data, z: path.z, x: path.x, y: path.y), nil)
+		} else {
+			result(data, nil) // already raster
+		}
 	}
 }
 
@@ -94,6 +99,11 @@ struct PMTilesMapView: UIViewRepresentable {
 		// Draw the GeoJSON overlay (polygons/lines as overlays, points as annotations).
 		if let geoJSONURL { context.coordinator.addGeoJSON(from: geoJSONURL, to: mapView) }
 
+		// Frame the downloaded archive with the bounding box (same style as our test box).
+		if let bounds = source.geographicBounds {
+			context.coordinator.addBoundingBox(bounds, to: mapView)
+		}
+
 		// Frame the GeoJSON if present, else the archive's own bounds.
 		if let region = context.coordinator.geoJSONRegion {
 			mapView.setRegion(region, animated: false)
@@ -114,6 +124,30 @@ struct PMTilesMapView: UIViewRepresentable {
 	final class Coordinator: NSObject, MKMapViewDelegate {
 		private var styles: [ObjectIdentifier: GeoJSONStyle] = [:]
 		private(set) var geoJSONRegion: MKCoordinateRegion?
+
+		/// Adds a styled rectangle around the archive's geographic bounds — the "box around the
+		/// downloaded protomap" — using the same look as the test GeoJSON box.
+		func addBoundingBox(_ bounds: GeoBounds, to mapView: MKMapView) {
+			let corners = [
+				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
+				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
+				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
+				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
+			]
+			let polygon = MKPolygon(coordinates: corners, count: corners.count)
+			var style = GeoJSONStyle(properties: nil)
+			style.stroke = UIColor(hex: "#E76F51") ?? .systemOrange
+			style.strokeWidth = 3
+			style.fill = UIColor(hex: "#2A9D8F") ?? .systemTeal
+			style.fillOpacity = 0.15
+			styles[ObjectIdentifier(polygon)] = style
+			mapView.addOverlay(polygon, level: .aboveLabels)
+
+			if geoJSONRegion == nil {
+				let rect = polygon.boundingMapRect
+				geoJSONRegion = MKCoordinateRegion(rect.insetBy(dx: -rect.size.width * 0.12, dy: -rect.size.height * 0.12))
+			}
+		}
 
 		/// Decodes a GeoJSON file with `MKGeoJSONDecoder` and adds its geometry to the map.
 		func addGeoJSON(from url: URL, to mapView: MKMapView) {
