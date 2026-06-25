@@ -321,18 +321,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			let overlay = OfflineTileOverlay(source: source, dark: dark)
 			tileOverlay = overlay
 			mapView.addOverlay(overlay, level: .aboveLabels)
-
-			// If the caller didn't drive a region, frame the archive's own coverage so the basemap
-			// is visible on first appearance.
-			if regionBinding?.wrappedValue == nil, let bounds = source.geographicBounds {
-				let center = CLLocationCoordinate2D(latitude: (bounds.minLat + bounds.maxLat) / 2,
-													longitude: (bounds.minLon + bounds.maxLon) / 2)
-				let span = MKCoordinateSpan(latitudeDelta: max(0.02, bounds.maxLat - bounds.minLat),
-											longitudeDelta: max(0.02, bounds.maxLon - bounds.minLon))
-				isApplyingExternalRegion = true
-				mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: false)
-				isApplyingExternalRegion = false
-			}
+			// NOTE: deliberately does NOT move the camera. The basemap renders wherever the user is;
+			// the caller (MeshMapMK) owns the initial framing (GPS-centered fit-to-nodes). Auto-jumping
+			// to the archive's coverage box was demo-only behavior and is confusing in the real map.
 		}
 
 		// MARK: Overlay diffing (circles / hull / routes / GeoJSON)

@@ -48,6 +48,11 @@ struct MeshMapMK: View {
 	/// Vector overlays (accuracy circles + convex hull) — rebuilt on data change, stable between
 	/// renders so ClusterMapView's overlay diff is a no-op when nothing changed.
 	@State private var mapOverlays: [ClusterMapOverlay] = []
+	/// Display-coordinate overrides for nodes that sit on (nearly) the same point, fanned out into
+	/// a small ring so a stacked cluster always breaks into individual, tappable node circles.
+	@State private var spreadOverrides: [Int64: CLLocationCoordinate2D] = [:]
+	/// Guards the one-time initial camera framing (GPS-centered, zoomed out, ~100 miles max).
+	@State private var didInitialFrame = false
 	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
@@ -177,7 +182,7 @@ struct MeshMapMK: View {
 			ZStack {
 			ClusterMapView(
 				items: visiblePositionSnapshots,
-				coordinate: { $0.coordinate },
+				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
 				region: $visibleRegion,
 				clustering: true,
 				tilesURL: offlineTilesURL,
@@ -430,13 +435,80 @@ struct MeshMapMK: View {
 
 		private func refreshVisiblePositionSnapshots() {
 			visiblePositionSnapshots = makePositionSnapshots(from: visiblePositions)
+			spreadOverrides = computeSpreadOverrides(visiblePositionSnapshots)
+			frameInitialRegionIfNeeded()
 			rebuildOverlays()
 		}
 
 		private func refreshVisiblePositionSnapshots(from positions: [PositionEntity]) {
 			visiblePositionSnapshots = makePositionSnapshots(from: positions)
+			spreadOverrides = computeSpreadOverrides(visiblePositionSnapshots)
+			frameInitialRegionIfNeeded()
 			rebuildOverlays()
 		}
+
+	/// Fan out nodes that sit on (nearly) the same coordinate into a small ring so a stacked cluster
+	/// always breaks into individual, tappable node circles instead of an un-splittable pin. The
+	/// accuracy circle stays at the true location; only the pin's display coordinate is offset.
+	private func computeSpreadOverrides(_ snaps: [MeshMapPositionSnapshot]) -> [Int64: CLLocationCoordinate2D] {
+		var groups: [Int64: [MeshMapPositionSnapshot]] = [:]
+		for snap in snaps {
+			// Quantize to ~1 m so only (near-)coincident nodes are grouped together.
+			let latKey = Int64((snap.coordinate.latitude * 1e5).rounded())
+			let lonKey = Int64((snap.coordinate.longitude * 1e5).rounded())
+			groups[latKey &* 100_000_000 &+ lonKey, default: []].append(snap)
+		}
+		var overrides: [Int64: CLLocationCoordinate2D] = [:]
+		let metersPerDegLat = 111_320.0
+		for members in groups.values where members.count > 1 {
+			let sorted = members.sorted { $0.nodeNum < $1.nodeNum }
+			let base = sorted[0].coordinate
+			let metersPerDegLon = max(1.0, metersPerDegLat * cos(base.latitude * .pi / 180))
+			// Grow the ring with crowd size so even a big pile stays individually tappable.
+			let radius = 14.0 + Double(sorted.count) * 1.5
+			for (index, member) in sorted.enumerated() {
+				let angle = 2 * Double.pi * Double(index) / Double(sorted.count)
+				overrides[member.nodeNum] = CLLocationCoordinate2D(
+					latitude: base.latitude + (radius * sin(angle)) / metersPerDegLat,
+					longitude: base.longitude + (radius * cos(angle)) / metersPerDegLon
+				)
+			}
+		}
+		return overrides
+	}
+
+	/// One-time initial camera framing. Centers on the phone's GPS (else the connected device's GPS,
+	/// else the node centroid) and zooms out to fit nearby nodes -- capped at ~100 miles so we "start
+	/// zoomed out but local." After it fires once the user drives the camera; we never re-frame.
+	private func frameInitialRegionIfNeeded() {
+		guard !didInitialFrame, visibleRegion == nil else { return }
+		let nodeCoords = allLatestPositions.compactMap { $0.nodeCoordinate ?? $0.fuzzedNodeCoordinate }
+		guard let center = LocationsHandler.currentLocation ?? activeDeviceCoordinate ?? coordinateCentroid(of: nodeCoords) else {
+			return // No GPS and no nodes yet -- try again on the next refresh.
+		}
+		// ~100 miles is about 1.45 deg latitude; floor ~20 miles so a lone node still starts zoomed out.
+		let maxSpan = 1.45, minSpan = 0.30
+		var maxLat = 0.0, maxLon = 0.0
+		for coord in nodeCoords {
+			maxLat = max(maxLat, abs(coord.latitude - center.latitude))
+			maxLon = max(maxLon, abs(coord.longitude - center.longitude))
+		}
+		let latDelta = min(max(maxLat * 2.5, minSpan), maxSpan)
+		let lonDelta = min(max(maxLon * 2.5, minSpan), maxSpan)
+		didInitialFrame = true
+		visibleRegion = MKCoordinateRegion(
+			center: center,
+			span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta)
+		)
+	}
+
+	/// Average of a coordinate list (nil when empty).
+	private func coordinateCentroid(of coords: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D? {
+		guard !coords.isEmpty else { return nil }
+		let lat = coords.reduce(0.0) { $0 + $1.latitude } / Double(coords.count)
+		let lon = coords.reduce(0.0) { $0 + $1.longitude } / Double(coords.count)
+		return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+	}
 
 	/// Rebuild the vector overlays (accuracy circles + convex hull) from the current snapshots.
 	/// Called on data change so the overlay objects are stable between renders. Ports the styling
