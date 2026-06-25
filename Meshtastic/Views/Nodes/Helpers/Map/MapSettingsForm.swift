@@ -18,6 +18,7 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
+	@AppStorage("enableMapClustering") private var enableMapClustering = true
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
@@ -50,12 +51,25 @@ struct MapSettingsForm: View {
 							Label {
 								VStack(alignment: .leading) {
 									Text("Offline Tiles")
-									Text("Styled offline basemap drawn over the selected map where coverage exists.")
+									Text("Shows a saved offline map over the covered area, so it still works without an internet connection.")
 										.font(.caption)
 										.foregroundColor(.secondary)
 								}
 							} icon: {
 								Image(systemName: "square.dashed")
+							}
+						}
+						.tint(.accentColor)
+						Toggle(isOn: $enableMapClustering) {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Cluster Nodes")
+									Text("Groups nearby nodes into one numbered pin; tap it to zoom in. Turn off to always show every node.")
+										.font(.caption)
+										.foregroundColor(.secondary)
+								}
+							} icon: {
+								Image(systemName: "circle.grid.3x3.fill")
 							}
 						}
 						.tint(.accentColor)

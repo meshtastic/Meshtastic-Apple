@@ -38,6 +38,7 @@ struct MeshMapMK: View {
 	/// Offline tiles are an independent overlay (drawn on top of the selected base map), not a
 	/// base layer -- so the styled offline box + coverage border work over Standard/Hybrid/Satellite.
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
+	@AppStorage("enableMapClustering") private var enableMapClustering = true
 	/// Map overlay configs
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
@@ -220,7 +221,7 @@ struct MeshMapMK: View {
 				items: visiblePositionSnapshots,
 				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
 				region: $visibleRegion,
-				clustering: true,
+				clustering: enableMapClustering,
 				tilesURL: nil,
 				onSelect: { snapshot in selectedWaypoint = nil; editingWaypoint = nil; selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
