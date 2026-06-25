@@ -48,34 +48,6 @@ struct MapSettingsForm: View {
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
-						Toggle(isOn: $enableOfflineTiles) {
-							Label {
-								VStack(alignment: .leading) {
-									Text("Offline Tiles")
-									Text("Shows a saved offline map over the covered area, so it still works without an internet connection.")
-										.font(.caption)
-										.foregroundColor(.secondary)
-								}
-							} icon: {
-								Image(systemName: "square.dashed")
-							}
-						}
-						.tint(.accentColor)
-						Toggle(isOn: $enableMapClustering) {
-							Label {
-								VStack(alignment: .leading) {
-									Text("Cluster Nodes")
-									Text("Groups nearby nodes into one numbered pin; tap it to zoom in. Turn off to always show every node.")
-										.font(.caption)
-										.foregroundColor(.secondary)
-								}
-							} icon: {
-								Image(systemName: "circle.grid.3x3.fill")
-							}
-						}
-						.tint(.accentColor)
-					}
-					if meshMap {
 					if LocationsHandler.currentPreciseLocation != nil {
 							HStack {
 								Label("Distance", systemImage: "lines.measurement.horizontal")
@@ -169,6 +141,34 @@ struct MapSettingsForm: View {
 				}
 
 				Section(header: Text("Map Overlays")) {
+					if meshMap {
+						Toggle(isOn: $enableOfflineTiles) {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Offline Tiles")
+									Text("Shows a saved offline map over the covered area, so it still works without an internet connection.")
+										.font(.caption)
+										.foregroundColor(.secondary)
+								}
+							} icon: {
+								Image(systemName: "square.dashed")
+							}
+						}
+						.tint(.accentColor)
+						Toggle(isOn: $enableMapClustering) {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Cluster Nodes")
+									Text("Groups nearby nodes into one numbered pin; tap it to zoom in. Turn off to always show every node.")
+										.font(.caption)
+										.foregroundColor(.secondary)
+								}
+							} icon: {
+								Image(systemName: "circle.grid.3x3.fill")
+							}
+						}
+						.tint(.accentColor)
+					}
 					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
 					// Master toggle for map overlays
 					Toggle(isOn: $mapOverlaysEnabled) {
