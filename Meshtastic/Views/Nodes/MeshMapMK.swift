@@ -651,12 +651,12 @@ struct MeshMapMK: View {
 
 	private static func offlineLineWidth(_ role: OfflineFeatureRole) -> CGFloat {
 		switch role {
-			case .majorRoad: return 5.5
-			case .mediumRoad: return 3.2
-			case .minorRoad: return 1.6
-			case .path: return 1.0
-			case .rail: return 1.3
-			case .boundary: return 1.2
+			case .majorRoad: return 2.8
+			case .mediumRoad: return 1.8
+			case .minorRoad: return 1.2
+			case .path: return 0.8
+			case .rail: return 1.0
+			case .boundary: return 1.0
 			default: return 1.0
 		}
 	}
