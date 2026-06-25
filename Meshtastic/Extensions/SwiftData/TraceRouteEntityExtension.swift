@@ -10,7 +10,7 @@ import CoreLocation
 import MapKit
 import SwiftUI
 
-extension TraceRouteHopEntity {
+extension TraceRouteNodePositionEntity {
 
 	var latitude: Double? {
 
@@ -37,5 +37,13 @@ extension TraceRouteHopEntity {
 		} else {
 		   return nil
 		}
+	}
+}
+
+extension TraceRouteEntity {
+
+	/// Snapshotted node positions keyed by node num for quick lookup when rendering a route.
+	var nodePositionsByNum: [Int64: TraceRouteNodePositionEntity] {
+		Dictionary(nodePositions.map { ($0.num, $0) }, uniquingKeysWith: { first, _ in first })
 	}
 }

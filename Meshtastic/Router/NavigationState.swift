@@ -54,6 +54,7 @@ enum SettingsNavigationState: String {
 	case telemetry
 	case trafficManagement
 	case debugLogs
+	case traceRoutes
 	case appFiles
 	case firmwareUpdates
 	case deviceLinks
