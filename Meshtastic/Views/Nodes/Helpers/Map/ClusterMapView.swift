@@ -74,6 +74,8 @@ struct ClusterMapDecoration: Identifiable {
 	let id: AnyHashable
 	let coordinate: CLLocationCoordinate2D
 	let content: AnyView
+	/// Tapped -> caller handles it (e.g. open the waypoint form). nil = display-only (route markers).
+	var onTap: (() -> Void)?
 }
 
 // MARK: - Public declarative API
@@ -118,6 +120,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	let coverageBounds: GeoBounds?
 	/// Standalone non-clustering decorations (route markers, waypoints) hosted over the map.
 	let decorations: [ClusterMapDecoration]
+	/// Tap / long-press on EMPTY map (not on a pin/marker) -> caller coordinate (create waypoint).
+	let onMapTap: ((CLLocationCoordinate2D) -> Void)?
+	let onMapLongPress: ((CLLocationCoordinate2D) -> Void)?
 
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -134,6 +139,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		overlays: [ClusterMapOverlay] = [],
 		coverageBounds: GeoBounds? = nil,
 		decorations: [ClusterMapDecoration] = [],
+		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
+		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
 		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
 	) {
@@ -147,6 +154,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.overlays = overlays
 		self.coverageBounds = coverageBounds
 		self.decorations = decorations
+		self.onMapTap = onMapTap
+		self.onMapLongPress = onMapLongPress
 		self.pinContent = pinContent
 		self.clusterContent = clusterContent
 	}
@@ -170,6 +179,15 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 										 forAnnotationViewWithReuseIdentifier: HostingCoverageLabelView.reuseID)
 										mapView.register(HostingDecorationView.self,
 														 forAnnotationViewWithReuseIdentifier: HostingDecorationView.reuseID)
+
+														// Map tap / long-press -> caller (create waypoint). The delegate rejects touches that land on an
+														// annotation view so pin/marker taps still select normally instead of creating a waypoint.
+														let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleMapTap(_:)))
+														tap.delegate = context.coordinator
+														mapView.addGestureRecognizer(tap)
+														let longPress = UILongPressGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleMapLongPress(_:)))
+														longPress.delegate = context.coordinator
+														mapView.addGestureRecognizer(longPress)
 
 		// Apple basemap type + controls.
 		context.coordinator.applyConfiguration(configuration, to: mapView)
@@ -233,11 +251,13 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		coordinator.clusterContent = { AnyView(clusterContent($0)) }
 		coordinator.regionBinding = region
 		coordinator.onSelect = onSelect
+		coordinator.onMapTap = onMapTap
+		coordinator.onMapLongPress = onMapLongPress
 	}
 
 	// MARK: - Coordinator (MKMapViewDelegate + diffing + camera sync + offline overlay)
 
-	final class Coordinator: NSObject, MKMapViewDelegate {
+	final class Coordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate {
 
 		/// Builds the hosted SwiftUI pin for an item. Reset each render so captured state is fresh.
 		var pinContent: (Item) -> AnyView = { _ in AnyView(EmptyView()) }
@@ -247,6 +267,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		var regionBinding: Binding<MKCoordinateRegion?>?
 		/// Called when an item pin is tapped (set each render).
 		var onSelect: ((Item) -> Void)?
+		/// Empty-map tap / long-press handlers (create waypoint), set each render.
+		var onMapTap: ((CLLocationCoordinate2D) -> Void)?
+		var onMapLongPress: ((CLLocationCoordinate2D) -> Void)?
 
 		/// id → the backing annotation currently on the map. The single source of truth for diffing.
 		private var annotationsByID: [Item.ID: ItemAnnotation<Item>] = [:]
@@ -439,6 +462,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				seen.insert(deco.id)
 				if let existing = decorationsByID[deco.id] {
 					existing.content = deco.content
+					existing.onTap = deco.onTap
 					if !Self.coordinatesEqual(existing.coordinate, deco.coordinate) {
 						existing.coordinate = deco.coordinate
 					}
@@ -447,6 +471,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 					}
 				} else {
 					let annotation = DecorationAnnotation(id: deco.id, coordinate: deco.coordinate, content: deco.content)
+					annotation.onTap = deco.onTap
 					decorationsByID[deco.id] = annotation
 					toAdd.append(annotation)
 				}
@@ -542,6 +567,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				let view = mapView.dequeueReusableAnnotationView(
 					withIdentifier: HostingDecorationView.reuseID, for: deco)
 				(view as? HostingDecorationView)?.configure(content: deco.content)
+				view.isEnabled = (deco.onTap != nil) // tappable for waypoints; route markers stay inert
 				return view
 			}
 
@@ -580,11 +606,40 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				mapView.deselectAnnotation(cluster, animated: false)
 				return
 			}
+			if let deco = view.annotation as? DecorationAnnotation {
+				deco.onTap?()
+				mapView.deselectAnnotation(deco, animated: false)
+				return
+			}
 			if let annotation = view.annotation as? ItemAnnotation<Item> {
 				onSelect?(annotation.item)
 				// Immediate deselect so re-tapping the SAME pin fires again (sheet binding de-dups).
 				mapView.deselectAnnotation(annotation, animated: false)
 			}
+		}
+
+		// MARK: Map gestures (create waypoint) + delegate
+		@objc func handleMapTap(_ gesture: UITapGestureRecognizer) {
+			guard gesture.state == .ended, let mapView = gesture.view as? MKMapView else { return }
+			onMapTap?(mapView.convert(gesture.location(in: mapView), toCoordinateFrom: mapView))
+		}
+		@objc func handleMapLongPress(_ gesture: UILongPressGestureRecognizer) {
+			guard gesture.state == .began, let mapView = gesture.view as? MKMapView else { return }
+			onMapLongPress?(mapView.convert(gesture.location(in: mapView), toCoordinateFrom: mapView))
+		}
+		/// Reject the gesture when the touch lands on an annotation view, so tapping a pin/marker selects
+		/// it (and doesn't also create a waypoint); empty-map touches pass through.
+		func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+			guard let mapView = gestureRecognizer.view as? MKMapView else { return true }
+			var hit = mapView.hitTest(touch.location(in: mapView), with: nil)
+			while let view = hit, view !== mapView {
+				if view is MKAnnotationView { return false }
+				hit = view.superview
+			}
+			return true
+		}
+		func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+			true // coexist with MapKit's own pan/zoom recognizers
 		}
 
 		// MARK: Overlay renderer
@@ -675,6 +730,8 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		overlays: [ClusterMapOverlay] = [],
 		coverageBounds: GeoBounds? = nil,
 		decorations: [ClusterMapDecoration] = [],
+		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
+		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin
 	) {
 		self.init(items: items,
@@ -687,6 +744,8 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				  overlays: overlays,
 				coverageBounds: coverageBounds,
 				decorations: decorations,
+				onMapTap: onMapTap,
+				onMapLongPress: onMapLongPress,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
 	}
@@ -811,6 +870,7 @@ private final class DecorationAnnotation: NSObject, MKAnnotation {
 	let id: AnyHashable
 	@objc dynamic var coordinate: CLLocationCoordinate2D
 	var content: AnyView
+	var onTap: (() -> Void)?
 	init(id: AnyHashable, coordinate: CLLocationCoordinate2D, content: AnyView) {
 		self.id = id; self.coordinate = coordinate; self.content = content
 	}
@@ -821,7 +881,7 @@ private final class HostingDecorationView: HostingAnnotationViewBase {
 	static let reuseID = "ClusterMapView.decoration"
 	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
 		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-		isEnabled = false // display-only marker: no stuck selection, never swallows node/map taps
+		// isEnabled is set per-decoration in viewFor (tappable for waypoints, inert for route markers).
 	}
 	@available(*, unavailable)
 	required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }

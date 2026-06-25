@@ -63,6 +63,8 @@ struct MeshMapMK: View {
 	/// Route polylines + start/finish markers, rebuilt only when the route set changes.
 	@State private var routeOverlays: [ClusterMapOverlay] = []
 	@State private var routeDecorations: [ClusterMapDecoration] = []
+	@AppStorage("enableMapWaypoints") private var showWaypoints = true
+	@State private var waypointDecorations: [ClusterMapDecoration] = []
 	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
@@ -92,6 +94,9 @@ struct MeshMapMK: View {
 	/// Enabled saved routes drawn as polylines + start/finish markers (parity with the old map).
 	@Query(filter: #Predicate<RouteEntity> { $0.enabled == true }, sort: \RouteEntity.name)
 	private var routes: [RouteEntity]
+
+	/// Saved waypoints, shown as tappable markers (tap -> form; long-press empty map -> create).
+	@Query private var allWaypoints: [WaypointEntity]
 
 	/// Positions filtered once per render using the full NodeFilterParameters.
 	private func filteredPositions(from positions: [PositionEntity]) -> [PositionEntity] {
@@ -195,6 +200,10 @@ struct MeshMapMK: View {
 		enableOfflineTiles && offlineVectors.isAvailable ? offlineVectors.coverageBounds : nil
 	}
 	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
+	/// Change-detector for the waypoint set (rebuild markers on add/remove/move/icon change).
+	private var waypointsKey: String {
+		allWaypoints.map { "\($0.id)|\($0.icon)|\($0.latitudeI)|\($0.longitudeI)" }.joined(separator: ",")
+	}
 	private var routesKey: String {
 		routes.map { "\($0.color)|\($0.locations.count)" }.joined(separator: ",")
 	}
@@ -214,7 +223,8 @@ struct MeshMapMK: View {
 				configuration: clusterConfiguration,
 				overlays: mapVisible ? offlineVectorOverlays + routeOverlays + mapOverlays : [],
 				coverageBounds: mapVisible ? offlineCoverageBounds : nil,
-				decorations: mapVisible ? routeDecorations : []
+				decorations: mapVisible ? routeDecorations + waypointDecorations : [],
+				onMapLongPress: { coordinate in beginNewWaypoint(at: coordinate) }
 			) { snapshot in
 				MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
 					.equatable()
@@ -365,8 +375,15 @@ struct MeshMapMK: View {
 			.onChange(of: showConvexHull) {
 				rebuildOverlays()
 			}
+			.onChange(of: waypointsKey) {
+				rebuildWaypointDecorations()
+			}
+			.onChange(of: showWaypoints) {
+				rebuildWaypointDecorations()
+			}
 			.onChange(of: routesKey) {
 				rebuildRouteContent()
+				rebuildWaypointDecorations()
 			}
 			.onChange(of: enableOfflineTiles) {
 				if enableOfflineTiles { offlineVectors.updateIfNeeded() }
@@ -551,7 +568,36 @@ struct MeshMapMK: View {
 		return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 	}
 
-				/// Build route polylines (route color) + start (green) / finish (black) markers from the enabled
+								/// Build tappable waypoint markers (icon bubble) from saved waypoints; tap -> open the form.
+				private func rebuildWaypointDecorations() {
+					guard showWaypoints else {
+						if !waypointDecorations.isEmpty { waypointDecorations = [] }
+						return
+					}
+					waypointDecorations = allWaypoints.map { waypoint in
+						let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+						return ClusterMapDecoration(
+							id: "waypoint-\(waypoint.persistentModelID.hashValue)",
+							coordinate: waypoint.mapCoordinate,
+							content: AnyView(CircleText(text: icon, color: .orange, circleSize: 36)),
+							onTap: { selectedWaypoint = waypoint }
+						)
+					}
+				}
+
+				/// Long-press on empty map -> a new in-memory waypoint at that point, opening the edit form.
+				private func beginNewWaypoint(at coordinate: CLLocationCoordinate2D) {
+					let waypoint = WaypointEntity()
+					waypoint.name = "Waypoint Pin"
+					waypoint.latitudeI = Int32(coordinate.latitude * 1e7)
+					waypoint.longitudeI = Int32(coordinate.longitude * 1e7)
+					waypoint.expire = Date.now.addingTimeInterval(60 * 480)
+					waypoint.id = 0
+					newWaypointCoord = coordinate
+					editingWaypoint = waypoint
+				}
+
+/// Build route polylines (route color) + start (green) / finish (black) markers from the enabled
 		/// saved routes. Stable objects, rebuilt only when `routesKey` changes so the diff is a no-op.
 		private func rebuildRouteContent() {
 			var overlays: [ClusterMapOverlay] = []
