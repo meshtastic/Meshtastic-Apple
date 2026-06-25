@@ -133,6 +133,7 @@ private struct RFSitePlanningTool: View {
 	@AppStorage("sitePlannerCoverageSignalThresholdDbm") private var signalThresholdDbm = -130.0
 
 	@State private var position = MapCameraPosition.automatic
+	@State private var mapCenterCoordinate: CLLocationCoordinate2D?
 	@State private var mode: RFSitePlanningMode = .coverage
 	@State private var coverageCoordinate: CLLocationCoordinate2D?
 	@State private var linkStartCoordinate: CLLocationCoordinate2D?
@@ -178,20 +179,27 @@ private struct RFSitePlanningTool: View {
 					MapUserLocationButton()
 					MapCompass()
 				}
-				.ignoresSafeArea()
-				.onTapGesture { point in
-					guard let coordinate = reader.convert(point, from: .local) else { return }
-					handleMapTap(coordinate)
+				.onMapCameraChange(frequency: .onEnd) { context in
+					mapCenterCoordinate = context.camera.centerCoordinate
 				}
+				.simultaneousGesture(
+					SpatialTapGesture(coordinateSpace: .local)
+						.onEnded { value in
+							guard let coordinate = reader.convert(value.location, from: .local) else { return }
+							handleMapTap(coordinate)
+						}
+				)
+				.ignoresSafeArea(.container, edges: [.top, .horizontal])
 			}
+			centerTarget
+				.allowsHitTesting(false)
 		}
-		.safeAreaInset(edge: .bottom) {
-			controlPanel
-				.padding(.horizontal)
-				.padding(.bottom, 8)
+		.safeAreaInset(edge: .bottom, spacing: 0) {
+			plannerFooter
 		}
 		.navigationTitle("RF Site Planner")
 		.navigationBarTitleDisplayMode(.inline)
+		.toolbar(.hidden, for: .tabBar)
 		.toolbar {
 			ToolbarItemGroup(placement: .topBarTrailing) {
 				NavigationLink(destination: MapDataFiles()) {
@@ -231,34 +239,41 @@ private struct RFSitePlanningTool: View {
 		.onAppear {
 			mapDataManager.initialize()
 			if let coordinate = activeDeviceCoordinate ?? LocationsHandler.currentPreciseLocation {
+				mapCenterCoordinate = coordinate
 				position = .camera(MapCamera(centerCoordinate: coordinate, distance: 25_000))
 			}
 		}
 	}
 
+	private var centerTarget: some View {
+		Image(systemName: "scope")
+			.font(.title3.weight(.medium))
+			.foregroundStyle(.primary)
+			.shadow(color: .black.opacity(0.25), radius: 2)
+			.accessibilityHidden(true)
+	}
+
 	@MapContentBuilder
 	private var mapAnnotations: some MapContent {
-		if let coverageCoordinate {
-			Annotation("Coverage Source", coordinate: coverageCoordinate) {
-				RFSitePlanningMapMarker(systemImage: "antenna.radiowaves.left.and.right", color: .accentColor)
-			}
+		if mode == .coverage, let coverageCoordinate {
+			Marker("Coverage Source", systemImage: "antenna.radiowaves.left.and.right", coordinate: coverageCoordinate)
+				.tint(Color.accentColor)
 		}
 
-		if let linkStartCoordinate {
-			Annotation("Transmitter", coordinate: linkStartCoordinate) {
-				RFSitePlanningMapMarker(systemImage: "arrow.up.right.circle.fill", color: .blue)
+		if mode == .pointToPoint {
+			if let linkStartCoordinate {
+				Marker("Transmitter", systemImage: "arrow.up.right.circle.fill", coordinate: linkStartCoordinate)
+					.tint(.blue)
 			}
-		}
 
-		if let linkEndCoordinate {
-			Annotation("Receiver", coordinate: linkEndCoordinate) {
-				RFSitePlanningMapMarker(systemImage: "arrow.down.left.circle.fill", color: .purple)
+			if let linkEndCoordinate {
+				Marker("Receiver", systemImage: "arrow.down.left.circle.fill", coordinate: linkEndCoordinate)
+					.tint(.purple)
 			}
-		}
 
-		if let obstructionCoordinate {
-			Annotation("Blocking Terrain", coordinate: obstructionCoordinate) {
-				RFSitePlanningMapMarker(systemImage: "mountain.2.fill", color: .red)
+			if let obstructionCoordinate {
+				Marker("Blocking Terrain", systemImage: "mountain.2.fill", coordinate: obstructionCoordinate)
+					.tint(.red)
 			}
 		}
 	}
@@ -282,35 +297,46 @@ private struct RFSitePlanningTool: View {
 		)
 	}
 
-	private var controlPanel: some View {
-		VStack(alignment: .leading, spacing: 12) {
-			Picker("Mode", selection: $mode) {
-				ForEach(RFSitePlanningMode.allCases) { mode in
-					Text(mode.title).tag(mode)
+	private var plannerFooter: some View {
+		VStack(spacing: 0) {
+			Divider()
+			VStack(alignment: .leading, spacing: 10) {
+				Picker("Mode", selection: $mode) {
+					ForEach(RFSitePlanningMode.allCases) { mode in
+						Text(mode.title).tag(mode)
+					}
+				}
+				.pickerStyle(.segmented)
+
+				switch mode {
+				case .coverage:
+					coverageControls
+				case .pointToPoint:
+					pointToPointControls
 				}
 			}
-			.pickerStyle(.segmented)
-
-			switch mode {
-			case .coverage:
-				coverageControls
-			case .pointToPoint:
-				pointToPointControls
-			}
+			.padding(.horizontal, 16)
+			.padding(.vertical, 10)
 		}
-		.padding(12)
-		.background(.regularMaterial)
-		.clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+		.background(.bar)
 	}
 
 	private var coverageControls: some View {
-		VStack(alignment: .leading, spacing: 10) {
-			LabeledContent("Source", value: Self.coordinateString(coverageCoordinate))
-			HStack {
+		VStack(alignment: .leading, spacing: 8) {
+			selectionRow("Source", value: Self.coordinateString(coverageCoordinate))
+			HStack(spacing: 8) {
+				Button {
+					setPointFromMapCenter()
+				} label: {
+					Label("Set Source", systemImage: "scope")
+				}
+				.buttonStyle(.bordered)
+				.disabled(mapCenterCoordinate == nil)
+
 				Button {
 					generateCoverage()
 				} label: {
-					Label(isGeneratingCoverage ? "Generating" : "Generate Coverage", systemImage: "antenna.radiowaves.left.and.right")
+					Label(isGeneratingCoverage ? "Generating" : "Generate", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.buttonStyle(.borderedProminent)
 				.disabled(coverageCoordinate == nil || isGeneratingCoverage)
@@ -320,40 +346,47 @@ private struct RFSitePlanningTool: View {
 				}
 			}
 			Text("\(Self.integerString(radiusKilometers)) km, \(Self.integerString(frequencyMHz)) MHz, \(Self.integerString(signalThresholdDbm)) dBm threshold")
-				.font(.caption)
+				.font(.footnote)
 				.foregroundStyle(.secondary)
 		}
 	}
 
 	private var pointToPointControls: some View {
-		VStack(alignment: .leading, spacing: 10) {
-			LabeledContent("Transmitter", value: Self.coordinateString(linkStartCoordinate))
-			LabeledContent("Receiver", value: Self.coordinateString(linkEndCoordinate))
+		VStack(alignment: .leading, spacing: 8) {
+			selectionRow("Transmitter", value: Self.coordinateString(linkStartCoordinate))
+			selectionRow("Receiver", value: Self.coordinateString(linkEndCoordinate))
 
 			if let linkResult {
-				Label(
-					linkResult.linkMeetsThreshold ? "Predicted link meets threshold" : "Predicted link is below threshold",
-					systemImage: linkResult.linkMeetsThreshold ? "checkmark.circle.fill" : "xmark.circle.fill"
-				)
-				.foregroundStyle(linkResult.linkMeetsThreshold ? .green : .red)
-
 				HStack {
-					RFSitePlanningMetric(label: "Loss", value: "\(Self.decimalString(linkResult.lossDb)) dB")
-					RFSitePlanningMetric(label: "Signal", value: "\(Self.decimalString(linkResult.signalDbm)) dBm")
-					RFSitePlanningMetric(label: "Margin", value: "\(Self.decimalString(linkResult.linkMarginDb)) dB")
-				}
+					Label(
+						linkResult.linkMeetsThreshold ? "Meets threshold" : "Below threshold",
+						systemImage: linkResult.linkMeetsThreshold ? "checkmark.circle.fill" : "xmark.circle.fill"
+					)
+					.foregroundStyle(linkResult.linkMeetsThreshold ? .green : .red)
 
-				Button("View Profile") {
-					presentedLinkResult = linkResult
+					Spacer()
+
+					Button("View Profile") {
+						presentedLinkResult = linkResult
+					}
+					.buttonStyle(.bordered)
 				}
-				.buttonStyle(.bordered)
+				.font(.subheadline)
 			}
 
-			HStack {
+			HStack(spacing: 8) {
+				Button {
+					setPointFromMapCenter()
+				} label: {
+					Label(centerSetButtonTitle, systemImage: "scope")
+				}
+				.buttonStyle(.bordered)
+				.disabled(mapCenterCoordinate == nil)
+
 				Button {
 					analyzeLink()
 				} label: {
-					Label(isAnalyzingLink ? "Analyzing" : "Analyze Link", systemImage: "point.topleft.down.curvedto.point.bottomright.up")
+					Label(isAnalyzingLink ? "Analyzing" : "Analyze", systemImage: "point.topleft.down.curvedto.point.bottomright.up")
 				}
 				.buttonStyle(.borderedProminent)
 				.disabled(linkStartCoordinate == nil || linkEndCoordinate == nil || isAnalyzingLink)
@@ -370,6 +403,30 @@ private struct RFSitePlanningTool: View {
 				}
 			}
 		}
+	}
+
+	private var centerSetButtonTitle: String {
+		if linkStartCoordinate == nil || linkEndCoordinate != nil {
+			return "Set TX"
+		}
+		return "Set RX"
+	}
+
+	private func selectionRow(_ title: String, value: String) -> some View {
+		HStack(alignment: .firstTextBaseline) {
+			Text(title)
+			Spacer(minLength: 12)
+			Text(value)
+				.foregroundStyle(.secondary)
+				.lineLimit(1)
+				.minimumScaleFactor(0.75)
+		}
+		.font(.subheadline)
+	}
+
+	private func setPointFromMapCenter() {
+		guard let mapCenterCoordinate else { return }
+		handleMapTap(mapCenterCoordinate)
 	}
 
 	private func handleMapTap(_ coordinate: CLLocationCoordinate2D) {
@@ -494,7 +551,7 @@ private struct RFSitePlanningTool: View {
 	}
 
 	private static func coordinateString(_ coordinate: CLLocationCoordinate2D?) -> String {
-		guard let coordinate else { return "Tap map" }
+		guard let coordinate else { return "Tap map or set from center" }
 		return shortCoordinateString(coordinate)
 	}
 
@@ -546,40 +603,6 @@ private struct RFSitePlanningOverlayContent: MapContent {
 				}
 			}
 		}
-	}
-}
-
-@available(iOS 18, *)
-private struct RFSitePlanningMapMarker: View {
-	let systemImage: String
-	let color: Color
-
-	var body: some View {
-		Image(systemName: systemImage)
-			.font(.title3.weight(.semibold))
-			.foregroundStyle(.white)
-			.frame(width: 34, height: 34)
-			.background(color.gradient, in: Circle())
-			.overlay(Circle().stroke(.white.opacity(0.9), lineWidth: 2))
-			.shadow(radius: 2)
-	}
-}
-
-@available(iOS 18, *)
-private struct RFSitePlanningMetric: View {
-	let label: String
-	let value: String
-
-	var body: some View {
-		VStack(alignment: .leading, spacing: 2) {
-			Text(label)
-				.font(.caption2)
-				.foregroundStyle(.secondary)
-			Text(value)
-				.font(.caption.weight(.semibold))
-				.monospacedDigit()
-		}
-		.frame(maxWidth: .infinity, alignment: .leading)
 	}
 }
 
