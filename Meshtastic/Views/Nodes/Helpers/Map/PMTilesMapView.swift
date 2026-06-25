@@ -486,6 +486,8 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// Arterial network (major/medium/rail) — the only roads rendered. The residential grid is
 	/// dropped on purpose: thousands of SwiftUI-Map overlays hang MapKit on camera changes.
 	@Published private(set) var arterials: [OfflineMapPolyline] = []
+	/// Bumped once each time a decode publishes, so observers rebuild exactly once per decode.
+	@Published private(set) var revision = 0
 
 	let isAvailable: Bool
 	/// The archive's coverage box (for the base fill + coverage rectangle), nil if unavailable.
@@ -537,6 +539,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 				guard let self else { return }
 				self.polygons = result.polygons
 				self.arterials = arterials
+				self.revision += 1
 			}
 		}
 	}

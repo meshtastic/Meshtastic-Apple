@@ -365,12 +365,9 @@ struct MeshMapMK: View {
 			.onChange(of: colorScheme) {
 				rebuildOfflineVectorOverlays()
 			}
-			.onChange(of: offlineVectors.arterials.count) {
-				rebuildOfflineVectorOverlays()
-			}
-			.onChange(of: offlineVectors.polygons.count) {
-				rebuildOfflineVectorOverlays()
-			}
+.onChange(of: offlineVectors.revision) {
+	rebuildOfflineVectorOverlays()
+}
 			.onChange(of: allLatestPositions) {
 				filters.fallbackLocation = activeDeviceCoordinate
 			}
@@ -562,7 +559,7 @@ struct MeshMapMK: View {
 		result.append(ClusterMapOverlay(
 			id: "offline-earth",
 			overlay: MKPolygon(coordinates: &earth, count: earth.count),
-			style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0)
+			style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0, level: .aboveRoads)
 		))
 		// Water / park fills.
 		for polygon in offlineVectors.polygons {
@@ -571,7 +568,7 @@ struct MeshMapMK: View {
 			result.append(ClusterMapOverlay(
 				id: "offline-fill-\(polygon.id)",
 				overlay: MKPolygon(coordinates: &coords, count: coords.count),
-				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: fill, lineWidth: 0)
+				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: fill, lineWidth: 0, level: .aboveRoads)
 			))
 		}
 		// Arterial road network.
@@ -581,7 +578,7 @@ struct MeshMapMK: View {
 			result.append(ClusterMapOverlay(
 				id: "offline-road-\(line.id)",
 				overlay: MKPolyline(coordinates: &coords, count: coords.count),
-				style: ClusterMapOverlayStyle(strokeUIColor: stroke, fillUIColor: nil, lineWidth: Self.offlineLineWidth(line.role), lineCap: .round)
+				style: ClusterMapOverlayStyle(strokeUIColor: stroke, fillUIColor: nil, lineWidth: Self.offlineLineWidth(line.role), lineCap: .round, level: .aboveRoads)
 			))
 		}
 		offlineVectorOverlays = result
