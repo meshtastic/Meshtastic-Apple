@@ -19,6 +19,7 @@ struct MapSettingsForm: View {
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	/// Migration escape hatch: ON = new MKMapView map (offline basemap + clustering); OFF = old SwiftUI map.
 	@AppStorage("useMeshMapMK") private var useMeshMapMK = true
+	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
@@ -34,8 +35,8 @@ struct MapSettingsForm: View {
 				Section(header: Text("Map Options")) {
 					Picker(selection: $mapLayer, label: Text("")) {
 						ForEach(MapLayer.allCases, id: \.self) { layer in
-							// `.offline` (raster .pmtiles) is only meaningful on the new MKMapView map.
-							if layer != MapLayer.offline || useMeshMapMK {
+							// `.offline` base is legacy (old map only); the new map uses the Offline Tiles toggle below.
+							if layer != MapLayer.offline || !useMeshMapMK {
 								Text(layer.localized.capitalized)
 							}
 						}
@@ -45,6 +46,21 @@ struct MapSettingsForm: View {
 					.padding(.bottom, 5)
 					.onChange(of: mapLayer) { _, newMapLayer in
 						UserDefaults.mapLayer = newMapLayer
+					}
+					if useMeshMapMK && meshMap {
+						Toggle(isOn: $enableOfflineTiles) {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Offline Tiles")
+									Text("Styled offline basemap drawn over the selected map where coverage exists.")
+										.font(.caption)
+										.foregroundColor(.secondary)
+								}
+							} icon: {
+								Image(systemName: "square.dashed")
+							}
+						}
+						.tint(.accentColor)
 					}
 					if meshMap {
 					if LocationsHandler.currentPreciseLocation != nil {
@@ -238,6 +254,13 @@ struct MapSettingsForm: View {
 		.onAppear {
 			// Initialize map data manager
 			mapDataManager.initialize()
+			// Migrate the legacy `.offline` base layer to the new independent offline-tiles overlay here
+			// (a shared entry point), so any presenter — incl. the per-node map — never shows the base
+			// picker with an unselectable `.offline` value when its segment is hidden on the new map.
+			if useMeshMapMK && mapLayer == .offline {
+				mapLayer = .standard
+				enableOfflineTiles = true
+			}
 		}
 
 	}

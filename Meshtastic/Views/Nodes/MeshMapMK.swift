@@ -35,6 +35,9 @@ struct MeshMapMK: View {
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .standard
+	/// Offline tiles are an independent overlay (drawn on top of the selected base map), not a
+	/// base layer -- so the styled offline box + coverage border work over Standard/Hybrid/Satellite.
+	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	/// Map overlay configs
 	@State private var enabledOverlayConfigs: Set<UUID> = []
 	// Map Configuration
@@ -157,7 +160,7 @@ struct MeshMapMK: View {
 	/// Apple basemap type + controls fed to ClusterMapView (Phase 2).
 	private var clusterConfiguration: ClusterMapConfiguration {
 		ClusterMapConfiguration(
-			layer: selectedMapLayer,
+			layer: selectedMapLayer == .offline ? .standard : selectedMapLayer,
 			showsTraffic: showTraffic,
 			showsPointsOfInterest: showPointsOfInterest,
 			showsUserLocation: showUserLocation
@@ -167,7 +170,7 @@ struct MeshMapMK: View {
 	/// Offline raster basemap when the "Offline" layer is selected and tiles are present.
 	/// Prefers the street tiles (full roads, rasterized), then topo hillshade.
 	private var offlineTilesURL: URL? {
-		guard selectedMapLayer == .offline else { return nil }
+		guard enableOfflineTiles else { return nil }
 		let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 		for name in ["bellevue.pmtiles", "bellevue-topo.pmtiles"] {
 			let url = docs.appendingPathComponent(name)
@@ -362,6 +365,11 @@ struct MeshMapMK: View {
 				filters.fallbackLocation = activeDeviceCoordinate
 				refreshMapWindowOpenState()
 			// Initialize enabled overlay configs with all active files
+			// Migrate the legacy `.offline` base layer to the new independent offline-tiles overlay.
+			if selectedMapLayer == .offline {
+				selectedMapLayer = .standard
+				enableOfflineTiles = true
+			}
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
 

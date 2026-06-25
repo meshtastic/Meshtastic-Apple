@@ -231,6 +231,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		private var tileSource: OfflineTileSource?
 		private var tileOverlay: OfflineTileOverlay?
 		private var tileURL: URL?
+		/// Accent rectangle drawn on the offline archive's coverage bounds so the offline area reads
+		/// as a deliberate feature (matches the demo). Rebuilt whenever the tile overlay is.
+		private var coverageOverlay: MKPolygon?
 
 		/// Last-applied basemap config, so we only touch `preferredConfiguration` when it changed
 		/// (re-applying it resets the rendered map and is visibly expensive).
@@ -269,14 +272,14 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			if firstApply || typeChanged {
 				let poi: MKPointOfInterestFilter = config.showsPointsOfInterest ? .includingAll : .excludingAll
 				switch config.layer {
-				case .standard:
+				case .standard, .offline:
+					// Offline tiles are now an independent overlay (drawn on top of whatever base is
+					// selected), so a stray `.offline` base value just maps to the clean Standard base.
 					let standard = MKStandardMapConfiguration(elevationStyle: .realistic)
 					standard.pointOfInterestFilter = poi
 					standard.showsTraffic = config.showsTraffic
 					mapView.preferredConfiguration = standard
-				case .hybrid, .offline:
-					// `.offline` uses a hybrid base (matching the old map); the offline raster overlay
-					// draws on top where it has coverage.
+				case .hybrid:
 					let hybrid = MKHybridMapConfiguration(elevationStyle: .realistic)
 					hybrid.pointOfInterestFilter = poi
 					hybrid.showsTraffic = config.showsTraffic
@@ -301,7 +304,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			// Nothing requested — drop any existing overlay (caller cleared tilesURL).
 			guard let url else {
 				if let old = tileOverlay { mapView.removeOverlay(old) }
-				tileOverlay = nil; tileSource = nil; tileURL = nil
+				if let border = coverageOverlay { mapView.removeOverlay(border) }
+				tileOverlay = nil; tileSource = nil; tileURL = nil; coverageOverlay = nil
 				return
 			}
 			let urlChanged = (tileURL != url)
@@ -311,6 +315,11 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			if urlChanged || tileSource == nil {
 				guard let source = OfflineTileSourceFactory.source(for: url) else {
 					Logger.services.error("📦 [ClusterMapView] Failed to open \(url.lastPathComponent, privacy: .public); using Apple basemap.")
+					// Tear down any prior overlay + border so we cleanly fall back to the Apple basemap,
+					// instead of leaving a stale archive (and a misleading coverage border) on screen.
+					if let old = tileOverlay { mapView.removeOverlay(old) }
+					if let border = coverageOverlay { mapView.removeOverlay(border) }
+					tileOverlay = nil; tileSource = nil; tileURL = nil; coverageOverlay = nil
 					return
 				}
 				tileSource = source
@@ -319,8 +328,31 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			guard let source = tileSource else { return }
 			if let old = tileOverlay { mapView.removeOverlay(old) }
 			let overlay = OfflineTileOverlay(source: source, dark: dark)
+			// Offline tiles are an OVERLAY on top of the selected Apple base, not a replacement. Keep
+			// Apple's basemap drawing everywhere; the archive only paints where it actually has tiles.
+			// (true would blank the whole map to a loading grid outside the small coverage box.)
+			overlay.canReplaceMapContent = false
 			tileOverlay = overlay
-			mapView.addOverlay(overlay, level: .aboveLabels)
+			// Insert at the BOTTOM of the .aboveLabels stack so caller overlays (accuracy circles,
+			// convex hull) — added later and never re-added on a dark/light rebuild — stay on top.
+			mapView.insertOverlay(overlay, at: 0, level: .aboveLabels)
+
+			// Coverage border: an accent rectangle on the archive's bounds so the offline area reads as
+			// a deliberate feature on top of whatever base map is selected (matches the demo). Rebuilt
+			// alongside the tile overlay so its renderer picks up the current dark/light accent. Sits
+			// just above the tiles but below the caller overlays.
+			if let border = coverageOverlay { mapView.removeOverlay(border); coverageOverlay = nil }
+			if let bounds = source.geographicBounds {
+				let corners = [
+					CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
+					CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
+					CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
+					CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
+				]
+				let border = MKPolygon(coordinates: corners, count: corners.count)
+				coverageOverlay = border
+				mapView.insertOverlay(border, above: overlay)
+			}
 			// NOTE: deliberately does NOT move the camera. The basemap renders wherever the user is;
 			// the caller (MeshMapMK) owns the initial framing (GPS-centered fit-to-nodes). Auto-jumping
 			// to the archive's coverage box was demo-only behavior and is confusing in the real map.
@@ -479,6 +511,15 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			// Offline raster tiles first (same renderer the repo uses).
 			if let tileOverlay = overlay as? MKTileOverlay {
 				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
+			}
+			// Offline coverage border — accent rectangle, recolored per appearance.
+			if let coverageOverlay, overlay === coverageOverlay {
+				let renderer = MKPolygonRenderer(polygon: coverageOverlay)
+				renderer.strokeColor = (tileOverlay?.dark ?? false) ? .systemCyan : .systemBlue
+				renderer.fillColor = .clear
+				renderer.lineWidth = 4
+				renderer.lineJoin = .round
+				return renderer
 			}
 			// Styled caller overlay (circle / polyline / polygon), style looked up by object identity.
 			let style = styleByOverlay[ObjectIdentifier(overlay)] ?? ClusterMapOverlayStyle()
