@@ -68,6 +68,14 @@ struct ClusterMapOverlay: Identifiable {
 	let style: ClusterMapOverlayStyle
 }
 
+/// A standalone, non-clustering map annotation hosting an arbitrary SwiftUI view (route start/finish
+/// markers, waypoints, …). Diffed by `id`; never merges into node clusters.
+struct ClusterMapDecoration: Identifiable {
+	let id: AnyHashable
+	let coordinate: CLLocationCoordinate2D
+	let content: AnyView
+}
+
 // MARK: - Public declarative API
 
 /// A data-driven map. Pass your `items` and a `@ViewBuilder` that turns one item into its annotation
@@ -108,6 +116,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	let overlays: [ClusterMapOverlay]
 	/// Offline coverage area: when set, draws the accent border + "OFFLINE MAP" capsule on it.
 	let coverageBounds: GeoBounds?
+	/// Standalone non-clustering decorations (route markers, waypoints) hosted over the map.
+	let decorations: [ClusterMapDecoration]
 
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -123,6 +133,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		configuration: ClusterMapConfiguration = .init(),
 		overlays: [ClusterMapOverlay] = [],
 		coverageBounds: GeoBounds? = nil,
+		decorations: [ClusterMapDecoration] = [],
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
 		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
 	) {
@@ -135,6 +146,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.configuration = configuration
 		self.overlays = overlays
 		self.coverageBounds = coverageBounds
+		self.decorations = decorations
 		self.pinContent = pinContent
 		self.clusterContent = clusterContent
 	}
@@ -156,6 +168,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 						 forAnnotationViewWithReuseIdentifier: HostingClusterView.reuseID)
 						mapView.register(HostingCoverageLabelView.self,
 										 forAnnotationViewWithReuseIdentifier: HostingCoverageLabelView.reuseID)
+										mapView.register(HostingDecorationView.self,
+														 forAnnotationViewWithReuseIdentifier: HostingDecorationView.reuseID)
 
 		// Apple basemap type + controls.
 		context.coordinator.applyConfiguration(configuration, to: mapView)
@@ -166,6 +180,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// Vector overlays (circles / hull / routes / GeoJSON), diffed by id.
 		context.coordinator.syncOverlays(overlays, on: mapView)
 		context.coordinator.syncCoverage(bounds: coverageBounds, dark: colorScheme == .dark, on: mapView)
+		context.coordinator.syncDecorations(decorations, on: mapView)
 
 		// Initial camera, if the caller drives one. Guarded so we don't echo it back out.
 		if let region = region?.wrappedValue {
@@ -194,6 +209,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// 1b) Vector overlays — diffed by id (object-identity change → remove + re-add).
 		context.coordinator.syncOverlays(overlays, on: mapView)
 		context.coordinator.syncCoverage(bounds: coverageBounds, dark: colorScheme == .dark, on: mapView)
+		context.coordinator.syncDecorations(decorations, on: mapView)
 
 		// 2) Diff annotations by Identifiable id — add/remove/move ONLY what changed (no flicker).
 		context.coordinator.sync(items: items, coordinate: coordinate,
@@ -247,6 +263,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// Applied coverage bounds + dark flag, so syncCoverage only rebuilds when they change.
 		private var coverageBoundsApplied: GeoBounds?
 		private var coverageDark = false
+		/// id → standalone decoration annotation (route markers, waypoints) currently on the map.
+		private var decorationsByID: [AnyHashable: DecorationAnnotation] = [:]
 
 		/// Last-applied basemap config, so we only touch `preferredConfiguration` when it changed
 		/// (re-applying it resets the rendered map and is visibly expensive).
@@ -409,6 +427,38 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			for entry in toAdd { mapView.addOverlay(entry.overlay, level: entry.style.level) }
 		}
 
+		// MARK: Decoration diffing (standalone non-clustering markers)
+
+		/// Reconcile standalone (non-clustering) decoration annotations by id — add/remove/move + refresh
+		/// content in place, mirroring `sync` but for caller-hosted markers that must never cluster.
+		func syncDecorations(_ decorations: [ClusterMapDecoration], on mapView: MKMapView) {
+			var seen = Set<AnyHashable>()
+			seen.reserveCapacity(decorations.count)
+			var toAdd: [DecorationAnnotation] = []
+			for deco in decorations {
+				seen.insert(deco.id)
+				if let existing = decorationsByID[deco.id] {
+					existing.content = deco.content
+					if !Self.coordinatesEqual(existing.coordinate, deco.coordinate) {
+						existing.coordinate = deco.coordinate
+					}
+					if let view = mapView.view(for: existing) as? HostingDecorationView {
+						view.configure(content: deco.content)
+					}
+				} else {
+					let annotation = DecorationAnnotation(id: deco.id, coordinate: deco.coordinate, content: deco.content)
+					decorationsByID[deco.id] = annotation
+					toAdd.append(annotation)
+				}
+			}
+			let removed = decorationsByID.keys.filter { !seen.contains($0) }
+			if !removed.isEmpty {
+				let gone = removed.compactMap { decorationsByID.removeValue(forKey: $0) }
+				mapView.removeAnnotations(gone)
+			}
+			if !toAdd.isEmpty { mapView.addAnnotations(toAdd) }
+		}
+
 		// MARK: Annotation diffing
 
 		/// Reconcile on-map annotations with `items` by `Item.ID`, touching ONLY what changed.
@@ -487,6 +537,14 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 
 			// One of our item annotations.
 			// The offline coverage capsule label (standalone, non-selecting).
+			// A standalone decoration (route marker / waypoint), hosted but never clustered.
+			if let deco = annotation as? DecorationAnnotation {
+				let view = mapView.dequeueReusableAnnotationView(
+					withIdentifier: HostingDecorationView.reuseID, for: deco)
+				(view as? HostingDecorationView)?.configure(content: deco.content)
+				return view
+			}
+
 			if annotation is OfflineCoverageLabelAnnotation {
 				let view = mapView.dequeueReusableAnnotationView(
 					withIdentifier: HostingCoverageLabelView.reuseID, for: annotation)
@@ -616,6 +674,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		configuration: ClusterMapConfiguration = .init(),
 		overlays: [ClusterMapOverlay] = [],
 		coverageBounds: GeoBounds? = nil,
+		decorations: [ClusterMapDecoration] = [],
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin
 	) {
 		self.init(items: items,
@@ -627,6 +686,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				  configuration: configuration,
 				  overlays: overlays,
 				coverageBounds: coverageBounds,
+				decorations: decorations,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
 	}
@@ -746,6 +806,21 @@ private final class HostingClusterView: HostingAnnotationViewBase {
 
 /// Standalone, non-clustering, non-selectable annotation marking the offline coverage area with the
 /// "OFFLINE MAP" capsule tab (mirrors the SwiftUI map's label).
+/// Standalone, non-clustering annotation carrying an arbitrary SwiftUI view by value.
+private final class DecorationAnnotation: NSObject, MKAnnotation {
+	let id: AnyHashable
+	@objc dynamic var coordinate: CLLocationCoordinate2D
+	var content: AnyView
+	init(id: AnyHashable, coordinate: CLLocationCoordinate2D, content: AnyView) {
+		self.id = id; self.coordinate = coordinate; self.content = content
+	}
+}
+
+/// Hosts a caller decoration's SwiftUI view. Never clusters.
+private final class HostingDecorationView: HostingAnnotationViewBase {
+	static let reuseID = "ClusterMapView.decoration"
+}
+
 private final class OfflineCoverageLabelAnnotation: NSObject, MKAnnotation {
 	@objc dynamic var coordinate: CLLocationCoordinate2D
 	init(coordinate: CLLocationCoordinate2D) { self.coordinate = coordinate }

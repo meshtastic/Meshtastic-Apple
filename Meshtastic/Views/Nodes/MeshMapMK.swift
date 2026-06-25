@@ -60,6 +60,9 @@ struct MeshMapMK: View {
 	/// SwiftUI map's look and aligns the coverage border/label exactly (no tile-grid mismatch).
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
 	@State private var offlineVectorOverlays: [ClusterMapOverlay] = []
+	/// Route polylines + start/finish markers, rebuilt only when the route set changes.
+	@State private var routeOverlays: [ClusterMapOverlay] = []
+	@State private var routeDecorations: [ClusterMapDecoration] = []
 	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
@@ -85,6 +88,10 @@ struct MeshMapMK: View {
 
 	@Query(filter: #Predicate<PositionEntity> { $0.nodePosition != nil && $0.latest == true && $0.nodePosition?.ignored != true })
 	private var allLatestPositions: [PositionEntity]
+
+	/// Enabled saved routes drawn as polylines + start/finish markers (parity with the old map).
+	@Query(filter: #Predicate<RouteEntity> { $0.enabled == true }, sort: \RouteEntity.name)
+	private var routes: [RouteEntity]
 
 	/// Positions filtered once per render using the full NodeFilterParameters.
 	private func filteredPositions(from positions: [PositionEntity]) -> [PositionEntity] {
@@ -187,8 +194,13 @@ struct MeshMapMK: View {
 	private var offlineCoverageBounds: GeoBounds? {
 		enableOfflineTiles && offlineVectors.isAvailable ? offlineVectors.coverageBounds : nil
 	}
+	/// Cheap change-detector for the route set (drives rebuildRouteContent via onChange).
+	private var routesKey: String {
+		routes.map { "\($0.color)|\($0.locations.count)" }.joined(separator: ",")
+	}
 	var body: some View {
 		let positionState = visiblePositionState
+		let isDense = visiblePositionSnapshots.count > 500 // switch to lightweight dots when crowded
 		NavigationStack {
 			ZStack {
 			ClusterMapView(
@@ -199,18 +211,12 @@ struct MeshMapMK: View {
 				tilesURL: nil,
 				onSelect: { snapshot in selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
-				overlays: offlineVectorOverlays + mapOverlays,
-				coverageBounds: offlineCoverageBounds
+				overlays: offlineVectorOverlays + routeOverlays + mapOverlays,
+				coverageBounds: offlineCoverageBounds,
+				decorations: routeDecorations
 			) { snapshot in
-				AnimatedNodePin(
-					nodeColor: UIColor(hex: UInt32(snapshot.nodeNum)),
-					shortName: snapshot.shortName,
-					hasDetectionSensorMetrics: false,
-					isOnline: snapshot.isOnline,
-					calculatedDelay: snapshot.calculatedDelay,
-					showsPulse: true
-				)
-				.equatable()
+				MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
+					.equatable()
 			}
 			.ignoresSafeArea()
 				.sheet(item: $selectedNode) { selection in
@@ -358,9 +364,13 @@ struct MeshMapMK: View {
 			.onChange(of: showConvexHull) {
 				rebuildOverlays()
 			}
+			.onChange(of: routesKey) {
+				rebuildRouteContent()
+			}
 			.onChange(of: enableOfflineTiles) {
 				if enableOfflineTiles { offlineVectors.updateIfNeeded() }
 				rebuildOfflineVectorOverlays()
+				rebuildRouteContent()
 			}
 			.onChange(of: colorScheme) {
 				rebuildOfflineVectorOverlays()
@@ -539,7 +549,35 @@ struct MeshMapMK: View {
 		return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 	}
 
-		/// Build the offline basemap as native MKOverlays (earth fill + water/park fills + arterial roads)
+				/// Build route polylines (route color) + start (green) / finish (black) markers from the enabled
+		/// saved routes. Stable objects, rebuilt only when `routesKey` changes so the diff is a no-op.
+		private func rebuildRouteContent() {
+			var overlays: [ClusterMapOverlay] = []
+			var decorations: [ClusterMapDecoration] = []
+			for route in routes {
+				let coords = route.locations.compactMap { $0.locationCoordinate }
+				guard coords.count >= 2 else { continue }
+				let key = route.persistentModelID.hashValue
+				var line = coords
+				overlays.append(ClusterMapOverlay(
+					id: "route-\(key)",
+					overlay: MKPolyline(coordinates: &line, count: line.count),
+					style: ClusterMapOverlayStyle(strokeUIColor: UIColor(hex: UInt32(route.color)), fillUIColor: nil, lineWidth: 3, lineCap: .round)
+				))
+				if let start = coords.first {
+					decorations.append(ClusterMapDecoration(id: "route-start-\(key)", coordinate: start,
+					                                        content: AnyView(RouteEndpointMarker(color: .green))))
+				}
+				if let finish = coords.last {
+					decorations.append(ClusterMapDecoration(id: "route-finish-\(key)", coordinate: finish,
+					                                        content: AnyView(RouteEndpointMarker(color: .black))))
+				}
+			}
+			routeOverlays = overlays
+			routeDecorations = decorations
+		}
+
+/// Build the offline basemap as native MKOverlays (earth fill + water/park fills + arterial roads)
 	/// from the decoded vector tiles, using the same slate/cream palette as the old SwiftUI map. Stable
 	/// objects, rebuilt only on toggle/appearance/decode so the overlay diff is a no-op between renders.
 	private func rebuildOfflineVectorOverlays() {
@@ -801,5 +839,49 @@ private extension PositionEntity {
 			return longitude >= minLongitude || longitude <= maxLongitude - 360
 		}
 		return longitude >= minLongitude && longitude <= maxLongitude
+	}
+}
+
+// MARK: - Node pin (full pin, or a lightweight dot in dense mode)
+
+/// Node annotation content. Renders the full animated pin normally, or a small colored dot when the
+/// map is crowded (parity with the old map's densePositionAnnotations) to keep many pins cheap.
+private struct MeshMapMKNodePin: View, Equatable {
+	let nodeNum: Int64
+	let shortName: String?
+	let isOnline: Bool
+	let calculatedDelay: Double
+	let dense: Bool
+
+	var body: some View {
+		if dense {
+			Circle()
+				.fill(Color(UIColor(hex: UInt32(nodeNum))).opacity(isOnline ? 0.9 : 0.6))
+				.overlay(Circle().stroke(.white.opacity(0.85), lineWidth: 1))
+				.frame(width: isOnline ? 10 : 8, height: isOnline ? 10 : 8)
+		} else {
+			AnimatedNodePin(
+				nodeColor: UIColor(hex: UInt32(nodeNum)),
+				shortName: shortName,
+				hasDetectionSensorMetrics: false,
+				isOnline: isOnline,
+				calculatedDelay: calculatedDelay,
+				showsPulse: true
+			)
+		}
+	}
+}
+
+// MARK: - Route start/finish marker
+
+/// Small filled circle with a white border marking a route's start (green) or finish (black).
+private struct RouteEndpointMarker: View {
+	let color: Color
+
+	var body: some View {
+		Circle()
+			.fill(color)
+			.overlay(Circle().stroke(.white, lineWidth: 3))
+			.frame(width: 15, height: 15)
 	}
 }
