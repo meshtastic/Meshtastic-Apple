@@ -51,11 +51,11 @@ struct MapWindow: View {
 	@ViewBuilder
 	private var meshMapView: some View {
 		#if os(visionOS)
-		MeshMapContainer(router: appState.router, showOpenWindowButton: false)
+		MeshMapMK(router: appState.router, showOpenWindowButton: false)
 			.toolbar(.hidden, for: .windowToolbar)
 			.persistentSystemOverlays(.hidden)
 		#else
-		MeshMapContainer(router: appState.router, showOpenWindowButton: false)
+		MeshMapMK(router: appState.router, showOpenWindowButton: false)
 		#endif
 	}
 }

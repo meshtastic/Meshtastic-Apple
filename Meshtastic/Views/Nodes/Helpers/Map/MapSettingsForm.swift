@@ -17,8 +17,6 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapConvexHull") private var convexHull = false
 	@AppStorage("enableMapWaypoints") private var enableMapWaypoints = true
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
-	/// Migration escape hatch: ON = new MKMapView map (offline basemap + clustering); OFF = old SwiftUI map.
-	@AppStorage("useMeshMapMK") private var useMeshMapMK = true
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@Binding var traffic: Bool
@@ -35,8 +33,8 @@ struct MapSettingsForm: View {
 				Section(header: Text("Map Options")) {
 					Picker(selection: $mapLayer, label: Text("")) {
 						ForEach(MapLayer.allCases, id: \.self) { layer in
-							// `.offline` base is legacy (old map only); the new map uses the Offline Tiles toggle below.
-							if layer != MapLayer.offline || !useMeshMapMK {
+							// `.offline` is an overlay toggle now, not a base layer — keep it out of the base picker.
+							if layer != MapLayer.offline {
 								Text(layer.localized.capitalized)
 							}
 						}
@@ -47,7 +45,7 @@ struct MapSettingsForm: View {
 					.onChange(of: mapLayer) { _, newMapLayer in
 						UserDefaults.mapLayer = newMapLayer
 					}
-					if useMeshMapMK && meshMap {
+					if meshMap {
 						Toggle(isOn: $enableOfflineTiles) {
 							Label {
 								VStack(alignment: .leading) {
@@ -211,21 +209,6 @@ struct MapSettingsForm: View {
 						}
 					}
 				}
-				Section(header: Text("Beta")) {
-					Toggle(isOn: $useMeshMapMK) {
-						Label {
-							VStack(alignment: .leading) {
-								Text("MapKit Mesh Map")
-								Text("Offline basemap + clustering (MKMapView). Off = classic map.")
-									.font(.caption)
-									.foregroundColor(.secondary)
-							}
-						} icon: {
-							Image(systemName: "circle.grid.3x3.fill")
-						}
-					}
-					.tint(.accentColor)
-				}
 			}
 			.navigationTitle("Map Options")
 			.navigationBarTitleDisplayMode(.inline)
@@ -257,7 +240,7 @@ struct MapSettingsForm: View {
 			// Migrate the legacy `.offline` base layer to the new independent offline-tiles overlay here
 			// (a shared entry point), so any presenter — incl. the per-node map — never shows the base
 			// picker with an unselectable `.offline` value when its segment is hidden on the new map.
-			if useMeshMapMK && mapLayer == .offline {
+			if mapLayer == .offline {
 				mapLayer = .standard
 				enableOfflineTiles = true
 			}

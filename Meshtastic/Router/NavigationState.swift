@@ -64,8 +64,6 @@ enum SettingsNavigationState: String {
 	case localMeshDiscovery
 	case helpDocs
 	case backupManagement
-	case offlineMapTest
-	case clusterMapTest
 }
 
 struct NavigationState: Hashable {

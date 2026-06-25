@@ -508,20 +508,6 @@ struct Settings: View {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 					}
 				}
-				NavigationLink(value: SettingsNavigationState.offlineMapTest) {
-					Label {
-						Text("Offline Map (PMTiles)")
-					} icon: {
-						Image(systemName: "map")
-					}
-				}
-				NavigationLink(value: SettingsNavigationState.clusterMapTest) {
-					Label {
-						Text("Cluster Map (MKMapView)")
-					} icon: {
-						Image(systemName: "circle.grid.3x3.fill")
-					}
-				}
 				NavigationLink(value: SettingsNavigationState.routes) {
 					Label {
 						Text("Routes")
@@ -712,10 +698,6 @@ struct Settings: View {
 					DocBrowserView()
 				case .backupManagement:
 					BackupManagement()
-				case .offlineMapTest:
-					PMTilesMapDemoView()
-				case .clusterMapTest:
-					ClusterMapDemoView()
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
