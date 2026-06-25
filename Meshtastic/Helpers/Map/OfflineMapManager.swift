@@ -79,8 +79,19 @@ final class OfflineMapManager: ObservableObject {
 
 	/// Begins extracting a region in the background, publishing progress to `activeDownload`.
 	/// On success the region is persisted and `activeDownload` is cleared.
+	/// The first existing region whose extent intersects `bounds` (ignoring `excluding`), or nil.
+	func overlappingRegion(with bounds: GeoBounds, excluding: OfflineMapRegion? = nil) -> OfflineMapRegion? {
+		regions.first { region in
+			region.id != excluding?.id &&
+			region.bounds.minLon <= bounds.maxLon && region.bounds.maxLon >= bounds.minLon &&
+			region.bounds.minLat <= bounds.maxLat && region.bounds.maxLat >= bounds.minLat
+		}
+	}
+
 	func startDownload(name: String, bounds: GeoBounds, detail: OfflineMapDetailLevel, replacing: OfflineMapRegion? = nil) {
 		guard activeDownload == nil, let archive = newArchiveURL() else { return }
+		// Don't allow regions to overlap (excluding the one being replaced) — avoids duplicate coverage.
+		guard overlappingRegion(with: bounds, excluding: replacing) == nil else { return }
 		let regionID = UUID()
 		let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
 		let finalName = trimmedName.isEmpty ? String(localized: "Offline Map") : trimmedName

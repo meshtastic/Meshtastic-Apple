@@ -72,6 +72,11 @@ struct MeshMapMK: View {
 	/// User-uploaded GeoJSON overlays: lines/polygons -> overlays, points -> decorations.
 	@State private var geoJSONOverlays: [ClusterMapOverlay] = []
 	@State private var geoJSONDecorations: [ClusterMapDecoration] = []
+	/// Last inputs each rebuild ran for; skip when unchanged so overlay objects stay stable (no flash).
+	@State private var lastOfflineOverlaysKey = ""
+	@State private var lastRouteKey = "init"
+	@State private var lastWaypointKey = "init"
+	@State private var lastGeoJSONKey = "init"
 	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
@@ -391,10 +396,11 @@ struct MeshMapMK: View {
 			.onChange(of: positionState.key) {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
 				filters.fallbackLocation = activeDeviceCoordinate
+				decodeOfflineIfVisible()
 			}
 			.onChange(of: offlineMapManager.regions) {
-				reloadOfflineSource()
 				frameToNewestOfflineRegion()
+				reloadOfflineSource()
 			}
 			.onChange(of: overlayInputsKey) {
 				rebuildAllMapContent()
@@ -607,6 +613,22 @@ struct MeshMapMK: View {
 
 								private func reloadOfflineSource() {
 									offlineVectors.reload(url: offlineTilesURL)
+									decodeOfflineIfVisible()
+								}
+
+								/// Decode the offline region ONLY when it's on/near screen (lazy) — avoids the upfront
+								/// 48-tile decode when the map opens somewhere else. updateIfNeeded() decodes once.
+								private func decodeOfflineIfVisible() {
+									if offlineRegionOnScreen() { offlineVectors.updateIfNeeded() }
+								}
+
+								/// Whether the offline coverage box intersects the current (padded) viewport.
+								private func offlineRegionOnScreen() -> Bool {
+									guard enableOfflineTiles, let bounds = offlineVectors.coverageBounds, let region = visibleRegion else { return false }
+									let latPad = region.span.latitudeDelta * 0.75, lonPad = region.span.longitudeDelta * 0.75
+									let vMinLat = region.center.latitude - latPad, vMaxLat = region.center.latitude + latPad
+									let vMinLon = region.center.longitude - lonPad, vMaxLon = region.center.longitude + lonPad
+									return bounds.minLat <= vMaxLat && bounds.maxLat >= vMinLat && bounds.minLon <= vMaxLon && bounds.maxLon >= vMinLon
 								}
 
 								private func rebuildAllMapContent() {
@@ -636,6 +658,9 @@ struct MeshMapMK: View {
 								}
 
 								private func rebuildGeoJSONOverlays() {
+						let key = "\(mapOverlaysEnabled)|\(enabledOverlayConfigs.hashValue)"
+						guard key != lastGeoJSONKey else { return }
+						lastGeoJSONKey = key
 									guard mapOverlaysEnabled, !enabledOverlayConfigs.isEmpty else {
 										if !geoJSONOverlays.isEmpty { geoJSONOverlays = [] }
 										if !geoJSONDecorations.isEmpty { geoJSONDecorations = [] }
@@ -674,6 +699,9 @@ struct MeshMapMK: View {
 
 /// Build tappable waypoint markers (icon bubble) from saved waypoints; tap -> open the form.
 				private func rebuildWaypointDecorations() {
+					let key = "\(showWaypoints)|\(waypointsKey)"
+					guard key != lastWaypointKey else { return }
+					lastWaypointKey = key
 					guard showWaypoints else {
 						if !waypointDecorations.isEmpty { waypointDecorations = [] }
 						return
@@ -704,6 +732,8 @@ struct MeshMapMK: View {
 /// Build route polylines (route color) + start (green) / finish (black) markers from the enabled
 		/// saved routes. Stable objects, rebuilt only when `routesKey` changes so the diff is a no-op.
 		private func rebuildRouteContent() {
+			guard routesKey != lastRouteKey else { return }
+			lastRouteKey = routesKey
 			var overlays: [ClusterMapOverlay] = []
 			var decorations: [ClusterMapDecoration] = []
 			for route in routes {
@@ -733,6 +763,9 @@ struct MeshMapMK: View {
 	/// from the decoded vector tiles, using the same slate/cream palette as the old SwiftUI map. Stable
 	/// objects, rebuilt only on toggle/appearance/decode so the overlay diff is a no-op between renders.
 	private func rebuildOfflineVectorOverlays() {
+		let key = "\(enableOfflineTiles)|\(offlineVectors.isAvailable)|\(offlineVectors.revision)|\(colorScheme == .dark)"
+		guard key != lastOfflineOverlaysKey else { return }
+		lastOfflineOverlaysKey = key
 		guard enableOfflineTiles, offlineVectors.isAvailable, let bounds = offlineVectors.coverageBounds else {
 			if !offlineVectorOverlays.isEmpty { offlineVectorOverlays = [] }
 			return

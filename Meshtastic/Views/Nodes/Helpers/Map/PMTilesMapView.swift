@@ -162,7 +162,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 			arterials = []
 			revision += 1   // drop the old region's overlays now; the decode publishes the new set
 		}
-		updateIfNeeded()
+		// NOTE: does NOT decode here — the caller decodes lazily (only when the region is on screen).
 	}
 
 	nonisolated static var defaultURL: URL? {

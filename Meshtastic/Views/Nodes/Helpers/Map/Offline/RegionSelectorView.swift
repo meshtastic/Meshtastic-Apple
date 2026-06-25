@@ -133,6 +133,13 @@ struct RegionSelectorView: View {
 			Text("Size of selected map: \(estimatedSize)")
 				.font(.subheadline)
 
+			if let overlap {
+				Label("Overlaps \u{201C}\(overlap.name)\u{201D}. Move or zoom so it doesn\u{2019}t overlap an existing map.", systemImage: "exclamationmark.triangle.fill")
+					.font(.caption)
+					.foregroundStyle(.orange)
+					.multilineTextAlignment(.center)
+			}
+
 			HStack(spacing: 12) {
 				Button(role: .cancel) { dismiss() } label: {
 					Text("Cancel").frame(maxWidth: .infinity)
@@ -145,13 +152,18 @@ struct RegionSelectorView: View {
 					Text("Download").frame(maxWidth: .infinity)
 				}
 				.buttonStyle(.borderedProminent)
-				.disabled(bounds == nil || manager.isDownloading)
+				.disabled(bounds == nil || manager.isDownloading || overlap != nil)
 			}
 		}
 		.padding()
 		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
 		.padding(.horizontal, 12)
 		.padding(.bottom, 8)
+	}
+
+	/// An existing region the framed area overlaps (downloads must not overlap), or nil.
+	private var overlap: OfflineMapRegion? {
+		bounds.flatMap { manager.overlappingRegion(with: $0, excluding: replacing) }
 	}
 
 	private var estimatedSize: String {
