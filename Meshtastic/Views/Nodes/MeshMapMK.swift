@@ -399,7 +399,6 @@ struct MeshMapMK: View {
 				decodeOfflineIfVisible()
 			}
 			.onChange(of: offlineMapManager.regions) {
-				frameToNewestOfflineRegion()
 				reloadOfflineSource()
 			}
 			.onChange(of: overlayInputsKey) {
@@ -600,17 +599,6 @@ struct MeshMapMK: View {
 								/// Rebuild every derived overlay/marker set (cheap; few items). Driven by overlayInputsKey.
 								/// Re-bind the offline vector provider to the active archive (newest downloaded region, else the
 								/// bundled demo) and decode it. Cheap no-op when the archive hasn't changed.
-								/// Jump the camera to the newest downloaded region so a just-finished download is visible
-								/// (the offline box renders at the region's real location, which may be far from the nodes).
-								private func frameToNewestOfflineRegion() {
-									guard enableOfflineTiles, let region = offlineMapManager.regions.first else { return }
-									let center = CLLocationCoordinate2D(latitude: (region.minLatitude + region.maxLatitude) / 2,
-									                                    longitude: (region.minLongitude + region.maxLongitude) / 2)
-									let span = MKCoordinateSpan(latitudeDelta: max(0.05, (region.maxLatitude - region.minLatitude) * 1.4),
-									                            longitudeDelta: max(0.05, (region.maxLongitude - region.minLongitude) * 1.4))
-									visibleRegion = MKCoordinateRegion(center: center, span: span)
-								}
-
 								private func reloadOfflineSource() {
 									offlineVectors.reload(url: offlineTilesURL)
 									decodeOfflineIfVisible()
