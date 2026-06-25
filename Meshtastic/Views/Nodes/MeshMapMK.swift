@@ -60,6 +60,8 @@ struct MeshMapMK: View {
 	/// Offline basemap rendered as native MKOverlays (slate/cream vector content) -- matches the old
 	/// SwiftUI map's look and aligns the coverage border/label exactly (no tile-grid mismatch).
 	@StateObject private var offlineVectors = OfflineVectorTileProvider()
+	/// Downloaded offline regions; observed so a new download re-points offlineVectors.
+	@ObservedObject private var offlineMapManager = OfflineMapManager.shared
 	@State private var offlineVectorOverlays: [ClusterMapOverlay] = []
 	/// Route polylines + start/finish markers, rebuilt only when the route set changes.
 	@State private var routeOverlays: [ClusterMapOverlay] = []
@@ -390,6 +392,10 @@ struct MeshMapMK: View {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
 				filters.fallbackLocation = activeDeviceCoordinate
 			}
+			.onChange(of: offlineMapManager.regions) {
+				reloadOfflineSource()
+				frameToNewestOfflineRegion()
+			}
 			.onChange(of: overlayInputsKey) {
 				rebuildAllMapContent()
 			}
@@ -419,7 +425,7 @@ struct MeshMapMK: View {
 			rebuildWaypointDecorations()
 			rebuildGeoJSONOverlays()
 			rebuildRouteContent()
-			if enableOfflineTiles { offlineVectors.updateIfNeeded() }
+			reloadOfflineSource()
 			rebuildOfflineVectorOverlays()
 
 			switch selectedMapLayer {
@@ -586,8 +592,25 @@ struct MeshMapMK: View {
 								}
 
 								/// Rebuild every derived overlay/marker set (cheap; few items). Driven by overlayInputsKey.
+								/// Re-bind the offline vector provider to the active archive (newest downloaded region, else the
+								/// bundled demo) and decode it. Cheap no-op when the archive hasn't changed.
+								/// Jump the camera to the newest downloaded region so a just-finished download is visible
+								/// (the offline box renders at the region's real location, which may be far from the nodes).
+								private func frameToNewestOfflineRegion() {
+									guard enableOfflineTiles, let region = offlineMapManager.regions.first else { return }
+									let center = CLLocationCoordinate2D(latitude: (region.minLatitude + region.maxLatitude) / 2,
+									                                    longitude: (region.minLongitude + region.maxLongitude) / 2)
+									let span = MKCoordinateSpan(latitudeDelta: max(0.05, (region.maxLatitude - region.minLatitude) * 1.4),
+									                            longitudeDelta: max(0.05, (region.maxLongitude - region.minLongitude) * 1.4))
+									visibleRegion = MKCoordinateRegion(center: center, span: span)
+								}
+
+								private func reloadOfflineSource() {
+									offlineVectors.reload(url: offlineTilesURL)
+								}
+
 								private func rebuildAllMapContent() {
-									if enableOfflineTiles { offlineVectors.updateIfNeeded() }
+									reloadOfflineSource()
 									rebuildOfflineVectorOverlays()
 									rebuildRouteContent()
 									rebuildWaypointDecorations()

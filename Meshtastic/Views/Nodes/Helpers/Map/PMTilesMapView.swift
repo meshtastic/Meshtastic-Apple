@@ -121,10 +121,12 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// Bumped once each time a decode publishes, so observers rebuild exactly once per decode.
 	@Published private(set) var revision = 0
 
-	let isAvailable: Bool
+	private(set) var isAvailable = false
 	/// The archive's coverage box (for the base fill + coverage rectangle), nil if unavailable.
-	let coverageBounds: GeoBounds?
-	private let source: OfflineTileSource?
+	private(set) var coverageBounds: GeoBounds?
+	private var source: OfflineTileSource?
+	/// URL the provider is currently bound to, so reload(url:) can no-op when it hasn't changed.
+	private var loadedURL: URL?
 	private let queue = DispatchQueue(label: "offline.vector.decode", qos: .userInitiated)
 	private var didLoad = false
 
@@ -138,15 +140,29 @@ final class OfflineVectorTileProvider: ObservableObject {
 	}
 
 	init(url: URL? = OfflineVectorTileProvider.defaultURL) {
-		if let url, let source = OfflineTileSourceFactory.source(for: url), source.isVectorTiles {
-			self.source = source
-			self.isAvailable = true
-			self.coverageBounds = source.geographicBounds
+		applySource(url: url)
+	}
+
+	/// (Re)bind to an archive URL (newest downloaded region, or the bundled demo tiles).
+	private func applySource(url: URL?) {
+		if let url, let src = OfflineTileSourceFactory.source(for: url), src.isVectorTiles {
+			source = src; isAvailable = true; coverageBounds = src.geographicBounds; loadedURL = url
 		} else {
-			self.source = nil
-			self.isAvailable = false
-			self.coverageBounds = nil
+			source = nil; isAvailable = false; coverageBounds = nil; loadedURL = nil
 		}
+	}
+
+	/// Switch to a different archive (e.g. a freshly downloaded region) and re-decode. No-op when the
+	/// URL is unchanged; clears the old overlays + re-decodes when it changes.
+	func reload(url: URL?) {
+		if url != loadedURL {
+			applySource(url: url)
+			didLoad = false
+			polygons = []
+			arterials = []
+			revision += 1   // drop the old region's overlays now; the decode publishes the new set
+		}
+		updateIfNeeded()
 	}
 
 	nonisolated static var defaultURL: URL? {
