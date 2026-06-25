@@ -64,7 +64,11 @@ struct MeshMapMK: View {
 	@State private var routeOverlays: [ClusterMapOverlay] = []
 	@State private var routeDecorations: [ClusterMapDecoration] = []
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
+	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@State private var waypointDecorations: [ClusterMapDecoration] = []
+	/// User-uploaded GeoJSON overlays: lines/polygons -> overlays, points -> decorations.
+	@State private var geoJSONOverlays: [ClusterMapOverlay] = []
+	@State private var geoJSONDecorations: [ClusterMapDecoration] = []
 	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
@@ -207,28 +211,33 @@ struct MeshMapMK: View {
 	private var routesKey: String {
 		routes.map { "\($0.color)|\($0.locations.count)" }.joined(separator: ",")
 	}
-	var body: some View {
-		let positionState = visiblePositionState
-		let isDense = visiblePositionSnapshots.count > 500 // switch to lightweight dots when crowded
-		let mapVisible = isMapVisible // drop offline/route overlays + markers off-screen (no leak)
-		NavigationStack {
-			ZStack {
-			ClusterMapView(
+	/// True when the visible set is crowded -> draw lightweight dot pins instead of full pins.
+	private var isDense: Bool { visiblePositionSnapshots.count > 500 }
+
+	/// The map itself, extracted from `body` so the big generic expression type-checks on its own.
+	@ViewBuilder private var meshClusterMapView: some View {
+		ClusterMapView(
 				items: visiblePositionSnapshots,
 				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
 				region: $visibleRegion,
 				clustering: true,
 				tilesURL: nil,
-				onSelect: { snapshot in selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
+				onSelect: { snapshot in selectedWaypoint = nil; editingWaypoint = nil; selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
-				overlays: mapVisible ? offlineVectorOverlays + routeOverlays + mapOverlays : [],
-				coverageBounds: mapVisible ? offlineCoverageBounds : nil,
-				decorations: mapVisible ? routeDecorations + waypointDecorations : [],
+				overlays: combinedMapOverlays(),
+				coverageBounds: isMapVisible ? offlineCoverageBounds : nil,
+				decorations: combinedMapDecorations(),
 				onMapLongPress: { coordinate in beginNewWaypoint(at: coordinate) }
 			) { snapshot in
 				MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
 					.equatable()
 			}
+	}
+
+	/// The map + its sheets + the bottom button bar, split out of `body` so the long modifier
+	/// chain type-checks in pieces (the whole thing in one `body` exceeded the solver budget).
+	@ViewBuilder private var mapWithSheets: some View {
+		meshClusterMapView
 			.ignoresSafeArea()
 				.sheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
@@ -344,6 +353,13 @@ struct MeshMapMK: View {
 					.padding(.horizontal, 12)
 					.padding(.vertical, 8)
 				}
+	}
+
+	var body: some View {
+		let positionState = visiblePositionState
+		NavigationStack {
+			ZStack {
+			mapWithSheets
 			}
 			.toolbar {
 				ToolbarItem(placement: .topBarLeading) {
@@ -372,30 +388,9 @@ struct MeshMapMK: View {
 				refreshVisiblePositionSnapshots(from: positionState.positions)
 				filters.fallbackLocation = activeDeviceCoordinate
 			}
-			.onChange(of: showConvexHull) {
-				rebuildOverlays()
+			.onChange(of: overlayInputsKey) {
+				rebuildAllMapContent()
 			}
-			.onChange(of: waypointsKey) {
-				rebuildWaypointDecorations()
-			}
-			.onChange(of: showWaypoints) {
-				rebuildWaypointDecorations()
-			}
-			.onChange(of: routesKey) {
-				rebuildRouteContent()
-				rebuildWaypointDecorations()
-			}
-			.onChange(of: enableOfflineTiles) {
-				if enableOfflineTiles { offlineVectors.updateIfNeeded() }
-				rebuildOfflineVectorOverlays()
-				rebuildRouteContent()
-			}
-			.onChange(of: colorScheme) {
-				rebuildOfflineVectorOverlays()
-			}
-.onChange(of: offlineVectors.revision) {
-	rebuildOfflineVectorOverlays()
-}
 			.onChange(of: allLatestPositions) {
 				filters.fallbackLocation = activeDeviceCoordinate
 			}
@@ -419,6 +414,8 @@ struct MeshMapMK: View {
 			}
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
+			rebuildWaypointDecorations()
+			rebuildGeoJSONOverlays()
 			rebuildRouteContent()
 			if enableOfflineTiles { offlineVectors.updateIfNeeded() }
 			rebuildOfflineVectorOverlays()
@@ -568,19 +565,101 @@ struct MeshMapMK: View {
 		return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 	}
 
-								/// Build tappable waypoint markers (icon bubble) from saved waypoints; tap -> open the form.
+																/// Build user GeoJSON overlays: LineString/Polygon -> styled MKOverlay; Point -> a circle marker.
+								/// Gated on the Map Overlays master toggle + the set of enabled uploaded files.
+								/// Overlays passed to the map (empty off-screen so MapKit drops the trees). Built with += rather
+								/// than a big `+` chain inside `body` so the SwiftUI type-checker doesn't time out.
+								/// Single change-detector for everything that affects the vector overlays / markers, so one
+								/// onChange rebuilds them all (keeps `body`'s modifier chain short enough to type-check).
+								private var overlayInputsKey: String {
+									var parts = [routesKey, waypointsKey]
+									parts.append(showWaypoints ? "w1" : "w0")
+									parts.append(showConvexHull ? "h1" : "h0")
+									parts.append(mapOverlaysEnabled ? "o1" : "o0")
+									parts.append(enableOfflineTiles ? "t1" : "t0")
+									parts.append(colorScheme == .dark ? "d1" : "d0")
+									parts.append(String(enabledOverlayConfigs.hashValue))
+									parts.append(String(offlineVectors.revision))
+									return parts.joined(separator: "|")
+								}
+
+								/// Rebuild every derived overlay/marker set (cheap; few items). Driven by overlayInputsKey.
+								private func rebuildAllMapContent() {
+									if enableOfflineTiles { offlineVectors.updateIfNeeded() }
+									rebuildOfflineVectorOverlays()
+									rebuildRouteContent()
+									rebuildWaypointDecorations()
+									rebuildGeoJSONOverlays()
+									rebuildOverlays()
+								}
+
+								private func combinedMapOverlays() -> [ClusterMapOverlay] {
+									guard isMapVisible else { return [] }
+									var result = offlineVectorOverlays
+									result += routeOverlays
+									result += mapOverlays
+									result += geoJSONOverlays
+									return result
+								}
+
+								private func combinedMapDecorations() -> [ClusterMapDecoration] {
+									guard isMapVisible else { return [] }
+									var result = routeDecorations
+									result += waypointDecorations
+									result += geoJSONDecorations
+									return result
+								}
+
+								private func rebuildGeoJSONOverlays() {
+									guard mapOverlaysEnabled, !enabledOverlayConfigs.isEmpty else {
+										if !geoJSONOverlays.isEmpty { geoJSONOverlays = [] }
+										if !geoJSONDecorations.isEmpty { geoJSONDecorations = [] }
+										return
+									}
+									var overlays: [ClusterMapOverlay] = []
+									var decorations: [ClusterMapDecoration] = []
+									for styled in GeoJSONOverlayManager.shared.loadStyledFeaturesForConfigs(enabledOverlayConfigs) {
+										let stroke = styled.strokeStyle
+										let style = ClusterMapOverlayStyle(
+											strokeUIColor: UIColor(styled.strokeColor),
+											fillUIColor: UIColor(styled.fillColor),
+											lineWidth: stroke.lineWidth,
+											lineDash: stroke.dash.isEmpty ? nil : stroke.dash.map { NSNumber(value: Double($0)) },
+											lineCap: stroke.lineCap
+										)
+										if let overlay = styled.createOverlay() {
+											overlays.append(ClusterMapOverlay(id: "geojson-\(styled.id)", overlay: overlay, style: style))
+										} else if let coordinate = styled.feature.geometry.coordinates.toCoordinate() {
+											let radius = styled.feature.markerRadius
+											decorations.append(ClusterMapDecoration(
+												id: "geojson-pt-\(styled.id)",
+												coordinate: coordinate,
+												content: AnyView(
+													Circle()
+														.fill(styled.fillColor)
+														.overlay(Circle().stroke(styled.strokeColor, style: stroke))
+														.frame(width: radius * 2, height: radius * 2)
+												)
+											))
+										}
+									}
+									geoJSONOverlays = overlays
+									geoJSONDecorations = decorations
+								}
+
+/// Build tappable waypoint markers (icon bubble) from saved waypoints; tap -> open the form.
 				private func rebuildWaypointDecorations() {
 					guard showWaypoints else {
 						if !waypointDecorations.isEmpty { waypointDecorations = [] }
 						return
 					}
-					waypointDecorations = allWaypoints.map { waypoint in
+					waypointDecorations = allWaypoints.filter { $0.expire == nil || $0.expire! >= Date.now }.map { waypoint in
 						let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
 						return ClusterMapDecoration(
 							id: "waypoint-\(waypoint.persistentModelID.hashValue)",
 							coordinate: waypoint.mapCoordinate,
 							content: AnyView(CircleText(text: icon, color: .orange, circleSize: 36)),
-							onTap: { selectedWaypoint = waypoint }
+							onTap: { selectedNode = nil; editingWaypoint = nil; selectedWaypoint = waypoint }
 						)
 					}
 				}
@@ -588,12 +667,12 @@ struct MeshMapMK: View {
 				/// Long-press on empty map -> a new in-memory waypoint at that point, opening the edit form.
 				private func beginNewWaypoint(at coordinate: CLLocationCoordinate2D) {
 					let waypoint = WaypointEntity()
-					waypoint.name = "Waypoint Pin"
 					waypoint.latitudeI = Int32(coordinate.latitude * 1e7)
 					waypoint.longitudeI = Int32(coordinate.longitude * 1e7)
 					waypoint.expire = Date.now.addingTimeInterval(60 * 480)
 					waypoint.id = 0
-					newWaypointCoord = coordinate
+					selectedNode = nil
+					selectedWaypoint = nil
 					editingWaypoint = waypoint
 				}
 
