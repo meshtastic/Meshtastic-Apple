@@ -764,12 +764,12 @@ struct MeshMapMK: View {
 
 	private static func offlineStrokeColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
 		switch role {
-			case .majorRoad: return dark ? UIColor(red: 0.960, green: 0.860, blue: 0.620, alpha: 1) : UIColor(red: 0.980, green: 0.760, blue: 0.330, alpha: 1)
-			case .mediumRoad: return dark ? UIColor(red: 0.880, green: 0.880, blue: 0.900, alpha: 1) : UIColor.white
-			case .minorRoad: return dark ? UIColor(red: 0.610, green: 0.620, blue: 0.650, alpha: 1) : UIColor(red: 0.730, green: 0.730, blue: 0.715, alpha: 1)
-			case .path: return dark ? UIColor(white: 0.43, alpha: 1) : UIColor(white: 0.70, alpha: 1)
-			case .rail: return dark ? UIColor(red: 0.500, green: 0.520, blue: 0.560, alpha: 1) : UIColor(red: 0.560, green: 0.580, blue: 0.620, alpha: 1)
-			case .boundary: return dark ? UIColor(red: 0.520, green: 0.470, blue: 0.580, alpha: 1) : UIColor(red: 0.560, green: 0.510, blue: 0.610, alpha: 1)
+			case .majorRoad: return dark ? UIColor(red: 0.62, green: 0.56, blue: 0.42, alpha: 1) : UIColor(red: 0.99, green: 0.78, blue: 0.42, alpha: 1)
+			case .mediumRoad: return dark ? UIColor(red: 0.55, green: 0.56, blue: 0.59, alpha: 1) : UIColor(red: 0.99, green: 0.99, blue: 0.98, alpha: 1)
+			case .minorRoad: return dark ? UIColor(red: 0.42, green: 0.43, blue: 0.46, alpha: 1) : UIColor(red: 0.90, green: 0.90, blue: 0.88, alpha: 1)
+			case .path: return dark ? UIColor(white: 0.40, alpha: 1) : UIColor(white: 0.80, alpha: 1)
+			case .rail: return dark ? UIColor(red: 0.48, green: 0.49, blue: 0.52, alpha: 1) : UIColor(red: 0.62, green: 0.62, blue: 0.64, alpha: 1)
+			case .boundary: return dark ? UIColor(red: 0.50, green: 0.46, blue: 0.56, alpha: 1) : UIColor(red: 0.58, green: 0.54, blue: 0.62, alpha: 1)
 			default: return nil
 		}
 	}
