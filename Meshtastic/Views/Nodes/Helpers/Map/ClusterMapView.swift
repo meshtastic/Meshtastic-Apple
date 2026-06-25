@@ -150,6 +150,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 						 forAnnotationViewWithReuseIdentifier: HostingAnnotationView.reuseID)
 		mapView.register(HostingClusterView.self,
 						 forAnnotationViewWithReuseIdentifier: HostingClusterView.reuseID)
+						mapView.register(HostingCoverageLabelView.self,
+										 forAnnotationViewWithReuseIdentifier: HostingCoverageLabelView.reuseID)
 
 		// Apple basemap type + controls.
 		context.coordinator.applyConfiguration(configuration, to: mapView)
@@ -234,6 +236,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// Accent rectangle drawn on the offline archive's coverage bounds so the offline area reads
 		/// as a deliberate feature (matches the demo). Rebuilt whenever the tile overlay is.
 		private var coverageOverlay: MKPolygon?
+		/// The "OFFLINE MAP" capsule annotation on the coverage area; lifecycle mirrors coverageOverlay.
+		private var coverageLabel: OfflineCoverageLabelAnnotation?
 
 		/// Last-applied basemap config, so we only touch `preferredConfiguration` when it changed
 		/// (re-applying it resets the rendered map and is visibly expensive).
@@ -305,7 +309,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			guard let url else {
 				if let old = tileOverlay { mapView.removeOverlay(old) }
 				if let border = coverageOverlay { mapView.removeOverlay(border) }
-				tileOverlay = nil; tileSource = nil; tileURL = nil; coverageOverlay = nil
+				if let label = coverageLabel { mapView.removeAnnotation(label) }
+				tileOverlay = nil; tileSource = nil; tileURL = nil; coverageOverlay = nil; coverageLabel = nil
 				return
 			}
 			let urlChanged = (tileURL != url)
@@ -319,7 +324,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 					// instead of leaving a stale archive (and a misleading coverage border) on screen.
 					if let old = tileOverlay { mapView.removeOverlay(old) }
 					if let border = coverageOverlay { mapView.removeOverlay(border) }
-					tileOverlay = nil; tileSource = nil; tileURL = nil; coverageOverlay = nil
+				if let label = coverageLabel { mapView.removeAnnotation(label) }
+					tileOverlay = nil; tileSource = nil; tileURL = nil; coverageOverlay = nil; coverageLabel = nil
 					return
 				}
 				tileSource = source
@@ -342,6 +348,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			// alongside the tile overlay so its renderer picks up the current dark/light accent. Sits
 			// just above the tiles but below the caller overlays.
 			if let border = coverageOverlay { mapView.removeOverlay(border); coverageOverlay = nil }
+			if let label = coverageLabel { mapView.removeAnnotation(label); coverageLabel = nil }
 			if let bounds = source.geographicBounds {
 				let corners = [
 					CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
@@ -352,6 +359,12 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				let border = MKPolygon(coordinates: corners, count: corners.count)
 				coverageOverlay = border
 				mapView.insertOverlay(border, above: overlay)
+				// 'OFFLINE MAP' capsule centered on the top edge of the coverage box (matches the SwiftUI map).
+				let labelCoord = CLLocationCoordinate2D(latitude: bounds.maxLat,
+																   longitude: (bounds.minLon + bounds.maxLon) / 2)
+				let label = OfflineCoverageLabelAnnotation(coordinate: labelCoord)
+				coverageLabel = label
+				mapView.addAnnotation(label)
 			}
 			// NOTE: deliberately does NOT move the camera. The basemap renders wherever the user is;
 			// the caller (MeshMapMK) owns the initial framing (GPS-centered fit-to-nodes). Auto-jumping
@@ -470,6 +483,14 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			}
 
 			// One of our item annotations.
+			// The offline coverage capsule label (standalone, non-selecting).
+			if annotation is OfflineCoverageLabelAnnotation {
+				let view = mapView.dequeueReusableAnnotationView(
+					withIdentifier: HostingCoverageLabelView.reuseID, for: annotation)
+				(view as? HostingCoverageLabelView)?.configure(content: makeOfflineCoverageLabel(dark: tileOverlay?.dark ?? false))
+				return view
+			}
+			
 			if let item = annotation as? ItemAnnotation<Item> {
 				let view = mapView.dequeueReusableAnnotationView(
 					withIdentifier: HostingAnnotationView.reuseID, for: item) as? HostingAnnotationView
@@ -714,6 +735,42 @@ private final class HostingClusterView: HostingAnnotationViewBase {
 
 	@available(*, unavailable)
 	required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+// MARK: - Offline coverage label (the "OFFLINE MAP" capsule, hosted like a pin)
+
+/// Standalone, non-clustering, non-selectable annotation marking the offline coverage area with the
+/// "OFFLINE MAP" capsule tab (mirrors the SwiftUI map's label).
+private final class OfflineCoverageLabelAnnotation: NSObject, MKAnnotation {
+	@objc dynamic var coordinate: CLLocationCoordinate2D
+	init(coordinate: CLLocationCoordinate2D) { self.coordinate = coordinate }
+}
+
+/// Hosts the offline coverage capsule label. Not a tap target and never decluttered away.
+private final class HostingCoverageLabelView: HostingAnnotationViewBase {
+	static let reuseID = "ClusterMapView.coverageLabel"
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		isEnabled = false           // a label, not selectable
+		displayPriority = .required // never hidden by decluttering
+	}
+	@available(*, unavailable)
+	required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+/// The "OFFLINE MAP" capsule view shown on the offline coverage area, matching the SwiftUI map.
+private func makeOfflineCoverageLabel(dark: Bool) -> AnyView {
+	let accent: Color = dark ? .cyan : .blue
+	return AnyView(
+		Text("OFFLINE MAP")
+			.font(.system(size: 11, weight: .heavy))
+			.tracking(0.5)
+			.foregroundStyle(.white)
+			.padding(.horizontal, 8)
+			.padding(.vertical, 4)
+			.background(Capsule().fill(accent))
+			.shadow(color: .black.opacity(0.25), radius: 1.5, y: 1)
+	)
 }
 
 // MARK: - Default cluster badge (a SwiftUI view, hosted just like the pins)
