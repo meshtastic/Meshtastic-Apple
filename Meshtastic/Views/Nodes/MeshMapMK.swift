@@ -56,6 +56,10 @@ struct MeshMapMK: View {
 	@State private var spreadOverrides: [Int64: CLLocationCoordinate2D] = [:]
 	/// Guards the one-time initial camera framing (GPS-centered, zoomed out, ~100 miles max).
 	@State private var didInitialFrame = false
+	/// Offline basemap rendered as native MKOverlays (slate/cream vector content) -- matches the old
+	/// SwiftUI map's look and aligns the coverage border/label exactly (no tile-grid mismatch).
+	@StateObject private var offlineVectors = OfflineVectorTileProvider()
+	@State private var offlineVectorOverlays: [ClusterMapOverlay] = []
 	@Environment(\.colorScheme) private var colorScheme
 	@State private var editingSettings = false
 	@State private var editingFilters = false
@@ -179,6 +183,10 @@ struct MeshMapMK: View {
 		return nil
 	}
 
+	/// Offline coverage bounds passed to ClusterMapView (drives the accent border + capsule).
+	private var offlineCoverageBounds: GeoBounds? {
+		enableOfflineTiles && offlineVectors.isAvailable ? offlineVectors.coverageBounds : nil
+	}
 	var body: some View {
 		let positionState = visiblePositionState
 		NavigationStack {
@@ -188,10 +196,11 @@ struct MeshMapMK: View {
 				coordinate: { spreadOverrides[$0.nodeNum] ?? $0.coordinate },
 				region: $visibleRegion,
 				clustering: true,
-				tilesURL: offlineTilesURL,
+				tilesURL: nil,
 				onSelect: { snapshot in selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
-				overlays: mapOverlays
+				overlays: offlineVectorOverlays + mapOverlays,
+				coverageBounds: offlineCoverageBounds
 			) { snapshot in
 				AnimatedNodePin(
 					nodeColor: UIColor(hex: UInt32(snapshot.nodeNum)),
@@ -349,6 +358,19 @@ struct MeshMapMK: View {
 			.onChange(of: showConvexHull) {
 				rebuildOverlays()
 			}
+			.onChange(of: enableOfflineTiles) {
+				if enableOfflineTiles { offlineVectors.updateIfNeeded() }
+				rebuildOfflineVectorOverlays()
+			}
+			.onChange(of: colorScheme) {
+				rebuildOfflineVectorOverlays()
+			}
+			.onChange(of: offlineVectors.arterials.count) {
+				rebuildOfflineVectorOverlays()
+			}
+			.onChange(of: offlineVectors.polygons.count) {
+				rebuildOfflineVectorOverlays()
+			}
 			.onChange(of: allLatestPositions) {
 				filters.fallbackLocation = activeDeviceCoordinate
 			}
@@ -372,6 +394,8 @@ struct MeshMapMK: View {
 			}
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
+			if enableOfflineTiles { offlineVectors.updateIfNeeded() }
+			rebuildOfflineVectorOverlays()
 
 			switch selectedMapLayer {
 			case .standard:
@@ -518,7 +542,89 @@ struct MeshMapMK: View {
 		return CLLocationCoordinate2D(latitude: lat, longitude: lon)
 	}
 
-	/// Rebuild the vector overlays (accuracy circles + convex hull) from the current snapshots.
+		/// Build the offline basemap as native MKOverlays (earth fill + water/park fills + arterial roads)
+	/// from the decoded vector tiles, using the same slate/cream palette as the old SwiftUI map. Stable
+	/// objects, rebuilt only on toggle/appearance/decode so the overlay diff is a no-op between renders.
+	private func rebuildOfflineVectorOverlays() {
+		guard enableOfflineTiles, offlineVectors.isAvailable, let bounds = offlineVectors.coverageBounds else {
+			if !offlineVectorOverlays.isEmpty { offlineVectorOverlays = [] }
+			return
+		}
+		let dark = colorScheme == .dark
+		var result: [ClusterMapOverlay] = []
+		// Earth base fill for the whole coverage box (so gaps read as land, not Apple basemap).
+		var earth = [
+			CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
+			CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
+			CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
+			CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
+		]
+		result.append(ClusterMapOverlay(
+			id: "offline-earth",
+			overlay: MKPolygon(coordinates: &earth, count: earth.count),
+			style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: Self.offlineEarthColor(dark: dark), lineWidth: 0)
+		))
+		// Water / park fills.
+		for polygon in offlineVectors.polygons {
+			guard let fill = Self.offlineFillColor(polygon.role, dark: dark), polygon.coordinates.count >= 3 else { continue }
+			var coords = polygon.coordinates
+			result.append(ClusterMapOverlay(
+				id: "offline-fill-\(polygon.id)",
+				overlay: MKPolygon(coordinates: &coords, count: coords.count),
+				style: ClusterMapOverlayStyle(strokeUIColor: nil, fillUIColor: fill, lineWidth: 0)
+			))
+		}
+		// Arterial road network.
+		for line in offlineVectors.arterials {
+			guard let stroke = Self.offlineStrokeColor(line.role, dark: dark), line.coordinates.count >= 2 else { continue }
+			var coords = line.coordinates
+			result.append(ClusterMapOverlay(
+				id: "offline-road-\(line.id)",
+				overlay: MKPolyline(coordinates: &coords, count: coords.count),
+				style: ClusterMapOverlayStyle(strokeUIColor: stroke, fillUIColor: nil, lineWidth: Self.offlineLineWidth(line.role), lineCap: .round)
+			))
+		}
+		offlineVectorOverlays = result
+	}
+
+	private static func offlineEarthColor(dark: Bool) -> UIColor {
+		dark ? UIColor(red: 0.180, green: 0.180, blue: 0.190, alpha: 1) : UIColor(red: 0.940, green: 0.935, blue: 0.920, alpha: 1)
+	}
+
+	private static func offlineFillColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		switch role {
+			case .water: return dark ? UIColor(red: 0.160, green: 0.220, blue: 0.300, alpha: 1) : UIColor(red: 0.680, green: 0.800, blue: 0.920, alpha: 1)
+			case .park, .green: return dark ? UIColor(red: 0.170, green: 0.235, blue: 0.185, alpha: 1) : UIColor(red: 0.830, green: 0.890, blue: 0.795, alpha: 1)
+			case .land: return dark ? UIColor(red: 0.185, green: 0.185, blue: 0.195, alpha: 1) : UIColor(red: 0.925, green: 0.920, blue: 0.905, alpha: 1)
+			default: return nil
+		}
+	}
+
+	private static func offlineStrokeColor(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		switch role {
+			case .majorRoad: return dark ? UIColor(red: 0.960, green: 0.860, blue: 0.620, alpha: 1) : UIColor(red: 0.980, green: 0.760, blue: 0.330, alpha: 1)
+			case .mediumRoad: return dark ? UIColor(red: 0.880, green: 0.880, blue: 0.900, alpha: 1) : UIColor.white
+			case .minorRoad: return dark ? UIColor(red: 0.610, green: 0.620, blue: 0.650, alpha: 1) : UIColor(red: 0.730, green: 0.730, blue: 0.715, alpha: 1)
+			case .path: return dark ? UIColor(white: 0.43, alpha: 1) : UIColor(white: 0.70, alpha: 1)
+			case .rail: return dark ? UIColor(red: 0.500, green: 0.520, blue: 0.560, alpha: 1) : UIColor(red: 0.560, green: 0.580, blue: 0.620, alpha: 1)
+			case .boundary: return dark ? UIColor(red: 0.520, green: 0.470, blue: 0.580, alpha: 1) : UIColor(red: 0.560, green: 0.510, blue: 0.610, alpha: 1)
+			default: return nil
+		}
+	}
+
+	private static func offlineLineWidth(_ role: OfflineFeatureRole) -> CGFloat {
+		switch role {
+			case .majorRoad: return 5.5
+			case .mediumRoad: return 3.2
+			case .minorRoad: return 1.6
+			case .path: return 1.0
+			case .rail: return 1.3
+			case .boundary: return 1.2
+			default: return 1.0
+		}
+	}
+
+/// Rebuild the vector overlays (accuracy circles + convex hull) from the current snapshots.
 	/// Called on data change so the overlay objects are stable between renders. Ports the styling
 	/// from MeshMapContent's reducedPrecisionMapCircles + convex hull.
 	private func rebuildOverlays() {
