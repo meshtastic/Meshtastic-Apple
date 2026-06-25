@@ -183,10 +183,11 @@ struct MeshMapMK: View {
 		)
 	}
 
-	/// Offline raster basemap when the "Offline" layer is selected and tiles are present.
-	/// Prefers the street tiles (full roads, rasterized), then topo hillshade.
+	/// Offline raster basemap when offline tiles are enabled and an archive is present.
+	/// Prefers a user-downloaded region, then the bundled street/topo demo tiles.
 	private var offlineTilesURL: URL? {
 		guard enableOfflineTiles else { return nil }
+		if let downloaded = OfflineMapManager.newestRegionFileURL() { return downloaded }
 		let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 		for name in ["bellevue.pmtiles", "bellevue-topo.pmtiles"] {
 			let url = docs.appendingPathComponent(name)
