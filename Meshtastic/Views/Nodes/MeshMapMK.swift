@@ -201,6 +201,7 @@ struct MeshMapMK: View {
 	var body: some View {
 		let positionState = visiblePositionState
 		let isDense = visiblePositionSnapshots.count > 500 // switch to lightweight dots when crowded
+		let mapVisible = isMapVisible // drop offline/route overlays + markers off-screen (no leak)
 		NavigationStack {
 			ZStack {
 			ClusterMapView(
@@ -211,9 +212,9 @@ struct MeshMapMK: View {
 				tilesURL: nil,
 				onSelect: { snapshot in selectedNode = MeshMapSelectedNode(id: snapshot.nodeNum) },
 				configuration: clusterConfiguration,
-				overlays: offlineVectorOverlays + routeOverlays + mapOverlays,
-				coverageBounds: offlineCoverageBounds,
-				decorations: routeDecorations
+				overlays: mapVisible ? offlineVectorOverlays + routeOverlays + mapOverlays : [],
+				coverageBounds: mapVisible ? offlineCoverageBounds : nil,
+				decorations: mapVisible ? routeDecorations : []
 			) { snapshot in
 				MeshMapMKNodePin(nodeNum: snapshot.nodeNum, shortName: snapshot.shortName, isOnline: snapshot.isOnline, calculatedDelay: snapshot.calculatedDelay, dense: isDense)
 					.equatable()
@@ -401,6 +402,7 @@ struct MeshMapMK: View {
 			}
 			let activeFiles = GeoJSONOverlayManager.shared.getUploadedFilesWithState().filter { $0.isActive }
 			enabledOverlayConfigs = Set(activeFiles.map { $0.id })
+			rebuildRouteContent()
 			if enableOfflineTiles { offlineVectors.updateIfNeeded() }
 			rebuildOfflineVectorOverlays()
 

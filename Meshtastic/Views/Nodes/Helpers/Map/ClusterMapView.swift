@@ -819,6 +819,12 @@ private final class DecorationAnnotation: NSObject, MKAnnotation {
 /// Hosts a caller decoration's SwiftUI view. Never clusters.
 private final class HostingDecorationView: HostingAnnotationViewBase {
 	static let reuseID = "ClusterMapView.decoration"
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		isEnabled = false // display-only marker: no stuck selection, never swallows node/map taps
+	}
+	@available(*, unavailable)
+	required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }
 
 private final class OfflineCoverageLabelAnnotation: NSObject, MKAnnotation {
