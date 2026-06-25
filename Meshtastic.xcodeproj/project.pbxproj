@@ -208,6 +208,15 @@
 		B734732C0C394582BD6CD0CA /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = AF44FDF549704E29A8E5FE2F /* urls.json */; };
 		B96123C9177242AFA768AA8F /* DeviceMetadataEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509A1C42A695463093654617 /* DeviceMetadataEntity.swift */; };
 		BB0000000000000000000000 /* PMTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000000 /* PMTilesArchive.swift */; };
+		BBFF00000000000000000001 /* OfflineMapRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000001 /* OfflineMapRegion.swift */; };
+		BBFF00000000000000000002 /* OfflineMapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000002 /* OfflineMapManager.swift */; };
+		BBFF00000000000000000003 /* PMTilesExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000003 /* PMTilesExtractor.swift */; };
+		BBFF00000000000000000004 /* OfflineMapThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000004 /* OfflineMapThumbnail.swift */; };
+		BBFF00000000000000000005 /* OfflineMapsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000005 /* OfflineMapsList.swift */; };
+		BBFF00000000000000000006 /* DownloadNewMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000006 /* DownloadNewMapView.swift */; };
+		BBFF00000000000000000007 /* RegionSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000007 /* RegionSelectorView.swift */; };
+		BBFF00000000000000000008 /* OfflineMapDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000008 /* OfflineMapDetailView.swift */; };
+		BBFF00000000000000000009 /* PMTilesExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000009 /* PMTilesExtractorTests.swift */; };
 		BB0001000000000000000000 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001000000000000000000 /* MBTilesArchive.swift */; };
 		BB0002000000000000000000 /* VectorTileRasterizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002000000000000000000 /* VectorTileRasterizer.swift */; };
 		BB0003000000000000000000 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003000000000000000000 /* PMTilesMapView.swift */; };
@@ -702,6 +711,15 @@
 		918722D2C1474B2D99ED01DC /* UserEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntity.swift; sourceTree = "<group>"; };
 		A97241903A924144A3EEB679 /* PositionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntity.swift; sourceTree = "<group>"; };
 		AA0000000000000000000000 /* PMTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesArchive.swift; path = Meshtastic/Helpers/Map/PMTilesArchive.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000001 /* OfflineMapRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapRegion.swift; path = Meshtastic/Helpers/Map/OfflineMapRegion.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000002 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapManager.swift; path = Meshtastic/Helpers/Map/OfflineMapManager.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000003 /* PMTilesExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesExtractor.swift; path = Meshtastic/Helpers/Map/PMTilesExtractor.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000004 /* OfflineMapThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapThumbnail.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapThumbnail.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000005 /* OfflineMapsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapsList.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapsList.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000006 /* DownloadNewMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DownloadNewMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/DownloadNewMapView.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000007 /* RegionSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RegionSelectorView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/RegionSelectorView.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000008 /* OfflineMapDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfflineMapDetailView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/Offline/OfflineMapDetailView.swift; sourceTree = SOURCE_ROOT; };
+		AAFF00000000000000000009 /* PMTilesExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesExtractorTests.swift; path = MeshtasticTests/PMTilesExtractorTests.swift; sourceTree = SOURCE_ROOT; };
 		AA000002303050030000B001 /* Color+Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Brand.swift"; sourceTree = "<group>"; };
 		AA0001000000000000000000 /* MBTilesArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MBTilesArchive.swift; path = Meshtastic/Helpers/Map/MBTilesArchive.swift; sourceTree = SOURCE_ROOT; };
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
@@ -2666,6 +2684,7 @@
 				DD00001AASYNCCTST0000001 /* AsyncConcurrencyTests.swift in Sources */,
 				DD00001BINTCVRTST0000001 /* IntentConverterTests.swift in Sources */,
 				DD00001CMAPDATTST0000001 /* MapDataModelTests.swift in Sources */,
+				BBFF00000000000000000009 /* PMTilesExtractorTests.swift in Sources */,
 				DD00001DCDENTTST00000001 /* EntityTests.swift in Sources */,
 				DD00001EURLDETTST0000001 /* URLExtensionDetailedTests.swift in Sources */,
 				DD00001FFWVMERRTST000001 /* FirmwareViewModelErrorTests.swift in Sources */,
@@ -2709,6 +2728,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB0000000000000000000000 /* PMTilesArchive.swift in Sources */,
+				BBFF00000000000000000001 /* OfflineMapRegion.swift in Sources */,
+				BBFF00000000000000000002 /* OfflineMapManager.swift in Sources */,
+				BBFF00000000000000000003 /* PMTilesExtractor.swift in Sources */,
+				BBFF00000000000000000004 /* OfflineMapThumbnail.swift in Sources */,
+				BBFF00000000000000000005 /* OfflineMapsList.swift in Sources */,
+				BBFF00000000000000000006 /* DownloadNewMapView.swift in Sources */,
+				BBFF00000000000000000007 /* RegionSelectorView.swift in Sources */,
+				BBFF00000000000000000008 /* OfflineMapDetailView.swift in Sources */,
 				BB0001000000000000000000 /* MBTilesArchive.swift in Sources */,
 				BB0002000000000000000000 /* VectorTileRasterizer.swift in Sources */,
 				BB0003000000000000000000 /* PMTilesMapView.swift in Sources */,

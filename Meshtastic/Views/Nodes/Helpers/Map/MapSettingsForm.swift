@@ -20,6 +20,7 @@ struct MapSettingsForm: View {
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
 	@ObservedObject private var mapDataManager = MapDataManager.shared
+	@ObservedObject private var offlineMapManager = OfflineMapManager.shared
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
@@ -142,6 +143,31 @@ struct MapSettingsForm: View {
 					}
 				}
 
+				if meshMap {
+					Section(header: Text("Offline Maps")) {
+						NavigationLink {
+							OfflineMapsList()
+						} label: {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Offline Maps")
+									if offlineMapManager.regions.isEmpty {
+										Text("Download map areas to use without a connection.")
+											.font(.caption)
+											.foregroundColor(.secondary)
+									} else {
+										Text("\(offlineMapManager.regions.count) downloaded · \(offlineMapManager.formattedTotalSize)")
+											.font(.caption)
+											.foregroundColor(.secondary)
+									}
+								}
+							} icon: {
+								Image(systemName: "arrow.down.circle")
+							}
+						}
+					}
+				}
+
 				Section(header: Text("Map Overlays")) {
 					let hasUserData = GeoJSONOverlayManager.shared.hasUserData()
 					// Master toggle for map overlays
@@ -251,6 +277,7 @@ struct MapSettingsForm: View {
 		.onAppear {
 			// Initialize map data manager
 			mapDataManager.initialize()
+			offlineMapManager.loadIfNeeded()
 			// Migrate the legacy `.offline` base layer to the new independent offline-tiles overlay here
 			// (a shared entry point), so any presenter — incl. the per-node map — never shows the base
 			// picker with an unselectable `.offline` value when its segment is hidden on the new map.

@@ -70,7 +70,9 @@ final class PMTilesArchive {
 	/// Small LRU-ish cache of decoded leaf directories keyed by their byte offset.
 	private var leafCache: [UInt64: [Entry]] = [:]
 
-	private struct Entry {
+	/// A PMTiles directory entry. Exposed (alongside the static (de)serialization
+	/// helpers below) so `PMTilesExtractor` can reuse the exact same format logic.
+	struct Entry {
 		var tileID: UInt64
 		var offset: UInt64
 		var length: UInt32
@@ -97,7 +99,7 @@ final class PMTilesArchive {
 
 	// MARK: - Header
 
-	private static func parseHeader(_ data: Data) -> PMTilesHeader? {
+	static func parseHeader(_ data: Data) -> PMTilesHeader? {
 		// Magic "PMTiles" + version 3.
 		let magic = data.subdata(in: 0..<7)
 		guard magic == Data("PMTiles".utf8), data[7] == 3 else { return nil }
@@ -199,7 +201,7 @@ final class PMTilesArchive {
 
 	// MARK: - Directory deserialization
 
-	private static func deserializeDirectory(_ data: Data) -> [Entry] {
+	static func deserializeDirectory(_ data: Data) -> [Entry] {
 		var pos = 0
 		func varint() -> UInt64 {
 			var result: UInt64 = 0
@@ -233,7 +235,7 @@ final class PMTilesArchive {
 	}
 
 	/// Binary search matching the PMTiles reference `findTile`.
-	private static func find(_ tileID: UInt64, in entries: [Entry]) -> Entry? {
+	static func find(_ tileID: UInt64, in entries: [Entry]) -> Entry? {
 		var low = 0
 		var high = entries.count - 1
 		while low <= high {
@@ -302,7 +304,7 @@ final class PMTilesArchive {
 
 	/// Inflates a gzip member using Apple's Compression framework (which only does raw
 	/// DEFLATE), by parsing and skipping the gzip header and trailer.
-	private static func gunzip(_ data: Data) -> Data? {
+	static func gunzip(_ data: Data) -> Data? {
 		let bytes = [UInt8](data)
 		guard bytes.count >= 18, bytes[0] == 0x1F, bytes[1] == 0x8B, bytes[2] == 0x08 else {
 			return data // not gzip — assume already-raw payload
