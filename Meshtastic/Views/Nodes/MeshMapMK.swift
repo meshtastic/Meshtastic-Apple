@@ -195,17 +195,11 @@ struct MeshMapMK: View {
 		)
 	}
 
-	/// Offline raster basemap when offline tiles are enabled and an archive is present.
-	/// Prefers a user-downloaded region, then the bundled street/topo demo tiles.
+	/// Offline archive to render when offline tiles are enabled: the newest user-downloaded region.
+	/// (No bundled demo fallback — offline shows only what the user has downloaded.)
 	private var offlineTilesURL: URL? {
 		guard enableOfflineTiles else { return nil }
-		if let downloaded = OfflineMapManager.newestRegionFileURL() { return downloaded }
-		let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-		for name in ["bellevue.pmtiles", "bellevue-topo.pmtiles"] {
-			let url = docs.appendingPathComponent(name)
-			if FileManager.default.fileExists(atPath: url.path) { return url }
-		}
-		return nil
+		return OfflineMapManager.newestRegionFileURL()
 	}
 
 	/// Offline coverage bounds passed to ClusterMapView (drives the accent border + capsule).
