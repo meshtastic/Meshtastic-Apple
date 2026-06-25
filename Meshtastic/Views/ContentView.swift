@@ -72,7 +72,7 @@ struct ContentView: View {
 				}
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
-					MeshMap(router: appState.router)
+					MeshMapMK(router: appState.router)
 				}
 
 				Tab("Settings", systemImage: "gear", value: NavigationState.Tab.settings) {
@@ -104,7 +104,7 @@ struct ContentView: View {
 				}
 				.tag(NavigationState.Tab.nodes)
 
-				MeshMap(router: appState.router)
+				MeshMapMK(router: appState.router)
 				.tabItem {
 					Label("Map", systemImage: "map")
 				}
