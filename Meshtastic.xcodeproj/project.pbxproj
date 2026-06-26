@@ -222,6 +222,7 @@
 		BB0003000000000000000000 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003000000000000000000 /* PMTilesMapView.swift */; };
 		BB0005000000000000000000 /* MeshMapMK.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005000000000000000000 /* MeshMapMK.swift */; };
 		BB0004000000000000000000 /* ClusterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004000000000000000000 /* ClusterMapView.swift */; };
+		BB0F1900000000000000F190 /* TraceRouteFlyover.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F1900000000000000F190 /* TraceRouteFlyover.swift */; };
 		BC10380F2DD4334400B00BFA /* AddContactIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC10380E2DD4333C00B00BFA /* AddContactIntent.swift */; };
 		BC6B45FF2CB2F98900723CEB /* SaveChannelSettingsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B45FE2CB2F98900723CEB /* SaveChannelSettingsIntent.swift */; };
 		BC996F276BA82B1229C119D8 /* DiscoveryHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EB21EF91CA0B50FDC20B85 /* DiscoveryHistoryView.swift */; };
@@ -732,6 +733,7 @@
 		AA0003000000000000000000 /* PMTilesMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/PMTilesMapView.swift; sourceTree = SOURCE_ROOT; };
 		AA0005000000000000000000 /* MeshMapMK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MeshMapMK.swift; path = Meshtastic/Views/Nodes/MeshMapMK.swift; sourceTree = SOURCE_ROOT; };
 		AA0004000000000000000000 /* ClusterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClusterMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/ClusterMapView.swift; sourceTree = SOURCE_ROOT; };
+		AA0F1900000000000000F190 /* TraceRouteFlyover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TraceRouteFlyover.swift; path = Meshtastic/Views/Nodes/Helpers/Map/TraceRouteFlyover.swift; sourceTree = SOURCE_ROOT; };
 		AA000301CPTST000000000001 /* CarPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayTests.swift; sourceTree = "<group>"; };
 		AA000401SIRI000000000010 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		AA000401SIRI000000000011 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = de; path = de.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
@@ -2051,6 +2053,7 @@
 				AA0003000000000000000000 /* PMTilesMapView.swift */,
 				AA0005000000000000000000 /* MeshMapMK.swift */,
 				AA0004000000000000000000 /* ClusterMapView.swift */,
+				AA0F1900000000000000F190 /* TraceRouteFlyover.swift */,
 				DDD3A2B12D5127B40045EB48 /* ci_scripts */,
 				DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */,
 				25AECD4E2C2F723200862C8E /* Localizable.xcstrings */,
@@ -2744,6 +2747,7 @@
 				BB0003000000000000000000 /* PMTilesMapView.swift in Sources */,
 				BB0005000000000000000000 /* MeshMapMK.swift in Sources */,
 				BB0004000000000000000000 /* ClusterMapView.swift in Sources */,
+				BB0F1900000000000000F190 /* TraceRouteFlyover.swift in Sources */,
 				86CCA3EEDD7E1036893B2663 /* DiscoverySessionEntity.swift in Sources */,
 				82F6BD3326F1BFEAF0F16723 /* DiscoveryPresetResultEntity.swift in Sources */,
 				84468ADE09D001043DECFD86 /* DiscoveredNodeEntity.swift in Sources */,

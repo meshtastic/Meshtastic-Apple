@@ -474,6 +474,7 @@ extension AccessoryManager {
 			connectedHop.time = Date()
 			connectedHop.num = originatorNum
 			connectedHop.name = originatorNode?.user?.longName ?? "???"
+			connectedHop.index = 0
 			// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 			connectedHop.snr = Float(routingMessage.snrBack.last ?? -128) / 4
 			var routeString = "\(originatorNode?.user?.longName ?? "???") --> "
@@ -494,6 +495,7 @@ extension AccessoryManager {
 					traceRouteHop.snr = -32
 				}
 				traceRouteHop.num = hopNode?.num ?? 0
+				traceRouteHop.index = Int32(index + 1)
 				if hopNode != nil {
 					if packet.rxTime > 0 {
 						hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
@@ -513,6 +515,7 @@ extension AccessoryManager {
 			// If nil, set to unknown, INT8_MIN (-128) then divide by 4
 			destinationHop.snr = Float(routingMessage.snrTowards.last ?? -128) / 4
 			destinationHop.num = targetNum
+			destinationHop.index = Int32(routingMessage.route.count + 1)
 			hopNodes.append(destinationHop)
 			/// Add the destination node to the end of the route towards string and the beginning of the route back string
 			routeString += "\(targetNodeInfo?.user?.longName ?? "Unknown".localized) \(targetNum.toHex()) (\(destinationHop.snr != -32 ? String(destinationHop.snr) : "unknown ".localized)dB)"
@@ -539,6 +542,7 @@ extension AccessoryManager {
 						traceRouteHop.snr = -32
 					}
 					traceRouteHop.num = hopNode?.num ?? 0
+					traceRouteHop.index = Int32(index)
 					if hopNode != nil {
 						if packet.rxTime > 0 {
 							hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))

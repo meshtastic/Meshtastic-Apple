@@ -123,6 +123,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	/// Tap / long-press on EMPTY map (not on a pin/marker) -> caller coordinate (create waypoint).
 	let onMapTap: ((CLLocationCoordinate2D) -> Void)?
 	let onMapLongPress: ((CLLocationCoordinate2D) -> Void)?
+	/// Handed the underlying `MKMapView` once it's created, so a caller can drive the camera directly
+	/// (e.g. a guided 3D flyover). Called once from `makeUIView`.
+	let onMapCreated: ((MKMapView) -> Void)?
 
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -141,6 +144,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		decorations: [ClusterMapDecoration] = [],
 		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
+		onMapCreated: ((MKMapView) -> Void)? = nil,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin,
 		@ViewBuilder clusterContent: @escaping (Int) -> Cluster
 	) {
@@ -156,6 +160,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.decorations = decorations
 		self.onMapTap = onMapTap
 		self.onMapLongPress = onMapLongPress
+		self.onMapCreated = onMapCreated
 		self.pinContent = pinContent
 		self.clusterContent = clusterContent
 	}
@@ -210,6 +215,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// Seed the annotations through the same diffing path used by updates.
 		context.coordinator.sync(items: items, coordinate: coordinate,
 								 clustering: clustering, on: mapView)
+
+		// Hand the map to the caller (e.g. for a guided camera flyover).
+		onMapCreated?(mapView)
 		return mapView
 	}
 
@@ -732,6 +740,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		decorations: [ClusterMapDecoration] = [],
 		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
+		onMapCreated: ((MKMapView) -> Void)? = nil,
 		@ViewBuilder content pinContent: @escaping (Item) -> Pin
 	) {
 		self.init(items: items,
@@ -746,6 +755,7 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				decorations: decorations,
 				onMapTap: onMapTap,
 				onMapLongPress: onMapLongPress,
+				onMapCreated: onMapCreated,
 				  content: pinContent,
 				  clusterContent: { ClusterBadge(count: $0) })
 	}

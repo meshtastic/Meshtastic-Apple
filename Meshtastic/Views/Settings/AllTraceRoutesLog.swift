@@ -13,6 +13,7 @@ import OSLog
 struct AllTraceRoutesLog: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.modelContext) private var context
+	@Environment(\.openURL) private var openURL
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	@Query(sort: \TraceRouteEntity.time, order: .reverse)
@@ -108,6 +109,17 @@ struct AllTraceRoutesLog: View {
 					.symbolRenderingMode(.hierarchical)
 			}
 			.font(.title3)
+			if route.hasPositions {
+				Button {
+					if let url = URL(string: "meshtastic:///map?tracerouteId=\(route.id)") {
+						openURL(url)
+					}
+				} label: {
+					Label("Show on Map", systemImage: "map")
+				}
+				.buttonStyle(.bordered)
+				.padding(.top, 4)
+			}
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.padding(.vertical)

@@ -176,7 +176,7 @@ enum PerformanceSeedData {
 		insertPositions(for: node, index: index, now: now, configuration: configuration, context: context)
 
 		if index.isMultiple(of: 25) {
-			insertTraceRoute(for: node, index: index, now: now, context: context)
+			insertTraceRoute(for: node, index: index, now: now, baseNodeNum: baseNodeNum, context: context)
 		}
 	}
 
@@ -316,15 +316,53 @@ enum PerformanceSeedData {
 		return Double(mixed >> 11) / Double(1 << 53)
 	}
 
-	private static func insertTraceRoute(for node: NodeInfoEntity, index: Int, now: Date, context: ModelContext) {
+	private static func insertTraceRoute(for node: NodeInfoEntity, index: Int, now: Date, baseNodeNum: Int64, context: ModelContext) {
 		let traceRoute = TraceRouteEntity()
 		traceRoute.id = Int64(index)
 		traceRoute.response = true
+		traceRoute.sent = true
 		traceRoute.routeText = "Perf route \(index)"
 		traceRoute.snr = node.snr
 		traceRoute.time = now.addingTimeInterval(TimeInterval(-(index % 3_600)))
 		traceRoute.node = node
+		traceRoute.fromNum = baseNodeNum
+		traceRoute.toNum = node.num
+		traceRoute.hopsBack = -1
 		context.insert(traceRoute)
+
+		// Ordered forward path: our node -> a couple of earlier seeded nodes -> the target. Only
+		// reference nodes that already exist (num < target) so the snapshot lookups resolve.
+		var pathNums: [Int64] = [baseNodeNum]
+		for candidate in [baseNodeNum + Int64(index / 3), baseNodeNum + Int64(index / 2)]
+		where candidate != baseNodeNum && candidate < node.num {
+			pathNums.append(candidate)
+		}
+		pathNums.append(node.num)
+		traceRoute.hopsTowards = Int32(max(0, pathNums.count - 2))
+
+		for (hopIndex, num) in pathNums.enumerated() {
+			let hopNode = num == node.num ? node : getNodeInfo(id: num, context: context)
+			let hop = TraceRouteHopEntity()
+			hop.index = Int32(hopIndex)
+			hop.num = num
+			hop.name = hopNode?.user?.longName
+			hop.snr = node.snr
+			hop.time = traceRoute.time
+			hop.traceRoute = traceRoute
+			context.insert(hop)
+
+			if let position = hopNode?.latestPosition, position.nodeCoordinate != nil {
+				let snapshot = TraceRouteNodePositionEntity()
+				snapshot.num = num
+				snapshot.latitudeI = position.latitudeI
+				snapshot.longitudeI = position.longitudeI
+				snapshot.altitude = position.altitude
+				snapshot.time = position.time
+				snapshot.traceRoute = traceRoute
+				context.insert(snapshot)
+				traceRoute.hasPositions = true
+			}
+		}
 	}
 
 	private static func seedMessageHistory(

@@ -45,6 +45,9 @@ final class TraceRouteEntity {
 @Model
 final class TraceRouteHopEntity {
 	var back: Bool = false
+	/// Position of this hop within its direction's ordered path (the `hops` relationship is
+	/// unordered, so this preserves the originator → … → target sequence for rendering).
+	var index: Int32 = 0
 	var name: String?
 	var num: Int64 = 0
 	var snr: Float = 0.0

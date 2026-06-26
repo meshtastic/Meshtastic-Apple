@@ -295,6 +295,7 @@ extension NodeBackupManager {
 			for srcHop in src.hops {
 				let dstHop = TraceRouteHopEntity()
 				dstHop.back = srcHop.back
+				dstHop.index = srcHop.index
 				dstHop.name = srcHop.name
 				dstHop.num = srcHop.num
 				dstHop.snr = srcHop.snr
