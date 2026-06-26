@@ -166,11 +166,8 @@ final class OfflineVectorTileProvider: ObservableObject {
 	}
 
 	nonisolated static var defaultURL: URL? {
-		// Prefer a user-downloaded offline region; fall back to the bundled demo tiles.
-		if let downloaded = OfflineMapManager.newestRegionFileURL() { return downloaded }
-		let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-			.appendingPathComponent("bellevue.pmtiles")
-		return FileManager.default.fileExists(atPath: url.path) ? url : nil
+		// User-downloaded offline regions only — no bundled demo fallback.
+		OfflineMapManager.newestRegionFileURL()
 	}
 
 	/// Decode the whole coverage box ONCE at a fixed detail zoom, stitch road segments per role, and
