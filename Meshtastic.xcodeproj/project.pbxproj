@@ -218,7 +218,6 @@
 		BBFF00000000000000000008 /* OfflineMapDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000008 /* OfflineMapDetailView.swift */; };
 		BBFF00000000000000000009 /* PMTilesExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFF00000000000000000009 /* PMTilesExtractorTests.swift */; };
 		BB0001000000000000000000 /* MBTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001000000000000000000 /* MBTilesArchive.swift */; };
-		BB0002000000000000000000 /* VectorTileRasterizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002000000000000000000 /* VectorTileRasterizer.swift */; };
 		BB0003000000000000000000 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003000000000000000000 /* PMTilesMapView.swift */; };
 		BB0005000000000000000000 /* MeshMapMK.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0005000000000000000000 /* MeshMapMK.swift */; };
 		BB0004000000000000000000 /* ClusterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004000000000000000000 /* ClusterMapView.swift */; };
@@ -725,7 +724,6 @@
 		AA00010022E2730EC0060000 /* ConnectViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectViewTests.swift; sourceTree = "<group>"; };
 		AA0001022F07A4B000600001 /* MeshtasticDataModelV 57.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 57.xcdatamodel"; sourceTree = "<group>"; };
 		AA0001042F07A4B000600001 /* TAKModuleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAKModuleConfig.swift; sourceTree = "<group>"; };
-		AA0002000000000000000000 /* VectorTileRasterizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VectorTileRasterizer.swift; path = Meshtastic/Helpers/Map/VectorTileRasterizer.swift; sourceTree = SOURCE_ROOT; };
 		AA000201CPLAY000000000001 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		AA000201CPLAY000000000003 /* CarPlayIntentDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayIntentDonation.swift; sourceTree = "<group>"; };
 		AA0003000000000000000000 /* PMTilesMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PMTilesMapView.swift; path = Meshtastic/Views/Nodes/Helpers/Map/PMTilesMapView.swift; sourceTree = SOURCE_ROOT; };
@@ -2044,7 +2042,6 @@
 			children = (
 				AA0000000000000000000000 /* PMTilesArchive.swift */,
 				AA0001000000000000000000 /* MBTilesArchive.swift */,
-				AA0002000000000000000000 /* VectorTileRasterizer.swift */,
 				AA0003000000000000000000 /* PMTilesMapView.swift */,
 				AA0005000000000000000000 /* MeshMapMK.swift */,
 				AA0004000000000000000000 /* ClusterMapView.swift */,
@@ -2737,7 +2734,6 @@
 				BBFF00000000000000000007 /* RegionSelectorView.swift in Sources */,
 				BBFF00000000000000000008 /* OfflineMapDetailView.swift in Sources */,
 				BB0001000000000000000000 /* MBTilesArchive.swift in Sources */,
-				BB0002000000000000000000 /* VectorTileRasterizer.swift in Sources */,
 				BB0003000000000000000000 /* PMTilesMapView.swift in Sources */,
 				BB0005000000000000000000 /* MeshMapMK.swift in Sources */,
 				BB0004000000000000000000 /* ClusterMapView.swift in Sources */,

@@ -6,7 +6,6 @@
 //  `MKMapView`. It gives a `Map`-like call site (pass `items` + a `@ViewBuilder` per annotation)
 //  while keeping the three things SwiftUI's own `Map` can't do:
 //
-//    1. CUSTOM raster basemaps via `MKTileOverlay` (the repo's offline `.pmtiles` / `.mbtiles`).
 //    2. Native MapKit CLUSTERING (`clusteringIdentifier`) with a SwiftUI cluster badge.
 //    3. Precise annotation-view REUSE + Identifiable-id DIFFING (no flicker on update).
 //
@@ -14,7 +13,6 @@
 //  that already ship in the app target:
 //
 //    • OfflineTileSource / OfflineTileSourceFactory.source(for:)  (Helpers/Map/MBTilesArchive.swift)
-//    • OfflineTileOverlay(source:dark:)                            (…/Map/PMTilesMapView.swift)
 //    • GeoBounds                                                    (Helpers/Map/PMTilesArchive.swift)
 //    • AnimatedNodePin / CircleText / UIColor(hex: UInt32)          (node pin styling — demo only)
 //
@@ -44,6 +42,9 @@ struct ClusterMapConfiguration: Equatable {
 	var showsScale = true
 	var showsCompass = true
 	var showsPitchControl = true
+	/// Bottom inset (pts, from the safe area) for the custom compass + pitch controls, so callers can
+	/// lift them above an on-screen button bar.
+	var controlsBottomInset: CGFloat = 0
 }
 
 // MARK: - Overlays (polylines / polygons / circles)
@@ -103,9 +104,6 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	let region: Binding<MKCoordinateRegion?>?
 	/// When true, annotations share a `clusteringIdentifier` so MapKit collapses nearby pins.
 	let clustering: Bool
-	/// Optional offline raster basemap (`.pmtiles` / `.mbtiles`). When set, an `OfflineTileOverlay`
-	/// replaces Apple's basemap (rebuilt on a light/dark switch, exactly like `PMTilesMapView`).
-	let tilesURL: URL?
 	/// Builds the SwiftUI view for one item's pin.
 	@ViewBuilder let pinContent: (Item) -> Pin
 	/// Builds the SwiftUI cluster badge from the collapsed member count.
@@ -116,8 +114,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 	let configuration: ClusterMapConfiguration
 	/// Vector overlays (accuracy circles, convex hull, routes, GeoJSON shapes). Diffed by `id`.
 	let overlays: [ClusterMapOverlay]
-	/// Offline coverage area: when set, draws the accent border + "OFFLINE MAP" capsule on it.
-	let coverageBounds: GeoBounds?
+	/// Offline coverage areas: each draws an accent border + "OFFLINE MAP" capsule.
+	let coverageAreas: [GeoBounds]
 	/// Standalone non-clustering decorations (route markers, waypoints) hosted over the map.
 	let decorations: [ClusterMapDecoration]
 	/// Tap / long-press on EMPTY map (not on a pin/marker) -> caller coordinate (create waypoint).
@@ -133,11 +131,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		coordinate: @escaping (Item) -> CLLocationCoordinate2D,
 		region: Binding<MKCoordinateRegion?>? = nil,
 		clustering: Bool = true,
-		tilesURL: URL? = nil,
 		onSelect: ((Item) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
 		overlays: [ClusterMapOverlay] = [],
-		coverageBounds: GeoBounds? = nil,
+		coverageAreas: [GeoBounds] = [],
 		decorations: [ClusterMapDecoration] = [],
 		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
@@ -148,11 +145,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		self.coordinate = coordinate
 		self.region = region
 		self.clustering = clustering
-		self.tilesURL = tilesURL
 		self.onSelect = onSelect
 		self.configuration = configuration
 		self.overlays = overlays
-		self.coverageBounds = coverageBounds
+		self.coverageAreas = coverageAreas
 		self.decorations = decorations
 		self.onMapTap = onMapTap
 		self.onMapLongPress = onMapLongPress
@@ -191,13 +187,13 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 
 		// Apple basemap type + controls.
 		context.coordinator.applyConfiguration(configuration, to: mapView)
+		context.coordinator.installControls(on: mapView, bottomInset: configuration.controlsBottomInset)
 
 		// Offline raster basemap (optional). Mirrors PMTilesMapView.makeUIView exactly.
-		context.coordinator.installTileOverlay(on: mapView, url: tilesURL, dark: colorScheme == .dark)
 
 		// Vector overlays (circles / hull / routes / GeoJSON), diffed by id.
 		context.coordinator.syncOverlays(overlays, on: mapView)
-		context.coordinator.syncCoverage(bounds: coverageBounds, dark: colorScheme == .dark, on: mapView)
+		context.coordinator.syncCoverage(areas: coverageAreas, dark: colorScheme == .dark, on: mapView)
 		context.coordinator.syncDecorations(decorations, on: mapView)
 
 		// Initial camera, if the caller drives one. Guarded so we don't echo it back out.
@@ -220,13 +216,13 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 
 		// 0) Apple basemap type + controls (diffed; only re-applied when it actually changed).
 		context.coordinator.applyConfiguration(configuration, to: mapView)
+		context.coordinator.installControls(on: mapView, bottomInset: configuration.controlsBottomInset)
 
 		// 1) Offline basemap: rebuild only if the URL or the dark/light flag actually changed.
-		context.coordinator.installTileOverlay(on: mapView, url: tilesURL, dark: colorScheme == .dark)
 
 		// 1b) Vector overlays — diffed by id (object-identity change → remove + re-add).
 		context.coordinator.syncOverlays(overlays, on: mapView)
-		context.coordinator.syncCoverage(bounds: coverageBounds, dark: colorScheme == .dark, on: mapView)
+		context.coordinator.syncCoverage(areas: coverageAreas, dark: colorScheme == .dark, on: mapView)
 		context.coordinator.syncDecorations(decorations, on: mapView)
 
 		// 2) Diff annotations by Identifiable id — add/remove/move ONLY what changed (no flicker).
@@ -274,18 +270,21 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// id → the backing annotation currently on the map. The single source of truth for diffing.
 		private var annotationsByID: [Item.ID: ItemAnnotation<Item>] = [:]
 
-		// Offline basemap state (retained so the overlay can be rebuilt when only `dark` flips).
-		private var tileSource: OfflineTileSource?
-		private var tileOverlay: OfflineTileOverlay?
-		private var tileURL: URL?
-		/// Accent rectangle drawn on the offline archive's coverage bounds so the offline area reads
-		/// as a deliberate feature (matches the demo). Rebuilt whenever the tile overlay is.
-		private var coverageOverlay: MKPolygon?
-		/// The "OFFLINE MAP" capsule annotation on the coverage area; lifecycle mirrors coverageOverlay.
-		private var coverageLabel: OfflineCoverageLabelAnnotation?
-		/// Applied coverage bounds + dark flag, so syncCoverage only rebuilds when they change.
-		private var coverageBoundsApplied: GeoBounds?
+		/// Accent rectangles drawn on each offline coverage box so each offline area reads as a
+		/// deliberate feature. Rebuilt when the coverage areas or `dark` change.
+		private var coverageOverlays: [MKPolygon] = []
+		/// Object-identity set of the coverage borders, for O(1) lookup in `rendererFor`.
+		private var coverageOverlayIDs: Set<ObjectIdentifier> = []
+		/// The "OFFLINE MAP" capsule annotations; lifecycle mirrors `coverageOverlays`.
+		private var coverageLabels: [OfflineCoverageLabelAnnotation] = []
+		/// Applied coverage areas + dark flag, so syncCoverage only rebuilds when they change.
+		private var coverageAreasApplied: [GeoBounds] = []
 		private var coverageDark = false
+
+		// Custom map controls (compass + pitch toggle), pinned bottom-trailing above the button bar.
+		private weak var hostMapView: MKMapView?
+		private var controlsStack: UIStackView?
+		private var controlsBottomConstraint: NSLayoutConstraint?
 		/// id → standalone decoration annotation (route markers, waypoints) currently on the map.
 		private var decorationsByID: [AnyHashable: DecorationAnnotation] = [:]
 
@@ -345,8 +344,68 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 
 			mapView.showsUserLocation = config.showsUserLocation
 			mapView.showsScale = config.showsScale
-			mapView.showsCompass = config.showsCompass
-			mapView.isPitchEnabled = config.showsPitchControl // iOS has no pitch-control button; enable the gesture
+			// A custom compass + pitch toggle are installed in `installControls` (bottom-trailing, above
+			// the caller's button bar); the built-in top-right compass is disabled there.
+			mapView.isPitchEnabled = config.showsPitchControl
+		}
+
+		// MARK: Custom controls (compass + pitch toggle, bottom-trailing above the button bar)
+
+		/// Installs (once) a custom compass + pitch toggle pinned to the map's bottom-trailing safe area,
+		/// lifted by `bottomInset` so they clear the caller's button bar. Disables the built-in compass.
+		func installControls(on mapView: MKMapView, bottomInset: CGFloat) {
+			hostMapView = mapView
+			mapView.showsCompass = false
+			if let controlsBottomConstraint {
+				controlsBottomConstraint.constant = -bottomInset
+				return
+			}
+			let compass = MKCompassButton(mapView: mapView)
+			compass.compassVisibility = .adaptive
+
+			let pitch = UIButton(type: .system)
+			pitch.setImage(UIImage(systemName: "view.3d") ?? UIImage(systemName: "cube"), for: .normal)
+			pitch.tintColor = .label
+			pitch.backgroundColor = UIColor.tertiarySystemBackground.withAlphaComponent(0.92)
+			pitch.layer.cornerRadius = 8
+			pitch.layer.shadowColor = UIColor.black.cgColor
+			pitch.layer.shadowOpacity = 0.2
+			pitch.layer.shadowRadius = 2
+			pitch.layer.shadowOffset = CGSize(width: 0, height: 1)
+			pitch.translatesAutoresizingMaskIntoConstraints = false
+			pitch.addTarget(self, action: #selector(togglePitch), for: .touchUpInside)
+			NSLayoutConstraint.activate([
+				pitch.widthAnchor.constraint(equalToConstant: 44),
+				pitch.heightAnchor.constraint(equalToConstant: 44)
+			])
+
+			let stack = UIStackView(arrangedSubviews: [pitch, compass])
+			stack.axis = .vertical
+			stack.spacing = 10
+			stack.alignment = .center
+			stack.translatesAutoresizingMaskIntoConstraints = false
+			mapView.addSubview(stack)
+			let bottom = stack.bottomAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.bottomAnchor, constant: -bottomInset)
+			NSLayoutConstraint.activate([
+				stack.trailingAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.trailingAnchor, constant: -12),
+				bottom
+			])
+			controlsStack = stack
+			controlsBottomConstraint = bottom
+		}
+
+		/// Toggle the camera between flat (2D) and pitched (3D), like the old SwiftUI `MapPitchToggle`.
+		@objc func togglePitch() {
+			guard let mapView = hostMapView else { return }
+			let current = mapView.camera
+			let pitched = current.pitch > 1
+			let camera = MKMapCamera(
+				lookingAtCenter: mapView.centerCoordinate,
+				fromDistance: current.centerCoordinateDistance,
+				pitch: pitched ? 0 : 55,
+				heading: current.heading
+			)
+			mapView.setCamera(camera, animated: true)
 		}
 
 		// MARK: Offline basemap (mirrors PMTilesMapView's swap-on-dark pattern)
@@ -354,65 +413,37 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// Adds the offline overlay, or rebuilds it when the URL or dark flag changed. Idempotent:
 		/// safe to call every `updateUIView`. The `source` is retained, so a light/dark switch only
 		/// rebuilds the cheap overlay wrapper, never re-opens the archive.
-		/// Adds / rebuilds / clears the offline RASTER tile overlay (optional). The coverage border +
-		/// "OFFLINE MAP" capsule are drawn separately by `syncCoverage` so they align with ANY offline
-		/// content the caller renders (native vector overlays), not just the raster tile grid.
-		func installTileOverlay(on mapView: MKMapView, url: URL?, dark: Bool) {
-			guard let url else {
-				if let old = tileOverlay { mapView.removeOverlay(old) }
-				tileOverlay = nil; tileSource = nil; tileURL = nil
-				return
-			}
-			let urlChanged = (tileURL != url)
-			let darkChanged = (tileOverlay?.dark != dark)
-			guard urlChanged || darkChanged || tileOverlay == nil else { return }
-
-			if urlChanged || tileSource == nil {
-				guard let source = OfflineTileSourceFactory.source(for: url) else {
-					Logger.services.error("📦 [ClusterMapView] Failed to open \(url.lastPathComponent, privacy: .public); using Apple basemap.")
-					if let old = tileOverlay { mapView.removeOverlay(old) }
-					tileOverlay = nil; tileSource = nil; tileURL = nil
-					return
-				}
-				tileSource = source
-				tileURL = url
-			}
-			guard let source = tileSource else { return }
-			if let old = tileOverlay { mapView.removeOverlay(old) }
-			let overlay = OfflineTileOverlay(source: source, dark: dark)
-			// Offline tiles are an OVERLAY on top of the selected Apple base, not a replacement.
-			overlay.canReplaceMapContent = false
-			tileOverlay = overlay
-			// Bottom of the .aboveLabels stack so caller overlays (vector fills, circles, hull) stay on top.
-			mapView.insertOverlay(overlay, at: 0, level: .aboveLabels)
-		}
 
 		// MARK: Offline coverage decoration (accent border + "OFFLINE MAP" capsule)
 
 		/// Draws (or clears) the accent coverage border + capsule, driven by an explicit bounds param so it
 		/// aligns exactly with the caller's offline content (no tile-grid mismatch). Rebuilt only when the
 		/// bounds or the dark flag change; recolors via `coverageDark`.
-		func syncCoverage(bounds: GeoBounds?, dark: Bool, on mapView: MKMapView) {
-			if coverageBoundsApplied == bounds, coverageDark == dark { return }
-			coverageBoundsApplied = bounds
+		func syncCoverage(areas: [GeoBounds], dark: Bool, on mapView: MKMapView) {
+			if coverageAreasApplied == areas, coverageDark == dark { return }
+			coverageAreasApplied = areas
 			coverageDark = dark
-			if let border = coverageOverlay { mapView.removeOverlay(border); coverageOverlay = nil }
-			if let label = coverageLabel { mapView.removeAnnotation(label); coverageLabel = nil }
-			guard let bounds else { return }
-			let corners = [
-				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
-				CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
-				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
-				CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
-			]
-			let border = MKPolygon(coordinates: corners, count: corners.count)
-			coverageOverlay = border
-			mapView.addOverlay(border, level: .aboveLabels)
-			let labelCoord = CLLocationCoordinate2D(latitude: bounds.maxLat,
-			                                       longitude: (bounds.minLon + bounds.maxLon) / 2)
-			let label = OfflineCoverageLabelAnnotation(coordinate: labelCoord)
-			coverageLabel = label
-			mapView.addAnnotation(label)
+			if !coverageOverlays.isEmpty { mapView.removeOverlays(coverageOverlays) }
+			coverageOverlays = []
+			coverageOverlayIDs = []
+			if !coverageLabels.isEmpty { mapView.removeAnnotations(coverageLabels) }
+			coverageLabels = []
+			for bounds in areas {
+				let corners = [
+					CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.minLon),
+					CLLocationCoordinate2D(latitude: bounds.minLat, longitude: bounds.maxLon),
+					CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.maxLon),
+					CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: bounds.minLon)
+				]
+				let border = MKPolygon(coordinates: corners, count: corners.count)
+				coverageOverlays.append(border)
+				coverageOverlayIDs.insert(ObjectIdentifier(border))
+				mapView.addOverlay(border, level: .aboveLabels)
+				let labelCoord = CLLocationCoordinate2D(latitude: bounds.maxLat, longitude: (bounds.minLon + bounds.maxLon) / 2)
+				let label = OfflineCoverageLabelAnnotation(coordinate: labelCoord)
+				coverageLabels.append(label)
+				mapView.addAnnotation(label)
+			}
 		}
 
 		// MARK: Overlay diffing (circles / hull / routes / GeoJSON)
@@ -645,13 +676,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// MARK: Overlay renderer
 
 		func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-			// Offline raster tiles first (same renderer the repo uses).
-			if let tileOverlay = overlay as? MKTileOverlay {
-				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
-			}
 			// Offline coverage border — accent rectangle, recolored per appearance.
-			if let coverageOverlay, overlay === coverageOverlay {
-				let renderer = MKPolygonRenderer(polygon: coverageOverlay)
+			if coverageOverlayIDs.contains(ObjectIdentifier(overlay)), let polygon = overlay as? MKPolygon {
+				let renderer = MKPolygonRenderer(polygon: polygon)
 				renderer.strokeColor = coverageDark ? .systemCyan : .systemBlue
 				renderer.fillColor = .clear
 				renderer.lineWidth = 4
@@ -724,11 +751,10 @@ extension ClusterMapView where Cluster == ClusterBadge {
 		coordinate: @escaping (Item) -> CLLocationCoordinate2D,
 		region: Binding<MKCoordinateRegion?>? = nil,
 		clustering: Bool = true,
-		tilesURL: URL? = nil,
 		onSelect: ((Item) -> Void)? = nil,
 		configuration: ClusterMapConfiguration = .init(),
 		overlays: [ClusterMapOverlay] = [],
-		coverageBounds: GeoBounds? = nil,
+		coverageAreas: [GeoBounds] = [],
 		decorations: [ClusterMapDecoration] = [],
 		onMapTap: ((CLLocationCoordinate2D) -> Void)? = nil,
 		onMapLongPress: ((CLLocationCoordinate2D) -> Void)? = nil,
@@ -738,11 +764,10 @@ extension ClusterMapView where Cluster == ClusterBadge {
 				  coordinate: coordinate,
 				  region: region,
 				  clustering: clustering,
-				  tilesURL: tilesURL,
 				  onSelect: onSelect,
 				  configuration: configuration,
 				  overlays: overlays,
-				coverageBounds: coverageBounds,
+				coverageAreas: coverageAreas,
 				decorations: decorations,
 				onMapTap: onMapTap,
 				onMapLongPress: onMapLongPress,
