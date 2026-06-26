@@ -287,6 +287,9 @@ struct LoRaConfig: View {
 			if newRegion != node?.loRaConfig?.regionCode ?? -1 { hasChanges = true }
 			applyRegionPresetDefault(forRegion: newRegion)
 		}
+		.onChange(of: accessoryManager.loRaRegionPresets) { _, _ in
+			applyRegionPresetDefault(forRegion: region)
+		}
 		.onChange(of: usePreset) { _, newPreset in
 			if newPreset != node?.loRaConfig?.usePreset { hasChanges = true }
 		}
