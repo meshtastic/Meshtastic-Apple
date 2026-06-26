@@ -360,12 +360,12 @@
             "radio",
             "device",
             "node",
+            "region",
             "position",
             "language",
             "from",
             "firmware",
             "settings",
-            "region",
             "traffic",
             "nodes",
             "mesh",
@@ -382,12 +382,12 @@
             "connected",
             "configure",
             "unknown",
+            "preset",
             "pages",
             "packets",
-            "module",
-            "lora"
+            "module"
         ],
-        "charCount": 8503
+        "charCount": 8587
     },
     {
         "id": "signal-meter",
@@ -920,6 +920,7 @@
             "absent",
             "supports2",
             "radio",
+            "modempresets",
             "message",
             "map",
             "loraregionpresets",
@@ -930,10 +931,9 @@
             "default",
             "band",
             "set",
-            "selectable",
-            "screen"
+            "selectable"
         ],
-        "charCount": 6621
+        "charCount": 6795
     },
     {
         "id": "measurement",

@@ -330,22 +330,24 @@ struct LoRaConfig: View {
 			if newOkToMqtt != node?.loRaConfig?.okToMqtt { hasChanges = true }
 		}
 	}
-	/// When the user switches region, if the currently selected preset is not
-	/// legal in the new region (per the firmware's advertised map), fall back to
-	/// that region's default preset rather than leaving an illegal selection
-	/// (spec §5.3 / §6). No-op when the firmware advertised no map for the region,
-	/// or when the advertised default has no matching UI preset case (the Save
-	/// path force-unwraps `ModemPresets(rawValue:)`, so an unmapped value would
-	/// otherwise crash on save).
+	/// When the user switches region, pre-select the appropriate preset: a
+	/// factory-flashed node defaults to Long Turbo for US on 2.8 firmware, and
+	/// otherwise an illegal current preset falls back to the region's advertised
+	/// default (spec §5.3 / §6). See `ModemPresets.presetToSelect` for the rules.
+	/// A nil result keeps the current selection.
 	private func applyRegionPresetDefault(forRegion newRegion: Int) {
-		guard supports2_8, usePreset,
-			  let code = RegionCodes(rawValue: newRegion)?.protoEnumValue(),
-			  let info = accessoryManager.loRaRegionPresets[code],
-			  !info.presets.isEmpty,
-			  let current = ModemPresets(rawValue: modemPreset)?.protoEnumValue(),
-			  !info.presets.contains(current),
-			  let fallback = ModemPresets(rawValue: info.defaultPreset.rawValue) else { return }
-		modemPreset = fallback.rawValue
+		guard let code = RegionCodes(rawValue: newRegion)?.protoEnumValue() else { return }
+		let factoryFresh = (node?.loRaConfig?.regionCode ?? 0) == RegionCodes.unset.rawValue
+		if let preset = ModemPresets.presetToSelect(
+			forRegion: code,
+			factoryFresh: factoryFresh,
+			supports2_8: supports2_8,
+			usePreset: usePreset,
+			regionInfo: accessoryManager.loRaRegionPresets[code],
+			currentPreset: ModemPresets(rawValue: modemPreset)
+		) {
+			modemPreset = preset.rawValue
+		}
 	}
 
 	func setLoRaValues() {
