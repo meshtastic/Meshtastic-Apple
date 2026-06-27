@@ -11,7 +11,14 @@ import Foundation
 
 struct NodeListRowSummary {
 	let latestDeviceMetrics: TelemetryEntity?
-	let latestPosition: PositionEntity?
+	// Snapshot the position as plain value types at construction time rather than
+	// vending the live PositionEntity. SwiftData fatally traps (SIGTRAP in
+	// _SD_get_faulting_backingdata_tsd) if a deleted @Model's persisted property is
+	// read, and position rows are pruned/replaced constantly underneath the list —
+	// so a view body holding a live PositionEntity can crash mid-render. Value-type
+	// snapshots can never fault.
+	let hasPosition: Bool
+	let latestNodeCoordinate: CLLocationCoordinate2D?
 	let hasEnvironmentMetrics: Bool
 	let hasDetectionSensorMetrics: Bool
 	let hasTraceRoutes: Bool
@@ -23,7 +30,9 @@ struct NodeListRowSummary {
 		includeLogAvailability: Bool = true
 	) {
 		latestDeviceMetrics = includeDeviceMetrics ? node.latestDeviceMetrics : nil
-		latestPosition = includePosition ? node.latestPosition : nil
+		let latestPosition = includePosition ? node.latestPosition : nil
+		hasPosition = latestPosition != nil
+		latestNodeCoordinate = latestPosition?.nodeCoordinate
 		hasEnvironmentMetrics = includeLogAvailability ? node.hasEnvironmentMetrics : false
 		hasDetectionSensorMetrics = includeLogAvailability ? node.hasDetectionSensorMetrics : false
 		hasTraceRoutes = includeLogAvailability ? node.hasTraceRoutes : false
@@ -44,7 +53,7 @@ struct NodeListItem: View {
 		return f
 	}()
 
-	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
+	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
 			desc = shortName.formatNodeNameForVoiceOver()
@@ -84,8 +93,7 @@ struct NodeListItem: View {
 				desc += ", battery \(battery)%"
 			}
 		}
-		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
-			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
+		if !isDirectlyConnected, let (nodeCoord, myCoord) = cachedLocationData {
 			let metersAway = nodeCoord.distance(from: myCoord)
 			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
 			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
@@ -138,27 +146,39 @@ struct NodeListItem: View {
 		return (image, color)
 	}
 	
-	func locationData(for lastPosition: PositionEntity?) -> (PositionEntity, CLLocation)? {
-		guard let lastPosition else {
+	func locationData(for nodeCoordinate: CLLocationCoordinate2D?) -> (nodeLocation: CLLocation, myLocation: CLLocation)? {
+		guard let nodeCoordinate else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
 			return nil
 		}
-		
+
 		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-		
-		if lastPosition.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-			return (lastPosition, myCoord)
+
+		if myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+			return (CLLocation(latitude: nodeCoordinate.latitude, longitude: nodeCoordinate.longitude), myCoord)
 		}
 		return nil
 	}
 	
 	var body: some View {
+		// A List row view can be retained and re-evaluate its body after the underlying
+		// node row has been deleted (nodes/positions are pruned constantly). Reading any
+		// persisted property of a deleted @Model fatally traps in SwiftData, so bail to an
+		// empty row when the node is no longer live — the List drops it on its next rebuild.
+		// Mirrors the modelContext guard already used in NodeList/NodeDetail.
+		if node.modelContext != nil && !node.isDeleted {
+			rowContent
+		} else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder private var rowContent: some View {
 		let cachedMetrics = rowSummary?.latestDeviceMetrics
-		let cachedLatestPosition = rowSummary?.latestPosition
-		let cachedLocationData = connectedNode == node.num ? nil : locationData(for: cachedLatestPosition)
-		let cachedHasPositions = cachedLatestPosition != nil
+		let cachedLocationData = connectedNode == node.num ? nil : locationData(for: rowSummary?.latestNodeCoordinate)
+		let cachedHasPositions = rowSummary?.hasPosition ?? false
 		let cachedHasDeviceMetrics = cachedMetrics != nil
 		let cachedHasEnvironmentMetrics = rowSummary?.hasEnvironmentMetrics ?? false
 		let cachedHasDetectionSensorMetrics = rowSummary?.hasDetectionSensorMetrics ?? false
@@ -218,8 +238,7 @@ struct NodeListItem: View {
 					
 					if connectedNode != node.num {
 						HStack {
-							if let (lastPostion, myCoord) = cachedLocationData {
-								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+							if let (nodeCoord, myCoord) = cachedLocationData {
 								let metersAway = nodeCoord.distance(from: myCoord)
 								Image(systemName: "lines.measurement.horizontal")
 									.font(.callout)

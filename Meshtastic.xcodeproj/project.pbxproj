@@ -3398,6 +3398,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Meshtastic/Meshtastic-Catalyst.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -3447,6 +3448,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Meshtastic/Meshtastic-Catalyst.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

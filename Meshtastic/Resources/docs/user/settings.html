@@ -31,11 +31,11 @@
 <tbody>
 <tr>
 <td>Region</td>
-<td>Your geographical region. <strong>Must be set correctly</strong> — using the wrong region is illegal and prevents communication with local nodes. Available regions include the standard set plus Nepal 865MHz, Brazil 902MHz, ITU Region 1 Amateur 2m, ITU Region 2/3 Amateur 2m, and the EU 866 / 874 / 917 / 868-narrow bands.</td>
+<td>Your geographical region. <strong>Must be set correctly</strong> — using the wrong region is illegal and prevents communication with local nodes. The standard regions are always available; the amateur (ham) 2m / 70cm / 1.25m bands and the EU 866 / narrow bands require firmware <strong>2.8.0 or later</strong> and only appear when your connected radio supports them.</td>
 </tr>
 <tr>
 <td>Modem Preset</td>
-<td>Speed/range trade-off. Most users should use Long Fast or Long Slow.</td>
+<td>Speed/range trade-off. Most users should use Long Fast or Long Slow. On firmware 2.8+, the preset list is filtered to those that are legal for the selected region (see below).</td>
 </tr>
 <tr>
 <td>Hop Limit</td>
@@ -47,6 +47,7 @@
 </tr>
 </tbody>
 </table>
+<p>On firmware <strong>2.8.0 or later</strong>, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to <strong>US</strong> on a newly flashed node defaults the preset to <strong>Long Turbo</strong>. Amateur (ham) bands such as the Tiny and Narrow presets are marked <strong>licensed</strong> — the app shows a warning, and you should enable <strong>Licensed Operator</strong> (and set your call sign) in <strong>User</strong> config before transmitting. On older firmware the full preset list is shown unchanged.</p>
 <h3>Channels</h3>
 <p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
 <h3>Security</h3>
@@ -177,12 +178,12 @@
 </tr>
 <tr>
 <td>Traffic Management</td>
-<td>Mesh traffic optimisation — deduplication, rate limiting, and hop management. Requires firmware 2.8.0+.</td>
+<td>Mesh traffic optimisation — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+.</td>
 </tr>
 </tbody>
 </table>
 <h3>Traffic Management</h3>
-<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>.</p>
+<p>The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware <strong>2.8.0 or later</strong>. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master <strong>Enabled</strong> switch) clears its values and disables that feature on the radio.</p>
 <table>
 <thead>
 <tr>
@@ -204,10 +205,6 @@
 <td>Drop redundant position broadcasts from the same node.</td>
 </tr>
 <tr>
-<td>Precision Bits</td>
-<td>Number of bits of precision for position deduplication (0–32). Lower values merge more positions.</td>
-</tr>
-<tr>
 <td>Min Interval (s)</td>
 <td>Minimum seconds between position updates from the same node.</td>
 </tr>
@@ -221,7 +218,7 @@
 </tr>
 <tr>
 <td>Max Hops</td>
-<td>Minimum hop distance from requestor before responding to NodeInfo requests.</td>
+<td>Maximum hop distance from the requestor at which direct NodeInfo responses are served from the local cache.</td>
 </tr>
 <tr>
 <td><strong>Rate Limiting</strong></td>
@@ -249,23 +246,7 @@
 </tr>
 <tr>
 <td>Threshold</td>
-<td>Number of unknown packets received from a node before dropping.</td>
-</tr>
-<tr>
-<td><strong>Hop Management</strong></td>
-<td></td>
-</tr>
-<tr>
-<td>Exhaust Hop Telemetry</td>
-<td>Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected).</td>
-</tr>
-<tr>
-<td>Exhaust Hop Position</td>
-<td>Set hop_limit to 0 for relayed position broadcasts (own packets unaffected).</td>
-</tr>
-<tr>
-<td>Router Preserve Hops</td>
-<td>Preserve hop_limit for router-to-router traffic.</td>
+<td>Maximum unknown/undecryptable packets per rate window before the source is dropped.</td>
 </tr>
 </tbody>
 </table>
