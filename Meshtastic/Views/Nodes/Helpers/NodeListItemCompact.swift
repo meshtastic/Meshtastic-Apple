@@ -39,7 +39,7 @@ struct NodeListItemCompact: View {
 		return f
 	}()
 
-	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (PositionEntity, CLLocation)?) -> String {
+	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
 			desc = shortName.formatNodeNameForVoiceOver()
@@ -79,8 +79,7 @@ struct NodeListItemCompact: View {
 				desc += ", battery \(battery)%"
 			}
 		}
-		if !isDirectlyConnected, let (lastPosition, myCoord) = cachedLocationData {
-			let nodeCoord = CLLocation(latitude: lastPosition.nodeCoordinate!.latitude, longitude: lastPosition.nodeCoordinate!.longitude)
+		if !isDirectlyConnected, let (nodeCoord, myCoord) = cachedLocationData {
 			let metersAway = nodeCoord.distance(from: myCoord)
 			let formattedDistance = Self.distanceFormatter.string(fromMeters: metersAway)
 			desc += ", " + String(format: "%@: %@", "Distance".localized, formattedDistance)
@@ -133,18 +132,18 @@ struct NodeListItemCompact: View {
 		return (image, color)
 	}
 	
-	func locationData(for lastPosition: PositionEntity?) -> (PositionEntity, CLLocation)? {
-		guard let lastPosition else {
+	func locationData(for nodeCoordinate: CLLocationCoordinate2D?) -> (nodeLocation: CLLocation, myLocation: CLLocation)? {
+		guard let nodeCoordinate else {
 			return nil
 		}
 		guard let currentLocation = LocationsHandler.shared.locationsArray.last else {
 			return nil
 		}
-		
+
 		let myCoord = CLLocation(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
-		
-		if lastPosition.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-			return (lastPosition, myCoord)
+
+		if myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+			return (CLLocation(latitude: nodeCoordinate.latitude, longitude: nodeCoordinate.longitude), myCoord)
 		}
 		return nil
 	}
@@ -163,12 +162,25 @@ struct NodeListItemCompact: View {
 	}
 	
 	var body: some View {
+		// A List row view can be retained and re-evaluate its body after the underlying
+		// node row has been deleted (nodes/positions are pruned constantly). Reading any
+		// persisted property of a deleted @Model fatally traps in SwiftData, so bail to an
+		// empty row when the node is no longer live — the List drops it on its next rebuild.
+		// Mirrors the modelContext guard already used in NodeList/NodeDetail.
+		if node.modelContext != nil && !node.isDeleted {
+			rowContent
+		} else {
+			EmptyView()
+		}
+	}
+
+	@ViewBuilder private var rowContent: some View {
 		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
 		let cachedMetrics = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.latestDeviceMetrics : nil
 		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num)
-		let cachedLatestPosition = needsLatestPosition ? rowSummary?.latestPosition : nil
-		let cachedLocationData = (shouldShowLocation && connectedNode != node.num) ? locationData(for: cachedLatestPosition) : nil
-		let cachedHasPositions = shouldShowTelemetry ? cachedLatestPosition != nil : false
+		let cachedLatestNodeCoordinate = needsLatestPosition ? rowSummary?.latestNodeCoordinate : nil
+		let cachedLocationData = (shouldShowLocation && connectedNode != node.num) ? locationData(for: cachedLatestNodeCoordinate) : nil
+		let cachedHasPositions = shouldShowTelemetry ? (rowSummary?.hasPosition ?? false) : false
 		let cachedHasDeviceMetrics = shouldShowTelemetry && cachedMetrics != nil
 		let cachedHasEnvironmentMetrics = shouldShowTelemetry ? rowSummary?.hasEnvironmentMetrics ?? false : false
 		let cachedHasDetectionSensorMetrics = shouldShowTelemetry ? rowSummary?.hasDetectionSensorMetrics ?? false : false
@@ -217,8 +229,7 @@ struct NodeListItemCompact: View {
 					// Distance, bearing, hops, signal, role, telemetry row
 					HStack(alignment: .center, spacing: 6) {
 						if shouldShowLocation && connectedNode != node.num {
-							if let (lastPostion, myCoord) = cachedLocationData {
-								let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+							if let (nodeCoord, myCoord) = cachedLocationData {
 								let metersAway = nodeCoord.distance(from: myCoord)
 								DistanceText(meters: metersAway, isCompact: true)
 									.font(.callout)
