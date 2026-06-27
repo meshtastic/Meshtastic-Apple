@@ -78,3 +78,90 @@ struct XEdDSASigningTests {
 		#expect(node.hasXeddsaSigned == true)
 	}
 }
+
+// MARK: - Ingestion behavior
+
+/// Exercises the actual packet→entity ingestion logic that the UI depends on:
+/// the broadcast-only gate for the message shield and the latch for the node row.
+@Suite("XEdDSA ingestion")
+struct XEdDSAIngestionTests {
+
+	@MainActor
+	private func fetchNode(_ num: Int64) -> NodeInfoEntity? {
+		let ctx = ModelContext(sharedModelContainer)
+		return try? ctx.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })).first
+	}
+
+	@MainActor
+	private func fetchMessage(_ id: Int64) -> MessageEntity? {
+		let ctx = ModelContext(sharedModelContainer)
+		return try? ctx.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == id })).first
+	}
+
+	private func nodeInfo(num: UInt32, signed: Bool) -> NodeInfo {
+		var ni = NodeInfo()
+		ni.num = num
+		ni.hasXeddsaSigned_p = signed
+		return ni
+	}
+
+	private func textPacket(id: UInt32, from: UInt32, to: UInt32, signed: Bool) -> MeshPacket {
+		var data = DataMessage()
+		data.portnum = .textMessageApp
+		data.payload = Data("hi".utf8)
+		var packet = MeshPacket()
+		packet.id = id
+		packet.from = from
+		packet.to = to
+		packet.channel = 0
+		packet.decoded = data
+		packet.xeddsaSigned = signed
+		return packet
+	}
+
+	// MARK: node-level flag (NodeInfo.has_xeddsa_signed → NodeInfoEntity.hasXeddsaSigned)
+
+	@Test @MainActor func nodeInfoPacket_setsFlag_whenNodeSigns() async {
+		let mp = MeshPackets(modelContainer: sharedModelContainer)
+		let num: Int64 = 0x00E0_0101
+		_ = await mp.nodeInfoPacket(nodeInfo: nodeInfo(num: UInt32(num), signed: true), channel: 0)
+		#expect(fetchNode(num)?.hasXeddsaSigned == true)
+	}
+
+	@Test @MainActor func nodeInfoPacket_leavesFlagFalse_whenNodeUnsigned() async {
+		let mp = MeshPackets(modelContainer: sharedModelContainer)
+		let num: Int64 = 0x00E0_0102
+		_ = await mp.nodeInfoPacket(nodeInfo: nodeInfo(num: UInt32(num), signed: false), channel: 0)
+		#expect(fetchNode(num)?.hasXeddsaSigned == false)
+	}
+
+	/// The node flag means "≥1 verified" and persists — a later NodeInfo that omits the bit
+	/// must not downgrade a node we've already seen sign.
+	@Test @MainActor func nodeInfoPacket_latchesFlag_acrossUpdates() async {
+		let mp = MeshPackets(modelContainer: sharedModelContainer)
+		let num: Int64 = 0x00E0_0103
+		_ = await mp.nodeInfoPacket(nodeInfo: nodeInfo(num: UInt32(num), signed: true), channel: 0)
+		_ = await mp.nodeInfoPacket(nodeInfo: nodeInfo(num: UInt32(num), signed: false), channel: 0)
+		#expect(fetchNode(num)?.hasXeddsaSigned == true)
+	}
+
+	// MARK: per-message flag — broadcast only, never DMs (MeshPacket.xeddsa_signed)
+
+	@Test @MainActor func textMessage_signedBroadcast_setsFlag() async {
+		let mp = MeshPackets(modelContainer: sharedModelContainer)
+		let id: Int64 = 0x00B0_0201
+		let packet = textPacket(id: UInt32(id), from: 0xA01, to: Constants.maximumNodeNum, signed: true)
+		await mp.textMessageAppPacket(packet: packet, wantRangeTestPackets: true, connectedNode: 0x01, appState: nil)
+		#expect(fetchMessage(id)?.xeddsaSigned == true)
+	}
+
+	/// Firmware never sets the flag on DMs, but the ingest path also gates on the broadcast
+	/// address so a stray/spoofed signed DM can never light the "verified" shield.
+	@Test @MainActor func textMessage_signedDirectMessage_doesNotSetFlag() async {
+		let mp = MeshPackets(modelContainer: sharedModelContainer)
+		let id: Int64 = 0x00B0_0202
+		let packet = textPacket(id: UInt32(id), from: 0xA02, to: 0x01, signed: true)
+		await mp.textMessageAppPacket(packet: packet, wantRangeTestPackets: true, connectedNode: 0x01, appState: nil)
+		#expect(fetchMessage(id)?.xeddsaSigned == false)
+	}
+}
