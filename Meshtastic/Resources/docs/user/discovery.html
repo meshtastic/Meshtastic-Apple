@@ -11,7 +11,9 @@
 <p>Local Mesh Discovery scans your area to find nearby Meshtastic radios operating on different frequency settings. Use it to identify which LoRa configuration is most active in your location before setting up a new node.</p>
 <h2>What It Does</h2>
 <p>The scanner switches through a series of LoRa modem presets, listens for a set period on each, and records how many nodes it hears and how busy the airwaves are (channel utilisation). It then presents a ranked list of settings ordered by activity.</p>
+<p>When your connected radio reports local statistics, the scanner also captures the <strong>noise floor</strong> (the background RF energy on the channel, in dBm) for each preset and summarises it in the <strong>RF Health</strong> section. A lower (more negative) noise floor means a quieter, cleaner channel; a higher one indicates more interference. This helps you pick not just the busiest setting but the one with the healthiest signal environment.</p>
 <p>Each preset is scanned on the <strong>default frequency slot</strong> so the radio listens on the same frequency the public mesh uses. If your radio is set to a custom frequency slot, the scan temporarily uses the default slot while it runs and restores your original LoRa configuration — including your frequency slot — automatically when the scan finishes.</p>
+<p>You no longer need to put your primary channel on the default key before scanning. If your primary channel uses a custom key or name, Local Mesh Discovery temporarily switches it to the default public channel so the radio can both decode the public mesh and tune to its frequency, then restores your original channel automatically when the scan finishes. (Channel changes don't reboot the radio, so this happens instantly at the start and end of the scan.)</p>
 <p>On supported devices running iOS 26+, the on-device AI assistant analyses the scan results and recommends the best configuration for your location — no internet connection required.</p>
 <h2>Running a Scan</h2>
 <p><img src="../assets/screenshots/radarActive.png" alt="Radar sweep active — scan in progress" /></p>
@@ -21,6 +23,8 @@
 <li>The scanner cycles through settings automatically. Each cycle takes a few minutes — do not close the app during a scan.</li>
 <li>When the scan completes, results appear ranked by node count and channel activity.</li>
 </ol>
+<h3>Analyze Current Preset</h3>
+<p>If you only want a report for the preset your radio is already using, tap <strong>Analyze Current Preset</strong>. This runs a single, fast (about one minute) pass on your current setting and seeds the report from the nodes already in your database, animating them onto the map as it builds. It's a quick way to generate an RF Health and node report for your active configuration without cycling through every preset.</p>
 <h2>Reading Results</h2>
 <p><img src="../assets/screenshots/summaryTwoPresets.png" alt="Discovery results summary with two presets" /></p>
 <table>
@@ -44,11 +48,16 @@
 <td>Percentage of airtime used — higher means more active</td>
 </tr>
 <tr>
+<td>Noise Floor</td>
+<td>Background RF energy in dBm — lower (more negative) is a cleaner channel</td>
+</tr>
+<tr>
 <td>Recommendation</td>
 <td>✅ Best match for your area</td>
 </tr>
 </tbody>
 </table>
+<p>The <strong>RF Health</strong> card summarises the noise floor across the scan and calls out the quietest channel. Noise floor (and the rest of the report) is also included when you export the scan as a PDF.</p>
 <h2>Applying a Setting</h2>
 <p>Tap a result row and then <strong>Apply Setting</strong> to configure your connected radio to match the most active setting in your area. This updates the LoRa configuration on the radio directly.</p>
 <hr />

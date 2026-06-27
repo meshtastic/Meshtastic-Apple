@@ -183,6 +183,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
 
+	/// Region → legal-preset lookup advertised by the connected radio during the
+	/// want_config handshake (FromRadio.region_presets, 2.8+). Empty when the
+	/// firmware predates the feature or hasn't sent it yet — callers must treat an
+	/// absent region (or an empty map) as "no constraint". Reset on disconnect.
+	@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+
 	var activeConnection: (device: Device, connection: any Connection)?
 
 	/// Reference to the active discovery scan engine, if any
@@ -461,6 +467,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.isConnected = false
 			self.isConnecting = false
 			self.firmwareEdition = .vanilla
+			self.loRaRegionPresets = [:]
 		case .connecting, .communicating, .retrying:
 			self.isConnected = false
 			self.isConnecting = true
@@ -762,6 +769,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet)
 				case .mapReportApp:
 					Logger.mesh.info("[Map Report] packet received from \(packet.from.toHex(), privacy: .public)")
+				case .meshBeaconApp:
+					Logger.mesh.info("[Mesh Beacon] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .UNRECOGNIZED:
 					Logger.mesh.info("[Unrecognized] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .max:
@@ -810,6 +819,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 		case .metadata(let metadata):
 			await handleDeviceMetadata(metadata)
+
+		case .regionPresets(let regionPresets):
+			handleRegionPresets(regionPresets)
 
 		case .deviceuiConfig:
 #if DEBUG

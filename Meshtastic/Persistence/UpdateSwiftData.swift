@@ -1860,40 +1860,34 @@ extension MeshPackets {
 		do {
 			let fetchedNode = try modelContext.fetch(fetchNodeInfoRequest)
 			if !fetchedNode.isEmpty {
-				if fetchedNode[0].trafficManagementConfig == nil {
-					let newConfig = TrafficManagementConfigEntity()
-					modelContext.insert(newConfig)
-					newConfig.enabled = config.enabled
-					newConfig.positionDedupEnabled = config.positionDedupEnabled
-					newConfig.positionPrecisionBits = Int32(config.positionPrecisionBits)
-					newConfig.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
-					newConfig.nodeinfoDirectResponse = config.nodeinfoDirectResponse
-					newConfig.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
-					newConfig.rateLimitEnabled = config.rateLimitEnabled
-					newConfig.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
-					newConfig.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
-					newConfig.dropUnknownEnabled = config.dropUnknownEnabled
-					newConfig.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
-					newConfig.exhaustHopTelemetry = config.exhaustHopTelemetry
-					newConfig.exhaustHopPosition = config.exhaustHopPosition
-					newConfig.routerPreserveHops = config.routerPreserveHops
-					fetchedNode[0].trafficManagementConfig = newConfig
+				let entity: TrafficManagementConfigEntity
+				if let existing = fetchedNode[0].trafficManagementConfig {
+					entity = existing
 				} else {
-					fetchedNode[0].trafficManagementConfig?.enabled = config.enabled
-					fetchedNode[0].trafficManagementConfig?.positionDedupEnabled = config.positionDedupEnabled
-					fetchedNode[0].trafficManagementConfig?.positionPrecisionBits = Int32(config.positionPrecisionBits)
-					fetchedNode[0].trafficManagementConfig?.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
-					fetchedNode[0].trafficManagementConfig?.nodeinfoDirectResponse = config.nodeinfoDirectResponse
-					fetchedNode[0].trafficManagementConfig?.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
-					fetchedNode[0].trafficManagementConfig?.rateLimitEnabled = config.rateLimitEnabled
-					fetchedNode[0].trafficManagementConfig?.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
-					fetchedNode[0].trafficManagementConfig?.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
-					fetchedNode[0].trafficManagementConfig?.dropUnknownEnabled = config.dropUnknownEnabled
-					fetchedNode[0].trafficManagementConfig?.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
-					fetchedNode[0].trafficManagementConfig?.exhaustHopTelemetry = config.exhaustHopTelemetry
-					fetchedNode[0].trafficManagementConfig?.exhaustHopPosition = config.exhaustHopPosition
-					fetchedNode[0].trafficManagementConfig?.routerPreserveHops = config.routerPreserveHops
+					entity = TrafficManagementConfigEntity()
+					modelContext.insert(entity)
+					fetchedNode[0].trafficManagementConfig = entity
 				}
+
+				// 2.8 schema dropped the per-feature boolean flags and the
+				// precision-bits / hop-management fields. Each feature is now enabled
+				// implicitly by a non-zero value, so derive the stored booleans (still
+				// used by the config UI) from the incoming interval/threshold values.
+				let positionDedup = config.positionMinIntervalSecs > 0
+				let nodeinfoDirect = config.nodeinfoDirectResponseMaxHops > 0
+				let rateLimit = config.rateLimitWindowSecs > 0 || config.rateLimitMaxPackets > 0
+				let dropUnknown = config.unknownPacketThreshold > 0
+
+				entity.enabled = positionDedup || nodeinfoDirect || rateLimit || dropUnknown
+				entity.positionDedupEnabled = positionDedup
+				entity.positionMinIntervalSecs = Int32(config.positionMinIntervalSecs)
+				entity.nodeinfoDirectResponse = nodeinfoDirect
+				entity.nodeinfoDirectResponseMaxHops = Int32(config.nodeinfoDirectResponseMaxHops)
+				entity.rateLimitEnabled = rateLimit
+				entity.rateLimitWindowSecs = Int32(config.rateLimitWindowSecs)
+				entity.rateLimitMaxPackets = Int32(config.rateLimitMaxPackets)
+				entity.dropUnknownEnabled = dropUnknown
+				entity.unknownPacketThreshold = Int32(config.unknownPacketThreshold)
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
