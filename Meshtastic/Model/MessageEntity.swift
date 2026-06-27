@@ -35,6 +35,9 @@ final class MessageEntity {
 	var rssi: Int32 = 0
 	var showTranslatedMessage: Bool = false
 	var snr: Float = 0.0
+	/// True when the radio verified this received broadcast's XEdDSA signature (MeshPacket.xeddsa_signed, field 22).
+	/// Firmware only ever sets this on broadcasts — never on DMs — so it can be trusted on its own.
+	var xeddsaSigned: Bool = false
 
 	var fromUser: UserEntity?
 	var toUser: UserEntity?

@@ -429,6 +429,7 @@ actor MeshPackets {
 					newNode.favorite = nodeInfo.isFavorite
 					newNode.ignored = nodeInfo.isIgnored
 					newNode.hopsAway = Int32(nodeInfo.hopsAway)
+					newNode.hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 
 					if nodeInfo.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
@@ -541,6 +542,9 @@ actor MeshPackets {
 					fetchedNode[0].favorite = nodeInfo.isFavorite
 					fetchedNode[0].ignored = nodeInfo.isIgnored
 					fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
+					// has_xeddsa_signed means the node has signed ≥1 verified broadcast and persists; latch it
+					// so a later NodeInfo that omits the bit doesn't downgrade a node we've seen sign.
+					fetchedNode[0].hasXeddsaSigned = fetchedNode[0].hasXeddsaSigned || nodeInfo.hasXeddsaSigned_p
 
 					if nodeInfo.hasUser {
 						if fetchedNode[0].user == nil {
@@ -1135,6 +1139,10 @@ actor MeshPackets {
 					newMessage.isEmoji = packet.decoded.emoji == 1
 					newMessage.channel = Int32(packet.channel)
 					newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
+					/// Radio-verified XEdDSA signature for this received broadcast. Firmware only sets this on
+					/// broadcasts, but gate on the broadcast address too so the "verified" shield can never
+					/// appear on a DM even if a stray/spoofed packet carries the flag.
+					newMessage.xeddsaSigned = packet.xeddsaSigned && packet.to == Constants.maximumNodeNum
 					if packet.decoded.portnum == PortNum.detectionSensorApp {
 						if !UserDefaults.enableDetectionNotifications {
 							newMessage.read = true

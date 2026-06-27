@@ -2807,6 +2807,13 @@ public struct MeshPacket: @unchecked Sendable {
     set {_uniqueStorage()._transportMechanism = newValue}
   }
 
+  ///
+  /// Indicates whether the packet has a valid signature
+  public var xeddsaSigned: Bool {
+    get {return _storage._xeddsaSigned}
+    set {_uniqueStorage()._xeddsaSigned = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_PayloadVariant: Equatable, Sendable {
@@ -3210,6 +3217,15 @@ public struct NodeInfo: @unchecked Sendable {
   public var isMuted: Bool {
     get {return _storage._isMuted}
     set {_uniqueStorage()._isMuted = newValue}
+  }
+
+  ///
+  /// True if node is signing its packets via XEdDSA
+  /// Persists between NodeDB internal clean ups
+  /// LSB 1 of the bitfield
+  public var hasXeddsaSigned_p: Bool {
+    get {return _storage._hasXeddsaSigned_p}
+    set {_uniqueStorage()._hasXeddsaSigned_p = newValue}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -5264,7 +5280,7 @@ extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageI
 
 extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MeshPacket"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}from\0\u{1}to\0\u{1}channel\0\u{1}decoded\0\u{1}encrypted\0\u{1}id\0\u{3}rx_time\0\u{3}rx_snr\0\u{3}hop_limit\0\u{3}want_ack\0\u{1}priority\0\u{3}rx_rssi\0\u{1}delayed\0\u{3}via_mqtt\0\u{3}hop_start\0\u{3}public_key\0\u{3}pki_encrypted\0\u{3}next_hop\0\u{3}relay_node\0\u{3}tx_after\0\u{3}transport_mechanism\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}from\0\u{1}to\0\u{1}channel\0\u{1}decoded\0\u{1}encrypted\0\u{1}id\0\u{3}rx_time\0\u{3}rx_snr\0\u{3}hop_limit\0\u{3}want_ack\0\u{1}priority\0\u{3}rx_rssi\0\u{1}delayed\0\u{3}via_mqtt\0\u{3}hop_start\0\u{3}public_key\0\u{3}pki_encrypted\0\u{3}next_hop\0\u{3}relay_node\0\u{3}tx_after\0\u{3}transport_mechanism\0\u{3}xeddsa_signed\0")
 
   fileprivate class _StorageClass {
     var _from: UInt32 = 0
@@ -5287,6 +5303,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _relayNode: UInt32 = 0
     var _txAfter: UInt32 = 0
     var _transportMechanism: MeshPacket.TransportMechanism = .transportInternal
+    var _xeddsaSigned: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -5317,6 +5334,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _relayNode = source._relayNode
       _txAfter = source._txAfter
       _transportMechanism = source._transportMechanism
+      _xeddsaSigned = source._xeddsaSigned
     }
   }
 
@@ -5375,6 +5393,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._relayNode) }()
         case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._txAfter) }()
         case 21: try { try decoder.decodeSingularEnumField(value: &_storage._transportMechanism) }()
+        case 22: try { try decoder.decodeSingularBoolField(value: &_storage._xeddsaSigned) }()
         default: break
         }
       }
@@ -5455,6 +5474,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._transportMechanism != .transportInternal {
         try visitor.visitSingularEnumField(value: _storage._transportMechanism, fieldNumber: 21)
       }
+      if _storage._xeddsaSigned != false {
+        try visitor.visitSingularBoolField(value: _storage._xeddsaSigned, fieldNumber: 22)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -5484,6 +5506,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._relayNode != rhs_storage._relayNode {return false}
         if _storage._txAfter != rhs_storage._txAfter {return false}
         if _storage._transportMechanism != rhs_storage._transportMechanism {return false}
+        if _storage._xeddsaSigned != rhs_storage._xeddsaSigned {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -5507,7 +5530,7 @@ extension MeshPacket.TransportMechanism: SwiftProtobuf._ProtoNameProviding {
 
 extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfo"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0\u{3}is_muted\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0\u{3}is_muted\0\u{3}has_xeddsa_signed\0")
 
   fileprivate class _StorageClass {
     var _num: UInt32 = 0
@@ -5523,6 +5546,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _isIgnored: Bool = false
     var _isKeyManuallyVerified: Bool = false
     var _isMuted: Bool = false
+    var _hasXeddsaSigned_p: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -5546,6 +5570,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _isIgnored = source._isIgnored
       _isKeyManuallyVerified = source._isKeyManuallyVerified
       _isMuted = source._isMuted
+      _hasXeddsaSigned_p = source._hasXeddsaSigned_p
     }
   }
 
@@ -5577,6 +5602,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._isIgnored) }()
         case 12: try { try decoder.decodeSingularBoolField(value: &_storage._isKeyManuallyVerified) }()
         case 13: try { try decoder.decodeSingularBoolField(value: &_storage._isMuted) }()
+        case 14: try { try decoder.decodeSingularBoolField(value: &_storage._hasXeddsaSigned_p) }()
         default: break
         }
       }
@@ -5628,6 +5654,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._isMuted != false {
         try visitor.visitSingularBoolField(value: _storage._isMuted, fieldNumber: 13)
       }
+      if _storage._hasXeddsaSigned_p != false {
+        try visitor.visitSingularBoolField(value: _storage._hasXeddsaSigned_p, fieldNumber: 14)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -5650,6 +5679,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._isIgnored != rhs_storage._isIgnored {return false}
         if _storage._isKeyManuallyVerified != rhs_storage._isKeyManuallyVerified {return false}
         if _storage._isMuted != rhs_storage._isMuted {return false}
+        if _storage._hasXeddsaSigned_p != rhs_storage._hasXeddsaSigned_p {return false}
         return true
       }
       if !storagesAreEqual {return false}

@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Signed · verified" : {
+
+    },
+    "Signed node" : {
+
+    },
+    "Verified automatically" : {
+
+    },
+    "Verified with the sender's key." : {
+
+    },
     "" : {
       "localizations" : {
         "da" : {
