@@ -14,6 +14,10 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Jun 2026** — [Messages](messages.md) — Packet signing (firmware 2.8+): verified, signed broadcast messages now show a green shield, and Message Details reveals "Signed · verified". The encryption lock (private DMs) is unchanged; unsigned traffic is never flagged.
+
+**Jun 2026** — [Nodes](nodes.md) — Signed node: nodes that sign their broadcasts show a green shield "Signed node — Verified automatically" row in the detail view (firmware 2.8+), reflecting automatic, radio-observed trust.
+
 **Jun 2026** — [Settings](settings.md) — LoRa region/preset compatibility (firmware 2.8+): the Presets picker is filtered to those legal for the selected region, switches to the region default when needed, and warns on licensed amateur (ham) bands. The new 2.8 ham/narrow regions and presets are hidden on 2.7.x and earlier radios.
 
 **Jun 2026** — [Settings](settings.md) — Traffic Management updated for the 2.8 firmware schema: features are now enabled implicitly by a non-zero value; the precision-bits and hop-management options were removed.

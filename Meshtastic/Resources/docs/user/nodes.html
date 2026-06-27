@@ -264,6 +264,9 @@
 <h2>Node Detail View</h2>
 <p>Tap any node to see the full detail view with hardware info, signal metrics, environment sensors, and log navigation:</p>
 <p><img src="../assets/screenshots/nodeDetail.png" alt="Node Detail" /></p>
+<h3>Signed Node</h3>
+<p>If a node signs its broadcast packets, a green shield (🛡️) <strong>Signed node</strong> row appears in the detail view, marked <strong>Verified automatically</strong>. This means the radio has cryptographically verified an XEdDSA signature from this node (firmware 2.8 or later). Because a node's identity broadcast is itself signed, its name and identity are verified by extension.</p>
+<p>This is <em>automatic</em> trust observed from the radio — distinct from manually verifying a contact's public key out-of-band, which is a separate, user-asserted action. The row only ever affirms the good state; nodes that don't sign simply show no shield, which is not a warning.</p>
 <h3>Hardware Info</h3>
 <p>The hardware section shows information about the physical device running the node. The section title reflects the device's support status:</p>
 <table>
