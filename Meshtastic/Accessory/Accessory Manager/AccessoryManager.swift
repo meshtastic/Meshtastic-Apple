@@ -954,9 +954,14 @@ extension AccessoryManager {
 		checkIsVersionSupported(forVersion: "2.8.0")
 	}
 
-	/// StatusMessage module was introduced in firmware 2.6.0.
+	/// The Status Message module (`ModuleConfig.StatusMessageConfig` + the
+	/// `NODE_STATUS_APP` broadcast) ships in firmware 2.8.0 (design#115). Gate the editor on
+	/// it so we don't expose a broken/empty config screen on a *known* older firmware.
+	/// `checkIsVersionSupported` is intentionally permissive when the version is unknown
+	/// (first-launch / reconnect window) — matching every other capability gate here — so the
+	/// editor still appears until the radio reports a confirmed sub-2.8.0 version.
 	var supportsStatusMessage: Bool {
-		checkIsVersionSupported(forVersion: "2.6.0")
+		checkIsVersionSupported(forVersion: "2.8.0")
 	}
 }
 

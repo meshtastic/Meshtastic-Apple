@@ -236,6 +236,29 @@ struct NodeDetail: View {
 				}
 				.accessibilityElement(children: .combine)
 			}
+			// User-authored status broadcast by the node. Omitted entirely when empty
+			// (no placeholder / em-dash). Untrusted free text — rendered verbatim as
+			// plain text, never markup. `Text(_: String)` does not parse markdown.
+			// Detail has more room than the cards (design#115), so it shows the full
+			// status rather than the 2-line card clamp — but still capped so a remote
+			// node broadcasting newline-laden text (the 80-byte cap is only enforced on
+			// the local save path) can't grow the row without bound.
+			if let status = node.statusMessageDisplay {
+				HStack(alignment: .top) {
+					Label {
+						Text("Status Message")
+					} icon: {
+						Image(systemName: NodeStatusStyle.glyph)
+							.symbolRenderingMode(.hierarchical)
+					}
+					Spacer()
+					Text(status)
+						.multilineTextAlignment(.trailing)
+						.lineLimit(6)
+						.textSelection(.enabled)
+				}
+				.accessibilityElement(children: .combine)
+			}
 			if node.user?.unmessagable ?? false {
 				HStack {
 					Label {

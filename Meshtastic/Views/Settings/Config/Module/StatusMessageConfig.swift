@@ -15,16 +15,23 @@ struct StatusMessageConfig: View {
 	let node: NodeInfoEntity?
 	@State var hasChanges: Bool = false
 	@State var nodeStatus: String = ""
+	/// The value the field was prefilled with (configured value, or the live broadcast
+	/// status when no config value exists yet). `hasChanges` is computed relative to this
+	/// so the programmatic prefill — which fires `onChange` — is not mistaken for a user
+	/// edit (which would wrongly enable Save and trigger a discard prompt on a blank open).
+	@State private var baselineStatus: String = ""
 
 	var body: some View {
 		Form {
 			ConfigHeader(title: "Status Message", config: \.statusMessageConfig, node: node, onAppear: setStatusMessageValues)
 
-			Section(header: Text("Status")) {
+			Section(header: Text("Status Message Config")) {
 				VStack(alignment: .leading) {
 					HStack {
-						TextField("Node Status", text: $nodeStatus, axis: .vertical)
-							.lineLimit(3...5)
+						// Single-line input per the design spec; the 80-byte enforcement below is
+						// independent of presentation. Placeholder kept as the existing localized
+						// "Node Status" key (translated in 10 locales) rather than a new string.
+						TextField("Node Status", text: $nodeStatus)
 							.onChange(of: nodeStatus) { _, newValue in
 								// Enforce 80 byte UTF-8 limit
 								if newValue.utf8.count > 80 {
@@ -34,19 +41,19 @@ struct StatusMessageConfig: View {
 									}
 									nodeStatus = trimmed
 								}
-								if nodeStatus != node?.statusMessageConfig?.nodeStatus ?? "" {
-									hasChanges = true
-								}
+								// Track edits relative to the prefilled baseline so adopting the
+								// prefill value isn't reported as an unsaved change.
+								hasChanges = nodeStatus != baselineStatus
 							}
 						if !nodeStatus.isEmpty {
 							Button {
 								nodeStatus = ""
-								hasChanges = true
 							} label: {
 								Image(systemName: "xmark.circle.fill")
 									.foregroundColor(.secondary)
 							}
 							.buttonStyle(.plain)
+							.accessibilityLabel("Clear")
 						}
 					}
 					Text("\(nodeStatus.utf8.count)/80 bytes")
@@ -77,7 +84,7 @@ struct StatusMessageConfig: View {
 			}
 			}
 		}
-		.navigationTitle("Status Message Config")
+		.navigationTitle("Status Message")
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
@@ -100,7 +107,11 @@ struct StatusMessageConfig: View {
 		// node is currently advertising rather than appearing empty.
 		let configValue = node?.statusMessageConfig?.nodeStatus ?? ""
 		let liveValue = node?.nodeStatus ?? ""
-		self.nodeStatus = configValue.isEmpty && !liveValue.isEmpty ? liveValue : configValue
+		let prefill = configValue.isEmpty && !liveValue.isEmpty ? liveValue : configValue
+		self.nodeStatus = prefill
+		// Record the prefill as the change baseline so the onChange this assignment triggers
+		// doesn't flip hasChanges on a fresh open with no user edit.
+		self.baselineStatus = prefill
 		self.hasChanges = false
 	}
 }
