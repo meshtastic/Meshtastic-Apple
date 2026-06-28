@@ -10,13 +10,16 @@ import CoreLocation
 import Foundation
 
 struct NodeListRowSummary {
-	let latestDeviceMetrics: TelemetryEntity?
-	// Snapshot the position as plain value types at construction time rather than
-	// vending the live PositionEntity. SwiftData fatally traps (SIGTRAP in
-	// _SD_get_faulting_backingdata_tsd) if a deleted @Model's persisted property is
-	// read, and position rows are pruned/replaced constantly underneath the list —
-	// so a view body holding a live PositionEntity can crash mid-render. Value-type
-	// snapshots can never fault.
+	// Snapshot the position and device metrics as plain value types at construction
+	// time rather than vending live PositionEntity/TelemetryEntity objects. SwiftData
+	// fatally traps (SIGTRAP in _SD_get_faulting_backingdata_tsd) if a deleted @Model's
+	// persisted property is read, and both position rows and telemetry history are
+	// pruned constantly underneath the list (telemetry via shouldPruneTelemetryHistory,
+	// nullify relationship — so the captured metrics row can be deleted while the node
+	// stays live). A view body holding either live object can crash mid-render; value-
+	// type snapshots can never fault.
+	let batteryLevel: Int32?
+	let hasDeviceMetrics: Bool
 	let hasPosition: Bool
 	let latestNodeCoordinate: CLLocationCoordinate2D?
 	let hasEnvironmentMetrics: Bool
@@ -29,7 +32,9 @@ struct NodeListRowSummary {
 		includePosition: Bool = true,
 		includeLogAvailability: Bool = true
 	) {
-		latestDeviceMetrics = includeDeviceMetrics ? node.latestDeviceMetrics : nil
+		let latestDeviceMetrics = includeDeviceMetrics ? node.latestDeviceMetrics : nil
+		batteryLevel = latestDeviceMetrics?.batteryLevel
+		hasDeviceMetrics = latestDeviceMetrics != nil
 		let latestPosition = includePosition ? node.latestPosition : nil
 		hasPosition = latestPosition != nil
 		latestNodeCoordinate = latestPosition?.nodeCoordinate
@@ -53,7 +58,7 @@ struct NodeListItem: View {
 		return f
 	}()
 
-	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
+	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
 			desc = shortName.formatNodeNameForVoiceOver()
@@ -84,7 +89,7 @@ struct NodeListItem: View {
 		if node.hopsAway > 0 {
 			desc += ", \(node.hopsAway) hops away"
 		}
-		if let battery = cachedMetrics?.batteryLevel {
+		if let battery = batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -176,10 +181,10 @@ struct NodeListItem: View {
 	}
 
 	@ViewBuilder private var rowContent: some View {
-		let cachedMetrics = rowSummary?.latestDeviceMetrics
+		let cachedBatteryLevel = rowSummary?.batteryLevel
 		let cachedLocationData = connectedNode == node.num ? nil : locationData(for: rowSummary?.latestNodeCoordinate)
 		let cachedHasPositions = rowSummary?.hasPosition ?? false
-		let cachedHasDeviceMetrics = cachedMetrics != nil
+		let cachedHasDeviceMetrics = rowSummary?.hasDeviceMetrics ?? false
 		let cachedHasEnvironmentMetrics = rowSummary?.hasEnvironmentMetrics ?? false
 		let cachedHasDetectionSensorMetrics = rowSummary?.hasDetectionSensorMetrics ?? false
 		let cachedHasTraceRoutes = rowSummary?.hasTraceRoutes ?? false
@@ -194,7 +199,7 @@ struct NodeListItem: View {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 						.padding(.trailing, 5)
-					if let batteryLevel = cachedMetrics?.batteryLevel {
+					if let batteryLevel = cachedBatteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 							.padding(.trailing, 5)
 					}
@@ -316,7 +321,7 @@ struct NodeListItem: View {
 			}
 		}
 		.accessibilityElement(children: .ignore)
-		.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
+		.accessibilityLabel(accessibilityDescription(batteryLevel: cachedBatteryLevel, cachedLocationData: cachedLocationData))
 	}
 }
 
