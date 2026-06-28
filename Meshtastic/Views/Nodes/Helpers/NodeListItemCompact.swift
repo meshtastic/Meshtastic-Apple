@@ -39,7 +39,7 @@ struct NodeListItemCompact: View {
 		return f
 	}()
 
-	private func accessibilityDescription(cachedMetrics: TelemetryEntity?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
+	private func accessibilityDescription(batteryLevel: Int32?, cachedLocationData: (nodeLocation: CLLocation, myLocation: CLLocation)?) -> String {
 		var desc = ""
 		if let shortName = node.user?.shortName {
 			desc = shortName.formatNodeNameForVoiceOver()
@@ -70,7 +70,7 @@ struct NodeListItemCompact: View {
 		if node.hopsAway > 0 {
 			desc += ", \(node.hopsAway) hops away"
 		}
-		if let battery = cachedMetrics?.batteryLevel {
+		if let battery = batteryLevel {
 			if battery > 100 {
 				desc += ", " + "Plugged in".localized
 			} else if battery == 100 {
@@ -176,12 +176,12 @@ struct NodeListItemCompact: View {
 
 	@ViewBuilder private var rowContent: some View {
 		let circleSize = max(minCircle, min(maxCircle, baseUnit * CGFloat(lineNums)))
-		let cachedMetrics = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.latestDeviceMetrics : nil
+		let cachedBatteryLevel = (shouldShowPower || shouldShowTelemetry) ? rowSummary?.batteryLevel : nil
 		let needsLatestPosition = shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num)
 		let cachedLatestNodeCoordinate = needsLatestPosition ? rowSummary?.latestNodeCoordinate : nil
 		let cachedLocationData = (shouldShowLocation && connectedNode != node.num) ? locationData(for: cachedLatestNodeCoordinate) : nil
 		let cachedHasPositions = shouldShowTelemetry ? (rowSummary?.hasPosition ?? false) : false
-		let cachedHasDeviceMetrics = shouldShowTelemetry && cachedMetrics != nil
+		let cachedHasDeviceMetrics = shouldShowTelemetry && (rowSummary?.hasDeviceMetrics ?? false)
 		let cachedHasEnvironmentMetrics = shouldShowTelemetry ? rowSummary?.hasEnvironmentMetrics ?? false : false
 		let cachedHasDetectionSensorMetrics = shouldShowTelemetry ? rowSummary?.hasDetectionSensorMetrics ?? false : false
 		let cachedHasTraceRoutes = shouldShowTelemetry ? rowSummary?.hasTraceRoutes ?? false : false
@@ -194,7 +194,7 @@ struct NodeListItemCompact: View {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: circleSize)
 						.padding(.trailing, 5)
-					if shouldShowPower, let batteryLevel = cachedMetrics?.batteryLevel {
+					if shouldShowPower, let batteryLevel = cachedBatteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption2, iconFont: .caption, color: .accentColor)
 							.padding(.trailing, 5)
 					}
@@ -310,7 +310,7 @@ struct NodeListItemCompact: View {
 				}
 			}
 			.accessibilityElement(children: .ignore)
-			.accessibilityLabel(accessibilityDescription(cachedMetrics: cachedMetrics, cachedLocationData: cachedLocationData))
+			.accessibilityLabel(accessibilityDescription(batteryLevel: cachedBatteryLevel, cachedLocationData: cachedLocationData))
 	}
 }
 
