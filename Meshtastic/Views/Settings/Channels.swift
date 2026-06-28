@@ -59,6 +59,36 @@ struct Channels: View {
 		return byIndex.values.sorted { $0.index < $1.index }
 	}
 
+	private var locationSharingChannelIndex: Int32? {
+		if accessoryManager.checkIsVersionSupported(forVersion: "2.6.10") {
+			return displayChannels.first { $0.positionPrecision > 0 }?.index
+		}
+		guard let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }),
+			  primary.positionPrecision > 0 else {
+			return nil
+		}
+		return primary.index
+	}
+
+	private var primaryChannelName: String {
+		if let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }),
+		   let name = primary.name,
+		   !name.isEmpty {
+			return name
+		}
+		if node.loRaConfig?.usePreset == false {
+			return "Custom"
+		}
+		guard let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) else {
+			return "LongFast"
+		}
+		return preset.androidChannelName
+	}
+
+	private var channelFrequencySummary: ChannelFrequencySummary? {
+		ChannelFrequencySummary(loRaConfig: node.loRaConfig, primaryChannelName: primaryChannelName)
+	}
+
 	private func normalizeDuplicateChannelsIfNeeded() {
 		guard let channels = node.myInfo?.channels else { return }
 		var uniqueChannels: [Int32: ChannelEntity] = [:]
@@ -84,6 +114,9 @@ struct Channels: View {
 					.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
 					.listRowSeparator(.hidden)
 				if node.myInfo != nil {
+					if let channelFrequencySummary {
+						ChannelConfigSummaryRow(summary: channelFrequencySummary)
+					}
 					ForEach(displayChannels, id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
 							channelIndex = channel.index
@@ -139,28 +172,9 @@ struct Channels: View {
 							hasChanges = false
 							selectedChannel = channel
 						}) {
-							VStack(alignment: .leading) {
-								HStack {
-									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
-										.padding(.trailing, 5)
-										.brightness(0.1)
-									VStack {
-										HStack {
-											ChannelLock(channel: channel)
-											if channel.name?.isEmpty ?? false {
-												if channel.role == 1 {
-													Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
-												} else {
-													Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
-												}
-											} else {
-												Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
-											}
-										}
-									}
-								}
-							}
+							ChannelRow(channel: channel, sharesLocation: channel.index == locationSharingChannelIndex)
 						}
+						.buttonStyle(.plain)
 					}
 				}
 				if (node.myInfo?.channels.count ?? 0) < 8 {
@@ -448,5 +462,292 @@ enum PositionPrecision: Int, CaseIterable, Identifiable {
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
 		return String.localizedStringWithFormat("Within %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+	}
+}
+
+private struct ChannelConfigSummaryRow: View {
+	let summary: ChannelFrequencySummary
+
+	var body: some View {
+		HStack(spacing: 8) {
+			Image(systemName: "antenna.radiowaves.left.and.right")
+				.foregroundStyle(.secondary)
+			Text(summary.regionName)
+			Spacer(minLength: 8)
+			Text("\(summary.frequencyText) · Slot \(summary.slotText)")
+				.monospacedDigit()
+		}
+		.font(.caption)
+		.foregroundStyle(.secondary)
+		.listRowSeparator(.hidden)
+		.accessibilityElement(children: .combine)
+	}
+}
+
+private struct ChannelRow: View {
+	let channel: ChannelEntity
+	let sharesLocation: Bool
+
+	private var title: String {
+		if let name = channel.name, !name.isEmpty {
+			return String(name.camelCaseToWords())
+		}
+		if channel.role == 1 {
+			return String("PrimaryChannel").camelCaseToWords()
+		}
+		return String("Channel \(channel.index)").camelCaseToWords()
+	}
+
+	private var subtitle: String {
+		if channel.role == 1 {
+			return "Primary channel"
+		}
+		return "Channel \(channel.index)"
+	}
+
+	var body: some View {
+		HStack(alignment: .center, spacing: 10) {
+			CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
+				.padding(.trailing, 5)
+				.brightness(0.1)
+			VStack(alignment: .leading, spacing: 3) {
+				HStack(spacing: 6) {
+					ChannelLock(channel: channel)
+					Text(title)
+						.font(.headline)
+						.foregroundStyle(.primary)
+				}
+				Text(subtitle)
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
+			Spacer(minLength: 0)
+			HStack(spacing: 8) {
+				if sharesLocation {
+					ChannelStatusIcon(systemImage: "location.fill", color: .green, accessibilityLabel: "Position sharing")
+				}
+				if channel.uplinkEnabled {
+					ChannelStatusIcon(systemImage: "icloud.and.arrow.up", color: .blue, accessibilityLabel: "MQTT uplink enabled")
+				}
+				if channel.downlinkEnabled {
+					ChannelStatusIcon(systemImage: "icloud.and.arrow.down", color: .blue, accessibilityLabel: "MQTT downlink enabled")
+				}
+			}
+		}
+		.padding(.vertical, 4)
+		.accessibilityElement(children: .combine)
+	}
+}
+
+private struct ChannelStatusIcon: View {
+	let systemImage: String
+	let color: Color
+	let accessibilityLabel: String
+
+	var body: some View {
+		Image(systemName: systemImage)
+			.font(.caption)
+			.foregroundStyle(color)
+			.accessibilityLabel(accessibilityLabel)
+	}
+}
+
+private struct ChannelFrequencySummary {
+	let frequencyText: String
+	let slotText: String
+	let regionName: String
+
+	init?(loRaConfig: LoRaConfigEntity?, primaryChannelName: String) {
+		guard let loRaConfig else {
+			return nil
+		}
+		let calculator = LoRaChannelCalculator(config: loRaConfig)
+		let slot = calculator.effectiveChannelSlot(primaryName: primaryChannelName)
+		let frequency = calculator.radioFrequencyMHz(slot: slot)
+		if frequency > 0 {
+			frequencyText = String(format: "%.3f MHz", frequency)
+		} else {
+			frequencyText = "Unknown"
+		}
+		slotText = slot > 0 ? String(slot) : "Auto"
+		regionName = calculator.regionName
+	}
+}
+
+private struct LoRaChannelCalculator {
+	let config: LoRaConfigEntity?
+
+	private var region: RegionInfo? {
+		RegionInfo(regionCode: Int(config?.regionCode ?? 0))
+	}
+
+	var regionName: String {
+		guard let regionCode = RegionCodes(rawValue: Int(config?.regionCode ?? 0)) else {
+			return "Unknown region"
+		}
+		return regionCode.description
+	}
+
+	func effectiveChannelSlot(primaryName: String) -> Int {
+		if let channelNum = config?.channelNum, channelNum != 0 {
+			return Int(channelNum)
+		}
+		let numChannels = numChannels()
+		guard numChannels > 0 else { return 0 }
+		return Int(djb2Hash(primaryName) % UInt32(numChannels)) + 1
+	}
+
+	func radioFrequencyMHz(slot: Int) -> Double {
+		guard let config else { return 0 }
+		if config.overrideFrequency != 0 {
+			return Double(config.overrideFrequency)
+		}
+		guard let region else { return 0 }
+		let bandwidth = bandwidthMHz(region: region)
+		guard bandwidth > 0, slot > 0 else { return 0 }
+		return region.freqStart + bandwidth / 2 + Double(slot - 1) * bandwidth
+	}
+
+	private func numChannels() -> Int {
+		guard let region else { return 0 }
+		let bandwidth = bandwidthMHz(region: region)
+		guard bandwidth > 0 else { return 1 }
+		return max(Int(floor((region.freqEnd - region.freqStart) / bandwidth)), 1)
+	}
+
+	private func bandwidthMHz(region: RegionInfo) -> Double {
+		guard let config else { return 0 }
+		if config.usePreset {
+			let presetBandwidth = ModemPresets(rawValue: Int(config.modemPreset))?.bandwidthMHz ?? 0
+			return presetBandwidth * (region.wideLoRa ? 3.25 : 1)
+		}
+		switch config.bandwidth {
+		case 31:
+			return 0.03125
+		case 62:
+			return 0.0625
+		case 200:
+			return 0.203125
+		case 400:
+			return 0.40625
+		case 800:
+			return 0.8125
+		case 1600:
+			return 1.625
+		default:
+			return Double(config.bandwidth) / 1000
+		}
+	}
+
+	private func djb2Hash(_ name: String) -> UInt32 {
+		var hash: UInt32 = 5381
+		for scalar in name.unicodeScalars {
+			hash = hash &+ (hash << 5) &+ UInt32(scalar.value)
+		}
+		return hash
+	}
+}
+
+private struct RegionInfo {
+	let freqStart: Double
+	let freqEnd: Double
+	let wideLoRa: Bool
+
+	init?(regionCode: Int) {
+		guard let region = RegionCodes(rawValue: regionCode) else { return nil }
+		switch region {
+		case .us, .unset:
+			self.init(freqStart: 902.0, freqEnd: 928.0)
+		case .eu433:
+			self.init(freqStart: 433.0, freqEnd: 434.0)
+		case .eu868:
+			self.init(freqStart: 869.4, freqEnd: 869.65)
+		case .cn:
+			self.init(freqStart: 470.0, freqEnd: 510.0)
+		case .jp:
+			self.init(freqStart: 920.5, freqEnd: 923.5)
+		case .anz:
+			self.init(freqStart: 915.0, freqEnd: 928.0)
+		case .kr:
+			self.init(freqStart: 920.0, freqEnd: 923.0)
+		case .tw:
+			self.init(freqStart: 920.0, freqEnd: 925.0)
+		case .ru:
+			self.init(freqStart: 868.7, freqEnd: 869.2)
+		case .in:
+			self.init(freqStart: 865.0, freqEnd: 867.0)
+		case .nz865:
+			self.init(freqStart: 864.0, freqEnd: 868.0)
+		case .th:
+			self.init(freqStart: 920.0, freqEnd: 925.0)
+		case .ua433:
+			self.init(freqStart: 433.0, freqEnd: 434.7)
+		case .ua868:
+			self.init(freqStart: 868.0, freqEnd: 868.6)
+		case .my433:
+			self.init(freqStart: 433.0, freqEnd: 435.0)
+		case .my919:
+			self.init(freqStart: 919.0, freqEnd: 924.0)
+		case .sg923:
+			self.init(freqStart: 917.0, freqEnd: 925.0)
+		case .ph433:
+			self.init(freqStart: 433.0, freqEnd: 434.7)
+		case .ph868:
+			self.init(freqStart: 868.0, freqEnd: 869.4)
+		case .ph915:
+			self.init(freqStart: 915.0, freqEnd: 918.0)
+		case .lora24:
+			self.init(freqStart: 2400.0, freqEnd: 2483.5, wideLoRa: true)
+		case .anz433:
+			self.init(freqStart: 433.05, freqEnd: 434.79)
+		case .kz433:
+			self.init(freqStart: 433.075, freqEnd: 434.775)
+		case .kz863:
+			self.init(freqStart: 863.0, freqEnd: 868.0, wideLoRa: true)
+		case .np865:
+			self.init(freqStart: 865.0, freqEnd: 868.0)
+		case .br902:
+			self.init(freqStart: 902.0, freqEnd: 907.5)
+		case .itu12M, .itu22M:
+			self.init(freqStart: 144.0, freqEnd: 148.0)
+		case .eu866:
+			self.init(freqStart: 866.0, freqEnd: 866.5)
+		case .eu874:
+			self.init(freqStart: 873.0, freqEnd: 876.0)
+		case .eu917:
+			self.init(freqStart: 917.0, freqEnd: 921.0)
+		case .euN868:
+			self.init(freqStart: 869.4, freqEnd: 869.65)
+		}
+	}
+
+	private init(freqStart: Double, freqEnd: Double, wideLoRa: Bool = false) {
+		self.freqStart = freqStart
+		self.freqEnd = freqEnd
+		self.wideLoRa = wideLoRa
+	}
+}
+
+private extension ModemPresets {
+	var androidChannelName: String {
+		switch self {
+		case .longModerate:
+			return "LongMod"
+		default:
+			return name
+		}
+	}
+
+	var bandwidthMHz: Double {
+		switch self {
+		case .longTurbo, .shortTurbo:
+			return 0.5
+		case .longFast, .medFast, .medSlow, .shortFast, .shortSlow:
+			return 0.25
+		case .longModerate, .longSlow, .liteFast, .liteSlow:
+			return 0.125
+		case .narrowFast, .narrowSlow:
+			return 0.0625
+		}
 	}
 }
