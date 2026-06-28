@@ -1,13 +1,13 @@
 /* Info.plist localization - Traditional Chinese (Taiwan) */
 
 "NFCReaderUsageDescription" = "我們使用 NFC 標籤來分享節點聯絡人";
-"NSBluetoothAlwaysUsageDescription" = "我們使用 Bluetooth 連線至附近的 Meshtastic 裝置";
-"NSBluetoothPeripheralUsageDescription" = "Bluetooth 用於將 iPhone 連線至使用者的 Meshtastic 裝置，以在網狀網路上傳送訊息與定位資料。";
+"NSBluetoothAlwaysUsageDescription" = "我們使用藍牙連線至附近的 Meshtastic 裝置";
+"NSBluetoothPeripheralUsageDescription" = "藍牙用於將 iPhone 連線至使用者的 Meshtastic 裝置，以在網狀網路上傳送訊息與位置資料。";
 "NSCameraUsageDescription" = "我們使用相機透過 QR Code 分享頻道";
 "NSLocalNetworkUsageDescription" = "我們使用區域網路連線至網路型節點。";
 "NSSiriUsageDescription" = "Siri 與捷徑可讓您免持控制 Meshtastic——以語音傳送訊息、中斷連線、重新啟動或關閉節點。";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "我們使用您的定位在地圖上顯示位置、依距離顯示與篩選，並將 GPS 座標傳送至已連線裝置。路線記錄會在背景使用定位。";
-"NSLocationAlwaysUsageDescription" = "我們使用您的定位在地圖上顯示位置，並將 GPS 座標傳送至已連線裝置。";
-"NSLocationUsageDescription" = "我們使用您的定位在地圖上顯示位置，並將 GPS 座標傳送至已連線裝置。";
-"NSLocationWhenInUseUsageDescription" = "我們使用您的定位在地圖上顯示位置、依距離顯示與篩選，並將 GPS 座標傳送至已連線裝置。路線記錄會在背景使用定位。";
-"Privacy – Bluetooth Always Usage Description" = "我們使用 Bluetooth 連線至附近的 Meshtastic 裝置";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "我們使用您的位置在地圖上顯示位置、依距離顯示與篩選，並將 GPS 座標傳送至已連線裝置。路線記錄會在背景使用位置。";
+"NSLocationAlwaysUsageDescription" = "我們使用您的位置在地圖上顯示位置，並將 GPS 座標傳送至已連線裝置。";
+"NSLocationUsageDescription" = "我們使用您的位置在地圖上顯示位置，並將 GPS 座標傳送至已連線裝置。";
+"NSLocationWhenInUseUsageDescription" = "我們使用您的位置在地圖上顯示位置、依距離顯示與篩選，並將 GPS 座標傳送至已連線裝置。路線記錄會在背景使用位置。";
+"Privacy – Bluetooth Always Usage Description" = "我們使用藍牙連線至附近的 Meshtastic 裝置";

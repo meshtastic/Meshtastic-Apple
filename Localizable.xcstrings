@@ -298,7 +298,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "將設備送回DFU重啟"
+            "value" : "將裝置送回DFU重啟"
           }
         }
       }
@@ -362,7 +362,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "請確保您的設備已安裝並連線至Wi-Fi或藍牙。"
+            "value" : "請確保您的裝置已安裝並連線至Wi-Fi或藍牙。"
           }
         }
       }
@@ -564,7 +564,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "斷開Meshtastic連線"
+            "value" : "「中斷 Meshtastic 連線」— 中斷與已連線 BLE 節點的連線。"
           }
         }
       }
@@ -696,7 +696,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "使用 Siri 發送 Meshtastic 群組訊息，將訊息發送到網格頻道。"
+            "value" : "「傳送 Meshtastic 群組訊息」— 將訊息傳送至 Mesh 頻道。"
           }
         }
       }
@@ -4893,7 +4893,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "您可能會看到一個錯誤訊息，表示檔案無法儲存。這是正常的，因為設備在更新後立即斷開連線。"
+            "value" : "您可能會看到一個錯誤訊息，表示檔案無法儲存。這是正常的，因為裝置在更新後立即斷開連線。"
           }
         }
       }
@@ -6695,7 +6695,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "0 表示主頻道，使用來發送播報包。位置數據從第一個被啟用且支援 2.7 版本的頻道中發送。"
+            "value" : "0 表示主要頻道，使用來發送播報包。位置數據從第一個被啟用且支援 2.7 版本的頻道中發送。"
           }
         }
       }
@@ -6759,7 +6759,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "本地連線使用預設的自簽證書，若需，請導入自訂的.p12文件。客戶端CA(.pem)會驗證連接 TAK 客戶端。"
+            "value" : "本地連線使用預設的自簽證書，若需，請匯入自訂的.p12文件。用戶端CA(.pem)會驗證連線至 TAK 用戶端。"
           }
         }
       }
@@ -8728,7 +8728,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "管理密碼"
+            "value" : "管理金鑰"
           }
         }
       }
@@ -11251,7 +11251,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一個開源、離線運作、去中心化的網狀網路，運行於平價且低功耗的無線電設備上。"
+            "value" : "一個開源、離線運作、去中心化的網狀網路，運行於平價且低功耗的無線電裝置上。"
           }
         }
       }
@@ -11311,7 +11311,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "一個包圍所有 LoRa 節點在網格上的輪廓"
+            "value" : "包圍 Mesh 上所有 LoRa 節點位置的輪廓。"
           }
         }
       }
@@ -12123,7 +12123,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "設備架構"
+            "value" : "裝置架構"
           }
         }
       }
@@ -13135,7 +13135,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可以連接的設備"
+            "value" : "可連線的電台"
           }
         }
       }
@@ -13397,7 +13397,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "將您的私鑰複製到 iCloud 密碼夾中。"
+            "value" : "將您的私鑰備份至 iCloud 鑰匙圈。"
           }
         }
       }
@@ -14476,7 +14476,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "藍牙設備"
+            "value" : "藍牙裝置"
           }
         }
       }
@@ -14640,7 +14640,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "藍芽 PIN 碼必須是 6 位數字。"
+            "value" : "藍牙 PIN 碼必須是 6 位數字。"
           }
         }
       }
@@ -14751,7 +14751,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "藍芽"
+            "value" : "藍牙"
           }
         }
       }
@@ -14851,7 +14851,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "藍芽設定"
+            "value" : "藍牙設定"
           }
         }
       }
@@ -15147,7 +15147,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "將Mesh to TAK/CoT格式轉換"
+            "value" : "將 Meshtastic 位置、節點、航點與訊息橋接至 TAK/CoT 格式"
           }
         }
       }
@@ -15217,7 +15217,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "傳播設備指標"
+            "value" : "傳播裝置指標"
           }
         }
       }
@@ -19227,7 +19227,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "選擇合適的設備角色"
+            "value" : "選擇合適的裝置角色"
           }
         }
       }
@@ -19555,7 +19555,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "清除過時的節點"
+            "value" : "清除過期節點"
           }
         }
       }
@@ -19705,7 +19705,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "客戶端僅可對您控制的其他節點進行收藏。不當使用將損害您的本地網格"
+            "value" : "用戶端僅可將您控制的其他節點加入最愛。不當使用將損害您的本地 Mesh。"
           }
         }
       }
@@ -19915,7 +19915,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "客戶端歷史紀錄"
+            "value" : "用戶端歷史紀錄"
           }
         }
       }
@@ -19997,7 +19997,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "客戶端歷史紀錄請求已送出"
+            "value" : "用戶端歷史紀錄請求已送出"
           }
         }
       }
@@ -20079,7 +20079,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "客戶端選項"
+            "value" : "用戶端選項"
           }
         }
       }
@@ -20699,7 +20699,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "完成本地網格發現掃描後，請在此查看結果。"
+            "value" : "完成本地 Mesh 探索掃描後，即可在此查看結果。"
           }
         }
       }
@@ -20763,7 +20763,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "完整設備設置"
+            "value" : "完整裝置設定"
           }
         }
       }
@@ -21395,7 +21395,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在連接節點"
+            "value" : "正在連線節點"
           }
         }
       }
@@ -21477,7 +21477,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "透過Proxy連接到MQTT"
+            "value" : "透過Proxy連線到MQTT"
           }
         }
       }
@@ -21560,7 +21560,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "連接新的節點？"
+            "value" : "連線新的節點？"
           }
         }
       }
@@ -21627,7 +21627,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "連接本地Wi-Fi網絡上的節點"
+            "value" : "連線本地Wi-Fi網絡上的節點"
           }
         }
       }
@@ -21760,7 +21760,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "請確保設備連接到穩定的電源。"
+            "value" : "請確保裝置連線到穩定的電源。"
           }
         }
       }
@@ -21826,7 +21826,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "將您的mPWRD-OS設備透過藍牙連接到Wi-Fi網路"
+            "value" : "將您的mPWRD-OS裝置透過藍牙連線到Wi-Fi網路"
           }
         }
       }
@@ -21926,7 +21926,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已連接"
+            "value" : "已連線"
           }
         }
       }
@@ -22068,7 +22068,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已連接的節點 %@"
+            "value" : "已連線的節點 %@"
           }
         }
       }
@@ -22150,7 +22150,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已連接的節點"
+            "value" : "已連線的節點"
           }
         }
       }
@@ -22250,7 +22250,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "連接中⋯⋯"
+            "value" : "連線中⋯⋯"
           }
         }
       }
@@ -22333,7 +22333,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "連接到新的設備時，手機上的 App 資料將會被清除。"
+            "value" : "連線到新的裝置時，手機上的 App 資料將會被清除。"
           }
         }
       }
@@ -22833,7 +22833,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "持續定位更新"
+            "value" : "持續位置更新"
           }
         }
       }
@@ -23679,7 +23679,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "建立NFC聯絡人標籤"
+            "value" : "建立節點聯絡人 NFC 標籤"
           }
         }
       }
@@ -24943,7 +24943,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "必須使用預設密碼進行本地網格發現"
+            "value" : "需要預設金鑰"
           }
         }
       }
@@ -25177,7 +25177,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "刪除所有配置、鍵和 BLE 連接？"
+            "value" : "刪除所有配置、鍵和 BLE 連線？"
           }
         }
       }
@@ -27135,7 +27135,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設備"
+            "value" : "裝置"
           }
         }
       }
@@ -27323,7 +27323,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設備設定"
+            "value" : "裝置設定"
           }
         }
       }
@@ -27387,7 +27387,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "設備配置指南"
+            "value" : "裝置配置指南"
           }
         }
       }
@@ -27451,7 +27451,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "設備已連線"
+            "value" : "裝置已連線"
           }
         }
       }
@@ -27861,7 +27861,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "設備選項"
+            "value" : "裝置選項"
           }
         }
       }
@@ -28009,7 +28009,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "設備角色為 \"%@\"。建議設定為 TAK 或 TAK Tracker 以獲得最佳運作效果。"
+            "value" : "裝置角色為 \"%@\"。建議設定為 TAK 或 TAK Tracker 以獲得最佳運作效果。"
           }
         }
       }
@@ -28073,7 +28073,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "設備角色"
+            "value" : "裝置角色"
           }
         }
       }
@@ -28466,7 +28466,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "直接訊息密碼"
+            "value" : "直接訊息金鑰"
           }
         }
       }
@@ -28891,7 +28891,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "關閉"
+            "value" : "已停用"
           }
         }
       }
@@ -28991,7 +28991,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "斷開連接"
+            "value" : "斷開連線"
           }
         }
       }
@@ -30400,7 +30400,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "說明翻譯"
+            "value" : "文件翻譯"
           }
         }
       }
@@ -31824,7 +31824,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "啟用傳播設備指標到網格網路。啟用時，指標僅會傳輸給已連接的客戶端。"
+            "value" : "啟用向網狀網路廣播裝置指標。停用時，指標僅傳送給已連線的用戶端。"
           }
         }
       }
@@ -32437,7 +32437,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "啟用手機在網格地圖上的藍色定位點"
+            "value" : "在 Mesh 地圖上顯示您手機的藍色位置點。"
           }
         }
       }
@@ -33013,7 +33013,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "密碼保護"
+            "value" : "加密"
           }
         }
       }
@@ -33161,7 +33161,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "請確保您的設備已充電"
+            "value" : "請確保您的裝置已充電"
           }
         }
       }
@@ -34244,7 +34244,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "ESP32 OTA 更新需要 %@ 或更高版本的軟體更新。先使用 Web Flasher 更新設備的軟體版本。"
+            "value" : "ESP32 OTA 更新需要 %@ 或更高版本的軟體更新。先使用 Web Flasher 更新裝置的軟體版本。"
           }
         }
       }
@@ -35374,7 +35374,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "重置廠房將刪除設備和應用程式資料。"
+            "value" : "恢復原廠設定將刪除裝置與 App 資料。"
           }
         }
       }
@@ -35814,7 +35814,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "已收藏和已忽略的節點永遠保留。其他節點根據使用者設定的時間表從應用程式資料庫中清除（具有PKC密鑰的節點至少保留7天）。此功能僅清除未儲存於設備節點資料庫中的節點。"
+            "value" : "已收藏和已忽略的節點永遠保留。其他節點根據使用者設定的時間表從應用程式資料庫中清除（具有PKC密鑰的節點至少保留7天）。此功能僅清除未儲存於裝置節點資料庫中的節點。"
           }
         }
       }
@@ -36589,7 +36589,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "尋找設備"
+            "value" : "尋找裝置"
           }
         }
       }
@@ -37506,7 +37506,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "是否需要修復主頻道？"
+            "value" : "修復主要頻道？"
           }
         }
       }
@@ -38164,7 +38164,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "為了安全起見，iOS 無法直接寫入外部 USB 設備，您必須手動保存檔案。"
+            "value" : "為了安全起見，iOS 無法直接寫入外部 USB 裝置，您必須手動保存檔案。"
           }
         }
       }
@@ -38843,7 +38843,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "生成 TAK 客戶端配置數據包 (.zip)"
+            "value" : "產生資料套件（.zip）以設定 TAK 用戶端連線至此伺服器。"
           }
         }
       }
@@ -39225,7 +39225,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "取得 Node 位置"
+            "value" : "取得節點位置"
           }
         }
       }
@@ -40497,7 +40497,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "重置"
+            "value" : "強制重設"
           }
         }
       }
@@ -41170,7 +41170,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "隱藏地圖標示"
+            "value" : "隱藏地圖示示"
           }
         }
       }
@@ -41320,7 +41320,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "隱藏地圖標示"
+            "value" : "隱藏地圖示示"
           }
         }
       }
@@ -43741,7 +43741,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "若已連線，請按下下方按鈕重啟 DFU 模式。否則，請快速按下您的設備重置按鈕兩下。"
+            "value" : "若已連線，請按下下方按鈕重啟 DFU 模式。否則，請快速按下您的裝置重設按鈕兩下。"
           }
         }
       }
@@ -44069,7 +44069,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "如果預設的區域主題過於繁忙，您可以選擇一個較在地的主題。"
+            "value" : "若預設的地區主題過於繁忙，可選擇較在地的主題。"
           }
         }
       }
@@ -44133,7 +44133,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "如果您的設備已安裝到 OTA_1 分區的正確更新器，您可以嘗試使用 BLE 更新過程。"
+            "value" : "如果您的裝置已安裝到 OTA_1 分區的正確更新器，您可以嘗試使用 BLE 更新過程。"
           }
         }
       }
@@ -44197,7 +44197,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "如果您的設備已安裝到 OTA_1 分區的正確更新器，您可以嘗試使用 WiFi 更新過程。"
+            "value" : "如果您的裝置已安裝到 OTA_1 分區的正確更新器，您可以嘗試使用 WiFi 更新過程。"
           }
         }
       }
@@ -44514,7 +44514,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "導入"
+            "value" : "匯入"
           }
         }
       }
@@ -44578,7 +44578,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "導入 .pem"
+            "value" : "匯入 .pem"
           }
         }
       }
@@ -44642,7 +44642,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "導入自訂.p12文件"
+            "value" : "匯入自訂.p12文件"
           }
         }
       }
@@ -45253,7 +45253,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "顯示縮小GPS精確度。該節點位於陰影區域內。"
+            "value" : "表示 GPS 精確度降低，節點位於陰影範圍內的某處。"
           }
         }
       }
@@ -46344,7 +46344,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "請保持設備與手機的距離"
+            "value" : "請保持裝置與手機的距離"
           }
         }
       }
@@ -46950,7 +46950,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "最後一次接觸的設備:"
+            "value" : "最後一次接觸的裝置:"
           }
         }
       }
@@ -47020,7 +47020,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "最後一次看到設備：%@"
+            "value" : "最後一次看到裝置：%@"
           }
         }
       }
@@ -48633,7 +48633,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "本地網格發現"
+            "value" : "本地 Mesh 探索"
           }
         }
       }
@@ -48700,7 +48700,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "本地網格發現需要主頻使用預設密碼。請重設主頻密碼為預設後再掃描。"
+            "value" : "本地 Mesh 探索需要主要頻道使用預設金鑰。掃描前請將主要頻道金鑰重設為預設值。"
           }
         }
       }
@@ -48822,7 +48822,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "定位"
+            "value" : "位置"
           }
         }
       }
@@ -50783,7 +50783,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "手動連接"
+            "value" : "手動連線"
           }
         }
       }
@@ -51303,7 +51303,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "從請求者起算，可從本機快取直接回應 NodeInfo 的最大跳數距離。"
+            "value" : "從請求者起算，可從本機快取直接回應節點資訊的最大跳數距離。"
           }
         }
       }
@@ -51474,7 +51474,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "網格覆蓋"
+            "value" : "Mesh 覆蓋範圍"
           }
         }
       }
@@ -54556,7 +54556,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "附近設備"
+            "value" : "附近裝置"
           }
         }
       }
@@ -55456,7 +55456,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "沒有已連接的節點"
+            "value" : "沒有已連線的節點"
           }
         }
       }
@@ -55633,7 +55633,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未連接到節點"
+            "value" : "未連線至節點"
           }
         }
       }
@@ -55699,7 +55699,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "未連線設備。將使用第一個發現的設備。"
+            "value" : "未連線裝置。將使用第一個發現的裝置。"
           }
         }
       }
@@ -55781,7 +55781,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "沒有已連接的節點"
+            "value" : "沒有已連線的節點"
           }
         }
       }
@@ -56071,7 +56071,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "此設備尚未下載任何軟體。"
+            "value" : "此裝置尚未下載任何軟體。"
           }
         }
       }
@@ -56678,7 +56678,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "未找到SSH客戶端。我們將打開App Store讓您下載一個。"
+            "value" : "找不到 SSH 用戶端。我們將開啟 App Store，讓您安裝一個。"
           }
         }
       }
@@ -56879,7 +56879,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Node Core Data Backup %1$@/%2$@ - %3$@ - %4$@"
+            "value" : "節點 Core Data 備份 %1$@/%2$@ - %3$@ - %4$@"
           }
         }
       }
@@ -56945,7 +56945,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "最近2小時內收到訊號。在地圖上顯示有脈動的環形圖標。"
+            "value" : "節點在過去 2 小時內曾被聽到。在地圖上以脈動環標示。"
           }
         }
       }
@@ -57355,7 +57355,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "連線設備名稱: %@"
+            "value" : "節點名稱：%@"
           }
         }
       }
@@ -57421,7 +57421,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "最近未被聽到。在地圖上顯示無脈動環。"
+            "value" : "節點最近未被聽到。在地圖上不顯示脈動環。"
           }
         }
       }
@@ -57637,7 +57637,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "NodeInfo 直接回應"
+            "value" : "節點資訊直接回應"
           }
         }
       }
@@ -58204,7 +58204,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "此更新將會暫時斷開您的設備"
+            "value" : "此更新將會暫時斷開您的裝置"
           }
         }
       }
@@ -58438,7 +58438,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "已連線設備的電池電量低警報通知"
+            "value" : "已連線裝置的電池電量低警報通知"
           }
         }
       }
@@ -59711,7 +59711,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "在meshtastic.org上打開%@"
+            "value" : "在meshtastic.org上開啟%@"
           }
         }
       }
@@ -59781,7 +59781,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "打開指南針"
+            "value" : "開啟指南針"
           }
         }
       }
@@ -59856,7 +59856,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "打開本地檔案..."
+            "value" : "開啟本地檔案..."
           }
         }
       }
@@ -59938,7 +59938,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打開設定"
+            "value" : "開啟設定"
           }
         }
       }
@@ -60002,7 +60002,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "打開SSH客戶端"
+            "value" : "開啟 SSH 用戶端"
           }
         }
       }
@@ -60128,7 +60128,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "打開 %@ 說明書"
+            "value" : "開啟 %@ 說明書"
           }
         }
       }
@@ -60458,7 +60458,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "請自行在頻道設定中調整主頻道，然後返回此頁面"
+            "value" : "請自行在頻道設定中調整主要頻道，然後返回此頁面。"
           }
         }
       }
@@ -60836,7 +60836,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "透過序列埠輸出即時偵錯記錄，並可透過藍芽檢視與匯出經位置隱藏處理的裝置日誌。"
+            "value" : "透過序列埠輸出即時偵錯記錄，並可透過藍牙檢視與匯出經位置隱藏處理的裝置日誌。"
           }
         }
       }
@@ -61524,7 +61524,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "參加分佈式翻譯"
+            "value" : "參與分散式翻譯"
           }
         }
       }
@@ -62740,7 +62740,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "基於 PKI 的遠端管理，需搭配 2.5 版以上的韌體。"
+            "value" : "基於 PKI 的節點管理，需搭配 2.5 版以上的韌體。"
           }
         }
       }
@@ -62806,7 +62806,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "將設備放入DFU模式並通過USB連接"
+            "value" : "將裝置放入DFU模式並通過USB連線"
           }
         }
       }
@@ -63102,7 +63102,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請先連接裝置來進行設定。"
+            "value" : "請先連線裝置來進行設定。"
           }
         }
       }
@@ -63234,7 +63234,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "請重新連線到您的設備以載入軟體資訊。"
+            "value" : "請重新連線到您的裝置以載入軟體資訊。"
           }
         }
       }
@@ -63474,7 +63474,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "定位"
+            "value" : "位置"
           }
         }
       }
@@ -63574,7 +63574,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "定位設定"
+            "value" : "位置設定"
           }
         }
       }
@@ -64326,7 +64326,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "定位精度圓圈"
+            "value" : "位置精度圓圈"
           }
         }
       }
@@ -64702,7 +64702,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "裝置的 GPS 會提供定位資訊，如果選擇「已停用」或「無此功能」，則可以手動設定固定位置。"
+            "value" : "裝置的 GPS 會提供位置資訊，若選擇「已停用」或「無此功能」，則可手動設定固定位置。"
           }
         }
       }
@@ -67508,7 +67508,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "未收到無線電的範圍測試配置，請重新連接設備"
+            "value" : "未收到無線電的範圍測試配置，請重新連線裝置"
           }
         }
       }
@@ -68612,7 +68612,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "記錄了訊息從網格到此節點所經過的跳躍路徑。"
+            "value" : "記錄訊息經由 Mesh 抵達此節點所經過的跳躍路徑。"
           }
         }
       }
@@ -68934,7 +68934,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "區域"
+            "value" : "地區"
           }
         }
       }
@@ -70203,7 +70203,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "需要您的手機精確定位"
+            "value" : "需要您的手機取得精確 GPS 位置"
           }
         }
       }
@@ -70367,7 +70367,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "重置 App 設定"
+            "value" : "重設 App 設定"
           }
         }
       }
@@ -70495,7 +70495,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "重置 NodeDB"
+            "value" : "重設 NodeDB"
           }
         }
       }
@@ -70559,7 +70559,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "重置為預設值"
+            "value" : "重設為預設值"
           }
         }
       }
@@ -70580,7 +70580,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "直接從本機快取回應 NodeInfo 要求。"
+            "value" : "直接從本機快取回應 NodeInfo 請求。"
           }
         }
       }
@@ -73251,7 +73251,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信號強度 %d dBm"
+            "value" : "訊號強度 %d dBm"
           }
         }
       }
@@ -75147,7 +75147,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "使用 TLS 進行安全連線，端口為 8089，需要雙方伺服器和客戶端證書。TAK 頻道索引選擇將 TAK 訊息發送到哪個頻道。"
+            "value" : "使用 TLS 進行安全連線，端口為 8089，需要雙方伺服器和用戶端證書。TAK 頻道索引選擇將 TAK 訊息發送到哪個頻道。"
           }
         }
       }
@@ -75989,7 +75989,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "從下拉選單中選擇一個節點，以管理已連接或遠端的裝置。"
+            "value" : "從下拉選單中選擇一個節點，以管理已連線或遠端的裝置。"
           }
         }
       }
@@ -76621,7 +76621,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send ${messageContent} to ${nodeNumber}"
+            "value" : "傳送 ${messageContent} 至節點 ${nodeNumber}"
           }
         }
       }
@@ -78036,7 +78036,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "傳感器選項"
+            "value" : "感測器選項"
           }
         }
       }
@@ -78102,7 +78102,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "感測信號包數"
+            "value" : "感測器封包數"
           }
         }
       }
@@ -78269,7 +78269,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sent a Position Packet from the Apple device GPS to node: %@"
+            "value" : "已從 Apple 裝置 GPS 傳送位置封包至節點：%@"
           }
         }
       }
@@ -79263,7 +79263,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "伺服器：連接埠"
+            "value" : "伺服器：連線埠"
           }
         }
       }
@@ -79704,7 +79704,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定 LoRa 區域"
+            "value" : "設定 LoRa 地區"
           }
         }
       }
@@ -81109,7 +81109,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "顯示確認對話框前執行廢棄機場重置"
+            "value" : "顯示確認對話框前執行廢棄機場重設"
           }
         }
       }
@@ -81872,7 +81872,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "顯示基於GPS位置的節點方向和距離。需要您的設備和遠端節點共享位置。"
+            "value" : "顯示基於GPS位置的節點方向和距離。需要您的裝置和遠端節點共享位置。"
           }
         }
       }
@@ -82171,7 +82171,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "關機？"
+            "value" : "關閉節點？"
           }
         }
       }
@@ -82247,7 +82247,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "關機？"
+            "value" : "關閉節點？"
           }
         }
       }
@@ -82469,7 +82469,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信號（僅限直接傳輸）"
+            "value" : "訊號（僅限直接傳輸）"
           }
         }
       }
@@ -82615,7 +82615,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信號強度計"
+            "value" : "訊號強度計"
           }
         }
       }
@@ -82679,7 +82679,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信號：不良"
+            "value" : "訊號：差"
           }
         }
       }
@@ -82743,7 +82743,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信號：良好"
+            "value" : "訊號：尚可"
           }
         }
       }
@@ -82807,7 +82807,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信號：良好"
+            "value" : "訊號：良好"
           }
         }
       }
@@ -82871,7 +82871,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信號非常差"
+            "value" : "訊號：極差"
           }
         }
       }
@@ -83396,7 +83396,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信號強度超過目前模組預設的限制，信號穩定可靠"
+            "value" : "SNR 高於目前 Modem 預設限制，訊號強而穩定。"
           }
         }
       }
@@ -83460,7 +83460,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "信噪比遠低於模組預設限制，通信在這個信號水平下很難進行"
+            "value" : "SNR 遠低於 Modem 預設限制，在此訊號強度下難以通訊。"
           }
         }
       }
@@ -84799,7 +84799,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "步驟1：連接設備"
+            "value" : "步驟1：連線裝置"
           }
         }
       }
@@ -85522,7 +85522,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "支援的 I2C 連接感測器將自動偵測，這些感測器包括 BMP280、BME280、BME680、MCP9808、INA219、INA260、LPS22 和 SHTC3。"
+            "value" : "支援的 I2C 連線感測器將自動偵測，這些感測器包括 BMP280、BME280、BME680、MCP9808、INA219、INA260、LPS22 和 SHTC3。"
           }
         }
       }
@@ -86557,7 +86557,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "遙測（傳感器）"
+            "value" : "遙測"
           }
         }
       }
@@ -87051,7 +87051,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Web Flasher 無法在此設備或 USB 或 BLE 上更新"
+            "value" : "Web Flasher 無法在此裝置或 USB 或 BLE 上更新"
           }
         }
       }
@@ -87276,7 +87276,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "此頻道未經安全加密，並用於精確定位數據。"
+            "value" : "此頻道未經安全加密，並用於精確位置資料。"
           }
         }
       }
@@ -87408,7 +87408,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "該頻道使用無密碼或1位已知密碼，但不是用於精確定位數據。"
+            "value" : "此頻道使用無金鑰或 1 位元組已知金鑰，但不會用於精確位置資料。"
           }
         }
       }
@@ -87848,7 +87848,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "完整布局中的梯度條顯示整體信號品質，從紅色（無信號）到橙色、黃色、綠色（良好信號），結合了相對於您的模組預設的 SNR 和 RSSI。"
+            "value" : "完整布局中的梯度條顯示整體訊號品質，從紅色（無訊號）到橙色、黃色、綠色（良好訊號），結合了相對於您的模組預設的 SNR 和 RSSI。"
           }
         }
       }
@@ -88344,7 +88344,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "最近沒有收到訊號，可能正在休眠或距離太遠"
+            "value" : "最近沒有收到此節點的訊號，可能正在休眠或超出範圍。"
           }
         }
       }
@@ -88472,7 +88472,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "編號的圓圈表示該節點正在使用哪個頻道。只有當節點在副頻道上（非主頻道0）時才顯示"
+            "value" : "編號的圓圈表示該節點正在使用哪個頻道。只有當節點在次要頻道上（非主要頻道0）時才顯示"
           }
         }
       }
@@ -88538,7 +88538,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "主頻道負責廣播流量。為每個獨立訊息群組添加副頻道，每個群組都使用其獨特的密碼進行保護。[了解更多](https://meshtastic.org/docs/configuration/tips/)"
+            "value" : "主要頻道負責廣播流量。為每個獨立訊息群組添加次要頻道，每個群組都使用其專屬金鑰進行保護。[了解更多](https://meshtastic.org/docs/configuration/tips/)"
           }
         }
       }
@@ -88605,7 +88605,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "主頻道必須使用預設密碼進行發現掃描"
+            "value" : "主要頻道必須使用預設金鑰才能進行探索掃描。"
           }
         }
       }
@@ -88751,7 +88751,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "建議更新ESP32設備的方法是使用桌面電腦上的Web Flasher（Chrome瀏覽器）。"
+            "value" : "建議更新ESP32裝置的方法是使用桌面電腦上的Web Flasher（Chrome瀏覽器）。"
           }
         }
       }
@@ -89401,7 +89401,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "未收到 PKC 管理員對此節點的設備資料請求回應"
+            "value" : "未收到 PKC 管理員對此節點的裝置資料請求回應"
           }
         }
       }
@@ -89541,7 +89541,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "此設定僅適用於 TAK 或 TAK Tracker 設備角色"
+            "value" : "此設定僅適用於 TAK 或 TAK Tracker 裝置角色"
           }
         }
       }
@@ -89679,7 +89679,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "這些值包含在 TAK 位置報告中。將任何設定設置為預設以讓固件使用 Cyan 和 Team Member。"
+            "value" : "這些值包含在 TAK 位置報告中。將任何設定設定為預設以讓固件使用 Cyan 和 Team Member。"
           }
         }
       }
@@ -90313,7 +90313,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "此工具會掃描您的本地區域，尋找附近的 Meshtastic 無線電，並根據不同頻率設定自動切換。它會在每個設定上靜靜收聽幾分鐘，然後根據發現的無線電數量和空頻率的忙碌程度顯示最適合您位置的設定。在支援設備上，本地設備 AI 將分析掃描結果並推薦最佳設定，無需網路連接。"
+            "value" : "此工具會掃描您的本地區域，尋找附近的 Meshtastic 無線電，並根據不同頻率設定自動切換。它會在每個設定上靜靜收聽幾分鐘，然後根據發現的無線電數量和空頻率的忙碌程度顯示最適合您位置的設定。在支援裝置上，本地裝置 AI 將分析掃描結果並推薦最佳設定，無需網路連線。"
           }
         }
       }
@@ -90379,7 +90379,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "此將將您的主頻道變為：\n• 名稱： TAK\n• 密碼： 新 256 位 AES 密碼\n• LoRa 預設：短快 (建議用於 TAK )\n\n此為 TAK 伺服器正常運作所必需。任何已存在的頻道共享連結將會失效。"
+            "value" : "此將變更您的主要頻道為：\n• 名稱：TAK\n• 加密：新的 256 位元 AES 金鑰\n• LoRa 預設：Short Fast（建議用於 TAK）\n\n此為 TAK 伺服器正常運作所必需。任何既有的頻道分享連結將會失效。"
           }
         }
       }
@@ -90461,7 +90461,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這將禁用固定位置並移除當前設定的位置。"
+            "value" : "這將停用固定位置並移除目前設定的位置。"
           }
         }
       }
@@ -91258,7 +91258,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "時間和重置"
+            "value" : "時間和重設"
           }
         }
       }
@@ -91550,7 +91550,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "為遵守如 CCPA 和 GDPR 等隱私法規，我們避免分享精確的位置信息。取而代之，我們使用匿名化或近似（不精確）的位置資訊，以保護您的隱私。"
+            "value" : "為遵守如 CCPA 和 GDPR 等隱私法規，我們避免分享精確的位置資訊。取而代之，我們使用匿名化或近似（不精確）的位置資訊，以保護您的隱私。"
           }
         }
       }
@@ -93078,7 +93078,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "正在進行翻譯…"
+            "value" : "正在翻譯…"
           }
         }
       }
@@ -97825,7 +97825,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "透過手機的網路連線來連接至 MQTT 伺服器。"
+            "value" : "透過手機的網路連線來連線至 MQTT 伺服器。"
           }
         }
       }
@@ -98065,7 +98065,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "確認與您通訊的對象，可以透過實體或電話的方式比較公開鍵。此節點的最新公開鍵與之前記錄的公開鍵不符。若鍵值變更是由於機箱重置或其他故意操作，可以刪除該節點，讓它重新交換鍵值。但若鍵值變更是由於其他原因，也可能表示更嚴重的安全問題。"
+            "value" : "確認與您通訊的對象，可以透過實體或電話的方式比較公開鍵。此節點的最新公開鍵與之前記錄的公開鍵不符。若鍵值變更是由於機箱重設或其他故意操作，可以刪除該節點，讓它重新交換鍵值。但若鍵值變更是由於其他原因，也可能表示更嚴重的安全問題。"
           }
         }
       }
@@ -101506,7 +101506,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "您即將將新固件更新到您的設備，此過程具有風險。如果更新失敗，可能會失敗，並且在某些情況下需要重新更新系統啟動器。"
+            "value" : "您即將將新固件更新到您的裝置，此過程具有風險。如果更新失敗，可能會失敗，並且在某些情況下需要重新更新系統啟動器。"
           }
         }
       }
@@ -101572,7 +101572,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "您可以自行修改您的主頻道來解決此問題。"
+            "value" : "您可以自行修改主要頻道來解決此問題："
           }
         }
       }
@@ -102002,7 +102002,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "您的節點將定期向配置的 MQTT 伺服器發送未加密的地圖報告封包，內容包括 ID、簡短名稱和完整名稱、大略位置、硬體型號、角色（Role）、韌體版本、LoRa 區域、Modem預設值以及主要頻道名稱。"
+            "value" : "您的節點將定期向配置的 MQTT 伺服器發送未加密的地圖報告封包，內容包括 ID、簡短名稱和完整名稱、大略位置、硬體型號、角色（Role）、韌體版本、LoRa 地區、Modem預設值以及主要頻道名稱。"
           }
         }
       }
@@ -102150,7 +102150,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "您的密碼會透過藍牙直接傳輸到設備，並且不會被儲存。"
+            "value" : "您的密碼會透過藍牙直接傳輸到裝置，並且不會被儲存。"
           }
         }
       }
@@ -102298,7 +102298,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "您的主頻道使用預設設定（沒有名稱或預設密碼）， TAK 伺服器正在讀取模式運作。"
+            "value" : "您的主要頻道使用預設設定（無名稱或預設加密金鑰）。TAK 伺服器正以唯讀模式運作。"
           }
         }
       }
@@ -102368,7 +102368,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "您的公鑰由您的私鑰產生並發送到其他網格節點，以便他們與您共同計算共享密碼。"
+            "value" : "您的公鑰由私鑰產生，並傳送給 Mesh 上的其他節點，以便與您計算共用密鑰。"
           }
         }
       }
