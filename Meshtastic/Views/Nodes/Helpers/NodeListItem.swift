@@ -212,6 +212,13 @@ struct NodeListItem: View {
 								.symbolRenderingMode(.multicolor)
 						}
 					}
+					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
+					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
+					if node.hasXeddsaSigned {
+						IconAndText(systemName: "checkmark.shield.fill",
+									imageColor: .green,
+									text: "Signed node".localized)
+					}
 					if isDirectlyConnected {
 						IconAndText(systemName: "antenna.radiowaves.left.and.right.circle.fill",
 									imageColor: .green,

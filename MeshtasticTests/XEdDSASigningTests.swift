@@ -4,8 +4,8 @@
 // Covers the XEdDSA packet-signing flags surfaced in the UI (design#113 / issue #1992):
 //   - MeshPacket.xeddsa_signed (field 22)  → MessageEntity.xeddsaSigned
 //   - NodeInfo.has_xeddsa_signed (field 14) → NodeInfoEntity.hasXeddsaSigned
-// The protobuf fields are hand-added to the generated sources, so these tests also guard the
-// binary wire round-trip for both fields.
+// These fields come from the upstream-generated 2.8 protobuf sources; the tests guard their
+// binary wire compatibility and our ingestion behavior, independent of how the code is generated.
 
 import Testing
 import Foundation
@@ -16,7 +16,7 @@ import MeshtasticProtobufs
 @Suite("XEdDSA signing")
 struct XEdDSASigningTests {
 
-	// MARK: - Protobuf wire round-trip (guards the hand-edited generated code)
+	// MARK: - Protobuf wire round-trip (guards wire compatibility of both fields)
 
 	@Test func meshPacket_xeddsaSigned_roundTrips() throws {
 		var packet = MeshPacket()

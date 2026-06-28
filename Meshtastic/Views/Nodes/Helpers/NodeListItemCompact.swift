@@ -214,6 +214,13 @@ struct NodeListItemCompact: View {
 								.symbolRenderingMode(.multicolor)
 						}
 					}
+					// Signed node = XEdDSA-signed NodeInfo broadcast → identity verified by the radio.
+					// Affirmative only; never shown for unsigned nodes. Mirrors the Node Detail row.
+					if node.hasXeddsaSigned {
+						IconAndText(systemName: "checkmark.shield.fill",
+									imageColor: .green,
+									text: "Signed node".localized)
+					}
 					if shouldShowLastHeard && node.lastHeard?.timeIntervalSince1970 ?? 0 > 0 && node.lastHeard! < Calendar.current.date(byAdding: .year, value: 1, to: Date())! {
 						
 						let lastHeardText = lastHeardIsRelative ?
