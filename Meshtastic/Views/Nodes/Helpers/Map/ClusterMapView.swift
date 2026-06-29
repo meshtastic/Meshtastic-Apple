@@ -298,32 +298,43 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// current on reuse (the representable is recreated each render; the coordinator persists).
 		refreshClosures(on: context.coordinator)
 
+		let coordinator = context.coordinator
+		// RE-ENTRANCY GUARD. Hosting a SwiftUI pin (`UIHostingConfiguration` forces a synchronous
+		// layout) and writing the region binding back are side effects that can synchronously
+		// re-invalidate this representable and call updateUIView AGAIN while we're mid-mutation of
+		// MapKit's annotation/overlay tables. Mutating one of those (an `NSHashTable`) during
+		// MapKit's own enumeration throws NSGenericException ("Collection … was mutated while being
+		// enumerated"). A nested call is always triggered by our own side effects — it carries the
+		// SAME data (real data changes arrive on a later runloop tick, never re-entrantly) — so
+		// skipping it drops nothing. (Repro: clear database → connect → the node flood churns
+		// annotations fast enough to re-enter.)
+		guard !coordinator.isApplyingUpdate else { return }
+		coordinator.isApplyingUpdate = true
+		defer { coordinator.isApplyingUpdate = false }
+
 		// 0) Apple basemap type + controls (diffed; only re-applied when it actually changed).
-		context.coordinator.applyConfiguration(configuration, to: mapView)
-		context.coordinator.installControls(on: mapView, bottomInset: configuration.controlsBottomInset)
+		coordinator.applyConfiguration(configuration, to: mapView)
+		coordinator.installControls(on: mapView, bottomInset: configuration.controlsBottomInset)
 
-		// 1) Offline basemap: rebuild only if the URL or the dark/light flag actually changed.
-
-		// 1b) Vector overlays — diffed by id (object-identity change → remove + re-add).
-		context.coordinator.syncOverlays(overlays, on: mapView)
-		context.coordinator.syncCoverage(areas: coverageAreas, dark: colorScheme == .dark, on: mapView)
-		context.coordinator.syncDecorations(decorations, on: mapView)
+		// 1) Vector overlays — diffed by id (object-identity change → remove + re-add).
+		coordinator.syncOverlays(overlays, on: mapView)
+		coordinator.syncCoverage(areas: coverageAreas, dark: colorScheme == .dark, on: mapView)
+		coordinator.syncDecorations(decorations, on: mapView)
 
 		// 2) Diff annotations by Identifiable id — add/remove/move ONLY what changed (no flicker).
-		context.coordinator.sync(items: items, coordinate: coordinate,
-								 clustering: clustering, on: mapView)
+		coordinator.sync(items: items, coordinate: coordinate, clustering: clustering, on: mapView)
 
 		// 3) Apply a one-shot camera command (e.g. the initial frame) EXACTLY ONCE. We deliberately
 		//    do NOT push the `region` binding back into the map: under heavy traffic the data churns
 		//    every frame, and a reactive setRegion would fight the user's pan/zoom and "re-frame" the
 		//    map constantly. After the initial command fires, the user owns the camera.
 		if let command = cameraCommand,
-		   context.coordinator.appliedCameraCommandID != command.id {
-			context.coordinator.appliedCameraCommandID = command.id
-			context.coordinator.isApplyingExternalRegion = true
+		   coordinator.appliedCameraCommandID != command.id {
+			coordinator.appliedCameraCommandID = command.id
+			coordinator.isApplyingExternalRegion = true
 			mapView.setRegion(command.region, animated: command.animated)
 			// Cleared in regionDidChangeAnimated; also clear async in case no event fires.
-			DispatchQueue.main.async { context.coordinator.isApplyingExternalRegion = false }
+			DispatchQueue.main.async { coordinator.isApplyingExternalRegion = false }
 		}
 	}
 
@@ -386,6 +397,13 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		private var overlaysByID: [AnyHashable: ClusterMapOverlay] = [:]
 		/// Per-MKOverlay style, keyed by object identity, for O(1) lookup in `rendererFor`.
 		private var styleByOverlay: [ObjectIdentifier: ClusterMapOverlayStyle] = [:]
+
+		/// True while `updateUIView` is mutating the map. Mutating annotations/overlays hosts SwiftUI
+		/// pins and writes the region binding back, either of which can synchronously re-invalidate
+		/// the representable and re-enter `updateUIView` mid-mutation — mutating MapKit's annotation
+		/// `NSHashTable` while it is being enumerated, which throws NSGenericException. This flag makes
+		/// the re-entrant call a no-op (it carries the same data, so nothing is lost).
+		var isApplyingUpdate = false
 
 		// Camera feedback-loop guards.
 		/// True while WE push an external region in (so the resulting `regionDidChange` callback
