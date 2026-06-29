@@ -195,4 +195,22 @@ extension NodeInfoEntity {
 		}
 		return hasVisible ? trimmed : nil
 	}
+
+	/// The value the status-message editor should prefill. Prefer the configured status, but when
+	/// it has no *displayable* content (blank, whitespace-only, or invisible-only — the same cases
+	/// `displayableStatus` rejects) fall back to the node's live broadcast if that one is
+	/// displayable. Without this the cards/detail can show the live broadcast while the editor
+	/// prefills an apparently-blank configured value — a user-visible mismatch. A non-displayable
+	/// configured value with no displayable live fallback normalizes to "" rather than echoing the
+	/// whitespace/invisible characters back into the field (which would show a non-zero byte count
+	/// for an apparently-empty editor). Pure + static so it can be unit-tested directly.
+	static func statusMessagePrefill(configured: String?, live: String?) -> String {
+		if let configured, displayableStatus(configured) != nil {
+			return configured
+		}
+		if let live, displayableStatus(live) != nil {
+			return live
+		}
+		return ""
+	}
 }

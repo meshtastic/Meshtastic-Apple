@@ -92,3 +92,46 @@ struct StatusMessageDisplayTests {
 		#expect(makeNode(broadcast: "Hi\u{200D}!").statusMessageDisplay == "Hi\u{200D}!")
 	}
 }
+
+// MARK: - Editor prefill
+
+@Suite("NodeInfoEntity.statusMessagePrefill")
+struct StatusMessagePrefillTests {
+
+	@Test func prefersConfiguredWhenDisplayable() {
+		#expect(NodeInfoEntity.statusMessagePrefill(configured: "Configured", live: "Live") == "Configured")
+	}
+
+	@Test func keepsConfiguredEvenWhenLiveDiffers() {
+		#expect(NodeInfoEntity.statusMessagePrefill(configured: "Battery Low", live: nil) == "Battery Low")
+	}
+
+	@Test func emptyConfiguredFallsBackToLive() {
+		#expect(NodeInfoEntity.statusMessagePrefill(configured: "", live: "Live") == "Live")
+	}
+
+	@Test func whitespaceOnlyConfiguredFallsBackToLive() {
+		// The case the cards/detail already treat as blank — the editor must agree, not prefill "   ".
+		#expect(NodeInfoEntity.statusMessagePrefill(configured: "   \n\t ", live: "Live") == "Live")
+	}
+
+	@Test func invisibleOnlyConfiguredFallsBackToLive() {
+		#expect(NodeInfoEntity.statusMessagePrefill(configured: "\u{200B}\u{2060}", live: "Live") == "Live")
+	}
+
+	@Test func nilConfiguredFallsBackToLive() {
+		#expect(NodeInfoEntity.statusMessagePrefill(configured: nil, live: "Live") == "Live")
+	}
+
+	@Test func bothBlankReturnsEmpty() {
+		// Nothing displayable on either side → normalize to "" rather than surfacing a
+		// non-displayable configured/live value.
+		#expect(NodeInfoEntity.statusMessagePrefill(configured: "", live: "   ") == "")
+	}
+
+	@Test func nonDisplayableConfiguredWithNonDisplayableLiveNormalizesToEmpty() {
+		// Whitespace-only configured + invisible-only live → empty, so the editor agrees with the
+		// cards/detail (which show nothing) instead of prefilling whitespace that counts bytes.
+		#expect(NodeInfoEntity.statusMessagePrefill(configured: "  ", live: "\u{200B}") == "")
+	}
+}
