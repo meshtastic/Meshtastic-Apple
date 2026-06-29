@@ -3,6 +3,7 @@ import MeshtasticProtobufs
 
 struct MeshtasticChannelURL: Sendable {
 	static let host = "meshtastic.org"
+	static let appScheme = "meshtastic"
 	static let channelPathSegment = "e"
 	static let canonicalPrefix = "https://meshtastic.org/e/"
 
@@ -90,15 +91,22 @@ struct MeshtasticChannelURL: Sendable {
 	}
 
 	private static func isChannelURL(_ url: URL) -> Bool {
-		guard let host = url.host?.lowercased(),
-			  host == Self.host || host == "www.\(Self.host)" else {
-			return false
+		if url.scheme?.lowercased() == appScheme {
+			let pathSegments = pathSegments(for: url)
+			if pathSegments.first == channelPathSegment {
+				return true
+			}
+			return url.host?.lowercased() == channelPathSegment
 		}
 
-		let pathSegments = url.pathComponents
+		guard url.host?.lowercased() == Self.host else { return false }
+		return pathSegments(for: url).first == channelPathSegment
+	}
+
+	private static func pathSegments(for url: URL) -> [String] {
+		url.pathComponents
 			.filter { $0 != "/" }
 			.map { $0.lowercased() }
-		return pathSegments.contains(channelPathSegment)
 	}
 
 	private static func boolQueryValue(named name: String, in query: String?) -> Bool? {

@@ -19,12 +19,12 @@ struct MeshtasticChannelURLTests {
 	}
 
 	@Test(arguments: [
-		"https://www.meshtastic.org/e/#",
 		"HTTPS://MESHTASTIC.ORG/E/#",
 		"https://meshtastic.org/e#",
-		"https://meshtastic.org/channel/e/#"
+		"meshtastic:///e/#",
+		"meshtastic://e/#"
 	])
-	func acceptsAndroidCompatibleURLForms(_ prefix: String) throws {
+	func acceptsSupportedChannelURLForms(_ prefix: String) throws {
 		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
 		let parsed = try MeshtasticChannelURL.parse(prefix + payload)
 
@@ -41,7 +41,7 @@ struct MeshtasticChannelURLTests {
 		#expect(!parsed.channelSet.hasLoraConfig)
 	}
 
-	@Test func legacyFragmentAddClearsLoraConfig() throws {
+	@Test func fragmentAddClearsLoraConfig() throws {
 		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
 		let parsed = try MeshtasticChannelURL.parse("https://meshtastic.org/e/#\(payload)?add=true")
 
@@ -61,6 +61,24 @@ struct MeshtasticChannelURLTests {
 	@Test func rejectsWrongHost() {
 		#expect(throws: (any Error).self) {
 			_ = try MeshtasticChannelURL.parse("https://example.com/e/#abc")
+		}
+	}
+
+	@Test func rejectsContactURLPath() throws {
+		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
+
+		#expect(!MeshtasticChannelURL.canHandle(try #require(URL(string: "https://meshtastic.org/v/#\(payload)"))))
+		#expect(throws: MeshtasticChannelURL.ParseError.notChannelURL) {
+			_ = try MeshtasticChannelURL.parse("https://meshtastic.org/v/#\(payload)")
+		}
+	}
+
+	@Test func rejectsNestedChannelPath() throws {
+		let payload = try MeshtasticChannelURL.payloadString(for: makeChannelSet())
+
+		#expect(!MeshtasticChannelURL.canHandle(try #require(URL(string: "https://meshtastic.org/channel/e/#\(payload)"))))
+		#expect(throws: MeshtasticChannelURL.ParseError.notChannelURL) {
+			_ = try MeshtasticChannelURL.parse("https://meshtastic.org/channel/e/#\(payload)")
 		}
 	}
 
